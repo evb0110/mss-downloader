@@ -1,10 +1,11 @@
 import { app, BrowserWindow, Menu, ipcMain, dialog } from 'electron';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-const Store = require('electron-store');
-import { UnifiedManuscriptDownloader } from './services/UnifiedManuscriptDownloader';
-import { ElectronImageCache } from './services/ElectronImageCache';
-import { ElectronPdfMerger } from './services/ElectronPdfMerger';
+import Store from 'electron-store';
+import { UnifiedManuscriptDownloader } from './services/UnifiedManuscriptDownloader.js';
+import { ElectronImageCache } from './services/ElectronImageCache.js';
+import { ElectronPdfMerger } from './services/ElectronPdfMerger.js';
+import { DownloadQueue } from './services/DownloadQueue.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -16,6 +17,7 @@ let mainWindow: BrowserWindow | null = null;
 let manuscriptDownloader: UnifiedManuscriptDownloader | null = null;
 let imageCache: ElectronImageCache | null = null;
 let pdfMerger: ElectronPdfMerger | null = null;
+let downloadQueue: DownloadQueue | null = null;
 
 const createWindow = () => {
   const preloadPath = join(__dirname, '../preload/preload.js');
@@ -82,18 +84,18 @@ const createMenu = () => {
         {
           label: 'English',
           type: 'radio',
-          checked: store.get('language', 'en') === 'en',
+          checked: (store as any).get('language', 'en') === 'en',
           click: () => {
-            store.set('language', 'en');
+            (store as any).set('language', 'en');
             mainWindow?.webContents.send('language-changed', 'en');
           },
         },
         {
           label: 'Русский',
           type: 'radio', 
-          checked: store.get('language', 'en') === 'ru',
+          checked: (store as any).get('language', 'en') === 'ru',
           click: () => {
-            store.set('language', 'ru');
+            (store as any).set('language', 'ru');
             mainWindow?.webContents.send('language-changed', 'ru');
           },
         },
@@ -125,6 +127,12 @@ app.whenReady().then(() => {
   imageCache = new ElectronImageCache();
   pdfMerger = new ElectronPdfMerger();
   manuscriptDownloader = new UnifiedManuscriptDownloader(pdfMerger);
+  downloadQueue = DownloadQueue.getInstance(pdfMerger);
+  
+  // Listen for queue state changes and send to renderer
+  downloadQueue.on('stateChanged', (state) => {
+    mainWindow?.webContents.send('queue-state-changed', state);
+  });
   
   createWindow();
   createMenu();
@@ -143,7 +151,7 @@ app.on('window-all-closed', () => {
 });
 
 ipcMain.handle('get-language', () => {
-  return store.get('language', 'en');
+  return (store as any).get('language', 'en');
 });
 
 ipcMain.handle('download-manuscript', async (_event, url: string, _callbacks: any) => {
@@ -177,4 +185,68 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
     throw new Error('Manuscript downloader not initialized');
   }
   return manuscriptDownloader.parseManuscriptUrl(url);
+});
+
+// Queue management handlers
+ipcMain.handle('queue-add-manuscript', async (_event, manuscript: any) => {
+  if (!downloadQueue) {
+    throw new Error('Download queue not initialized');
+  }
+  return downloadQueue.addManuscript(manuscript);
+});
+
+ipcMain.handle('queue-remove-manuscript', async (_event, id: string) => {
+  if (!downloadQueue) {
+    throw new Error('Download queue not initialized');
+  }
+  return downloadQueue.removeManuscript(id);
+});
+
+ipcMain.handle('queue-start-processing', async () => {
+  if (!downloadQueue) {
+    throw new Error('Download queue not initialized');
+  }
+  return downloadQueue.startProcessing();
+});
+
+ipcMain.handle('queue-stop-processing', async () => {
+  if (!downloadQueue) {
+    throw new Error('Download queue not initialized');
+  }
+  return downloadQueue.stopProcessing();
+});
+
+ipcMain.handle('queue-pause-item', async (_event, id: string) => {
+  if (!downloadQueue) {
+    throw new Error('Download queue not initialized');
+  }
+  return downloadQueue.pauseItem(id);
+});
+
+ipcMain.handle('queue-resume-item', async (_event, id: string) => {
+  if (!downloadQueue) {
+    throw new Error('Download queue not initialized');
+  }
+  return downloadQueue.resumeItem(id);
+});
+
+ipcMain.handle('queue-clear-completed', async () => {
+  if (!downloadQueue) {
+    throw new Error('Download queue not initialized');
+  }
+  return downloadQueue.clearCompleted();
+});
+
+ipcMain.handle('queue-clear-failed', async () => {
+  if (!downloadQueue) {
+    throw new Error('Download queue not initialized');
+  }
+  return downloadQueue.clearFailed();
+});
+
+ipcMain.handle('queue-get-state', async () => {
+  if (!downloadQueue) {
+    throw new Error('Download queue not initialized');
+  }
+  return downloadQueue.getState();
 });

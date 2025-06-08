@@ -366,6 +366,50 @@ export class UnifiedManuscriptDownloader {
         return [...new Set(imageLinks)];
     }
 
+    async downloadManuscriptPages(
+        pageLinks: string[], 
+        callbacks?: {
+            onProgress?: (progress: { downloadedPages: number; totalPages: number; estimatedTimeRemaining?: number }) => void;
+            onStatusChange?: (status: { phase: string; message: string }) => void;
+            onError?: (error: string) => void;
+        }
+    ): Promise<void> {
+        try {
+            callbacks?.onStatusChange?.({ phase: 'downloading', message: 'Starting download...' });
+            
+            const images = await this.downloadImagesWithProgress(pageLinks, 'mixed', {
+                onProgress: (progress) => {
+                    callbacks?.onProgress?.({
+                        downloadedPages: progress.downloadedPages,
+                        totalPages: progress.totalPages,
+                        estimatedTimeRemaining: progress.estimatedTimeRemaining,
+                    });
+                },
+                onStatusChange: callbacks?.onStatusChange,
+                onError: callbacks?.onError,
+            });
+            
+            callbacks?.onStatusChange?.({ phase: 'processing', message: 'Creating PDF...' });
+            
+            const pdfPath = await this.pdfMerger.createPDFFromImages({
+                images,
+                onProgress: (_progress) => {
+                    // PDF creation progress is already handled in the original progress callback
+                },
+                onError: (error) => callbacks?.onError?.(error)
+            });
+            
+            callbacks?.onStatusChange?.({ 
+                phase: 'completed', 
+                message: `PDF saved to: ${pdfPath}` 
+            });
+            
+        } catch (error: any) {
+            callbacks?.onError?.(error.message);
+            throw error;
+        }
+    }
+
     abort(): void {
         if (this.abortController) {
             this.abortController.abort();

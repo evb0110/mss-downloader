@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { DownloadProgress, DownloadStatus, DownloadCallbacks } from '../shared/types';
+import type { QueueState, QueuedManuscript } from '../shared/queueTypes';
 
 console.log('Preload script loaded');
 
@@ -36,6 +37,39 @@ const api = {
   onLanguageChanged: (callback: (language: string) => void) => {
     ipcRenderer.on('language-changed', (_, language) => callback(language));
     return () => ipcRenderer.removeAllListeners('language-changed');
+  },
+
+  // Queue management methods
+  addToQueue: (manuscript: Omit<QueuedManuscript, 'id' | 'addedAt' | 'status'>) => 
+    ipcRenderer.invoke('queue-add-manuscript', manuscript),
+  
+  removeFromQueue: (id: string) => 
+    ipcRenderer.invoke('queue-remove-manuscript', id),
+  
+  startQueueProcessing: () => 
+    ipcRenderer.invoke('queue-start-processing'),
+  
+  stopQueueProcessing: () => 
+    ipcRenderer.invoke('queue-stop-processing'),
+  
+  pauseQueueItem: (id: string) => 
+    ipcRenderer.invoke('queue-pause-item', id),
+  
+  resumeQueueItem: (id: string) => 
+    ipcRenderer.invoke('queue-resume-item', id),
+  
+  clearCompletedFromQueue: () => 
+    ipcRenderer.invoke('queue-clear-completed'),
+  
+  clearFailedFromQueue: () => 
+    ipcRenderer.invoke('queue-clear-failed'),
+  
+  getQueueState: () => 
+    ipcRenderer.invoke('queue-get-state'),
+  
+  onQueueStateChanged: (callback: (state: QueueState) => void) => {
+    ipcRenderer.on('queue-state-changed', (_, state) => callback(state));
+    return () => ipcRenderer.removeAllListeners('queue-state-changed');
   }
 };
 

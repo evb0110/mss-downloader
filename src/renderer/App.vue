@@ -1,11 +1,11 @@
 <template>
   <div class="app">
-    <ManuscriptDownloader />
+    <DownloadQueueManager />
   </div>
 </template>
 
 <script setup lang="ts">
-import ManuscriptDownloader from './components/ManuscriptDownloader.vue'
+import DownloadQueueManager from './components/DownloadQueueManager.vue'
 </script>
 
 <style>
