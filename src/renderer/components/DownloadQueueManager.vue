@@ -2159,4 +2159,3 @@ label {
     background-color: #5a6268;
 }
 </style>
-</rewritten_file>

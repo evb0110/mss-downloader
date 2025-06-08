@@ -10,9 +10,7 @@ export class DownloadQueue extends EventEmitter {
     private currentDownloader: UnifiedManuscriptDownloader | null = null;
     private processingAbortController: AbortController | null = null;
     private pdfMerger: ElectronPdfMerger;
-    private store: Store<{
-        queueState: QueueState;
-    }>;
+    private store: any;
     
     private constructor(pdfMerger: ElectronPdfMerger) {
         super();
@@ -357,11 +355,12 @@ export class DownloadQueue extends EventEmitter {
         this.emit('stateChanged', this.getState());
     }
     
-    private saveToStorage(): void {
+        private saveToStorage(): void {
         this.store.set('queueState', this.state);
     }
-    
+
     private loadFromStorage(): void {
-        this.state = this.store.get('queueState');
+        const storedState = this.store.get('queueState', this.state) as QueueState;
+        this.state = storedState;
     }
 } 
