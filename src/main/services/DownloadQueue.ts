@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import { UnifiedManuscriptDownloader } from './UnifiedManuscriptDownloader.js';
 import { ElectronPdfMerger } from './ElectronPdfMerger.js';
 import type { QueuedManuscript, QueueState, TStage, TLibrary } from '../../shared/queueTypes.js';
+import Store from 'electron-store';
 
 export class DownloadQueue extends EventEmitter {
     private static instance: DownloadQueue | null = null;
@@ -9,11 +10,15 @@ export class DownloadQueue extends EventEmitter {
     private currentDownloader: UnifiedManuscriptDownloader | null = null;
     private processingAbortController: AbortController | null = null;
     private pdfMerger: ElectronPdfMerger;
+    private store: Store<{
+        queueState: QueueState;
+    }>;
     
     private constructor(pdfMerger: ElectronPdfMerger) {
         super();
         this.pdfMerger = pdfMerger;
-        this.state = {
+        // Define default state for electron-store
+        const defaultState: QueueState = {
             items: [],
             isProcessing: false,
             isPaused: false,
@@ -23,6 +28,10 @@ export class DownloadQueue extends EventEmitter {
                 pauseBetweenItems: 0,
             },
         };
+        this.store = new Store<{
+            queueState: QueueState;
+        }>({ defaults: { queueState: defaultState } });
+        this.state = defaultState; // Initialize state with default before loading from storage
         this.loadFromStorage();
     }
     
@@ -37,67 +46,25 @@ export class DownloadQueue extends EventEmitter {
     }
     
     // Queue Management
-    addManuscript(manuscript: Omit<QueuedManuscript, 'id' | 'addedAt' | 'status'>) {
-        const canonicalizeUrl = (url: any) => {
-            try {
-                if (!url || typeof url !== 'string') {
-                    return url;
-                }
-                
-                const trimmedUrl = url.trim().replace(/\/$/, '');
-                
-                if (trimmedUrl.includes('gallica.bnf.fr/ark:')) {
-                    const arkMatch = trimmedUrl.match(/ark:\/12148\/([^/]+)/);
-                    const pageMatch = trimmedUrl.match(/\/f(\d+)\./);
-                    
-                    if (arkMatch) {
-                        const arkId = arkMatch[1];
-                        const pageNumber = pageMatch ? pageMatch[1] : '1';
-                        return `gallica://ark:12148/${arkId}/f${pageNumber}`;
-                    }
-                }
-                
-                return trimmedUrl;
-            } catch (error) {
-                console.warn('Error canonicalizing URL:', url, error);
-                return url;
-            }
-        };
-        
-        const manuscriptCanonical = canonicalizeUrl(manuscript.url);
-        
-        const isDuplicate = this.state.items.some((item) => {
-            const itemCanonical = canonicalizeUrl(item.url);
-            const sameUrl = itemCanonical === manuscriptCanonical;
-            const sameStartPage = (item.downloadOptions?.startPage || 1) === (manuscript.downloadOptions?.startPage || 1);
-            const sameEndPage = (item.downloadOptions?.endPage || item.totalPages) === (manuscript.downloadOptions?.endPage || manuscript.totalPages);
-            
-            return sameUrl && sameStartPage && sameEndPage;
-        });
-        
-        if (isDuplicate) {
-            throw new Error('Document with same URL and page range already exists in queue');
-        }
-        
+    addManuscript(manuscript: Omit<QueuedManuscript, 'id' | 'addedAt' | 'status'>): string {
         const id = `ms_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const queuedManuscript: QueuedManuscript = {
             ...manuscript,
             id,
             addedAt: Date.now(),
             status: 'pending',
+            displayName: manuscript.displayName || manuscript.url.substring(0, 50) + '...', // Provide a default display name if not given
+            library: manuscript.library || 'loading', // Default to loading until manifest is processed
+            totalPages: manuscript.totalPages || 0, // Default to 0 until manifest is processed
         };
         
         this.state.items.push(queuedManuscript);
         this.saveToStorage();
         this.notifyListeners();
         
-        if (this.state.globalSettings.autoStart && !this.state.isProcessing) {
-            this.startProcessing();
-        }
-        
         return id;
     }
-    
+
     removeManuscript(id: string): boolean {
         const index = this.state.items.findIndex((item) => item.id === id);
         if (index === -1) return false;
@@ -255,7 +222,7 @@ export class DownloadQueue extends EventEmitter {
         const items = this.state.items;
         return {
             total: items.length,
-            pending: items.filter((item) => item.status === 'pending').length,
+            pending: items.filter((item) => item.status === 'pending' || item.status === 'loading').length,
             downloading: items.filter((item) => item.status === 'downloading').length,
             completed: items.filter((item) => item.status === 'completed').length,
             failed: items.filter((item) => item.status === 'failed').length,
@@ -288,33 +255,43 @@ export class DownloadQueue extends EventEmitter {
             item.totalPages = manifest.totalPages;
             item.displayName = manifest.displayName;
             item.library = manifest.library as TLibrary;
-            
+            item.status = 'downloading';
+
             const startPage = Math.max(1, item.downloadOptions?.startPage || 1);
             const endPage = Math.min(manifest.totalPages, item.downloadOptions?.endPage || manifest.totalPages);
             const pageCount = endPage - startPage + 1;
             
             const selectedPageLinks = manifest.pageLinks.slice(startPage - 1, endPage);
             
+            let lastProgressUpdate = 0;
+            let lastPercentage = -1;
+
             await this.currentDownloader.downloadManuscriptPages(selectedPageLinks, {
                 onProgress: (progress) => {
                     if (!this.state.isPaused && item.progress) {
-                        const actualCurrentPage = startPage + progress.downloadedPages - 1;
-                        
-                        item.progress = {
-                            current: progress.downloadedPages,
-                            total: pageCount,
-                            percentage: Math.round((progress.downloadedPages / pageCount) * 100),
-                            eta: this.formatTime(progress.estimatedTimeRemaining || 0),
-                            stage: 'downloading' as TStage,
-                            actualCurrentPage,
-                        };
-                        
-                        this.saveToStorage();
-                        this.notifyListeners();
+                        const now = Date.now();
+                        const calculatedPercentage = Math.round((progress.downloadedPages / pageCount) * 100);
+                        const shouldUpdate = (now - lastProgressUpdate > 500) || (calculatedPercentage !== lastPercentage);
+
+                        if (shouldUpdate) {
+                            const actualCurrentPage = startPage + progress.downloadedPages - 1;
+                            item.progress = {
+                                current: progress.downloadedPages,
+                                total: pageCount,
+                                percentage: calculatedPercentage,
+                                eta: this.formatTime(progress.estimatedTimeRemaining || 0),
+                                stage: 'downloading' as TStage,
+                                actualCurrentPage,
+                            };
+                            lastProgressUpdate = now;
+                            lastPercentage = calculatedPercentage;
+                            this.saveToStorage();
+                            this.notifyListeners();
+                        }
                     }
                 },
                 onStatusChange: (_status) => {
-                    // Handle status changes if needed
+                    // Not used for queue items directly
                 },
                 onError: (error) => {
                     throw new Error(error);
@@ -327,7 +304,7 @@ export class DownloadQueue extends EventEmitter {
             
         } catch (error: any) {
             if (error.name === 'AbortError' || error.message?.includes('abort')) {
-                item.status = 'pending';
+                item.status = 'paused';
                 item.progress = undefined;
             } else {
                 item.status = 'failed';
@@ -343,7 +320,7 @@ export class DownloadQueue extends EventEmitter {
     }
     
     private getNextPendingItem(): QueuedManuscript | null {
-        return this.state.items.find((item) => item.status === 'pending') || null;
+        return this.state.items.find((item) => item.status === 'pending' || item.status === 'loading') || null;
     }
     
     private cancelCurrent(): void {
@@ -381,10 +358,10 @@ export class DownloadQueue extends EventEmitter {
     }
     
     private saveToStorage(): void {
-        // Implementation will be added when integrating with electron-store
+        this.store.set('queueState', this.state);
     }
     
     private loadFromStorage(): void {
-        // Implementation will be added when integrating with electron-store
+        this.state = this.store.get('queueState');
     }
 } 

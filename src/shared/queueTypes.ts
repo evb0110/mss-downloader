@@ -1,6 +1,6 @@
 export type TStage = 'downloading' | 'merging' | 'processing' | 'caching' | 'complete';
-export type TStatus = 'pending' | 'downloading' | 'completed' | 'failed' | 'paused';
-export type TLibrary = 'gallica' | 'unifr' | 'vatlib' | 'cecilia' | 'irht' | 'dijon' | 'laon' | 'durham';
+export type TStatus = 'loading' | 'pending' | 'downloading' | 'completed' | 'failed' | 'paused';
+export type TLibrary = 'gallica' | 'unifr' | 'vatlib' | 'cecilia' | 'irht' | 'dijon' | 'laon' | 'durham' | 'loading';
 
 export interface QueuedManuscript {
     id: string;

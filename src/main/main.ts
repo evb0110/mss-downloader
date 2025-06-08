@@ -6,6 +6,7 @@ import { UnifiedManuscriptDownloader } from './services/UnifiedManuscriptDownloa
 import { ElectronImageCache } from './services/ElectronImageCache.js';
 import { ElectronPdfMerger } from './services/ElectronPdfMerger.js';
 import { DownloadQueue } from './services/DownloadQueue.js';
+import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -130,7 +131,7 @@ app.whenReady().then(() => {
   downloadQueue = DownloadQueue.getInstance(pdfMerger);
   
   // Listen for queue state changes and send to renderer
-  downloadQueue.on('stateChanged', (state) => {
+  downloadQueue.on('stateChanged', (state: QueueState) => {
     mainWindow?.webContents.send('queue-state-changed', state);
   });
   
@@ -188,7 +189,7 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
 });
 
 // Queue management handlers
-ipcMain.handle('queue-add-manuscript', async (_event, manuscript: any) => {
+ipcMain.handle('queue-add-manuscript', async (_event, manuscript: Omit<QueuedManuscript, 'id' | 'addedAt' | 'status'>) => {
   if (!downloadQueue) {
     throw new Error('Download queue not initialized');
   }
@@ -207,6 +208,20 @@ ipcMain.handle('queue-start-processing', async () => {
     throw new Error('Download queue not initialized');
   }
   return downloadQueue.startProcessing();
+});
+
+ipcMain.handle('queue-pause-processing', async () => {
+  if (!downloadQueue) {
+    throw new Error('Download queue not initialized');
+  }
+  return downloadQueue.pauseProcessing();
+});
+
+ipcMain.handle('queue-resume-processing', async () => {
+  if (!downloadQueue) {
+    throw new Error('Download queue not initialized');
+  }
+  return downloadQueue.resumeProcessing();
 });
 
 ipcMain.handle('queue-stop-processing', async () => {
@@ -244,9 +259,30 @@ ipcMain.handle('queue-clear-failed', async () => {
   return downloadQueue.clearFailed();
 });
 
+ipcMain.handle('queue-clear-all', async () => {
+  if (!downloadQueue) {
+    throw new Error('Download queue not initialized');
+  }
+  return downloadQueue.clearAll();
+});
+
+ipcMain.handle('queue-update-item', async (_event, id: string, updates: Partial<QueuedManuscript>) => {
+  if (!downloadQueue) {
+    throw new Error('Download queue not initialized');
+  }
+  return downloadQueue.updateItem(id, updates);
+});
+
 ipcMain.handle('queue-get-state', async () => {
   if (!downloadQueue) {
     throw new Error('Download queue not initialized');
   }
   return downloadQueue.getState();
+});
+
+ipcMain.handle('cleanup-indexeddb-cache', async () => {
+  if (!imageCache) {
+    throw new Error('Image cache not initialized');
+  }
+  return imageCache.clearCache();
 });
