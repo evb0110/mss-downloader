@@ -61,5 +61,35 @@ export default {
       name: 'Durham University',
       description: 'Durham University Library digital manuscripts via IIIF'
     }
+  },
+  settings: {
+    title: 'Settings',
+    download: {
+      title: 'Download Settings',
+      maxConcurrent: 'Max Concurrent Downloads',
+      maxRetries: 'Max Retries',
+      requestTimeout: 'Request Timeout'
+    },
+    pdf: {
+      title: 'PDF Settings',
+      quality: 'PDF Quality',
+      autoSplitThreshold: 'Auto-split Threshold'
+    },
+    ui: {
+      title: 'Interface',
+      language: 'Language',
+      theme: 'Theme',
+      themeSystem: 'System',
+      themeLight: 'Light',
+      themeDark: 'Dark'
+    },
+    resetToDefaults: 'Reset to Defaults',
+    confirmReset: 'Are you sure you want to reset all settings to defaults?'
+  },
+  common: {
+    close: 'Close',
+    save: 'Save',
+    cancel: 'Cancel',
+    ok: 'OK'
   }
 }

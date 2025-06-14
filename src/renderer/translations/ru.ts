@@ -61,5 +61,35 @@ export default {
       name: 'Durham University',
       description: 'Цифровые рукописи Библиотеки Дархемского университета через IIIF'
     }
+  },
+  settings: {
+    title: 'Настройки',
+    download: {
+      title: 'Настройки Загрузки',
+      maxConcurrent: 'Макс. одновременных загрузок',
+      maxRetries: 'Макс. попыток',
+      requestTimeout: 'Таймаут запроса'
+    },
+    pdf: {
+      title: 'Настройки PDF',
+      quality: 'Качество PDF',
+      autoSplitThreshold: 'Порог автоматического разделения'
+    },
+    ui: {
+      title: 'Интерфейс',
+      language: 'Язык',
+      theme: 'Тема',
+      themeSystem: 'Системная',
+      themeLight: 'Светлая',
+      themeDark: 'Тёмная'
+    },
+    resetToDefaults: 'Сбросить к по умолчанию',
+    confirmReset: 'Вы уверены, что хотите сбросить все настройки к значениям по умолчанию?'
+  },
+  common: {
+    close: 'Закрыть',
+    save: 'Сохранить',
+    cancel: 'Отмена',
+    ok: 'ОК'
   }
 }

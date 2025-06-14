@@ -27,15 +27,16 @@
                     <textarea
                         id="bulk-urls"
                         v-model="bulkUrlText"
-                        placeholder="Enter manuscript URLs here, one per line or separated by commas/semicolons."
+                        placeholder="Enter multiple URLs separated by whitespace, semicolon, or comma
+https://gallica.bnf.fr/ark:/12148/...
+https://e-codices.unifr.ch/...
+https://digi.vatlib.it/..."
                         class="bulk-textarea manuscript-input"
                         :disabled="isProcessingUrls"
                         rows="6"
                         @keydown="handleTextareaKeydown"
                     />
-                    <small class="help-text">
-                        Accepted URLs: Gallica BnF (gallica.bnf.fr), e-codices (e-codices.unifr.ch), Vatican Library (digi.vatlib.it).
-                    </small>
+                    <small class="help-text">Enter multiple manuscript URLs, one per line or separated by whitespace, semicolon, or comma. Press Ctrl+Enter (or Cmd+Enter on Mac) to add to queue.</small>
                 </div>
                 
                 <button
@@ -148,22 +149,106 @@
                         Stop Queue
                     </button>
                     <button
-                        class="clear-queue-btn"
-                        :disabled="queueItems.length === 0 || isProcessingUrls"
-                        title="Clear all items from the queue"
+                        :class="getButtonClass('clearAll', 'clear-queue-btn')"
+                        :disabled="isButtonDisabled('clearAll', queueItems.length === 0 || isProcessingUrls)"
+                        title="Delete all items from the queue"
                         @click="clearAllQueue"
                     >
-                        Clear All
+                        <span v-if="getButtonContent('clearAll', 'Delete All').icon" class="btn-icon-only">{{ getButtonContent('clearAll', 'Delete All').icon }}</span>
+                        <span v-else>{{ getButtonContent('clearAll', 'Delete All').text }}</span>
                     </button>
                     <button
-                        class="cleanup-cache-btn"
-                        :disabled="isProcessingUrls"
+                        :class="getButtonClass('cleanupCache', 'cleanup-cache-btn')"
+                        :disabled="isButtonDisabled('cleanupCache', isProcessingUrls)"
                         title="Clean up the image cache for downloaded manuscripts"
                         @click="cleanupIndexedDBCache"
                     >
-                        Cleanup Cache
+                        <span v-if="getButtonContent('cleanupCache', 'Cleanup Cache').icon" class="btn-icon-only">{{ getButtonContent('cleanupCache', 'Cleanup Cache').icon }}</span>
+                        <span v-else>{{ getButtonContent('cleanupCache', 'Cleanup Cache').text }}</span>
                     </button>
-                    
+                    <button
+                        :class="getButtonClass('revealFolder', 'reveal-folder-btn')"
+                        :disabled="isButtonDisabled('revealFolder')"
+                        title="Open the Downloads folder where completed files are saved"
+                        @click="revealDownloadsFolder"
+                    >
+                        <span v-if="getButtonContent('revealFolder', 'Reveal Folder').icon" class="btn-icon-only">{{ getButtonContent('revealFolder', 'Reveal Folder').icon }}</span>
+                        <span v-else>{{ getButtonContent('revealFolder', 'Reveal Folder').text }}</span>
+                    </button>
+                </div>
+
+                <!-- Queue Settings -->
+                <Spoiler title="⚙️ Queue Settings" class="settings-spoiler">
+                    <div class="settings-content">
+                        <div class="setting-group">
+                            <label class="setting-checkbox">
+                                <input
+                                    type="checkbox"
+                                    v-model="queueSettings.autoSplitEnabled"
+                                    @change="updateQueueSettings"
+                                >
+                                <span class="checkbox-label">Enable auto-split for large documents</span>
+                            </label>
+                            <p class="setting-description">
+                                Automatically split documents larger than the threshold into multiple PDF files
+                            </p>
+                        </div>
+
+                        <div class="setting-group">
+                            <label class="setting-label">
+                                Auto-split threshold: {{ queueSettings.autoSplitThresholdMB }}MB
+                            </label>
+                            <input
+                                type="range"
+                                min="200"
+                                max="1000"
+                                step="50"
+                                v-model="queueSettings.autoSplitThresholdMB"
+                                @input="updateQueueSettings"
+                                class="setting-range"
+                            >
+                            <div class="range-labels">
+                                <span>200MB</span>
+                                <span>1000MB</span>
+                            </div>
+                        </div>
+
+                        <div class="setting-group">
+                            <label class="setting-label">
+                                Concurrent downloads: {{ queueSettings.maxConcurrentDownloads }}
+                            </label>
+                            <input
+                                type="range"
+                                min="1"
+                                max="8"
+                                step="1"
+                                v-model="queueSettings.maxConcurrentDownloads"
+                                @input="updateQueueSettings"
+                                class="setting-range"
+                            >
+                            <div class="range-labels">
+                                <span>1</span>
+                                <span>8</span>
+                            </div>
+                        </div>
+
+                        <div class="setting-group">
+                            <button
+                                :class="getButtonClass('applySettings', 'apply-settings-btn')"
+                                @click="applySettingsToAllQueueItems"
+                                :disabled="isButtonDisabled('applySettings', queueItems.length === 0)"
+                            >
+                                <span v-if="getButtonContent('applySettings', 'Apply to All Queue Items').icon" class="btn-icon-only">{{ getButtonContent('applySettings', 'Apply to All Queue Items').icon }}</span>
+                                <span v-else>{{ getButtonContent('applySettings', 'Apply to All Queue Items').text }}</span>
+                            </button>
+                            <p class="setting-description">
+                                Update all queued items with the current settings
+                            </p>
+                        </div>
+                    </div>
+                </Spoiler>
+
+                <div class="queue-actions">
                     <!-- Loading manifests indicator -->
                     <div
                         v-if="isProcessingUrls"
@@ -210,7 +295,7 @@
                                     <span
                                         class="status-badge"
                                         :class="`status-${item.status}`"
-                                    >{{ item.status }}</span>
+                                    >{{ getStatusText(item.status) }}</span>
                                     <span
                                         v-if="item.status !== 'failed'"
                                         class="total-pages-badge"
@@ -273,23 +358,6 @@
                             <div class="edit-section">
                                 <div class="edit-header">
                                     <label>Page Range</label>
-                                    <div class="edit-actions">
-                                        <button
-                                            :disabled="hasEditQueueValidationErrors || !hasQueueItemChanges"
-                                            class="edit-btn edit-save-btn"
-                                            title="Apply changes"
-                                            @click="saveQueueItemEdit()"
-                                        >
-                                            Apply
-                                        </button>
-                                        <button
-                                            class="edit-btn edit-cancel-btn"
-                                            title="Cancel changes"
-                                            @click="cancelQueueItemEdit()"
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
                                 </div>
                                 <div class="page-range">
                                     <input
@@ -310,12 +378,27 @@
                                         @blur="validateQueueEditInputs"
                                     >
                                     <button
+                                        :disabled="hasEditQueueValidationErrors || !hasQueueItemChanges"
+                                        class="edit-btn edit-save-btn"
+                                        title="Apply changes"
+                                        @click="saveQueueItemEdit()"
+                                    >
+                                        Apply
+                                    </button>
+                                    <button
                                         type="button"
                                         class="select-all-btn"
                                         :class="{ 'active': editingQueueItem.startPage === 1 && editingQueueItem.endPage === item.totalPages }"
                                         @click="selectAllPages(item.totalPages)"
                                     >
                                         All Pages
+                                    </button>
+                                    <button
+                                        class="edit-btn edit-cancel-btn"
+                                        title="Cancel changes"
+                                        @click="cancelQueueItemEdit()"
+                                    >
+                                        Cancel
                                     </button>
                                 </div>
                                 <p v-if="hasEditQueueValidationErrors" class="error-message">
@@ -376,103 +459,112 @@
         </div>
     </div>
 
-    <!-- Custom Modals (simplified from original) -->
-    <div v-if="showConfirmModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>{{ confirmModal.title }}</h3>
-            <p>{{ confirmModal.message }}</p>
-            <div class="modal-actions">
-                <button @click="handleConfirm">{{ confirmModal.confirmText }}</button>
-                <button @click="closeConfirmModal">{{ confirmModal.cancelText }}</button>
-            </div>
-        </div>
-    </div>
+    <!-- Custom Modals -->
+    <Modal
+        :show="showConfirmModal"
+        :title="confirmModal.title"
+        :message="confirmModal.message"
+        type="confirm"
+        :confirm-text="confirmModal.confirmText"
+        :cancel-text="confirmModal.cancelText"
+        @confirm="handleConfirm"
+        @close="closeConfirmModal"
+    />
 
-    <div v-if="showAlertModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>{{ alertModal.title }}</h3>
-            <p>{{ alertModal.message }}</p>
-            <div class="modal-actions">
-                <button @click="closeAlertModal">Close</button>
-            </div>
-        </div>
-    </div>
+    <Modal
+        :show="showAlertModal"
+        :title="alertModal.title"
+        :message="alertModal.message"
+        type="alert"
+        cancel-text="Close"
+        @close="closeAlertModal"
+    />
 
-    <!-- Supported Libraries Modal (simplified) -->
-    <div v-if="showSupportedLibrariesModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Supported Libraries</h3>
-            <p>Enter a URL from one of the following supported digital libraries to download a manuscript:</p>
+    <!-- Supported Libraries Modal -->
+    <Modal
+        :show="showSupportedLibrariesModal"
+        title="Supported Manuscript Libraries"
+        type="alert"
+        width="min(800px, 90vw)"
+        @close="showSupportedLibrariesModal = false"
+    >
+        <p style="margin-bottom: 1.5rem;">Enter a URL from one of the following supported digital libraries to download a manuscript:</p>
 
-            <div class="libraries-list">
-                <div
-                    v-for="library in supportedLibraries"
-                    :key="library.name"
-                    class="library-item"
-                >
-                    <h4 :class="{ 'library-warning': library.name.includes('⚠️') }">
-                        {{ library.name }}
-                    </h4>
-                    <p
-                        class="library-description"
-                        :class="{ 'library-warning': library.description.includes('NOT WORKING YET') }"
-                    >
-                        {{ library.description }}
-                    </p>
-                    <div class="library-example">
-                        <strong>Example URL:</strong>
-                        <code
-                            class="example-url-link"
-                            @click="handleExampleClick(library.example); showSupportedLibrariesModal = false"
-                        >{{ library.example }}</code>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button @click="showSupportedLibrariesModal = false">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add More Documents Modal (simplified) -->
-    <div v-if="showAddMoreDocumentsModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Add More Documents</h3>
-            <div class="form-group">
-                <label for="modal-bulk-urls">Manuscript URLs</label>
-                <textarea
-                    id="modal-bulk-urls"
-                    ref="modalTextarea"
-                    v-model="bulkUrlText"
-                    placeholder="Enter manuscript URLs here, one per line or separated by commas/semicolons."
-                    class="bulk-textarea manuscript-input"
-                    :disabled="isProcessingUrls"
-                    rows="6"
-                    @keydown="handleTextareaKeydown"
-                />
-                <small class="help-text">
-                    Accepted URLs: Gallica BnF (gallica.bnf.fr), e-codices (e-codices.unifr.ch), Vatican Library (digi.vatlib.it).
-                </small>
-            </div>
-            
-            <button
-                :disabled="isProcessingUrls || !bulkUrlText.trim()"
-                class="load-btn"
-                @click="processBulkUrls()"
+        <div class="libraries-list">
+            <div
+                v-for="library in supportedLibrariesComplete"
+                :key="library.name"
+                class="library-item"
             >
-                {{ isProcessingUrls ? 'Adding to Queue...' : 'Add to Queue' }}
-            </button>
-            <div class="modal-actions">
-                <button @click="showAddMoreDocumentsModal = false">Cancel</button>
+                <h4 :class="{ 'library-warning': library.name.includes('⚠️') }">
+                    {{ library.name }}
+                </h4>
+                <p class="library-description">
+                    {{ library.description }}
+                </p>
+                
+                <Spoiler title="Example URLs" class="library-examples-spoiler">
+                    <div class="library-examples">
+                        <div
+                            v-for="example in library.examples"
+                            :key="example.url"
+                            class="library-example"
+                        >
+                            <div class="example-label">{{ example.label }}:</div>
+                            <code
+                                class="example-url-link"
+                                @click="handleExampleClick(example.url); showSupportedLibrariesModal = false"
+                            >
+                                {{ example.url }}
+                            </code>
+                        </div>
+                    </div>
+                </Spoiler>
             </div>
         </div>
-    </div>
+    </Modal>
+
+    <!-- Add More Documents Modal -->
+    <Modal
+        :show="showAddMoreDocumentsModal"
+        title="Add More Documents"
+        type="alert"
+        @close="showAddMoreDocumentsModal = false"
+    >
+        <div class="form-group">
+            <label for="modal-bulk-urls">Manuscript URLs</label>
+            <textarea
+                id="modal-bulk-urls"
+                ref="modalTextarea"
+                v-model="bulkUrlText"
+                placeholder="Enter multiple URLs separated by whitespace, semicolon, or comma
+https://gallica.bnf.fr/ark:/12148/...
+https://e-codices.unifr.ch/...
+https://digi.vatlib.it/..."
+                class="bulk-textarea manuscript-input"
+                :disabled="isProcessingUrls"
+                rows="6"
+                @keydown="handleTextareaKeydown"
+            />
+            <small class="help-text">Enter multiple manuscript URLs, one per line or separated by whitespace, semicolon, or comma. Press Ctrl+Enter (or Cmd+Enter on Mac) to add to queue.</small>
+        </div>
+        
+        <button
+            :disabled="isProcessingUrls || !bulkUrlText.trim()"
+            class="load-btn"
+            @click="processBulkUrls()"
+        >
+            {{ isProcessingUrls ? 'Adding to Queue...' : 'Add to Queue' }}
+        </button>
+    </Modal>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watchEffect, onMounted } from 'vue';
 import type { QueuedManuscript, QueueState, TStatus, TLibrary } from '../../shared/queueTypes';
-import type { LibraryInfo, UnifiedManifest } from '../../shared/types';
+import type { LibraryInfo, ManuscriptManifest } from '../../shared/types';
+import Modal from './Modal.vue';
+import Spoiler from './Spoiler.vue';
 
 // Declare window.electronAPI type
 declare global {
@@ -481,7 +573,7 @@ declare global {
       getLanguage: () => Promise<string>;
       downloadManuscript: (url: string, callbacks: any) => Promise<void>; // Simplified for now
       getSupportedLibraries: () => Promise<LibraryInfo[]>;
-      parseManuscriptUrl: (url: string) => Promise<UnifiedManifest>;
+      parseManuscriptUrl: (url: string) => Promise<ManuscriptManifest>;
       onLanguageChanged: (callback: (language: string) => void) => () => void;
       
       addToQueue: (manuscript: Omit<QueuedManuscript, 'id' | 'addedAt' | 'status'>) => Promise<string>;
@@ -529,6 +621,9 @@ const editingQueueItem = ref<{
 } | null>(null);
 
 
+// Button loading states
+const buttonLoadingStates = ref<{ [key: string]: 'idle' | 'loading' | 'success' }>({});
+
 // Modal state
 const showConfirmModal = ref(false);
 const showAlertModal = ref(false);
@@ -549,12 +644,104 @@ const alertModal = ref({
 // Supported Libraries - fetched via IPC
 const supportedLibraries = ref<LibraryInfo[]>([]);
 
-// Set up confirmation callback for unified downloader (not directly used by queue, but kept for consistency if direct downloads were enabled)
-// window.electronAPI.setShowConfirmCallback((title, message, onConfirm, confirmText = 'Confirm', cancelText = 'Cancel') => {
-//     showConfirm(title, message, onConfirm, confirmText, cancelText);
-// });
+// Complete supported libraries with examples structure matching barsky.club
+const supportedLibrariesComplete = ref([
+    {
+        name: 'Gallica (BnF)',
+        description: 'French National Library digital manuscripts (supports any f{page}.* format)',
+        examples: [
+            { label: 'Working manuscript (Bible)', url: 'https://gallica.bnf.fr/ark:/12148/btv1b8449691v/f1.highres' },
+            { label: 'Planche contact format', url: 'https://gallica.bnf.fr/ark:/12148/btv1b8449691v/f1.planchecontact' },
+            { label: 'Direct IIIF URL', url: 'https://gallica.bnf.fr/iiif/ark:/12148/btv1b8449691v/f1/full/max/0/native.jpg' }
+        ]
+    },
+    {
+        name: 'e-codices (Unifr)',
+        description: 'Swiss virtual manuscript library',
+        examples: [
+            { label: 'Zurich Central Library', url: 'https://www.e-codices.unifr.ch/en/zbz/C0043/1r' },
+            { label: 'Bern Burgerbibliothek manuscript', url: 'https://www.e-codices.ch/en/sbe/0610/1' },
+            { label: 'Bern Burgerbibliothek codex', url: 'https://www.e-codices.ch/en/sbe/0611/1r' },
+            { label: 'Basel University Library', url: 'https://www.e-codices.unifr.ch/en/ubb/AN-IV-0011/1r' }
+        ]
+    },
+    {
+        name: 'Vatican Library',
+        description: 'Vatican Apostolic Library digital collections',
+        examples: [
+            { label: 'Vatican Latin manuscript', url: 'https://digi.vatlib.it/view/MSS_Vat.lat.3225' },
+            { label: 'Palatine Latin manuscript', url: 'https://digi.vatlib.it/view/MSS_Pal.lat.24' },
+            { label: 'Vatican Greek manuscript', url: 'https://digi.vatlib.it/view/MSS_Vat.gr.1613' }
+        ]
+    },
+    {
+        name: 'Cecilia (Grand Albigeois)',
+        description: 'Grand Albigeois mediatheques digital collections',
+        examples: [
+            { label: 'Document 124 example', url: 'https://cecilia.mediatheques.grand-albigeois.fr/viewer/124/?offset=#page=1&viewer=picture&o=&n=0&q=' },
+            { label: 'Document 105 - Liber sacramentorum (9th century)', url: 'https://cecilia.mediatheques.grand-albigeois.fr/viewer/105/?offset=#page=1&viewer=picture&o=&n=0&q=' }
+        ]
+    },
+    {
+        name: 'IRHT (CNRS)',
+        description: 'Institut de recherche et d\'histoire des textes digital manuscripts',
+        examples: [
+            { label: 'ARCA manuscript example', url: 'https://arca.irht.cnrs.fr/ark:/63955/md14nk323d72' }
+        ]
+    },
+    {
+        name: 'Dijon Patrimoine',
+        description: 'Bibliothèque municipale de Dijon digital manuscripts',
+        examples: [
+            { label: 'Citeaux manuscript', url: 'http://patrimoine.bm-dijon.fr/pleade/img-viewer/MS00114/?ns=FR212316101_CITEAUX_MS00114_000_01_PS.jpg' }
+        ]
+    },
+    {
+        name: 'Laon Bibliothèque ⚠️',
+        description: 'Bibliothèque municipale de Laon digital manuscripts (NOT WORKING YET - proxy issues)',
+        examples: [
+            { label: 'Document 1459 (not working)', url: 'https://bibliotheque-numerique.ville-laon.fr/viewer/1459/?offset=#page=1&viewer=picture&o=download&n=0&q=' }
+        ]
+    },
+    {
+        name: 'Durham University',
+        description: 'Durham University Library digital manuscripts via IIIF',
+        examples: [
+            { label: 'IIIF manifest example', url: 'https://iiif.durham.ac.uk/index.html?manifest=t1mp2676v52p' }
+        ]
+    },
+    {
+        name: 'SharedCanvas',
+        description: 'SharedCanvas-based digital manuscript viewers and collections',
+        examples: [
+            { label: 'Mirador viewer example', url: 'https://sharedcanvas.be/IIIF/viewer/mirador/B_OB_MS310' }
+        ]
+    },
+    {
+        name: 'UGent Library',
+        description: 'Ghent University Library digital manuscript collections via IIIF',
+        examples: [
+            { label: 'IIIF manuscript example', url: 'https://lib.ugent.be/viewer/archive.ugent.be%3A644DCADE-4FE7-11E9-9AC5-81E62282636C' }
+        ]
+    },
+    {
+        name: 'British Library',
+        description: 'British Library digital manuscript collections via IIIF',
+        examples: [
+            { label: 'Stavelot Missal', url: 'https://iiif.bl.uk/uv/?_gl=1*kp8b4r*_ga*MTE5NDkxMjY0MS4xNzQ5NjMwNDI3*_ga_B8DBRB95KV*czE3NDk2MzA2MzckbzEkZzAkdDE3NDk2MzA2MzgkajU5JGwwJGgw#?manifest=https://bl.digirati.io/iiif/ark:/81055/vdc_100055984026.0x000001' },
+            { label: 'Another manuscript', url: 'https://iiif.bl.uk/uv/?_gl=1*1sdgphl*_ga*MTE5NDkxMjY0MS4xNzQ5NjMwNDI3#?manifest=https://bl.digirati.io/iiif/ark:/81055/vdc_100055981061.0x000001' },
+            { label: 'Third manuscript', url: 'https://iiif.bl.uk/uv/?_gl=1*1oia29t*_ga*MTE5NDkxMjY0MS4xNzQ5NjMwNDI3*_ga_B8DBRB95KV*czE3NDk2MzA2MzckbzEkZzEkdDE3NDk2MzA2NDAkajYwJGwwJGgw#?manifest=https://bl.digirati.io/iiif/ark:/81055/vdc_100064569172.0x000001' },
+            { label: 'Direct manifest URL', url: 'https://bl.digirati.io/iiif/ark:/81055/vdc_100055984026.0x000001' }
+        ]
+    }
+]);
 
-
+// Queue settings
+const queueSettings = ref({
+    autoSplitEnabled: false,
+    autoSplitThresholdMB: 800,
+    maxConcurrentDownloads: 3
+});
 
 // Bulk mode computed properties
 const queueItems = computed(() => queueState.value.items || []);
@@ -634,9 +821,32 @@ const hasQueueItemChanges = computed(() => {
         editingQueueItem.value.concurrentDownloads !== (currentOptions?.concurrentDownloads || 3);
 });
 
+function getStatusText(status: TStatus): string {
+    const statusMap = {
+        'pending': 'Pending',
+        'downloading': 'Downloading',
+        'completed': 'Completed',
+        'failed': 'Failed',
+        'paused': 'Paused',
+        'loading': 'Loading'
+    };
+    return statusMap[status] || status;
+}
 
 async function handleExampleClick(exampleUrl: string) {
-    bulkUrlText.value = bulkUrlText.value ? bulkUrlText.value + '\n' + exampleUrl : exampleUrl;
+    if (queueItems.value.length === 0) {
+        // If queue is empty, add to main textarea
+        bulkUrlText.value = bulkUrlText.value ? bulkUrlText.value + '\n' + exampleUrl : exampleUrl;
+    } else {
+        // If queue has items, open "Add More Documents" modal with URL
+        bulkUrlText.value = exampleUrl;
+        showAddMoreDocumentsModal.value = true;
+        await nextTick();
+        if (modalTextarea.value) {
+            modalTextarea.value.focus();
+            modalTextarea.value.setSelectionRange(modalTextarea.value.value.length, modalTextarea.value.value.length);
+        }
+    }
 }
 
 async function openAddMoreDocumentsModal() {
@@ -656,6 +866,11 @@ async function openAddMoreDocumentsModal() {
 // Initialize queue on component mount - moved to onMounted for proper timing
 
 async function initializeQueue() {
+    if (!window.electronAPI) {
+        console.error('electronAPI is not available! Preload script may not have loaded.');
+        return;
+    }
+    
     // Fetch initial state
     const initialState = await window.electronAPI.getQueueState();
     queueState.value = { ...initialState };
@@ -677,8 +892,35 @@ async function initializeQueue() {
 
 // Initialize queue and fetch supported libraries when component mounts
 onMounted(async () => {
+    console.log('Component mounted');
+    console.log('window object keys:', Object.keys(window));
+    console.log('electronAPI available:', !!window.electronAPI);
+    
+    // Wait a bit for preload script to finish loading
+    if (!window.electronAPI) {
+        console.log('electronAPI not available initially, waiting...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('After waiting, electronAPI available:', !!window.electronAPI);
+    }
+    
     await initializeQueue();
-    supportedLibraries.value = await window.electronAPI.getSupportedLibraries();
+    
+    if (window.electronAPI) {
+        console.log('Fetching supported libraries...');
+        try {
+            const libraries = await window.electronAPI.getSupportedLibraries();
+            if (libraries && libraries.length > 0) {
+                supportedLibraries.value = libraries;
+                console.log('Supported libraries received:', supportedLibraries.value);
+            } else {
+                console.log('No libraries received, using fallback');
+            }
+        } catch (error) {
+            console.error('Failed to fetch libraries:', error);
+        }
+    } else {
+        console.log('electronAPI still not available, using hardcoded libraries');
+    }
 
     // After loading from storage, if there are downloading items without progress, try to re-establish
     const downloadingItems = queueState.value.items?.filter((item: QueuedManuscript) => 
@@ -768,6 +1010,12 @@ async function processBulkUrls() {
             }
 
             try {
+                if (!window.electronAPI) {
+                    console.error('electronAPI is not available!');
+                    errorCount++;
+                    continue;
+                }
+                
                 // Add a placeholder item to the queue with 'loading' status
                 const tempId = await window.electronAPI.addToQueue({
                     url,
@@ -876,11 +1124,7 @@ async function processBulkUrls() {
                 message,
             );
         } else if (addedCount > 0) {
-            // Show success if items were added and no duplicates/errors
-            showAlert(
-                'Success',
-                `${addedCount} new manuscript${addedCount > 1 ? 's' : ''} added to queue.`,
-            );
+            // Items were added successfully - no notification needed, user can see them in the queue
         }
 
 
@@ -924,30 +1168,29 @@ function clearAllQueue() {
     
     const hasActiveDownloads = queueItems.value.some((item: QueuedManuscript) => item.status === 'downloading');
     
+    const confirmAction = async () => {
+        await performButtonAction('clearAll', async () => {
+            await window.electronAPI.clearAllFromQueue();
+            hasUserStartedQueue.value = false;
+            editingQueueItemId.value = null;
+            editingQueueItem.value = null;
+        });
+    };
+    
     if (hasActiveDownloads) {
         showConfirm(
-            'Clear All Queue Items?',
-            'There are active downloads. Stopping the queue will cancel them. Are you sure you want to clear all items?',
-            async () => {
-                await window.electronAPI.clearAllFromQueue();
-                hasUserStartedQueue.value = false;
-                editingQueueItemId.value = null;
-                editingQueueItem.value = null;
-            },
-            'Clear All',
+            'Delete All Queue Items?',
+            'There are active downloads. Stopping the queue will cancel them. Are you sure you want to delete all items?',
+            confirmAction,
+            'Delete All',
             'Cancel',
         );
     } else {
         showConfirm(
-            'Clear All Queue Items?',
-            `Are you sure you want to clear all ${queueItems.value.length} items from the queue?`,
-            async () => {
-                await window.electronAPI.clearAllFromQueue();
-                hasUserStartedQueue.value = false;
-                editingQueueItemId.value = null;
-                editingQueueItem.value = null;
-            },
-            'Clear All',
+            'Delete All Queue Items?',
+            `Are you sure you want to delete all ${queueItems.value.length} items from the queue?`,
+            confirmAction,
+            'Delete All',
             'Cancel',
         );
     }
@@ -1062,19 +1305,78 @@ function closeAlertModal() {
 
 async function cleanupIndexedDBCache() {
     try {
+        const confirmAction = async () => {
+            await performButtonAction('cleanupCache', async () => {
+                await window.electronAPI.cleanupIndexedDBCache();
+            });
+        };
+        
         showConfirm(
             'Cleanup Cache',
             'Are you sure you want to clear the image cache? This will delete all downloaded images and may free up significant disk space.',
-            async () => {
-                await window.electronAPI.cleanupIndexedDBCache();
-                showAlert('Cache Cleanup', 'Image cache has been cleared successfully.');
-            },
+            confirmAction,
             'Cleanup',
             'Cancel',
         );
     } catch (error: any) {
         console.error('Failed to cleanup IndexedDB cache:', error);
         showAlert('Error', `Failed to clean up cache: ${error.message}`);
+    }
+}
+
+async function revealDownloadsFolder() {
+    await performButtonAction('revealFolder', async () => {
+        try {
+            const folderPath = await window.electronAPI.openDownloadsFolder();
+            console.log('Opened downloads folder:', folderPath);
+        } catch (error: any) {
+            console.error('Failed to open downloads folder:', error);
+            showAlert('Error', `Failed to open downloads folder: ${error.message}`);
+            throw error; // Re-throw to prevent showing success state
+        }
+    });
+}
+
+// Queue settings management
+function updateQueueSettings() {
+    console.log('Queue settings updated:', queueSettings.value);
+    // Settings are updated in real-time via the reactive refs
+}
+
+async function applySettingsToAllQueueItems() {
+    try {
+        const confirmAction = async () => {
+            await performButtonAction('applySettings', async () => {
+                // Update each queue item with new settings
+                for (const item of queueItems.value) {
+                    const updates = {
+                        downloadOptions: {
+                            ...item.downloadOptions,
+                            concurrentDownloads: queueSettings.value.maxConcurrentDownloads,
+                        }
+                    };
+                    
+                    try {
+                        await window.electronAPI.updateQueueItem(item.id, updates);
+                    } catch (error: any) {
+                        console.error(`Failed to update item ${item.id}:`, error);
+                    }
+                }
+                
+                await refreshQueueState();
+            });
+        };
+        
+        showConfirm(
+            'Apply Settings to All Items?',
+            `This will update all ${queueItems.value.length} items in the queue with the current settings (${queueSettings.value.maxConcurrentDownloads} concurrent downloads, auto-split: ${queueSettings.value.autoSplitEnabled ? 'enabled' : 'disabled'}).`,
+            confirmAction,
+            'Apply Settings',
+            'Cancel'
+        );
+    } catch (error: any) {
+        console.error('Failed to apply settings to queue items:', error);
+        showAlert('Error', `Failed to apply settings: ${error.message}`);
     }
 }
 
@@ -1110,211 +1412,59 @@ function getProgressSegmentClass(status: TStatus): string {
             return 'pending';
     }
 }
+
+// Button state management
+async function performButtonAction(buttonKey: string, action: () => Promise<void>) {
+    buttonLoadingStates.value[buttonKey] = 'loading';
+    
+    try {
+        await action();
+        buttonLoadingStates.value[buttonKey] = 'success';
+        
+        // Reset to idle after showing success state
+        setTimeout(() => {
+            buttonLoadingStates.value[buttonKey] = 'idle';
+        }, 1500);
+    } catch (error) {
+        buttonLoadingStates.value[buttonKey] = 'idle';
+        throw error;
+    }
+}
+
+function getButtonContent(buttonKey: string, defaultText: string): { text: string; icon: string } {
+    const state = buttonLoadingStates.value[buttonKey] || 'idle';
+    
+    switch (state) {
+        case 'loading':
+            return { text: '', icon: '⏳' };
+        case 'success':
+            return { text: '', icon: '✓' };
+        case 'idle':
+        default:
+            return { text: defaultText, icon: '' };
+    }
+}
+
+function getButtonClass(buttonKey: string, baseClass: string): string {
+    const state = buttonLoadingStates.value[buttonKey] || 'idle';
+    return `${baseClass} ${state !== 'idle' ? `btn-${state}` : ''}`;
+}
+
+function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false): boolean {
+    const state = buttonLoadingStates.value[buttonKey] || 'idle';
+    return originalDisabled || state === 'loading';
+}
+
+// Add missing refreshQueueState function
+async function refreshQueueState() {
+    if (window.electronAPI) {
+        const newState = await window.electronAPI.getQueueState();
+        queueState.value = { ...newState };
+    }
+}
 </script>
 
 <style scoped>
-/* Modal Overlay and Content Styles */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background: white;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    max-width: 500px;
-    width: 90%;
-    z-index: 1001;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.modal-content h3 {
-    margin-top: 0;
-    color: #333;
-    font-size: 1.5em;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-}
-
-.modal-content p {
-    margin: 0;
-    color: #555;
-    line-height: 1.6;
-}
-
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.modal-actions button {
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    border: none;
-    transition: background-color 0.2s ease;
-}
-
-.modal-actions button:first-child { /* Confirm button style */
-    background-color: #007bff;
-    color: white;
-}
-
-.modal-actions button:first-child:hover {
-    background-color: #0056b3;
-}
-
-.modal-actions button:last-child { /* Cancel/Close button style */
-    background-color: #6c757d;
-    color: white;
-}
-
-.modal-actions button:last-child:hover {
-    background-color: #5a6268;
-}
-
-
-/* General Styles from barsky.club/src/styles/main.scss relevant to this component, or duplicated from the original component for consistency */
-:root {
-    --primary-color: #007bff;
-    --secondary-color: #6c757d;
-    --success-color: #28a745;
-    --danger-color: #dc3545;
-    --warning-color: #ffc107;
-    --info-color: #17a2b8;
-    --light-color: #f8f9fa;
-    --dark-color: #343a40;
-    --border-color: #dee2e6;
-    --text-color: #212529;
-    --header-color: #495057;
-    --bg-light: #ffffff;
-    --bg-dark: #f0f2f5;
-    --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --font-family-mono: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-}
-
-body {
-    font-family: var(--font-family-base);
-    line-height: 1.6;
-    color: var(--text-color);
-    background-color: var(--bg-dark);
-    margin: 0;
-    padding: 0;
-}
-
-.manuscript-downloader {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: min(2rem, 3vw);
-    font-family: var(--font-family-base);
-    max-height: calc(100vh - 80px); /* 100svh minus navbar height */
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.info-buttons-row {
-    display: flex;
-    justify-content: flex-end; /* Align to the right */
-    gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
-}
-
-.info-btn, .add-more-btn {
-    background-color: var(--info-color);
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9em;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    transition: background-color 0.2s ease;
-}
-
-.info-btn:hover, .add-more-btn:hover {
-    background-color: #118c9f;
-}
-
-.info-btn .btn-icon, .add-more-btn .btn-icon {
-    font-size: 1.1em;
-}
-
-.form-group {
-    margin-bottom: 1rem;
-}
-
-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: var(--header-color);
-}
-
-.manuscript-input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 1rem;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-
-.manuscript-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-.help-text {
-    display: block;
-    margin-top: 0.25rem;
-    color: var(--secondary-color);
-    font-size: 0.875rem;
-}
-
-.load-btn {
-    width: 100%;
-    background-color: var(--primary-color);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.15s ease-in-out;
-}
-
-.load-btn:hover:not(:disabled) {
-    background-color: #0056b3;
-}
-
-.load-btn:disabled {
-    background-color: var(--secondary-color);
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
 /* Bulk Mode Styles */
 .bulk-queue-form {
     max-width: 100%;
@@ -1328,7 +1478,7 @@ label {
 .bulk-textarea {
     min-height: 120px;
     resize: vertical;
-    font-family: var(--font-family-mono);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 14px;
     line-height: 1.4;
     width: 100%;
@@ -1389,13 +1539,13 @@ label {
 
 .queue-progress-label {
     font-weight: 600;
-    color: var(--header-color);
+    color: #495057;
     font-size: 0.9em;
 }
 
 .queue-progress-stats {
     font-weight: 500;
-    color: var(--secondary-color);
+    color: #6c757d;
     font-size: 0.85em;
 }
 
@@ -1449,8 +1599,8 @@ label {
 
 .progress-segment.pending {
     background: #f8f9fa;
-    color: var(--secondary-color);
-    border: 1px solid var(--border-color);
+    color: #6c757d;
+    border: 1px solid #dee2e6;
 }
 
 .progress-segment.downloading {
@@ -1485,7 +1635,7 @@ label {
 }
 
 .start-btn {
-    background: linear-gradient(135deg, var(--success-color) 0%, #20c997 100%);
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -1509,8 +1659,8 @@ label {
 }
 
 .pause-btn {
-    background: var(--warning-color);
-    color: var(--dark-color);
+    background: #ffc107;
+    color: #212529;
     border: none;
     padding: 8px 16px;
     border-radius: 6px;
@@ -1523,7 +1673,7 @@ label {
 }
 
 .resume-btn {
-    background: var(--info-color);
+    background: #17a2b8;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -1537,7 +1687,7 @@ label {
 }
 
 .stop-btn {
-    background: var(--danger-color);
+    background: #dc3545;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -1551,7 +1701,7 @@ label {
 }
 
 .clear-queue-btn {
-    background: var(--danger-color);
+    background: #dc3545;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -1571,7 +1721,7 @@ label {
 }
 
 .cleanup-cache-btn {
-    background: var(--secondary-color);
+    background: #6c757d;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -1588,6 +1738,71 @@ label {
     background: #adb5bd;
     cursor: not-allowed;
     opacity: 0.6;
+}
+
+.reveal-folder-btn {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.reveal-folder-btn:hover:not(:disabled) {
+    background: #138496;
+}
+
+.reveal-folder-btn:disabled {
+    background: #adb5bd;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Button state styles */
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+.btn-success {
+    background: #28a745 !important;
+    color: white !important;
+    pointer-events: none;
+}
+
+.btn-icon-only {
+    font-size: 1.2em;
+    display: inline-block;
+    min-width: 1.5em;
+    text-align: center;
+}
+
+/* Specific button state overrides */
+.clear-queue-btn.btn-loading,
+.cleanup-cache-btn.btn-loading,
+.reveal-folder-btn.btn-loading,
+.apply-settings-btn.btn-loading {
+    background: #6c757d !important;
+}
+
+.clear-queue-btn.btn-success {
+    background: #28a745 !important;
+}
+
+.cleanup-cache-btn.btn-success {
+    background: #28a745 !important;
+}
+
+.reveal-folder-btn.btn-success {
+    background: #28a745 !important;
+}
+
+.apply-settings-btn.btn-success {
+    background: #28a745 !important;
 }
 
 .queue-list {
@@ -1613,7 +1828,7 @@ label {
 
 .queue-item.status-downloading {
     background: #fff3cd;
-    border-left: 4px solid var(--warning-color);
+    border-left: 4px solid #ffc107;
 }
 
 .queue-item.status-paused {
@@ -1623,18 +1838,18 @@ label {
 
 .queue-item.status-completed {
     background: #d4edda;
-    border-left: 4px solid var(--success-color);
+    border-left: 4px solid #28a745;
 }
 
 .queue-item.status-failed {
     background: #f8d7da;
-    border-left: 4px solid var(--danger-color);
+    border-left: 4px solid #dc3545;
 }
 
 .queue-item.status-loading,
 .queue-item.loading-manifest {
     background: #f8f9fa;
-    border-left: 4px solid var(--secondary-color);
+    border-left: 4px solid #6c757d;
     opacity: 0.7;
 }
 
@@ -1646,7 +1861,7 @@ label {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--secondary-color);
+    color: #6c757d;
     font-size: 0.9em;
     margin-bottom: 10px;
 }
@@ -1655,7 +1870,7 @@ label {
     width: 16px;
     height: 16px;
     border: 2px solid #f3f3f3;
-    border-top: 2px solid var(--primary-color);
+    border-top: 2px solid #007bff;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -1685,15 +1900,15 @@ label {
 }
 
 .manuscript-title-link:hover {
-    color: var(--primary-color);
-    border-bottom-color: var(--primary-color);
+    color: #007bff;
+    border-bottom-color: #007bff;
     text-decoration: none;
 }
 
 .manuscript-error-link {
-    color: var(--danger-color);
+    color: #dc3545;
     text-decoration: none;
-    border-bottom: 1px dotted var(--danger-color);
+    border-bottom: 1px dotted #dc3545;
     transition: color 0.2s ease, border-color 0.2s ease;
     word-break: break-all;
 }
@@ -1702,14 +1917,6 @@ label {
     color: #c82333;
     border-bottom-color: #c82333;
     text-decoration: none;
-}
-
-.error-prefix {
-    color: var(--danger-color);
-    font-weight: 700;
-    text-transform: uppercase;
-    font-size: 0.9em;
-    letter-spacing: 0.5px;
 }
 
 .queue-item-meta {
@@ -1733,34 +1940,34 @@ label {
 }
 
 .status-badge.status-pending {
-    background: var(--secondary-color);
+    background: #6c757d;
 }
 
 .status-badge.status-loading {
-    background: var(--info-color);
+    background: #17a2b8;
 }
 
 .status-badge.status-downloading {
-    background: var(--warning-color);
-    color: var(--dark-color);
+    background: #ffc107;
+    color: #212529;
 }
 
 .status-badge.status-paused {
-    background: var(--secondary-color);
+    background: #6c757d;
     color: white;
 }
 
 .status-badge.status-completed {
-    background: var(--success-color);
+    background: #28a745;
 }
 
 .status-badge.status-failed {
-    background: var(--danger-color);
+    background: #dc3545;
 }
 
 .total-pages-badge {
     background: #e9ecef;
-    color: var(--header-color);
+    color: #495057;
     padding: 3px 8px;
     border-radius: 12px;
     font-size: 0.75em;
@@ -1779,24 +1986,14 @@ label {
     white-space: nowrap;
 }
 
-.downloading-range-badge {
-    background: #fff3cd;
-    color: #856404;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 0.75em;
-    font-weight: 600;
-    border: 1px solid #ffeaa7;
-}
-
 .queue-item-controls {
     display: flex;
     gap: 8px;
 }
 
 .edit-btn {
-    background: var(--warning-color);
-    color: var(--dark-color);
+    background: #ffc107;
+    color: #212529;
     border: none;
     border-radius: 4px;
     min-width: 28px;
@@ -1815,8 +2012,8 @@ label {
 }
 
 .pause-item-btn {
-    background: var(--warning-color);
-    color: var(--dark-color);
+    background: #ffc107;
+    color: #212529;
     border: none;
     border-radius: 4px;
     min-width: 28px;
@@ -1835,7 +2032,7 @@ label {
 }
 
 .resume-item-btn {
-    background: var(--info-color);
+    background: #17a2b8;
     color: white;
     border: none;
     border-radius: 4px;
@@ -1855,7 +2052,7 @@ label {
 }
 
 .remove-btn {
-    background: var(--danger-color);
+    background: #dc3545;
     color: white;
     border: none;
     border-radius: 4px;
@@ -1876,7 +2073,7 @@ label {
 }
 
 .queue-edit-form .edit-save-btn {
-    background: var(--success-color);
+    background: #28a745;
     color: white;
     font-size: 12px;
     padding: 6px 12px;
@@ -1891,12 +2088,12 @@ label {
 }
 
 .queue-edit-form .edit-save-btn:disabled {
-    background: var(--secondary-color);
+    background: #6c757d;
     cursor: not-allowed;
 }
 
 .queue-edit-form .edit-cancel-btn {
-    background: var(--secondary-color);
+    background: #6c757d;
     color: white;
     font-size: 12px;
     padding: 6px 12px;
@@ -1932,13 +2129,7 @@ label {
     font-size: 0.9em;
     margin-bottom: 4px;
     font-weight: 500;
-    color: var(--header-color);
-}
-
-.error-message {
-    color: var(--danger-color);
-    font-size: 0.85em;
-    margin-top: 5px;
+    color: #495057;
 }
 
 .edit-header {
@@ -1948,14 +2139,25 @@ label {
     margin-bottom: 12px;
 }
 
-.edit-actions {
+/* Buttons are now inline in page-range, no separate edit-actions needed */
+
+.page-range {
     display: flex;
-    gap: 6px;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.page-input {
+    width: 60px;
+    padding: 4px 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
 .select-all-btn {
-    background: var(--primary-color);
-    border: 1px solid var(--primary-color);
+    background: #007bff;
+    border: 1px solid #007bff;
     color: white;
     padding: 4px 8px;
     border-radius: 4px;
@@ -1973,13 +2175,18 @@ label {
 .select-all-btn.active {
     background: #f8f9fa;
     border-color: #dee2e6;
-    color: var(--secondary-color);
+    color: #6c757d;
     cursor: not-allowed;
 }
 
 .select-all-btn.active:hover {
     background: #f8f9fa;
     border-color: #dee2e6;
+}
+
+.concurrency-slider {
+    width: 100%;
+    max-width: 120px;
 }
 
 /* Individual Item Progress */
@@ -2000,13 +2207,13 @@ label {
 
 .item-progress-label {
     font-weight: 600;
-    color: var(--header-color);
+    color: #495057;
     font-size: 0.8em;
 }
 
 .item-progress-stats {
     font-weight: 500;
-    color: var(--secondary-color);
+    color: #6c757d;
     font-size: 0.75em;
 }
 
@@ -2020,14 +2227,26 @@ label {
 
 .item-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--warning-color) 0%, #fd7e14 100%);
+    background: linear-gradient(90deg, #ffc107 0%, #fd7e14 100%);
     transition: width 0.3s ease;
 }
 
 .item-progress-eta {
     font-size: 0.7em;
-    color: var(--secondary-color);
+    color: #6c757d;
     text-align: right;
+}
+
+.manuscript-downloader {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: min(2rem, 3vw);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    max-height: calc(100svh - 80px); /* 100svh minus navbar height */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .libraries-list {
@@ -2044,18 +2263,18 @@ label {
 
 .library-item h4 {
     margin: 0 0 0.5rem 0;
-    color: var(--primary-color);
+    color: #007bff;
     font-size: 1.1rem;
 }
 
 .library-description {
     margin: 0 0 0.75rem 0;
-    color: var(--secondary-color);
+    color: #6c757d;
     font-size: 0.9rem;
 }
 
 .library-warning {
-    color: var(--danger-color);
+    color: #dc3545;
     font-weight: 600;
 }
 
@@ -2067,10 +2286,33 @@ label {
     background: #f8f9fa;
     padding: 0.25rem 0.5rem;
     border-radius: 3px;
-    font-family: var(--font-family-mono);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     word-break: break-all;
     display: inline-block;
     margin-top: 0.25rem;
+}
+
+/* Enhanced library examples with spoilers */
+.library-examples-spoiler {
+    margin-top: 0.75rem;
+}
+
+.library-examples {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.library-example {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.example-label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 0.9rem;
 }
 
 .library-example code.example-url-link {
@@ -2078,84 +2320,225 @@ label {
     text-decoration: underline;
 }
 
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.manuscript-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.manuscript-input:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.help-text {
+    display: block;
+    margin-top: 0.25rem;
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.load-btn {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.load-btn:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.load-btn:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Button styles for modal triggers */
+.info-buttons-row {
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.info-btn,
+.add-more-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.btn-icon {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 50%;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.info-btn:hover,
+.add-more-btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+}
+
+.info-btn:hover .btn-icon,
+.add-more-btn:hover .btn-icon {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.info-btn:active,
+.add-more-btn:active {
+    transform: translateY(0);
+}
+
 .error-message {
-    color: var(--danger-color);
+    color: #dc3545;
     font-size: 0.85em;
     margin-top: 5px;
 }
 
-/* Generic modal styles (basic, replace with a proper Modal component if needed) */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
+/* Queue Settings Spoiler */
+.settings-spoiler {
+    margin: 1.5rem 0;
+}
+
+.settings-content {
+    padding: 1rem 0;
+}
+
+.setting-group {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.setting-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.setting-checkbox {
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+}
+
+.setting-checkbox input[type="checkbox"] {
+    margin-right: 0.75rem;
+    margin-top: 0.125rem;
+    cursor: pointer;
+}
+
+.checkbox-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.setting-label {
+    display: block;
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.setting-range {
     width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
+    margin-bottom: 0.5rem;
+}
+
+.range-labels {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #6c757d;
 }
 
-.modal-content {
-    background: white;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    max-width: 500px;
-    width: 90%;
-    z-index: 1001;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.setting-description {
+    font-size: 13px;
+    color: #6c757d;
+    margin: 0.5rem 0 0 0;
+    line-height: 1.4;
 }
 
-.modal-content h3 {
-    margin-top: 0;
-    color: #333;
-    font-size: 1.5em;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-}
-
-.modal-content p {
-    margin: 0;
-    color: #555;
-    line-height: 1.6;
-}
-
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.modal-actions button {
-    padding: 10px 20px;
+.apply-settings-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
     border-radius: 6px;
     cursor: pointer;
     font-weight: 500;
-    border: none;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s;
+    width: 100%;
 }
 
-.modal-actions button:first-child { /* Confirm button style */
-    background-color: #007bff;
-    color: white;
+.apply-settings-btn:hover:not(:disabled) {
+    background: #0056b3;
 }
 
-.modal-actions button:first-child:hover {
-    background-color: #0056b3;
+.apply-settings-btn:disabled {
+    background: #adb5bd;
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
-.modal-actions button:last-child { /* Cancel/Close button style */
-    background-color: #6c757d;
-    color: white;
-}
-
-.modal-actions button:last-child:hover {
-    background-color: #5a6268;
+/* Mobile responsiveness for buttons - only wrap on very narrow screens */
+@media (max-width: 520px) {
+    .info-buttons-row {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .info-btn,
+    .add-more-btn {
+        width: 100%;
+        font-size: min(1rem, 3.2vw);
+    }
 }
 </style>

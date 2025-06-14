@@ -1,24 +1,30 @@
-import { app, BrowserWindow, Menu, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import Store from 'electron-store';
-import { UnifiedManuscriptDownloader } from './services/UnifiedManuscriptDownloader.js';
+import { promises as fs } from 'fs';
+import os from 'os';
+import { ManuscriptDownloaderService } from './services/ManuscriptDownloaderService.js';
 import { ElectronImageCache } from './services/ElectronImageCache.js';
 import { ElectronPdfMerger } from './services/ElectronPdfMerger.js';
-import { DownloadQueue } from './services/DownloadQueue.js';
+import { EnhancedManuscriptDownloaderService } from './services/EnhancedManuscriptDownloaderService.js';
+import { EnhancedDownloadQueue } from './services/EnhancedDownloadQueue.js';
+import { configService } from './services/ConfigService.js';
 import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const isDev = process.env.NODE_ENV === 'development';
-const store = new Store();
+const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('isDev:', isDev);
+console.log('isPackaged:', app.isPackaged);
 
 let mainWindow: BrowserWindow | null = null;
-let manuscriptDownloader: UnifiedManuscriptDownloader | null = null;
+let manuscriptDownloader: ManuscriptDownloaderService | null = null;
+let enhancedManuscriptDownloader: EnhancedManuscriptDownloaderService | null = null;
 let imageCache: ElectronImageCache | null = null;
 let pdfMerger: ElectronPdfMerger | null = null;
-let downloadQueue: DownloadQueue | null = null;
+let enhancedDownloadQueue: EnhancedDownloadQueue | null = null;
 
 const createWindow = () => {
   const preloadPath = join(__dirname, '../preload/preload.js');
@@ -31,15 +37,45 @@ const createWindow = () => {
       nodeIntegration: false,
       contextIsolation: true,
       preload: preloadPath,
+      webSecurity: false, // Disable for dev to avoid CORS issues
+      allowRunningInsecureContent: true,
     },
     title: 'Manuscript Downloader',
     titleBarStyle: 'default',
-    show: false,
+    show: true, // Show immediately for debugging
   });
 
+  // Force devtools open immediately
   if (isDev) {
-    mainWindow.loadURL('http://localhost:5173');
-    mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
+  }
+
+  // Add comprehensive logging
+  mainWindow.webContents.on('did-start-loading', () => {
+    console.log('Started loading page...');
+  });
+
+  mainWindow.webContents.on('did-stop-loading', () => {
+    console.log('Stopped loading page...');
+  });
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('Finished loading page...');
+  });
+
+  mainWindow.webContents.on('did-fail-load', (_, errorCode, errorDescription, validatedURL) => {
+    console.error('Failed to load page:', { errorCode, errorDescription, validatedURL });
+  });
+
+  // Remove problematic event listeners for now
+
+  if (isDev) {
+    console.log('Loading development URL: http://localhost:5173');
+    
+    // Try to load the URL and log any errors
+    mainWindow.loadURL('http://localhost:5173').catch(err => {
+      console.error('Error loading URL:', err);
+    });
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
@@ -80,24 +116,55 @@ const createMenu = () => {
       ],
     },
     {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'selectAll' },
+      ],
+    },
+    {
       label: 'Language',
       submenu: [
         {
           label: 'English',
           type: 'radio',
-          checked: (store as any).get('language', 'en') === 'en',
+          checked: configService.get('language') === 'en',
           click: () => {
-            (store as any).set('language', 'en');
+            configService.set('language', 'en');
             mainWindow?.webContents.send('language-changed', 'en');
           },
         },
         {
           label: 'Русский',
           type: 'radio', 
-          checked: (store as any).get('language', 'en') === 'ru',
+          checked: configService.get('language') === 'ru',
           click: () => {
-            (store as any).set('language', 'ru');
+            configService.set('language', 'ru');
             mainWindow?.webContents.send('language-changed', 'ru');
+          },
+        },
+      ],
+    },
+    {
+      label: 'Debug',
+      submenu: [
+        {
+          label: 'Open DevTools',
+          accelerator: 'F12',
+          click: () => {
+            mainWindow?.webContents.openDevTools({ mode: 'detach' });
+          },
+        },
+        {
+          label: 'Reload',
+          accelerator: 'F5',
+          click: () => {
+            mainWindow?.reload();
           },
         },
       ],
@@ -124,14 +191,58 @@ const createMenu = () => {
   Menu.setApplicationMenu(menu);
 };
 
-app.whenReady().then(() => {
+// Cleanup function to remove temporary image files
+async function cleanupTempFiles(): Promise<void> {
+  try {
+    const tempDir = os.tmpdir();
+    const possibleTempDirs = [
+      tempDir,
+      join(tempDir, 'mss-downloader'),
+      join(app.getPath('temp'), 'mss-downloader'),
+      join(app.getPath('downloads'), '.temp')
+    ];
+    
+    for (const dir of possibleTempDirs) {
+      try {
+        const files = await fs.readdir(dir);
+        const jpgFiles = files.filter(file => 
+          file.endsWith('.jpg') && 
+          (file.includes('_page_') || file.includes('temp_') || file.includes('manuscript_'))
+        );
+        
+        for (const file of jpgFiles) {
+          try {
+            await fs.unlink(join(dir, file));
+            console.log(`Cleaned up temp file: ${file}`);
+          } catch (error) {
+            // Ignore individual file cleanup errors
+          }
+        }
+      } catch (error) {
+        // Directory might not exist, that's fine
+      }
+    }
+  } catch (error) {
+    console.warn('Error during temp file cleanup:', error);
+  }
+}
+
+app.whenReady().then(async () => {
   imageCache = new ElectronImageCache();
   pdfMerger = new ElectronPdfMerger();
-  manuscriptDownloader = new UnifiedManuscriptDownloader(pdfMerger);
-  downloadQueue = DownloadQueue.getInstance(pdfMerger);
+  manuscriptDownloader = new ManuscriptDownloaderService(pdfMerger);
+  enhancedManuscriptDownloader = new EnhancedManuscriptDownloaderService();
+  enhancedDownloadQueue = EnhancedDownloadQueue.getInstance();
+  
+  // Clean up any temporary image files from previous sessions
+  try {
+    await cleanupTempFiles();
+  } catch (error) {
+    console.warn('Failed to cleanup temp files:', error);
+  }
   
   // Listen for queue state changes and send to renderer
-  downloadQueue.on('stateChanged', (state: QueueState) => {
+  enhancedDownloadQueue.on('stateChanged', (state: QueueState) => {
     mainWindow?.webContents.send('queue-state-changed', state);
   });
   
@@ -152,7 +263,35 @@ app.on('window-all-closed', () => {
 });
 
 ipcMain.handle('get-language', () => {
-  return (store as any).get('language', 'en');
+  return configService.get('language');
+});
+
+// Config management handlers
+ipcMain.handle('config-get', (_event, key: string) => {
+  return configService.get(key as any);
+});
+
+ipcMain.handle('config-set', (_event, key: string, value: any) => {
+  configService.set(key as any, value);
+  // Notify renderer of config changes
+  mainWindow?.webContents.send('config-changed', key, value);
+});
+
+ipcMain.handle('config-get-all', () => {
+  return configService.getAll();
+});
+
+ipcMain.handle('config-set-multiple', (_event, updates: Record<string, any>) => {
+  configService.setMultiple(updates);
+  // Notify renderer of config changes
+  mainWindow?.webContents.send('config-changed-multiple', updates);
+});
+
+ipcMain.handle('config-reset', () => {
+  configService.reset();
+  const newConfig = configService.getAll();
+  // Notify renderer of config reset
+  mainWindow?.webContents.send('config-reset', newConfig);
 });
 
 ipcMain.handle('download-manuscript', async (_event, url: string, _callbacks: any) => {
@@ -174,110 +313,122 @@ ipcMain.handle('download-manuscript', async (_event, url: string, _callbacks: an
 });
 
 ipcMain.handle('get-supported-libraries', () => {
-  console.log('get-supported-libraries called');
-  console.log('manuscriptDownloader:', manuscriptDownloader);
-  const libraries = manuscriptDownloader?.getSupportedLibraries() || [];
-  console.log('libraries:', libraries);
-  return libraries;
+  console.log('=== get-supported-libraries IPC handler called ===');
+  console.log('enhancedManuscriptDownloader exists:', !!enhancedManuscriptDownloader);
+  
+  if (!enhancedManuscriptDownloader) {
+    console.error('enhancedManuscriptDownloader is null!');
+    return [];
+  }
+  
+  try {
+    const libraries = enhancedManuscriptDownloader.getSupportedLibraries();
+    console.log('libraries returned:', libraries);
+    console.log('libraries length:', libraries.length);
+    return libraries;
+  } catch (error) {
+    console.error('Error calling getSupportedLibraries:', error);
+    return [];
+  }
 });
 
 ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
-  if (!manuscriptDownloader) {
-    throw new Error('Manuscript downloader not initialized');
+  if (!enhancedManuscriptDownloader) {
+    throw new Error('Enhanced manuscript downloader not initialized');
   }
-  return manuscriptDownloader.parseManuscriptUrl(url);
+  return enhancedManuscriptDownloader.loadManifest(url);
 });
 
 // Queue management handlers
 ipcMain.handle('queue-add-manuscript', async (_event, manuscript: Omit<QueuedManuscript, 'id' | 'addedAt' | 'status'>) => {
-  if (!downloadQueue) {
-    throw new Error('Download queue not initialized');
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
   }
-  return downloadQueue.addManuscript(manuscript);
+  return enhancedDownloadQueue.addManuscript(manuscript);
 });
 
 ipcMain.handle('queue-remove-manuscript', async (_event, id: string) => {
-  if (!downloadQueue) {
-    throw new Error('Download queue not initialized');
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
   }
-  return downloadQueue.removeManuscript(id);
+  return enhancedDownloadQueue.removeManuscript(id);
 });
 
 ipcMain.handle('queue-start-processing', async () => {
-  if (!downloadQueue) {
-    throw new Error('Download queue not initialized');
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
   }
-  return downloadQueue.startProcessing();
+  return enhancedDownloadQueue.startProcessing();
 });
 
 ipcMain.handle('queue-pause-processing', async () => {
-  if (!downloadQueue) {
-    throw new Error('Download queue not initialized');
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
   }
-  return downloadQueue.pauseProcessing();
+  enhancedDownloadQueue.pauseProcessing();
 });
 
 ipcMain.handle('queue-resume-processing', async () => {
-  if (!downloadQueue) {
-    throw new Error('Download queue not initialized');
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
   }
-  return downloadQueue.resumeProcessing();
+  enhancedDownloadQueue.resumeProcessing();
 });
 
 ipcMain.handle('queue-stop-processing', async () => {
-  if (!downloadQueue) {
-    throw new Error('Download queue not initialized');
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
   }
-  return downloadQueue.stopProcessing();
+  enhancedDownloadQueue.stopProcessing();
 });
 
 ipcMain.handle('queue-pause-item', async (_event, id: string) => {
-  if (!downloadQueue) {
-    throw new Error('Download queue not initialized');
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
   }
-  return downloadQueue.pauseItem(id);
+  return enhancedDownloadQueue.pauseItem(id);
 });
 
 ipcMain.handle('queue-resume-item', async (_event, id: string) => {
-  if (!downloadQueue) {
-    throw new Error('Download queue not initialized');
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
   }
-  return downloadQueue.resumeItem(id);
+  return enhancedDownloadQueue.resumeItem(id);
 });
 
 ipcMain.handle('queue-clear-completed', async () => {
-  if (!downloadQueue) {
-    throw new Error('Download queue not initialized');
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
   }
-  return downloadQueue.clearCompleted();
+  enhancedDownloadQueue.clearCompleted();
 });
 
 ipcMain.handle('queue-clear-failed', async () => {
-  if (!downloadQueue) {
-    throw new Error('Download queue not initialized');
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
   }
-  return downloadQueue.clearFailed();
+  enhancedDownloadQueue.clearFailed();
 });
 
 ipcMain.handle('queue-clear-all', async () => {
-  if (!downloadQueue) {
-    throw new Error('Download queue not initialized');
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
   }
-  return downloadQueue.clearAll();
+  enhancedDownloadQueue.clearAll();
 });
 
 ipcMain.handle('queue-update-item', async (_event, id: string, updates: Partial<QueuedManuscript>) => {
-  if (!downloadQueue) {
-    throw new Error('Download queue not initialized');
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
   }
-  return downloadQueue.updateItem(id, updates);
+  return enhancedDownloadQueue.updateItem(id, updates);
 });
 
 ipcMain.handle('queue-get-state', async () => {
-  if (!downloadQueue) {
-    throw new Error('Download queue not initialized');
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
   }
-  return downloadQueue.getState();
+  return enhancedDownloadQueue.getState();
 });
 
 ipcMain.handle('cleanup-indexeddb-cache', async () => {
@@ -285,4 +436,17 @@ ipcMain.handle('cleanup-indexeddb-cache', async () => {
     throw new Error('Image cache not initialized');
   }
   return imageCache.clearCache();
+});
+
+ipcMain.handle('open-downloads-folder', async () => {
+  const downloadsDir = app.getPath('downloads');
+  
+  // Open the folder
+  await shell.openPath(downloadsDir);
+  
+  return downloadsDir;
+});
+
+ipcMain.handle('get-downloads-path', () => {
+  return app.getPath('downloads');
 });

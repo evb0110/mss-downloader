@@ -25,7 +25,7 @@ export interface DownloadCallbacks {
   onError?: (error: string) => void;
 }
 
-export interface UnifiedManifest {
+export interface ManuscriptManifest {
   pageLinks: string[];
   totalPages: number;
   library: 'gallica' | 'unifr' | 'vatlib' | 'cecilia' | 'irht' | 'dijon' | 'laon' | 'durham';
@@ -43,7 +43,7 @@ export interface ElectronAPI {
   getLanguage: () => Promise<string>;
   downloadManuscript: (url: string, callbacks: DownloadCallbacks) => Promise<void>;
   getSupportedLibraries: () => Promise<LibraryInfo[]>;
-  parseManuscriptUrl: (url: string) => Promise<UnifiedManifest>;
+  parseManuscriptUrl: (url: string) => Promise<ManuscriptManifest>;
   onLanguageChanged: (callback: (language: string) => void) => () => void;
   clearCache: () => Promise<void>;
   getCacheStats: () => Promise<{ size: number; entries: number }>;

@@ -1,6 +1,6 @@
 export type TStage = 'downloading' | 'merging' | 'processing' | 'caching' | 'complete';
-export type TStatus = 'loading' | 'pending' | 'downloading' | 'completed' | 'failed' | 'paused';
-export type TLibrary = 'gallica' | 'unifr' | 'vatlib' | 'cecilia' | 'irht' | 'dijon' | 'laon' | 'durham' | 'loading';
+export type TStatus = 'loading' | 'pending' | 'queued' | 'downloading' | 'completed' | 'failed' | 'paused';
+export type TLibrary = 'gallica' | 'unifr' | 'vatlib' | 'cecilia' | 'irht' | 'dijon' | 'laon' | 'durham' | 'sharedcanvas' | 'ugent' | 'bl' | 'loading';
 
 export interface QueuedManuscript {
     id: string;
@@ -12,7 +12,7 @@ export interface QueuedManuscript {
     addedAt: number;
     startedAt?: number;
     completedAt?: number;
-    progress?: {
+    progress?: number | {
         current: number;
         total: number;
         percentage: number;
@@ -20,7 +20,10 @@ export interface QueuedManuscript {
         stage: TStage;
         actualCurrentPage?: number; // For page range downloads, shows the actual page being downloaded
     };
+    eta?: string;
     error?: string;
+    retryCount?: number;
+    outputPath?: string;
     downloadOptions?: {
         concurrentDownloads: number;
         startPage?: number;
@@ -37,5 +40,8 @@ export interface QueueState {
         autoStart: boolean;
         concurrentDownloads: number;
         pauseBetweenItems: number; // seconds
+        partSizeMB?: number; // optional for compatibility
+        autoSplitEnabled?: boolean;
+        autoSplitThresholdMB?: number;
     };
 } 

@@ -1,13 +1,14 @@
 import { EventEmitter } from 'events';
-import { UnifiedManuscriptDownloader } from './UnifiedManuscriptDownloader.js';
+import { ManuscriptDownloaderService } from './ManuscriptDownloaderService.js';
 import { ElectronPdfMerger } from './ElectronPdfMerger.js';
+import { configService } from './ConfigService.js';
 import type { QueuedManuscript, QueueState, TStage, TLibrary } from '../../shared/queueTypes.js';
 import Store from 'electron-store';
 
 export class DownloadQueue extends EventEmitter {
     private static instance: DownloadQueue | null = null;
     private state: QueueState;
-    private currentDownloader: UnifiedManuscriptDownloader | null = null;
+    private currentDownloader: ManuscriptDownloaderService | null = null;
     private processingAbortController: AbortController | null = null;
     private pdfMerger: ElectronPdfMerger;
     private store: any;
@@ -22,8 +23,10 @@ export class DownloadQueue extends EventEmitter {
             isPaused: false,
             globalSettings: {
                 autoStart: false,
-                concurrentDownloads: 3,
+                concurrentDownloads: configService.get('maxConcurrentDownloads'),
                 pauseBetweenItems: 0,
+                autoSplitEnabled: false,
+                autoSplitThresholdMB: 800,
             },
         };
         this.store = new Store<{
@@ -246,7 +249,7 @@ export class DownloadQueue extends EventEmitter {
         this.notifyListeners();
         
         try {
-            this.currentDownloader = new UnifiedManuscriptDownloader(this.pdfMerger);
+            this.currentDownloader = new ManuscriptDownloaderService(this.pdfMerger);
             
             const manifest = await this.currentDownloader.parseManuscriptUrl(item.url);
             
@@ -264,7 +267,18 @@ export class DownloadQueue extends EventEmitter {
             let lastProgressUpdate = 0;
             let lastPercentage = -1;
 
-            await this.currentDownloader.downloadManuscriptPages(selectedPageLinks, {
+            // Calculate estimated file size (rough approximation: 1MB per 5 pages)
+            const estimatedSizeMB = Math.ceil(pageCount / 5);
+            const shouldAutoSplit = this.state.globalSettings.autoSplitEnabled && estimatedSizeMB > (this.state.globalSettings.autoSplitThresholdMB || 800);
+            const maxPagesPerPart = Math.ceil((this.state.globalSettings.autoSplitThresholdMB || 800) * 5); // ~5 pages per MB
+            
+            await this.currentDownloader.downloadManuscriptPagesWithOptions(selectedPageLinks, {
+                displayName: manifest.displayName,
+                startPage,
+                endPage,
+                totalPages: manifest.totalPages,
+                autoSplit: shouldAutoSplit,
+                maxPagesPerPart,
                 onProgress: (progress) => {
                     if (!this.state.isPaused && item.progress) {
                         const now = Date.now();

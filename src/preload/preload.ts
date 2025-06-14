@@ -1,8 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { DownloadProgress, DownloadStatus, DownloadCallbacks, LibraryInfo, UnifiedManifest } from '../shared/types';
+import type { DownloadProgress, DownloadStatus, DownloadCallbacks, LibraryInfo, ManuscriptManifest } from '../shared/types';
 import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
 
 console.log('Preload script loaded');
+
+// Check if we have access to contextBridge and ipcRenderer
+console.log('contextBridge available:', !!contextBridge);
+console.log('ipcRenderer available:', !!ipcRenderer);
 
 const api = {
   getLanguage: () => ipcRenderer.invoke('get-language'),
@@ -32,7 +36,7 @@ const api = {
 
   // Old methods (keep for now, will remove if no longer needed by ManuscriptDownloader.vue)
   getSupportedLibraries: (): Promise<LibraryInfo[]> => ipcRenderer.invoke('get-supported-libraries'),
-  parseManuscriptUrl: (url: string): Promise<UnifiedManifest> => ipcRenderer.invoke('parse-manuscript-url', url),
+  parseManuscriptUrl: (url: string): Promise<ManuscriptManifest> => ipcRenderer.invoke('parse-manuscript-url', url),
 
   onLanguageChanged: (callback: (language: string) => void) => {
     ipcRenderer.on('language-changed', (_, language) => callback(language));
@@ -89,7 +93,38 @@ const api = {
 
   // No direct IndexedDB cleanup from renderer, will be part of main process/queue logic if needed
   cleanupIndexedDBCache: () => ipcRenderer.invoke('cleanup-indexeddb-cache'),
+
+  // Downloads folder management
+  openDownloadsFolder: () => ipcRenderer.invoke('open-downloads-folder'),
+  getDownloadsPath: () => ipcRenderer.invoke('get-downloads-path'),
+
+  // Config management methods
+  getConfig: (key: string) => ipcRenderer.invoke('config-get', key),
+  setConfig: (key: string, value: any) => ipcRenderer.invoke('config-set', key, value),
+  getAllConfig: () => ipcRenderer.invoke('config-get-all'),
+  setMultipleConfig: (updates: Record<string, any>) => ipcRenderer.invoke('config-set-multiple', updates),
+  resetConfig: () => ipcRenderer.invoke('config-reset'),
+
+  onConfigChanged: (callback: (key: string, value: any) => void) => {
+    ipcRenderer.on('config-changed', (_, key, value) => callback(key, value));
+    return () => ipcRenderer.removeAllListeners('config-changed');
+  },
+
+  onConfigChangedMultiple: (callback: (updates: Record<string, any>) => void) => {
+    ipcRenderer.on('config-changed-multiple', (_, updates) => callback(updates));
+    return () => ipcRenderer.removeAllListeners('config-changed-multiple');
+  },
+
+  onConfigReset: (callback: (newConfig: Record<string, any>) => void) => {
+    ipcRenderer.on('config-reset', (_, newConfig) => callback(newConfig));
+    return () => ipcRenderer.removeAllListeners('config-reset');
+  },
 };
 
-contextBridge.exposeInMainWorld('electronAPI', api);
-console.log('electronAPI exposed to main world');
+try {
+  contextBridge.exposeInMainWorld('electronAPI', api);
+  console.log('electronAPI exposed to main world successfully');
+  console.log('API methods:', Object.keys(api));
+} catch (error) {
+  console.error('Failed to expose electronAPI:', error);
+}
