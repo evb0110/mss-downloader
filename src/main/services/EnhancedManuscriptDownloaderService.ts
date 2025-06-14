@@ -1,7 +1,8 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { app } from 'electron';
-import sharp from 'sharp';
+// Conditional sharp import with fallback
+let sharp: any = null;
 import { PDFDocument } from 'pdf-lib';
 import { ManifestCache } from './ManifestCache.js';
 import { configService } from './ConfigService.js';
@@ -14,6 +15,17 @@ export class EnhancedManuscriptDownloaderService {
 
     constructor() {
         this.manifestCache = new ManifestCache();
+        this.initSharp();
+    }
+
+    private async initSharp() {
+        if (!sharp) {
+            try {
+                sharp = (await import('sharp')).default;
+            } catch (error) {
+                console.warn('Sharp module not available, image processing will use fallback methods');
+            }
+        }
     }
 
     static readonly SUPPORTED_LIBRARIES: LibraryInfo[] = [
@@ -472,7 +484,25 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     async loadDurhamManifest(url: string): Promise<ManuscriptManifest> {
-        const manifestUrl = url.replace('/manifests/', '/iiif/') + '/manifest';
+        const manifestMatch = url.match(/[?&]manifest=([^&]+)/);
+        if (!manifestMatch) {
+            throw new Error('Invalid Durham URL format - could not extract manifest ID');
+        }
+        
+        const manifestId = manifestMatch[1];
+        
+        // Durham University IIIF manifest URL pattern:
+        // https://iiif.durham.ac.uk/manifests/trifle/32150/[first-2-chars]/[next-2-chars]/[next-2-chars]/[full-id]/manifest
+        // Example: t1mp2676v52p -> t1/mp/26/t1mp2676v52p/manifest
+        if (manifestId.length < 6) {
+            throw new Error(`Invalid Durham manifest ID format: ${manifestId}`);
+        }
+        
+        const part1 = manifestId.substring(0, 2);
+        const part2 = manifestId.substring(2, 4);
+        const part3 = manifestId.substring(4, 6);
+        
+        const manifestUrl = `https://iiif.durham.ac.uk/manifests/trifle/32150/${part1}/${part2}/${part3}/${manifestId}/manifest`;
         return this.loadIIIFManifest(manifestUrl);
     }
 
@@ -1107,20 +1137,28 @@ export class EnhancedManuscriptDownloaderService {
                             // First, try to read the original image
                             const originalBuffer = await fs.readFile(imagePath);
                             
-                            // Process with Sharp for optimization and format consistency
-                            imageBuffer = await sharp(originalBuffer)
-                                .jpeg({ 
-                                    quality: 90, 
-                                    progressive: true,
-                                    mozjpeg: true // Better compression
-                                })
-                                .resize({ 
-                                    width: 2048, // Max width to keep file size reasonable
-                                    height: 2048, 
-                                    fit: 'inside',
-                                    withoutEnlargement: true 
-                                })
-                                .toBuffer();
+                            // Ensure sharp is loaded before use
+                            await this.initSharp();
+                            
+                            // Process with Sharp for optimization and format consistency (if available)
+                            if (sharp) {
+                                imageBuffer = await sharp(originalBuffer)
+                                    .jpeg({ 
+                                        quality: 90, 
+                                        progressive: true,
+                                        mozjpeg: true // Better compression
+                                    })
+                                    .resize({ 
+                                        width: 2048, // Max width to keep file size reasonable
+                                        height: 2048, 
+                                        fit: 'inside',
+                                        withoutEnlargement: true 
+                                    })
+                                    .toBuffer();
+                            } else {
+                                // Fallback: use original file without processing
+                                imageBuffer = originalBuffer;
+                            }
                                 
                         } catch (sharpError: any) {
                             console.warn(`\n⚠  Sharp processing failed for ${path.basename(imagePath)}: ${sharpError.message}`);

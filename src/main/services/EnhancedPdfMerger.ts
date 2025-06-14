@@ -1,10 +1,22 @@
 import { PDFDocument, rgb } from 'pdf-lib';
-import sharp from 'sharp';
+// Conditional sharp import with fallback
+let sharp: any = null;
 import { configService } from './ConfigService.js';
 
 export class EnhancedPdfMerger {
     constructor() {
         // Configuration is accessed via configService when needed
+        this.initSharp();
+    }
+
+    private async initSharp() {
+        if (!sharp) {
+            try {
+                sharp = (await import('sharp')).default;
+            } catch (error) {
+                console.warn('Sharp module not available in PDF merger, using fallback methods');
+            }
+        }
     }
 
     async createPDF(imageBuffers: Buffer[], options: any = {}): Promise<Uint8Array> {
@@ -41,30 +53,50 @@ export class EnhancedPdfMerger {
 
     async addImageToPDF(pdfDoc: PDFDocument, imageBuffer: Buffer, pageNumber: number): Promise<void> {
         try {
-            // Use sharp to process and optimize the image
-            const imageInfo = await sharp(imageBuffer).metadata();
-            const { width: originalWidth, height: originalHeight, format } = imageInfo;
+            let processedImageBuffer: Buffer = imageBuffer;
             
-            if (!originalWidth || !originalHeight) {
-                throw new Error(`Invalid image dimensions for page ${pageNumber}`);
-            }
-            
-            let processedImageBuffer: Buffer;
-            
-            // Convert to JPEG if not already, and optimize
-            if (format !== 'jpeg') {
-                processedImageBuffer = await sharp(imageBuffer)
-                    .jpeg({ quality: Math.round(configService.get('pdfQuality') * 100), progressive: true })
-                    .toBuffer();
-            } else {
-                // Re-compress JPEG for optimization
-                processedImageBuffer = await sharp(imageBuffer)
-                    .jpeg({ quality: Math.round(configService.get('pdfQuality') * 100), progressive: true })
-                    .toBuffer();
+            // Ensure sharp is loaded and use it if available
+            await this.initSharp();
+            if (sharp) {
+                try {
+                    const imageInfo = await sharp(imageBuffer).metadata();
+                    const { width: originalWidth, height: originalHeight, format } = imageInfo;
+                    
+                    if (!originalWidth || !originalHeight) {
+                        throw new Error(`Invalid image dimensions for page ${pageNumber}`);
+                    }
+                    
+                    // Convert to JPEG if not already, and optimize
+                    if (format !== 'jpeg') {
+                        processedImageBuffer = await sharp(imageBuffer)
+                            .jpeg({ quality: Math.round(configService.get('pdfQuality') * 100), progressive: true })
+                            .toBuffer();
+                    } else {
+                        // Re-compress JPEG for optimization
+                        processedImageBuffer = await sharp(imageBuffer)
+                            .jpeg({ quality: Math.round(configService.get('pdfQuality') * 100), progressive: true })
+                            .toBuffer();
+                    }
+                } catch (sharpError: any) {
+                    console.warn(`Sharp processing failed for page ${pageNumber}, using original image: ${sharpError.message}`);
+                    processedImageBuffer = imageBuffer;
+                }
             }
             
             // Embed image in PDF
-            const image = await pdfDoc.embedJpg(processedImageBuffer);
+            let image;
+            try {
+                // Try as JPEG first
+                image = await pdfDoc.embedJpg(processedImageBuffer);
+            } catch {
+                try {
+                    // Fallback to PNG
+                    image = await pdfDoc.embedPng(processedImageBuffer);
+                } catch (embedError: any) {
+                    throw new Error(`Failed to embed image: ${embedError.message}`);
+                }
+            }
+            
             const imageDims = image.scale(1);
             
             // Create page with image dimensions
