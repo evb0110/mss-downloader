@@ -47,9 +47,9 @@ export class EnhancedManuscriptDownloaderService {
             description: 'Bibliothèque municipale de Dijon digital manuscripts',
         },
         {
-            name: 'Laon Bibliothèque ⚠️',
+            name: 'Laon Bibliothèque',
             example: 'https://bibliotheque-numerique.ville-laon.fr/viewer/1459/?offset=#page=1&viewer=picture&o=download&n=0&q=',
-            description: 'Bibliothèque municipale de Laon digital manuscripts (NOT WORKING YET - proxy issues)',
+            description: 'Bibliothèque municipale de Laon digital manuscripts',
         },
         {
             name: 'Durham University',
@@ -378,6 +378,7 @@ export class EnhancedManuscriptDownloaderService {
      * Load IIIF manifest (for Vatican, Durham, UGent, British Library)
      */
     async loadIIIFManifest(manifestUrl: string): Promise<ManuscriptManifest> {
+        console.log(`🔍 Loading IIIF manifest from: ${manifestUrl}`);
         const response = await this.fetchDirect(manifestUrl);
         if (!response.ok) {
             throw new Error(`Failed to load IIIF manifest: HTTP ${response.status}`);
@@ -391,30 +392,80 @@ export class EnhancedManuscriptDownloaderService {
             throw new Error(`Invalid JSON response from manifest URL: ${manifestUrl}. Response starts with: ${responseText.substring(0, 100)}`);
         }
         
-        const pageLinks: string[] = [];
-        const sequences = manifest.sequences || [manifest];
+        console.log(`🔍 IIIF manifest structure: sequences=${manifest.sequences ? manifest.sequences.length : 'none'}, items=${manifest.items ? manifest.items.length : 'none'}`);
         
-        for (const sequence of sequences) {
-            const canvases = sequence.canvases || sequence.items || [];
+        const pageLinks: string[] = [];
+        
+        // Handle IIIF v3 format (items directly in manifest) and IIIF v2 format (sequences)
+        let canvases: any[] = [];
+        
+        if (manifest.items && Array.isArray(manifest.items)) {
+            // IIIF v3: canvases are directly in manifest.items
+            canvases = manifest.items;
+            console.log(`🔍 IIIF v3: Found ${canvases.length} canvases in manifest.items`);
+        } else if (manifest.sequences && Array.isArray(manifest.sequences)) {
+            // IIIF v2: canvases are in sequences
+            console.log(`🔍 IIIF v2: Processing ${manifest.sequences.length} sequences`);
+            for (const sequence of manifest.sequences) {
+                const sequenceCanvases = sequence.canvases || [];
+                canvases.push(...sequenceCanvases);
+                console.log(`🔍 Found ${sequenceCanvases.length} canvases in sequence`);
+            }
+        } else {
+            // Fallback: try to find canvases in the manifest itself
+            canvases = manifest.canvases || [];
+            console.log(`🔍 Fallback: Found ${canvases.length} canvases in manifest.canvases`);
+        }
+        
+        // Process each canvas to extract image URLs
+        for (const canvas of canvases) {
+            const images = canvas.images || canvas.items || [];
+            console.log(`🔍 Found ${images.length} images in canvas ${canvas.id || 'unknown'}`);
             
-            for (const canvas of canvases) {
-                const images = canvas.images || canvas.items || [];
+            for (const image of images) {
+                let imageUrl;
                 
-                for (const image of images) {
-                    let imageUrl;
-                    
-                    if (image.resource) {
-                        imageUrl = image.resource['@id'] || image.resource.id;
-                    } else if (image.body) {
-                        imageUrl = image.body.id;
+                // Handle different IIIF image structure formats
+                if (image.resource) {
+                    // IIIF v2 format
+                    imageUrl = image.resource['@id'] || image.resource.id;
+                } else if (image.body) {
+                    // IIIF v3 format
+                    imageUrl = image.body.id;
+                } else if (image.id) {
+                    // Direct image reference
+                    imageUrl = image.id;
+                } else if (image['@id']) {
+                    // Legacy format
+                    imageUrl = image['@id'];
+                }
+                
+                if (imageUrl) {
+                    const originalUrl = imageUrl;
+                    // Convert to full resolution if IIIF, but be careful with BL
+                    if (imageUrl.includes('/full/') && !imageUrl.includes('bl.digirati.io')) {
+                        imageUrl = imageUrl.replace(/\/full\/[^\/]+\//, '/full/max/');
                     }
-                    
-                    if (imageUrl) {
-                        // Convert to full resolution if IIIF
-                        if (imageUrl.includes('/full/')) {
-                            imageUrl = imageUrl.replace(/\/full\/[^\/]+\//, '/full/max/');
+                    pageLinks.push(imageUrl);
+                    console.log(`🔍 Added image URL (original: ${originalUrl.substring(0, 100)}...) -> (final: ${imageUrl.substring(0, 100)}...)`);
+                }
+            }
+            
+            // If no images found in canvas.images/canvas.items, try to extract from canvas itself
+            if (!pageLinks.length && canvas.items) {
+                for (const item of canvas.items) {
+                    if (item.type === 'AnnotationPage' && item.items) {
+                        for (const annotation of item.items) {
+                            if (annotation.body && annotation.body.id) {
+                                let imageUrl = annotation.body.id;
+                                const originalUrl = imageUrl;
+                                if (imageUrl.includes('/full/') && !imageUrl.includes('bl.digirati.io')) {
+                                    imageUrl = imageUrl.replace(/\/full\/[^\/]+\//, '/full/max/');
+                                }
+                                pageLinks.push(imageUrl);
+                                console.log(`🔍 Added annotation image URL (original: ${originalUrl.substring(0, 100)}...) -> (final: ${imageUrl.substring(0, 100)}...)`);
+                            }
                         }
-                        pageLinks.push(imageUrl);
                     }
                 }
             }
@@ -455,6 +506,8 @@ export class EnhancedManuscriptDownloaderService {
                 }
             }
         }
+        
+        console.log(`🔍 IIIF manifest loaded: ${pageLinks.length} pages found`);
         
         return {
             pageLinks,
@@ -574,9 +627,11 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             const manuscriptId = decodeURIComponent(manuscriptMatch[1]);
+            console.log(`🔍 UGent manuscript ID extracted: ${manuscriptId}`);
             
             // Construct the IIIF v3 manifest URL based on the pattern from the reference implementation
             const manifestUrl = `https://adore.ugent.be/IIIF/v3/manifests/${manuscriptId}`;
+            console.log(`🔍 UGent manifest URL constructed: ${manifestUrl}`);
             
             return this.loadIIIFManifest(manifestUrl);
         } catch (error: any) {
@@ -934,6 +989,7 @@ export class EnhancedManuscriptDownloaderService {
             if (attempt < maxRetries) {
                 const delay = this.calculateRetryDelay(attempt);
                 console.log(`  Retry ${attempt + 1}/${maxRetries} in ${delay}ms: ${error.message}`);
+                console.log(`  URL: ${url}`);
                 
                 await this.sleep(delay);
                 return this.downloadImageWithRetries(url, attempt + 1);

@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import { promises as fs } from 'fs';
+import * as fsSync from 'fs';
 import path from 'path';
 import { app } from 'electron';
 import Store from 'electron-store';
@@ -35,10 +36,30 @@ export class EnhancedDownloadQueue extends EventEmitter {
             },
         };
         
-        this.store = new Store<{ queueState: QueueState }>({ 
-            defaults: { queueState: defaultState },
-            name: 'queue'
-        });
+        // Initialize store with error handling for corrupted files
+        try {
+            this.store = new Store<{ queueState: QueueState }>({ 
+                defaults: { queueState: defaultState },
+                name: 'queue'
+            });
+        } catch (error: any) {
+            console.warn('📋 Store corrupted, resetting:', error.message);
+            // Try to clear the corrupted store file and recreate
+            try {
+                const storePath = path.join(userDataPath, 'queue.json');
+                if (fsSync.existsSync(storePath)) {
+                    fsSync.unlinkSync(storePath);
+                }
+            } catch {
+                // Ignore file deletion errors
+            }
+            
+            // Recreate store
+            this.store = new Store<{ queueState: QueueState }>({ 
+                defaults: { queueState: defaultState },
+                name: 'queue'
+            });
+        }
         
         this.state = defaultState;
         this.currentDownloader = new EnhancedManuscriptDownloaderService();
@@ -89,7 +110,12 @@ export class EnhancedDownloadQueue extends EventEmitter {
             // Save to both file and electron-store for compatibility
             const data = JSON.stringify(this.state, null, 2);
             await fs.writeFile(this.queueFile, data);
-            (this.store as any).set('queueState', this.state);
+            
+            try {
+                (this.store as any).set('queueState', this.state);
+            } catch (storeError: any) {
+                console.warn('Failed to save to electron-store, but file saved successfully:', storeError.message);
+            }
         } catch (error: any) {
             console.error('Failed to save queue:', error.message);
         }
@@ -128,6 +154,31 @@ export class EnhancedDownloadQueue extends EventEmitter {
         this.emit('stateChanged', this.state);
     }
 
+    // Load manifest for an item to get page count and library info
+    private async loadManifestForItem(itemId: string): Promise<void> {
+        const item = this.state.items.find(i => i.id === itemId);
+        if (!item || !this.currentDownloader) {
+            return;
+        }
+
+        try {
+            console.log(`📖 Loading manifest for: ${item.displayName}`);
+            const manifest = await this.currentDownloader.loadManifest(item.url);
+            
+            // Update item with manifest information
+            item.totalPages = manifest.totalPages;
+            item.library = manifest.library as TLibrary;
+            
+            this.saveToStorage();
+            this.notifyListeners();
+            
+            console.log(`✅ Manifest loaded for ${item.displayName}: ${manifest.totalPages} pages`);
+        } catch (error: any) {
+            console.warn(`⚠️  Failed to load manifest for ${item.displayName}: ${error.message}`);
+            // Don't fail the entire process if manifest loading fails
+        }
+    }
+
     // Queue Management
     addManuscript(manuscript: Omit<QueuedManuscript, 'id' | 'addedAt' | 'status'>): string {
         const canonicalUrl = this.canonicalizeUrl(manuscript.url);
@@ -162,6 +213,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
         this.notifyListeners();
         
         console.log(`➕ Added to queue: ${newItem.displayName}`);
+        
+        // Load manifest immediately to get page count
+        this.loadManifestForItem(newItem.id);
         
         if (this.state.globalSettings.autoStart && !this.state.isProcessing) {
             this.processQueue();

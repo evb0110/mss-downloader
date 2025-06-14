@@ -49,9 +49,9 @@ export class ManuscriptDownloaderService {
             description: 'Bibliothèque municipale de Dijon digital manuscripts',
         },
         {
-            name: 'Laon Bibliothèque ⚠️',
+            name: 'Laon Bibliothèque',
             example: 'https://bibliotheque-numerique.ville-laon.fr/viewer/1459/?offset=#page=1&viewer=picture&o=download&n=0&q=',
-            description: 'Bibliothèque municipale de Laon digital manuscripts (NOT WORKING YET - proxy issues)',
+            description: 'Bibliothèque municipale de Laon digital manuscripts',
         },
         {
             name: 'Durham University',

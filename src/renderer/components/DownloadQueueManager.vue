@@ -727,8 +727,8 @@ const supportedLibrariesComplete = ref([
         ]
     },
     {
-        name: 'Laon Bibliothèque ⚠️',
-        description: 'Bibliothèque municipale de Laon digital manuscripts (NOT WORKING YET - proxy issues)',
+        name: 'Laon Bibliothèque',
+        description: 'Bibliothèque municipale de Laon digital manuscripts',
         examples: [
             { label: 'Document 1459 (not working)', url: 'https://bibliotheque-numerique.ville-laon.fr/viewer/1459/?offset=#page=1&viewer=picture&o=download&n=0&q=' }
         ]
