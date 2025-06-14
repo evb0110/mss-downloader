@@ -85,6 +85,9 @@ const api = {
   getQueueState: (): Promise<QueueState> => 
     ipcRenderer.invoke('queue-get-state'),
   
+  updateAutoSplitThreshold: (thresholdMB: number) =>
+    ipcRenderer.invoke('queue-update-autosplit-threshold', thresholdMB),
+  
   onQueueStateChanged: (callback: (state: QueueState) => void) => {
     ipcRenderer.on('queue-state-changed', (_, state) => callback(state));
     // Return unsubscribe function

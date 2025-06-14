@@ -29,6 +29,15 @@ export interface QueuedManuscript {
         startPage?: number;
         endPage?: number;
     };
+    // Auto-split fields
+    parentId?: string;
+    isAutoPart?: boolean;
+    partInfo?: {
+        partNumber: number;
+        totalParts: number;
+        originalDisplayName: string;
+        pageRange: { start: number; end: number };
+    };
 }
 
 export interface QueueState {
@@ -40,8 +49,6 @@ export interface QueueState {
         autoStart: boolean;
         concurrentDownloads: number;
         pauseBetweenItems: number; // seconds
-        partSizeMB?: number; // optional for compatibility
-        autoSplitEnabled?: boolean;
-        autoSplitThresholdMB?: number;
+        autoSplitThresholdMB: number; // Size limit in MB for auto-splitting
     };
 } 

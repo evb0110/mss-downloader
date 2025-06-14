@@ -432,6 +432,13 @@ ipcMain.handle('queue-get-state', async () => {
   return enhancedDownloadQueue.getState();
 });
 
+ipcMain.handle('queue-update-autosplit-threshold', async (_event, thresholdMB: number) => {
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
+  }
+  return enhancedDownloadQueue.updateAutoSplitThreshold(thresholdMB);
+});
+
 ipcMain.handle('cleanup-indexeddb-cache', async () => {
   if (!imageCache) {
     throw new Error('Image cache not initialized');

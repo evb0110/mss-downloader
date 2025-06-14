@@ -25,7 +25,6 @@ export class DownloadQueue extends EventEmitter {
                 autoStart: false,
                 concurrentDownloads: configService.get('maxConcurrentDownloads'),
                 pauseBetweenItems: 0,
-                autoSplitEnabled: false,
                 autoSplitThresholdMB: 800,
             },
         };
@@ -215,6 +214,147 @@ export class DownloadQueue extends EventEmitter {
         this.notifyListeners();
     }
     
+    updateAutoSplitThreshold(thresholdMB: number): void {
+        this.state.globalSettings.autoSplitThresholdMB = thresholdMB;
+        this.saveToStorage();
+        this.notifyListeners();
+        
+        // Recalculate splits for all existing items
+        this.recalculateAutoSplits();
+    }
+    
+    private recalculateAutoSplits(): void {
+        // Group items by parentId to find documents that need recalculation
+        const parentGroups = new Map<string, QueuedManuscript[]>();
+        const standaloneItems: QueuedManuscript[] = [];
+        
+        for (const item of this.state.items) {
+            if (item.isAutoPart && item.parentId) {
+                if (!parentGroups.has(item.parentId)) {
+                    parentGroups.set(item.parentId, []);
+                }
+                parentGroups.get(item.parentId)!.push(item);
+            } else if (!item.isAutoPart) {
+                standaloneItems.push(item);
+            }
+        }
+        
+        // For each parent group, recalculate splits
+        for (const [parentId, parts] of parentGroups) {
+            if (parts.length > 0) {
+                this.recalculatePartsForGroup(parentId, parts);
+            }
+        }
+    }
+    
+    private recalculatePartsForGroup(parentId: string, existingParts: QueuedManuscript[]): void {
+        // Get the first part to reconstruct original document info
+        const firstPart = existingParts[0];
+        if (!firstPart.partInfo) return;
+        
+        const originalDisplayName = firstPart.partInfo.originalDisplayName;
+        const totalPages = existingParts.reduce((max, part) => 
+            Math.max(max, part.partInfo?.pageRange.end || 0), 0);
+        
+        // Estimate size based on first part if available (rough approximation)
+        const estimatedSizeMB = totalPages * 8; // Assume 8MB per page for manuscripts
+        const thresholdMB = this.state.globalSettings.autoSplitThresholdMB;
+        
+        if (estimatedSizeMB <= thresholdMB) {
+            // Should not be split anymore - merge back to single item
+            this.mergePartsBackToSingle(parentId, existingParts, originalDisplayName, totalPages);
+        } else {
+            // Recalculate new parts
+            const newNumberOfParts = Math.ceil(estimatedSizeMB / thresholdMB);
+            const newPagesPerPart = Math.ceil(totalPages / newNumberOfParts);
+            
+            if (newNumberOfParts !== existingParts.length) {
+                this.recreatePartsWithNewSizes(parentId, existingParts, originalDisplayName, totalPages, newNumberOfParts, newPagesPerPart);
+            }
+        }
+    }
+    
+    private mergePartsBackToSingle(parentId: string, parts: QueuedManuscript[], originalDisplayName: string, totalPages: number): void {
+        // Remove all parts
+        this.state.items = this.state.items.filter(item => !parts.includes(item));
+        
+        // Create single item
+        const firstPart = parts[0];
+        const mergedItem: QueuedManuscript = {
+            ...firstPart,
+            id: parentId,
+            displayName: originalDisplayName,
+            totalPages,
+            status: 'pending',
+            isAutoPart: false,
+            parentId: undefined,
+            partInfo: undefined,
+            downloadOptions: {
+                concurrentDownloads: firstPart.downloadOptions?.concurrentDownloads || 3,
+                startPage: 1,
+                endPage: totalPages,
+            },
+            progress: undefined,
+            error: undefined,
+            startedAt: undefined,
+            completedAt: undefined,
+        };
+        
+        this.state.items.push(mergedItem);
+        this.saveToStorage();
+        this.notifyListeners();
+    }
+    
+    private recreatePartsWithNewSizes(
+        parentId: string, 
+        existingParts: QueuedManuscript[], 
+        originalDisplayName: string, 
+        totalPages: number, 
+        newNumberOfParts: number, 
+        newPagesPerPart: number
+    ): void {
+        // Remove existing parts
+        this.state.items = this.state.items.filter(item => !existingParts.includes(item));
+        
+        // Create new parts
+        const firstPart = existingParts[0];
+        for (let i = 0; i < newNumberOfParts; i++) {
+            const startPage = i * newPagesPerPart + 1;
+            const endPage = Math.min((i + 1) * newPagesPerPart, totalPages);
+            const partNumber = i + 1;
+            
+            const partId = `${parentId}_part_${partNumber}`;
+            const partItem: QueuedManuscript = {
+                ...firstPart,
+                id: partId,
+                displayName: `${originalDisplayName}_Part_${partNumber}_pages_${startPage}-${endPage}`,
+                status: 'pending',
+                parentId,
+                isAutoPart: true,
+                partInfo: {
+                    partNumber,
+                    totalParts: newNumberOfParts,
+                    originalDisplayName,
+                    pageRange: { start: startPage, end: endPage },
+                },
+                downloadOptions: {
+                    concurrentDownloads: firstPart.downloadOptions?.concurrentDownloads || 3,
+                    startPage,
+                    endPage,
+                },
+                progress: undefined,
+                error: undefined,
+                startedAt: undefined,
+                completedAt: undefined,
+            };
+            
+            this.state.items.push(partItem);
+        }
+        
+        this.saveToStorage();
+        this.notifyListeners();
+    }
+    
     getState(): QueueState {
         return JSON.parse(JSON.stringify(this.state));
     }
@@ -264,21 +404,24 @@ export class DownloadQueue extends EventEmitter {
             
             const selectedPageLinks = manifest.pageLinks.slice(startPage - 1, endPage);
             
+            // Check if document should be auto-split
+            const shouldCheckSplit = !item.isAutoPart && pageCount > 50; // Only check for non-part items with decent size
+            if (shouldCheckSplit) {
+                const splitResult = await this.checkAndSplitLargeDocument(item, manifest, selectedPageLinks);
+                if (splitResult) {
+                    // Document was split, throw special error to signal queue replacement
+                    throw new Error('DOCUMENT_WAS_SPLIT');
+                }
+            }
+            
             let lastProgressUpdate = 0;
             let lastPercentage = -1;
-
-            // Calculate estimated file size (rough approximation: 1MB per 5 pages)
-            const estimatedSizeMB = Math.ceil(pageCount / 5);
-            const shouldAutoSplit = this.state.globalSettings.autoSplitEnabled && estimatedSizeMB > (this.state.globalSettings.autoSplitThresholdMB || 800);
-            const maxPagesPerPart = Math.ceil((this.state.globalSettings.autoSplitThresholdMB || 800) * 5); // ~5 pages per MB
             
             await this.currentDownloader.downloadManuscriptPagesWithOptions(selectedPageLinks, {
                 displayName: manifest.displayName,
                 startPage,
                 endPage,
                 totalPages: manifest.totalPages,
-                autoSplit: shouldAutoSplit,
-                maxPagesPerPart,
                 onProgress: (progress) => {
                     if (!this.state.isPaused && item.progress) {
                         const now = Date.now();
@@ -315,7 +458,11 @@ export class DownloadQueue extends EventEmitter {
             item.progress = undefined;
             
         } catch (error: any) {
-            if (error.name === 'AbortError' || error.message?.includes('abort')) {
+            if (error.message === 'DOCUMENT_WAS_SPLIT') {
+                // Document was split successfully, just remove current item status
+                item.status = 'completed';
+                item.progress = undefined;
+            } else if (error.name === 'AbortError' || error.message?.includes('abort')) {
                 item.status = 'paused';
                 item.progress = undefined;
             } else {
@@ -376,5 +523,126 @@ export class DownloadQueue extends EventEmitter {
     private loadFromStorage(): void {
         const storedState = this.store.get('queueState', this.state) as QueueState;
         this.state = storedState;
+    }
+    
+    private async checkAndSplitLargeDocument(
+        item: QueuedManuscript, 
+        manifest: any, 
+        selectedPageLinks: string[]
+    ): Promise<boolean> {
+        try {
+            // Download first page to get actual size estimation
+            const firstPageUrl = selectedPageLinks[0];
+            if (!firstPageUrl) return false;
+            
+            const firstPageBuffer = await this.downloadSinglePage(firstPageUrl);
+            
+            const firstPageSizeMB = firstPageBuffer.length / (1024 * 1024);
+            const estimatedTotalSizeMB = firstPageSizeMB * manifest.totalPages;
+            
+            console.log(`First page: ${firstPageSizeMB.toFixed(2)}MB, Estimated total: ${estimatedTotalSizeMB.toFixed(2)}MB, Threshold: ${this.state.globalSettings.autoSplitThresholdMB}MB`);
+            
+            if (estimatedTotalSizeMB > this.state.globalSettings.autoSplitThresholdMB) {
+                await this.splitQueueItem(item, manifest, estimatedTotalSizeMB);
+                return true;
+            }
+            
+            return false;
+        } catch (error) {
+            console.error('Error checking document size:', error);
+            return false;
+        }
+    }
+    
+    private async splitQueueItem(
+        originalItem: QueuedManuscript, 
+        manifest: any, 
+        estimatedSizeMB: number
+    ): Promise<void> {
+        const thresholdMB = this.state.globalSettings.autoSplitThresholdMB;
+        const numberOfParts = Math.ceil(estimatedSizeMB / thresholdMB);
+        const pagesPerPart = Math.ceil(manifest.totalPages / numberOfParts);
+        
+        console.log(`Splitting document into ${numberOfParts} parts, ${pagesPerPart} pages each`);
+        
+        // Remove original item from queue
+        const originalIndex = this.state.items.findIndex(item => item.id === originalItem.id);
+        if (originalIndex !== -1) {
+            this.state.items.splice(originalIndex, 1);
+        }
+        
+        // Create parts
+        for (let i = 0; i < numberOfParts; i++) {
+            const startPage = i * pagesPerPart + 1;
+            const endPage = Math.min((i + 1) * pagesPerPart, manifest.totalPages);
+            const partNumber = i + 1;
+            
+            const partId = `${originalItem.id}_part_${partNumber}`;
+            const partItem: QueuedManuscript = {
+                ...originalItem, // Copy all original properties
+                id: partId,
+                displayName: `${manifest.displayName}_Part_${partNumber}_pages_${startPage}-${endPage}`,
+                status: 'pending',
+                parentId: originalItem.id,
+                isAutoPart: true,
+                partInfo: {
+                    partNumber,
+                    totalParts: numberOfParts,
+                    originalDisplayName: manifest.displayName,
+                    pageRange: { start: startPage, end: endPage },
+                },
+                downloadOptions: {
+                    concurrentDownloads: originalItem.downloadOptions?.concurrentDownloads || 3,
+                    startPage,
+                    endPage,
+                },
+                progress: undefined,
+                error: undefined,
+                startedAt: undefined,
+                completedAt: undefined,
+            };
+            
+            // Insert part at the original position + i
+            this.state.items.splice(originalIndex + i, 0, partItem);
+        }
+        
+        this.saveToStorage();
+        this.notifyListeners();
+    }
+    
+    private async downloadSinglePage(url: string): Promise<Buffer> {
+        return new Promise((resolve, reject) => {
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            const https = require('https');
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            const http = require('http');
+            const urlObj = new URL(url);
+            const client = urlObj.protocol === 'https:' ? https : http;
+
+            const req = client.request(url, { 
+                timeout: 10000,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                }
+            }, (res: any) => {
+                if (res.statusCode !== 200) {
+                    reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
+                    return;
+                }
+
+                const chunks: Buffer[] = [];
+                res.on('data', (chunk: Buffer) => chunks.push(chunk));
+                res.on('end', () => resolve(Buffer.concat(chunks)));
+                res.on('error', reject);
+            });
+
+            req.on('error', reject);
+            req.on('timeout', () => {
+                req.destroy();
+                reject(new Error('Request timeout'));
+            });
+
+            req.end();
+        });
     }
 } 

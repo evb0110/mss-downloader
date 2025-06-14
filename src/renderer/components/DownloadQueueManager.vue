@@ -201,34 +201,23 @@ https://digi.vatlib.it/..."
         >
           <div class="settings-content">
             <div class="setting-group">
-              <label class="setting-checkbox">
-                <input
-                  v-model="queueSettings.autoSplitEnabled"
-                  type="checkbox"
-                  @change="updateQueueSettings"
-                >
-                <span class="checkbox-label">Enable auto-split for large documents</span>
-              </label>
-              <p class="setting-description">
-                Automatically split documents larger than the threshold into multiple PDF files (applies to new downloads)
-              </p>
-            </div>
-
-            <div class="setting-group">
               <label class="setting-label">
                 Auto-split threshold: {{ queueSettings.autoSplitThresholdMB }}MB
               </label>
+              <p class="setting-description">
+                Large documents are automatically split into multiple parts based on this size limit. Changes recalculate existing queued items.
+              </p>
               <input
                 v-model="queueSettings.autoSplitThresholdMB"
                 type="range"
-                min="200"
+                min="30"
                 max="1000"
-                step="50"
+                step="10"
                 class="setting-range"
-                @input="updateQueueSettings"
+                @input="onAutoSplitThresholdChange"
               >
               <div class="range-labels">
-                <span>200MB</span>
+                <span>30MB</span>
                 <span>1000MB</span>
               </div>
             </div>
@@ -632,6 +621,7 @@ declare global {
       clearAllFromQueue: () => Promise<number>;
       updateQueueItem: (id: string, updates: Partial<QueuedManuscript>) => Promise<boolean>;
       getQueueState: () => Promise<QueueState>;
+      updateAutoSplitThreshold: (thresholdMB: number) => Promise<void>;
       onQueueStateChanged: (callback: (state: QueueState) => void) => () => void;
       cleanupIndexedDBCache: () => Promise<void>;
       showItemInFinder: (filePath: string) => Promise<boolean>;
@@ -653,6 +643,7 @@ const queueState = ref<QueueState>({
         autoStart: false,
         concurrentDownloads: 3,
         pauseBetweenItems: 0,
+        autoSplitThresholdMB: 800,
     },
 });
 
@@ -782,9 +773,19 @@ const supportedLibrariesComplete = ref([
 
 // Queue settings
 const queueSettings = ref({
-    autoSplitEnabled: false,
     autoSplitThresholdMB: 800,
     maxConcurrentDownloads: 3
+});
+
+// Debounced threshold update
+let debounceTimer: NodeJS.Timeout | null = null;
+
+// Watch for queue state changes to sync settings
+watchEffect(() => {
+    if (queueState.value?.globalSettings) {
+        queueSettings.value.autoSplitThresholdMB = queueState.value.globalSettings.autoSplitThresholdMB;
+        queueSettings.value.maxConcurrentDownloads = queueState.value.globalSettings.concurrentDownloads;
+    }
 });
 
 // Bulk mode computed properties
@@ -1465,6 +1466,22 @@ async function revealDownloadsFolder() {
 function updateQueueSettings() {
     console.log('Queue settings updated:', queueSettings.value);
     // Settings are updated in real-time via the reactive refs
+}
+
+// Debounced auto-split threshold update
+function onAutoSplitThresholdChange() {
+    if (debounceTimer) {
+        clearTimeout(debounceTimer);
+    }
+    
+    debounceTimer = setTimeout(async () => {
+        try {
+            await window.electronAPI.updateAutoSplitThreshold(queueSettings.value.autoSplitThresholdMB);
+            console.log('Auto-split threshold updated:', queueSettings.value.autoSplitThresholdMB);
+        } catch (error) {
+            console.error('Failed to update auto-split threshold:', error);
+        }
+    }, 2000); // 2 second debounce
 }
 
 

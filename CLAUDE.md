@@ -152,3 +152,4 @@ npm run dist:win         # Windows-specific build
 
 ## Memories
 - image sizing and non-compression
+- devserver doesn't work correctly for you. If you need, I can start it
