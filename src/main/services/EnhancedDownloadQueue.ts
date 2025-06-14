@@ -386,7 +386,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 item.completedAt = Date.now();
                 item.progress = 1;
                 item.outputPath = result.filepath;
-                item.totalPages = result.totalPages;
+                // Do NOT update totalPages here - it should always reflect the manifest total, not download count
                 
                 console.log(`✅ Completed: ${item.displayName}`);
             } else {

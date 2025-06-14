@@ -397,7 +397,6 @@ https://digi.vatlib.it/..."
                                     <button
                                         type="button"
                                         class="select-all-btn"
-                                        :class="{ 'active': editingQueueItem.startPage === 1 && editingQueueItem.endPage === item.totalPages }"
                                         @click="selectAllPages(item.totalPages)"
                                     >
                                         All Pages
@@ -1230,6 +1229,10 @@ function clearAllQueue() {
 }
 
 function startQueueItemEdit(item: QueuedManuscript) {
+    console.log('Starting edit for item:', item);
+    console.log('Item totalPages:', item.totalPages);
+    console.log('Item downloadOptions:', item.downloadOptions);
+    
     editingQueueItemId.value = item.id;
     editingQueueItem.value = {
         startPage: item.downloadOptions?.startPage || 1,
