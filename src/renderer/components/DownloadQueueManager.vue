@@ -510,7 +510,7 @@ https://digi.vatlib.it/..."
     width="min(800px, 90vw)"
     @close="showSupportedLibrariesModal = false"
   >
-    <p style="margin-bottom: 1.5rem;">
+    <p class="libraries-intro">
       Enter a URL from one of the following supported digital libraries to download a manuscript:
     </p>
 
@@ -550,6 +550,20 @@ https://digi.vatlib.it/..."
           </div>
         </Spoiler>
       </div>
+    </div>
+    
+    <!-- Add All Testing Button -->
+    <div class="add-all-test-section">
+      <button
+        class="add-all-test-btn"
+        @click="addAllTestUrls"
+        :disabled="isProcessingUrls"
+      >
+        Add All (Testing)
+      </button>
+      <p class="add-all-test-description">
+        Adds one example URL from each supported library for testing purposes
+      </p>
     </div>
   </Modal>
 
@@ -879,6 +893,27 @@ async function handleExampleClick(exampleUrl: string) {
             modalTextarea.value.focus();
             modalTextarea.value.setSelectionRange(modalTextarea.value.value.length, modalTextarea.value.value.length);
         }
+    }
+}
+
+async function addAllTestUrls() {
+    // Get the first example URL from each library
+    const testUrls = supportedLibrariesComplete.value
+        .filter(library => library.examples && library.examples.length > 0)
+        .map(library => library.examples[0].url);
+    
+    if (testUrls.length === 0) return;
+    
+    // Close the modal
+    showSupportedLibrariesModal.value = false;
+    
+    // If queue is empty, add to main textarea
+    if (queueItems.value.length === 0) {
+        bulkUrlText.value = testUrls.join('\n');
+    } else {
+        // If queue has items, add directly to processing
+        bulkUrlText.value = testUrls.join('\n');
+        await processBulkUrls();
     }
 }
 
@@ -2635,6 +2670,52 @@ label {
     background: #adb5bd;
     cursor: not-allowed;
     opacity: 0.6;
+}
+
+/* Libraries Modal */
+.libraries-intro {
+    margin-bottom: 1.5rem;
+}
+
+/* Add All Test Section */
+.add-all-test-section {
+    margin-top: 2rem;
+    text-align: center;
+    border-top: 1px solid #dee2e6;
+    padding-top: 1.5rem;
+}
+
+.add-all-test-btn {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(23, 162, 184, 0.2);
+}
+
+.add-all-test-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
+    box-shadow: 0 3px 12px rgba(23, 162, 184, 0.25);
+    transform: translateY(-1px);
+}
+
+.add-all-test-btn:disabled {
+    background: #adb5bd;
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+    transform: none;
+}
+
+.add-all-test-description {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #6c757d;
 }
 
 /* Mobile responsiveness for buttons - only wrap on very narrow screens */

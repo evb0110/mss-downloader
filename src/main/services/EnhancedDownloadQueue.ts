@@ -92,11 +92,25 @@ export class EnhancedDownloadQueue extends EventEmitter {
             } catch {
                 // Fall back to electron-store
                 this.state = (this.store as any).get('queueState', this.state);
+                // Ensure proper cleanup for electron-store loaded state as well
+                this.state.isProcessing = false;
+                this.state.isPaused = false;
+                this.state.currentItemId = undefined;
             }
             
             // Resume any in-progress items by resetting 'downloading' status to 'queued'
+            // Also clean up progress data and other transient fields
             this.state.items.forEach((item) => {
-                if (item.status === 'downloading') item.status = 'queued';
+                if (item.status === 'downloading') {
+                    item.status = 'queued';
+                    item.progress = undefined; // Clear progress data
+                    item.eta = undefined; // Clear ETA
+                }
+                // Also clean up any paused items that might have stale progress data
+                if (item.status === 'paused') {
+                    item.progress = undefined;
+                    item.eta = undefined;
+                }
             });
             
             console.log(`📋 Loaded ${this.state.items.length} items from queue`);
