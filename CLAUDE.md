@@ -149,6 +149,6 @@ npm run dist:win         # Windows-specific build
 - Always use source project barsky.club as reference if something is broken
 - on every fix bump minor version
 - not minor, but patch
-```
 
-</invoke>
+## Memories
+- image sizing and non-compression

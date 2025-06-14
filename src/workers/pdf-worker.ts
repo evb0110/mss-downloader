@@ -7,8 +7,9 @@ let pageCount = 0;
 // const MAX_CANVAS_WIDTH = 2048; // Removed - using unlimited resolution
 // const MAX_CANVAS_HEIGHT = 2048; // Removed - using unlimited resolution
 
-const MAX_MEMORY_USAGE_MB = 512;
-const BATCH_SIZE = 5;
+// Reserved for future use: memory management thresholds
+// const _MAX_MEMORY_USAGE_MB = 512;
+// const _BATCH_SIZE = 5;
 const GC_INTERVAL = 3;
 
 const isWindows = typeof navigator !== 'undefined' && /Windows/.test(navigator.userAgent);
@@ -16,9 +17,10 @@ const isWindows = typeof navigator !== 'undefined' && /Windows/.test(navigator.u
 // Unlimited resolution for all platforms
 // const WINDOWS_MAX_CANVAS_WIDTH = 1200; // Removed - using unlimited resolution
 // const WINDOWS_MAX_CANVAS_HEIGHT = 1200; // Removed - using unlimited resolution
-const WINDOWS_JPEG_QUALITY = 1.0; // Maximum quality
+// Reserved for future use: quality and threshold settings
+// const _WINDOWS_JPEG_QUALITY = 1.0; // Maximum quality
 const WINDOWS_MAX_IMAGE_SIZE_MB = 500; // Increased limit for unlimited resolution
-const WINDOWS_LARGE_PDF_THRESHOLD = 15;
+// const _WINDOWS_LARGE_PDF_THRESHOLD = 15;
 
 interface WorkerMessage {
     type: 'init' | 'addPage' | 'finalize' | 'reset' | 'processChunk' | 'assemblePages';

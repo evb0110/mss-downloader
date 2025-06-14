@@ -1,22 +1,7 @@
 import { PDFDocument, rgb } from 'pdf-lib';
-// Conditional sharp import with fallback
-let sharp: any = null;
-import { configService } from './ConfigService.js';
 
 export class EnhancedPdfMerger {
     constructor() {
-        // Configuration is accessed via configService when needed
-        this.initSharp();
-    }
-
-    private async initSharp() {
-        if (!sharp) {
-            try {
-                sharp = (await import('sharp')).default;
-            } catch (error) {
-                console.warn('Sharp module not available in PDF merger, using fallback methods');
-            }
-        }
     }
 
     async createPDF(imageBuffers: Buffer[], options: any = {}): Promise<Uint8Array> {
@@ -53,45 +38,15 @@ export class EnhancedPdfMerger {
 
     async addImageToPDF(pdfDoc: PDFDocument, imageBuffer: Buffer, pageNumber: number): Promise<void> {
         try {
-            let processedImageBuffer: Buffer = imageBuffer;
-            
-            // Ensure sharp is loaded and use it if available
-            await this.initSharp();
-            if (sharp) {
-                try {
-                    const imageInfo = await sharp(imageBuffer).metadata();
-                    const { width: originalWidth, height: originalHeight, format } = imageInfo;
-                    
-                    if (!originalWidth || !originalHeight) {
-                        throw new Error(`Invalid image dimensions for page ${pageNumber}`);
-                    }
-                    
-                    // Convert to JPEG if not already, and optimize
-                    if (format !== 'jpeg') {
-                        processedImageBuffer = await sharp(imageBuffer)
-                            .jpeg({ quality: Math.round(configService.get('pdfQuality') * 100), progressive: true })
-                            .toBuffer();
-                    } else {
-                        // Re-compress JPEG for optimization
-                        processedImageBuffer = await sharp(imageBuffer)
-                            .jpeg({ quality: Math.round(configService.get('pdfQuality') * 100), progressive: true })
-                            .toBuffer();
-                    }
-                } catch (sharpError: any) {
-                    console.warn(`Sharp processing failed for page ${pageNumber}, using original image: ${sharpError.message}`);
-                    processedImageBuffer = imageBuffer;
-                }
-            }
-            
-            // Embed image in PDF
+            // Use original image buffer without any processing
             let image;
             try {
                 // Try as JPEG first
-                image = await pdfDoc.embedJpg(processedImageBuffer);
+                image = await pdfDoc.embedJpg(imageBuffer);
             } catch {
                 try {
                     // Fallback to PNG
-                    image = await pdfDoc.embedPng(processedImageBuffer);
+                    image = await pdfDoc.embedPng(imageBuffer);
                 } catch (embedError: any) {
                     throw new Error(`Failed to embed image: ${embedError.message}`);
                 }
@@ -99,7 +54,7 @@ export class EnhancedPdfMerger {
             
             const imageDims = image.scale(1);
             
-            // Create page with image dimensions
+            // Create page with original image dimensions
             const page = pdfDoc.addPage([imageDims.width, imageDims.height]);
             
             // Draw image to fill the entire page

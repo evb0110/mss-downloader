@@ -19,17 +19,17 @@
       <div class="cache-controls">
         <button 
           class="btn btn-secondary"
-          @click="showCacheStats"
           :disabled="isDownloading"
           :title="$t('downloader.cacheStats')"
+          @click="showCacheStats"
         >
           📊 {{ $t('downloader.cacheStats') }}
         </button>
         <button 
           class="btn btn-secondary"
-          @click="clearCache"
           :disabled="isDownloading"
           :title="$t('downloader.clearCache')"
+          @click="clearCache"
         >
           🗑️ {{ $t('downloader.clearCache') }}
         </button>
@@ -42,9 +42,15 @@
       <div class="download-section card">
         <h2>{{ $t('downloader.title') }}</h2>
         
-        <form @submit.prevent="handleDownload" class="download-form">
+        <form
+          class="download-form"
+          @submit.prevent="handleDownload"
+        >
           <div class="form-group">
-            <label for="manuscript-url" class="form-label">{{ $t('downloader.urlLabel') }}</label>
+            <label
+              for="manuscript-url"
+              class="form-label"
+            >{{ $t('downloader.urlLabel') }}</label>
             <input
               id="manuscript-url"
               v-model="manuscriptUrl"
@@ -53,7 +59,7 @@
               class="form-input"
               :disabled="isDownloading"
               required
-            />
+            >
             <small class="input-help">{{ $t('downloader.workingLibraries') }}</small>
           </div>
 
@@ -67,17 +73,26 @@
         </form>
 
         <!-- Status and Progress -->
-        <div v-if="downloadStatus" class="status-section">
-          <div class="status-message" :class="downloadStatus.phase">
+        <div
+          v-if="downloadStatus"
+          class="status-section"
+        >
+          <div
+            class="status-message"
+            :class="downloadStatus.phase"
+          >
             {{ downloadStatus.message }}
           </div>
 
-          <div v-if="downloadProgress && isDownloading" class="progress-section">
+          <div
+            v-if="downloadProgress && isDownloading"
+            class="progress-section"
+          >
             <div class="progress-bar">
               <div 
                 class="progress-fill" 
                 :style="{ width: downloadProgress.percentage + '%' }"
-              ></div>
+              />
             </div>
             
             <div class="progress-details">
@@ -90,13 +105,19 @@
               }) }}</span>
             </div>
 
-            <div v-if="downloadProgress.estimatedTimeRemaining > 0" class="progress-eta">
+            <div
+              v-if="downloadProgress.estimatedTimeRemaining > 0"
+              class="progress-eta"
+            >
               {{ $t('downloader.progress.timeRemaining', { 
                 time: formatTime(downloadProgress.estimatedTimeRemaining) 
               }) }}
             </div>
 
-            <div v-if="downloadProgress.downloadSpeed > 0" class="progress-speed">
+            <div
+              v-if="downloadProgress.downloadSpeed > 0"
+              class="progress-speed"
+            >
               {{ $t('downloader.progress.downloadSpeed', { 
                 speed: formatBytes(downloadProgress.downloadSpeed) 
               }) }}
@@ -104,7 +125,10 @@
           </div>
         </div>
 
-        <div v-if="errorMessage" class="error-section">
+        <div
+          v-if="errorMessage"
+          class="error-section"
+        >
           <div class="error-message">
             {{ $t('downloader.error') }}: {{ errorMessage }}
           </div>
@@ -127,8 +151,8 @@
               <strong>{{ $t('downloader.examples') }}:</strong>
               <code 
                 class="example-url" 
-                @click="useExample(library.example)"
                 :title="'Click to use this example'"
+                @click="useExample(library.example)"
               >
                 {{ library.example }}
               </code>
@@ -139,14 +163,29 @@
     </div>
 
     <!-- Cache Stats Modal -->
-    <div v-if="showCacheModal" class="modal-overlay" @click="showCacheModal = false">
-      <div class="modal-content" @click.stop>
+    <div
+      v-if="showCacheModal"
+      class="modal-overlay"
+      @click="showCacheModal = false"
+    >
+      <div
+        class="modal-content"
+        @click.stop
+      >
         <h3>{{ $t('downloader.cacheStats') }}</h3>
-        <div v-if="cacheStats" class="cache-info">
+        <div
+          v-if="cacheStats"
+          class="cache-info"
+        >
           <p><strong>Size:</strong> {{ formatBytes(cacheStats.size) }}</p>
           <p><strong>Entries:</strong> {{ cacheStats.entries }}</p>
         </div>
-        <button @click="showCacheModal = false" class="btn btn-secondary">Close</button>
+        <button
+          class="btn btn-secondary"
+          @click="showCacheModal = false"
+        >
+          Close
+        </button>
       </div>
     </div>
   </div>

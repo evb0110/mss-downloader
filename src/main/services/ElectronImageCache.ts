@@ -43,7 +43,7 @@ export class ElectronImageCache {
       const data = await fs.readFile(this.metadataFile, 'utf-8');
       const entries = JSON.parse(data) as CacheEntry[];
       this.metadata = new Map(entries.map(entry => [entry.url, entry]));
-    } catch (error) {
+    } catch {
       this.metadata = new Map();
     }
   }
@@ -74,7 +74,7 @@ export class ElectronImageCache {
 
     try {
       return await fs.readFile(entry.filePath);
-    } catch (error) {
+    } catch {
       await this.removeEntry(url);
       return null;
     }
@@ -109,7 +109,7 @@ export class ElectronImageCache {
 
     try {
       await fs.unlink(entry.filePath);
-    } catch (error) {
+    } catch {
       // File might not exist, ignore
     }
 
@@ -176,7 +176,7 @@ export class ElectronImageCache {
           await fs.unlink(join(tempImagesDir, file));
         }
         console.log('Temporary images cleared');
-      } catch (error) {
+      } catch {
         // Temp folder might not exist, ignore
       }
       

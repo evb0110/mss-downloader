@@ -1,53 +1,53 @@
 <template>
+  <div
+    v-if="show"
+    class="modal-overlay"
+    @click="handleOverlayClick"
+  >
     <div
-        v-if="show"
-        class="modal-overlay"
-        @click="handleOverlayClick"
+      class="modal-content"
+      :style="{ width: width || 'auto', maxWidth: width ? 'none' : '500px' }"
+      @click.stop
     >
-        <div
-            class="modal-content"
-            :style="{ width: width || 'auto', maxWidth: width ? 'none' : '500px' }"
-            @click.stop
+      <div class="modal-header">
+        <h3 class="modal-title">
+          {{ title }}
+        </h3>
+        <button
+          class="modal-close"
+          aria-label="Close"
+          @click="$emit('close')"
         >
-            <div class="modal-header">
-                <h3 class="modal-title">
-                    {{ title }}
-                </h3>
-                <button
-                    class="modal-close"
-                    aria-label="Close"
-                    @click="$emit('close')"
-                >
-                    ×
-                </button>
-            </div>
+          ×
+        </button>
+      </div>
       
-            <div class="modal-body">
-                <p v-if="message">
-                    {{ message }}
-                </p>
-                <slot />
-            </div>
+      <div class="modal-body">
+        <p v-if="message">
+          {{ message }}
+        </p>
+        <slot />
+      </div>
       
-            <div class="modal-footer">
-                <button
-                    v-if="type === 'confirm'"
-                    class="btn btn-danger"
-                    :disabled="loading"
-                    @click="$emit('confirm')"
-                >
-                    {{ confirmText || 'Confirm' }}
-                </button>
-                <button
-                    class="btn btn-secondary"
-                    :disabled="loading"
-                    @click="$emit('close')"
-                >
-                    {{ cancelText || 'Cancel' }}
-                </button>
-            </div>
-        </div>
+      <div class="modal-footer">
+        <button
+          v-if="type === 'confirm'"
+          class="btn btn-danger"
+          :disabled="loading"
+          @click="$emit('confirm')"
+        >
+          {{ confirmText || 'Confirm' }}
+        </button>
+        <button
+          class="btn btn-secondary"
+          :disabled="loading"
+          @click="$emit('close')"
+        >
+          {{ cancelText || 'Cancel' }}
+        </button>
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup lang="ts">

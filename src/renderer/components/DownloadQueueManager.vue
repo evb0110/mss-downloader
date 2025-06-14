@@ -1,570 +1,591 @@
 <template>
-    <div class="manuscript-downloader">
-        <div class="info-buttons-row">
-            <button
-                class="info-btn"
-                @click="showSupportedLibrariesModal = true"
-            >
-                <span class="btn-icon">ℹ</span>
-                Supported Libraries
-            </button>
-            <button
-                v-if="queueItems.length > 0"
-                class="add-more-btn"
-                @click="openAddMoreDocumentsModal"
-            >
-                <span class="btn-icon">+</span>
-                Add More Documents
-            </button>
-        </div>
-
-        <!-- Bulk Queue Mode -->
-        <div class="bulk-queue-form">
-            <!-- Show input form directly if no queue items -->
-            <template v-if="queueItems.length === 0">
-                <div class="form-group">
-                    <label for="bulk-urls">Manuscript URLs</label>
-                    <textarea
-                        id="bulk-urls"
-                        v-model="bulkUrlText"
-                        placeholder="Enter multiple URLs separated by whitespace, semicolon, or comma
-https://gallica.bnf.fr/ark:/12148/...
-https://e-codices.unifr.ch/...
-https://digi.vatlib.it/..."
-                        class="bulk-textarea manuscript-input"
-                        :disabled="isProcessingUrls"
-                        rows="6"
-                        @keydown="handleTextareaKeydown"
-                    />
-                    <small class="help-text">Enter multiple manuscript URLs, one per line or separated by whitespace, semicolon, or comma. Press Ctrl+Enter (or Cmd+Enter on Mac) to add to queue.</small>
-                </div>
-                
-                <button
-                    :disabled="isProcessingUrls || !bulkUrlText.trim()"
-                    class="load-btn"
-                    @click="processBulkUrls"
-                >
-                    {{ isProcessingUrls ? 'Adding to Queue...' : 'Add to Queue' }}
-                </button>
-            </template>
-
-
-            <!-- Queue Display -->
-            <div
-                v-if="queueItems.length > 0"
-                class="queue-section"
-            >
-                <!-- Queue Progress Bar -->
-                <div
-                    v-if="queueStats.total > 0"
-                    class="queue-progress"
-                >
-                    <div class="queue-progress-header">
-                        <span class="queue-progress-label">Queue Progress</span>
-                        <span class="queue-progress-stats">
-                            {{ queueStats.completed + queueStats.failed }} / {{ queueStats.total }} Manuscripts
-                        </span>
-                    </div>
-                    <div class="queue-progress-bar">
-                        <!-- Individual segments for each item in queue order -->
-                        <div
-                            v-for="item in queueItems"
-                            :key="item.id"
-                            class="queue-progress-fill"
-                            :class="getProgressSegmentClass(item.status)"
-                            :style="{ width: `${Math.round((1 / queueStats.total) * 100)}%` }"
-                            :title="`${item.displayName}: ${item.status}`"
-                        />
-                    </div>
-                    <div class="queue-progress-breakdown">
-                        <span
-                            v-if="queueStats.downloading > 0"
-                            class="progress-segment downloading"
-                        >
-                            {{ queueStats.downloading }} Downloading
-                        </span>
-                        <span
-                            v-if="queueStats.pending > 0"
-                            class="progress-segment pending"
-                        >
-                            {{ queueStats.pending }} Pending
-                        </span>
-                        <span
-                            v-if="queueStats.paused > 0"
-                            class="progress-segment paused"
-                        >
-                            {{ queueStats.paused }} Paused
-                        </span>
-                        <span
-                            v-if="queueStats.completed > 0"
-                            class="progress-segment completed"
-                        >
-                            {{ queueStats.completed }} Completed
-                        </span>
-                        <span
-                            v-if="queueStats.failed > 0"
-                            class="progress-segment failed"
-                        >
-                            {{ queueStats.failed }} Failed
-                        </span>
-                    </div>
-                </div>
-
-                <div class="queue-controls">
-                    <button
-                        v-if="!isQueueProcessing && !isQueuePaused"
-                        class="start-btn"
-                        :disabled="isProcessingUrls || !hasReadyItems"
-                        @click="startQueue"
-                    >
-                        {{ shouldShowResume ? 'Resume Queue' : 'Start Queue' }}
-                    </button>
-                    <button
-                        v-if="isQueueProcessing && !isQueuePaused"
-                        class="pause-btn"
-                        @click="pauseQueue"
-                    >
-                        Pause Queue
-                    </button>
-                    <button
-                        v-if="isQueuePaused && shouldShowResume"
-                        class="resume-btn"
-                        @click="resumeQueue"
-                    >
-                        Resume Queue
-                    </button>
-                    <button
-                        v-if="isQueuePaused && !shouldShowResume"
-                        class="start-btn"
-                        :disabled="isProcessingUrls || !hasReadyItems"
-                        @click="startQueue"
-                    >
-                        Start Queue
-                    </button>
-                    <button
-                        v-if="isQueueProcessing || isQueuePaused"
-                        class="stop-btn"
-                        @click="stopQueue"
-                    >
-                        Stop Queue
-                    </button>
-                    <button
-                        v-if="!isQueueProcessing && !isQueuePaused && hasCompletedOrFailedItems"
-                        class="restart-queue-btn"
-                        @click="restartAllCompletedFailed"
-                        title="Restart all completed and failed items"
-                    >
-                        Restart Queue
-                    </button>
-                    <button
-                        :class="getButtonClass('clearAll', 'clear-queue-btn')"
-                        :disabled="isButtonDisabled('clearAll', queueItems.length === 0 || isProcessingUrls)"
-                        title="Delete all items from the queue"
-                        @click="clearAllQueue"
-                    >
-                        <span v-if="getButtonContent('clearAll', 'Delete All').icon" class="btn-icon-only">{{ getButtonContent('clearAll', 'Delete All').icon }}</span>
-                        <span v-else>{{ getButtonContent('clearAll', 'Delete All').text }}</span>
-                    </button>
-                    <button
-                        :class="getButtonClass('cleanupCache', 'cleanup-cache-btn')"
-                        :disabled="isButtonDisabled('cleanupCache', isProcessingUrls)"
-                        title="Clean up the image cache for downloaded manuscripts"
-                        @click="cleanupIndexedDBCache"
-                    >
-                        <span v-if="getButtonContent('cleanupCache', 'Cleanup Cache').icon" class="btn-icon-only">{{ getButtonContent('cleanupCache', 'Cleanup Cache').icon }}</span>
-                        <span v-else>{{ getButtonContent('cleanupCache', 'Cleanup Cache').text }}</span>
-                    </button>
-                    <button
-                        :class="getButtonClass('revealFolder', 'reveal-folder-btn')"
-                        :disabled="isButtonDisabled('revealFolder')"
-                        title="Open the Downloads folder where completed files are saved"
-                        @click="revealDownloadsFolder"
-                    >
-                        <span v-if="getButtonContent('revealFolder', 'Reveal Folder').icon" class="btn-icon-only">{{ getButtonContent('revealFolder', 'Reveal Folder').icon }}</span>
-                        <span v-else>{{ getButtonContent('revealFolder', 'Reveal Folder').text }}</span>
-                    </button>
-                </div>
-
-                <!-- Queue Settings -->
-                <Spoiler title="⚙️ Default Download Settings" class="settings-spoiler">
-                    <div class="settings-content">
-                        <div class="setting-group">
-                            <label class="setting-checkbox">
-                                <input
-                                    type="checkbox"
-                                    v-model="queueSettings.autoSplitEnabled"
-                                    @change="updateQueueSettings"
-                                >
-                                <span class="checkbox-label">Enable auto-split for large documents</span>
-                            </label>
-                            <p class="setting-description">
-                                Automatically split documents larger than the threshold into multiple PDF files (applies to new downloads)
-                            </p>
-                        </div>
-
-                        <div class="setting-group">
-                            <label class="setting-label">
-                                Auto-split threshold: {{ queueSettings.autoSplitThresholdMB }}MB
-                            </label>
-                            <input
-                                type="range"
-                                min="200"
-                                max="1000"
-                                step="50"
-                                v-model="queueSettings.autoSplitThresholdMB"
-                                @input="updateQueueSettings"
-                                class="setting-range"
-                            >
-                            <div class="range-labels">
-                                <span>200MB</span>
-                                <span>1000MB</span>
-                            </div>
-                        </div>
-
-                        <div class="setting-group">
-                            <label class="setting-label">
-                                Concurrent downloads: {{ queueSettings.maxConcurrentDownloads }}
-                            </label>
-                            <input
-                                type="range"
-                                min="1"
-                                max="8"
-                                step="1"
-                                v-model="queueSettings.maxConcurrentDownloads"
-                                @input="updateQueueSettings"
-                                class="setting-range"
-                            >
-                            <div class="range-labels">
-                                <span>1</span>
-                                <span>8</span>
-                            </div>
-                        </div>
-
-                    </div>
-                </Spoiler>
-
-                <div class="queue-actions">
-                    <!-- Loading manifests indicator -->
-                    <div
-                        v-if="isProcessingUrls"
-                        class="loading-manifests"
-                    >
-                        <div class="loading-spinner" />
-                        <span>Loading Manifests...</span>
-                    </div>
-                </div>
-
-                <div class="queue-list">
-                    <div
-                        v-for="item in queueItems"
-                        :key="item.id"
-                        class="queue-item"
-                        :class="[`status-${item.status}`, { 'loading-manifest': item.status === 'loading' }]"
-                    >
-                        <div class="queue-item-header">
-                            <div class="queue-item-info">
-                                <strong v-if="item.status === 'failed'">
-                                    Failed to Load Manifest
-                                    <a
-                                        :href="item.url"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="manuscript-error-link"
-                                    >
-                                        {{ item.url }}
-                                    </a>
-                                </strong>
-                                <strong v-else>
-                                    <a
-                                        v-if="item.status !== 'loading' && item.url"
-                                        :href="item.url"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="manuscript-title-link"
-                                    >
-                                        {{ item.displayName }}
-                                    </a>
-                                    <span v-else>{{ item.displayName }}</span>
-                                </strong>
-                                <div class="queue-item-meta">
-                                    <span
-                                        class="status-badge"
-                                        :class="`status-${item.status}`"
-                                    >{{ getStatusText(item.status) }}</span>
-                                    <span
-                                        v-if="item.status !== 'failed'"
-                                        class="total-pages-badge"
-                                    >
-                                        <template v-if="item.downloadOptions && (item.downloadOptions.startPage !== 1 || item.downloadOptions.endPage !== item.totalPages)">
-                                            Pages {{ item.downloadOptions.startPage || 1 }}–{{ item.downloadOptions.endPage || item.totalPages }} ({{ (item.downloadOptions.endPage || item.totalPages) - (item.downloadOptions.startPage || 1) + 1 }} of {{ item.totalPages }})
-                                        </template>
-                                        <template v-else>
-                                            All {{ item.totalPages }} Pages
-                                        </template>
-                                    </span>
-                                    <span
-                                        v-if="item.status !== 'failed'"
-                                        class="concurrency-badge"
-                                    >
-                                        Concurrency: {{ item.downloadOptions?.concurrentDownloads || 3 }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="queue-item-controls">
-                                <button
-                                    v-if="editingQueueItemId !== item.id"
-                                    class="edit-btn"
-                                    title="Edit download options"
-                                    @click="startQueueItemEdit(item)"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    v-if="item.status === 'downloading'"
-                                    class="pause-item-btn"
-                                    title="Pause this download"
-                                    @click="pauseQueueItem(item.id)"
-                                >
-                                    Pause
-                                </button>
-                                <button
-                                    v-if="item.status === 'paused'"
-                                    class="resume-item-btn"
-                                    title="Resume this download"
-                                    @click="resumeQueueItem(item.id)"
-                                >
-                                    Resume
-                                </button>
-                                <button
-                                    v-if="item.status === 'completed' || item.status === 'failed'"
-                                    class="restart-item-btn"
-                                    title="Restart download with current settings"
-                                    @click="restartQueueItem(item.id)"
-                                >
-                                    Restart
-                                </button>
-                                <button
-                                    v-if="(item.status === 'completed' || item.status === 'failed') && item.outputPath"
-                                    class="show-finder-btn"
-                                    :title="getShowInFinderText()"
-                                    @click="showItemInFinder(item.outputPath)"
-                                >
-                                    {{ getShowInFinderText() }}
-                                </button>
-                                <button
-                                    class="remove-btn"
-                                    title="Remove from queue"
-                                    @click="removeQueueItem(item.id)"
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Edit form (when editing) -->
-                        <div
-                            v-if="editingQueueItemId === item.id && editingQueueItem"
-                            class="queue-edit-form"
-                        >
-                            <div class="edit-section">
-                                <div class="edit-header">
-                                    <label>Page Range</label>
-                                </div>
-                                <div class="page-range">
-                                    <input
-                                        v-model.number="editingQueueItem.startPage"
-                                        type="number"
-                                        min="1"
-                                        class="page-input"
-                                        @blur="validateQueueEditInputs"
-                                    >
-                                    <span>–</span>
-                                    <input
-                                        v-model.number="editingQueueItem.endPage"
-                                        type="number"
-                                        min="1"
-                                        class="page-input"
-                                        @blur="validateQueueEditInputs"
-                                    >
-                                    <button
-                                        :disabled="hasEditQueueValidationErrors || !hasQueueItemChanges"
-                                        class="edit-btn edit-save-btn"
-                                        title="Apply changes"
-                                        @click="saveQueueItemEdit()"
-                                    >
-                                        Apply
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="select-all-btn"
-                                        @click="selectAllPages(item.totalPages)"
-                                    >
-                                        All Pages
-                                    </button>
-                                    <button
-                                        class="edit-btn edit-cancel-btn"
-                                        title="Cancel changes"
-                                        @click="cancelQueueItemEdit()"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                                <p v-if="hasEditQueueValidationErrors" class="error-message">
-                                    Invalid page range or duplicate entry.
-                                </p>
-                            </div>
-                            
-                            <div class="edit-section">
-                                <label>Concurrent Downloads: {{ editingQueueItem.concurrentDownloads }}</label>
-                                <input
-                                    v-model.number="editingQueueItem.concurrentDownloads"
-                                    type="range"
-                                    min="1"
-                                    max="8"
-                                    class="concurrency-slider"
-                                >
-                            </div>
-                        </div>
-                        
-                        <!-- Progress bar for downloading and paused items -->
-                        <div
-                            v-if="item.status === 'downloading' || (item.status === 'paused' && item.progress)"
-                            :key="`progress-${item.id}-${item.progress?.current || 0}`"
-                            class="item-progress"
-                        >
-                            <div class="item-progress-header">
-                                <span class="item-progress-label">
-                                    {{ item.status === 'downloading' ? 'Download Progress' : 'Paused Progress' }}
-                                </span>
-                                <span class="item-progress-stats">
-                                    <template v-if="item.progress">
-                                        {{ item.status === 'downloading'
-                                            ? `Downloading ${item.progress.current} of ${item.progress.total}`
-                                            : `Paused at ${item.progress.current} of ${item.progress.total}`
-                                        }} ({{ item.progress.percentage }}%)
-                                    </template>
-                                    <template v-else>
-                                        Initializing...
-                                    </template>
-                                </span>
-                            </div>
-                            <div class="item-progress-bar">
-                                <div 
-                                    class="item-progress-fill"
-                                    :style="{ width: `${item.progress?.percentage || 0}%` }"
-                                />
-                            </div>
-                            <div
-                                v-if="item.progress?.eta"
-                                class="item-progress-eta"
-                            >
-                                Estimated Time: {{ item.progress.eta }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="manuscript-downloader">
+    <div class="info-buttons-row">
+      <button
+        class="info-btn"
+        @click="showSupportedLibrariesModal = true"
+      >
+        <span class="btn-icon">ℹ</span>
+        Supported Libraries
+      </button>
+      <button
+        v-if="queueItems.length > 0"
+        class="add-more-btn"
+        @click="openAddMoreDocumentsModal"
+      >
+        <span class="btn-icon">+</span>
+        Add More Documents
+      </button>
     </div>
 
-    <!-- Custom Modals -->
-    <Modal
-        :show="showConfirmModal"
-        :title="confirmModal.title"
-        :message="confirmModal.message"
-        type="confirm"
-        :confirm-text="confirmModal.confirmText"
-        :cancel-text="confirmModal.cancelText"
-        @confirm="handleConfirm"
-        @close="closeConfirmModal"
-    />
-
-    <Modal
-        :show="showAlertModal"
-        :title="alertModal.title"
-        :message="alertModal.message"
-        type="alert"
-        cancel-text="Close"
-        @close="closeAlertModal"
-    />
-
-    <!-- Supported Libraries Modal -->
-    <Modal
-        :show="showSupportedLibrariesModal"
-        title="Supported Manuscript Libraries"
-        type="alert"
-        width="min(800px, 90vw)"
-        @close="showSupportedLibrariesModal = false"
-    >
-        <p style="margin-bottom: 1.5rem;">Enter a URL from one of the following supported digital libraries to download a manuscript:</p>
-
-        <div class="libraries-list">
-            <div
-                v-for="library in supportedLibrariesComplete"
-                :key="library.name"
-                class="library-item"
-            >
-                <h4 :class="{ 'library-warning': library.name.includes('⚠️') }">
-                    {{ library.name }}
-                </h4>
-                <p class="library-description">
-                    {{ library.description }}
-                </p>
-                
-                <Spoiler title="Example URLs" class="library-examples-spoiler">
-                    <div class="library-examples">
-                        <div
-                            v-for="example in library.examples"
-                            :key="example.url"
-                            class="library-example"
-                        >
-                            <div class="example-label">{{ example.label }}:</div>
-                            <code
-                                class="example-url-link"
-                                @click="handleExampleClick(example.url); showSupportedLibrariesModal = false"
-                            >
-                                {{ example.url }}
-                            </code>
-                        </div>
-                    </div>
-                </Spoiler>
-            </div>
-        </div>
-    </Modal>
-
-    <!-- Add More Documents Modal -->
-    <Modal
-        :show="showAddMoreDocumentsModal"
-        title="Add More Documents"
-        type="alert"
-        @close="showAddMoreDocumentsModal = false"
-    >
+    <!-- Bulk Queue Mode -->
+    <div class="bulk-queue-form">
+      <!-- Show input form directly if no queue items -->
+      <template v-if="queueItems.length === 0">
         <div class="form-group">
-            <label for="modal-bulk-urls">Manuscript URLs</label>
-            <textarea
-                id="modal-bulk-urls"
-                ref="modalTextarea"
-                v-model="bulkUrlText"
-                placeholder="Enter multiple URLs separated by whitespace, semicolon, or comma
+          <label for="bulk-urls">Manuscript URLs</label>
+          <textarea
+            id="bulk-urls"
+            v-model="bulkUrlText"
+            placeholder="Enter multiple URLs separated by whitespace, semicolon, or comma
 https://gallica.bnf.fr/ark:/12148/...
 https://e-codices.unifr.ch/...
 https://digi.vatlib.it/..."
-                class="bulk-textarea manuscript-input"
-                :disabled="isProcessingUrls"
-                rows="6"
-                @keydown="handleTextareaKeydown"
-            />
-            <small class="help-text">Enter multiple manuscript URLs, one per line or separated by whitespace, semicolon, or comma. Press Ctrl+Enter (or Cmd+Enter on Mac) to add to queue.</small>
+            class="bulk-textarea manuscript-input"
+            :disabled="isProcessingUrls"
+            rows="6"
+            @keydown="handleTextareaKeydown"
+          />
+          <small class="help-text">Enter multiple manuscript URLs, one per line or separated by whitespace, semicolon, or comma. Press Ctrl+Enter (or Cmd+Enter on Mac) to add to queue.</small>
         </div>
-        
+                
         <button
-            :disabled="isProcessingUrls || !bulkUrlText.trim()"
-            class="load-btn"
-            @click="processBulkUrls()"
+          :disabled="isProcessingUrls || !bulkUrlText.trim()"
+          class="load-btn"
+          @click="processBulkUrls"
         >
-            {{ isProcessingUrls ? 'Adding to Queue...' : 'Add to Queue' }}
+          {{ isProcessingUrls ? 'Adding to Queue...' : 'Add to Queue' }}
         </button>
-    </Modal>
+      </template>
+
+
+      <!-- Queue Display -->
+      <div
+        v-if="queueItems.length > 0"
+        class="queue-section"
+      >
+        <!-- Queue Progress Bar -->
+        <div
+          v-if="queueStats.total > 0"
+          class="queue-progress"
+        >
+          <div class="queue-progress-header">
+            <span class="queue-progress-label">Queue Progress</span>
+            <span class="queue-progress-stats">
+              {{ queueStats.completed + queueStats.failed }} / {{ queueStats.total }} Manuscripts
+            </span>
+          </div>
+          <div class="queue-progress-bar">
+            <!-- Individual segments for each item in queue order -->
+            <div
+              v-for="item in queueItems"
+              :key="item.id"
+              class="queue-progress-fill"
+              :class="getProgressSegmentClass(item.status)"
+              :style="{ width: `${Math.round((1 / queueStats.total) * 100)}%` }"
+              :title="`${item.displayName}: ${item.status}`"
+            />
+          </div>
+          <div class="queue-progress-breakdown">
+            <span
+              v-if="queueStats.downloading > 0"
+              class="progress-segment downloading"
+            >
+              {{ queueStats.downloading }} Downloading
+            </span>
+            <span
+              v-if="queueStats.pending > 0"
+              class="progress-segment pending"
+            >
+              {{ queueStats.pending }} Pending
+            </span>
+            <span
+              v-if="queueStats.paused > 0"
+              class="progress-segment paused"
+            >
+              {{ queueStats.paused }} Paused
+            </span>
+            <span
+              v-if="queueStats.completed > 0"
+              class="progress-segment completed"
+            >
+              {{ queueStats.completed }} Completed
+            </span>
+            <span
+              v-if="queueStats.failed > 0"
+              class="progress-segment failed"
+            >
+              {{ queueStats.failed }} Failed
+            </span>
+          </div>
+        </div>
+
+        <div class="queue-controls">
+          <button
+            v-if="!isQueueProcessing && !isQueuePaused"
+            class="start-btn"
+            :disabled="isProcessingUrls || !hasReadyItems"
+            @click="startQueue"
+          >
+            {{ shouldShowResume ? 'Resume Queue' : 'Start Queue' }}
+          </button>
+          <button
+            v-if="isQueueProcessing && !isQueuePaused"
+            class="pause-btn"
+            @click="pauseQueue"
+          >
+            Pause Queue
+          </button>
+          <button
+            v-if="isQueuePaused && shouldShowResume"
+            class="resume-btn"
+            @click="resumeQueue"
+          >
+            Resume Queue
+          </button>
+          <button
+            v-if="isQueuePaused && !shouldShowResume"
+            class="start-btn"
+            :disabled="isProcessingUrls || !hasReadyItems"
+            @click="startQueue"
+          >
+            Start Queue
+          </button>
+          <button
+            v-if="isQueueProcessing || isQueuePaused"
+            class="stop-btn"
+            @click="stopQueue"
+          >
+            Stop Queue
+          </button>
+          <button
+            v-if="!isQueueProcessing && !isQueuePaused && hasCompletedOrFailedItems"
+            class="restart-queue-btn"
+            title="Restart all completed and failed items"
+            @click="restartAllCompletedFailed"
+          >
+            Restart Queue
+          </button>
+          <button
+            :class="getButtonClass('clearAll', 'clear-queue-btn')"
+            :disabled="isButtonDisabled('clearAll', queueItems.length === 0 || isProcessingUrls)"
+            title="Delete all items from the queue"
+            @click="clearAllQueue"
+          >
+            <span
+              v-if="getButtonContent('clearAll', 'Delete All').icon"
+              class="btn-icon-only"
+            >{{ getButtonContent('clearAll', 'Delete All').icon }}</span>
+            <span v-else>{{ getButtonContent('clearAll', 'Delete All').text }}</span>
+          </button>
+          <button
+            :class="getButtonClass('cleanupCache', 'cleanup-cache-btn')"
+            :disabled="isButtonDisabled('cleanupCache', isProcessingUrls)"
+            title="Clean up the image cache for downloaded manuscripts"
+            @click="cleanupIndexedDBCache"
+          >
+            <span
+              v-if="getButtonContent('cleanupCache', 'Cleanup Cache').icon"
+              class="btn-icon-only"
+            >{{ getButtonContent('cleanupCache', 'Cleanup Cache').icon }}</span>
+            <span v-else>{{ getButtonContent('cleanupCache', 'Cleanup Cache').text }}</span>
+          </button>
+          <button
+            :class="getButtonClass('revealFolder', 'reveal-folder-btn')"
+            :disabled="isButtonDisabled('revealFolder')"
+            title="Open the Downloads folder where completed files are saved"
+            @click="revealDownloadsFolder"
+          >
+            <span
+              v-if="getButtonContent('revealFolder', 'Reveal Folder').icon"
+              class="btn-icon-only"
+            >{{ getButtonContent('revealFolder', 'Reveal Folder').icon }}</span>
+            <span v-else>{{ getButtonContent('revealFolder', 'Reveal Folder').text }}</span>
+          </button>
+        </div>
+
+        <!-- Queue Settings -->
+        <Spoiler
+          title="⚙️ Default Download Settings"
+          class="settings-spoiler"
+        >
+          <div class="settings-content">
+            <div class="setting-group">
+              <label class="setting-checkbox">
+                <input
+                  v-model="queueSettings.autoSplitEnabled"
+                  type="checkbox"
+                  @change="updateQueueSettings"
+                >
+                <span class="checkbox-label">Enable auto-split for large documents</span>
+              </label>
+              <p class="setting-description">
+                Automatically split documents larger than the threshold into multiple PDF files (applies to new downloads)
+              </p>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">
+                Auto-split threshold: {{ queueSettings.autoSplitThresholdMB }}MB
+              </label>
+              <input
+                v-model="queueSettings.autoSplitThresholdMB"
+                type="range"
+                min="200"
+                max="1000"
+                step="50"
+                class="setting-range"
+                @input="updateQueueSettings"
+              >
+              <div class="range-labels">
+                <span>200MB</span>
+                <span>1000MB</span>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">
+                Concurrent downloads: {{ queueSettings.maxConcurrentDownloads }}
+              </label>
+              <input
+                v-model="queueSettings.maxConcurrentDownloads"
+                type="range"
+                min="1"
+                max="8"
+                step="1"
+                class="setting-range"
+                @input="updateQueueSettings"
+              >
+              <div class="range-labels">
+                <span>1</span>
+                <span>8</span>
+              </div>
+            </div>
+          </div>
+        </Spoiler>
+
+        <div class="queue-actions">
+          <!-- Loading manifests indicator -->
+          <div
+            v-if="isProcessingUrls"
+            class="loading-manifests"
+          >
+            <div class="loading-spinner" />
+            <span>Loading Manifests...</span>
+          </div>
+        </div>
+
+        <div class="queue-list">
+          <div
+            v-for="item in queueItems"
+            :key="item.id"
+            class="queue-item"
+            :class="[`status-${item.status}`, { 'loading-manifest': item.status === 'loading' }]"
+          >
+            <div class="queue-item-header">
+              <div class="queue-item-info">
+                <strong v-if="item.status === 'failed'">
+                  Failed to Load Manifest
+                  <a
+                    :href="item.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="manuscript-error-link"
+                  >
+                    {{ item.url }}
+                  </a>
+                </strong>
+                <strong v-else>
+                  <a
+                    v-if="item.status !== 'loading' && item.url"
+                    :href="item.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="manuscript-title-link"
+                  >
+                    {{ item.displayName }}
+                  </a>
+                  <span v-else>{{ item.displayName }}</span>
+                </strong>
+                <div class="queue-item-meta">
+                  <span
+                    class="status-badge"
+                    :class="`status-${item.status}`"
+                  >{{ getStatusText(item.status) }}</span>
+                  <span
+                    v-if="item.status !== 'failed'"
+                    class="total-pages-badge"
+                  >
+                    <template v-if="item.downloadOptions && (item.downloadOptions.startPage !== 1 || item.downloadOptions.endPage !== item.totalPages)">
+                      Pages {{ item.downloadOptions.startPage || 1 }}–{{ item.downloadOptions.endPage || item.totalPages }} ({{ (item.downloadOptions.endPage || item.totalPages) - (item.downloadOptions.startPage || 1) + 1 }} of {{ item.totalPages }})
+                    </template>
+                    <template v-else>
+                      All {{ item.totalPages }} Pages
+                    </template>
+                  </span>
+                  <span
+                    v-if="item.status !== 'failed'"
+                    class="concurrency-badge"
+                  >
+                    Concurrency: {{ item.downloadOptions?.concurrentDownloads || 3 }}
+                  </span>
+                </div>
+              </div>
+              <div class="queue-item-controls">
+                <button
+                  v-if="editingQueueItemId !== item.id"
+                  class="edit-btn"
+                  title="Edit download options"
+                  @click="startQueueItemEdit(item)"
+                >
+                  Edit
+                </button>
+                <button
+                  v-if="item.status === 'downloading'"
+                  class="pause-item-btn"
+                  title="Pause this download"
+                  @click="pauseQueueItem(item.id)"
+                >
+                  Pause
+                </button>
+                <button
+                  v-if="item.status === 'paused'"
+                  class="resume-item-btn"
+                  title="Resume this download"
+                  @click="resumeQueueItem(item.id)"
+                >
+                  Resume
+                </button>
+                <button
+                  v-if="item.status === 'completed' || item.status === 'failed'"
+                  class="restart-item-btn"
+                  title="Restart download with current settings"
+                  @click="restartQueueItem(item.id)"
+                >
+                  Restart
+                </button>
+                <button
+                  v-if="(item.status === 'completed' || item.status === 'failed') && item.outputPath"
+                  class="show-finder-btn"
+                  :title="getShowInFinderText()"
+                  @click="showItemInFinder(item.outputPath)"
+                >
+                  {{ getShowInFinderText() }}
+                </button>
+                <button
+                  class="remove-btn"
+                  title="Remove from queue"
+                  @click="removeQueueItem(item.id)"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+                        
+            <!-- Edit form (when editing) -->
+            <div
+              v-if="editingQueueItemId === item.id && editingQueueItem"
+              class="queue-edit-form"
+            >
+              <div class="edit-section">
+                <div class="edit-header">
+                  <label>Page Range</label>
+                </div>
+                <div class="page-range">
+                  <input
+                    v-model.number="editingQueueItem.startPage"
+                    type="number"
+                    min="1"
+                    class="page-input"
+                    @blur="validateQueueEditInputs"
+                  >
+                  <span>–</span>
+                  <input
+                    v-model.number="editingQueueItem.endPage"
+                    type="number"
+                    min="1"
+                    class="page-input"
+                    @blur="validateQueueEditInputs"
+                  >
+                  <button
+                    :disabled="hasEditQueueValidationErrors || !hasQueueItemChanges"
+                    class="edit-btn edit-save-btn"
+                    title="Apply changes"
+                    @click="saveQueueItemEdit()"
+                  >
+                    Apply
+                  </button>
+                  <button
+                    type="button"
+                    class="select-all-btn"
+                    @click="selectAllPages(item.totalPages)"
+                  >
+                    All Pages
+                  </button>
+                  <button
+                    class="edit-btn edit-cancel-btn"
+                    title="Cancel changes"
+                    @click="cancelQueueItemEdit()"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                <p
+                  v-if="hasEditQueueValidationErrors"
+                  class="error-message"
+                >
+                  Invalid page range or duplicate entry.
+                </p>
+              </div>
+                            
+              <div class="edit-section">
+                <label>Concurrent Downloads: {{ editingQueueItem.concurrentDownloads }}</label>
+                <input
+                  v-model.number="editingQueueItem.concurrentDownloads"
+                  type="range"
+                  min="1"
+                  max="8"
+                  class="concurrency-slider"
+                >
+              </div>
+            </div>
+                        
+            <!-- Progress bar for downloading and paused items -->
+            <div
+              v-if="item.status === 'downloading' || (item.status === 'paused' && item.progress)"
+              :key="`progress-${item.id}-${item.progress?.current || 0}`"
+              class="item-progress"
+            >
+              <div class="item-progress-header">
+                <span class="item-progress-label">
+                  {{ item.status === 'downloading' ? 'Download Progress' : 'Paused Progress' }}
+                </span>
+                <span class="item-progress-stats">
+                  <template v-if="item.progress">
+                    {{ item.status === 'downloading'
+                      ? `Downloading ${item.progress.current} of ${item.progress.total}`
+                      : `Paused at ${item.progress.current} of ${item.progress.total}`
+                    }} ({{ item.progress.percentage }}%)
+                  </template>
+                  <template v-else>
+                    Initializing...
+                  </template>
+                </span>
+              </div>
+              <div class="item-progress-bar">
+                <div 
+                  class="item-progress-fill"
+                  :style="{ width: `${item.progress?.percentage || 0}%` }"
+                />
+              </div>
+              <div
+                v-if="item.progress?.eta"
+                class="item-progress-eta"
+              >
+                Estimated Time: {{ item.progress.eta }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Modals -->
+  <Modal
+    :show="showConfirmModal"
+    :title="confirmModal.title"
+    :message="confirmModal.message"
+    type="confirm"
+    :confirm-text="confirmModal.confirmText"
+    :cancel-text="confirmModal.cancelText"
+    @confirm="handleConfirm"
+    @close="closeConfirmModal"
+  />
+
+  <Modal
+    :show="showAlertModal"
+    :title="alertModal.title"
+    :message="alertModal.message"
+    type="alert"
+    cancel-text="Close"
+    @close="closeAlertModal"
+  />
+
+  <!-- Supported Libraries Modal -->
+  <Modal
+    :show="showSupportedLibrariesModal"
+    title="Supported Manuscript Libraries"
+    type="alert"
+    width="min(800px, 90vw)"
+    @close="showSupportedLibrariesModal = false"
+  >
+    <p style="margin-bottom: 1.5rem;">
+      Enter a URL from one of the following supported digital libraries to download a manuscript:
+    </p>
+
+    <div class="libraries-list">
+      <div
+        v-for="library in supportedLibrariesComplete"
+        :key="library.name"
+        class="library-item"
+      >
+        <h4 :class="{ 'library-warning': library.name.includes('⚠️') }">
+          {{ library.name }}
+        </h4>
+        <p class="library-description">
+          {{ library.description }}
+        </p>
+                
+        <Spoiler
+          title="Example URLs"
+          class="library-examples-spoiler"
+        >
+          <div class="library-examples">
+            <div
+              v-for="example in library.examples"
+              :key="example.url"
+              class="library-example"
+            >
+              <div class="example-label">
+                {{ example.label }}:
+              </div>
+              <code
+                class="example-url-link"
+                @click="handleExampleClick(example.url); showSupportedLibrariesModal = false"
+              >
+                {{ example.url }}
+              </code>
+            </div>
+          </div>
+        </Spoiler>
+      </div>
+    </div>
+  </Modal>
+
+  <!-- Add More Documents Modal -->
+  <Modal
+    :show="showAddMoreDocumentsModal"
+    title="Add More Documents"
+    type="alert"
+    @close="showAddMoreDocumentsModal = false"
+  >
+    <div class="form-group">
+      <label for="modal-bulk-urls">Manuscript URLs</label>
+      <textarea
+        id="modal-bulk-urls"
+        ref="modalTextarea"
+        v-model="bulkUrlText"
+        placeholder="Enter multiple URLs separated by whitespace, semicolon, or comma
+https://gallica.bnf.fr/ark:/12148/...
+https://e-codices.unifr.ch/...
+https://digi.vatlib.it/..."
+        class="bulk-textarea manuscript-input"
+        :disabled="isProcessingUrls"
+        rows="6"
+        @keydown="handleTextareaKeydown"
+      />
+      <small class="help-text">Enter multiple manuscript URLs, one per line or separated by whitespace, semicolon, or comma. Press Ctrl+Enter (or Cmd+Enter on Mac) to add to queue.</small>
+    </div>
+        
+    <button
+      :disabled="isProcessingUrls || !bulkUrlText.trim()"
+      class="load-btn"
+      @click="processBulkUrls()"
+    >
+      {{ isProcessingUrls ? 'Adding to Queue...' : 'Add to Queue' }}
+    </button>
+  </Modal>
 </template>
 
 <script setup lang="ts">

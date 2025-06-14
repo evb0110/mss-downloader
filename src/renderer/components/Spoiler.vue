@@ -1,47 +1,47 @@
 <template>
-    <div
-        class="spoiler"
-        :class="{ 'is-open': isOpen }"
+  <div
+    class="spoiler"
+    :class="{ 'is-open': isOpen }"
+  >
+    <button 
+      type="button"
+      class="spoiler-trigger"
+      :aria-expanded="isOpen"
+      :aria-controls="contentId"
+      @click="toggle"
     >
-        <button 
-            type="button"
-            class="spoiler-trigger"
-            :aria-expanded="isOpen"
-            :aria-controls="contentId"
-            @click="toggle"
+      <span class="spoiler-title">
+        <slot name="title">{{ title }}</slot>
+      </span>
+      <div class="spoiler-icon">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
         >
-            <span class="spoiler-title">
-                <slot name="title">{{ title }}</slot>
-            </span>
-            <div class="spoiler-icon">
-                <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
-                    <path
-                        d="M6 8L10 12L14 8"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    />
-                </svg>
-            </div>
-        </button>
+          <path
+            d="M6 8L10 12L14 8"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+    </button>
     
-        <div 
-            :id="contentId"
-            class="spoiler-content"
-            :style="{ height: isOpen ? 'auto' : '0px' }"
-        >
-            <div class="spoiler-inner">
-                <slot />
-            </div>
-        </div>
+    <div 
+      :id="contentId"
+      class="spoiler-content"
+      :style="{ height: isOpen ? 'auto' : '0px' }"
+    >
+      <div class="spoiler-inner">
+        <slot />
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup lang="ts">

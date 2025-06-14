@@ -215,11 +215,11 @@ async function cleanupTempFiles(): Promise<void> {
           try {
             await fs.unlink(join(dir, file));
             console.log(`Cleaned up temp file: ${file}`);
-          } catch (error) {
+          } catch {
             // Ignore individual file cleanup errors
           }
         }
-      } catch (error) {
+      } catch {
         // Directory might not exist, that's fine
       }
     }

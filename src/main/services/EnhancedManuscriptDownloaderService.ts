@@ -1,8 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { app } from 'electron';
-// Conditional sharp import with fallback
-let sharp: any = null;
 import { PDFDocument } from 'pdf-lib';
 import { ManifestCache } from './ManifestCache.js';
 import { configService } from './ConfigService.js';
@@ -15,17 +13,6 @@ export class EnhancedManuscriptDownloaderService {
 
     constructor() {
         this.manifestCache = new ManifestCache();
-        this.initSharp();
-    }
-
-    private async initSharp() {
-        if (!sharp) {
-            try {
-                sharp = (await import('sharp')).default;
-            } catch (error) {
-                console.warn('Sharp module not available, image processing will use fallback methods');
-            }
-        }
     }
 
     static readonly SUPPORTED_LIBRARIES: LibraryInfo[] = [
@@ -1105,7 +1092,7 @@ export class EnhancedManuscriptDownloaderService {
         
         console.log(`  Processing ${totalImages} images in batches of ${batchSize}...`);
         
-        let allPdfBytes: Uint8Array[] = [];
+        const allPdfBytes: Uint8Array[] = [];
         let processedCount = 0;
         
         // Process images in batches to manage memory
@@ -1131,40 +1118,8 @@ export class EnhancedManuscriptDownloaderService {
                             continue;
                         }
                         
-                        // Read and process image with Sharp
-                        let imageBuffer: Buffer;
-                        try {
-                            // First, try to read the original image
-                            const originalBuffer = await fs.readFile(imagePath);
-                            
-                            // Ensure sharp is loaded before use
-                            await this.initSharp();
-                            
-                            // Process with Sharp for optimization and format consistency (if available)
-                            if (sharp) {
-                                imageBuffer = await sharp(originalBuffer)
-                                    .jpeg({ 
-                                        quality: 90, 
-                                        progressive: true,
-                                        mozjpeg: true // Better compression
-                                    })
-                                    .resize({ 
-                                        width: 2048, // Max width to keep file size reasonable
-                                        height: 2048, 
-                                        fit: 'inside',
-                                        withoutEnlargement: true 
-                                    })
-                                    .toBuffer();
-                            } else {
-                                // Fallback: use original file without processing
-                                imageBuffer = originalBuffer;
-                            }
-                                
-                        } catch (sharpError: any) {
-                            console.warn(`\n⚠  Sharp processing failed for ${path.basename(imagePath)}: ${sharpError.message}`);
-                            // Fallback: use original file
-                            imageBuffer = await fs.readFile(imagePath);
-                        }
+                        // Read original image without any processing
+                        const imageBuffer = await fs.readFile(imagePath);
                         
                         // Embed image in PDF
                         let image;
@@ -1181,18 +1136,8 @@ export class EnhancedManuscriptDownloaderService {
                             }
                         }
                         
-                        // Add page with appropriate dimensions
-                        const maxWidth = 595; // A4 width in points
-                        const maxHeight = 842; // A4 height in points
-                        
-                        let { width, height } = image;
-                        
-                        // Scale to fit within A4 if necessary
-                        if (width > maxWidth || height > maxHeight) {
-                            const scale = Math.min(maxWidth / width, maxHeight / height);
-                            width *= scale;
-                            height *= scale;
-                        }
+                        // Add page with original image dimensions
+                        const { width, height } = image;
                         
                         const page = batchPdfDoc.addPage([width, height]);
                         page.drawImage(image, {

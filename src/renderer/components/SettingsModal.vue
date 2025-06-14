@@ -1,9 +1,18 @@
 <template>
-  <div v-if="isOpen" class="modal-overlay" @click.self="close">
+  <div
+    v-if="isOpen"
+    class="modal-overlay"
+    @click.self="close"
+  >
     <div class="modal-content settings-modal">
       <div class="modal-header">
         <h2>{{ t('settings.title') }}</h2>
-        <button class="close-btn" @click="close">&times;</button>
+        <button
+          class="close-btn"
+          @click="close"
+        >
+          &times;
+        </button>
       </div>
       
       <div class="modal-body">
@@ -13,36 +22,36 @@
           <div class="setting-item">
             <label>{{ t('settings.download.maxConcurrent') }}</label>
             <input 
+              v-model.number="localConfig.maxConcurrentDownloads" 
               type="number" 
               min="1" 
-              max="20" 
-              v-model.number="localConfig.maxConcurrentDownloads"
+              max="20"
               @change="updateConfig('maxConcurrentDownloads', localConfig.maxConcurrentDownloads)"
-            />
+            >
           </div>
           
           <div class="setting-item">
             <label>{{ t('settings.download.maxRetries') }}</label>
             <input 
+              v-model.number="localConfig.maxRetries" 
               type="number" 
               min="1" 
-              max="50" 
-              v-model.number="localConfig.maxRetries"
+              max="50"
               @change="updateConfig('maxRetries', localConfig.maxRetries)"
-            />
+            >
           </div>
           
           <div class="setting-item">
             <label>{{ t('settings.download.requestTimeout') }}</label>
             <div class="input-with-unit">
               <input 
+                v-model.number="localConfig.requestTimeout" 
                 type="number" 
                 min="5000" 
-                max="120000" 
+                max="120000"
                 step="1000"
-                v-model.number="localConfig.requestTimeout"
                 @change="updateConfig('requestTimeout', localConfig.requestTimeout)"
-              />
+              >
               <span class="unit">ms</span>
             </div>
           </div>
@@ -55,14 +64,14 @@
             <label>{{ t('settings.pdf.quality') }}</label>
             <div class="slider-container">
               <input 
+                v-model.number="localConfig.pdfQuality" 
                 type="range" 
                 min="0.5" 
-                max="1" 
+                max="1"
                 step="0.1"
-                v-model.number="localConfig.pdfQuality"
-                @change="updateConfig('pdfQuality', localConfig.pdfQuality)"
                 class="quality-slider"
-              />
+                @change="updateConfig('pdfQuality', localConfig.pdfQuality)"
+              >
               <span class="slider-value">{{ Math.round(localConfig.pdfQuality * 100) }}%</span>
             </div>
           </div>
@@ -71,13 +80,13 @@
             <label>{{ t('settings.pdf.autoSplitThreshold') }}</label>
             <div class="input-with-unit">
               <input 
+                v-model.number="autoSplitThresholdMB" 
                 type="number" 
                 min="100" 
-                max="2000" 
+                max="2000"
                 step="50"
-                v-model.number="autoSplitThresholdMB"
                 @change="updateAutoSplitThreshold"
-              />
+              >
               <span class="unit">MB</span>
             </div>
           </div>
@@ -92,8 +101,12 @@
               v-model="localConfig.language" 
               @change="updateConfig('language', localConfig.language)"
             >
-              <option value="en">English</option>
-              <option value="ru">Русский</option>
+              <option value="en">
+                English
+              </option>
+              <option value="ru">
+                Русский
+              </option>
             </select>
           </div>
           
@@ -103,19 +116,31 @@
               v-model="localConfig.theme" 
               @change="updateConfig('theme', localConfig.theme)"
             >
-              <option value="system">{{ t('settings.ui.themeSystem') }}</option>
-              <option value="light">{{ t('settings.ui.themeLight') }}</option>
-              <option value="dark">{{ t('settings.ui.themeDark') }}</option>
+              <option value="system">
+                {{ t('settings.ui.themeSystem') }}
+              </option>
+              <option value="light">
+                {{ t('settings.ui.themeLight') }}
+              </option>
+              <option value="dark">
+                {{ t('settings.ui.themeDark') }}
+              </option>
             </select>
           </div>
         </div>
       </div>
       
       <div class="modal-footer">
-        <button class="btn btn-secondary" @click="resetToDefaults">
+        <button
+          class="btn btn-secondary"
+          @click="resetToDefaults"
+        >
           {{ t('settings.resetToDefaults') }}
         </button>
-        <button class="btn btn-primary" @click="close">
+        <button
+          class="btn btn-primary"
+          @click="close"
+        >
           {{ t('common.close') }}
         </button>
       </div>
