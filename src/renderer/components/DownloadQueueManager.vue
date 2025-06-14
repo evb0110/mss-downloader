@@ -545,8 +545,8 @@ https://digi.vatlib.it/..."
     <div class="add-all-test-section">
       <button
         class="add-all-test-btn"
-        @click="addAllTestUrls"
         :disabled="isProcessingUrls"
+        @click="addAllTestUrls"
       >
         Add All (Testing)
       </button>

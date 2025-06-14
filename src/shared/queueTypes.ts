@@ -38,6 +38,7 @@ export interface QueuedManuscript {
         originalDisplayName: string;
         pageRange: { start: number; end: number };
     };
+    estimatedSizeMB?: number; // Estimated size based on actual downloaded data
 }
 
 export interface QueueState {

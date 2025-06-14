@@ -122,7 +122,7 @@ export class EnhancedManuscriptDownloaderService {
      */
     detectLibrary(url: string): string | null {
         if (url.includes('gallica.bnf.fr')) return 'gallica';
-        if (url.includes('e-codices.unifr.ch')) return 'unifr';
+        if (url.includes('e-codices.unifr.ch') || url.includes('e-codices.ch')) return 'unifr';
         if (url.includes('digi.vatlib.it')) return 'vatlib';
         if (url.includes('cecilia.mediatheques.grand-albigeois.fr')) return 'cecilia';
         if (url.includes('arca.irht.cnrs.fr')) return 'irht';
