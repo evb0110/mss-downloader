@@ -199,7 +199,8 @@ async function cleanupTempFiles(): Promise<void> {
       tempDir,
       join(tempDir, 'mss-downloader'),
       join(app.getPath('temp'), 'mss-downloader'),
-      join(app.getPath('downloads'), '.temp')
+      join(app.getPath('downloads'), '.temp'),
+      join(app.getPath('userData'), 'temp-images')
     ];
     
     for (const dir of possibleTempDirs) {
@@ -449,4 +450,23 @@ ipcMain.handle('open-downloads-folder', async () => {
 
 ipcMain.handle('get-downloads-path', () => {
   return app.getPath('downloads');
+});
+
+ipcMain.handle('show-item-in-finder', async (_event, filePath: string) => {
+  if (!filePath) {
+    throw new Error('No file path provided');
+  }
+  
+  try {
+    // Check if the file exists
+    await fs.access(filePath);
+    
+    // Show the file in Finder/Explorer
+    shell.showItemInFolder(filePath);
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to show item in finder:', error);
+    throw new Error(`File not found: ${filePath}`);
+  }
 });

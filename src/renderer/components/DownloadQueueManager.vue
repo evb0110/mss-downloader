@@ -149,6 +149,14 @@ https://digi.vatlib.it/..."
                         Stop Queue
                     </button>
                     <button
+                        v-if="!isQueueProcessing && !isQueuePaused && hasCompletedOrFailedItems"
+                        class="restart-queue-btn"
+                        @click="restartAllCompletedFailed"
+                        title="Restart all completed and failed items"
+                    >
+                        Restart Queue
+                    </button>
+                    <button
                         :class="getButtonClass('clearAll', 'clear-queue-btn')"
                         :disabled="isButtonDisabled('clearAll', queueItems.length === 0 || isProcessingUrls)"
                         title="Delete all items from the queue"
@@ -178,7 +186,7 @@ https://digi.vatlib.it/..."
                 </div>
 
                 <!-- Queue Settings -->
-                <Spoiler title="⚙️ Queue Settings" class="settings-spoiler">
+                <Spoiler title="⚙️ Default Download Settings" class="settings-spoiler">
                     <div class="settings-content">
                         <div class="setting-group">
                             <label class="setting-checkbox">
@@ -190,7 +198,7 @@ https://digi.vatlib.it/..."
                                 <span class="checkbox-label">Enable auto-split for large documents</span>
                             </label>
                             <p class="setting-description">
-                                Automatically split documents larger than the threshold into multiple PDF files
+                                Automatically split documents larger than the threshold into multiple PDF files (applies to new downloads)
                             </p>
                         </div>
 
@@ -232,19 +240,6 @@ https://digi.vatlib.it/..."
                             </div>
                         </div>
 
-                        <div class="setting-group">
-                            <button
-                                :class="getButtonClass('applySettings', 'apply-settings-btn')"
-                                @click="applySettingsToAllQueueItems"
-                                :disabled="isButtonDisabled('applySettings', queueItems.length === 0)"
-                            >
-                                <span v-if="getButtonContent('applySettings', 'Apply to All Queue Items').icon" class="btn-icon-only">{{ getButtonContent('applySettings', 'Apply to All Queue Items').icon }}</span>
-                                <span v-else>{{ getButtonContent('applySettings', 'Apply to All Queue Items').text }}</span>
-                            </button>
-                            <p class="setting-description">
-                                Update all queued items with the current settings
-                            </p>
-                        </div>
                     </div>
                 </Spoiler>
 
@@ -317,7 +312,7 @@ https://digi.vatlib.it/..."
                             </div>
                             <div class="queue-item-controls">
                                 <button
-                                    v-if="(item.status === 'pending' || item.status === 'downloading' || item.status === 'paused') && editingQueueItemId !== item.id"
+                                    v-if="editingQueueItemId !== item.id"
                                     class="edit-btn"
                                     title="Edit download options"
                                     @click="startQueueItemEdit(item)"
@@ -341,6 +336,22 @@ https://digi.vatlib.it/..."
                                     Resume
                                 </button>
                                 <button
+                                    v-if="item.status === 'completed' || item.status === 'failed'"
+                                    class="restart-item-btn"
+                                    title="Restart download with current settings"
+                                    @click="restartQueueItem(item.id)"
+                                >
+                                    Restart
+                                </button>
+                                <button
+                                    v-if="(item.status === 'completed' || item.status === 'failed') && item.outputPath"
+                                    class="show-finder-btn"
+                                    :title="getShowInFinderText()"
+                                    @click="showItemInFinder(item.outputPath)"
+                                >
+                                    {{ getShowInFinderText() }}
+                                </button>
+                                <button
                                     class="remove-btn"
                                     title="Remove from queue"
                                     @click="removeQueueItem(item.id)"
@@ -350,9 +361,9 @@ https://digi.vatlib.it/..."
                             </div>
                         </div>
                         
-                        <!-- Edit form (for pending, downloading, and paused items when editing) -->
+                        <!-- Edit form (when editing) -->
                         <div
-                            v-if="editingQueueItemId === item.id && (item.status === 'pending' || item.status === 'downloading' || item.status === 'paused') && editingQueueItem"
+                            v-if="editingQueueItemId === item.id && editingQueueItem"
                             class="queue-edit-form"
                         >
                             <div class="edit-section">
@@ -364,7 +375,6 @@ https://digi.vatlib.it/..."
                                         v-model.number="editingQueueItem.startPage"
                                         type="number"
                                         min="1"
-                                        :max="item.totalPages"
                                         class="page-input"
                                         @blur="validateQueueEditInputs"
                                     >
@@ -373,7 +383,6 @@ https://digi.vatlib.it/..."
                                         v-model.number="editingQueueItem.endPage"
                                         type="number"
                                         min="1"
-                                        :max="item.totalPages"
                                         class="page-input"
                                         @blur="validateQueueEditInputs"
                                     >
@@ -591,6 +600,7 @@ declare global {
       getQueueState: () => Promise<QueueState>;
       onQueueStateChanged: (callback: (state: QueueState) => void) => () => void;
       cleanupIndexedDBCache: () => Promise<void>;
+      showItemInFinder: (filePath: string) => Promise<boolean>;
     };
   }
 }
@@ -761,6 +771,7 @@ const queueStats = computed(() => {
 });
 
 const hasReadyItems = computed(() => queueItems.value.some((item: QueuedManuscript) => item.status === 'pending'));
+const hasCompletedOrFailedItems = computed(() => queueItems.value.some((item: QueuedManuscript) => item.status === 'completed' || item.status === 'failed'));
 // Track if the user has manually started queue in this session
 const hasUserStartedQueue = ref(false);
 
@@ -796,16 +807,18 @@ const hasEditQueueValidationErrors = computed(() => {
     const currentItem = queueItems.value.find((item: QueuedManuscript) => item.id === editingQueueItemId.value);
     if (!currentItem) return true;
     
-    if (editingQueueItem.value.startPage < 1 || editingQueueItem.value.startPage > currentItem.totalPages) return true;
-    if (editingQueueItem.value.endPage < 1 || editingQueueItem.value.endPage > currentItem.totalPages) return true;
+    if (editingQueueItem.value.startPage < 1) return true;
+    if (editingQueueItem.value.endPage < 1) return true;
     if (editingQueueItem.value.startPage > editingQueueItem.value.endPage) return true;
     
     // Check for duplicates with other items (excluding the current item)
+    // Only flag as duplicate if it's the exact same page range for the same URL
     return queueItems.value.some((item: QueuedManuscript) =>
         item.id !== editingQueueItemId.value &&
         item.url === currentItem.url &&
         (item.downloadOptions?.startPage || 1) === editingQueueItem.value!.startPage &&
-        (item.downloadOptions?.endPage || item.totalPages) === editingQueueItem.value!.endPage,
+        (item.downloadOptions?.endPage || item.totalPages) === editingQueueItem.value!.endPage &&
+        ['pending', 'downloading', 'completed'].includes(item.status) // Only consider active/successful items as duplicates
     );
 });
 
@@ -1163,6 +1176,26 @@ async function stopQueue() {
     hasUserStartedQueue.value = false; // Reset when queue is stopped manually
 }
 
+async function restartAllCompletedFailed() {
+    const itemsToRestart = queueItems.value.filter((item: QueuedManuscript) => 
+        item.status === 'completed' || item.status === 'failed'
+    );
+    
+    if (itemsToRestart.length === 0) return;
+    
+    // Reset all completed/failed items to pending
+    for (const item of itemsToRestart) {
+        await window.electronAPI.updateQueueItem(item.id, {
+            status: 'pending' as TStatus,
+            progress: undefined,
+            error: undefined
+        });
+    }
+    
+    // Start the queue
+    await startQueue();
+}
+
 function clearAllQueue() {
     if (queueItems.value.length === 0) return;
     
@@ -1216,9 +1249,7 @@ function validateQueueEditInputs() {
     if (!currentItem) return;
     
     if (editingQueueItem.value.startPage < 1) editingQueueItem.value.startPage = 1;
-    if (editingQueueItem.value.startPage > currentItem.totalPages) editingQueueItem.value.startPage = currentItem.totalPages;
     if (editingQueueItem.value.endPage < 1) editingQueueItem.value.endPage = 1;
-    if (editingQueueItem.value.endPage > currentItem.totalPages) editingQueueItem.value.endPage = currentItem.totalPages;
     if (editingQueueItem.value.startPage > editingQueueItem.value.endPage) editingQueueItem.value.endPage = editingQueueItem.value.startPage;
 }
 
@@ -1256,6 +1287,20 @@ async function resumeQueueItem(id: string) {
     await window.electronAPI.resumeQueueItem(id);
 }
 
+async function restartQueueItem(id: string) {
+    // Reset the item status to pending so it can be downloaded again
+    await window.electronAPI.updateQueueItem(id, {
+        status: 'pending' as TStatus,
+        progress: undefined,
+        error: undefined
+    });
+    
+    // Start the queue if it's not already processing
+    if (!isQueueProcessing.value) {
+        await startQueue();
+    }
+}
+
 function removeQueueItem(id: string) {
     showConfirm(
         'Remove Manuscript?',
@@ -1266,6 +1311,26 @@ function removeQueueItem(id: string) {
         'Remove',
         'Cancel',
     );
+}
+
+async function showItemInFinder(filePath: string) {
+    try {
+        await window.electronAPI.showItemInFinder(filePath);
+    } catch (error: any) {
+        showAlert('Error', `Failed to show file: ${error.message}`);
+    }
+}
+
+function getShowInFinderText(): string {
+    // Detect platform - on macOS it's "Show in Finder", on Windows "Show in Explorer", on Linux "Show in File Manager"
+    const platform = navigator.platform.toLowerCase();
+    if (platform.includes('mac')) {
+        return 'Show in Finder';
+    } else if (platform.includes('win')) {
+        return 'Show in Explorer';
+    } else {
+        return 'Show in File Manager';
+    }
 }
 
 
@@ -1343,42 +1408,6 @@ function updateQueueSettings() {
     // Settings are updated in real-time via the reactive refs
 }
 
-async function applySettingsToAllQueueItems() {
-    try {
-        const confirmAction = async () => {
-            await performButtonAction('applySettings', async () => {
-                // Update each queue item with new settings
-                for (const item of queueItems.value) {
-                    const updates = {
-                        downloadOptions: {
-                            ...item.downloadOptions,
-                            concurrentDownloads: queueSettings.value.maxConcurrentDownloads,
-                        }
-                    };
-                    
-                    try {
-                        await window.electronAPI.updateQueueItem(item.id, updates);
-                    } catch (error: any) {
-                        console.error(`Failed to update item ${item.id}:`, error);
-                    }
-                }
-                
-                await refreshQueueState();
-            });
-        };
-        
-        showConfirm(
-            'Apply Settings to All Items?',
-            `This will update all ${queueItems.value.length} items in the queue with the current settings (${queueSettings.value.maxConcurrentDownloads} concurrent downloads, auto-split: ${queueSettings.value.autoSplitEnabled ? 'enabled' : 'disabled'}).`,
-            confirmAction,
-            'Apply Settings',
-            'Cancel'
-        );
-    } catch (error: any) {
-        console.error('Failed to apply settings to queue items:', error);
-        showAlert('Error', `Failed to apply settings: ${error.message}`);
-    }
-}
 
 function handleTextareaKeydown(event: KeyboardEvent) {
     // Check for Ctrl+Enter (Windows/Linux) or Cmd+Enter (Mac)
@@ -1698,6 +1727,23 @@ async function refreshQueueState() {
 
 .stop-btn:hover {
     background: #c82333;
+}
+
+.restart-queue-btn {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+    transition: all 0.2s ease;
+}
+
+.restart-queue-btn:hover {
+    background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+    box-shadow: 0 3px 12px rgba(40, 167, 69, 0.25);
 }
 
 .clear-queue-btn {
@@ -2051,6 +2097,46 @@ async function refreshQueueState() {
     background: #138496;
 }
 
+.restart-item-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.restart-item-btn:hover {
+    background: #218838;
+}
+
+.show-finder-btn {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.show-finder-btn:hover {
+    background: #138496;
+}
+
 .remove-btn {
     background: #dc3545;
     color: white;
@@ -2242,7 +2328,7 @@ async function refreshQueueState() {
     margin: 0 auto;
     padding: min(2rem, 3vw);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    max-height: calc(100svh - 80px); /* 100svh minus navbar height */
+    min-height: calc(100vh - 80px); /* Ensure minimum height but allow expansion */
     box-sizing: border-box;
     display: flex;
     flex-direction: column;

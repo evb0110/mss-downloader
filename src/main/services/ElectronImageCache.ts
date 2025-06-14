@@ -160,11 +160,24 @@ export class ElectronImageCache {
 
   async clearCache(): Promise<void> {
     try {
+      // Clear main cache files
       const files = await fs.readdir(this.cacheDir);
       for (const file of files) {
         if (file !== 'metadata.json') {
           await fs.unlink(join(this.cacheDir, file));
         }
+      }
+      
+      // Clear temporary images folder
+      const tempImagesDir = join(app.getPath('userData'), 'temp-images');
+      try {
+        const tempFiles = await fs.readdir(tempImagesDir);
+        for (const file of tempFiles) {
+          await fs.unlink(join(tempImagesDir, file));
+        }
+        console.log('Temporary images cleared');
+      } catch (error) {
+        // Temp folder might not exist, ignore
       }
       
       this.metadata.clear();

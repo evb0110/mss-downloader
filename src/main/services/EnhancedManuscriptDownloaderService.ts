@@ -463,7 +463,63 @@ export class EnhancedManuscriptDownloaderService {
         }
         const manifestId = `${collection}-${manuscript}`;
         const manifestUrl = `https://www.e-codices.unifr.ch/metadata/iiif/${manifestId}/manifest.json`;
-        return this.loadIIIFManifest(manifestUrl);
+        
+        // Add proper headers for e-codices requests to avoid HTTP 400 errors
+        const response = await this.fetchDirect(manifestUrl, {
+            headers: {
+                'Referer': url,
+                'Accept': 'application/json,application/ld+json,*/*'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to load IIIF manifest: HTTP ${response.status}`);
+        }
+        
+        const responseText = await response.text();
+        let manifest;
+        try {
+            manifest = JSON.parse(responseText);
+        } catch (error) {
+            throw new Error(`Invalid JSON response from manifest URL: ${manifestUrl}. Response starts with: ${responseText.substring(0, 100)}`);
+        }
+        
+        const pageLinks: string[] = [];
+        const sequences = manifest.sequences || [manifest];
+        
+        for (const sequence of sequences) {
+            const canvases = sequence.canvases || sequence.items || [];
+            
+            for (const canvas of canvases) {
+                const images = canvas.images || canvas.items || [];
+                
+                for (const image of images) {
+                    let imageUrl;
+                    
+                    if (image.resource) {
+                        imageUrl = image.resource['@id'] || image.resource.id;
+                    } else if (image.body) {
+                        imageUrl = image.body.id;
+                    }
+                    
+                    if (imageUrl) {
+                        pageLinks.push(imageUrl);
+                    }
+                }
+            }
+        }
+        
+        if (pageLinks.length === 0) {
+            throw new Error('No page links found in IIIF manifest');
+        }
+        
+        return {
+            pageLinks,
+            totalPages: pageLinks.length,
+            displayName: `UNIFR_${collection}_${manuscript}`,
+            library: 'unifr',
+            originalUrl: url
+        };
     }
 
     async loadCeciliaManifest(_url: string): Promise<ManuscriptManifest> {
@@ -653,11 +709,11 @@ export class EnhancedManuscriptDownloaderService {
             const manifest = await this.loadManifest(url);
             onManifestLoaded(manifest);
             
-            // Get downloads directory - use user's Downloads folder
-            const downloadsDir = app.getPath('downloads');
+            // Get internal cache directory for temporary images
+            const tempImagesDir = path.join(app.getPath('userData'), 'temp-images');
             
-            // Ensure downloads directory exists
-            await fs.mkdir(downloadsDir, { recursive: true });
+            // Ensure temporary images directory exists
+            await fs.mkdir(tempImagesDir, { recursive: true });
             
             // Generate filename using filesystem-safe sanitization
             const sanitizedName = manifest.displayName
@@ -676,6 +732,10 @@ export class EnhancedManuscriptDownloaderService {
             
             let filename: string;
             let filepath: string;
+            
+            // Final PDF goes to Downloads folder
+            const downloadsDir = app.getPath('downloads');
+            await fs.mkdir(downloadsDir, { recursive: true });
             
             if (shouldSplit) {
                 // For split PDFs, we'll create the first part initially
@@ -728,7 +788,7 @@ export class EnhancedManuscriptDownloaderService {
             const downloadPage = async (pageIndex: number) => {
                 const imageUrl = manifest.pageLinks[pageIndex];
                 const imgFile = `${sanitizedName}_page_${pageIndex + 1}.jpg`;
-                const imgPath = path.join(downloadsDir, imgFile);
+                const imgPath = path.join(tempImagesDir, imgFile);
                 
                 try {
                     // Skip if already downloaded
