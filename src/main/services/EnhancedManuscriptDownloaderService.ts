@@ -13,6 +13,10 @@ export class EnhancedManuscriptDownloaderService {
 
     constructor() {
         this.manifestCache = new ManifestCache();
+        // Clear potentially problematic cached manifests on startup
+        this.manifestCache.clearProblematicUrls().catch(error => {
+            console.warn('Failed to clear problematic cache entries:', error.message);
+        });
     }
 
     static readonly SUPPORTED_LIBRARIES: LibraryInfo[] = [
@@ -419,55 +423,63 @@ export class EnhancedManuscriptDownloaderService {
         
         // Process each canvas to extract image URLs
         for (const canvas of canvases) {
-            const images = canvas.images || canvas.items || [];
-            console.log(`🔍 Found ${images.length} images in canvas ${canvas.id || 'unknown'}`);
+            let foundImages = false;
             
-            for (const image of images) {
-                let imageUrl;
+            // Check if this looks like IIIF v2 (has canvas.images)
+            if (canvas.images && Array.isArray(canvas.images)) {
+                console.log(`🔍 IIIF v2: Found ${canvas.images.length} images in canvas ${canvas.id || 'unknown'}`);
                 
-                // Handle different IIIF image structure formats
-                if (image.resource) {
+                for (const image of canvas.images) {
+                    let imageUrl;
+                    
                     // IIIF v2 format
-                    imageUrl = image.resource['@id'] || image.resource.id;
-                } else if (image.body) {
-                    // IIIF v3 format
-                    imageUrl = image.body.id;
-                } else if (image.id) {
-                    // Direct image reference
-                    imageUrl = image.id;
-                } else if (image['@id']) {
-                    // Legacy format
-                    imageUrl = image['@id'];
-                }
-                
-                if (imageUrl) {
-                    const originalUrl = imageUrl;
-                    // Convert to full resolution if IIIF, but be careful with BL
-                    if (imageUrl.includes('/full/') && !imageUrl.includes('bl.digirati.io')) {
-                        imageUrl = imageUrl.replace(/\/full\/[^\/]+\//, '/full/max/');
+                    if (image.resource) {
+                        imageUrl = image.resource['@id'] || image.resource.id;
+                    } else if (image['@id']) {
+                        imageUrl = image['@id'];
                     }
-                    pageLinks.push(imageUrl);
-                    console.log(`🔍 Added image URL (original: ${originalUrl.substring(0, 100)}...) -> (final: ${imageUrl.substring(0, 100)}...)`);
+                    
+                    if (imageUrl) {
+                        const originalUrl = imageUrl;
+                        // Convert to full resolution for all IIIF libraries
+                        if (imageUrl.includes('/full/')) {
+                            imageUrl = imageUrl.replace(/\/full\/[^\/]+\//, '/full/max/');
+                        }
+                        pageLinks.push(imageUrl);
+                        foundImages = true;
+                        console.log(`🔍 Added IIIF v2 image URL (original: ${originalUrl.substring(0, 100)}...) -> (final: ${imageUrl.substring(0, 100)}...)`);
+                    }
                 }
             }
             
-            // If no images found in canvas.images/canvas.items, try to extract from canvas itself
-            if (!pageLinks.length && canvas.items) {
+            // Check if this looks like IIIF v3 (has canvas.items with AnnotationPages)
+            if (!foundImages && canvas.items && Array.isArray(canvas.items)) {
+                console.log(`🔍 IIIF v3: Found ${canvas.items.length} annotation pages in canvas ${canvas.id || 'unknown'}`);
+                
                 for (const item of canvas.items) {
-                    if (item.type === 'AnnotationPage' && item.items) {
+                    if (item.type === 'AnnotationPage' && item.items && Array.isArray(item.items)) {
+                        console.log(`🔍 IIIF v3: Found ${item.items.length} annotations in annotation page`);
+                        
                         for (const annotation of item.items) {
                             if (annotation.body && annotation.body.id) {
                                 let imageUrl = annotation.body.id;
                                 const originalUrl = imageUrl;
-                                if (imageUrl.includes('/full/') && !imageUrl.includes('bl.digirati.io')) {
+                                
+                                // Convert to full resolution for all IIIF libraries
+                                if (imageUrl.includes('/full/')) {
                                     imageUrl = imageUrl.replace(/\/full\/[^\/]+\//, '/full/max/');
                                 }
                                 pageLinks.push(imageUrl);
-                                console.log(`🔍 Added annotation image URL (original: ${originalUrl.substring(0, 100)}...) -> (final: ${imageUrl.substring(0, 100)}...)`);
+                                foundImages = true;
+                                console.log(`🔍 Added IIIF v3 annotation image URL (original: ${originalUrl.substring(0, 100)}...) -> (final: ${imageUrl.substring(0, 100)}...)`);
                             }
                         }
                     }
                 }
+            }
+            
+            if (!foundImages) {
+                console.log(`⚠️  No images found in canvas ${canvas.id || 'unknown'}`);
             }
         }
         

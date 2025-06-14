@@ -91,8 +91,9 @@ const api = {
     return () => ipcRenderer.removeAllListeners('queue-state-changed');
   },
 
-  // No direct IndexedDB cleanup from renderer, will be part of main process/queue logic if needed
+  // Cache management
   cleanupIndexedDBCache: () => ipcRenderer.invoke('cleanup-indexeddb-cache'),
+  clearManifestCache: () => ipcRenderer.invoke('clear-manifest-cache'),
 
   // Downloads folder management
   openDownloadsFolder: () => ipcRenderer.invoke('open-downloads-folder'),

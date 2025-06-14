@@ -439,6 +439,19 @@ ipcMain.handle('cleanup-indexeddb-cache', async () => {
   return imageCache.clearCache();
 });
 
+ipcMain.handle('clear-manifest-cache', async () => {
+  if (!enhancedManuscriptDownloader) {
+    throw new Error('Enhanced manuscript downloader not initialized');
+  }
+  
+  try {
+    await (enhancedManuscriptDownloader as any).manifestCache.clear();
+    return { success: true, message: 'Manifest cache cleared successfully' };
+  } catch (error: any) {
+    throw new Error(`Failed to clear manifest cache: ${error.message}`);
+  }
+});
+
 ipcMain.handle('open-downloads-folder', async () => {
   const downloadsDir = app.getPath('downloads');
   

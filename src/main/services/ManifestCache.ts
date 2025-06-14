@@ -6,9 +6,10 @@ import { configService } from './ConfigService.js';
 export class ManifestCache {
     private cacheDir: string;
     private cacheFile: string;
-    private cache = new Map<string, { manifest: any; timestamp: number }>();
+    private cache = new Map<string, { manifest: any; timestamp: number; version: number }>();
     private maxAge = 24 * 60 * 60 * 1000; // 24 hours
     private initialized = false;
+    private static readonly CACHE_VERSION = 4; // Increment when URL processing logic changes
 
     constructor() {
         const userDataPath = app.getPath('userData');
@@ -22,19 +23,37 @@ export class ManifestCache {
         try {
             await fs.mkdir(this.cacheDir, { recursive: true });
             
+            let shouldClearCache = false;
+            
             try {
                 const data = await fs.readFile(this.cacheFile, 'utf-8');
                 const cached = JSON.parse(data);
                 
-                // Convert back to Map and filter expired entries
-                const now = Date.now();
-                for (const [key, value] of Object.entries(cached) as [string, any][]) {
-                    if (now - value.timestamp < this.maxAge) {
-                        this.cache.set(key, value);
+                // Check cache version and auto-clear if outdated
+                const cacheVersion = cached._cacheVersion || 1;
+                if (cacheVersion < ManifestCache.CACHE_VERSION) {
+                    console.log(`📋 Cache version outdated (${cacheVersion} < ${ManifestCache.CACHE_VERSION}), clearing cache`);
+                    shouldClearCache = true;
+                } else {
+                    // Convert back to Map and filter expired entries
+                    const now = Date.now();
+                    for (const [key, value] of Object.entries(cached) as [string, any][]) {
+                        if (key !== '_cacheVersion' && value.timestamp && now - value.timestamp < this.maxAge) {
+                            // Ensure version compatibility for individual entries
+                            const entryVersion = value.version || 1;
+                            if (entryVersion >= ManifestCache.CACHE_VERSION) {
+                                this.cache.set(key, value);
+                            }
+                        }
                     }
                 }
             } catch {
                 // Cache file doesn't exist or is invalid
+                shouldClearCache = true;
+            }
+            
+            if (shouldClearCache) {
+                await this.clear();
             }
         } catch (error: any) {
             console.warn('Failed to initialize manifest cache:', error.message);
@@ -63,6 +82,7 @@ export class ManifestCache {
         this.cache.set(key, {
             manifest,
             timestamp: Date.now(),
+            version: ManifestCache.CACHE_VERSION,
         });
         
         await this.save();
@@ -70,7 +90,9 @@ export class ManifestCache {
 
     private async save(): Promise<void> {
         try {
-            const cacheObject = Object.fromEntries(this.cache);
+            const cacheObject: any = Object.fromEntries(this.cache);
+            // Add cache version to the saved data
+            cacheObject._cacheVersion = ManifestCache.CACHE_VERSION;
             await fs.writeFile(this.cacheFile, JSON.stringify(cacheObject, null, 2));
         } catch (error: any) {
             console.warn('Failed to save manifest cache:', error.message);
@@ -86,8 +108,44 @@ export class ManifestCache {
         this.cache.clear();
         try {
             await fs.unlink(this.cacheFile);
+            console.log('📋 Manifest cache cleared');
         } catch {
             // File doesn't exist, that's fine
+        }
+    }
+
+    /**
+     * Clear cache entries for specific domains (e.g., when URL processing changes)
+     */
+    async clearDomain(domain: string): Promise<void> {
+        await this.init();
+        
+        const keysToDelete: string[] = [];
+        for (const [key, value] of this.cache.entries()) {
+            if (value.manifest?.originalUrl?.includes(domain)) {
+                keysToDelete.push(key);
+            }
+        }
+        
+        for (const key of keysToDelete) {
+            this.cache.delete(key);
+        }
+        
+        if (keysToDelete.length > 0) {
+            await this.save();
+            console.log(`📋 Cleared ${keysToDelete.length} cache entries for domain: ${domain}`);
+        }
+    }
+
+    /**
+     * Clear cache for URLs that might have problematic image URLs
+     */
+    async clearProblematicUrls(): Promise<void> {
+        await this.init();
+        
+        const problematicDomains = ['bl.digirati.io', 'iiif.bl.uk'];
+        for (const domain of problematicDomains) {
+            await this.clearDomain(domain);
         }
     }
 }
