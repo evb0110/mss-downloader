@@ -30,10 +30,10 @@ export default typescriptEslint.config(
   },
   {
     ignores: [
-      'dist/',
-      'release/',
-      'node_modules/',
-      'workers-dist/',
+      'dist/**',
+      'release/**',
+      'node_modules/**',
+      'workers-dist/**',
       '*.config.js',
       '*.config.ts'
     ]
@@ -44,7 +44,9 @@ export default typescriptEslint.config(
       '@typescript-eslint/no-explicit-any': 'warn',
       'vue/multi-word-component-names': 'off',
       'vue/no-unused-vars': 'error',
-      'no-console': 'warn'
+      'no-console': 'off',
+      'no-control-regex': 'off',
+      'no-undef': 'off'
     }
   }
 );

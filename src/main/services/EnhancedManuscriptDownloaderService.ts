@@ -164,12 +164,9 @@ export class EnhancedManuscriptDownloaderService {
      * Load manifest for different library types
      */
     async loadManifest(originalUrl: string): Promise<ManuscriptManifest> {
-        console.log(`Loading manifest for: ${originalUrl}`);
-        
         // Check cache first
         const cachedManifest = await this.manifestCache.get(originalUrl);
         if (cachedManifest) {
-            console.log(`✓ Using cached manifest for ${originalUrl}`);
             return cachedManifest;
         }
         
@@ -225,7 +222,6 @@ export class EnhancedManuscriptDownloaderService {
             // Cache the manifest
             await this.manifestCache.set(originalUrl, manifest);
             
-            console.log(`✓ Loaded ${manifest.totalPages} pages from ${library.toUpperCase()}`);
             return manifest;
             
         } catch (error: any) {
@@ -239,7 +235,7 @@ export class EnhancedManuscriptDownloaderService {
      */
     async loadGallicaManifest(gallicaUrl: string): Promise<ManuscriptManifest> {
         try {
-            const arkMatch = gallicaUrl.match(/ark:\/[^\/]+\/[^\/?\s]+/);
+            const arkMatch = gallicaUrl.match(/ark:\/[^/]+\/[^/?\s]+/);
             if (!arkMatch) {
                 throw new Error('Invalid Gallica URL format');
             }
@@ -248,7 +244,6 @@ export class EnhancedManuscriptDownloaderService {
             
             // Try IIIF manifest first (modern approach)
             const manifestUrl = `https://gallica.bnf.fr/iiif/${ark}/manifest.json`;
-            console.log(`[Gallica] Trying IIIF manifest: ${manifestUrl}`);
             
             try {
                 const manifestResponse = await this.fetchDirect(manifestUrl);
@@ -278,8 +273,6 @@ export class EnhancedManuscriptDownloaderService {
                     }
                     
                     if (pageLinks.length > 0) {
-                        console.log(`[Gallica] IIIF manifest loaded: ${pageLinks.length} pages`);
-                        
                         const gallicaManifest = {
                             pageLinks,
                             totalPages: pageLinks.length,
@@ -294,12 +287,11 @@ export class EnhancedManuscriptDownloaderService {
                         return gallicaManifest;
                     }
                 }
-            } catch (e) {
-                console.log(`[Gallica] IIIF manifest failed: ${e}`);
+            } catch {
+                // IIIF manifest failed, try fallback
             }
             
             // Fallback: Direct IIIF image testing approach
-            console.log(`[Gallica] Trying direct IIIF image approach`);
             
             // Test if we can access IIIF images directly and find the page count
             let totalPages = 0;
@@ -321,7 +313,7 @@ export class EnhancedManuscriptDownloaderService {
                     } else {
                         high = mid - 1;
                     }
-                } catch (e) {
+                } catch {
                     high = mid - 1;
                 }
             }
@@ -340,7 +332,7 @@ export class EnhancedManuscriptDownloaderService {
                         } else {
                             break;
                         }
-                    } catch (e) {
+                    } catch {
                         break;
                     }
                 }
@@ -357,7 +349,6 @@ export class EnhancedManuscriptDownloaderService {
                 pageLinks.push(imageUrl);
             }
             
-            console.log(`[Gallica] Direct IIIF approach found ${totalPages} pages`);
             
             const gallicaManifest = {
                 pageLinks,
@@ -382,7 +373,6 @@ export class EnhancedManuscriptDownloaderService {
      * Load IIIF manifest (for Vatican, Durham, UGent, British Library)
      */
     async loadIIIFManifest(manifestUrl: string): Promise<ManuscriptManifest> {
-        console.log(`🔍 Loading IIIF manifest from: ${manifestUrl}`);
         const response = await this.fetchDirect(manifestUrl);
         if (!response.ok) {
             throw new Error(`Failed to load IIIF manifest: HTTP ${response.status}`);
@@ -392,11 +382,10 @@ export class EnhancedManuscriptDownloaderService {
         let manifest;
         try {
             manifest = JSON.parse(responseText);
-        } catch (error) {
+        } catch {
             throw new Error(`Invalid JSON response from manifest URL: ${manifestUrl}. Response starts with: ${responseText.substring(0, 100)}`);
         }
         
-        console.log(`🔍 IIIF manifest structure: sequences=${manifest.sequences ? manifest.sequences.length : 'none'}, items=${manifest.items ? manifest.items.length : 'none'}`);
         
         const pageLinks: string[] = [];
         
@@ -406,19 +395,15 @@ export class EnhancedManuscriptDownloaderService {
         if (manifest.items && Array.isArray(manifest.items)) {
             // IIIF v3: canvases are directly in manifest.items
             canvases = manifest.items;
-            console.log(`🔍 IIIF v3: Found ${canvases.length} canvases in manifest.items`);
         } else if (manifest.sequences && Array.isArray(manifest.sequences)) {
             // IIIF v2: canvases are in sequences
-            console.log(`🔍 IIIF v2: Processing ${manifest.sequences.length} sequences`);
             for (const sequence of manifest.sequences) {
                 const sequenceCanvases = sequence.canvases || [];
                 canvases.push(...sequenceCanvases);
-                console.log(`🔍 Found ${sequenceCanvases.length} canvases in sequence`);
             }
         } else {
             // Fallback: try to find canvases in the manifest itself
             canvases = manifest.canvases || [];
-            console.log(`🔍 Fallback: Found ${canvases.length} canvases in manifest.canvases`);
         }
         
         // Process each canvas to extract image URLs
@@ -427,8 +412,6 @@ export class EnhancedManuscriptDownloaderService {
             
             // Check if this looks like IIIF v2 (has canvas.images)
             if (canvas.images && Array.isArray(canvas.images)) {
-                console.log(`🔍 IIIF v2: Found ${canvas.images.length} images in canvas ${canvas.id || 'unknown'}`);
-                
                 for (const image of canvas.images) {
                     let imageUrl;
                     
@@ -440,47 +423,38 @@ export class EnhancedManuscriptDownloaderService {
                     }
                     
                     if (imageUrl) {
-                        const originalUrl = imageUrl;
+                        // const originalUrl = imageUrl;
                         // Convert to full resolution for all IIIF libraries
                         if (imageUrl.includes('/full/')) {
-                            imageUrl = imageUrl.replace(/\/full\/[^\/]+\//, '/full/max/');
+                            imageUrl = imageUrl.replace(/\/full\/[^/]+\//, '/full/max/');
                         }
                         pageLinks.push(imageUrl);
                         foundImages = true;
-                        console.log(`🔍 Added IIIF v2 image URL (original: ${originalUrl.substring(0, 100)}...) -> (final: ${imageUrl.substring(0, 100)}...)`);
                     }
                 }
             }
             
             // Check if this looks like IIIF v3 (has canvas.items with AnnotationPages)
             if (!foundImages && canvas.items && Array.isArray(canvas.items)) {
-                console.log(`🔍 IIIF v3: Found ${canvas.items.length} annotation pages in canvas ${canvas.id || 'unknown'}`);
-                
                 for (const item of canvas.items) {
                     if (item.type === 'AnnotationPage' && item.items && Array.isArray(item.items)) {
-                        console.log(`🔍 IIIF v3: Found ${item.items.length} annotations in annotation page`);
-                        
                         for (const annotation of item.items) {
                             if (annotation.body && annotation.body.id) {
                                 let imageUrl = annotation.body.id;
-                                const originalUrl = imageUrl;
+                                // const originalUrl = imageUrl;
                                 
                                 // Convert to full resolution for all IIIF libraries
                                 if (imageUrl.includes('/full/')) {
-                                    imageUrl = imageUrl.replace(/\/full\/[^\/]+\//, '/full/max/');
+                                    imageUrl = imageUrl.replace(/\/full\/[^/]+\//, '/full/max/');
                                 }
                                 pageLinks.push(imageUrl);
                                 foundImages = true;
-                                console.log(`🔍 Added IIIF v3 annotation image URL (original: ${originalUrl.substring(0, 100)}...) -> (final: ${imageUrl.substring(0, 100)}...)`);
                             }
                         }
                     }
                 }
             }
             
-            if (!foundImages) {
-                console.log(`⚠️  No images found in canvas ${canvas.id || 'unknown'}`);
-            }
         }
         
         // Extract display name from IIIF manifest
@@ -519,7 +493,6 @@ export class EnhancedManuscriptDownloaderService {
             }
         }
         
-        console.log(`🔍 IIIF manifest loaded: ${pageLinks.length} pages found`);
         
         return {
             pageLinks,
@@ -552,7 +525,6 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             const manifestUrl = `https://digi.vatlib.it/iiif/${manuscriptName}/manifest.json`;
-            console.log(`[Vatican] Loading manifest: ${manifestUrl}`);
             
             const response = await this.fetchDirect(manifestUrl);
             
@@ -592,7 +564,6 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('No pages found in manifest');
             }
             
-            console.log(`[Vatican] Successfully loaded ${pageLinks.length} pages`);
             
             return {
                 pageLinks,
@@ -639,11 +610,9 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             const manuscriptId = decodeURIComponent(manuscriptMatch[1]);
-            console.log(`🔍 UGent manuscript ID extracted: ${manuscriptId}`);
             
             // Construct the IIIF v3 manifest URL based on the pattern from the reference implementation
             const manifestUrl = `https://adore.ugent.be/IIIF/v3/manifests/${manuscriptId}`;
-            console.log(`🔍 UGent manifest URL constructed: ${manifestUrl}`);
             
             return this.loadIIIFManifest(manifestUrl);
         } catch (error: any) {
@@ -668,7 +637,7 @@ export class EnhancedManuscriptDownloaderService {
                 manifestUrl = url;
             } else {
                 // Fallback: try to extract ARK and use API
-                const arkMatch = url.match(/ark:\/[^\/]+\/[^\/?\s]+/);
+                const arkMatch = url.match(/ark:\/[^/]+\/[^/?\s]+/);
                 if (arkMatch) {
                     manifestUrl = `https://api.bl.uk/metadata/iiif/${arkMatch[0]}/manifest.json`;
                 } else {
@@ -708,7 +677,7 @@ export class EnhancedManuscriptDownloaderService {
         let manifest;
         try {
             manifest = JSON.parse(responseText);
-        } catch (error) {
+        } catch {
             throw new Error(`Invalid JSON response from manifest URL: ${manifestUrl}. Response starts with: ${responseText.substring(0, 100)}`);
         }
         
@@ -776,7 +745,6 @@ export class EnhancedManuscriptDownloaderService {
                     manifestUrl = 'https://cecilia.mediatheques.grand-albigeois.fr/api/viewer/lgiiif?url=/srv/www/limbgallery/medias/18/d6/50/b5/18d650b5-14e5-4b48-88b1-6fa9b8982c7d/';
                 } else {
                     // For unknown documents, try to extract manifest URL from viewer page HTML
-                    console.log(`[Cecilia] Trying to parse viewer page for document ${documentId}`);
                     const cleanViewerUrl = `https://cecilia.mediatheques.grand-albigeois.fr/viewer/${documentId}/`;
                     const viewerResp = await this.fetchDirect(cleanViewerUrl);
                     if (!viewerResp.ok) {
@@ -795,7 +763,6 @@ export class EnhancedManuscriptDownloaderService {
                 }
             }
             
-            console.log(`[Cecilia] Using manifest URL: ${manifestUrl}`);
             
             // Load the IIIF-style manifest from Cecilia
             const response = await this.fetchDirect(manifestUrl);
@@ -807,7 +774,7 @@ export class EnhancedManuscriptDownloaderService {
             let manifestData;
             try {
                 manifestData = JSON.parse(responseText);
-            } catch (error) {
+            } catch {
                 throw new Error(`Invalid JSON response from Cecilia manifest URL: ${manifestUrl}. Response starts with: ${responseText.substring(0, 100)}`);
             }
             
@@ -848,7 +815,7 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     async loadIrhtManifest(url: string): Promise<ManuscriptManifest> {
-        const arkMatch = url.match(/ark:\/(\d+)\/([^\/?]+)/);
+        const arkMatch = url.match(/ark:\/(\d+)\/([^/?]+)/);
         if (!arkMatch) {
             throw new Error('Invalid IRHT URL format - could not extract ARK ID');
         }
@@ -877,7 +844,7 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     async loadDijonManifest(url: string): Promise<ManuscriptManifest> {
-        const msMatch = url.match(/img-viewer\/([^\/?]+)/);
+        const msMatch = url.match(/img-viewer\/([^/?]+)/);
         if (!msMatch) {
             throw new Error('Invalid Dijon URL format - could not extract manuscript ID');
         }
@@ -930,7 +897,7 @@ export class EnhancedManuscriptDownloaderService {
             }
             const html = await viewerResp.text();
             // Try lgiiif URL pattern
-            const lgiiifMatch = html.match(/lgiiif\?url=([^&'\"]+)/);
+            const lgiiifMatch = html.match(/lgiiif\?url=([^&'"]+)/);
             if (lgiiifMatch) {
                 manifestUrl = `https://bibliotheque-numerique.ville-laon.fr/api/viewer/lgiiif?url=${lgiiifMatch[1]}`;
             } else {
@@ -969,7 +936,7 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     async loadSharedCanvasManifest(url: string): Promise<ManuscriptManifest> {
-        const match = url.match(/\/viewer\/mirador\/([^\/?&]+)/);
+        const match = url.match(/\/viewer\/mirador\/([^/?&]+)/);
         if (!match) {
             throw new Error('Invalid SharedCanvas URL format');
         }
@@ -1000,8 +967,6 @@ export class EnhancedManuscriptDownloaderService {
             const maxRetries = configService.get('maxRetries');
             if (attempt < maxRetries) {
                 const delay = this.calculateRetryDelay(attempt);
-                console.log(`  Retry ${attempt + 1}/${maxRetries} in ${delay}ms: ${error.message}`);
-                console.log(`  URL: ${url}`);
                 
                 await this.sleep(delay);
                 return this.downloadImageWithRetries(url, attempt + 1);
@@ -1025,8 +990,6 @@ export class EnhancedManuscriptDownloaderService {
         } = options;
 
         try {
-            console.log(`🔍 Starting download for: ${url}`);
-            
             // Load manifest
             const manifest = await this.loadManifest(url);
             onManifestLoaded(manifest);
@@ -1074,7 +1037,6 @@ export class EnhancedManuscriptDownloaderService {
             if (skipExisting) {
                 try {
                     await fs.access(filepath);
-                    console.log(`📁 File already exists: ${filename}`);
                     return { success: true, filepath, skipped: true };
                 } catch {
                     // File doesn't exist, continue with download
@@ -1083,7 +1045,6 @@ export class EnhancedManuscriptDownloaderService {
             
             // Page range already calculated above for filename generation
             
-            console.log(`📥 Downloading and saving pages ${actualStartPage}-${actualEndPage} (${totalPagesToDownload} pages)...`);
             
             const imagePaths: string[] = [];
             const writePromises: Promise<void>[] = [];
@@ -1139,7 +1100,6 @@ export class EnhancedManuscriptDownloaderService {
                 }
             }));
             
-            console.log('\n');
             const validImagePaths = imagePaths.filter(Boolean);
             
             if (validImagePaths.length === 0) {
@@ -1152,7 +1112,6 @@ export class EnhancedManuscriptDownloaderService {
                 return aNum - bNum;
             });
             
-            console.log(`📄 Converting ${validImagePaths.length} images to PDF...`);
             
             if (shouldSplit) {
                 // Split into multiple PDFs like barsky.club
@@ -1168,18 +1127,18 @@ export class EnhancedManuscriptDownloaderService {
                     const partFilename = `${sanitizedName}_part_${partNumber}.pdf`;
                     const partFilepath = path.join(downloadsDir, partFilename);
                     
-                    console.log(`  Creating part ${partIndex + 1}/${totalParts}: ${partFilename} (${partImages.length} pages)`);
                     await this.convertImagesToPDF(partImages, partFilepath);
                     createdFiles.push(partFilepath);
                 }
                 
-                console.log(`✅ Successfully created ${totalParts} PDF parts`);
                 
                 // Clean up temporary images
                 for (const p of validImagePaths) {
                     try { 
                         await fs.unlink(p); 
-                    } catch {}
+                    } catch {
+                        // Ignore file deletion errors
+                    }
                 }
                 
                 // Wait for all file writes to complete
@@ -1196,13 +1155,14 @@ export class EnhancedManuscriptDownloaderService {
             } else {
                 // Single PDF
                 await this.convertImagesToPDF(validImagePaths, filepath);
-                console.log(`✅ Successfully saved: ${filename}`);
                 
                 // Clean up temporary images
                 for (const p of validImagePaths) {
                     try { 
                         await fs.unlink(p); 
-                    } catch {}
+                    } catch {
+                        // Ignore file deletion errors
+                    }
                 }
                 
                 // Wait for all file writes to complete
@@ -1230,8 +1190,6 @@ export class EnhancedManuscriptDownloaderService {
         const maxMemoryMB = 1024; // 1GB memory limit
         const batchSize = Math.min(50, Math.max(10, Math.floor(maxMemoryMB / 20))); // Adaptive batch size
         
-        console.log(`  Processing ${totalImages} images in batches of ${batchSize}...`);
-        
         const allPdfBytes: Uint8Array[] = [];
         let processedCount = 0;
         
@@ -1239,9 +1197,7 @@ export class EnhancedManuscriptDownloaderService {
         for (let i = 0; i < totalImages; i += batchSize) {
             const batch = imagePaths.slice(i, Math.min(i + batchSize, totalImages));
             const batchNum = Math.floor(i / batchSize) + 1;
-            const totalBatches = Math.ceil(totalImages / batchSize);
-            
-            console.log(`\n  Processing batch ${batchNum}/${totalBatches} (${batch.length} images)...`);
+            // const totalBatches = Math.ceil(totalImages / batchSize);
             
             try {
                 const batchPdfDoc = await PDFDocument.create();
@@ -1254,7 +1210,6 @@ export class EnhancedManuscriptDownloaderService {
                         const stats = await fs.stat(imagePath);
                         
                         if (stats.size < MIN_VALID_IMAGE_SIZE_BYTES) {
-                            console.warn(`\n⚠  Skipping ${path.basename(imagePath)}: file too small (${stats.size} bytes)`);
                             continue;
                         }
                         
@@ -1271,7 +1226,6 @@ export class EnhancedManuscriptDownloaderService {
                                 // Fallback to PNG
                                 image = await batchPdfDoc.embedPng(imageBuffer);
                             } catch (embedError: any) {
-                                console.warn(`\n⚠  Failed to embed ${path.basename(imagePath)}: ${embedError.message}`);
                                 continue;
                             }
                         }
@@ -1290,9 +1244,6 @@ export class EnhancedManuscriptDownloaderService {
                         validImagesInBatch++;
                         processedCount++;
                         
-                        const percentage = Math.round((processedCount / totalImages) * 100);
-                        console.log(`    Progress: ${percentage}% (${processedCount}/${totalImages})`);
-                        
                     } catch (error: any) {
                         console.error(`\n❌ Failed to process ${path.basename(imagePath)}: ${error.message}`);
                         continue;
@@ -1303,9 +1254,6 @@ export class EnhancedManuscriptDownloaderService {
                     // Save batch PDF
                     const batchPdfBytes = await batchPdfDoc.save();
                     allPdfBytes.push(batchPdfBytes);
-                    console.log(`\n    Batch ${batchNum} completed: ${validImagesInBatch} images processed`);
-                } else {
-                    console.warn(`\n⚠  Batch ${batchNum} contained no valid images`);
                 }
                 
             } catch (batchError: any) {
@@ -1319,7 +1267,6 @@ export class EnhancedManuscriptDownloaderService {
         }
         
         // Merge all batch PDFs into final PDF
-        console.log(`\n  Merging ${allPdfBytes.length} PDF batches...`);
         
         if (allPdfBytes.length === 1) {
             // Single batch, just write it
@@ -1335,8 +1282,6 @@ export class EnhancedManuscriptDownloaderService {
                     const copiedPages = await finalPdfDoc.copyPages(batchPdf, pageIndices);
                     
                     copiedPages.forEach((page) => finalPdfDoc.addPage(page));
-                    
-                    console.log(`    Merged batch ${i + 1}/${allPdfBytes.length}`);
                 } catch (mergeError: any) {
                     console.error(`\n❌ Failed to merge batch ${i + 1}: ${mergeError.message}`);
                     throw mergeError;
@@ -1347,7 +1292,6 @@ export class EnhancedManuscriptDownloaderService {
             await fs.writeFile(outputPath, finalPdfBytes);
         }
         
-        console.log(`\n  ✅ PDF created successfully: ${processedCount} pages processed`);
     }
 
 }

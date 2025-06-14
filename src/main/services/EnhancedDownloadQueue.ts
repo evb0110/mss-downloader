@@ -43,7 +43,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 name: 'queue'
             });
         } catch (error: any) {
-            console.warn('📋 Store corrupted, resetting:', error.message);
+            console.warn('Store corrupted, resetting:', error.message);
             // Try to clear the corrupted store file and recreate
             try {
                 const storePath = path.join(userDataPath, 'queue.json');
@@ -113,9 +113,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 }
             });
             
-            console.log(`📋 Loaded ${this.state.items.length} items from queue`);
-        } catch (error: any) {
-            console.log('📋 Starting with empty queue');
+        } catch {
+            // Starting with empty queue
         }
     }
 
@@ -176,7 +175,6 @@ export class EnhancedDownloadQueue extends EventEmitter {
         }
 
         try {
-            console.log(`📖 Loading manifest for: ${item.displayName}`);
             const manifest = await this.currentDownloader.loadManifest(item.url);
             
             // Update item with manifest information
@@ -185,10 +183,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
             
             this.saveToStorage();
             this.notifyListeners();
-            
-            console.log(`✅ Manifest loaded for ${item.displayName}: ${manifest.totalPages} pages`);
         } catch (error: any) {
-            console.warn(`⚠️  Failed to load manifest for ${item.displayName}: ${error.message}`);
+            console.warn(`Failed to load manifest for ${item.displayName}: ${error.message}`);
             // Don't fail the entire process if manifest loading fails
         }
     }
@@ -203,7 +199,6 @@ export class EnhancedDownloadQueue extends EventEmitter {
         );
         
         if (existing) {
-            console.log(`⚠️  Duplicate URL, skipping: ${manuscript.displayName}`);
             return existing.id;
         }
 
@@ -217,16 +212,10 @@ export class EnhancedDownloadQueue extends EventEmitter {
         // Force status to be 'queued' regardless of input
         newItem.status = 'queued';
 
-        console.log(`🔧 Creating new item with status: ${newItem.status}`);
-        
         this.state.items.push(newItem);
-        
-        console.log(`📝 Item in array has status: ${this.state.items[this.state.items.length - 1].status}`);
         
         this.saveToStorage();
         this.notifyListeners();
-        
-        console.log(`➕ Added to queue: ${newItem.displayName}`);
         
         // Load manifest immediately to get page count
         this.loadManifestForItem(newItem.id);
@@ -251,7 +240,6 @@ export class EnhancedDownloadQueue extends EventEmitter {
         this.saveToStorage();
         this.notifyListeners();
         
-        console.log(`🗑️  Removed from queue: ${item.displayName}`);
         return true;
     }
 
@@ -267,30 +255,27 @@ export class EnhancedDownloadQueue extends EventEmitter {
     }
 
     clearCompleted(): void {
-        const completedCount = this.state.items.filter((item) => item.status === 'completed').length;
+        // const completedCount = this.state.items.filter((item) => item.status === 'completed').length;
         this.state.items = this.state.items.filter((item) => item.status !== 'completed');
         this.saveToStorage();
         this.notifyListeners();
         
-        console.log(`🧹 Cleared ${completedCount} completed items`);
     }
 
     clearFailed(): void {
-        const failedCount = this.state.items.filter((item) => item.status === 'failed').length;
+        // const failedCount = this.state.items.filter((item) => item.status === 'failed').length;
         this.state.items = this.state.items.filter((item) => item.status !== 'failed');
         this.saveToStorage();
         this.notifyListeners();
         
-        console.log(`🧹 Cleared ${failedCount} failed items`);
     }
 
     clearAll(): void {
-        const totalCount = this.state.items.length;
+        // const totalCount = this.state.items.length;
         this.state.items = [];
         this.saveToStorage();
         this.notifyListeners();
         
-        console.log(`🧹 Cleared all ${totalCount} items`);
     }
 
     pauseItem(id: string): boolean {
@@ -376,26 +361,16 @@ export class EnhancedDownloadQueue extends EventEmitter {
         this.notifyListeners();
 
         try {
-            console.log('🔍 Queue processing started');
-            console.log(`📊 Total items in queue: ${this.state.items.length}`);
-            console.log(`📋 Item statuses:`, this.state.items.map(item => `${item.displayName}: ${item.status}`));
-            
             while (true) {
                 const nextItem = this.state.items.find((item) => 
                     item.status === 'queued' || item.status === 'failed' || item.status === 'pending',
                 );
 
                 if (!nextItem) {
-                    console.log('✅ Queue processing completed - no more items');
-                    console.log(`📊 Final queue state: ${this.state.items.length} total items`);
-                    if (this.state.items.length > 0) {
-                        console.log(`📋 Final statuses:`, this.state.items.map(item => `${item.displayName}: ${item.status}`));
-                    }
                     break;
                 }
 
                 if (this.state.isPaused) {
-                    console.log('⏸️  Queue processing paused');
                     break;
                 }
 
@@ -418,8 +393,6 @@ export class EnhancedDownloadQueue extends EventEmitter {
     }
 
     private async processItem(item: QueuedManuscript): Promise<void> {
-        console.log(`🔄 Processing: ${item.displayName}`);
-        
         this.state.currentItemId = item.id;
         item.status = 'downloading';
         item.startedAt = Date.now();
@@ -478,14 +451,12 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 item.outputPath = result.filepath;
                 // Do NOT update totalPages here - it should always reflect the manifest total, not download count
                 
-                console.log(`✅ Completed: ${item.displayName}`);
             } else {
                 throw new Error('Download failed without specific error');
             }
 
         } catch (error: any) {
             if (this.processingAbortController?.signal.aborted) {
-                console.log(`⏸️  Aborted: ${item.displayName}`);
                 item.status = 'paused';
             } else {
                 console.error(`❌ Failed: ${item.displayName} - ${error.message}`);
@@ -550,8 +521,6 @@ export class EnhancedDownloadQueue extends EventEmitter {
     }
     
     private recalculateAutoSplits(): void {
-        console.log('🔄 Recalculating auto-splits due to threshold change');
-        
         // Group items by parentId to find documents that need recalculation
         const parentGroups = new Map<string, QueuedManuscript[]>();
         const standaloneItems: QueuedManuscript[] = [];
@@ -598,11 +567,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
         const estimatedSizeMB = firstPart.estimatedSizeMB || (totalPages * 8);
         const thresholdMB = this.state.globalSettings.autoSplitThresholdMB;
         
-        console.log(`📊 Recalculating parts for ${originalDisplayName}: ${estimatedSizeMB}MB, threshold: ${thresholdMB}MB`);
-        
         if (estimatedSizeMB <= thresholdMB) {
             // Should not be split anymore - merge back to single item
-            console.log(`🔗 Merging parts back to single item`);
             this.mergePartsBackToSingle(parentId, existingParts, originalDisplayName, totalPages);
         } else {
             // Recalculate new parts
@@ -610,7 +576,6 @@ export class EnhancedDownloadQueue extends EventEmitter {
             const newPagesPerPart = Math.ceil(totalPages / newNumberOfParts);
             
             if (newNumberOfParts !== existingParts.length) {
-                console.log(`🔀 Changing from ${existingParts.length} to ${newNumberOfParts} parts`);
                 this.recreatePartsWithNewSizes(parentId, existingParts, originalDisplayName, totalPages, newNumberOfParts, newPagesPerPart);
             }
         }
@@ -619,15 +584,12 @@ export class EnhancedDownloadQueue extends EventEmitter {
     private async checkStandaloneItemForSplitting(item: QueuedManuscript): Promise<void> {
         // If we don't have size estimate, we can't check without downloading
         if (!item.estimatedSizeMB) {
-            console.log(`⏭️ Skipping reactive split check for ${item.displayName} - no size estimate available`);
             return;
         }
         
         const thresholdMB = this.state.globalSettings.autoSplitThresholdMB;
         
         if (item.estimatedSizeMB > thresholdMB) {
-            console.log(`🔄 Item ${item.displayName} (${item.estimatedSizeMB}MB) exceeds threshold (${thresholdMB}MB) - splitting`);
-            
             // Calculate number of parts
             const numberOfParts = Math.ceil(item.estimatedSizeMB / thresholdMB);
             const pagesPerPart = Math.ceil(item.totalPages / numberOfParts);
@@ -779,8 +741,6 @@ export class EnhancedDownloadQueue extends EventEmitter {
             const firstPageSizeMB = firstPageBuffer.length / (1024 * 1024);
             const estimatedTotalSizeMB = firstPageSizeMB * manifest.totalPages;
             
-            console.log(`📏 Size check for ${item.displayName}: ${firstPageSizeMB.toFixed(2)}MB per page, estimated total: ${estimatedTotalSizeMB.toFixed(2)}MB, threshold: ${this.state.globalSettings.autoSplitThresholdMB}MB`);
-            
             // Store the estimated size for future recalculations
             item.estimatedSizeMB = estimatedTotalSizeMB;
             
@@ -804,8 +764,6 @@ export class EnhancedDownloadQueue extends EventEmitter {
         const thresholdMB = this.state.globalSettings.autoSplitThresholdMB;
         const numberOfParts = Math.ceil(estimatedSizeMB / thresholdMB);
         const pagesPerPart = Math.ceil(manifest.totalPages / numberOfParts);
-        
-        console.log(`📄 Splitting ${originalItem.displayName} into ${numberOfParts} parts, ${pagesPerPart} pages each`);
         
         // Remove original item from queue
         const originalIndex = this.state.items.findIndex(item => item.id === originalItem.id);

@@ -540,8 +540,6 @@ export class DownloadQueue extends EventEmitter {
             const firstPageSizeMB = firstPageBuffer.length / (1024 * 1024);
             const estimatedTotalSizeMB = firstPageSizeMB * manifest.totalPages;
             
-            console.log(`First page: ${firstPageSizeMB.toFixed(2)}MB, Estimated total: ${estimatedTotalSizeMB.toFixed(2)}MB, Threshold: ${this.state.globalSettings.autoSplitThresholdMB}MB`);
-            
             if (estimatedTotalSizeMB > this.state.globalSettings.autoSplitThresholdMB) {
                 await this.splitQueueItem(item, manifest, estimatedTotalSizeMB);
                 return true;
@@ -562,8 +560,6 @@ export class DownloadQueue extends EventEmitter {
         const thresholdMB = this.state.globalSettings.autoSplitThresholdMB;
         const numberOfParts = Math.ceil(estimatedSizeMB / thresholdMB);
         const pagesPerPart = Math.ceil(manifest.totalPages / numberOfParts);
-        
-        console.log(`Splitting document into ${numberOfParts} parts, ${pagesPerPart} pages each`);
         
         // Remove original item from queue
         const originalIndex = this.state.items.findIndex(item => item.id === originalItem.id);

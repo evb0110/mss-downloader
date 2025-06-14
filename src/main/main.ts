@@ -15,9 +15,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('isDev:', isDev);
-console.log('isPackaged:', app.isPackaged);
 
 let mainWindow: BrowserWindow | null = null;
 let manuscriptDownloader: ManuscriptDownloaderService | null = null;
@@ -28,7 +25,6 @@ let enhancedDownloadQueue: EnhancedDownloadQueue | null = null;
 
 const createWindow = () => {
   const preloadPath = join(__dirname, '../preload/preload.js');
-  console.log('Preload path:', preloadPath);
   
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -50,19 +46,6 @@ const createWindow = () => {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
 
-  // Add comprehensive logging
-  mainWindow.webContents.on('did-start-loading', () => {
-    console.log('Started loading page...');
-  });
-
-  mainWindow.webContents.on('did-stop-loading', () => {
-    console.log('Stopped loading page...');
-  });
-
-  mainWindow.webContents.on('did-finish-load', () => {
-    console.log('Finished loading page...');
-  });
-
   mainWindow.webContents.on('did-fail-load', (_, errorCode, errorDescription, validatedURL) => {
     console.error('Failed to load page:', { errorCode, errorDescription, validatedURL });
   });
@@ -70,9 +53,6 @@ const createWindow = () => {
   // Remove problematic event listeners for now
 
   if (isDev) {
-    console.log('Loading development URL: http://localhost:5173');
-    
-    // Try to load the URL and log any errors
     mainWindow.loadURL('http://localhost:5173').catch(err => {
       console.error('Error loading URL:', err);
     });
@@ -214,7 +194,6 @@ async function cleanupTempFiles(): Promise<void> {
         for (const file of jpgFiles) {
           try {
             await fs.unlink(join(dir, file));
-            console.log(`Cleaned up temp file: ${file}`);
           } catch {
             // Ignore individual file cleanup errors
           }
@@ -314,9 +293,6 @@ ipcMain.handle('download-manuscript', async (_event, url: string, _callbacks: an
 });
 
 ipcMain.handle('get-supported-libraries', () => {
-  console.log('=== get-supported-libraries IPC handler called ===');
-  console.log('enhancedManuscriptDownloader exists:', !!enhancedManuscriptDownloader);
-  
   if (!enhancedManuscriptDownloader) {
     console.error('enhancedManuscriptDownloader is null!');
     return [];
@@ -324,8 +300,6 @@ ipcMain.handle('get-supported-libraries', () => {
   
   try {
     const libraries = enhancedManuscriptDownloader.getSupportedLibraries();
-    console.log('libraries returned:', libraries);
-    console.log('libraries length:', libraries.length);
     return libraries;
   } catch (error) {
     console.error('Error calling getSupportedLibraries:', error);

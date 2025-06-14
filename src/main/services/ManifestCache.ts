@@ -32,7 +32,6 @@ export class ManifestCache {
                 // Check cache version and auto-clear if outdated
                 const cacheVersion = cached._cacheVersion || 1;
                 if (cacheVersion < ManifestCache.CACHE_VERSION) {
-                    console.log(`📋 Cache version outdated (${cacheVersion} < ${ManifestCache.CACHE_VERSION}), clearing cache`);
                     shouldClearCache = true;
                 } else {
                     // Convert back to Map and filter expired entries
@@ -108,7 +107,6 @@ export class ManifestCache {
         this.cache.clear();
         try {
             await fs.unlink(this.cacheFile);
-            console.log('📋 Manifest cache cleared');
         } catch {
             // File doesn't exist, that's fine
         }
@@ -133,7 +131,6 @@ export class ManifestCache {
         
         if (keysToDelete.length > 0) {
             await this.save();
-            console.log(`📋 Cleared ${keysToDelete.length} cache entries for domain: ${domain}`);
         }
     }
 

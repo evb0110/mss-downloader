@@ -64,9 +64,13 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+    message: undefined,
     type: 'alert',
-    closeOnOverlay: true,
+    confirmText: undefined,
+    cancelText: undefined,
     loading: false,
+    closeOnOverlay: true,
+    width: undefined,
 });
 
 const emit = defineEmits<{

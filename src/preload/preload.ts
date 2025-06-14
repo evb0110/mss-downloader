@@ -2,11 +2,6 @@ import { contextBridge, ipcRenderer } from 'electron';
 import type { DownloadProgress, DownloadStatus, DownloadCallbacks, LibraryInfo, ManuscriptManifest } from '../shared/types';
 import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
 
-console.log('Preload script loaded');
-
-// Check if we have access to contextBridge and ipcRenderer
-console.log('contextBridge available:', !!contextBridge);
-console.log('ipcRenderer available:', !!ipcRenderer);
 
 const api = {
   getLanguage: () => ipcRenderer.invoke('get-language'),
@@ -128,8 +123,6 @@ const api = {
 
 try {
   contextBridge.exposeInMainWorld('electronAPI', api);
-  console.log('electronAPI exposed to main world successfully');
-  console.log('API methods:', Object.keys(api));
 } catch (error) {
   console.error('Failed to expose electronAPI:', error);
 }

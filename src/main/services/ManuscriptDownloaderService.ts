@@ -61,7 +61,6 @@ export class ManuscriptDownloaderService {
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
-        console.log('getSupportedLibraries called, returning:', ManuscriptDownloaderService.SUPPORTED_LIBRARIES);
         return ManuscriptDownloaderService.SUPPORTED_LIBRARIES;
     }
 
@@ -290,29 +289,10 @@ export class ManuscriptDownloaderService {
 
     private async loadUnifrManifest(unifrUrl: string): Promise<ManuscriptManifest> {
         try {
-            console.log('Loading e-codices manifest for URL:', unifrUrl);
-            
             const html = await this.downloadTextContent(unifrUrl);
-            console.log('Downloaded HTML content, length:', html.length);
-            
-            // Log if we find the manuscript-viewer component
-            if (html.includes('manuscript-viewer')) {
-                console.log('Found manuscript-viewer component in HTML');
-            } else {
-                console.log('No manuscript-viewer component found in HTML');
-            }
-            
             const pageLinks = this.extractUnifrImageUrls(html);
-            console.log('Extracted page links:', pageLinks.length, 'images found');
             
             if (pageLinks.length === 0) {
-                console.error('No images found. HTML snippet around manuscript-viewer:');
-                const viewerIndex = html.indexOf('manuscript-viewer');
-                if (viewerIndex > -1) {
-                    const start = Math.max(0, viewerIndex - 200);
-                    const end = Math.min(html.length, viewerIndex + 1000);
-                    console.error(html.substring(start, end));
-                }
                 throw new Error('No images found in manuscript');
             }
 
@@ -326,7 +306,6 @@ export class ManuscriptDownloaderService {
             const manuscript = pathMatch ? pathMatch[2] : '';
             const manuscriptCode = collection && manuscript ? `${collection}_${manuscript}` : 'manuscript';
             
-            console.log('Parsed manuscript code:', manuscriptCode);
             
             return {
                 pageLinks,
@@ -363,7 +342,6 @@ export class ManuscriptDownloaderService {
             }
             
             const manifestUrl = `https://digi.vatlib.it/iiif/${manuscriptName}/manifest.json`;
-            console.log(`[Vatican] Loading manifest: ${manifestUrl}`);
             
             const html = await this.downloadTextContent(manifestUrl);
             const iiifManifest = JSON.parse(html);
@@ -395,7 +373,6 @@ export class ManuscriptDownloaderService {
                 throw new Error('No pages found in manifest');
             }
             
-            console.log(`[Vatican] Successfully loaded ${pageLinks.length} pages`);
             
             return {
                 pageLinks,
@@ -455,7 +432,7 @@ export class ManuscriptDownloaderService {
         }
         
         // Pattern 2: Alternative image patterns if needed
-        const arkPattern = /ark:\/12148\/[^\/]+\/f(\d+)\.item/g;
+        const arkPattern = /ark:\/12148\/[^/]+\/f(\d+)\.item/g;
         const arkMatches = [];
         while ((match = arkPattern.exec(html)) !== null) {
             arkMatches.push(match[0]);
@@ -644,10 +621,8 @@ export class ManuscriptDownloaderService {
                 .replace(/\s+/g, '_')                     // Replace spaces with underscores
                 .substring(0, 100) || 'manuscript';       // Limit to 100 characters with fallback
             
-            let filename: string;
-            
             // Always include page numbers for clarity
-            filename = `${cleanName}_pages_${options.startPage}-${options.endPage}.pdf`;
+            const filename = `${cleanName}_pages_${options.startPage}-${options.endPage}.pdf`;
             
             const outputPath = join(app.getPath('downloads'), filename);
             

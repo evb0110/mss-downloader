@@ -961,34 +961,22 @@ async function initializeQueue() {
 
 // Initialize queue and fetch supported libraries when component mounts
 onMounted(async () => {
-    console.log('Component mounted');
-    console.log('window object keys:', Object.keys(window));
-    console.log('electronAPI available:', !!window.electronAPI);
-    
     // Wait a bit for preload script to finish loading
     if (!window.electronAPI) {
-        console.log('electronAPI not available initially, waiting...');
         await new Promise(resolve => setTimeout(resolve, 1000));
-        console.log('After waiting, electronAPI available:', !!window.electronAPI);
     }
     
     await initializeQueue();
     
     if (window.electronAPI) {
-        console.log('Fetching supported libraries...');
         try {
             const libraries = await window.electronAPI.getSupportedLibraries();
             if (libraries && libraries.length > 0) {
                 supportedLibraries.value = libraries;
-                console.log('Supported libraries received:', supportedLibraries.value);
-            } else {
-                console.log('No libraries received, using fallback');
             }
         } catch (error) {
             console.error('Failed to fetch libraries:', error);
         }
-    } else {
-        console.log('electronAPI still not available, using hardcoded libraries');
     }
 
     // After loading from storage, if there are downloading items without progress, try to re-establish
@@ -1286,10 +1274,6 @@ function clearAllQueue() {
 }
 
 function startQueueItemEdit(item: QueuedManuscript) {
-    console.log('Starting edit for item:', item);
-    console.log('Item totalPages:', item.totalPages);
-    console.log('Item downloadOptions:', item.downloadOptions);
-    
     editingQueueItemId.value = item.id;
     editingQueueItem.value = {
         startPage: item.downloadOptions?.startPage || 1,
@@ -1453,7 +1437,6 @@ async function revealDownloadsFolder() {
     await performButtonAction('revealFolder', async () => {
         try {
             const folderPath = await window.electronAPI.openDownloadsFolder();
-            console.log('Opened downloads folder:', folderPath);
         } catch (error: any) {
             console.error('Failed to open downloads folder:', error);
             showAlert('Error', `Failed to open downloads folder: ${error.message}`);
@@ -1464,7 +1447,6 @@ async function revealDownloadsFolder() {
 
 // Queue settings management
 function updateQueueSettings() {
-    console.log('Queue settings updated:', queueSettings.value);
     // Settings are updated in real-time via the reactive refs
 }
 
@@ -1477,7 +1459,6 @@ function onAutoSplitThresholdChange() {
     debounceTimer = setTimeout(async () => {
         try {
             await window.electronAPI.updateAutoSplitThreshold(queueSettings.value.autoSplitThresholdMB);
-            console.log('Auto-split threshold updated:', queueSettings.value.autoSplitThresholdMB);
         } catch (error) {
             console.error('Failed to update auto-split threshold:', error);
         }
@@ -1560,13 +1541,7 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     return originalDisabled || state === 'loading';
 }
 
-// Add missing refreshQueueState function
-async function refreshQueueState() {
-    if (window.electronAPI) {
-        const newState = await window.electronAPI.getQueueState();
-        queueState.value = { ...newState };
-    }
-}
+// Note: refreshQueueState function removed as it was unused
 </script>
 
 <style scoped>
