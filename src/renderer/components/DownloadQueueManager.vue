@@ -492,6 +492,46 @@ https://digi.vatlib.it/..."
     @close="closeAlertModal"
   />
 
+  <!-- Trinity Dublin Manual Manifest Modal -->
+  <Modal
+    :show="showTrinityDublinModal"
+    title="Trinity College Dublin - Manual Manifest Entry"
+    type="confirm"
+    confirm-text="Process Manifest"
+    cancel-text="Cancel"
+    width="800px"
+    @confirm="handleTrinityDublinSubmit"
+    @close="handleTrinityDublinCancel"
+  >
+    <div class="trinity-dublin-modal">
+      <p class="instructions">
+        Trinity College Dublin blocks automated access. To download this manuscript:
+      </p>
+      <ol class="steps">
+        <li>Open the manuscript page in your browser</li>
+        <li>Complete any captchas shown</li>
+        <li>Open Developer Tools (F12) → Network tab</li>
+        <li>Look for a request to "manifest" or ending in "/manifest"</li>
+        <li>Copy the JSON response and paste it below</li>
+      </ol>
+      
+      <div class="manifest-input-container">
+        <label for="manifest-data">Paste IIIF Manifest JSON:</label>
+        <textarea
+          id="manifest-data"
+          v-model="trinityDublinModal.manifestData"
+          class="manifest-textarea"
+          placeholder='{"@context":"http://iiif.io/api/presentation/2/context.json","@id":"...","sequences":[...]}'
+          rows="10"
+        />
+      </div>
+      
+      <div v-if="trinityDublinManifestError" class="error-message">
+        {{ trinityDublinManifestError }}
+      </div>
+    </div>
+  </Modal>
+
   <!-- Supported Libraries Modal -->
   <Modal
     :show="showSupportedLibrariesModal"
@@ -677,7 +717,17 @@ const confirmModal = ref({
 const alertModal = ref({
     title: '',
     message: '',
+    type: 'info',
 });
+
+const showTrinityDublinModal = ref(false);
+const trinityDublinModal = ref({
+    url: '',
+    manifestData: '',
+    onSubmit: (manifest: string) => {},
+    onCancel: () => {},
+});
+const trinityDublinManifestError = ref('');
 
 // Supported Libraries - fetched via IPC
 const supportedLibraries = ref<LibraryInfo[]>([]);
@@ -921,35 +971,41 @@ async function parseManuscriptWithCaptcha(url: string) {
         
         // Check if this is Trinity Dublin manual requirement
         if (error.message?.includes('TRINITY_DUBLIN_MANUAL_REQUIRED')) {
-            // Show instructions for manual download
-            showAlert(
-                'Trinity College Dublin - Manual Download Required',
-                `Trinity College Dublin blocks automated access with aggressive captcha protection.
-
-To download this manuscript:
-1. Open the manuscript page in your browser
-2. Complete any captchas shown
-3. Open Developer Tools (F12) → Network tab
-4. Look for a request to "manifest" or ending in "/manifest"
-5. Copy the JSON response
-6. Use "Edit" on this item to paste the manifest data
-
-Alternatively, you can manually download individual pages from the viewer.`,
-                'warning'
-            );
-            
-            // Return a placeholder manifest
-            const workIdMatch = url.match(/\/works\/([^/?]+)/);
-            const workId = workIdMatch ? workIdMatch[1] : 'unknown';
-            
-            return {
-                pageLinks: [],
-                totalPages: 0,
-                library: 'trinity_dublin' as const,
-                displayName: `TrinityDublin_${workId}_MANUAL_REQUIRED`,
-                originalUrl: url,
-                requiresManualDownload: true
-            };
+            // Create a promise that will be resolved when user provides manifest
+            return new Promise((resolve, reject) => {
+                // Show custom modal with paste area
+                showTrinityDublinManifestModal(url, (manifestData: string) => {
+                    try {
+                        const manifest = JSON.parse(manifestData);
+                        
+                        // Extract page links from IIIF manifest
+                        const pageLinks = manifest.sequences[0].canvases.map((canvas: any) => {
+                            const resource = canvas.images[0].resource;
+                            return resource['@id'] || resource.id;
+                        }).filter((link: string) => link);
+                        
+                        if (pageLinks.length > 0) {
+                            const workIdMatch = url.match(/\/works\/([^/?]+)/);
+                            const workId = workIdMatch ? workIdMatch[1] : 'unknown';
+                            
+                            resolve({
+                                pageLinks,
+                                totalPages: pageLinks.length,
+                                library: 'trinity_dublin' as const,
+                                displayName: manifest.label || `TrinityDublin_${workId}`,
+                                originalUrl: url,
+                            });
+                        } else {
+                            reject(new Error('No pages found in manifest'));
+                        }
+                    } catch (err) {
+                        reject(new Error('Invalid manifest JSON'));
+                    }
+                }, () => {
+                    // User cancelled
+                    reject(new Error('Manual manifest entry cancelled'));
+                });
+            });
         }
         
         // Check if this is a captcha error (may be wrapped in IPC error)
@@ -1405,12 +1461,23 @@ function showConfirm(title: string, message: string, onConfirm: () => void, conf
     showConfirmModal.value = true;
 }
 
-function showAlert(title: string, message: string) {
+function showAlert(title: string, message: string, type?: string) {
     alertModal.value = {
         title,
         message,
+        type: type || 'info',
     };
     showAlertModal.value = true;
+}
+
+function showTrinityDublinManifestModal(url: string, onSubmit: (manifest: string) => void, onCancel: () => void) {
+    trinityDublinModal.value = {
+        url,
+        onSubmit,
+        onCancel,
+        manifestData: ''
+    };
+    showTrinityDublinModal.value = true;
 }
 
 function handleConfirm() {
@@ -1424,6 +1491,36 @@ function closeConfirmModal() {
 
 function closeAlertModal() {
     showAlertModal.value = false;
+}
+
+function handleTrinityDublinSubmit() {
+    trinityDublinManifestError.value = '';
+    
+    if (!trinityDublinModal.value.manifestData.trim()) {
+        trinityDublinManifestError.value = 'Please paste the manifest JSON';
+        return;
+    }
+    
+    try {
+        const manifest = JSON.parse(trinityDublinModal.value.manifestData);
+        if (!manifest.sequences || !manifest.sequences[0] || !manifest.sequences[0].canvases) {
+            trinityDublinManifestError.value = 'Invalid manifest structure';
+            return;
+        }
+        
+        trinityDublinModal.value.onSubmit(trinityDublinModal.value.manifestData);
+        showTrinityDublinModal.value = false;
+        trinityDublinModal.value.manifestData = '';
+    } catch (err) {
+        trinityDublinManifestError.value = 'Invalid JSON format';
+    }
+}
+
+function handleTrinityDublinCancel() {
+    trinityDublinModal.value.onCancel();
+    showTrinityDublinModal.value = false;
+    trinityDublinModal.value.manifestData = '';
+    trinityDublinManifestError.value = '';
 }
 
 async function cleanupIndexedDBCache() {
@@ -2781,5 +2878,62 @@ label {
         width: 100%;
         font-size: min(1rem, 3.2vw);
     }
+}
+
+/* Trinity Dublin Manual Manifest Modal Styles */
+.trinity-dublin-modal {
+    padding: 10px;
+}
+
+.trinity-dublin-modal .instructions {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.trinity-dublin-modal .steps {
+    margin-bottom: 20px;
+    padding-left: 20px;
+}
+
+.trinity-dublin-modal .steps li {
+    margin-bottom: 8px;
+    color: #555;
+}
+
+.manifest-input-container {
+    margin-top: 20px;
+}
+
+.manifest-input-container label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.manifest-textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 12px;
+    resize: vertical;
+    min-height: 200px;
+}
+
+.manifest-textarea:focus {
+    outline: none;
+    border-color: #4183c4;
+    box-shadow: 0 0 0 2px rgba(65, 131, 196, 0.2);
+}
+
+.trinity-dublin-modal .error-message {
+    margin-top: 10px;
+    padding: 10px;
+    background: #fee;
+    border: 1px solid #fcc;
+    border-radius: 4px;
+    color: #c00;
 }
 </style>
