@@ -119,6 +119,9 @@ const api = {
     ipcRenderer.on('config-reset', (_, newConfig) => callback(newConfig));
     return () => ipcRenderer.removeAllListeners('config-reset');
   },
+
+  // Captcha solving
+  solveCaptcha: (url: string) => ipcRenderer.invoke('solve-captcha', url),
 };
 
 try {

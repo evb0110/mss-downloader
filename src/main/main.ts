@@ -471,3 +471,65 @@ ipcMain.handle('show-item-in-finder', async (_event, filePath: string) => {
     throw new Error(`File not found: ${filePath}`);
   }
 });
+
+ipcMain.handle('solve-captcha', async (_event, url: string) => {
+  return new Promise((resolve) => {
+    const captchaWindow = new BrowserWindow({
+      width: 800,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        webSecurity: true,
+      },
+      title: 'Complete Captcha Verification',
+      modal: true,
+      parent: mainWindow || undefined,
+      show: false
+    });
+
+    captchaWindow.loadURL(url);
+    
+    captchaWindow.once('ready-to-show', () => {
+      captchaWindow.show();
+    });
+
+    // Monitor URL changes to detect when captcha is solved
+    captchaWindow.webContents.on('did-navigate', (_event, navigationUrl) => {
+      console.log('Captcha window navigated to:', navigationUrl);
+      
+      // If we're redirected to the manifest URL or the original URL without captcha
+      if (navigationUrl.includes('/manifest') || 
+          (navigationUrl === url && !navigationUrl.includes('captcha'))) {
+        
+        // Try to get the page content
+        captchaWindow.webContents.executeJavaScript('document.body.innerText')
+          .then((content) => {
+            captchaWindow.close();
+            
+            // Check if content looks like JSON manifest
+            if (content.trim().startsWith('{') && content.includes('sequences')) {
+              resolve({ success: true, content });
+            } else {
+              resolve({ success: false, error: 'Content is not a valid IIIF manifest' });
+            }
+          })
+          .catch(() => {
+            resolve({ success: false, error: 'Failed to read page content' });
+          });
+      }
+    });
+
+    captchaWindow.on('closed', () => {
+      resolve({ success: false, error: 'Captcha window was closed' });
+    });
+
+    // Timeout after 5 minutes
+    setTimeout(() => {
+      if (!captchaWindow.isDestroyed()) {
+        captchaWindow.close();
+        resolve({ success: false, error: 'Captcha verification timed out' });
+      }
+    }, 5 * 60 * 1000);
+  });
+});

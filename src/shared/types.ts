@@ -47,6 +47,7 @@ export interface ElectronAPI {
   onLanguageChanged: (callback: (language: string) => void) => () => void;
   clearCache: () => Promise<void>;
   getCacheStats: () => Promise<{ size: number; entries: number }>;
+  solveCaptcha: (url: string) => Promise<{ success: boolean; content?: string; error?: string }>;
 }
 
 declare global {

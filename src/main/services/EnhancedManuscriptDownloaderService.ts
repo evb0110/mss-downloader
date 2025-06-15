@@ -2070,7 +2070,7 @@ export class EnhancedManuscriptDownloaderService {
             
             // Check if response is HTML (captcha protection)
             if (responseText.trim().startsWith('<html>') || responseText.includes('captcha')) {
-                throw new Error('Trinity College Dublin requires captcha verification - cannot access manifest automatically. Please try accessing the manuscript directly through their website.');
+                throw new Error('CAPTCHA_REQUIRED:' + manifestUrl);
             }
             
             let iiifManifest;
