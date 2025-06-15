@@ -1079,6 +1079,15 @@ export class EnhancedManuscriptDownloaderService {
             
             const downloadPage = async (pageIndex: number) => {
                 const imageUrl = manifest.pageLinks[pageIndex];
+                
+                // Skip placeholder URLs (empty strings) used for missing pages
+                if (!imageUrl || imageUrl === '') {
+                    console.warn(`Skipping missing page ${pageIndex + 1}`);
+                    completedPages++;
+                    updateProgress();
+                    return;
+                }
+                
                 const imgFile = `${sanitizedName}_page_${pageIndex + 1}.jpg`;
                 const imgPath = path.join(tempImagesDir, imgFile);
                 
@@ -1341,28 +1350,16 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('No pages found in Florus manuscript');
             }
             
-            // For Florus, we need to detect the actual total pages from navigation
-            // but only return sample pages for the manifest
-            let actualTotalPages = pageLinks.length;
-            
-            // Find the maximum page number from navigation
-            const navNumbers = [...html.matchAll(/naviguer\((\d+)\)/g)]
-                .map(match => parseInt(match[1]))
-                .filter(num => !isNaN(num) && num > 0);
-            
-            if (navNumbers.length > 0) {
-                actualTotalPages = Math.max(...navNumbers);
-            }
-            
+            // For Florus, we now have all pages loaded
             const manifest = {
                 pageLinks,
-                totalPages: actualTotalPages, // Use the actual total, not sample size
+                totalPages: pageLinks.length,
                 library: 'florus' as const,
                 displayName: `BM_Lyon_${cote}`,
                 originalUrl: florusUrl,
             };
             
-            console.log(`Florus manifest loaded: ${manifest.displayName}, sample pages: ${pageLinks.length}, total pages: ${actualTotalPages}`);
+            console.log(`Florus manifest loaded: ${manifest.displayName}, total pages: ${pageLinks.length}`);
             return manifest;
             
         } catch (error: any) {
@@ -1398,7 +1395,7 @@ export class EnhancedManuscriptDownloaderService {
             throw new Error('Could not parse Florus filename structure');
         }
         
-        // const manuscriptPrefix = filenameParts[1]; // For future pattern matching
+        const manuscriptPrefix = filenameParts[1];
         
         // Find the total number of pages from navigation
         let maxPage = currentVue + 20; // Conservative fallback
@@ -1413,59 +1410,80 @@ export class EnhancedManuscriptDownloaderService {
         
         console.log(`Detected ${maxPage} pages for Florus manuscript`);
         
-        // For Florus, we need to fetch a sample first to understand the folio naming pattern
-        // Then generate URLs for all pages
         const imageUrls: string[] = [];
         const serverUrl = 'https://florus.bm-lyon.fr/fcgi-bin/iipsrv.fcgi';
         
-        // First, fetch a few sample pages to understand the pattern
-        const sampleStart = Math.max(1, currentVue - 5);
-        const sampleEnd = Math.min(maxPage, currentVue + 5);
-        
-        console.log(`Fetching sample pages ${sampleStart} to ${sampleEnd} to analyze pattern...`);
-        
+        // Batch fetch all pages to build complete URL list
+        const batchSize = 10; // Process 10 pages concurrently
         const pageToFilename = new Map<number, string>();
         
-        for (let pageNum = sampleStart; pageNum <= sampleEnd; pageNum++) {
-            try {
-                const pageUrl = `https://florus.bm-lyon.fr/visualisation.php?cote=${cote}&vue=${pageNum}`;
-                const pageResponse = await this.fetchDirect(pageUrl);
-                
-                if (pageResponse.ok) {
-                    const pageHtml = await pageResponse.text();
-                    const pageImageMatch = pageHtml.match(/FIF=([^&\s'"]+)/) ||
-                                          pageHtml.match(/image\s*:\s*'([^']+)'/) ||
-                                          pageHtml.match(/image\s*:\s*"([^"]+)"/);
-                    
-                    if (pageImageMatch) {
-                        const imagePath = pageImageMatch[1];
-                        const filename = imagePath.substring(imagePath.lastIndexOf('/') + 1);
-                        pageToFilename.set(pageNum, filename);
+        console.log(`Fetching all ${maxPage} pages to build complete manifest...`);
+        
+        // Process pages in batches for better performance
+        for (let batchStart = 1; batchStart <= maxPage; batchStart += batchSize) {
+            const batchEnd = Math.min(batchStart + batchSize - 1, maxPage);
+            const batchPromises: Promise<void>[] = [];
+            
+            for (let pageNum = batchStart; pageNum <= batchEnd; pageNum++) {
+                const promise = (async () => {
+                    try {
+                        const pageUrl = `https://florus.bm-lyon.fr/visualisation.php?cote=${cote}&vue=${pageNum}`;
+                        const pageResponse = await this.fetchDirect(pageUrl);
+                        
+                        if (pageResponse.ok) {
+                            const pageHtml = await pageResponse.text();
+                            const pageImageMatch = pageHtml.match(/FIF=([^&\s'"]+)/) ||
+                                                  pageHtml.match(/image\s*:\s*'([^']+)'/) ||
+                                                  pageHtml.match(/image\s*:\s*"([^"]+)"/);
+                            
+                            if (pageImageMatch) {
+                                const imagePath = pageImageMatch[1];
+                                const filename = imagePath.substring(imagePath.lastIndexOf('/') + 1);
+                                pageToFilename.set(pageNum, filename);
+                            }
+                        }
+                    } catch (error) {
+                        console.warn(`Failed to fetch page ${pageNum}:`, error);
                     }
-                }
-            } catch (error) {
-                console.warn(`Failed to fetch sample page ${pageNum}:`, error);
+                })();
+                
+                batchPromises.push(promise);
+            }
+            
+            // Wait for current batch to complete before starting next
+            await Promise.all(batchPromises);
+            
+            // Add a small delay between batches to avoid overwhelming the server
+            if (batchEnd < maxPage) {
+                await new Promise(resolve => setTimeout(resolve, 200)); // Increased delay for Lyon library
             }
         }
         
-        // For simplicity, just return the URLs we've found
-        // A more sophisticated approach would analyze the pattern and generate all URLs
-        console.log(`Using ${pageToFilename.size} sample pages to represent the manuscript`);
+        console.log(`Successfully fetched ${pageToFilename.size} pages out of ${maxPage}`);
         
-        for (const [, filename] of pageToFilename) {
-            const imagePath = `${basePath}${filename}`;
-            const imageUrl = `${serverUrl}?FIF=${imagePath}&WID=2000&CVT=JPEG`;
-            imageUrls.push(imageUrl);
+        // Build the complete list of image URLs in order
+        for (let pageNum = 1; pageNum <= maxPage; pageNum++) {
+            const filename = pageToFilename.get(pageNum);
+            if (filename) {
+                const imagePath = `${basePath}${filename}`;
+                const imageUrl = `${serverUrl}?FIF=${imagePath}&WID=2000&CVT=JPEG`;
+                imageUrls.push(imageUrl);
+            } else {
+                // Add placeholder for missing pages to maintain page numbering
+                console.warn(`Missing page ${pageNum}, adding placeholder`);
+                imageUrls.push('');
+            }
         }
         
-        // If we have a good sample, estimate total pages = maxPage
-        if (imageUrls.length > 0) {
-            // Return URLs with adjusted total count
-            console.log(`Returning ${imageUrls.length} sample URLs (total pages: ${maxPage})`);
-            return imageUrls;
+        // Filter out empty URLs but keep track of actual count
+        const validUrls = imageUrls.filter(url => url !== '');
+        
+        if (validUrls.length === 0) {
+            throw new Error('Could not extract any valid image URLs from Florus manuscript');
         }
         
-        throw new Error('Could not extract any valid image URLs from Florus manuscript');
+        console.log(`Returning ${validUrls.length} valid URLs out of ${maxPage} total pages`);
+        return imageUrls; // Return all URLs including placeholders to maintain correct indexing
     }
 
 }

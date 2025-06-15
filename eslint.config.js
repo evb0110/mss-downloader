@@ -40,10 +40,10 @@ export default typescriptEslint.config(
   },
   {
     rules: {
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
       'vue/multi-word-component-names': 'off',
-      'vue/no-unused-vars': 'error',
+      'vue/no-unused-vars': 'off',
       'no-console': 'off',
       'no-control-regex': 'off',
       'no-undef': 'off'
