@@ -305,8 +305,6 @@ export class ManuscriptDownloaderService {
                 throw new Error('Invalid Trinity Cambridge URL format');
             }
             
-            const manuscriptId = idMatch[1];
-            
             throw new Error('Trinity College Cambridge manuscripts require manual inspection - please provide direct image URLs or use a supported IIIF endpoint');
             
         } catch (error: any) {
@@ -408,8 +406,6 @@ export class ManuscriptDownloaderService {
             if (!idMatch) {
                 throw new Error('Invalid Trinity College Dublin URL format');
             }
-            
-            const workId = idMatch[1];
             
             throw new Error('Trinity College Dublin digital collections may require authentication - please verify access and provide direct manifest URLs if available');
             
