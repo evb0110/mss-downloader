@@ -496,59 +496,63 @@ https://digi.vatlib.it/..."
     :show="showSupportedLibrariesModal"
     title="Supported Manuscript Libraries"
     type="alert"
-    width="min(800px, 90vw)"
+    width="min(1200px, 95vw)"
     @close="showSupportedLibrariesModal = false"
   >
-    <p class="libraries-intro">
-      Enter a URL from one of the following supported digital libraries to download a manuscript:
-    </p>
-
-    <div class="libraries-list">
-      <div
-        v-for="library in supportedLibraries"
-        :key="library.name"
-        class="library-item"
-      >
-        <h4 :class="{ 'library-warning': library.name.includes('⚠️') }">
-          {{ library.name }}
-        </h4>
-        <p class="library-description">
-          {{ library.description }}
-        </p>
-                
-        <Spoiler
-          title="Example URLs"
-          class="library-examples-spoiler"
-        >
-          <div class="library-examples">
-            <div class="library-example">
-              <div class="example-label">
-                Example:
-              </div>
-              <code
-                class="example-url-link"
-                @click="handleExampleClick(library.example); showSupportedLibrariesModal = false"
-              >
-                {{ library.example }}
-              </code>
-            </div>
-          </div>
-        </Spoiler>
-      </div>
-    </div>
-    
-    <!-- Add All Testing Button -->
-    <div class="add-all-test-section">
-      <button
-        class="add-all-test-btn"
-        :disabled="isProcessingUrls"
-        @click="addAllTestUrls"
-      >
-        Add All (Testing)
-      </button>
-      <p class="add-all-test-description">
-        Adds one example URL from each supported library for testing purposes
+    <div class="libraries-modal-content">
+      <p class="libraries-intro">
+        Enter a URL from one of the following supported digital libraries to download a manuscript:
       </p>
+
+      <div class="libraries-scroll-container">
+        <div class="libraries-list">
+          <div
+            v-for="library in supportedLibraries"
+            :key="library.name"
+            class="library-item"
+          >
+            <h4 :class="{ 'library-warning': library.name.includes('⚠️') }">
+              {{ library.name }}
+            </h4>
+            <p class="library-description">
+              {{ library.description }}
+            </p>
+                    
+            <Spoiler
+              title="Example URLs"
+              class="library-examples-spoiler"
+            >
+              <div class="library-examples">
+                <div class="library-example">
+                  <div class="example-label">
+                    Example:
+                  </div>
+                  <code
+                    class="example-url-link"
+                    @click="handleExampleClick(library.example); showSupportedLibrariesModal = false"
+                  >
+                    {{ library.example }}
+                  </code>
+                </div>
+              </div>
+            </Spoiler>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Add All Testing Button -->
+      <div class="add-all-test-section">
+        <button
+          class="add-all-test-btn"
+          :disabled="isProcessingUrls"
+          @click="addAllTestUrls"
+        >
+          Add All (Testing)
+        </button>
+        <p class="add-all-test-description">
+          Adds one example URL from each supported library for testing purposes
+        </p>
+      </div>
     </div>
   </Modal>
 
@@ -2294,14 +2298,38 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 
 .libraries-list {
     margin-top: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+/* Two columns on larger screens */
+@media (min-width: 1024px) {
+    .libraries-list {
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+}
+
+/* Responsive adjustments for medium screens */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .libraries-list {
+        gap: 1.25rem;
+    }
+    
+    .library-item {
+        padding: 0.875rem;
+    }
 }
 
 .library-item {
-    margin-bottom: 1.5rem;
     padding: 1rem;
     background: white;
     border-radius: 6px;
     border: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
 }
 
 .library-item h4 {
@@ -2571,8 +2599,24 @@ label {
 }
 
 /* Libraries Modal */
+.libraries-modal-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
 .libraries-intro {
     margin-bottom: 1.5rem;
+    flex-shrink: 0;
+}
+
+.libraries-scroll-container {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding-right: 4px; /* Space for scrollbar */
+    margin-right: -4px;
 }
 
 /* Add All Test Section */
@@ -2581,6 +2625,7 @@ label {
     text-align: center;
     border-top: 1px solid #dee2e6;
     padding-top: 1.5rem;
+    flex-shrink: 0;
 }
 
 .add-all-test-btn {

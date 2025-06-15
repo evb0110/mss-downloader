@@ -104,10 +104,18 @@ function handleOverlayClick() {
   background: white;
   border-radius: 8px;
   max-width: 500px;
-  max-height: 80vh;
-  overflow-y: auto;
+  max-height: 85vh;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   animation: slideIn 0.2s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Better handling for larger modal widths */
+@media (min-width: 1024px) {
+  .modal-content {
+    max-height: 90vh;
+  }
 }
 
 .modal-header {
@@ -117,6 +125,7 @@ function handleOverlayClick() {
   padding: 20px 20px 0 20px;
   border-bottom: 1px solid #e9ecef;
   margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 .modal-title {
@@ -149,6 +158,9 @@ function handleOverlayClick() {
 
 .modal-body {
   padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .modal-body p {
@@ -162,6 +174,7 @@ function handleOverlayClick() {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .btn {

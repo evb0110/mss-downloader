@@ -169,6 +169,11 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('iiif.bl.uk') || url.includes('bl.digirati.io')) return 'bl';
         if (url.includes('florus.bm-lyon.fr')) return 'florus';
         if (url.includes('digitallibrary.unicatt.it')) return 'unicatt';
+        if (url.includes('cudl.lib.cam.ac.uk')) return 'cudl';
+        if (url.includes('mss-cat.trin.cam.ac.uk')) return 'trinity_cam';
+        if (url.includes('isos.dias.ie')) return 'isos';
+        if (url.includes('mira.ie')) return 'mira';
+        if (url.includes('digitalcollections.tcd.ie')) return 'trinity_dublin';
         
         return null;
     }
@@ -321,6 +326,21 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'unicatt':
                     manifest = await this.loadUnicattManifest(originalUrl);
+                    break;
+                case 'cudl':
+                    manifest = await this.loadCudlManifest(originalUrl);
+                    break;
+                case 'trinity_cam':
+                    manifest = await this.loadTrinityCamManifest(originalUrl);
+                    break;
+                case 'isos':
+                    manifest = await this.loadIsosManifest(originalUrl);
+                    break;
+                case 'mira':
+                    manifest = await this.loadMiraManifest(originalUrl);
+                    break;
+                case 'trinity_dublin':
+                    manifest = await this.loadTrinityDublinManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -1849,6 +1869,228 @@ export class EnhancedManuscriptDownloaderService {
             
         } catch (error: any) {
             throw new Error(`Failed to load Unicatt manuscript: ${error.message}`);
+        }
+    }
+
+    async loadCudlManifest(cudlUrl: string): Promise<ManuscriptManifest> {
+        try {
+            const idMatch = cudlUrl.match(/\/view\/([^/]+)/);
+            if (!idMatch) {
+                throw new Error('Invalid Cambridge CUDL URL format');
+            }
+            
+            const manuscriptId = idMatch[1];
+            const manifestUrl = `https://cudl.lib.cam.ac.uk//iiif/${manuscriptId}`;
+            
+            const manifestResponse = await this.fetchDirect(manifestUrl);
+            if (!manifestResponse.ok) {
+                throw new Error(`Failed to fetch CUDL manifest: HTTP ${manifestResponse.status}`);
+            }
+            
+            const iiifManifest = await manifestResponse.json();
+            
+            if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
+                throw new Error('Invalid IIIF manifest structure');
+            }
+            
+            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                const resource = canvas.images[0].resource;
+                return resource['@id'] || resource.id;
+            }).filter((link: string) => link);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No pages found in manifest');
+            }
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'cudl',
+                displayName: `Cambridge_${manuscriptId}`,
+                originalUrl: cudlUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load Cambridge CUDL manuscript: ${error.message}`);
+        }
+    }
+
+    async loadTrinityCamManifest(trinityUrl: string): Promise<ManuscriptManifest> {
+        try {
+            const manuscriptIdMatch = trinityUrl.match(/\/Manuscript\/([^/]+)/);
+            if (!manuscriptIdMatch) {
+                throw new Error('Invalid Trinity College Cambridge URL format');
+            }
+            
+            const manuscriptId = manuscriptIdMatch[1];
+            const manifestUrl = `https://mss-cat.trin.cam.ac.uk/Manuscript/${manuscriptId}/manifest.json`;
+            
+            const manifestResponse = await this.fetchDirect(manifestUrl);
+            if (!manifestResponse.ok) {
+                throw new Error(`Failed to fetch Trinity Cambridge manifest: HTTP ${manifestResponse.status}`);
+            }
+            
+            const iiifManifest = await manifestResponse.json();
+            
+            if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
+                throw new Error('Invalid IIIF manifest structure');
+            }
+            
+            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                const resource = canvas.images[0].resource;
+                return resource['@id'] || resource.id;
+            }).filter((link: string) => link);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No pages found in manifest');
+            }
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'trinity_cam',
+                displayName: `TrinityC_${manuscriptId}`,
+                originalUrl: trinityUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load Trinity College Cambridge manuscript: ${error.message}`);
+        }
+    }
+
+    async loadIsosManifest(isosUrl: string): Promise<ManuscriptManifest> {
+        try {
+            const idMatch = isosUrl.match(/\/([^/]+)\.html$/);
+            if (!idMatch) {
+                throw new Error('Invalid ISOS URL format');
+            }
+            
+            const manuscriptId = idMatch[1];
+            const manifestUrl = `https://www.isos.dias.ie/static/manifests/${manuscriptId}.json`;
+            
+            const manifestResponse = await this.fetchDirect(manifestUrl);
+            if (!manifestResponse.ok) {
+                throw new Error(`Failed to fetch ISOS manifest: HTTP ${manifestResponse.status}`);
+            }
+            
+            const iiifManifest = await manifestResponse.json();
+            
+            if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
+                throw new Error('Invalid IIIF manifest structure');
+            }
+            
+            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                const resource = canvas.images[0].resource;
+                return resource['@id'] || resource.id || resource.service?.['@id'] + '/full/max/0/default.jpg';
+            }).filter((link: string) => link);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No pages found in manifest');
+            }
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'isos',
+                displayName: `ISOS_${manuscriptId}`,
+                originalUrl: isosUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load ISOS manuscript: ${error.message}`);
+        }
+    }
+
+    async loadMiraManifest(miraUrl: string): Promise<ManuscriptManifest> {
+        try {
+            const response = await this.fetchDirect(miraUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch MIRA page: HTTP ${response.status}`);
+            }
+            
+            const html = await response.text();
+            const manifestMatch = html.match(/"manifestId":\s*"([^"]+)"/);
+            if (!manifestMatch) {
+                throw new Error('No IIIF manifest found in MIRA page');
+            }
+            
+            const manifestUrl = manifestMatch[1];
+            const manifestResponse = await this.fetchDirect(manifestUrl);
+            if (!manifestResponse.ok) {
+                throw new Error(`Failed to fetch MIRA manifest: HTTP ${manifestResponse.status}`);
+            }
+            
+            const iiifManifest = await manifestResponse.json();
+            
+            if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
+                throw new Error('Invalid IIIF manifest structure');
+            }
+            
+            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                const resource = canvas.images[0].resource;
+                return resource['@id'] || resource.id;
+            }).filter((link: string) => link);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No pages found in manifest');
+            }
+            
+            const urlMatch = miraUrl.match(/\/(\d+)$/);
+            const manuscriptId = urlMatch ? urlMatch[1] : 'unknown';
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'mira',
+                displayName: `MIRA_${manuscriptId}`,
+                originalUrl: miraUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load MIRA manuscript: ${error.message}`);
+        }
+    }
+
+    async loadTrinityDublinManifest(trinityUrl: string): Promise<ManuscriptManifest> {
+        try {
+            const workIdMatch = trinityUrl.match(/\/works\/([^/?]+)/);
+            if (!workIdMatch) {
+                throw new Error('Invalid Trinity College Dublin URL format');
+            }
+            
+            const workId = workIdMatch[1];
+            const manifestUrl = `https://digitalcollections.tcd.ie/concern/works/${workId}/manifest`;
+            
+            const manifestResponse = await this.fetchDirect(manifestUrl);
+            if (!manifestResponse.ok) {
+                throw new Error(`Failed to fetch Trinity Dublin manifest: HTTP ${manifestResponse.status}`);
+            }
+            
+            const iiifManifest = await manifestResponse.json();
+            
+            if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
+                throw new Error('Invalid IIIF manifest structure');
+            }
+            
+            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                const resource = canvas.images[0].resource;
+                return resource['@id'] || resource.id;
+            }).filter((link: string) => link);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No pages found in manifest');
+            }
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'trinity_dublin',
+                displayName: `TrinityDublin_${workId}`,
+                originalUrl: trinityUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load Trinity Dublin manuscript: ${error.message}`);
         }
     }
 
