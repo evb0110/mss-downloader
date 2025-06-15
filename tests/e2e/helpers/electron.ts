@@ -12,10 +12,12 @@ export const test = base.extend<{
 }>({
   electronApp: async ({}, use) => {
     const electronApp = await electron.launch({
-      args: [path.join(__dirname, '../../../dist/main/main.js')],
+      args: [path.join(__dirname, '../../../dist/main/main.js'), '--headless'],
       env: {
         NODE_ENV: 'test',
       },
+      executablePath: undefined, // Let Playwright find Electron
+      timeout: 30000,
     });
     await use(electronApp);
     await electronApp.close();

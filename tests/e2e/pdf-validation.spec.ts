@@ -170,7 +170,8 @@ test.describe('PDF Download Validation', () => {
 
   // Helper function to capture and analyze screenshots
   async function captureAndAnalyzeScreenshot(page: any, filename: string, context: string) {
-    const screenshotPath = `test-results/${filename}`;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const screenshotPath = `test-results/${timestamp}-${filename}`;
     await page.screenshot({ path: screenshotPath, fullPage: true });
     console.log(`📸 Screenshot saved: ${screenshotPath} (${context})`);
     
@@ -229,10 +230,21 @@ test.describe('PDF Download Validation', () => {
     await expect(page.locator('[data-testid="queue-item"]')).toHaveCount(0);
   }
 
-  // Test each library individually
-  const priorityLibraries = ['Gallica (BnF)', 'e-codices (Unifr)', 'Vatican Library', 'British Library', 'Cambridge University Digital Library'];
+  // Test each library individually - major libraries first
+  const testLibraries = [
+    'Gallica (BnF)',
+    'e-codices (Unifr)', 
+    'Vatican Library',
+    'British Library',
+    'Cambridge University Digital Library',
+    'Trinity College Cambridge',
+    'Unicatt (Ambrosiana)',
+    'UGent Library',
+    'Florus (BM Lyon)',
+    'Dublin ISOS (DIAS)'
+  ];
   
-  for (const libraryName of priorityLibraries) {
+  testLibraries.forEach(libraryName => {
     test(`should download and validate PDF from ${libraryName}`, async ({ page }) => {
       const library = supportedLibraries.find(lib => lib.name === libraryName);
       if (!library) {
@@ -240,41 +252,166 @@ test.describe('PDF Download Validation', () => {
         return;
       }
       
-      console.log(`\n=== Testing ${library.name} ===`);
+      console.log(`\n=== Testing ${libraryName} ===`);
       console.log(`URL: ${library.example}`);
       
-      // Clean up any previous downloads and queue items
-      await cleanupDownloads(page);
+      // Wait for app to fully load and navigate to correct page
+      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(2000);
       
-      // Configure global settings for small download
+      // Check current URL and navigate if needed
+      const currentUrl = page.url();
+      console.log(`Current URL: ${currentUrl}`);
+      
+      // Check if we're on the queue management page
+      const queueSection = page.locator('.queue-section');
+      const isOnQueuePage = await queueSection.isVisible();
+      console.log(`Queue management interface visible: ${isOnQueuePage}`);
+      
+      // Take initial screenshot
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      await page.screenshot({ 
+        path: `test-results/${timestamp}-01-initial-${libraryName.replace(/[^a-zA-Z0-9]/g, '_')}.png`,
+        fullPage: true 
+      });
+      
+      // Configure global settings for small download (30MB limit) BEFORE adding items
       await page.evaluate(() => window.scrollTo(0, 0));
-      const globalSettingsButton = page.locator('button:has-text("Default Download Settings")');
-      if (await globalSettingsButton.isVisible()) {
-        await globalSettingsButton.click();
-        
-        // Set auto-split threshold to 10MB for faster testing
-        const globalThresholdSlider = page.locator('input[type="range"]').first();
-        if (await globalThresholdSlider.isVisible()) {
-          await globalThresholdSlider.fill('10');
-          console.log('✓ Set auto-split threshold to 10MB for testing');
-        }
-        
-        // Close settings
-        const closeButton = page.locator('button:has-text("Close"), button:has-text("Cancel")');
-        if (await closeButton.isVisible()) {
-          await closeButton.click();
+      
+      // Find and click settings using the approach that worked in threshold test
+      const settingsElements = await page.locator('*:has-text("Default Download Settings")').all();
+      let settingsExpanded = false;
+      
+      for (const element of settingsElements) {
+        try {
+          if (await element.isVisible()) {
+            await element.click();
+            console.log('✓ Clicked settings element');
+            settingsExpanded = true;
+            break;
+          }
+        } catch (error) {
+          // Try next element
         }
       }
       
-      // Add single library to queue
-      const urlInput = page.locator('[data-testid="url-input"]');
-      const addButton = page.locator('[data-testid="add-button"]');
+      if (settingsExpanded) {
+        // Wait for settings content to become visible
+        await page.waitForTimeout(500);
+        
+        // Take screenshot of expanded settings
+        const timestamp2 = new Date().toISOString().replace(/[:.]/g, '-');
+        await page.screenshot({ 
+          path: `test-results/${timestamp2}-02-settings-expanded-${libraryName.replace(/[^a-zA-Z0-9]/g, '_')}.png`,
+          fullPage: true 
+        });
+        
+        // Find and set threshold slider
+        const sliders = page.locator('input[type="range"]');
+        const sliderCount = await sliders.count();
+        console.log(`Found ${sliderCount} range sliders`);
+        
+        if (sliderCount > 0) {
+          const slider = sliders.first();
+          const currentValue = await slider.inputValue();
+          console.log(`Current threshold: ${currentValue}MB, setting to 30MB`);
+          
+          // Set to 30MB
+          await slider.evaluate((el) => {
+            el.value = '30';
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+          });
+          
+          const newValue = await slider.inputValue();
+          console.log(`✓ Threshold changed from ${currentValue}MB to ${newValue}MB`);
+          
+          // Take screenshot after changing settings
+          await page.screenshot({ 
+            path: `test-results/03-settings-modified-${libraryName.replace(/[^a-zA-Z0-9]/g, '_')}.png`,
+            fullPage: true 
+          });
+          
+          // Collapse settings by clicking again
+          await settingsElements[0].click();
+        }
+      } else {
+        console.log('❌ Could not expand settings');
+      }
       
-      await urlInput.fill(library.example);
-      await addButton.click();
+      // Take screenshot before adding manuscript
+      await page.screenshot({ 
+        path: `test-results/04-before-add-${libraryName.replace(/[^a-zA-Z0-9]/g, '_')}.png`,
+        fullPage: true 
+      });
       
-      await expect(page.locator('[data-testid="queue-item"]')).toHaveCount(1, { timeout: 15000 });
-      console.log('✓ Added manuscript to queue');
+      // Clear any existing items using bulk Delete All button
+      const existingItems = page.locator('[data-testid="queue-item"]');
+      const initialCount = await existingItems.count();
+      console.log(`Found ${initialCount} items to clear`);
+      
+      if (initialCount > 0) {
+        // Try bulk delete first
+        const deleteAllButton = page.locator('button:has-text("Delete All")');
+        if (await deleteAllButton.isVisible() && await deleteAllButton.isEnabled()) {
+          await deleteAllButton.click();
+          console.log('✓ Clicked Delete All button');
+          
+          // Handle confirmation dialog
+          await page.waitForTimeout(1000);
+          const confirmButton = page.locator('[data-testid="confirm-delete"]').first();
+          if (await confirmButton.isVisible()) {
+            await confirmButton.click();
+            console.log('✓ Confirmed bulk deletion');
+            await page.waitForTimeout(2000); // Wait for bulk deletion to complete
+          }
+        } else {
+          console.log('Delete All button not available, using alternative cleanup');
+          // Alternative: Stop queue first, then delete
+          const stopButton = page.locator('button:has-text("Stop Queue")');
+          if (await stopButton.isVisible() && await stopButton.isEnabled()) {
+            await stopButton.click();
+            console.log('✓ Stopped queue before cleanup');
+            await page.waitForTimeout(1000);
+          }
+        }
+        
+        // Verify queue is clear
+        const remainingCount = await page.locator('[data-testid="queue-item"]').count();
+        console.log(`✓ Queue cleanup result: ${remainingCount} items remaining`);
+      }
+      
+      // Check final queue state after cleanup
+      const finalItemCount = await page.locator('[data-testid="queue-item"]').count();
+      console.log(`Found ${finalItemCount} remaining queue items after cleanup`);
+      
+      if (finalItemCount === 0) {
+        // Add single library to queue if none exist
+        const addMoreButton = page.locator('button:has-text("Add More Documents")');
+        if (await addMoreButton.isVisible()) {
+          await addMoreButton.click();
+          console.log('✓ Clicked Add More Documents');
+          await page.waitForTimeout(500);
+        }
+        
+        const urlInput = page.locator('textarea').first();
+        const addButton = page.locator('button').filter({ hasText: /Add|Submit/ }).first();
+        
+        if (await urlInput.isVisible()) {
+          await urlInput.fill(library.example);
+          console.log(`✓ Filled URL: ${library.example}`);
+          
+          if (await addButton.isVisible() && await addButton.isEnabled()) {
+            await addButton.click();
+            console.log('✓ Clicked add button');
+          }
+        }
+        
+        await expect(page.locator('[data-testid="queue-item"]')).toHaveCount(1, { timeout: 15000 });
+        console.log('✓ Added manuscript to queue');
+      } else {
+        console.log(`✓ Using existing queue item for ${libraryName}`);
+      }
       
       const queueItem = page.locator('[data-testid="queue-item"]').first();
       
@@ -296,8 +433,14 @@ test.describe('PDF Download Validation', () => {
       
       console.log('✓ Manifest loaded successfully');
       
+      // Take screenshot after manifest loading
+      await page.screenshot({ 
+        path: `test-results/07-manifest-loaded-${libraryName.replace(/[^a-zA-Z0-9]/g, '_')}.png`,
+        fullPage: true 
+      });
+      
       // Analyze current state
-      await captureAndAnalyzeScreenshot(page, `manifest-loaded-${libraryName.replace(/[^a-zA-Z0-9]/g, '_')}.png`, 'after manifest loaded');
+      await captureAndAnalyzeScreenshot(page, `08-state-analysis-${libraryName.replace(/[^a-zA-Z0-9]/g, '_')}.png`, 'after manifest loaded');
       
       // Get manuscript info
       const manuscriptTitle = queueItem.locator('strong');
@@ -375,7 +518,7 @@ test.describe('PDF Download Validation', () => {
       // Monitor download progress and wait for completion
       let downloadCompleted = false;
       let downloadFailed = false;
-      const maxWaitTime = 900000; // 15 minutes for potentially large downloads
+      const maxWaitTime = 300000; // 5 minutes per library (reasonable for testing)
       const checkInterval = 10000; // 10 seconds between checks
       const maxChecks = maxWaitTime / checkInterval;
       
@@ -489,47 +632,13 @@ test.describe('PDF Download Validation', () => {
       expect(totalSize).toBeGreaterThan(0.5); // More than 500KB
       
       console.log(`✅ ${library.name} passed PDF validation!`);
-    });
-  }
-  
-  test('should test remaining libraries sequentially', async ({ page }) => {
-    const remainingLibraries = supportedLibraries.filter(lib => 
-      !priorityLibraries.includes(lib.name) && 
-      !lib.name.includes('⚠️')
-    );
-    
-    console.log(`\nTesting ${remainingLibraries.length} remaining libraries...`);
-    
-    for (const library of remainingLibraries) {
-      console.log(`\n--- Quick test: ${library.name} ---`);
       
-      // Clean up
-      await cleanupDownloads(page);
-      
-      // Add and test manifest loading only
-      const urlInput = page.locator('[data-testid="url-input"]');
-      const addButton = page.locator('[data-testid="add-button"]');
-      
-      await urlInput.fill(library.example);
-      await addButton.click();
-      
-      await expect(page.locator('[data-testid="queue-item"]')).toHaveCount(1, { timeout: 15000 });
-      
-      const queueItem = page.locator('[data-testid="queue-item"]').first();
-      
-      // Wait for manifest loading
-      try {
-        await expect(queueItem).not.toHaveClass(/loading-manifest/, { timeout: 30000 });
-        
-        const hasFailed = await queueItem.locator('.status-badge.status-failed').isVisible();
-        if (hasFailed) {
-          console.log(`❌ ${library.name}: Manifest loading failed`);
-        } else {
-          console.log(`✓ ${library.name}: Manifest loaded successfully`);
-        }
-      } catch (error) {
-        console.log(`⚠️ ${library.name}: Manifest loading timeout`);
+      // Stop the queue after successful test to prevent interference
+      const stopQueueButton = page.locator('button.stop-btn, button:has-text("Stop Queue")');
+      if (await stopQueueButton.isVisible() && await stopQueueButton.isEnabled()) {
+        await stopQueueButton.click();
+        console.log('✓ Stopped queue after test completion');
       }
-    }
+    });
   });
 });

@@ -193,3 +193,36 @@ npm run lint
 - v1.0.45: Fixed Trinity Dublin full resolution image downloading - convert size-limited URLs (/full/600,/) to full resolution (/full/max/)
 - v1.0.49: Fixed Trinity Cambridge downloads and auto-splitting - convert to /full/1000,/ for faster downloads, fixed critical auto-split bug where cached manifests had empty pageLinks
 - don't build after completing a task
+
+## Testing Section
+
+### Critical Testing Principles
+- **Always verify actions succeeded** - Don't assume UI interactions worked, check the result immediately
+- **Analyze screenshots thoroughly** - Look for collapsed sections, disabled buttons, validation errors before proceeding
+- **Check source code defaults** - When tests fail to change settings, investigate the actual default values in code
+- **Expand collapsed UI sections** - Settings might be hidden in closed spoilers/accordions - click to expand them first
+- **Test one library at a time** - Add one, test thoroughly, delete, add next to isolate issues
+- **Use proper selectors** - Never rely on text-based selectors, only CSS classes and data attributes
+- **Validate with tools** - Use `pdfinfo` to verify actual PDF page count and file validity
+- **Set reasonable test limits** - Use 30MB for testing, not 800MB+ that will never complete within test timeouts
+
+### Common Testing Mistakes & Solutions
+- **Range input sliders**: `slider.fill()` doesn't work - use `evaluate()` with direct value assignment + events
+- **Hidden settings**: Always check if settings sections are collapsed and expand them before configuring
+- **Infinite waiting**: Don't wait indefinitely - verify actions worked and modify approach if they didn't
+- **Text-based selectors**: Use `.start-btn` instead of `button:has-text("Start")` for reliability
+- **Assumption failures**: When something doesn't work as expected, investigate and fix rather than continuing
+
+### Testing Strategies
+- **End-to-End PDF Validation**: Test each library individually with poppler PDF verification
+- **Auto-split threshold testing**: Verify 30MB limits are actually applied by checking downloads split appropriately
+- **Manifest loading verification**: Wait for actual completion, not just timeouts
+- **UI state analysis**: Capture and analyze page state through screenshots and element inspection
+- **Error handling**: Test both expected and unexpected failure scenarios
+
+### Required Test Coverage
+- **Download Queue Management**: Start/stop/pause functionality with proper state transitions
+- **Manuscript Library Support**: Each supported library with manifest loading and download validation
+- **Auto-split functionality**: Large manuscripts split at configured thresholds (30MB for testing)
+- **PDF Generation**: Valid PDFs with correct page counts using poppler verification
+- **Error Recovery**: Proper handling of network failures, captcha requirements, blocked access
