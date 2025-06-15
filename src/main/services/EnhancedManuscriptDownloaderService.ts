@@ -2090,10 +2090,9 @@ export class EnhancedManuscriptDownloaderService {
             if (responseText.trim().startsWith('<html>') || responseText.includes('captcha')) {
                 console.log('Trinity Dublin captcha detected for URL:', trinityUrl);
                 console.log('Manifest URL:', manifestUrl);
-                // Throw CAPTCHA_REQUIRED error to trigger captcha flow in UI
-                // For Trinity Dublin, we need to navigate to the main page, not the manifest
-                const mainPageUrl = trinityUrl;
-                throw new Error(`CAPTCHA_REQUIRED:${mainPageUrl}`);
+                // Trinity Dublin has very aggressive anti-automation
+                // Direct users to manual approach
+                throw new Error(`TRINITY_DUBLIN_MANUAL_REQUIRED`);
             }
             
             let iiifManifest;

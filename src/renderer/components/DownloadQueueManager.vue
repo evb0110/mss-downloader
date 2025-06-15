@@ -919,6 +919,39 @@ async function parseManuscriptWithCaptcha(url: string) {
     } catch (error: any) {
         console.log('parseManuscriptWithCaptcha caught error:', error.message);
         
+        // Check if this is Trinity Dublin manual requirement
+        if (error.message?.includes('TRINITY_DUBLIN_MANUAL_REQUIRED')) {
+            // Show instructions for manual download
+            showAlert(
+                'Trinity College Dublin - Manual Download Required',
+                `Trinity College Dublin blocks automated access with aggressive captcha protection.
+
+To download this manuscript:
+1. Open the manuscript page in your browser
+2. Complete any captchas shown
+3. Open Developer Tools (F12) → Network tab
+4. Look for a request to "manifest" or ending in "/manifest"
+5. Copy the JSON response
+6. Use "Edit" on this item to paste the manifest data
+
+Alternatively, you can manually download individual pages from the viewer.`,
+                'warning'
+            );
+            
+            // Return a placeholder manifest
+            const workIdMatch = url.match(/\/works\/([^/?]+)/);
+            const workId = workIdMatch ? workIdMatch[1] : 'unknown';
+            
+            return {
+                pageLinks: [],
+                totalPages: 0,
+                library: 'trinity_dublin' as const,
+                displayName: `TrinityDublin_${workId}_MANUAL_REQUIRED`,
+                originalUrl: url,
+                requiresManualDownload: true
+            };
+        }
+        
         // Check if this is a captcha error (may be wrapped in IPC error)
         if (error.message?.includes('CAPTCHA_REQUIRED:')) {
             // Extract the captcha URL from the potentially wrapped error message
@@ -930,40 +963,23 @@ async function parseManuscriptWithCaptcha(url: string) {
             
             const captchaResult = await window.electronAPI.solveCaptcha(captchaUrl);
             
-            if (captchaResult.success) {
-                // For Trinity Dublin, after captcha is solved on the main page,
-                // we need to try fetching the manifest again
-                if (url.includes('digitalcollections.tcd.ie')) {
-                    console.log('Trinity Dublin captcha solved, retrying manifest fetch...');
-                    
-                    // Retry the original parse request
-                    try {
-                        return await window.electronAPI.parseManuscriptUrl(url);
-                    } catch (retryError: any) {
-                        console.error('Failed to load manifest after captcha:', retryError);
-                        throw new Error('Failed to load manifest even after captcha completion');
-                    }
-                } else if (captchaResult.content) {
-                    // For other libraries that return manifest directly
-                    const iiifManifest = JSON.parse(captchaResult.content);
-                    
-                    const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
-                        const resource = canvas.images[0].resource;
-                        return resource['@id'] || resource.id;
-                    }).filter((link: string) => link);
-                    
-                    if (pageLinks.length > 0) {
-                        const workIdMatch = url.match(/\/works\/([^/?]+)/);
-                        const workId = workIdMatch ? workIdMatch[1] : 'unknown';
-                        
-                        return {
-                            pageLinks,
-                            totalPages: pageLinks.length,
-                            library: 'trinity_dublin',
-                            displayName: `TrinityDublin_${workId}`,
-                            originalUrl: url,
-                        };
-                    }
+            if (captchaResult.success && captchaResult.content) {
+                // For libraries that return manifest directly after captcha
+                const iiifManifest = JSON.parse(captchaResult.content);
+                
+                const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                    const resource = canvas.images[0].resource;
+                    return resource['@id'] || resource.id;
+                }).filter((link: string) => link);
+                
+                if (pageLinks.length > 0) {
+                    return {
+                        pageLinks,
+                        totalPages: pageLinks.length,
+                        library: 'unknown',
+                        displayName: url.split('/').pop() || 'Document',
+                        originalUrl: url,
+                    };
                 }
             }
             
@@ -1104,17 +1120,33 @@ async function processBulkUrls() {
                 }
                 
                 // Update the temporary item with actual manifest data
-                await window.electronAPI.updateQueueItem(tempId, {
-                    displayName: manifest.displayName,
-                    library: manifest.library as TLibrary,
-                    totalPages: manifest.totalPages,
-                    status: 'pending' as TStatus,
-                    downloadOptions: {
-                        concurrentDownloads: queueState.value.globalSettings?.concurrentDownloads || 3,
-                        startPage: 1,
-                        endPage: manifest.totalPages,
-                    },
-                });
+                if ((manifest as any).requiresManualDownload) {
+                    // Trinity Dublin manual download case
+                    await window.electronAPI.updateQueueItem(tempId, {
+                        displayName: manifest.displayName,
+                        library: manifest.library as TLibrary,
+                        totalPages: 0,
+                        status: 'failed' as TStatus,
+                        error: 'Manual download required - see instructions',
+                        downloadOptions: {
+                            concurrentDownloads: 1,
+                            startPage: 1,
+                            endPage: 1,
+                        },
+                    });
+                } else {
+                    await window.electronAPI.updateQueueItem(tempId, {
+                        displayName: manifest.displayName,
+                        library: manifest.library as TLibrary,
+                        totalPages: manifest.totalPages,
+                        status: 'pending' as TStatus,
+                        downloadOptions: {
+                            concurrentDownloads: queueState.value.globalSettings?.concurrentDownloads || 3,
+                            startPage: 1,
+                            endPage: manifest.totalPages,
+                        },
+                    });
+                }
                 addedCount++;
             } catch (error: any) {
                 console.log('[RENDERER] Error caught in processBulkUrls:', error);
