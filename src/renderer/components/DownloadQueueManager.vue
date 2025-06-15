@@ -79,7 +79,12 @@ https://digi.vatlib.it/..."
           <div class="queue-progress-header">
             <span class="queue-progress-label">Queue Progress</span>
             <span class="queue-progress-stats" data-testid="total-items">
-              {{ queueStats.completed + queueStats.failed }} / {{ queueStats.total }} Manuscripts
+              <template v-if="queueStats.loading > 0">
+                Loading {{ queueStats.loading }} manifest{{ queueStats.loading > 1 ? 's' : '' }}...
+              </template>
+              <template v-else>
+                {{ queueStatsReady.completed + queueStatsReady.failed }} / {{ queueStatsReady.total }} Manuscripts
+              </template>
             </span>
           </div>
           <div class="queue-progress-bar" data-testid="progress-bar">
@@ -94,6 +99,12 @@ https://digi.vatlib.it/..."
             />
           </div>
           <div class="queue-progress-breakdown">
+            <span
+              v-if="queueStats.loading > 0"
+              class="progress-segment loading"
+            >
+              {{ queueStats.loading }} Loading
+            </span>
             <span
               v-if="queueStats.downloading > 0"
               class="progress-segment downloading"
@@ -132,11 +143,16 @@ https://digi.vatlib.it/..."
           <button
             v-if="!isQueueProcessing && !isQueuePaused"
             class="start-btn"
-            :disabled="isProcessingUrls || !hasReadyItems"
+            :disabled="isProcessingUrls || !hasReadyItems || queueStats.loading > 0"
             data-testid="start-queue"
             @click="startQueue"
           >
-            {{ shouldShowResume ? 'Resume Queue' : 'Start Queue' }}
+            <template v-if="queueStats.loading > 0">
+              Loading Manifests...
+            </template>
+            <template v-else>
+              {{ shouldShowResume ? 'Resume Queue' : 'Start Queue' }}
+            </template>
           </button>
           <button
             v-if="isQueueProcessing && !isQueuePaused"
@@ -156,10 +172,15 @@ https://digi.vatlib.it/..."
           <button
             v-if="isQueuePaused && !shouldShowResume"
             class="start-btn"
-            :disabled="isProcessingUrls || !hasReadyItems"
+            :disabled="isProcessingUrls || !hasReadyItems || queueStats.loading > 0"
             @click="startQueue"
           >
-            Start Queue
+            <template v-if="queueStats.loading > 0">
+              Loading Manifests...
+            </template>
+            <template v-else>
+              Start Queue
+            </template>
           </button>
           <button
             v-if="isQueueProcessing || isQueuePaused"
@@ -744,7 +765,21 @@ const queueStats = computed(() => {
     const items = queueItems.value;
     return {
         total: items.length,
-        pending: items.filter((item) => item.status === 'pending' || item.status === 'loading').length,
+        loading: items.filter((item) => item.status === 'loading').length,
+        pending: items.filter((item) => item.status === 'pending').length,
+        downloading: items.filter((item) => item.status === 'downloading').length,
+        completed: items.filter((item) => item.status === 'completed').length,
+        failed: items.filter((item) => item.status === 'failed').length,
+        paused: items.filter((item) => item.status === 'paused').length,
+    };
+});
+
+const queueStatsReady = computed(() => {
+    // Stats excluding loading items for progress display
+    const items = queueItems.value.filter((item) => item.status !== 'loading');
+    return {
+        total: items.length,
+        pending: items.filter((item) => item.status === 'pending').length,
         downloading: items.filter((item) => item.status === 'downloading').length,
         completed: items.filter((item) => item.status === 'completed').length,
         failed: items.filter((item) => item.status === 'failed').length,
@@ -762,6 +797,9 @@ const hasUserStartedQueue = ref(false);
 const shouldShowResume = computed(() => {
     // If queue is empty, always show "Start"
     if (queueItems.value.length === 0) return false;
+    
+    // If items are still loading, don't show resume
+    if (queueStats.value.loading > 0) return false;
     
     // If only pending items exist (no started/completed/failed items), show "Start"
     const hasOnlyPendingItems = queueItems.value.every((item: QueuedManuscript) => item.status === 'pending' || item.status === 'loading');
@@ -1504,8 +1542,9 @@ function getProgressSegmentClass(status: TStatus): string {
             return 'downloading';
         case 'paused':
             return 'paused';
-        case 'pending':
         case 'loading':
+            return 'loading';
+        case 'pending':
         default:
             return 'pending';
     }
@@ -1675,6 +1714,10 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     background: linear-gradient(90deg, #e9ecef 0%, #dee2e6 100%);
 }
 
+.queue-progress-fill.loading {
+    background: linear-gradient(90deg, #17a2b8 0%, #138496 100%);
+}
+
 .queue-progress-breakdown {
     display: flex;
     gap: 12px;
@@ -1717,6 +1760,12 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     background: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
+}
+
+.progress-segment.loading {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
 }
 
 .queue-controls {
