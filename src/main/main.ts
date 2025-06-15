@@ -25,6 +25,7 @@ let enhancedDownloadQueue: EnhancedDownloadQueue | null = null;
 
 const createWindow = () => {
   const preloadPath = join(__dirname, '../preload/preload.js');
+  const isHeadless = process.argv.includes('--headless') || process.env.NODE_ENV === 'test';
   
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -36,9 +37,17 @@ const createWindow = () => {
       webSecurity: false, // Disable for dev to avoid CORS issues
       allowRunningInsecureContent: true,
     },
-    title: 'Manuscript Downloader',
+    title: 'Abba Ababus (MSS Downloader)',
     titleBarStyle: 'default',
-    show: true, // Show immediately for debugging
+    show: false, // Never show initially
+    ...(isHeadless && {
+      x: -2000, // Move off-screen
+      y: -2000,
+      skipTaskbar: true,
+      minimizable: false,
+      maximizable: false,
+      resizable: false,
+    }),
   });
 
   // Force devtools open immediately (but not for tests)
@@ -65,7 +74,9 @@ const createWindow = () => {
   }
 
   mainWindow.once('ready-to-show', () => {
-    mainWindow?.show();
+    if (!isHeadless) {
+      mainWindow?.show();
+    }
   });
 
   mainWindow.on('closed', () => {

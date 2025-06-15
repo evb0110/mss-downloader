@@ -23,7 +23,14 @@
       <!-- Show input form directly if no queue items -->
       <template v-if="queueItems.length === 0">
         <div class="empty-queue-message" data-testid="empty-queue-message">
-          <p>No manuscripts in queue. Add URLs below to get started.</p>
+          <div class="patron-saint">
+            <img :src="abbaAbabusImage" alt="Abba Ababus" class="patron-image" />
+            <div class="patron-text">
+              <h3>Welcome to Abba Ababus (MSS Downloader)</h3>
+              <p>Under the patronage of Abba Ababus</p>
+              <p>No manuscripts in queue. Add URLs below to get started.</p>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label for="bulk-urls">Manuscript URLs</label>
@@ -623,6 +630,7 @@ import type { QueuedManuscript, QueueState, TStatus, TLibrary } from '../../shar
 import type { LibraryInfo, ManuscriptManifest } from '../../shared/types';
 import Modal from './Modal.vue';
 import Spoiler from './Spoiler.vue';
+import abbaAbabusImage from '../../../assets/abba-ababus.jpg';
 
 // Declare window.electronAPI type
 declare global {
@@ -2770,6 +2778,64 @@ label {
     .add-more-btn {
         width: 100%;
         font-size: min(1rem, 3.2vw);
+    }
+}
+
+/* Patron Saint Styles */
+.patron-saint {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--card-background, #f8f9fa);
+    border-radius: 8px;
+    border: 2px solid var(--border-color, #ddd);
+    margin-bottom: 1rem;
+}
+
+.patron-image {
+    width: 80px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 2px solid var(--accent-color, #007bff);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+
+.patron-text {
+    flex: 1;
+}
+
+.patron-text h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color, #333);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.patron-text p {
+    margin: 0.25rem 0;
+    color: var(--text-secondary, #666);
+    line-height: 1.4;
+}
+
+.patron-text p:first-of-type {
+    font-style: italic;
+    font-size: 0.9rem;
+    color: var(--accent-color, #007bff);
+}
+
+@media (max-width: 768px) {
+    .patron-saint {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .patron-image {
+        width: 60px;
+        height: 75px;
     }
 }
 

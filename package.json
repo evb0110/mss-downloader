@@ -1,7 +1,7 @@
 {
-  "name": "manuscript-downloader",
-  "version": "1.0.49",
-  "description": "Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
+  "name": "abba-ababus-mss-downloader",
+  "version": "1.0.50",
+  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "main": "dist/main/main.js",
   "type": "module",
   "scripts": {
@@ -55,8 +55,8 @@
     "vue-tsc": "^2.1.4"
   },
   "build": {
-    "appId": "com.me.manuscript-downloader",
-    "productName": "Manuscript Downloader",
+    "appId": "com.me.abba-ababus-mss-downloader",
+    "productName": "Abba Ababus (MSS Downloader)",
     "directories": {
       "output": "release"
     },
@@ -85,7 +85,12 @@
     "mac": {
       "target": "dmg",
       "icon": "assets/icon-512.png",
-      "identity": null
+      "identity": null,
+      "category": "public.app-category.productivity",
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
     },
     "nsis": {
       "oneClick": false,
