@@ -499,11 +499,13 @@ https://digi.vatlib.it/..."
     width="min(1200px, 95vw)"
     @close="showSupportedLibrariesModal = false"
   >
-    <div class="libraries-modal-content">
+    <template #headerContent>
       <p class="libraries-intro">
         Enter a URL from one of the following supported digital libraries to download a manuscript:
       </p>
+    </template>
 
+    <div class="libraries-modal-content">
       <div class="libraries-scroll-container">
         <div class="libraries-list">
           <div
@@ -2607,8 +2609,11 @@ label {
 }
 
 .libraries-intro {
-    margin-bottom: 1.5rem;
-    flex-shrink: 0;
+    margin: 0;
+    color: #495057;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    font-style: italic;
 }
 
 .libraries-scroll-container {

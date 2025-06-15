@@ -22,6 +22,10 @@
         </button>
       </div>
       
+      <div v-if="$slots.headerContent" class="modal-header-content">
+        <slot name="headerContent" />
+      </div>
+      
       <div class="modal-body">
         <p v-if="message">
           {{ message }}
@@ -29,21 +33,13 @@
         <slot />
       </div>
       
-      <div class="modal-footer">
+      <div class="modal-footer" v-if="type === 'confirm'">
         <button
-          v-if="type === 'confirm'"
           class="btn btn-danger"
           :disabled="loading"
           @click="$emit('confirm')"
         >
           {{ confirmText || 'Confirm' }}
-        </button>
-        <button
-          class="btn btn-secondary"
-          :disabled="loading"
-          @click="$emit('close')"
-        >
-          {{ cancelText || 'Cancel' }}
         </button>
       </div>
     </div>
@@ -122,9 +118,14 @@ function handleOverlayClick() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 20px 0 20px;
-  border-bottom: 1px solid #e9ecef;
+  padding: 20px 20px 10px 20px;
   margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.modal-header-content {
+  padding: 0 20px 20px 20px;
+  border-bottom: 1px solid #e9ecef;
   flex-shrink: 0;
 }
 

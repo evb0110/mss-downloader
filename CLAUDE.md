@@ -151,7 +151,37 @@ npm run dist:win         # Windows-specific build
 - on every fix bump minor version
 - not minor, but patch
 
+## Library Testing Protocol
+
+When implementing new manuscript libraries, use this testing methodology:
+
+```bash
+# 1. Test IIIF manifest accessibility
+curl -s "https://library-domain.com/iiif/manuscript-id/manifest.json" | head -20
+
+# 2. Verify manifest structure and extract image URLs
+curl -s "https://manifest-url" | jq '.sequences[0].canvases[0].images[0].resource | keys'
+curl -s "https://manifest-url" | jq -r '.sequences[0].canvases[0].images[0].resource."@id"'
+
+# 3. For embedded manifests (like MIRA), check page HTML
+curl -s "https://page-url" | grep -i "iiif\|manifest\|json" | head -5
+
+# 4. Test different URL patterns to understand manuscript ID extraction
+curl -s "https://library-domain.com/manuscript/ID/manifest" | jq '.sequences[0].canvases | length'
+
+# 5. Always build and lint after implementation
+npm run build:main
+npm run lint
+```
+
+**Important Testing Notes:**
+- Don't start dev server for testing - you cannot control it properly through Claude Code
+- Use curl commands to verify IIIF manifests are accessible and parseable
+- Test actual image URL extraction from manifest JSON structure
+- Verify manuscript ID extraction regex patterns work with real URLs
+
 ## Memories
 - image sizing and non-compression
 - devserver doesn't work correctly for you. If you need, I can start it
 - v1.0.29: Added Unicatt (Biblioteca Ambrosiana) support with proxy fallback mechanism for geo-restricted access
+- v1.0.31: Added Cambridge CUDL, Trinity Cambridge, Dublin ISOS, Dublin MIRA, and Trinity Dublin libraries

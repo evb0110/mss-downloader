@@ -2066,7 +2066,19 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error(`Failed to fetch Trinity Dublin manifest: HTTP ${manifestResponse.status}`);
             }
             
-            const iiifManifest = await manifestResponse.json();
+            const responseText = await manifestResponse.text();
+            
+            // Check if response is HTML (captcha protection)
+            if (responseText.trim().startsWith('<html>') || responseText.includes('captcha')) {
+                throw new Error('Trinity College Dublin requires captcha verification - cannot access manifest automatically. Please try accessing the manuscript directly through their website.');
+            }
+            
+            let iiifManifest;
+            try {
+                iiifManifest = JSON.parse(responseText);
+            } catch (parseError) {
+                throw new Error('Trinity College Dublin returned invalid JSON - possibly blocked by security measures');
+            }
             
             if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
                 throw new Error('Invalid IIIF manifest structure');
