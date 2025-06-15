@@ -755,13 +755,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 console.log(`Manifest loaded: ${manifest.totalPages} pages, library: ${manifest.library}`);
             } else {
                 console.log(`Using cached manifest data: ${item.totalPages} pages, library: ${item.library}`);
-                // Create a minimal manifest object for size checking
-                manifest = {
-                    totalPages: item.totalPages,
-                    library: item.library,
-                    displayName: item.displayName || `${item.library}_manuscript`,
-                    pageLinks: [] // Will be loaded during actual download
-                };
+                // Need to reload manifest to get pageLinks for size estimation
+                manifest = await this.currentDownloader!.loadManifest(item.url);
             }
             
             // For Florus only - limited manifest data requires size estimation

@@ -80,4 +80,15 @@ jspm_packages/
 # Generated icons
 assets/*.ico
 assets/*.icns 
-node_modules
+
+# Test results
+test-results/
+playwright-report/
+.playwright/
+
+# Test screenshots and artifacts
+*.png
+*.jpg
+*.jpeg
+*.webm
+*.mp4

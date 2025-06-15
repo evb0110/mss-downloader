@@ -14,7 +14,7 @@ import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+const isDev = (process.env.NODE_ENV === 'development' || !app.isPackaged) && process.env.NODE_ENV !== 'test';
 
 let mainWindow: BrowserWindow | null = null;
 let manuscriptDownloader: ManuscriptDownloaderService | null = null;

@@ -41,8 +41,17 @@
         class="modal-footer"
       >
         <button
+          class="btn btn-secondary"
+          :disabled="loading"
+          data-testid="cancel-delete"
+          @click="$emit('close')"
+        >
+          {{ cancelText || 'Cancel' }}
+        </button>
+        <button
           class="btn btn-danger"
           :disabled="loading"
+          data-testid="confirm-delete"
           @click="$emit('confirm')"
         >
           {{ confirmText || 'Confirm' }}
