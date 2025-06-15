@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain, dialog, shell, session } from 'electron';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { promises as fs } from 'fs';
@@ -494,6 +494,7 @@ ipcMain.handle('solve-captcha', async (_event, url: string) => {
         nodeIntegration: false,
         contextIsolation: true,
         webSecurity: true,
+        session: session.defaultSession, // Use default session to share cookies
       },
       title: 'Complete Captcha - Close window when done',
       modal: true,

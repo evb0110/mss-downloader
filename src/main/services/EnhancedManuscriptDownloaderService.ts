@@ -2064,7 +2064,22 @@ export class EnhancedManuscriptDownloaderService {
             const workId = workIdMatch[1];
             const manifestUrl = `https://digitalcollections.tcd.ie/concern/works/${workId}/manifest`;
             
-            const manifestResponse = await this.fetchDirect(manifestUrl);
+            // Try to get cookies from Electron session if available
+            let cookieHeader = '';
+            try {
+                const { session } = await import('electron');
+                const cookies = await session.defaultSession.cookies.get({ url: 'https://digitalcollections.tcd.ie' });
+                if (cookies.length > 0) {
+                    cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ');
+                    console.log('Using session cookies for Trinity Dublin request');
+                }
+            } catch (err) {
+                // Session not available in this context
+            }
+            
+            const manifestResponse = await this.fetchDirect(manifestUrl, {
+                headers: cookieHeader ? { 'Cookie': cookieHeader } : {}
+            });
             if (!manifestResponse.ok) {
                 throw new Error(`Failed to fetch Trinity Dublin manifest: HTTP ${manifestResponse.status}`);
             }
