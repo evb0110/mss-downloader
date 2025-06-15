@@ -2077,8 +2077,8 @@ export class EnhancedManuscriptDownloaderService {
             if (responseText.trim().startsWith('<html>') || responseText.includes('captcha')) {
                 console.log('Trinity Dublin captcha detected for URL:', trinityUrl);
                 console.log('Manifest URL:', manifestUrl);
-                // Trinity Dublin has aggressive captcha protection that requires manual access
-                throw new Error('Trinity College Dublin blocks automated access with endless captchas. Manual download required: 1) Visit the page in your browser, 2) Complete captcha, 3) Open DevTools Network tab, 4) Look for manifest.json request, 5) Copy the JSON response.');
+                // Throw CAPTCHA_REQUIRED error to trigger captcha flow in UI
+                throw new Error(`CAPTCHA_REQUIRED:${manifestUrl}`);
             }
             
             let iiifManifest;
