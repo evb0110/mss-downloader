@@ -318,7 +318,18 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
   if (!enhancedManuscriptDownloader) {
     throw new Error('Enhanced manuscript downloader not initialized');
   }
-  return enhancedManuscriptDownloader.loadManifest(url);
+  
+  try {
+    return await enhancedManuscriptDownloader.loadManifest(url);
+  } catch (error: any) {
+    // Check if this is a captcha error that should be handled by the UI
+    if (error.message?.startsWith('CAPTCHA_REQUIRED:')) {
+      // Let the error pass through to the UI for captcha handling
+      throw error;
+    }
+    // Handle other errors normally
+    throw error;
+  }
 });
 
 // Queue management handlers

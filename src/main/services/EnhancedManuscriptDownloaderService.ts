@@ -2070,7 +2070,9 @@ export class EnhancedManuscriptDownloaderService {
             
             // Check if response is HTML (captcha protection)
             if (responseText.trim().startsWith('<html>') || responseText.includes('captcha')) {
-                throw new Error('CAPTCHA_REQUIRED:' + manifestUrl);
+                console.log('Trinity Dublin captcha detected for URL:', trinityUrl);
+                console.log('Manifest URL:', manifestUrl);
+                throw new Error(`CAPTCHA_REQUIRED:${manifestUrl}`);
             }
             
             let iiifManifest;

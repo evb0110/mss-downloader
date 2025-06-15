@@ -913,6 +913,50 @@ function parseUrls(text: string): string[] {
         .filter((url) => url.length > 0);
 }
 
+async function parseManuscriptWithCaptcha(url: string) {
+    try {
+        return await window.electronAPI.parseManuscriptUrl(url);
+    } catch (error: any) {
+        // Check if this is a captcha error
+        if (error.message?.startsWith('CAPTCHA_REQUIRED:')) {
+            const captchaUrl = error.message.split('CAPTCHA_REQUIRED:')[1];
+            
+            console.log('Captcha required for:', url);
+            console.log('Captcha URL:', captchaUrl);
+            
+            const captchaResult = await window.electronAPI.solveCaptcha(captchaUrl);
+            
+            if (captchaResult.success && captchaResult.content) {
+                // Parse the manifest content we got from captcha solving
+                const iiifManifest = JSON.parse(captchaResult.content);
+                
+                const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                    const resource = canvas.images[0].resource;
+                    return resource['@id'] || resource.id;
+                }).filter((link: string) => link);
+                
+                if (pageLinks.length > 0) {
+                    const workIdMatch = url.match(/\/works\/([^/?]+)/);
+                    const workId = workIdMatch ? workIdMatch[1] : 'unknown';
+                    
+                    return {
+                        pageLinks,
+                        totalPages: pageLinks.length,
+                        library: 'trinity_dublin',
+                        displayName: `TrinityDublin_${workId}`,
+                        originalUrl: url,
+                    };
+                }
+            }
+            
+            throw new Error(captchaResult.error || 'Captcha verification failed');
+        }
+        
+        // Re-throw other errors
+        throw error;
+    }
+}
+
 async function processBulkUrls() {
     const urls = parseUrls(bulkUrlText.value);
     
@@ -1016,8 +1060,8 @@ async function processBulkUrls() {
             const tempId = tempIds[i];
         
             try {
-                // Parse manifest in the main process
-                const manifest = await window.electronAPI.parseManuscriptUrl(url);
+                // Parse manifest in the main process with captcha handling
+                const manifest = await parseManuscriptWithCaptcha(url);
                 
                 // Final duplicate check after manifest is loaded
                 const urlCanonical = canonicalizeUrl(url);
@@ -1053,86 +1097,25 @@ async function processBulkUrls() {
                 });
                 addedCount++;
             } catch (error: any) {
-                // Check if this is a captcha error
-                if (error.message?.startsWith('CAPTCHA_REQUIRED:')) {
-                    const captchaUrl = error.message.split('CAPTCHA_REQUIRED:')[1];
-                    
-                    // Update item to show captcha is being solved
-                    await window.electronAPI.updateQueueItem(tempId, {
-                        displayName: `Solving captcha for: ${url.substring(0, 30)}...`,
-                        status: 'loading' as TStatus,
-                        error: 'Captcha verification required - opening solver...',
-                    });
-                    
-                    try {
-                        const captchaResult = await window.electronAPI.solveCaptcha(captchaUrl);
-                        
-                        if (captchaResult.success && captchaResult.content) {
-                            // Parse the manifest content we got from captcha solving
-                            const iiifManifest = JSON.parse(captchaResult.content);
-                            
-                            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
-                                const resource = canvas.images[0].resource;
-                                return resource['@id'] || resource.id;
-                            }).filter((link: string) => link);
-                            
-                            if (pageLinks.length > 0) {
-                                const workIdMatch = url.match(/\/works\/([^/?]+)/);
-                                const workId = workIdMatch ? workIdMatch[1] : 'unknown';
-                                
-                                await window.electronAPI.updateQueueItem(tempId, {
-                                    displayName: `TrinityDublin_${workId}`,
-                                    library: 'trinity_dublin' as TLibrary,
-                                    totalPages: pageLinks.length,
-                                    status: 'pending' as TStatus,
-                                    error: undefined,
-                                    downloadOptions: {
-                                        concurrentDownloads: 3,
-                                        startPage: 1,
-                                        endPage: pageLinks.length,
-                                    },
-                                });
-                                addedCount++;
-                                continue; // Skip the error handling below
-                            }
-                        }
-                        
-                        // If captcha solving failed
-                        await window.electronAPI.updateQueueItem(tempId, {
-                            displayName: `Failed to solve captcha: ${url.substring(0, 40)}...`,
-                            status: 'failed' as TStatus,
-                            error: captchaResult.error || 'Captcha verification failed',
-                        });
-                        errorCount++;
-                        
-                    } catch (captchaError: any) {
-                        await window.electronAPI.updateQueueItem(tempId, {
-                            displayName: `Captcha error: ${url.substring(0, 40)}...`,
-                            status: 'failed' as TStatus,
-                            error: `Captcha solving failed: ${captchaError.message}`,
-                        });
-                        errorCount++;
-                    }
-                } else {
-                    // Handle normal errors
-                    const isExpectedError = error.message?.includes('not valid JSON') ||
-                        error.message?.includes('404') ||
-                        error.message?.includes('Manuscript not found') ||
-                        error.message?.includes('CORS') ||
-                        error.message?.includes('Invalid manifest structure');
-                
-                    if (!isExpectedError) {
-                        // Only log unexpected errors to avoid console spam
-                        console.error(`Failed to load manifest for ${url}:`, error);
-                    }
-                
-                    await window.electronAPI.updateQueueItem(tempId, {
-                        displayName: `Failed to load: ${url.substring(0, 50)}...`,
-                        status: 'failed' as TStatus,
-                        error: error.message,
-                    });
-                    errorCount++;
+                // Handle all errors (captcha handled in parseManuscriptWithCaptcha)
+                const isExpectedError = error.message?.includes('not valid JSON') ||
+                    error.message?.includes('404') ||
+                    error.message?.includes('Manuscript not found') ||
+                    error.message?.includes('CORS') ||
+                    error.message?.includes('Invalid manifest structure') ||
+                    error.message?.includes('Captcha verification failed');
+            
+                if (!isExpectedError) {
+                    // Only log unexpected errors to avoid console spam
+                    console.error(`Failed to load manifest for ${url}:`, error);
                 }
+            
+                await window.electronAPI.updateQueueItem(tempId, {
+                    displayName: `Failed to load: ${url.substring(0, 50)}...`,
+                    status: 'failed' as TStatus,
+                    error: error.message,
+                });
+                errorCount++;
             }
         }
 
