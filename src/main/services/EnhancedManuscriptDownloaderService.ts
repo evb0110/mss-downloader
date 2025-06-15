@@ -1395,20 +1395,42 @@ export class EnhancedManuscriptDownloaderService {
             throw new Error('Could not parse Florus filename structure');
         }
         
-        const manuscriptPrefix = filenameParts[1];
-        
         // Find the total number of pages from navigation
         let maxPage = currentVue + 20; // Conservative fallback
         
+        // Look for naviguer() function calls in the HTML
         const navNumbers = [...html.matchAll(/naviguer\((\d+)\)/g)]
             .map(match => parseInt(match[1]))
             .filter(num => !isNaN(num) && num > 0);
         
+        console.log(`Found ${navNumbers.length} navigation numbers:`, navNumbers);
+        
         if (navNumbers.length > 0) {
             maxPage = Math.max(...navNumbers);
+            console.log(`Maximum page from navigation: ${maxPage}`);
+        } else {
+            console.log(`No navigation numbers found, using fallback: ${maxPage}`);
+            // Try alternative patterns
+            const altPatterns = [
+                /href=["']javascript:naviguer\((\d+)\)/g,
+                /onclick=["']naviguer\((\d+)\)/g,
+                /naviguerSelect.*?value=["'](\d+)/g
+            ];
+            
+            for (const pattern of altPatterns) {
+                const altNumbers = [...html.matchAll(pattern)]
+                    .map(match => parseInt(match[1]))
+                    .filter(num => !isNaN(num) && num > 0);
+                    
+                if (altNumbers.length > 0) {
+                    maxPage = Math.max(...altNumbers);
+                    console.log(`Found ${altNumbers.length} pages using alternative pattern, max: ${maxPage}`);
+                    break;
+                }
+            }
         }
         
-        console.log(`Detected ${maxPage} pages for Florus manuscript`);
+        console.log(`Final detected page count: ${maxPage} pages for Florus manuscript`);
         
         const imageUrls: string[] = [];
         const serverUrl = 'https://florus.bm-lyon.fr/fcgi-bin/iipsrv.fcgi';
@@ -1424,26 +1446,51 @@ export class EnhancedManuscriptDownloaderService {
             const batchEnd = Math.min(batchStart + batchSize - 1, maxPage);
             const batchPromises: Promise<void>[] = [];
             
+            console.log(`Processing batch: pages ${batchStart} to ${batchEnd}`);
+            
             for (let pageNum = batchStart; pageNum <= batchEnd; pageNum++) {
                 const promise = (async () => {
-                    try {
-                        const pageUrl = `https://florus.bm-lyon.fr/visualisation.php?cote=${cote}&vue=${pageNum}`;
-                        const pageResponse = await this.fetchDirect(pageUrl);
-                        
-                        if (pageResponse.ok) {
-                            const pageHtml = await pageResponse.text();
-                            const pageImageMatch = pageHtml.match(/FIF=([^&\s'"]+)/) ||
-                                                  pageHtml.match(/image\s*:\s*'([^']+)'/) ||
-                                                  pageHtml.match(/image\s*:\s*"([^"]+)"/);
+                    let retries = 3;
+                    while (retries > 0) {
+                        try {
+                            const pageUrl = `https://florus.bm-lyon.fr/visualisation.php?cote=${cote}&vue=${pageNum}`;
+                            const pageResponse = await this.fetchDirect(pageUrl);
                             
-                            if (pageImageMatch) {
-                                const imagePath = pageImageMatch[1];
-                                const filename = imagePath.substring(imagePath.lastIndexOf('/') + 1);
-                                pageToFilename.set(pageNum, filename);
+                            if (pageResponse.ok) {
+                                const pageHtml = await pageResponse.text();
+                                const pageImageMatch = pageHtml.match(/FIF=([^&\s'"]+)/) ||
+                                                      pageHtml.match(/image\s*:\s*'([^']+)'/) ||
+                                                      pageHtml.match(/image\s*:\s*"([^"]+)"/);
+                                
+                                if (pageImageMatch) {
+                                    const imagePath = pageImageMatch[1];
+                                    const filename = imagePath.substring(imagePath.lastIndexOf('/') + 1);
+                                    pageToFilename.set(pageNum, filename);
+                                    if (pageNum <= 5 || pageNum === maxPage) {
+                                        console.log(`Page ${pageNum} image path: ${imagePath}`);
+                                    }
+                                    break; // Success, exit retry loop
+                                } else {
+                                    console.warn(`No image match found for page ${pageNum}, HTML length: ${pageHtml.length}`);
+                                    if (pageNum === 1) {
+                                        console.log('Sample HTML for debugging:', pageHtml.substring(0, 500));
+                                    }
+                                    break; // No point retrying if pattern doesn't match
+                                }
+                            } else {
+                                console.warn(`HTTP ${pageResponse.status} for page ${pageNum}`);
+                                retries--;
+                                if (retries > 0) {
+                                    await new Promise(resolve => setTimeout(resolve, 1000));
+                                }
+                            }
+                        } catch (error: any) {
+                            console.warn(`Failed to fetch page ${pageNum} (${retries} retries left):`, error.message);
+                            retries--;
+                            if (retries > 0) {
+                                await new Promise(resolve => setTimeout(resolve, 1000));
                             }
                         }
-                    } catch (error) {
-                        console.warn(`Failed to fetch page ${pageNum}:`, error);
                     }
                 })();
                 
@@ -1451,15 +1498,28 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             // Wait for current batch to complete before starting next
-            await Promise.all(batchPromises);
+            try {
+                await Promise.all(batchPromises);
+                console.log(`Batch complete. Total pages fetched so far: ${pageToFilename.size}`);
+            } catch (batchError) {
+                console.error(`Error in batch ${batchStart}-${batchEnd}:`, batchError);
+                // Continue with next batch even if current batch has errors
+            }
             
-            // Add a small delay between batches to avoid overwhelming the server
+            // Add a longer delay between batches to avoid overwhelming the server
             if (batchEnd < maxPage) {
-                await new Promise(resolve => setTimeout(resolve, 200)); // Increased delay for Lyon library
+                console.log(`Waiting 500ms before next batch...`);
+                await new Promise(resolve => setTimeout(resolve, 500)); // Increased delay for Lyon library
             }
         }
         
         console.log(`Successfully fetched ${pageToFilename.size} pages out of ${maxPage}`);
+        
+        // Log some sample filenames to debug
+        if (pageToFilename.size > 0) {
+            const sampleEntries = Array.from(pageToFilename.entries()).slice(0, 5);
+            console.log('Sample page mappings:', sampleEntries);
+        }
         
         // Build the complete list of image URLs in order
         for (let pageNum = 1; pageNum <= maxPage; pageNum++) {
@@ -1483,6 +1543,7 @@ export class EnhancedManuscriptDownloaderService {
         }
         
         console.log(`Returning ${validUrls.length} valid URLs out of ${maxPage} total pages`);
+        console.log(`First few URLs:`, imageUrls.slice(0, 3).filter(url => url !== ''));
         return imageUrls; // Return all URLs including placeholders to maintain correct indexing
     }
 
