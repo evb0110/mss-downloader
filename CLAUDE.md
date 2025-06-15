@@ -191,4 +191,5 @@ npm run lint
 - v1.0.29: Added Unicatt (Biblioteca Ambrosiana) support with proxy fallback mechanism for geo-restricted access
 - v1.0.31: Added Cambridge CUDL, Trinity Cambridge, Dublin ISOS, Dublin MIRA, and Trinity Dublin libraries
 - v1.0.45: Fixed Trinity Dublin full resolution image downloading - convert size-limited URLs (/full/600,/) to full resolution (/full/max/)
+- v1.0.49: Fixed Trinity Cambridge downloads and auto-splitting - convert to /full/1000,/ for faster downloads, fixed critical auto-split bug where cached manifests had empty pageLinks
 - don't build after completing a task
