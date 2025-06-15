@@ -55,6 +55,7 @@ npm run lint:fix
 - Gallica (BnF)
 - e-codices (Unifr)
 - Vatican Library (digi.vatlib.it)
+- Unicatt (Biblioteca Ambrosiana) - with proxy fallback for geo-restricted access
 - And others supported by the underlying downloader services.
 
 ### Key Features
@@ -153,3 +154,4 @@ npm run dist:win         # Windows-specific build
 ## Memories
 - image sizing and non-compression
 - devserver doesn't work correctly for you. If you need, I can start it
+- v1.0.29: Added Unicatt (Biblioteca Ambrosiana) support with proxy fallback mechanism for geo-restricted access

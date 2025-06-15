@@ -80,6 +80,36 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://florus.bm-lyon.fr/visualisation.php?cote=MS0425&vue=128',
             description: 'Bibliothèque municipale de Lyon digital manuscripts',
         },
+        {
+            name: 'Unicatt (Ambrosiana)',
+            example: 'https://digitallibrary.unicatt.it/veneranda/0b02da82800c3ea6',
+            description: 'Biblioteca Ambrosiana digital manuscripts',
+        },
+        {
+            name: 'Cambridge University Digital Library',
+            example: 'https://cudl.lib.cam.ac.uk/view/MS-II-00006-00032/1',
+            description: 'Cambridge University Library digital manuscripts via IIIF',
+        },
+        {
+            name: 'Trinity College Cambridge',
+            example: 'https://mss-cat.trin.cam.ac.uk/Manuscript/B.10.5/UV',
+            description: 'Trinity College Cambridge digital manuscripts',
+        },
+        {
+            name: 'Dublin ISOS (DIAS)',
+            example: 'https://www.isos.dias.ie/RIA/RIA_MS_D_ii_3.html',
+            description: 'Irish Script On Screen (Dublin Institute for Advanced Studies)',
+        },
+        {
+            name: 'Dublin MIRA',
+            example: 'https://www.mira.ie/105',
+            description: 'Manuscript, Inscription and Realia Archive (Dublin)',
+        },
+        {
+            name: 'Trinity College Dublin',
+            example: 'https://digitalcollections.tcd.ie/concern/works/2801pk96j',
+            description: 'Trinity College Dublin digital collections',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -138,8 +168,76 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('lib.ugent.be')) return 'ugent';
         if (url.includes('iiif.bl.uk') || url.includes('bl.digirati.io')) return 'bl';
         if (url.includes('florus.bm-lyon.fr')) return 'florus';
+        if (url.includes('digitallibrary.unicatt.it')) return 'unicatt';
         
         return null;
+    }
+
+    /**
+     * Proxy servers for regions where libraries might be blocked
+     */
+    private readonly PROXY_SERVERS = [
+        'https://api.allorigins.win/raw?url=',
+        'https://cors-anywhere.herokuapp.com/',
+        'https://proxy.cors.sh/',
+    ];
+
+    /**
+     * Fetch with automatic proxy fallback
+     */
+    async fetchWithProxyFallback(url: string, options: any = {}): Promise<Response> {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), configService.get('requestTimeout'));
+        
+        const fetchOptions = {
+            ...options,
+            signal: controller.signal,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                ...options.headers
+            }
+        };
+        
+        try {
+            // Try direct access first
+            const response = await fetch(url, fetchOptions);
+            clearTimeout(timeoutId);
+            
+            if (response.ok || response.status < 500) {
+                return response;
+            }
+            
+            throw new Error(`HTTP ${response.status}`);
+        } catch (directError: any) {
+            clearTimeout(timeoutId);
+            
+            // If direct access fails, try proxy servers
+            for (const proxy of this.PROXY_SERVERS) {
+                try {
+                    const proxyController = new AbortController();
+                    const proxyTimeoutId = setTimeout(() => proxyController.abort(), configService.get('requestTimeout'));
+                    
+                    const proxyUrl = `${proxy}${encodeURIComponent(url)}`;
+                    const proxyResponse = await fetch(proxyUrl, {
+                        ...fetchOptions,
+                        signal: proxyController.signal
+                    });
+                    
+                    clearTimeout(proxyTimeoutId);
+                    
+                    if (proxyResponse.ok) {
+                        console.log(`Successfully fetched ${url} via proxy: ${proxy}`);
+                        return proxyResponse;
+                    }
+                } catch (proxyError: any) {
+                    console.warn(`Proxy ${proxy} failed for ${url}: ${proxyError.message}`);
+                    continue;
+                }
+            }
+            
+            // All proxies failed, throw original error
+            throw directError;
+        }
     }
 
     /**
@@ -220,6 +318,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'florus':
                     manifest = await this.loadFlorusManifest(originalUrl);
+                    break;
+                case 'unicatt':
+                    manifest = await this.loadUnicattManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -954,11 +1055,14 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     /**
-     * Download image with retries
+     * Download image with retries and proxy fallback
      */
     async downloadImageWithRetries(url: string, attempt = 0): Promise<ArrayBuffer> {
         try {
-            const response = await this.fetchDirect(url);
+            // Use proxy fallback for Unicatt images or when direct access fails
+            const response = url.includes('digitallibrary.unicatt.it') 
+                ? await this.fetchWithProxyFallback(url)
+                : await this.fetchDirect(url);
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -1595,6 +1699,157 @@ export class EnhancedManuscriptDownloaderService {
         console.log(`Returning ${validUrls.length} valid URLs out of ${maxPage} total pages`);
         console.log(`First few URLs:`, imageUrls.slice(0, 3).filter(url => url !== ''));
         return imageUrls; // Return all URLs including placeholders to maintain correct indexing
+    }
+
+    async loadUnicattManifest(unicattUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // Extract the book ID from the URL
+            // Pattern: https://digitallibrary.unicatt.it/veneranda/0b02da82800c3ea6
+            const urlMatch = unicattUrl.match(/\/veneranda\/([^/?]+)/);
+            if (!urlMatch) {
+                throw new Error('Invalid Unicatt URL format - could not extract book ID');
+            }
+            
+            const bookIdFull = urlMatch[1];
+            const displayType = 'public'; // Based on JavaScript in the page
+            
+            // Build the folder structure as done in the JavaScript:
+            // for (let i = 0; i < 15; i += 2) { bookId = bookId + bookIdFull.substring(i, i+2) + "/" }
+            let bookIdPath = '';
+            for (let i = 0; i < Math.min(15, bookIdFull.length); i += 2) {
+                const segment = bookIdFull.substring(i, i + 2);
+                if (segment.length > 0) {
+                    bookIdPath += segment + '/';
+                }
+            }
+            bookIdPath += bookIdFull;
+            
+            // Construct the manifest URL based on the pattern found in the HTML
+            const manifestUrl = `https://digitallibrary.unicatt.it/veneranda/data/${displayType}/manifests/${bookIdPath}.json`;
+            
+            try {
+                // Try to load the IIIF manifest with proxy fallback
+                const response = await this.fetchWithProxyFallback(manifestUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load Unicatt manifest: HTTP ${response.status}`);
+                }
+                
+                const responseText = await response.text();
+                let manifest;
+                try {
+                    manifest = JSON.parse(responseText);
+                } catch {
+                    throw new Error(`Invalid JSON response from Unicatt manifest URL: ${manifestUrl}. Response starts with: ${responseText.substring(0, 100)}`);
+                }
+                
+                // Process the IIIF manifest
+                const pageLinks: string[] = [];
+                
+                // Handle IIIF v2/v3 format
+                let canvases: any[] = [];
+                
+                if (manifest.sequences && Array.isArray(manifest.sequences)) {
+                    // IIIF v2: canvases are in sequences
+                    for (const sequence of manifest.sequences) {
+                        const sequenceCanvases = sequence.canvases || [];
+                        canvases.push(...sequenceCanvases);
+                    }
+                } else if (manifest.items && Array.isArray(manifest.items)) {
+                    // IIIF v3: canvases are directly in manifest.items
+                    canvases = manifest.items;
+                } else {
+                    // Fallback: try to find canvases in the manifest itself
+                    canvases = manifest.canvases || [];
+                }
+                
+                // Process each canvas to extract image URLs
+                for (const canvas of canvases) {
+                    let foundImages = false;
+                    
+                    // Check IIIF v2 format (canvas.images)
+                    if (canvas.images && Array.isArray(canvas.images)) {
+                        for (const image of canvas.images) {
+                            let imageUrl;
+                            
+                            if (image.resource) {
+                                imageUrl = image.resource['@id'] || image.resource.id;
+                            } else if (image['@id']) {
+                                imageUrl = image['@id'];
+                            }
+                            
+                            if (imageUrl) {
+                                // Convert to full resolution
+                                if (imageUrl.includes('/full/')) {
+                                    imageUrl = imageUrl.replace(/\/full\/[^/]+\//, '/full/max/');
+                                }
+                                pageLinks.push(imageUrl);
+                                foundImages = true;
+                            }
+                        }
+                    }
+                    
+                    // Check IIIF v3 format (canvas.items with AnnotationPages)
+                    if (!foundImages && canvas.items && Array.isArray(canvas.items)) {
+                        for (const item of canvas.items) {
+                            if (item.type === 'AnnotationPage' && item.items && Array.isArray(item.items)) {
+                                for (const annotation of item.items) {
+                                    if (annotation.body && annotation.body.id) {
+                                        let imageUrl = annotation.body.id;
+                                        
+                                        // Convert to full resolution
+                                        if (imageUrl.includes('/full/')) {
+                                            imageUrl = imageUrl.replace(/\/full\/[^/]+\//, '/full/max/');
+                                        }
+                                        pageLinks.push(imageUrl);
+                                        foundImages = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (pageLinks.length === 0) {
+                    throw new Error('No page links found in Unicatt IIIF manifest');
+                }
+                
+                // Extract display name from manifest
+                let displayName = `Unicatt_${bookIdFull}`;
+                
+                if (manifest.label) {
+                    if (typeof manifest.label === 'string') {
+                        displayName = manifest.label;
+                    } else if (manifest.label.en && Array.isArray(manifest.label.en)) {
+                        displayName = manifest.label.en[0];
+                    } else if (manifest.label.it && Array.isArray(manifest.label.it)) {
+                        displayName = manifest.label.it[0];
+                    } else if (manifest.label.none && Array.isArray(manifest.label.none)) {
+                        displayName = manifest.label.none[0];
+                    } else if (typeof manifest.label === 'object') {
+                        // Try to extract any language variant
+                        const languages = Object.keys(manifest.label);
+                        if (languages.length > 0 && Array.isArray(manifest.label[languages[0]])) {
+                            displayName = manifest.label[languages[0]][0];
+                        }
+                    }
+                }
+                
+                return {
+                    pageLinks,
+                    totalPages: pageLinks.length,
+                    displayName: displayName,
+                    library: 'unicatt',
+                    originalUrl: unicattUrl
+                };
+                
+            } catch (error: any) {
+                throw new Error(`Failed to load Unicatt manifest: ${error.message}`);
+            }
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load Unicatt manuscript: ${error.message}`);
+        }
     }
 
 }

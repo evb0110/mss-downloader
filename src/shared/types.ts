@@ -28,7 +28,7 @@ export interface DownloadCallbacks {
 export interface ManuscriptManifest {
   pageLinks: string[];
   totalPages: number;
-  library: 'gallica' | 'unifr' | 'vatlib' | 'cecilia' | 'irht' | 'dijon' | 'laon' | 'durham' | 'florus';
+  library: 'gallica' | 'unifr' | 'vatlib' | 'cecilia' | 'irht' | 'dijon' | 'laon' | 'durham' | 'florus' | 'unicatt';
   displayName: string;
   originalUrl: string;
 }

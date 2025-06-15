@@ -1,7 +1,7 @@
 export default {
   app: {
     title: 'Manuscript Downloader',
-    description: 'Download manuscripts from 7 working digital libraries + 1 in development',
+    description: 'Download manuscripts from 8 working digital libraries + 1 in development',
     footer: 'Desktop application for manuscript downloading'
   },
   downloader: {
@@ -26,7 +26,7 @@ export default {
     clearCache: 'Clear Cache',
     cacheStats: 'Cache Statistics',
     cacheCleared: 'Cache cleared successfully',
-    workingLibraries: '7 working + 1 in development'
+    workingLibraries: '8 working + 1 in development'
   },
   libraries: {
     gallica: {
@@ -60,6 +60,10 @@ export default {
     durham: {
       name: 'Durham University',
       description: 'Durham University Library digital manuscripts via IIIF'
+    },
+    unicatt: {
+      name: 'Unicatt (Ambrosiana)',
+      description: 'Biblioteca Ambrosiana digital manuscripts'
     }
   },
   settings: {
