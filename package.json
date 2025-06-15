@@ -1,6 +1,6 @@
 {
   "name": "manuscript-downloader",
-  "version": "1.0.17",
+  "version": "1.0.26",
   "description": "Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "main": "dist/main/main.js",
   "type": "module",
@@ -15,7 +15,8 @@
     "build:renderer": "vite build",
     "build:workers": "vite build --config vite.worker.config.ts",
     "dist": "npm run build && electron-builder",
-    "dist:win": "npm run build && electron-builder --win",
+    "dist:win": "npm run build && electron-builder --win --x64",
+    "dist:win:arm": "npm run build && electron-builder --win --arm64",
     "dist:mac": "npm run build && electron-builder --mac",
     "dist:linux": "npm run build && electron-builder --linux",
     "lint": "eslint src --ext .vue,.js,.ts",
@@ -73,15 +74,7 @@
     "compression": "maximum",
     "icon": "assets/icon-512.png",
     "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        }
-      ],
+      "target": "nsis",
       "icon": "assets/icon.png"
     },
     "mac": {
@@ -95,7 +88,8 @@
       "allowElevation": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "deleteAppDataOnUninstall": false
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "${productName} Setup ${version}-${arch}.${ext}"
     },
     "linux": {
       "target": "AppImage",

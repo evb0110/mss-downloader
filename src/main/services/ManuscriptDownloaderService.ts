@@ -58,6 +58,11 @@ export class ManuscriptDownloaderService {
             example: 'https://iiif.durham.ac.uk/index.html?manifest=t1mp2676v52p',
             description: 'Durham University Library digital manuscripts via IIIF',
         },
+        {
+            name: 'Florus (BM Lyon)',
+            example: 'https://florus.bm-lyon.fr/visualisation.php?cote=MS0425&vue=128',
+            description: 'Bibliothèque municipale de Lyon digital manuscripts',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -74,6 +79,8 @@ export class ManuscriptDownloaderService {
                 return this.loadUnifrManifest(url);
             case 'vatlib':
                 return this.loadVatLibManifest(url);
+            case 'florus':
+                return this.loadFlorusManifest(url);
             default:
                 throw new Error('Unsupported URL. Please check the supported libraries.');
         }
@@ -129,10 +136,11 @@ export class ManuscriptDownloaderService {
         }
     }
 
-    private detectLibrary(url: string): 'gallica' | 'unifr' | 'vatlib' | null {
+    private detectLibrary(url: string): 'gallica' | 'unifr' | 'vatlib' | 'florus' | null {
         if (url.includes('gallica.bnf.fr')) return 'gallica';
         if (url.includes('e-codices.unifr.ch')) return 'unifr';
         if (url.includes('digi.vatlib.it')) return 'vatlib';
+        if (url.includes('florus.bm-lyon.fr')) return 'florus';
         return null;
     }
 
@@ -387,6 +395,49 @@ export class ManuscriptDownloaderService {
         }
     }
 
+    private async loadFlorusManifest(florusUrl: string): Promise<ManuscriptManifest> {
+        try {
+            const html = await this.downloadTextContent(florusUrl);
+            
+            // Extract manuscript code and current page from URL
+            const urlParams = new URLSearchParams(florusUrl.split('?')[1]);
+            const cote = urlParams.get('cote') || '';
+            const currentVue = parseInt(urlParams.get('vue') || '1');
+            
+            if (!cote) {
+                throw new Error('Invalid Florus URL: missing cote parameter');
+            }
+            
+            // Parse the HTML to find the navigation structure and determine total pages
+            const pageLinks = await this.extractFlorusImageUrls(html, cote, currentVue);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No pages found in Florus manuscript');
+            }
+            
+            // Find actual total pages from navigation
+            let actualTotalPages = pageLinks.length;
+            const navNumbers = [...html.matchAll(/naviguer\((\d+)\)/g)]
+                .map(match => parseInt(match[1]))
+                .filter(num => !isNaN(num) && num > 0);
+            
+            if (navNumbers.length > 0) {
+                actualTotalPages = Math.max(...navNumbers);
+            }
+            
+            return {
+                pageLinks,
+                totalPages: actualTotalPages, // Use actual total, not sample size
+                library: 'florus',
+                displayName: `BM_Lyon_${cote}`,
+                originalUrl: florusUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load Florus manuscript: ${error.message}`);
+        }
+    }
+
     private downloadTextContent(url: string): Promise<string> {
         return new Promise((resolve, reject) => {
             const urlObj = new URL(url);
@@ -564,6 +615,70 @@ export class ManuscriptDownloaderService {
         }
 
         throw new Error('Could not find viewer data, menu-bar-data, or IIIF image URLs in HTML');
+    }
+
+    private async extractFlorusImageUrls(html: string, cote: string, currentVue: number): Promise<string[]> {
+        // Extract the image path from current page to understand the pattern
+        const imagePathMatch = html.match(/FIF=([^&\s'"]+)/) ||
+                              html.match(/image\s*:\s*'([^']+)'/) ||
+                              html.match(/image\s*:\s*"([^"]+)"/);
+        
+        if (!imagePathMatch) {
+            throw new Error('Could not find image path pattern in Florus page');
+        }
+        
+        const currentImagePath = imagePathMatch[1];
+        
+        // Extract the base path and manuscript ID
+        const pathParts = currentImagePath.match(/(.+\/)([^/]+)\.JPG\.tif$/);
+        if (!pathParts) {
+            throw new Error('Could not parse Florus image path structure');
+        }
+        
+        // const basePath = pathParts[1]; // Used for constructing URLs below
+        
+        // Find the total number of pages from navigation
+        let maxPage = currentVue + 20; // Conservative fallback
+        
+        const navNumbers = [...html.matchAll(/naviguer\((\d+)\)/g)]
+            .map(match => parseInt(match[1]))
+            .filter(num => !isNaN(num) && num > 0);
+        
+        if (navNumbers.length > 0) {
+            maxPage = Math.max(...navNumbers);
+        }
+        
+        // For Florus, fetch sample pages around the current page
+        const imageUrls: string[] = [];
+        const serverUrl = 'https://florus.bm-lyon.fr/fcgi-bin/iipsrv.fcgi';
+        
+        const sampleStart = Math.max(1, currentVue - 5);
+        const sampleEnd = Math.min(maxPage, currentVue + 5);
+        
+        for (let pageNum = sampleStart; pageNum <= sampleEnd; pageNum++) {
+            try {
+                const pageUrl = `https://florus.bm-lyon.fr/visualisation.php?cote=${cote}&vue=${pageNum}`;
+                const pageHtml = await this.downloadTextContent(pageUrl);
+                
+                const pageImageMatch = pageHtml.match(/FIF=([^&\s'"]+)/) ||
+                                      pageHtml.match(/image\s*:\s*'([^']+)'/) ||
+                                      pageHtml.match(/image\s*:\s*"([^"]+)"/);
+                
+                if (pageImageMatch) {
+                    const imagePath = pageImageMatch[1];
+                    const imageUrl = `${serverUrl}?FIF=${imagePath}&WID=2000&CVT=JPEG`;
+                    imageUrls.push(imageUrl);
+                }
+            } catch (error) {
+                console.warn(`Failed to fetch Florus page ${pageNum}: ${error}`);
+            }
+        }
+        
+        if (imageUrls.length === 0) {
+            throw new Error('Could not extract any valid image URLs from Florus manuscript');
+        }
+        
+        return imageUrls;
     }
 
     async downloadManuscriptPages(

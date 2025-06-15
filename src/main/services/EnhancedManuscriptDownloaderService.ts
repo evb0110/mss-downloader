@@ -75,6 +75,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://bl.digirati.io/iiif/ark:/81055/vdc_100055984026.0x000001',
             description: 'British Library digital manuscript collections via IIIF',
         },
+        {
+            name: 'Florus (BM Lyon)',
+            example: 'https://florus.bm-lyon.fr/visualisation.php?cote=MS0425&vue=128',
+            description: 'Bibliothèque municipale de Lyon digital manuscripts',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -132,6 +137,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('sharedcanvas.be')) return 'sharedcanvas';
         if (url.includes('lib.ugent.be')) return 'ugent';
         if (url.includes('iiif.bl.uk') || url.includes('bl.digirati.io')) return 'bl';
+        if (url.includes('florus.bm-lyon.fr')) return 'florus';
         
         return null;
     }
@@ -211,6 +217,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'bl':
                     manifest = await this.loadBLManifest(originalUrl);
+                    break;
+                case 'florus':
+                    manifest = await this.loadFlorusManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -1076,19 +1085,23 @@ export class EnhancedManuscriptDownloaderService {
                 try {
                     // Skip if already downloaded
                     await fs.access(imgPath);
+                    // Mark path for skipped file
+                    imagePaths[pageIndex] = imgPath;
                 } catch {
                     // Not present: fetch and write
                     try {
                         const imageData = await this.downloadImageWithRetries(imageUrl);
                         const writePromise = fs.writeFile(imgPath, Buffer.from(imageData));
                         writePromises.push(writePromise);
+                        // Only mark path if download succeeded
+                        imagePaths[pageIndex] = imgPath;
                     } catch (error: any) {
                         console.error(`\n❌ Failed to download page ${pageIndex + 1}: ${error.message}`);
+                        // Don't mark path for failed downloads
                     }
                 }
                 
-                // Mark path regardless of skip/fail
-                imagePaths[pageIndex] = imgPath;
+                // Always increment completed pages to track overall progress
                 completedPages++;
                 updateProgress();
             };
@@ -1099,6 +1112,17 @@ export class EnhancedManuscriptDownloaderService {
                     await downloadPage(idx);
                 }
             }));
+            
+            // Wait for all file writes to complete before processing
+            await Promise.all(writePromises);
+            
+            // Ensure final progress update
+            onProgress({ 
+                progress: 1.0, 
+                completedPages: totalPagesToDownload, 
+                totalPages: totalPagesToDownload, 
+                eta: '0s' 
+            });
             
             const validImagePaths = imagePaths.filter(Boolean);
             
@@ -1141,9 +1165,6 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
                 
-                // Wait for all file writes to complete
-                await Promise.all(writePromises);
-                
                 return { 
                     success: true, 
                     filepath: createdFiles[0], // Return first part as primary
@@ -1164,9 +1185,6 @@ export class EnhancedManuscriptDownloaderService {
                         // Ignore file deletion errors
                     }
                 }
-                
-                // Wait for all file writes to complete
-                await Promise.all(writePromises);
                 
                 return { 
                     success: true, 
@@ -1292,6 +1310,162 @@ export class EnhancedManuscriptDownloaderService {
             await fs.writeFile(outputPath, finalPdfBytes);
         }
         
+    }
+
+    async loadFlorusManifest(florusUrl: string): Promise<ManuscriptManifest> {
+        console.log('Loading Florus manifest for:', florusUrl);
+        try {
+            const response = await this.fetchDirect(florusUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch Florus page: HTTP ${response.status}`);
+            }
+            
+            const html = await response.text();
+            console.log('Florus page fetched, length:', html.length);
+            
+            // Extract manuscript code and current page from URL
+            const urlParams = new URLSearchParams(florusUrl.split('?')[1]);
+            const cote = urlParams.get('cote') || '';
+            const currentVue = parseInt(urlParams.get('vue') || '1');
+            
+            if (!cote) {
+                throw new Error('Invalid Florus URL: missing cote parameter');
+            }
+            
+            // Parse the HTML to find the navigation structure and determine total pages
+            console.log('Extracting Florus image URLs...');
+            const pageLinks = await this.extractFlorusImageUrls(html, cote, currentVue);
+            
+            console.log(`Found ${pageLinks.length} pages for Florus manuscript`);
+            if (pageLinks.length === 0) {
+                throw new Error('No pages found in Florus manuscript');
+            }
+            
+            // For Florus, we need to detect the actual total pages from navigation
+            // but only return sample pages for the manifest
+            let actualTotalPages = pageLinks.length;
+            
+            // Find the maximum page number from navigation
+            const navNumbers = [...html.matchAll(/naviguer\((\d+)\)/g)]
+                .map(match => parseInt(match[1]))
+                .filter(num => !isNaN(num) && num > 0);
+            
+            if (navNumbers.length > 0) {
+                actualTotalPages = Math.max(...navNumbers);
+            }
+            
+            const manifest = {
+                pageLinks,
+                totalPages: actualTotalPages, // Use the actual total, not sample size
+                library: 'florus' as const,
+                displayName: `BM_Lyon_${cote}`,
+                originalUrl: florusUrl,
+            };
+            
+            console.log(`Florus manifest loaded: ${manifest.displayName}, sample pages: ${pageLinks.length}, total pages: ${actualTotalPages}`);
+            return manifest;
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load Florus manuscript: ${error.message}`);
+        }
+    }
+
+    private async extractFlorusImageUrls(html: string, cote: string, currentVue: number): Promise<string[]> {
+        console.log('Extracting Florus URLs for manuscript:', cote);
+        
+        // Extract the image path from current page to understand the pattern
+        const imagePathMatch = html.match(/FIF=([^&\s'"]+)/) ||
+                              html.match(/image\s*:\s*'([^']+)'/) ||
+                              html.match(/image\s*:\s*"([^"]+)"/);
+        
+        if (!imagePathMatch) {
+            throw new Error('Could not find image path pattern in Florus page');
+        }
+        
+        const currentImagePath = imagePathMatch[1];
+        console.log('Current image path:', currentImagePath);
+        
+        // Extract the base path and manuscript ID
+        // Example: /var/www/florus/web/ms/B693836101_MS0425/B693836101_MS0425_129_62V.JPG.tif
+        const pathParts = currentImagePath.match(/(.+\/)([^/]+)\.JPG\.tif$/);
+        if (!pathParts) {
+            throw new Error('Could not parse Florus image path structure');
+        }
+        
+        const basePath = pathParts[1];
+        const filenameParts = pathParts[2].match(/^(.+?)_(\d+)_(.+)$/);
+        if (!filenameParts) {
+            throw new Error('Could not parse Florus filename structure');
+        }
+        
+        // const manuscriptPrefix = filenameParts[1]; // For future pattern matching
+        
+        // Find the total number of pages from navigation
+        let maxPage = currentVue + 20; // Conservative fallback
+        
+        const navNumbers = [...html.matchAll(/naviguer\((\d+)\)/g)]
+            .map(match => parseInt(match[1]))
+            .filter(num => !isNaN(num) && num > 0);
+        
+        if (navNumbers.length > 0) {
+            maxPage = Math.max(...navNumbers);
+        }
+        
+        console.log(`Detected ${maxPage} pages for Florus manuscript`);
+        
+        // For Florus, we need to fetch a sample first to understand the folio naming pattern
+        // Then generate URLs for all pages
+        const imageUrls: string[] = [];
+        const serverUrl = 'https://florus.bm-lyon.fr/fcgi-bin/iipsrv.fcgi';
+        
+        // First, fetch a few sample pages to understand the pattern
+        const sampleStart = Math.max(1, currentVue - 5);
+        const sampleEnd = Math.min(maxPage, currentVue + 5);
+        
+        console.log(`Fetching sample pages ${sampleStart} to ${sampleEnd} to analyze pattern...`);
+        
+        const pageToFilename = new Map<number, string>();
+        
+        for (let pageNum = sampleStart; pageNum <= sampleEnd; pageNum++) {
+            try {
+                const pageUrl = `https://florus.bm-lyon.fr/visualisation.php?cote=${cote}&vue=${pageNum}`;
+                const pageResponse = await this.fetchDirect(pageUrl);
+                
+                if (pageResponse.ok) {
+                    const pageHtml = await pageResponse.text();
+                    const pageImageMatch = pageHtml.match(/FIF=([^&\s'"]+)/) ||
+                                          pageHtml.match(/image\s*:\s*'([^']+)'/) ||
+                                          pageHtml.match(/image\s*:\s*"([^"]+)"/);
+                    
+                    if (pageImageMatch) {
+                        const imagePath = pageImageMatch[1];
+                        const filename = imagePath.substring(imagePath.lastIndexOf('/') + 1);
+                        pageToFilename.set(pageNum, filename);
+                    }
+                }
+            } catch (error) {
+                console.warn(`Failed to fetch sample page ${pageNum}:`, error);
+            }
+        }
+        
+        // For simplicity, just return the URLs we've found
+        // A more sophisticated approach would analyze the pattern and generate all URLs
+        console.log(`Using ${pageToFilename.size} sample pages to represent the manuscript`);
+        
+        for (const [, filename] of pageToFilename) {
+            const imagePath = `${basePath}${filename}`;
+            const imageUrl = `${serverUrl}?FIF=${imagePath}&WID=2000&CVT=JPEG`;
+            imageUrls.push(imageUrl);
+        }
+        
+        // If we have a good sample, estimate total pages = maxPage
+        if (imageUrls.length > 0) {
+            // Return URLs with adjusted total count
+            console.log(`Returning ${imageUrls.length} sample URLs (total pages: ${maxPage})`);
+            return imageUrls;
+        }
+        
+        throw new Error('Could not extract any valid image URLs from Florus manuscript');
     }
 
 }

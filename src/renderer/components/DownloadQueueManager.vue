@@ -505,7 +505,7 @@ https://digi.vatlib.it/..."
 
     <div class="libraries-list">
       <div
-        v-for="library in supportedLibrariesComplete"
+        v-for="library in supportedLibraries"
         :key="library.name"
         class="library-item"
       >
@@ -521,19 +521,15 @@ https://digi.vatlib.it/..."
           class="library-examples-spoiler"
         >
           <div class="library-examples">
-            <div
-              v-for="example in library.examples"
-              :key="example.url"
-              class="library-example"
-            >
+            <div class="library-example">
               <div class="example-label">
-                {{ example.label }}:
+                Example:
               </div>
               <code
                 class="example-url-link"
-                @click="handleExampleClick(example.url); showSupportedLibrariesModal = false"
+                @click="handleExampleClick(library.example); showSupportedLibrariesModal = false"
               >
-                {{ example.url }}
+                {{ library.example }}
               </code>
             </div>
           </div>
@@ -679,97 +675,7 @@ const alertModal = ref({
 // Supported Libraries - fetched via IPC
 const supportedLibraries = ref<LibraryInfo[]>([]);
 
-// Complete supported libraries with examples structure matching barsky.club
-const supportedLibrariesComplete = ref([
-    {
-        name: 'Gallica (BnF)',
-        description: 'French National Library digital manuscripts (supports any f{page}.* format)',
-        examples: [
-            { label: 'Working manuscript (Bible)', url: 'https://gallica.bnf.fr/ark:/12148/btv1b8449691v/f1.highres' },
-            { label: 'Planche contact format', url: 'https://gallica.bnf.fr/ark:/12148/btv1b8449691v/f1.planchecontact' },
-            { label: 'Direct IIIF URL', url: 'https://gallica.bnf.fr/iiif/ark:/12148/btv1b8449691v/f1/full/max/0/native.jpg' }
-        ]
-    },
-    {
-        name: 'e-codices (Unifr)',
-        description: 'Swiss virtual manuscript library',
-        examples: [
-            { label: 'Zurich Central Library', url: 'https://www.e-codices.unifr.ch/en/zbz/C0043/1r' },
-            { label: 'Bern Burgerbibliothek manuscript', url: 'https://www.e-codices.ch/en/sbe/0610/1' },
-            { label: 'Bern Burgerbibliothek codex', url: 'https://www.e-codices.ch/en/sbe/0611/1r' },
-            { label: 'Basel University Library', url: 'https://www.e-codices.unifr.ch/en/ubb/AN-IV-0011/1r' }
-        ]
-    },
-    {
-        name: 'Vatican Library',
-        description: 'Vatican Apostolic Library digital collections',
-        examples: [
-            { label: 'Vatican Latin manuscript', url: 'https://digi.vatlib.it/view/MSS_Vat.lat.3225' },
-            { label: 'Palatine Latin manuscript', url: 'https://digi.vatlib.it/view/MSS_Pal.lat.24' },
-            { label: 'Vatican Greek manuscript', url: 'https://digi.vatlib.it/view/MSS_Vat.gr.1613' }
-        ]
-    },
-    {
-        name: 'Cecilia (Grand Albigeois)',
-        description: 'Grand Albigeois mediatheques digital collections',
-        examples: [
-            { label: 'Document 124 example', url: 'https://cecilia.mediatheques.grand-albigeois.fr/viewer/124/?offset=#page=1&viewer=picture&o=&n=0&q=' },
-            { label: 'Document 105 - Liber sacramentorum (9th century)', url: 'https://cecilia.mediatheques.grand-albigeois.fr/viewer/105/?offset=#page=1&viewer=picture&o=&n=0&q=' }
-        ]
-    },
-    {
-        name: 'IRHT (CNRS)',
-        description: 'Institut de recherche et d\'histoire des textes digital manuscripts',
-        examples: [
-            { label: 'ARCA manuscript example', url: 'https://arca.irht.cnrs.fr/ark:/63955/md14nk323d72' }
-        ]
-    },
-    {
-        name: 'Dijon Patrimoine',
-        description: 'Bibliothèque municipale de Dijon digital manuscripts',
-        examples: [
-            { label: 'Citeaux manuscript', url: 'http://patrimoine.bm-dijon.fr/pleade/img-viewer/MS00114/?ns=FR212316101_CITEAUX_MS00114_000_01_PS.jpg' }
-        ]
-    },
-    {
-        name: 'Laon Bibliothèque',
-        description: 'Bibliothèque municipale de Laon digital manuscripts',
-        examples: [
-            { label: 'Document 1459 (not working)', url: 'https://bibliotheque-numerique.ville-laon.fr/viewer/1459/?offset=#page=1&viewer=picture&o=download&n=0&q=' }
-        ]
-    },
-    {
-        name: 'Durham University',
-        description: 'Durham University Library digital manuscripts via IIIF',
-        examples: [
-            { label: 'IIIF manifest example', url: 'https://iiif.durham.ac.uk/index.html?manifest=t1mp2676v52p' }
-        ]
-    },
-    {
-        name: 'SharedCanvas',
-        description: 'SharedCanvas-based digital manuscript viewers and collections',
-        examples: [
-            { label: 'Mirador viewer example', url: 'https://sharedcanvas.be/IIIF/viewer/mirador/B_OB_MS310' }
-        ]
-    },
-    {
-        name: 'UGent Library',
-        description: 'Ghent University Library digital manuscript collections via IIIF',
-        examples: [
-            { label: 'IIIF manuscript example', url: 'https://lib.ugent.be/viewer/archive.ugent.be%3A644DCADE-4FE7-11E9-9AC5-81E62282636C' }
-        ]
-    },
-    {
-        name: 'British Library',
-        description: 'British Library digital manuscript collections via IIIF',
-        examples: [
-            { label: 'Stavelot Missal', url: 'https://iiif.bl.uk/uv/?_gl=1*kp8b4r*_ga*MTE5NDkxMjY0MS4xNzQ5NjMwNDI3*_ga_B8DBRB95KV*czE3NDk2MzA2MzckbzEkZzAkdDE3NDk2MzA2MzgkajU5JGwwJGgw#?manifest=https://bl.digirati.io/iiif/ark:/81055/vdc_100055984026.0x000001' },
-            { label: 'Another manuscript', url: 'https://iiif.bl.uk/uv/?_gl=1*1sdgphl*_ga*MTE5NDkxMjY0MS4xNzQ5NjMwNDI3#?manifest=https://bl.digirati.io/iiif/ark:/81055/vdc_100055981061.0x000001' },
-            { label: 'Third manuscript', url: 'https://iiif.bl.uk/uv/?_gl=1*1oia29t*_ga*MTE5NDkxMjY0MS4xNzQ5NjMwNDI3*_ga_B8DBRB95KV*czE3NDk2MzA2MzckbzEkZzEkdDE3NDk2MzA2NDAkajYwJGwwJGgw#?manifest=https://bl.digirati.io/iiif/ark:/81055/vdc_100064569172.0x000001' },
-            { label: 'Direct manifest URL', url: 'https://bl.digirati.io/iiif/ark:/81055/vdc_100055984026.0x000001' }
-        ]
-    }
-]);
+// Libraries are now fetched dynamically from the main process
 
 // Queue settings
 const queueSettings = ref({
@@ -898,10 +804,10 @@ async function handleExampleClick(exampleUrl: string) {
 }
 
 async function addAllTestUrls() {
-    // Get the first example URL from each library
-    const testUrls = supportedLibrariesComplete.value
-        .filter(library => library.examples && library.examples.length > 0)
-        .map(library => library.examples[0].url);
+    // Get the example URL from each library
+    const testUrls = supportedLibraries.value
+        .filter(library => library.example)
+        .map(library => library.example);
     
     if (testUrls.length === 0) return;
     

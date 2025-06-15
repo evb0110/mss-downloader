@@ -43,6 +43,10 @@ const createWindow = () => {
 
   // Force devtools open immediately
   if (isDev) {
+    // Disable autofill to prevent console errors
+    mainWindow.webContents.on('devtools-opened', () => {
+      // DevTools is open, but we can't disable autofill from here
+    });
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
 
@@ -206,6 +210,9 @@ async function cleanupTempFiles(): Promise<void> {
     console.warn('Error during temp file cleanup:', error);
   }
 }
+
+// Disable autofill features that cause DevTools errors
+app.commandLine.appendSwitch('disable-features', 'Autofill');
 
 app.whenReady().then(async () => {
   imageCache = new ElectronImageCache();

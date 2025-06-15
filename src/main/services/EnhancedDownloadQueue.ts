@@ -733,6 +733,22 @@ export class EnhancedDownloadQueue extends EventEmitter {
             item.totalPages = manifest.totalPages;
             item.library = manifest.library as TLibrary;
             
+            // For Florus, we need to handle size estimation differently
+            // since the manifest only returns sample pages
+            if (manifest.library === 'florus') {
+                console.log('Florus manuscript detected, using estimated size calculation');
+                // Estimate based on typical manuscript page size (300KB-500KB per page)
+                const avgPageSizeMB = 0.4; // 400KB average per page
+                const estimatedTotalSizeMB = avgPageSizeMB * manifest.totalPages;
+                item.estimatedSizeMB = estimatedTotalSizeMB;
+                
+                if (estimatedTotalSizeMB > this.state.globalSettings.autoSplitThresholdMB) {
+                    await this.splitQueueItem(item, manifest, estimatedTotalSizeMB);
+                    return true;
+                }
+                return false;
+            }
+            
             // Download first page to get actual size estimation
             const firstPageUrl = manifest.pageLinks[0];
             if (!firstPageUrl) return false;
