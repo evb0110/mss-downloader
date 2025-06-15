@@ -23,7 +23,6 @@ interface AppConfig {
     progressUpdateInterval: number; // Console update interval in ms
   
     // PDF processing
-    pdfQuality: number;
     maxMemoryUsage: number; // bytes
   
     // Timeouts
@@ -54,7 +53,6 @@ const defaultConfig: AppConfig = {
     progressUpdateInterval: 1000,
   
     // PDF processing
-    pdfQuality: 0.9,
     maxMemoryUsage: 2 * KB * MB, // 2GB
   
     // Timeouts

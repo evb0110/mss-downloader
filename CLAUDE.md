@@ -185,3 +185,4 @@ npm run lint
 - devserver doesn't work correctly for you. If you need, I can start it
 - v1.0.29: Added Unicatt (Biblioteca Ambrosiana) support with proxy fallback mechanism for geo-restricted access
 - v1.0.31: Added Cambridge CUDL, Trinity Cambridge, Dublin ISOS, Dublin MIRA, and Trinity Dublin libraries
+- don't build after completing a task

@@ -76,7 +76,6 @@ export default {
     },
     pdf: {
       title: 'PDF Settings',
-      quality: 'PDF Quality',
       autoSplitThreshold: 'Auto-split Threshold'
     },
     ui: {

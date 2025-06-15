@@ -1155,11 +1155,16 @@ export class EnhancedManuscriptDownloaderService {
             const downloadsDir = app.getPath('downloads');
             await fs.mkdir(downloadsDir, { recursive: true });
             
+            let targetDir = downloadsDir;
+            
             if (shouldSplit) {
-                // For split PDFs, we'll create the first part initially
+                // For split PDFs, create a subfolder with the manuscript name
+                targetDir = path.join(downloadsDir, sanitizedName);
+                await fs.mkdir(targetDir, { recursive: true });
+                
                 const partNumber = String(1).padStart(2, '0');
                 filename = `${sanitizedName}_part_${partNumber}_pages_${actualStartPage}-${actualEndPage}.pdf`;
-                filepath = path.join(downloadsDir, filename);
+                filepath = path.join(targetDir, filename);
             } else {
                 // Always include page numbers for clarity
                 filename = `${sanitizedName}_pages_${actualStartPage}-${actualEndPage}.pdf`;
@@ -1325,7 +1330,7 @@ export class EnhancedManuscriptDownloaderService {
                     
                     const partNumber = String(partIndex + 1).padStart(2, '0');
                     const partFilename = `${sanitizedName}_part_${partNumber}.pdf`;
-                    const partFilepath = path.join(downloadsDir, partFilename);
+                    const partFilepath = path.join(targetDir, partFilename);
                     
                     await this.convertImagesToPDF(partImages, partFilepath);
                     createdFiles.push(partFilepath);
@@ -2072,7 +2077,8 @@ export class EnhancedManuscriptDownloaderService {
             if (responseText.trim().startsWith('<html>') || responseText.includes('captcha')) {
                 console.log('Trinity Dublin captcha detected for URL:', trinityUrl);
                 console.log('Manifest URL:', manifestUrl);
-                throw new Error(`CAPTCHA_REQUIRED:${manifestUrl}`);
+                // Trinity Dublin has aggressive captcha protection that requires manual access
+                throw new Error('Trinity College Dublin blocks automated access with endless captchas. Manual download required: 1) Visit the page in your browser, 2) Complete captcha, 3) Open DevTools Network tab, 4) Look for manifest.json request, 5) Copy the JSON response.');
             }
             
             let iiifManifest;

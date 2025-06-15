@@ -917,35 +917,53 @@ async function parseManuscriptWithCaptcha(url: string) {
     try {
         return await window.electronAPI.parseManuscriptUrl(url);
     } catch (error: any) {
-        // Check if this is a captcha error
-        if (error.message?.startsWith('CAPTCHA_REQUIRED:')) {
-            const captchaUrl = error.message.split('CAPTCHA_REQUIRED:')[1];
+        console.log('parseManuscriptWithCaptcha caught error:', error.message);
+        
+        // Check if this is a captcha error (may be wrapped in IPC error)
+        if (error.message?.includes('CAPTCHA_REQUIRED:')) {
+            // Extract the captcha URL from the potentially wrapped error message
+            const captchaMatch = error.message.match(/CAPTCHA_REQUIRED:(.+?)(?:\s|$)/);
+            const captchaUrl = captchaMatch ? captchaMatch[1] : error.message.split('CAPTCHA_REQUIRED:')[1];
             
             console.log('Captcha required for:', url);
             console.log('Captcha URL:', captchaUrl);
             
             const captchaResult = await window.electronAPI.solveCaptcha(captchaUrl);
             
-            if (captchaResult.success && captchaResult.content) {
-                // Parse the manifest content we got from captcha solving
-                const iiifManifest = JSON.parse(captchaResult.content);
-                
-                const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
-                    const resource = canvas.images[0].resource;
-                    return resource['@id'] || resource.id;
-                }).filter((link: string) => link);
-                
-                if (pageLinks.length > 0) {
-                    const workIdMatch = url.match(/\/works\/([^/?]+)/);
-                    const workId = workIdMatch ? workIdMatch[1] : 'unknown';
+            if (captchaResult.success) {
+                // For Trinity Dublin, after captcha is solved on the main page,
+                // we need to try fetching the manifest again
+                if (url.includes('digitalcollections.tcd.ie')) {
+                    console.log('Trinity Dublin captcha solved, retrying manifest fetch...');
                     
-                    return {
-                        pageLinks,
-                        totalPages: pageLinks.length,
-                        library: 'trinity_dublin',
-                        displayName: `TrinityDublin_${workId}`,
-                        originalUrl: url,
-                    };
+                    // Retry the original parse request
+                    try {
+                        return await window.electronAPI.parseManuscriptUrl(url);
+                    } catch (retryError: any) {
+                        console.error('Failed to load manifest after captcha:', retryError);
+                        throw new Error('Failed to load manifest even after captcha completion');
+                    }
+                } else if (captchaResult.content) {
+                    // For other libraries that return manifest directly
+                    const iiifManifest = JSON.parse(captchaResult.content);
+                    
+                    const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                        const resource = canvas.images[0].resource;
+                        return resource['@id'] || resource.id;
+                    }).filter((link: string) => link);
+                    
+                    if (pageLinks.length > 0) {
+                        const workIdMatch = url.match(/\/works\/([^/?]+)/);
+                        const workId = workIdMatch ? workIdMatch[1] : 'unknown';
+                        
+                        return {
+                            pageLinks,
+                            totalPages: pageLinks.length,
+                            library: 'trinity_dublin',
+                            displayName: `TrinityDublin_${workId}`,
+                            originalUrl: url,
+                        };
+                    }
                 }
             }
             
@@ -1060,8 +1078,10 @@ async function processBulkUrls() {
             const tempId = tempIds[i];
         
             try {
+                console.log('[RENDERER] Parsing manifest for URL:', url);
                 // Parse manifest in the main process with captcha handling
                 const manifest = await parseManuscriptWithCaptcha(url);
+                console.log('[RENDERER] Manifest parsed successfully:', manifest.displayName);
                 
                 // Final duplicate check after manifest is loaded
                 const urlCanonical = canonicalizeUrl(url);
@@ -1097,6 +1117,10 @@ async function processBulkUrls() {
                 });
                 addedCount++;
             } catch (error: any) {
+                console.log('[RENDERER] Error caught in processBulkUrls:', error);
+                console.log('[RENDERER] Error message:', error.message);
+                console.log('[RENDERER] Error type:', typeof error);
+                
                 // Handle all errors (captcha handled in parseManuscriptWithCaptcha)
                 const isExpectedError = error.message?.includes('not valid JSON') ||
                     error.message?.includes('404') ||

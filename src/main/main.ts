@@ -484,55 +484,154 @@ ipcMain.handle('show-item-in-finder', async (_event, filePath: string) => {
 });
 
 ipcMain.handle('solve-captcha', async (_event, url: string) => {
-  return new Promise((resolve) => {
+  console.log('[MAIN] solve-captcha called with URL:', url);
+  
+  return new Promise(async (resolve) => {
     const captchaWindow = new BrowserWindow({
-      width: 800,
-      height: 600,
+      width: 900,
+      height: 700,
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
         webSecurity: true,
       },
-      title: 'Complete Captcha Verification',
+      title: 'Complete Captcha Verification - Close window when done',
       modal: true,
       parent: mainWindow || undefined,
       show: false
     });
 
+    // Track if we've completed the captcha
+    let captchaCompleted = false;
+    
+    // Handle loading errors
+    captchaWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription) => {
+      console.log('[MAIN] Captcha window failed to load:', errorCode, errorDescription);
+      // Don't close on error, let user retry
+    });
+    
     captchaWindow.loadURL(url);
     
     captchaWindow.once('ready-to-show', () => {
       captchaWindow.show();
+      console.log('[MAIN] Captcha window shown for URL:', url);
     });
 
+    // Track initial navigation
+    let initialLoad = true;
+    
     // Monitor URL changes to detect when captcha is solved
     captchaWindow.webContents.on('did-navigate', (_event, navigationUrl) => {
-      console.log('Captcha window navigated to:', navigationUrl);
+      console.log('[MAIN] Captcha window navigated to:', navigationUrl);
       
-      // If we're redirected to the manifest URL or the original URL without captcha
-      if (navigationUrl.includes('/manifest') || 
-          (navigationUrl === url && !navigationUrl.includes('captcha'))) {
+      // Skip the initial load of the manifest URL (which shows captcha)
+      if (initialLoad && navigationUrl.includes('/manifest')) {
+        initialLoad = false;
+        console.log('[MAIN] Initial load - waiting for user to complete captcha');
+        return;
+      }
+      
+      // Don't process if we already handled the captcha
+      if (captchaCompleted) return;
+      
+      // For subsequent navigations, check if we're still on manifest URL
+      // but now with actual manifest content (after captcha is solved)
+      if (!initialLoad && navigationUrl.includes('/manifest')) {
+        captchaCompleted = true;
+        console.log('[MAIN] Checking if captcha is completed...');
         
-        // Try to get the page content
-        captchaWindow.webContents.executeJavaScript('document.body.innerText')
-          .then((content) => {
-            captchaWindow.close();
-            
-            // Check if content looks like JSON manifest
-            if (content.trim().startsWith('{') && content.includes('sequences')) {
-              resolve({ success: true, content });
-            } else {
-              resolve({ success: false, error: 'Content is not a valid IIIF manifest' });
-            }
-          })
-          .catch(() => {
-            resolve({ success: false, error: 'Failed to read page content' });
-          });
+        // Wait a bit for the page to fully load
+        setTimeout(() => {
+          captchaWindow.webContents.executeJavaScript('document.body.innerText')
+            .then((content) => {
+              console.log('[MAIN] Page content length:', content.length);
+              console.log('[MAIN] Content preview:', content.substring(0, 100));
+              
+              // Check if content looks like JSON manifest
+              if (content.trim().startsWith('{') && content.includes('sequences')) {
+                console.log('[MAIN] Valid IIIF manifest detected');
+                captchaWindow.close();
+                resolve({ success: true, content });
+              } else if (content.includes('captcha') || content.includes('reCAPTCHA')) {
+                console.log('[MAIN] Still showing captcha, waiting...');
+                captchaCompleted = false; // Reset so we can try again
+              } else {
+                console.log('[MAIN] Content is not a valid IIIF manifest');
+                captchaWindow.close();
+                resolve({ success: false, error: 'Content is not a valid IIIF manifest' });
+              }
+            })
+            .catch((err) => {
+              console.log('[MAIN] Error reading page content:', err.message);
+              captchaWindow.close();
+              resolve({ success: false, error: 'Failed to read page content: ' + err.message });
+            });
+        }, 2000); // Wait 2 seconds for page to load
+      }
+    });
+    
+    // Also monitor for navigation completion
+    captchaWindow.webContents.on('did-finish-load', () => {
+      const currentUrl = captchaWindow.webContents.getURL();
+      console.log('[MAIN] Captcha window finished loading:', currentUrl);
+      
+      // If we're on the manifest URL and not on initial load, check content
+      if (!initialLoad && currentUrl.includes('/manifest') && !captchaCompleted) {
+        console.log('[MAIN] Page reloaded - checking for manifest content');
+        
+        setTimeout(() => {
+          captchaWindow.webContents.executeJavaScript('document.body.innerText')
+            .then((content) => {
+              if (content.trim().startsWith('{') && content.includes('sequences')) {
+                console.log('[MAIN] Valid IIIF manifest detected after reload');
+                captchaCompleted = true;
+                captchaWindow.close();
+                resolve({ success: true, content });
+              }
+            })
+            .catch(() => {
+              // Ignore errors here, user might still be solving captcha
+            });
+        }, 1000);
       }
     });
 
+    // Add a button or instruction for Trinity Dublin
+    if (url.includes('digitalcollections.tcd.ie') && !url.includes('/manifest')) {
+      captchaWindow.webContents.on('did-finish-load', () => {
+        captchaWindow.webContents.executeJavaScript(`
+          if (!document.querySelector('.captcha-complete-btn')) {
+            const btn = document.createElement('div');
+            btn.className = 'captcha-complete-btn';
+            btn.innerHTML = '<button style="position:fixed;top:10px;right:10px;z-index:9999;padding:10px 20px;background:#4CAF50;color:white;border:none;border-radius:5px;cursor:pointer;font-size:16px;">Captcha Completed - Click to Continue</button>';
+            btn.onclick = () => window.location.href = 'captcha://completed';
+            document.body.appendChild(btn);
+          }
+        `).catch(() => {});
+      });
+    }
+    
+    // Monitor for our custom protocol
+    captchaWindow.webContents.on('will-navigate', (_event, navUrl) => {
+      if (navUrl === 'captcha://completed') {
+        captchaCompleted = true;
+        captchaWindow.close();
+        resolve({ success: true });
+      }
+    });
+    
     captchaWindow.on('closed', () => {
-      resolve({ success: false, error: 'Captcha window was closed' });
+      if (!captchaCompleted) {
+        console.log('[MAIN] Captcha window closed');
+        
+        // For Trinity Dublin, just mark as success when window closes
+        if (url.includes('digitalcollections.tcd.ie')) {
+          // The session should now be established
+          resolve({ success: true });
+        } else {
+          resolve({ success: false, error: 'Captcha window was closed' });
+        }
+      }
     });
 
     // Timeout after 5 minutes

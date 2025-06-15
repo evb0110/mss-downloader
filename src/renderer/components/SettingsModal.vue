@@ -61,22 +61,6 @@
           <h3>{{ t('settings.pdf.title') }}</h3>
           
           <div class="setting-item">
-            <label>{{ t('settings.pdf.quality') }}</label>
-            <div class="slider-container">
-              <input 
-                v-model.number="localConfig.pdfQuality" 
-                type="range" 
-                min="0.5" 
-                max="1"
-                step="0.1"
-                class="quality-slider"
-                @change="updateConfig('pdfQuality', localConfig.pdfQuality)"
-              >
-              <span class="slider-value">{{ Math.round(localConfig.pdfQuality * 100) }}%</span>
-            </div>
-          </div>
-          
-          <div class="setting-item">
             <label>{{ t('settings.pdf.autoSplitThreshold') }}</label>
             <div class="input-with-unit">
               <input 
@@ -170,7 +154,6 @@ const localConfig = reactive({
   maxConcurrentDownloads: 8,
   maxRetries: 10,
   requestTimeout: 30000,
-  pdfQuality: 0.9,
   autoSplitThreshold: 800 * 1024 * 1024, // bytes
   language: 'en',
   theme: 'system'
