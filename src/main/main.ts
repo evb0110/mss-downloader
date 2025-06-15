@@ -517,14 +517,20 @@ ipcMain.handle('solve-captcha', async (_event, url: string) => {
       captchaWindow.show();
       console.log('[MAIN] Captcha window shown for URL:', url);
       
-      // For Trinity Dublin, add instructions
+      // For Trinity Dublin, add instructions and close button
       if (url.includes('digitalcollections.tcd.ie')) {
         setTimeout(() => {
           captchaWindow.webContents.executeJavaScript(`
-            if (!document.querySelector('.captcha-instructions')) {
+            if (!document.querySelector('.captcha-controls')) {
               const div = document.createElement('div');
-              div.className = 'captcha-instructions';
-              div.innerHTML = '<div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:15px 25px;border-radius:8px;font-size:16px;z-index:9999;text-align:center;max-width:600px;">Complete the captcha(s) above. When finished, close this window to continue downloading.</div>';
+              div.className = 'captcha-controls';
+              div.innerHTML = \`
+                <div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.9);color:white;padding:20px 30px;border-radius:12px;font-size:16px;z-index:9999;text-align:center;max-width:600px;box-shadow:0 4px 12px rgba(0,0,0,0.5);">
+                  <div style="margin-bottom:15px;">Trinity Dublin requires manual access. Complete the captcha(s) if you wish, but they may be endless.</div>
+                  <button onclick="window.close()" style="background:#dc3545;color:white;border:none;padding:10px 20px;border-radius:6px;font-size:16px;cursor:pointer;margin-right:10px;">Close Window</button>
+                  <button onclick="window.location.href='captcha://completed'" style="background:#28a745;color:white;border:none;padding:10px 20px;border-radius:6px;font-size:16px;cursor:pointer;">I Completed Captcha</button>
+                </div>
+              \`;
               document.body.appendChild(div);
             }
           `).catch(() => {});
@@ -589,6 +595,16 @@ ipcMain.handle('solve-captcha', async (_event, url: string) => {
               // Ignore errors
             });
         }, 2000);
+      }
+    });
+    
+    // Handle custom protocol for manual captcha completion
+    captchaWindow.webContents.on('will-navigate', (_event, navUrl) => {
+      if (navUrl === 'captcha://completed') {
+        console.log('[MAIN] User indicated captcha completed');
+        captchaCompleted = true;
+        captchaWindow.close();
+        resolve({ success: true });
       }
     });
     
