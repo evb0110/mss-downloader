@@ -1,5 +1,9 @@
 import Store from 'electron-store';
 
+// Constants for size calculations
+const KB = 1024;
+const MB = KB * 1024;
+
 interface AppConfig {
     // Download settings
     maxConcurrentDownloads: number;
@@ -39,7 +43,7 @@ const defaultConfig: AppConfig = {
     retryDelayMax: 30000,
   
     // Auto-split settings
-    autoSplitThreshold: 800 * 1024 * 1024, // 800MB in bytes
+    autoSplitThreshold: 300 * MB, // 300MB in bytes
     adaptiveSplitThreshold: 1.5,
   
     // Size monitoring
@@ -51,7 +55,7 @@ const defaultConfig: AppConfig = {
   
     // PDF processing
     pdfQuality: 0.9,
-    maxMemoryUsage: 2 * 1024 * 1024 * 1024, // 2GB
+    maxMemoryUsage: 2 * KB * MB, // 2GB
   
     // Timeouts
     requestTimeout: 30000,

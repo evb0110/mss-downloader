@@ -2104,6 +2104,10 @@ export class EnhancedManuscriptDownloaderService {
             };
             
         } catch (error: any) {
+            // Don't wrap CAPTCHA_REQUIRED errors
+            if (error.message?.startsWith('CAPTCHA_REQUIRED:')) {
+                throw error;
+            }
             throw new Error(`Failed to load Trinity Dublin manuscript: ${error.message}`);
         }
     }
