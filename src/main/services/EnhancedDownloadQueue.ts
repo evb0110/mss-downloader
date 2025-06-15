@@ -362,9 +362,16 @@ export class EnhancedDownloadQueue extends EventEmitter {
 
         try {
             while (true) {
-                const nextItem = this.state.items.find((item) => 
-                    item.status === 'queued' || item.status === 'failed' || item.status === 'pending',
-                );
+                const nextItem = this.state.items.find((item) => {
+                    if (item.status === 'queued' || item.status === 'pending') {
+                        return true;
+                    }
+                    // Don't auto-retry items that failed with CAPTCHA_REQUIRED
+                    if (item.status === 'failed' && item.error && !item.error.includes('CAPTCHA_REQUIRED:')) {
+                        return true;
+                    }
+                    return false;
+                });
 
                 if (!nextItem) {
                     break;
@@ -766,8 +773,16 @@ export class EnhancedDownloadQueue extends EventEmitter {
             }
             
             return false;
-        } catch (error) {
+        } catch (error: any) {
             console.error('❌ Error checking document size:', error);
+            // If it's a captcha error, mark the item as failed with captcha message
+            if (error.message?.includes('CAPTCHA_REQUIRED:')) {
+                item.status = 'failed';
+                item.error = error.message;
+                this.saveToStorage();
+                this.notifyListeners();
+                throw error; // Re-throw to be handled by processItem
+            }
             return false;
         }
     }

@@ -1151,24 +1151,22 @@ export class EnhancedManuscriptDownloaderService {
             let filename: string;
             let filepath: string;
             
-            // Final PDF goes to Downloads folder
+            // Final PDF goes to Downloads folder - always create a subfolder for each manuscript
             const downloadsDir = app.getPath('downloads');
             await fs.mkdir(downloadsDir, { recursive: true });
             
-            let targetDir = downloadsDir;
+            // Always create a subfolder with the manuscript name
+            const targetDir = path.join(downloadsDir, sanitizedName);
+            await fs.mkdir(targetDir, { recursive: true });
             
             if (shouldSplit) {
-                // For split PDFs, create a subfolder with the manuscript name
-                targetDir = path.join(downloadsDir, sanitizedName);
-                await fs.mkdir(targetDir, { recursive: true });
-                
                 const partNumber = String(1).padStart(2, '0');
                 filename = `${sanitizedName}_part_${partNumber}_pages_${actualStartPage}-${actualEndPage}.pdf`;
                 filepath = path.join(targetDir, filename);
             } else {
                 // Always include page numbers for clarity
                 filename = `${sanitizedName}_pages_${actualStartPage}-${actualEndPage}.pdf`;
-                filepath = path.join(downloadsDir, filename);
+                filepath = path.join(targetDir, filename);
             }
             
             // Check if file exists
