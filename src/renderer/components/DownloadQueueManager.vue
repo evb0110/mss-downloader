@@ -1,5 +1,5 @@
 <template>
-  <div class="manuscript-downloader">
+  <div class="manuscript-downloader" data-testid="download-queue">
     <div class="info-buttons-row">
       <button
         class="info-btn"
@@ -22,6 +22,9 @@
     <div class="bulk-queue-form">
       <!-- Show input form directly if no queue items -->
       <template v-if="queueItems.length === 0">
+        <div class="empty-queue-message" data-testid="empty-queue-message">
+          <p>No manuscripts in queue. Add URLs below to get started.</p>
+        </div>
         <div class="form-group">
           <label for="bulk-urls">Manuscript URLs</label>
           <textarea
@@ -34,14 +37,20 @@ https://digi.vatlib.it/..."
             class="bulk-textarea manuscript-input"
             :disabled="isProcessingUrls"
             rows="6"
+            data-testid="url-input"
             @keydown="handleTextareaKeydown"
           />
           <small class="help-text">Enter multiple manuscript URLs, one per line or separated by whitespace, semicolon, or comma. Press Ctrl+Enter (or Cmd+Enter on Mac) to add to queue.</small>
+        </div>
+
+        <div v-if="errorMessage" class="error-message" data-testid="error-message">
+          {{ errorMessage }}
         </div>
                 
         <button
           :disabled="isProcessingUrls || !bulkUrlText.trim()"
           class="load-btn"
+          data-testid="add-button"
           @click="processBulkUrls"
         >
           {{ isProcessingUrls ? 'Adding to Queue...' : 'Add to Queue' }}
@@ -58,14 +67,15 @@ https://digi.vatlib.it/..."
         <div
           v-if="queueStats.total > 0"
           class="queue-progress"
+          data-testid="queue-stats"
         >
           <div class="queue-progress-header">
             <span class="queue-progress-label">Queue Progress</span>
-            <span class="queue-progress-stats">
+            <span class="queue-progress-stats" data-testid="total-items">
               {{ queueStats.completed + queueStats.failed }} / {{ queueStats.total }} Manuscripts
             </span>
           </div>
-          <div class="queue-progress-bar">
+          <div class="queue-progress-bar" data-testid="progress-bar">
             <!-- Individual segments for each item in queue order -->
             <div
               v-for="item in queueItems"
@@ -98,6 +108,7 @@ https://digi.vatlib.it/..."
             <span
               v-if="queueStats.completed > 0"
               class="progress-segment completed"
+              data-testid="completed-items"
             >
               {{ queueStats.completed }} Completed
             </span>
@@ -110,11 +121,12 @@ https://digi.vatlib.it/..."
           </div>
         </div>
 
-        <div class="queue-controls">
+        <div class="queue-controls" data-testid="queue-controls">
           <button
             v-if="!isQueueProcessing && !isQueuePaused"
             class="start-btn"
             :disabled="isProcessingUrls || !hasReadyItems"
+            data-testid="start-queue"
             @click="startQueue"
           >
             {{ shouldShowResume ? 'Resume Queue' : 'Start Queue' }}
@@ -122,6 +134,7 @@ https://digi.vatlib.it/..."
           <button
             v-if="isQueueProcessing && !isQueuePaused"
             class="pause-btn"
+            data-testid="pause-queue"
             @click="pauseQueue"
           >
             Pause Queue
@@ -144,6 +157,7 @@ https://digi.vatlib.it/..."
           <button
             v-if="isQueueProcessing || isQueuePaused"
             class="stop-btn"
+            data-testid="stop-queue"
             @click="stopQueue"
           >
             Stop Queue
@@ -160,6 +174,7 @@ https://digi.vatlib.it/..."
             :class="getButtonClass('clearAll', 'clear-queue-btn')"
             :disabled="isButtonDisabled('clearAll', queueItems.length === 0 || isProcessingUrls)"
             title="Delete all items from the queue"
+            data-testid="clear-completed"
             @click="clearAllQueue"
           >
             <span
@@ -260,6 +275,7 @@ https://digi.vatlib.it/..."
             :key="item.id"
             class="queue-item"
             :class="[`status-${item.status}`, { 'loading-manifest': item.status === 'loading' }]"
+            data-testid="queue-item"
           >
             <div class="queue-item-header">
               <div class="queue-item-info">
@@ -267,10 +283,9 @@ https://digi.vatlib.it/..."
                   <span v-if="item.error">{{ item.error }}</span>
                   <span v-else>Failed to Load Manifest</span>
                   <a
-                    :href="item.url"
-                    target="_blank"
-                    rel="noopener noreferrer"
                     class="manuscript-error-link"
+                    style="cursor: pointer;"
+                    @click.prevent="openInBrowser(item.url)"
                   >
                     {{ item.url }}
                   </a>
@@ -278,10 +293,9 @@ https://digi.vatlib.it/..."
                 <strong v-else>
                   <a
                     v-if="item.status !== 'loading' && item.url"
-                    :href="item.url"
-                    target="_blank"
-                    rel="noopener noreferrer"
                     class="manuscript-title-link"
+                    style="cursor: pointer;"
+                    @click.prevent="openInBrowser(item.url)"
                   >
                     {{ item.displayName }}
                   </a>
@@ -316,6 +330,7 @@ https://digi.vatlib.it/..."
                   v-if="editingQueueItemId !== item.id"
                   class="edit-btn"
                   title="Edit download options"
+                  data-testid="edit-button"
                   @click="startQueueItemEdit(item)"
                 >
                   Edit
@@ -324,6 +339,7 @@ https://digi.vatlib.it/..."
                   v-if="item.status === 'downloading'"
                   class="pause-item-btn"
                   title="Pause this download"
+                  data-testid="pause-button"
                   @click="pauseQueueItem(item.id)"
                 >
                   Pause
@@ -332,6 +348,7 @@ https://digi.vatlib.it/..."
                   v-if="item.status === 'paused'"
                   class="resume-item-btn"
                   title="Resume this download"
+                  data-testid="resume-button"
                   @click="resumeQueueItem(item.id)"
                 >
                   Resume
@@ -355,6 +372,7 @@ https://digi.vatlib.it/..."
                 <button
                   class="remove-btn"
                   title="Remove from queue"
+                  data-testid="delete-button"
                   @click="removeQueueItem(item.id)"
                 >
                   Delete
@@ -366,6 +384,7 @@ https://digi.vatlib.it/..."
             <div
               v-if="editingQueueItemId === item.id && editingQueueItem"
               class="queue-edit-form"
+              data-testid="edit-modal"
             >
               <div class="edit-section">
                 <div class="edit-header">
@@ -377,6 +396,7 @@ https://digi.vatlib.it/..."
                     type="number"
                     min="1"
                     class="page-input"
+                    data-testid="page-range-input"
                     @blur="validateQueueEditInputs"
                   >
                   <span>–</span>
@@ -391,6 +411,7 @@ https://digi.vatlib.it/..."
                     :disabled="hasEditQueueValidationErrors || !hasQueueItemChanges"
                     class="edit-btn edit-save-btn"
                     title="Apply changes"
+                    data-testid="save-button"
                     @click="saveQueueItemEdit()"
                   >
                     Apply
@@ -426,6 +447,7 @@ https://digi.vatlib.it/..."
                   min="1"
                   max="8"
                   class="concurrency-slider"
+                  data-testid="concurrency-input"
                 >
               </div>
             </div>
@@ -492,51 +514,6 @@ https://digi.vatlib.it/..."
     @close="closeAlertModal"
   />
 
-  <!-- Trinity Dublin Manual Manifest Modal -->
-  <Modal
-    :show="showTrinityDublinModal"
-    title="Trinity College Dublin - Manual Manifest Entry"
-    type="confirm"
-    confirm-text="Process Manifest"
-    cancel-text="Cancel"
-    width="800px"
-    @confirm="handleTrinityDublinSubmit"
-    @close="handleTrinityDublinCancel"
-  >
-    <div class="trinity-dublin-modal">
-      <p class="instructions">
-        Trinity College Dublin blocks automated access. To download this manuscript:
-      </p>
-      <div class="manuscript-link">
-        <strong>Manuscript URL:</strong> 
-        <a :href="trinityDublinModal.url" target="_blank" class="manuscript-url">
-          {{ trinityDublinModal.url }}
-        </a>
-      </div>
-      <ol class="steps">
-        <li>Click the link above to open the manuscript page in your browser</li>
-        <li>Complete any captchas shown</li>
-        <li>Open Developer Tools (F12) → Network tab</li>
-        <li>Look for a request to "manifest" or ending in "/manifest"</li>
-        <li>Copy the JSON response and paste it below</li>
-      </ol>
-      
-      <div class="manifest-input-container">
-        <label for="manifest-data">Paste IIIF Manifest JSON:</label>
-        <textarea
-          id="manifest-data"
-          v-model="trinityDublinModal.manifestData"
-          class="manifest-textarea"
-          placeholder='{"@context":"http://iiif.io/api/presentation/2/context.json","@id":"...","sequences":[...]}'
-          rows="10"
-        />
-      </div>
-      
-      <div v-if="trinityDublinManifestError" class="error-message">
-        {{ trinityDublinManifestError }}
-      </div>
-    </div>
-  </Modal>
 
   <!-- Supported Libraries Modal -->
   <Modal
@@ -681,6 +658,7 @@ declare global {
 // Bulk mode state
 const bulkUrlText = ref('');
 const isProcessingUrls = ref(false);
+const errorMessage = ref('');
 const modalTextarea = ref<HTMLTextAreaElement | null>(null);
 
 // Queue state (imported from DownloadQueue service via IPC)
@@ -726,14 +704,6 @@ const alertModal = ref({
     type: 'info',
 });
 
-const showTrinityDublinModal = ref(false);
-const trinityDublinModal = ref({
-    url: '',
-    manifestData: '',
-    onSubmit: (manifest: string) => {},
-    onCancel: () => {},
-});
-const trinityDublinManifestError = ref('');
 
 // Supported Libraries - fetched via IPC
 const supportedLibraries = ref<LibraryInfo[]>([]);
@@ -975,44 +945,6 @@ async function parseManuscriptWithCaptcha(url: string) {
     } catch (error: any) {
         console.log('parseManuscriptWithCaptcha caught error:', error.message);
         
-        // Check if this is Trinity Dublin manual requirement
-        if (error.message?.includes('TRINITY_DUBLIN_MANUAL_REQUIRED')) {
-            // Create a promise that will be resolved when user provides manifest
-            return new Promise((resolve, reject) => {
-                // Show custom modal with paste area
-                showTrinityDublinManifestModal(url, (manifestData: string) => {
-                    try {
-                        const manifest = JSON.parse(manifestData);
-                        
-                        // Extract page links from IIIF manifest
-                        const pageLinks = manifest.sequences[0].canvases.map((canvas: any) => {
-                            const resource = canvas.images[0].resource;
-                            return resource['@id'] || resource.id;
-                        }).filter((link: string) => link);
-                        
-                        if (pageLinks.length > 0) {
-                            const workIdMatch = url.match(/\/works\/([^/?]+)/);
-                            const workId = workIdMatch ? workIdMatch[1] : 'unknown';
-                            
-                            resolve({
-                                pageLinks,
-                                totalPages: pageLinks.length,
-                                library: 'trinity_dublin' as const,
-                                displayName: manifest.label || `TrinityDublin_${workId}`,
-                                originalUrl: url,
-                            });
-                        } else {
-                            reject(new Error('No pages found in manifest'));
-                        }
-                    } catch (err) {
-                        reject(new Error('Invalid manifest JSON'));
-                    }
-                }, () => {
-                    // User cancelled
-                    reject(new Error('Manual manifest entry cancelled'));
-                });
-            });
-        }
         
         // Check if this is a captcha error (may be wrapped in IPC error)
         if (error.message?.includes('CAPTCHA_REQUIRED:')) {
@@ -1054,6 +986,9 @@ async function parseManuscriptWithCaptcha(url: string) {
 }
 
 async function processBulkUrls() {
+    // Clear previous error message
+    errorMessage.value = '';
+    
     const urls = parseUrls(bulkUrlText.value);
     
     if (urls.length === 0) return;
@@ -1182,21 +1117,7 @@ async function processBulkUrls() {
                 }
                 
                 // Update the temporary item with actual manifest data
-                if ((manifest as any).requiresManualDownload) {
-                    // Trinity Dublin manual download case
-                    await window.electronAPI.updateQueueItem(tempId, {
-                        displayName: manifest.displayName,
-                        library: manifest.library as TLibrary,
-                        totalPages: 0,
-                        status: 'failed' as TStatus,
-                        error: 'Manual download required - see instructions',
-                        downloadOptions: {
-                            concurrentDownloads: 1,
-                            startPage: 1,
-                            endPage: 1,
-                        },
-                    });
-                } else {
+                {
                     await window.electronAPI.updateQueueItem(tempId, {
                         displayName: manifest.displayName,
                         library: manifest.library as TLibrary,
@@ -1237,25 +1158,20 @@ async function processBulkUrls() {
             }
         }
 
-        // Show alert for duplicates to inform the user
+        // Show error message for duplicates or errors
         if (duplicateCount > 0 || errorCount > 0) {
             let message = '';
             if (duplicateCount > 0) {
-                message += `${duplicateCount} duplicate${duplicateCount > 1 ? 's' : ''} found and skipped. `;
+                message += `${duplicateCount} duplicate${duplicateCount > 1 ? 's' : ''} already exists in queue. `;
             }
             if (errorCount > 0) {
                 message += `${errorCount} URL${errorCount > 1 ? 's' : ''} failed to load. `;
             }
             if (addedCount > 0) {
                 message += `${addedCount} new manuscript${addedCount > 1 ? 's' : ''} added.`;
-            } else if (duplicateCount === 0 && errorCount === 0) {
-                message = 'No new manuscripts were added.'; // Should not happen if urls.length > 0 but no adds/duplicates/errors
             }
-
-            showAlert(
-                'Processing Results',
-                message,
-            );
+            
+            errorMessage.value = message.trim();
         } else if (addedCount > 0) {
             // Items were added successfully - no notification needed, user can see them in the queue
         }
@@ -1476,15 +1392,6 @@ function showAlert(title: string, message: string, type?: string) {
     showAlertModal.value = true;
 }
 
-function showTrinityDublinManifestModal(url: string, onSubmit: (manifest: string) => void, onCancel: () => void) {
-    trinityDublinModal.value = {
-        url,
-        onSubmit,
-        onCancel,
-        manifestData: ''
-    };
-    showTrinityDublinModal.value = true;
-}
 
 function handleConfirm() {
     confirmModal.value.onConfirm();
@@ -1499,34 +1406,14 @@ function closeAlertModal() {
     showAlertModal.value = false;
 }
 
-function handleTrinityDublinSubmit() {
-    trinityDublinManifestError.value = '';
-    
-    if (!trinityDublinModal.value.manifestData.trim()) {
-        trinityDublinManifestError.value = 'Please paste the manifest JSON';
-        return;
-    }
-    
-    try {
-        const manifest = JSON.parse(trinityDublinModal.value.manifestData);
-        if (!manifest.sequences || !manifest.sequences[0] || !manifest.sequences[0].canvases) {
-            trinityDublinManifestError.value = 'Invalid manifest structure';
-            return;
-        }
-        
-        trinityDublinModal.value.onSubmit(trinityDublinModal.value.manifestData);
-        showTrinityDublinModal.value = false;
-        trinityDublinModal.value.manifestData = '';
-    } catch (err) {
-        trinityDublinManifestError.value = 'Invalid JSON format';
-    }
-}
 
-function handleTrinityDublinCancel() {
-    trinityDublinModal.value.onCancel();
-    showTrinityDublinModal.value = false;
-    trinityDublinModal.value.manifestData = '';
-    trinityDublinManifestError.value = '';
+async function openInBrowser(url: string) {
+    // Use Electron's shell to open in default browser
+    try {
+        await window.electronAPI.openExternal(url);
+    } catch (error) {
+        console.error('Failed to open URL in browser:', error);
+    }
 }
 
 async function cleanupIndexedDBCache() {
@@ -2886,78 +2773,4 @@ label {
     }
 }
 
-/* Trinity Dublin Manual Manifest Modal Styles */
-.trinity-dublin-modal {
-    padding: 10px;
-}
-
-.trinity-dublin-modal .instructions {
-    margin-bottom: 15px;
-    color: #333;
-}
-
-.manuscript-link {
-    margin-bottom: 15px;
-    padding: 10px;
-    background: #f5f5f5;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-}
-
-.manuscript-url {
-    color: #4183c4;
-    text-decoration: none;
-    word-break: break-all;
-}
-
-.manuscript-url:hover {
-    text-decoration: underline;
-}
-
-.trinity-dublin-modal .steps {
-    margin-bottom: 20px;
-    padding-left: 20px;
-}
-
-.trinity-dublin-modal .steps li {
-    margin-bottom: 8px;
-    color: #555;
-}
-
-.manifest-input-container {
-    margin-top: 20px;
-}
-
-.manifest-input-container label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #333;
-}
-
-.manifest-textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 12px;
-    resize: vertical;
-    min-height: 200px;
-}
-
-.manifest-textarea:focus {
-    outline: none;
-    border-color: #4183c4;
-    box-shadow: 0 0 0 2px rgba(65, 131, 196, 0.2);
-}
-
-.trinity-dublin-modal .error-message {
-    margin-top: 10px;
-    padding: 10px;
-    background: #fee;
-    border: 1px solid #fcc;
-    border-radius: 4px;
-    color: #c00;
-}
 </style>

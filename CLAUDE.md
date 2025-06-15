@@ -41,6 +41,11 @@ npm run dist:mac    # macOS
 # Linting
 npm run lint
 npm run lint:fix
+
+# End-to-End Testing
+npm run test:e2e          # Run E2E tests (headless)
+npm run test:e2e:headed   # Run E2E tests (with UI)
+npm run test:e2e:debug    # Run E2E tests in debug mode
 ```
 
 **Development Process Management:**
@@ -185,4 +190,5 @@ npm run lint
 - devserver doesn't work correctly for you. If you need, I can start it
 - v1.0.29: Added Unicatt (Biblioteca Ambrosiana) support with proxy fallback mechanism for geo-restricted access
 - v1.0.31: Added Cambridge CUDL, Trinity Cambridge, Dublin ISOS, Dublin MIRA, and Trinity Dublin libraries
+- v1.0.45: Fixed Trinity Dublin full resolution image downloading - convert size-limited URLs (/full/600,/) to full resolution (/full/max/)
 - don't build after completing a task

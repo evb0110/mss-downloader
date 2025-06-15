@@ -41,8 +41,8 @@ const createWindow = () => {
     show: true, // Show immediately for debugging
   });
 
-  // Force devtools open immediately
-  if (isDev) {
+  // Force devtools open immediately (but not for tests)
+  if (isDev && process.env.NODE_ENV !== 'test') {
     // Disable autofill to prevent console errors
     mainWindow.webContents.on('devtools-opened', () => {
       // DevTools is open, but we can't disable autofill from here
@@ -483,10 +483,24 @@ ipcMain.handle('show-item-in-finder', async (_event, filePath: string) => {
   }
 });
 
+ipcMain.handle('open-external', async (_event, url: string) => {
+  if (!url) {
+    throw new Error('No URL provided');
+  }
+  
+  try {
+    await shell.openExternal(url);
+    return true;
+  } catch (error) {
+    console.error('Failed to open external URL:', error);
+    throw new Error(`Failed to open URL: ${url}`);
+  }
+});
+
 ipcMain.handle('solve-captcha', async (_event, url: string) => {
   console.log('[MAIN] solve-captcha called with URL:', url);
   
-  return new Promise(async (resolve) => {
+  return new Promise((resolve) => {
     const captchaWindow = new BrowserWindow({
       width: 900,
       height: 700,
@@ -504,7 +518,6 @@ ipcMain.handle('solve-captcha', async (_event, url: string) => {
 
     // Track if we've completed the captcha
     let captchaCompleted = false;
-    let manifestCheckInterval: NodeJS.Timeout | null = null;
     
     // Handle loading errors
     captchaWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription) => {
@@ -518,68 +531,15 @@ ipcMain.handle('solve-captcha', async (_event, url: string) => {
       captchaWindow.show();
       console.log('[MAIN] Captcha window shown for URL:', url);
       
-      // For Trinity Dublin, add instructions and close button
-      if (url.includes('digitalcollections.tcd.ie')) {
-        setTimeout(() => {
-          captchaWindow.webContents.executeJavaScript(`
-            if (!document.querySelector('.captcha-controls')) {
-              const div = document.createElement('div');
-              div.className = 'captcha-controls';
-              div.innerHTML = \`
-                <div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.9);color:white;padding:20px 30px;border-radius:12px;font-size:16px;z-index:9999;text-align:center;max-width:600px;box-shadow:0 4px 12px rgba(0,0,0,0.5);">
-                  <div style="margin-bottom:15px;">Trinity Dublin requires manual access. Complete the captcha(s) if you wish, but they may be endless.</div>
-                  <button onclick="window.close()" style="background:#dc3545;color:white;border:none;padding:10px 20px;border-radius:6px;font-size:16px;cursor:pointer;margin-right:10px;">Close Window</button>
-                  <button onclick="window.location.href='captcha://completed'" style="background:#28a745;color:white;border:none;padding:10px 20px;border-radius:6px;font-size:16px;cursor:pointer;">I Completed Captcha</button>
-                </div>
-              \`;
-              document.body.appendChild(div);
-            }
-          `).catch(() => {});
-        }, 1000);
-      }
     });
 
-    // For Trinity Dublin, check periodically if manifest is accessible
-    if (url.includes('digitalcollections.tcd.ie')) {
-      manifestCheckInterval = setInterval(async () => {
-        if (captchaCompleted || captchaWindow.isDestroyed()) {
-          if (manifestCheckInterval) clearInterval(manifestCheckInterval);
-          return;
-        }
-        
-        try {
-          // Try to fetch the manifest in the captcha window context
-          const manifestContent = await captchaWindow.webContents.executeJavaScript(`
-            fetch('${url}', { credentials: 'include', mode: 'cors' })
-              .then(r => r.text())
-              .then(text => {
-                if (text.trim().startsWith('{') && text.includes('sequences')) {
-                  return text;
-                }
-                return null;
-              })
-              .catch(() => null)
-          `);
-          
-          if (manifestContent) {
-            console.log('[MAIN] Manifest successfully fetched after captcha!');
-            captchaCompleted = true;
-            if (manifestCheckInterval) clearInterval(manifestCheckInterval);
-            captchaWindow.close();
-            resolve({ success: true, content: manifestContent });
-          }
-        } catch (err) {
-          // Ignore errors, keep checking
-        }
-      }, 3000); // Check every 3 seconds
-    }
     
-    // Monitor URL changes for non-Trinity Dublin sites
+    // Monitor URL changes for manifest content
     captchaWindow.webContents.on('did-navigate', (_event, navigationUrl) => {
       console.log('[MAIN] Captcha window navigated to:', navigationUrl);
       
-      // For non-Trinity Dublin sites, check if we got JSON content
-      if (!url.includes('digitalcollections.tcd.ie') && navigationUrl.includes('/manifest')) {
+      // Check if we got JSON content
+      if (navigationUrl.includes('/manifest')) {
         setTimeout(() => {
           if (captchaCompleted || captchaWindow.isDestroyed()) return;
           
@@ -611,23 +571,15 @@ ipcMain.handle('solve-captcha', async (_event, url: string) => {
     
     
     captchaWindow.on('closed', () => {
-      if (manifestCheckInterval) clearInterval(manifestCheckInterval);
-      
       if (!captchaCompleted) {
         console.log('[MAIN] Captcha window closed by user');
         
-        // For Trinity Dublin, mark as success so UI can retry
-        if (url.includes('digitalcollections.tcd.ie')) {
-          resolve({ success: true });
-        } else {
-          resolve({ success: false, error: 'Captcha window was closed' });
-        }
+        resolve({ success: false, error: 'Captcha window was closed' });
       }
     });
 
     // Timeout after 5 minutes
     setTimeout(() => {
-      if (manifestCheckInterval) clearInterval(manifestCheckInterval);
       if (!captchaWindow.isDestroyed()) {
         captchaWindow.close();
         resolve({ success: false, error: 'Captcha verification timed out' });

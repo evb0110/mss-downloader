@@ -97,6 +97,7 @@ const api = {
   openDownloadsFolder: () => ipcRenderer.invoke('open-downloads-folder'),
   getDownloadsPath: () => ipcRenderer.invoke('get-downloads-path'),
   showItemInFinder: (filePath: string) => ipcRenderer.invoke('show-item-in-finder', filePath),
+  openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
 
   // Config management methods
   getConfig: (key: string) => ipcRenderer.invoke('config-get', key),

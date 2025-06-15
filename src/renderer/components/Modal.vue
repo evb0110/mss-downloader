@@ -22,7 +22,10 @@
         </button>
       </div>
       
-      <div v-if="$slots.headerContent" class="modal-header-content">
+      <div
+        v-if="$slots.headerContent"
+        class="modal-header-content"
+      >
         <slot name="headerContent" />
       </div>
       
@@ -33,7 +36,10 @@
         <slot />
       </div>
       
-      <div class="modal-footer" v-if="type === 'confirm'">
+      <div
+        v-if="type === 'confirm'"
+        class="modal-footer"
+      >
         <button
           class="btn btn-danger"
           :disabled="loading"

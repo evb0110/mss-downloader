@@ -37,6 +37,9 @@ declare global {
       
       // Cleanup
       cleanupIndexedDBCache: () => Promise<void>;
+      
+      // External links
+      openExternal: (url: string) => Promise<boolean>;
     };
   }
 }

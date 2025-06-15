@@ -83,11 +83,6 @@ export class ManuscriptDownloaderService {
             example: 'https://www.mira.ie/105',
             description: 'Manuscript, Inscription and Realia Archive (Dublin)',
         },
-        {
-            name: 'Trinity College Dublin',
-            example: 'https://digitalcollections.tcd.ie/concern/works/2801pk96j',
-            description: 'Trinity College Dublin digital collections',
-        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -114,8 +109,6 @@ export class ManuscriptDownloaderService {
                 return this.loadIsosManifest(url);
             case 'mira':
                 return this.loadMiraManifest(url);
-            case 'trinity_dublin':
-                return this.loadTrinityDublinManifest(url);
             default:
                 throw new Error('Unsupported URL. Please check the supported libraries.');
         }
@@ -171,7 +164,12 @@ export class ManuscriptDownloaderService {
         }
     }
 
-    private detectLibrary(url: string): 'gallica' | 'unifr' | 'vatlib' | 'florus' | 'cudl' | 'trinity_cam' | 'isos' | 'mira' | 'trinity_dublin' | null {
+    private detectLibrary(url: string): 'gallica' | 'unifr' | 'vatlib' | 'florus' | 'cudl' | 'trinity_cam' | 'isos' | 'mira' | null {
+        // Check for unsupported libraries first
+        if (url.includes('digitalcollections.tcd.ie')) {
+            throw new Error('Trinity College Dublin is not currently supported due to aggressive captcha protection. Please download manuscripts manually through their website.');
+        }
+        
         if (url.includes('gallica.bnf.fr')) return 'gallica';
         if (url.includes('e-codices.unifr.ch')) return 'unifr';
         if (url.includes('digi.vatlib.it')) return 'vatlib';
@@ -180,7 +178,6 @@ export class ManuscriptDownloaderService {
         if (url.includes('mss-cat.trin.cam.ac.uk')) return 'trinity_cam';
         if (url.includes('isos.dias.ie')) return 'isos';
         if (url.includes('mira.ie')) return 'mira';
-        if (url.includes('digitalcollections.tcd.ie')) return 'trinity_dublin';
         return null;
     }
 
@@ -400,19 +397,6 @@ export class ManuscriptDownloaderService {
         }
     }
 
-    private async loadTrinityDublinManifest(tcdUrl: string): Promise<ManuscriptManifest> {
-        try {
-            const idMatch = tcdUrl.match(/\/works\/([^/?]+)/);
-            if (!idMatch) {
-                throw new Error('Invalid Trinity College Dublin URL format');
-            }
-            
-            throw new Error('Trinity College Dublin digital collections may require authentication - please verify access and provide direct manifest URLs if available');
-            
-        } catch (error: any) {
-            throw new Error(`Failed to load Trinity Dublin manuscript: ${error.message}`);
-        }
-    }
 
     private downloadImageBuffer(url: string): Promise<Buffer> {
         return new Promise((resolve, reject) => {

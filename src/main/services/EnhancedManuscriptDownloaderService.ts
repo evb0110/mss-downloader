@@ -105,11 +105,6 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://www.mira.ie/105',
             description: 'Manuscript, Inscription and Realia Archive (Dublin)',
         },
-        {
-            name: 'Trinity College Dublin',
-            example: 'https://digitalcollections.tcd.ie/concern/works/2801pk96j',
-            description: 'Trinity College Dublin digital collections',
-        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -156,6 +151,11 @@ export class EnhancedManuscriptDownloaderService {
      * Detect library type from URL
      */
     detectLibrary(url: string): string | null {
+        // Check for unsupported libraries first
+        if (url.includes('digitalcollections.tcd.ie')) {
+            throw new Error('Trinity College Dublin is not currently supported due to aggressive captcha protection. Please download manuscripts manually through their website.');
+        }
+        
         if (url.includes('gallica.bnf.fr')) return 'gallica';
         if (url.includes('e-codices.unifr.ch') || url.includes('e-codices.ch')) return 'unifr';
         if (url.includes('digi.vatlib.it')) return 'vatlib';
@@ -173,7 +173,6 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('mss-cat.trin.cam.ac.uk')) return 'trinity_cam';
         if (url.includes('isos.dias.ie')) return 'isos';
         if (url.includes('mira.ie')) return 'mira';
-        if (url.includes('digitalcollections.tcd.ie')) return 'trinity_dublin';
         
         return null;
     }
@@ -250,7 +249,9 @@ export class EnhancedManuscriptDownloaderService {
      */
     async fetchDirect(url: string, options: any = {}): Promise<Response> {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), configService.get('requestTimeout'));
+        // Use much longer timeout for Trinity Cambridge as their server is extremely slow (45+ seconds per image)
+        const timeout = url.includes('mss-cat.trin.cam.ac.uk') ? 120000 : configService.get('requestTimeout'); // 2 minutes for Trinity Cambridge
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
         
         try {
             const response = await fetch(url, {
@@ -338,9 +339,6 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'mira':
                     manifest = await this.loadMiraManifest(originalUrl);
-                    break;
-                case 'trinity_dublin':
-                    manifest = await this.loadTrinityDublinManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -1136,7 +1134,11 @@ export class EnhancedManuscriptDownloaderService {
             // Generate filename using filesystem-safe sanitization
             const sanitizedName = manifest.displayName
                 .replace(/[<>:"/\\|?*\x00-\x1f]/g, '_')  // Remove filesystem-unsafe and control characters
+                .replace(/[\u00A0-\u9999]/g, '_')         // Replace Unicode special characters that may cause Windows issues
+                .replace(/[^\w\s.-]/g, '_')               // Replace any remaining special characters except word chars, spaces, dots, hyphens
                 .replace(/\s+/g, '_')                     // Replace spaces with underscores
+                .replace(/_{2,}/g, '_')                   // Replace multiple underscores with single underscore
+                .replace(/^_|_$/g, '')                    // Remove leading/trailing underscores
                 .substring(0, 100) || 'manuscript';       // Limit to 100 characters with fallback
             
             // Calculate pages to download for splitting logic
@@ -1928,33 +1930,78 @@ export class EnhancedManuscriptDownloaderService {
             const manuscriptId = manuscriptIdMatch[1];
             const manifestUrl = `https://mss-cat.trin.cam.ac.uk/Manuscript/${manuscriptId}/manifest.json`;
             
-            const manifestResponse = await this.fetchDirect(manifestUrl);
-            if (!manifestResponse.ok) {
-                throw new Error(`Failed to fetch Trinity Cambridge manifest: HTTP ${manifestResponse.status}`);
+            // Use extended timeout for Trinity Cambridge as their server can be slow
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+            
+            try {
+                const manifestResponse = await fetch(manifestUrl, {
+                    signal: controller.signal,
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                        'Accept': 'application/json,application/ld+json,*/*',
+                        'Accept-Language': 'en-US,en;q=0.5',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!manifestResponse.ok) {
+                    if (manifestResponse.status === 404) {
+                        throw new Error(`Manuscript not found: ${manuscriptId}. Please check the URL is correct.`);
+                    } else if (manifestResponse.status >= 500) {
+                        throw new Error(`Trinity Cambridge server error (HTTP ${manifestResponse.status}). The server may be temporarily unavailable.`);
+                    } else {
+                        throw new Error(`Failed to fetch Trinity Cambridge manifest: HTTP ${manifestResponse.status}`);
+                    }
+                }
+                
+                const responseText = await manifestResponse.text();
+                let iiifManifest;
+                
+                try {
+                    iiifManifest = JSON.parse(responseText);
+                } catch {
+                    throw new Error(`Invalid JSON response from Trinity Cambridge. Response starts with: ${responseText.substring(0, 100)}`);
+                }
+                
+                if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
+                    throw new Error('Invalid IIIF manifest structure from Trinity Cambridge');
+                }
+                
+                const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                    const resource = canvas.images[0].resource;
+                    let imageUrl = resource['@id'] || resource.id;
+                    
+                    // For Trinity Cambridge, convert to smaller size for faster downloads
+                    // Convert from /full/full/ to /full/1000,/ (1000px wide, loads in ~1.4s vs 45s)
+                    if (imageUrl && imageUrl.includes('/full/full/')) {
+                        imageUrl = imageUrl.replace('/full/full/', '/full/1000,/');
+                    }
+                    
+                    return imageUrl;
+                }).filter((link: string) => link);
+                
+                if (pageLinks.length === 0) {
+                    throw new Error('No pages found in Trinity Cambridge manifest');
+                }
+                
+                return {
+                    pageLinks,
+                    totalPages: pageLinks.length,
+                    library: 'trinity_cam',
+                    displayName: `TrinityC_${manuscriptId}`,
+                    originalUrl: trinityUrl,
+                };
+                
+            } catch (fetchError: any) {
+                clearTimeout(timeoutId);
+                if (fetchError.name === 'AbortError') {
+                    throw new Error('Trinity Cambridge server request timed out after 60 seconds. The server may be temporarily unavailable.');
+                }
+                throw fetchError;
             }
-            
-            const iiifManifest = await manifestResponse.json();
-            
-            if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
-                throw new Error('Invalid IIIF manifest structure');
-            }
-            
-            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
-                const resource = canvas.images[0].resource;
-                return resource['@id'] || resource.id;
-            }).filter((link: string) => link);
-            
-            if (pageLinks.length === 0) {
-                throw new Error('No pages found in manifest');
-            }
-            
-            return {
-                pageLinks,
-                totalPages: pageLinks.length,
-                library: 'trinity_cam',
-                displayName: `TrinityC_${manuscriptId}`,
-                originalUrl: trinityUrl,
-            };
             
         } catch (error: any) {
             throw new Error(`Failed to load Trinity College Cambridge manuscript: ${error.message}`);
@@ -2054,82 +2101,5 @@ export class EnhancedManuscriptDownloaderService {
         }
     }
 
-    async loadTrinityDublinManifest(trinityUrl: string): Promise<ManuscriptManifest> {
-        try {
-            const workIdMatch = trinityUrl.match(/\/works\/([^/?]+)/);
-            if (!workIdMatch) {
-                throw new Error('Invalid Trinity College Dublin URL format');
-            }
-            
-            const workId = workIdMatch[1];
-            const manifestUrl = `https://digitalcollections.tcd.ie/concern/works/${workId}/manifest`;
-            
-            // Try to get cookies from Electron session if available
-            let cookieHeader = '';
-            try {
-                const { session } = await import('electron');
-                const cookies = await session.defaultSession.cookies.get({ url: 'https://digitalcollections.tcd.ie' });
-                if (cookies.length > 0) {
-                    cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ');
-                    console.log('Using session cookies for Trinity Dublin request');
-                }
-            } catch (err) {
-                // Session not available in this context
-            }
-            
-            const manifestResponse = await this.fetchDirect(manifestUrl, {
-                headers: cookieHeader ? { 'Cookie': cookieHeader } : {}
-            });
-            if (!manifestResponse.ok) {
-                throw new Error(`Failed to fetch Trinity Dublin manifest: HTTP ${manifestResponse.status}`);
-            }
-            
-            const responseText = await manifestResponse.text();
-            
-            // Check if response is HTML (captcha protection)
-            if (responseText.trim().startsWith('<html>') || responseText.includes('captcha')) {
-                console.log('Trinity Dublin captcha detected for URL:', trinityUrl);
-                console.log('Manifest URL:', manifestUrl);
-                // Trinity Dublin has very aggressive anti-automation
-                // Direct users to manual approach
-                throw new Error(`TRINITY_DUBLIN_MANUAL_REQUIRED`);
-            }
-            
-            let iiifManifest;
-            try {
-                iiifManifest = JSON.parse(responseText);
-            } catch (parseError) {
-                throw new Error('Trinity College Dublin returned invalid JSON - possibly blocked by security measures');
-            }
-            
-            if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
-                throw new Error('Invalid IIIF manifest structure');
-            }
-            
-            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
-                const resource = canvas.images[0].resource;
-                return resource['@id'] || resource.id;
-            }).filter((link: string) => link);
-            
-            if (pageLinks.length === 0) {
-                throw new Error('No pages found in manifest');
-            }
-            
-            return {
-                pageLinks,
-                totalPages: pageLinks.length,
-                library: 'trinity_dublin',
-                displayName: `TrinityDublin_${workId}`,
-                originalUrl: trinityUrl,
-            };
-            
-        } catch (error: any) {
-            // Don't wrap CAPTCHA_REQUIRED errors
-            if (error.message?.startsWith('CAPTCHA_REQUIRED:')) {
-                throw error;
-            }
-            throw new Error(`Failed to load Trinity Dublin manuscript: ${error.message}`);
-        }
-    }
 
 }

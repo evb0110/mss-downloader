@@ -403,7 +403,13 @@ export class EnhancedDownloadQueue extends EventEmitter {
         this.state.currentItemId = item.id;
         item.status = 'downloading';
         item.startedAt = Date.now();
-        item.progress = 0;
+        item.progress = {
+            current: 0,
+            total: item.totalPages || 0,
+            percentage: 0,
+            eta: 'calculating...',
+            stage: 'downloading',
+        };
         
         this.processingAbortController = new AbortController();
         this.notifyListeners();
@@ -449,6 +455,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 // Pass through download options for page range
                 startPage: item.downloadOptions?.startPage,
                 endPage: item.downloadOptions?.endPage,
+                // Pass the queue item for manual manifest data
+                queueItem: item,
             });
 
             if (result.success) {
@@ -733,18 +741,33 @@ export class EnhancedDownloadQueue extends EventEmitter {
     
     private async checkAndSplitLargeDocument(item: QueuedManuscript): Promise<boolean> {
         try {
-            // Load manifest first to get accurate page count
-            const manifest = await this.currentDownloader!.loadManifest(item.url);
+            let manifest: any;
             
-            // Update item with manifest info
-            item.totalPages = manifest.totalPages;
-            item.library = manifest.library as TLibrary;
+            // Only load manifest if we don't already have the data (avoid double loading)
+            if (!item.totalPages || !item.library) {
+                console.log(`Loading manifest for ${item.displayName}...`);
+                manifest = await this.currentDownloader!.loadManifest(item.url);
+                
+                // Update item with manifest info
+                item.totalPages = manifest.totalPages;
+                item.library = manifest.library as TLibrary;
+                
+                console.log(`Manifest loaded: ${manifest.totalPages} pages, library: ${manifest.library}`);
+            } else {
+                console.log(`Using cached manifest data: ${item.totalPages} pages, library: ${item.library}`);
+                // Create a minimal manifest object for size checking
+                manifest = {
+                    totalPages: item.totalPages,
+                    library: item.library,
+                    displayName: item.displayName || `${item.library}_manuscript`,
+                    pageLinks: [] // Will be loaded during actual download
+                };
+            }
             
-            // For Florus, we need to handle size estimation differently
-            // since the manifest only returns sample pages
+            // For Florus only - limited manifest data requires size estimation
             if (manifest.library === 'florus') {
-                console.log('Florus manuscript detected, using estimated size calculation');
-                // Estimate based on typical manuscript page size (300KB-500KB per page)
+                console.log(`${manifest.library} manuscript detected, using estimated size calculation`);
+                // Estimate based on typical manuscript page size
                 const avgPageSizeMB = 0.4; // 400KB average per page
                 const estimatedTotalSizeMB = avgPageSizeMB * manifest.totalPages;
                 item.estimatedSizeMB = estimatedTotalSizeMB;
@@ -850,10 +873,15 @@ export class EnhancedDownloadQueue extends EventEmitter {
             const urlObj = new URL(url);
             const client = urlObj.protocol === 'https:' ? https.default : http.default;
 
+            // Use much longer timeout for Trinity Cambridge as their server is extremely slow (45+ seconds per image)
+            const timeout = url.includes('mss-cat.trin.cam.ac.uk') ? 120000 : 30000; // 2 minutes for Trinity Cambridge
+
             const req = client.request(url, { 
-                timeout: 10000,
+                timeout,
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                    'Accept': 'image/*,*/*',
+                    'Accept-Language': 'en-US,en;q=0.5',
                 }
             }, (res: any) => {
                 if (res.statusCode !== 200) {
