@@ -13,6 +13,7 @@ test.describe('Library Manifest Testing', () => {
       { name: 'Cambridge University Digital Library', url: 'https://cudl.lib.cam.ac.uk/view/MS-II-00006-00032/1' },
       { name: 'Trinity College Cambridge', url: 'https://mss-cat.trin.cam.ac.uk/Manuscript/B.10.5/UV' },
       { name: 'Dublin ISOS (DIAS)', url: 'https://www.isos.dias.ie/RIA/RIA_MS_D_ii_3.html' },
+      { name: 'Orléans Médiathèques (Aurelia)', url: 'https://mediatheques.orleans.fr/recherche/viewnotice/clef/FRAGMENTSDEDIFFERENTSLIVRESDELECRITURESAINTE--AUGUSTINSAINT----28/id/745380' },
     ];
     
     const results: any[] = [];

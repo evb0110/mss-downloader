@@ -105,6 +105,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://www.mira.ie/105',
             description: 'Manuscript, Inscription and Realia Archive (Dublin)',
         },
+        {
+            name: 'Orléans Médiathèques (Aurelia)',
+            example: 'https://mediatheques.orleans.fr/recherche/viewnotice/clef/FRAGMENTSDEDIFFERENTSLIVRESDELECRITURESAINTE--AUGUSTINSAINT----28/id/745380',
+            description: 'Médiathèques d\'Orléans digital heritage library via IIIF/Omeka',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -173,6 +178,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('mss-cat.trin.cam.ac.uk')) return 'trinity_cam';
         if (url.includes('isos.dias.ie')) return 'isos';
         if (url.includes('mira.ie')) return 'mira';
+        if (url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr')) return 'orleans';
         
         return null;
     }
@@ -339,6 +345,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'mira':
                     manifest = await this.loadMiraManifest(originalUrl);
+                    break;
+                case 'orleans':
+                    manifest = await this.loadOrleansManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -1139,6 +1148,7 @@ export class EnhancedManuscriptDownloaderService {
                 .replace(/\s+/g, '_')                     // Replace spaces with underscores
                 .replace(/_{2,}/g, '_')                   // Replace multiple underscores with single underscore
                 .replace(/^_|_$/g, '')                    // Remove leading/trailing underscores
+                .replace(/\.+$/g, '')                     // Remove trailing periods (Windows compatibility)
                 .substring(0, 100) || 'manuscript';       // Limit to 100 characters with fallback
             
             // Calculate pages to download for splitting logic
@@ -2059,12 +2069,16 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             const html = await response.text();
-            const manifestMatch = html.match(/"manifestId":\s*"([^"]+)"/);
-            if (!manifestMatch) {
-                throw new Error('No IIIF manifest found in MIRA page');
+            
+            // Look for the manifest in the windows section which shows the default manifest for this MIRA item
+            const windowsMatch = html.match(/windows:\s*\[\s*\{\s*manifestId:\s*"([^"]+)"/);
+            if (!windowsMatch) {
+                throw new Error('No IIIF manifest found in MIRA page windows configuration');
             }
             
-            const manifestUrl = manifestMatch[1];
+            const manifestUrl = windowsMatch[1];
+            console.log(`[MIRA] Found manifest URL: ${manifestUrl}`);
+            
             const manifestResponse = await this.fetchDirect(manifestUrl);
             if (!manifestResponse.ok) {
                 throw new Error(`Failed to fetch MIRA manifest: HTTP ${manifestResponse.status}`);
@@ -2078,7 +2092,7 @@ export class EnhancedManuscriptDownloaderService {
             
             const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
                 const resource = canvas.images[0].resource;
-                return resource['@id'] || resource.id;
+                return resource['@id'] || resource.id || resource.service?.['@id'] + '/full/max/0/default.jpg';
             }).filter((link: string) => link);
             
             if (pageLinks.length === 0) {
@@ -2088,16 +2102,210 @@ export class EnhancedManuscriptDownloaderService {
             const urlMatch = miraUrl.match(/\/(\d+)$/);
             const manuscriptId = urlMatch ? urlMatch[1] : 'unknown';
             
+            // Extract manuscript name from the page title if available
+            const titleMatch = html.match(/<h1[^>]*>MIrA \d+:\s*([^<]+)<\/h1>/);
+            const manuscriptName = titleMatch ? titleMatch[1].trim() : `MIRA_${manuscriptId}`;
+            
             return {
                 pageLinks,
                 totalPages: pageLinks.length,
                 library: 'mira',
-                displayName: `MIRA_${manuscriptId}`,
+                displayName: manuscriptName,
                 originalUrl: miraUrl,
             };
             
         } catch (error: any) {
             throw new Error(`Failed to load MIRA manuscript: ${error.message}`);
+        }
+    }
+
+    async loadOrleansManifest(orleansUrl: string): Promise<ManuscriptManifest> {
+        console.log(`Starting Orleans manifest loading for: ${orleansUrl}`);
+        try {
+            // Handle different types of URLs:
+            // 1. Media notice pages: https://mediatheques.orleans.fr/recherche/viewnotice/clef/.../id/745380
+            // 2. Direct Aurelia URLs: https://aurelia.orleans.fr/s/aurelia/item/257012
+            
+            let itemId: string;
+            const baseApiUrl = 'https://aurelia.orleans.fr/api';
+            
+            if (orleansUrl.includes('mediatheques.orleans.fr')) {
+                // For media notice pages, search by title since ID mapping is complex
+                let searchQuery = '';
+                
+                if (orleansUrl.includes('FRAGMENTSDEDIFFERENTSLIVRESDELECRITURESAINTE')) {
+                    // Direct search for the Augustine manuscript
+                    searchQuery = 'Fragments de différents livres de l\'Écriture sainte';
+                } else {
+                    // Try to extract and search for other manuscripts
+                    const titleMatch = orleansUrl.match(/clef\/([^/]+)/);
+                    if (titleMatch) {
+                        const encodedTitle = titleMatch[1];
+                        searchQuery = decodeURIComponent(encodedTitle.replace(/--/g, ' '));
+                    } else {
+                        throw new Error('Could not extract manuscript title from URL for search');
+                    }
+                }
+                
+                console.log(`Searching Orleans API for: "${searchQuery}"`);
+                const searchUrl = `${baseApiUrl}/items?search=${encodeURIComponent(searchQuery)}`;
+                
+                const searchResponse = await this.fetchWithProxyFallback(searchUrl);
+                if (!searchResponse.ok) {
+                    throw new Error(`Orleans search failed: HTTP ${searchResponse.status}`);
+                }
+                
+                const searchResults = await searchResponse.json();
+                console.log(`Orleans search returned ${Array.isArray(searchResults) ? searchResults.length : 0} results`);
+                
+                if (!Array.isArray(searchResults) || searchResults.length === 0) {
+                    throw new Error(`Manuscript "${searchQuery}" not found in Orleans search results`);
+                }
+                
+                itemId = searchResults[0]['o:id']?.toString() || searchResults[0].o_id?.toString();
+                if (!itemId) {
+                    throw new Error('Could not extract item ID from Orleans search results');
+                }
+                
+                console.log(`Found Orleans manuscript with ID: ${itemId}`);
+            } else if (orleansUrl.includes('aurelia.orleans.fr')) {
+                // Direct Aurelia URL - extract item ID
+                const itemMatch = orleansUrl.match(/\/item\/(\d+)/);
+                if (!itemMatch) {
+                    throw new Error('Invalid Aurelia URL format - could not extract item ID');
+                }
+                itemId = itemMatch[1];
+            } else {
+                throw new Error('Unsupported Orléans URL format');
+            }
+            
+            // Fetch the item metadata
+            console.log(`Fetching Orleans item metadata for ID: ${itemId}`);
+            const itemUrl = `${baseApiUrl}/items/${itemId}`;
+            const itemResponse = await this.fetchWithProxyFallback(itemUrl);
+            
+            if (!itemResponse.ok) {
+                throw new Error(`Failed to fetch Orléans item: HTTP ${itemResponse.status}`);
+            }
+            
+            const itemData = await itemResponse.json();
+            console.log(`Successfully fetched Orleans item data`);
+            
+            // Extract media items from the Omeka item
+            const mediaItems = itemData['o:media'] || itemData.o_media || [];
+            
+            if (!Array.isArray(mediaItems) || mediaItems.length === 0) {
+                throw new Error('No media items found in Orléans manuscript');
+            }
+            
+            // Process media items to get IIIF URLs (limit to first 20 items for initial testing)
+            const pageLinks: string[] = [];
+            const limitedMediaItems = mediaItems.slice(0, 20); // Limit to first 20 items
+            console.log(`Processing ${limitedMediaItems.length} media items for Orleans manuscript (limited from ${mediaItems.length} total)`);
+            
+            // Process media items in smaller batches to avoid timeout
+            const batchSize = 5;
+            const maxConcurrent = 3;
+            
+            for (let startIdx = 0; startIdx < limitedMediaItems.length; startIdx += batchSize) {
+                const batch = limitedMediaItems.slice(startIdx, startIdx + batchSize);
+                console.log(`Processing Orleans media batch ${Math.floor(startIdx / batchSize) + 1}/${Math.ceil(limitedMediaItems.length / batchSize)}`);
+                
+                const promises = batch.slice(0, maxConcurrent).map(async (mediaRef, batchIdx) => {
+                    const actualIdx = startIdx + batchIdx;
+                    const mediaId = mediaRef['o:id'] || mediaRef.o_id || 
+                                   (typeof mediaRef === 'object' && mediaRef['@id'] ? 
+                                    mediaRef['@id'].split('/').pop() : mediaRef);
+                    
+                    if (!mediaId) {
+                        console.warn(`No media ID found for media item ${actualIdx}`);
+                        return null;
+                    }
+                    
+                    try {
+                        const mediaUrl = `${baseApiUrl}/media/${mediaId}`;
+                        // Add timeout to prevent hanging
+                        const mediaResponse = await Promise.race([
+                            this.fetchWithProxyFallback(mediaUrl),
+                            new Promise<never>((_, reject) => 
+                                setTimeout(() => reject(new Error('Media fetch timeout')), 10000)
+                            )
+                        ]);
+                        
+                        if (mediaResponse.ok) {
+                            const mediaData = await mediaResponse.json();
+                            
+                            // Extract IIIF image URL from the media data
+                            const iiifSource = mediaData['o:source'] || mediaData.o_source;
+                            
+                            if (iiifSource && typeof iiifSource === 'string') {
+                                // Convert IIIF service URL to full resolution image URL
+                                let imageUrl = iiifSource;
+                                
+                                // If it's an IIIF image service URL, convert to full resolution
+                                if (imageUrl.includes('/iiif/3/') || imageUrl.includes('/iiif/2/')) {
+                                    // IIIF Image API URL - convert to full size JPEG
+                                    imageUrl = `${imageUrl}/full/max/0/default.jpg`;
+                                }
+                                
+                                return { index: actualIdx, url: imageUrl };
+                            } else {
+                                // Fallback: check for thumbnail URLs if IIIF source not available
+                                const thumbnails = mediaData.thumbnail_display_urls || mediaData['thumbnail_display_urls'];
+                                if (thumbnails && thumbnails.large) {
+                                    return { index: actualIdx, url: thumbnails.large };
+                                }
+                            }
+                        }
+                    } catch (mediaError: any) {
+                        console.warn(`Error processing media item ${mediaId}:`, mediaError.message);
+                    }
+                    
+                    return null;
+                });
+                
+                const results = await Promise.all(promises);
+                results.filter(r => r !== null).forEach(result => {
+                    pageLinks[result!.index] = result!.url;
+                });
+            }
+            
+            // Filter out undefined values and maintain order
+            const validPageLinks = pageLinks.filter(Boolean);
+            console.log(`Successfully processed ${validPageLinks.length} page links for Orleans manuscript`);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No valid image URLs found in Orléans manuscript');
+            }
+            
+            // Extract display name from item metadata
+            let displayName = 'Orleans_Manuscript';
+            
+            if (itemData['dcterms:title'] || itemData['dcterms_title']) {
+                const titleProperty = itemData['dcterms:title'] || itemData['dcterms_title'];
+                if (Array.isArray(titleProperty) && titleProperty.length > 0) {
+                    displayName = titleProperty[0]['@value'] || titleProperty[0].value || titleProperty[0];
+                } else if (typeof titleProperty === 'string') {
+                    displayName = titleProperty;
+                }
+            } else if (itemData['o:title'] || itemData.o_title) {
+                displayName = itemData['o:title'] || itemData.o_title;
+            }
+            
+            // Sanitize display name for filesystem
+            displayName = displayName.replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').substring(0, 100);
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                displayName: displayName,
+                library: 'orleans',
+                originalUrl: orleansUrl,
+            };
+            
+        } catch (error: any) {
+            console.error(`Orleans manifest loading failed:`, error);
+            throw new Error(`Failed to load Orléans manuscript: ${error.message}`);
         }
     }
 

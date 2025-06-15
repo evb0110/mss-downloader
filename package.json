@@ -1,6 +1,6 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.0.53",
+  "version": "1.0.56",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "main": "dist/main/main.js",
   "type": "module",
@@ -14,6 +14,8 @@
     "build:preload": "npx tsc --project tsconfig.preload.json",
     "build:renderer": "vite build",
     "build:workers": "vite build --config vite.worker.config.ts",
+    "build:win": "npm run dist:win && npm run dist:win:arm",
+    "build:all": "npm run build:win && npm run build:mac && npm run build:linux",
     "dist": "npm run build && electron-builder",
     "dist:win": "npm run build && electron-builder --win --x64",
     "dist:win:arm": "npm run build && electron-builder --win --arm64",

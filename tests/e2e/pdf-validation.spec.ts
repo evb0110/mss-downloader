@@ -461,18 +461,27 @@ test.describe('PDF Download Validation', () => {
         
         console.log(`Attempt ${attempt + 1}: Status="${currentStatus}", Title="${currentTitle}"`);
         
-        // Check if manifest loading is complete (title no longer shows "Loading manifest")
-        if (currentTitle && !currentTitle.includes('Loading manifest')) {
-          manifestComplete = true;
-          console.log('✓ Manifest loading completed');
-          break;
+        // Check for failure conditions FIRST
+        if (currentStatus?.toLowerCase().includes('failed') || 
+            currentTitle?.toLowerCase().includes('error') ||
+            currentTitle?.toLowerCase().includes('failed') ||
+            currentTitle?.includes('Error invoking remote method')) {
+          console.log('❌ Item failed during manifest processing');
+          console.log(`   Status: ${currentStatus}`);
+          console.log(`   Title: ${currentTitle}`);
+          test.skip(true, `Item failed - Status: ${currentStatus}, Title: ${currentTitle}`);
+          return;
         }
         
-        // Check for failure
-        if (currentStatus?.toLowerCase().includes('failed')) {
-          console.log('❌ Item failed during manifest processing');
-          test.skip(true, `Item failed: ${currentStatus}`);
-          return;
+        // Only consider it successful if we have a valid manuscript name (not loading, not error)
+        if (currentTitle && 
+            !currentTitle.includes('Loading manifest') && 
+            !currentTitle.toLowerCase().includes('error') &&
+            !currentTitle.toLowerCase().includes('failed') &&
+            currentTitle.trim().length > 3) { // Valid title should be more than 3 characters
+          manifestComplete = true;
+          console.log(`✓ Manifest loading completed with title: ${currentTitle}`);
+          break;
         }
       }
       

@@ -39,7 +39,8 @@ test.describe('All Libraries Download Test', () => {
       'Unicatt (Ambrosiana)',
       'UGent Library',
       'Florus (BM Lyon)',
-      'Dublin ISOS (DIAS)'
+      'Dublin ISOS (DIAS)',
+      'Orléans Médiathèques (Aurelia)'
     ];
     
     for (const libraryName of priorityLibraries) {

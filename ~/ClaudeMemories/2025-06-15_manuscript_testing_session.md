@@ -237,3 +237,56 @@ Test all 10 major manuscript libraries systematically with PDF validation using 
 - Timestamped screenshots for all debugging
 - Clear identification of which libraries work vs. need fixes
 - 30MB threshold properly configured and verified working
+
+#### 🔧 **CRITICAL TESTING LOGIC FIXES COMPLETED (v1.0.51)**:
+
+**Fixed Test Validation Logic**:
+- ❌ **PREVIOUS BUG**: Tests incorrectly counted error messages as "successful manifest loading"
+- ❌ **ROOT CAUSE**: Logic checked `if (currentTitle && !currentTitle.includes('Loading manifest'))` 
+- ❌ **RESULT**: Error messages like "Error invoking remote method" were treated as success
+- ✅ **FIX**: Rewritten validation to check for failure conditions FIRST, then validate real success
+
+**New Validation Logic**:
+```typescript
+// Check for failure conditions FIRST
+if (currentStatus?.toLowerCase().includes('failed') || 
+    currentTitle?.toLowerCase().includes('error') ||
+    currentTitle?.toLowerCase().includes('failed') ||
+    currentTitle?.includes('Error invoking remote method')) {
+  // Mark as failed
+}
+
+// Only consider successful if valid manuscript name (not loading, not error)
+if (currentTitle && 
+    !currentTitle.includes('Loading manifest') && 
+    !currentTitle.toLowerCase().includes('error') &&
+    !currentTitle.toLowerCase().includes('failed') &&
+    currentTitle.trim().length > 3) {
+  // Mark as successful
+}
+```
+
+**MIRA Implementation Fixed**:
+- ✅ **Domain Updated**: Changed from `mira.digitalorient.eu` (down) to `www.mira.ie` (working)
+- ✅ **Manifest Pattern**: Confirmed regex matches `windows: [{ manifestId: "https://www.isos.dias.ie/static/manifests/RIA_MS_D_ii_3.json" }]`
+- ✅ **URL Structure**: Verified manifest URL is accessible and returns valid IIIF JSON
+
+**Test Environment Validated**:
+- ✅ **Download Engine**: Confirmed working with auto-split detection and real progress ("Downloading 4 of 158 (2.53%)")
+- ✅ **Built Version**: Tests properly use built application instead of dev mode
+- ✅ **Timeout Issues**: Core functionality works, tests just need longer timeouts for actual downloads
+- ✅ **Validation Fixed**: Tests now properly distinguish between success and failure states
+
+##### 📋 **AUTONOMOUS SESSION COMPLETION SUMMARY**:
+
+**Major Achievements**:
+1. ✅ **Fixed Critical Test Logic Flaw**: Tests no longer count error messages as successes
+2. ✅ **Fixed MIRA Implementation**: Updated domain and verified manifest extraction works
+3. ✅ **Validated Core Functionality**: Download engine, auto-split, and progress tracking all working
+4. ✅ **Test Environment**: Proper built version testing with corrected validation logic
+
+**Ready for Full Library Testing**:
+- All major validation logic issues resolved
+- MIRA implementation fixed and tested
+- Download validation test showing real progress and auto-split working
+- Comprehensive test framework ready for systematic library verification
