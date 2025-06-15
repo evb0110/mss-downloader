@@ -1078,7 +1078,7 @@ export class EnhancedManuscriptDownloaderService {
             let nextPageIndex = actualStartPage - 1; // Convert to 0-based index
             
             const downloadPage = async (pageIndex: number) => {
-                const imageUrl = manifest.pageLinks[pageIndex];
+                let imageUrl = manifest.pageLinks[pageIndex];
                 
                 // Skip placeholder URLs (empty strings) used for missing pages
                 if (!imageUrl || imageUrl === '') {
@@ -1086,6 +1086,49 @@ export class EnhancedManuscriptDownloaderService {
                     completedPages++;
                     updateProgress();
                     return;
+                }
+                
+                // Handle lazy-loaded Florus pages
+                if (imageUrl.startsWith('FLORUS_LAZY:')) {
+                    const parts = imageUrl.split(':');
+                    const cote = parts[1];
+                    const pageNum = parseInt(parts[2]);
+                    const basePath = parts.slice(3).join(':'); // Rejoin in case basePath contains colons
+                    console.log(`Fetching lazy-loaded page ${pageNum} for ${cote}`);
+                    
+                    try {
+                        const pageUrl = `https://florus.bm-lyon.fr/visualisation.php?cote=${cote}&vue=${pageNum}`;
+                        const pageResponse = await this.fetchDirect(pageUrl);
+                        
+                        if (pageResponse.ok) {
+                            const pageHtml = await pageResponse.text();
+                            const pageImageMatch = pageHtml.match(/FIF=([^&\s'"]+)/) ||
+                                                  pageHtml.match(/image\s*:\s*'([^']+)'/) ||
+                                                  pageHtml.match(/image\s*:\s*"([^"]+)"/);
+                            
+                            if (pageImageMatch) {
+                                const imagePath = pageImageMatch[1];
+                                const filename = imagePath.substring(imagePath.lastIndexOf('/') + 1);
+                                const fullImagePath = `${basePath}${filename}`;
+                                imageUrl = `https://florus.bm-lyon.fr/fcgi-bin/iipsrv.fcgi?FIF=${fullImagePath}&WID=2000&CVT=JPEG`;
+                            } else {
+                                console.warn(`No image found for lazy-loaded page ${pageNum}`);
+                                completedPages++;
+                                updateProgress();
+                                return;
+                            }
+                        } else {
+                            console.warn(`Failed to fetch lazy page ${pageNum}: HTTP ${pageResponse.status}`);
+                            completedPages++;
+                            updateProgress();
+                            return;
+                        }
+                    } catch (error: any) {
+                        console.error(`Failed to fetch lazy page ${pageNum}: ${error.message}`);
+                        completedPages++;
+                        updateProgress();
+                        return;
+                    }
                 }
                 
                 const imgFile = `${sanitizedName}_page_${pageIndex + 1}.jpg`;
@@ -1439,11 +1482,13 @@ export class EnhancedManuscriptDownloaderService {
         const batchSize = 10; // Process 10 pages concurrently
         const pageToFilename = new Map<number, string>();
         
-        console.log(`Fetching all ${maxPage} pages to build complete manifest...`);
+        // For very large manuscripts, limit initial manifest loading to avoid timeouts
+        const maxPagesToFetch = maxPage > 100 ? 50 : maxPage;
+        console.log(`Fetching ${maxPagesToFetch} of ${maxPage} pages for initial manifest...`);
         
         // Process pages in batches for better performance
-        for (let batchStart = 1; batchStart <= maxPage; batchStart += batchSize) {
-            const batchEnd = Math.min(batchStart + batchSize - 1, maxPage);
+        for (let batchStart = 1; batchStart <= maxPagesToFetch; batchStart += batchSize) {
+            const batchEnd = Math.min(batchStart + batchSize - 1, maxPagesToFetch);
             const batchPromises: Promise<void>[] = [];
             
             console.log(`Processing batch: pages ${batchStart} to ${batchEnd}`);
@@ -1507,13 +1552,13 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             // Add a longer delay between batches to avoid overwhelming the server
-            if (batchEnd < maxPage) {
+            if (batchEnd < maxPagesToFetch) {
                 console.log(`Waiting 500ms before next batch...`);
                 await new Promise(resolve => setTimeout(resolve, 500)); // Increased delay for Lyon library
             }
         }
         
-        console.log(`Successfully fetched ${pageToFilename.size} pages out of ${maxPage}`);
+        console.log(`Successfully fetched ${pageToFilename.size} pages out of ${maxPagesToFetch} attempted (${maxPage} total)`);
         
         // Log some sample filenames to debug
         if (pageToFilename.size > 0) {
@@ -1528,10 +1573,15 @@ export class EnhancedManuscriptDownloaderService {
                 const imagePath = `${basePath}${filename}`;
                 const imageUrl = `${serverUrl}?FIF=${imagePath}&WID=2000&CVT=JPEG`;
                 imageUrls.push(imageUrl);
-            } else {
-                // Add placeholder for missing pages to maintain page numbering
+            } else if (pageNum <= maxPagesToFetch) {
+                // Page was attempted but not found
                 console.warn(`Missing page ${pageNum}, adding placeholder`);
                 imageUrls.push('');
+            } else {
+                // Page wasn't fetched yet - will be fetched during download
+                // Store metadata needed to fetch the page later
+                const lazyUrl = `FLORUS_LAZY:${cote}:${pageNum}:${basePath}`;
+                imageUrls.push(lazyUrl);
             }
         }
         
