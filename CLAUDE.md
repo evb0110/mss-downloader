@@ -193,6 +193,7 @@ npm run lint
 - v1.0.45: Fixed Trinity Dublin full resolution image downloading - convert size-limited URLs (/full/600,/) to full resolution (/full/max/)
 - v1.0.49: Fixed Trinity Cambridge downloads and auto-splitting - convert to /full/1000,/ for faster downloads, fixed critical auto-split bug where cached manifests had empty pageLinks
 - don't build after completing a task
+- on every significant change keep playwright suite up to date, ask user's permission to run the suite or postpone
 
 ## Testing Section
 
@@ -226,3 +227,4 @@ npm run lint
 - **Auto-split functionality**: Large manuscripts split at configured thresholds (30MB for testing)
 - **PDF Generation**: Valid PDFs with correct page counts using poppler verification
 - **Error Recovery**: Proper handling of network failures, captcha requirements, blocked access
+```

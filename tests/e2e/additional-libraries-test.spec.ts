@@ -1,27 +1,25 @@
 import { test, expect } from './helpers/electron';
 
-test.describe('Library Manifest Testing', () => {
-  test('test manifest loading for all major libraries', async ({ page }) => {
+test.describe('Additional Libraries Testing', () => {
+  test('test remaining supported libraries for complete coverage', async ({ page }) => {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     
-    // Priority libraries to test (using correct URL formats from library examples)
-    const testLibraries = [
-      { name: 'Gallica (BnF)', url: 'https://gallica.bnf.fr/ark:/12148/btv1b8449691v/f1.highres' },
-      { name: 'e-codices (Unifr)', url: 'https://www.e-codices.ch/en/sbe/0610/1' },
-      { name: 'Vatican Library', url: 'https://digi.vatlib.it/view/MSS_Vat.lat.3225' },
-      { name: 'British Library', url: 'https://bl.digirati.io/iiif/ark:/81055/vdc_100055984026.0x000001' },
-      { name: 'Cambridge University Digital Library', url: 'https://cudl.lib.cam.ac.uk/view/MS-II-00006-00032/1' },
-      { name: 'Trinity College Cambridge', url: 'https://mss-cat.trin.cam.ac.uk/Manuscript/B.10.5/UV' },
-      { name: 'Dublin ISOS (DIAS)', url: 'https://www.isos.dias.ie/RIA/RIA_MS_D_ii_3.html' },
+    // Additional libraries from the full supported list
+    const additionalLibraries = [
+      { name: 'Unicatt (Ambrosiana)', url: 'https://digitallibrary.unicatt.it/veneranda/0b02da82800c3ea6' },
+      { name: 'UGent Library', url: 'https://lib.ugent.be/viewer/archive.ugent.be%3A02A70CB2-7C62-11E7-B6F0-A18A25F5A4CC#?c=&m=&s=&cv=' },
+      { name: 'Florus (BM Lyon)', url: 'https://florus.bm-lyon.fr/visualisation.php?cote=MS0425&vue=128' },
+      { name: 'Dublin MIRA', url: 'https://www.mira.ie/105' },
+      { name: 'IRHT (CNRS)', url: 'https://arca.irht.cnrs.fr/ark:/63955/md52b3kvksw' },
     ];
     
     const results: any[] = [];
     
-    console.log(`Starting manifest testing for ${testLibraries.length} libraries...`);
+    console.log(`Testing ${additionalLibraries.length} additional libraries...`);
     
-    for (let i = 0; i < testLibraries.length; i++) {
-      const library = testLibraries[i];
-      console.log(`\\n=== Testing ${library.name} (${i + 1}/${testLibraries.length}) ===`);
+    for (let i = 0; i < additionalLibraries.length; i++) {
+      const library = additionalLibraries[i];
+      console.log(`\\n=== Testing ${library.name} (${i + 1}/${additionalLibraries.length}) ===`);
       console.log(`URL: ${library.url}`);
       
       const result = {
@@ -62,11 +60,11 @@ test.describe('Library Manifest Testing', () => {
           }
         }
         
-        // Wait for manifest loading with longer timeout
+        // Wait for manifest loading
         console.log(`Waiting for ${library.name} manifest to load...`);
         const queueItem = page.locator('[data-testid="queue-item"]').first();
         
-        for (let attempt = 0; attempt < 20; attempt++) {
+        for (let attempt = 0; attempt < 15; attempt++) {
           await page.waitForTimeout(3000);
           
           const titleElement = queueItem.locator('strong');
@@ -89,12 +87,12 @@ test.describe('Library Manifest Testing', () => {
           }
           
           if (attempt % 5 === 0) {
-            console.log(`  ... still loading (attempt ${attempt + 1}/20)`);
+            console.log(`  ... still loading (attempt ${attempt + 1}/15)`);
           }
         }
         
         if (!result.manifestLoaded && !result.error) {
-          result.error = 'Manifest loading timeout (60 seconds)';
+          result.error = 'Manifest loading timeout (45 seconds)';
           console.log(`❌ Manifest loading timeout`);
         }
         
@@ -105,20 +103,19 @@ test.describe('Library Manifest Testing', () => {
       
       results.push(result);
       
-      // Take screenshot for this library
+      // Take screenshot
       await page.screenshot({ 
-        path: `test-results/${timestamp}-manifest-${library.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`,
+        path: `test-results/${timestamp}-additional-${library.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`,
         fullPage: true 
       });
     }
     
-    // Print comprehensive summary
-    console.log('\\n=== MANIFEST LOADING SUMMARY ===');
+    // Print summary
+    console.log('\\n=== ADDITIONAL LIBRARIES SUMMARY ===');
     let working = 0;
     let total = results.length;
     
     for (const result of results) {
-      total++;
       const status = result.manifestLoaded ? '✅ WORKING' : '❌ FAILED';
       
       if (result.manifestLoaded) working++;
@@ -128,9 +125,7 @@ test.describe('Library Manifest Testing', () => {
       if (result.error) console.log(`  └─ ❌ ${result.error}`);
     }
     
-    console.log(`\\nRESULTS: ${working}/${total} libraries successfully loading manifests`);
-    
-    // Save detailed results to console
-    console.log('\\nDETAILED_MANIFEST_RESULTS:', JSON.stringify(results, null, 2));
+    console.log(`\\nRESULTS: ${working}/${total} additional libraries working`);
+    console.log('\\nDETAILED_ADDITIONAL_RESULTS:', JSON.stringify(results, null, 2));
   });
 });
