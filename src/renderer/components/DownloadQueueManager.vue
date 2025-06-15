@@ -507,8 +507,14 @@ https://digi.vatlib.it/..."
       <p class="instructions">
         Trinity College Dublin blocks automated access. To download this manuscript:
       </p>
+      <div class="manuscript-link">
+        <strong>Manuscript URL:</strong> 
+        <a :href="trinityDublinModal.url" target="_blank" class="manuscript-url">
+          {{ trinityDublinModal.url }}
+        </a>
+      </div>
       <ol class="steps">
-        <li>Open the manuscript page in your browser</li>
+        <li>Click the link above to open the manuscript page in your browser</li>
         <li>Complete any captchas shown</li>
         <li>Open Developer Tools (F12) → Network tab</li>
         <li>Look for a request to "manifest" or ending in "/manifest"</li>
@@ -2888,6 +2894,24 @@ label {
 .trinity-dublin-modal .instructions {
     margin-bottom: 15px;
     color: #333;
+}
+
+.manuscript-link {
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.manuscript-url {
+    color: #4183c4;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.manuscript-url:hover {
+    text-decoration: underline;
 }
 
 .trinity-dublin-modal .steps {
