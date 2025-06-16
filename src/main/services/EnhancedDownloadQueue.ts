@@ -928,6 +928,18 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     'Sec-Fetch-Site': 'same-origin'
                 };
             }
+            
+            // Special headers for Cambridge CUDL to avoid 403 Forbidden errors
+            if (url.includes('images.lib.cam.ac.uk')) {
+                headers = {
+                    ...headers,
+                    'Referer': 'https://cudl.lib.cam.ac.uk/',
+                    'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive'
+                };
+            }
 
             const req = client.request(url, { 
                 timeout,
