@@ -259,14 +259,42 @@ export class EnhancedManuscriptDownloaderService {
         const timeout = url.includes('mss-cat.trin.cam.ac.uk') ? 120000 : configService.get('requestTimeout'); // 2 minutes for Trinity Cambridge
         const timeoutId = setTimeout(() => controller.abort(), timeout);
         
+        // Special headers for ISOS to avoid 403 Forbidden errors
+        let headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            ...options.headers
+        };
+        
+        if (url.includes('isos.dias.ie')) {
+            headers = {
+                ...headers,
+                'Referer': 'https://www.isos.dias.ie/',
+                'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Cache-Control': 'no-cache',
+                'Sec-Fetch-Dest': 'image',
+                'Sec-Fetch-Mode': 'no-cors',
+                'Sec-Fetch-Site': 'same-origin'
+            };
+        }
+        
+        // Special headers for Cambridge CUDL to avoid 403 Forbidden errors
+        if (url.includes('cudl.lib.cam.ac.uk')) {
+            headers = {
+                ...headers,
+                'Referer': 'https://cudl.lib.cam.ac.uk/',
+                'Accept': 'application/json, application/ld+json, image/webp,image/apng,image/*,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive'
+            };
+        }
+        
         try {
             const response = await fetch(url, {
                 ...options,
                 signal: controller.signal,
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                    ...options.headers
-                }
+                headers
             });
             clearTimeout(timeoutId);
             return response;
@@ -1895,7 +1923,7 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             const manuscriptId = idMatch[1];
-            const manifestUrl = `https://cudl.lib.cam.ac.uk//iiif/${manuscriptId}`;
+            const manifestUrl = `https://cudl.lib.cam.ac.uk/iiif/${manuscriptId}`;
             
             const manifestResponse = await this.fetchDirect(manifestUrl);
             if (!manifestResponse.ok) {
@@ -2041,7 +2069,15 @@ export class EnhancedManuscriptDownloaderService {
             
             const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
                 const resource = canvas.images[0].resource;
-                return resource['@id'] || resource.id || resource.service?.['@id'] + '/full/max/0/default.jpg';
+                
+                // For ISOS, prefer the service URL format which works better with headers
+                if (resource.service && (resource.service['@id'] || resource.service.id)) {
+                    const serviceUrl = resource.service['@id'] || resource.service.id;
+                    return serviceUrl + '/full/max/0/default.jpg';
+                }
+                
+                // Fallback to resource ID
+                return resource['@id'] || resource.id;
             }).filter((link: string) => link);
             
             if (pageLinks.length === 0) {
@@ -2084,7 +2120,19 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error(`Failed to fetch MIRA manifest: HTTP ${manifestResponse.status}`);
             }
             
-            const iiifManifest = await manifestResponse.json();
+            const manifestText = await manifestResponse.text();
+            
+            // Check if Trinity Dublin returned HTML instead of JSON (blocked/captcha)
+            if (manifestUrl.includes('digitalcollections.tcd.ie') && manifestText.trim().startsWith('<')) {
+                throw new Error('Trinity College Dublin manifests are currently blocked due to access restrictions. This MIRA item points to a Trinity Dublin manuscript that cannot be accessed programmatically.');
+            }
+            
+            let iiifManifest;
+            try {
+                iiifManifest = JSON.parse(manifestText);
+            } catch (parseError: any) {
+                throw new Error(`Invalid JSON manifest from ${manifestUrl}: ${parseError.message}`);
+            }
             
             if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
                 throw new Error('Invalid IIIF manifest structure');
@@ -2150,7 +2198,14 @@ export class EnhancedManuscriptDownloaderService {
                 console.log(`Searching Orleans API for: "${searchQuery}"`);
                 const searchUrl = `${baseApiUrl}/items?search=${encodeURIComponent(searchQuery)}`;
                 
-                const searchResponse = await this.fetchWithProxyFallback(searchUrl);
+                // Add retry logic for search as well
+                const searchResponse = await Promise.race([
+                    this.fetchWithProxyFallback(searchUrl),
+                    new Promise<never>((_, reject) => 
+                        setTimeout(() => reject(new Error('Search timeout')), 15000)
+                    )
+                ]);
+                
                 if (!searchResponse.ok) {
                     throw new Error(`Orleans search failed: HTTP ${searchResponse.status}`);
                 }
@@ -2179,16 +2234,41 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('Unsupported Orléans URL format');
             }
             
-            // Fetch the item metadata
+            // Fetch the item metadata with retry logic
             console.log(`Fetching Orleans item metadata for ID: ${itemId}`);
             const itemUrl = `${baseApiUrl}/items/${itemId}`;
-            const itemResponse = await this.fetchWithProxyFallback(itemUrl);
             
-            if (!itemResponse.ok) {
-                throw new Error(`Failed to fetch Orléans item: HTTP ${itemResponse.status}`);
+            let itemData;
+            let retryCount = 0;
+            const maxRetries = 3;
+            
+            while (retryCount < maxRetries) {
+                try {
+                    const itemResponse = await Promise.race([
+                        this.fetchWithProxyFallback(itemUrl),
+                        new Promise<never>((_, reject) => 
+                            setTimeout(() => reject(new Error('Item fetch timeout')), 15000)
+                        )
+                    ]);
+                    
+                    if (!itemResponse.ok) {
+                        throw new Error(`Failed to fetch Orléans item: HTTP ${itemResponse.status}`);
+                    }
+                    
+                    itemData = await itemResponse.json();
+                    break;
+                } catch (error: any) {
+                    retryCount++;
+                    console.warn(`Orleans item fetch attempt ${retryCount}/${maxRetries} failed:`, error.message);
+                    
+                    if (retryCount >= maxRetries) {
+                        throw new Error(`Failed to fetch Orleans item after ${maxRetries} attempts: ${error.message}`);
+                    }
+                    
+                    // Wait before retry
+                    await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
+                }
             }
-            
-            const itemData = await itemResponse.json();
             console.log(`Successfully fetched Orleans item data`);
             
             // Extract media items from the Omeka item
@@ -2198,39 +2278,30 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('No media items found in Orléans manuscript');
             }
             
-            // Process media items to get IIIF URLs (limit to first 20 items for initial testing)
+            // Process media items to get IIIF URLs
             const pageLinks: string[] = [];
-            const limitedMediaItems = mediaItems.slice(0, 20); // Limit to first 20 items
-            console.log(`Processing ${limitedMediaItems.length} media items for Orleans manuscript (limited from ${mediaItems.length} total)`);
+            console.log(`Processing ${mediaItems.length} media items for Orleans manuscript`);
             
-            // Process media items in smaller batches to avoid timeout
-            const batchSize = 5;
-            const maxConcurrent = 3;
+            // Process media items sequentially to avoid overwhelming the server
+            let processedCount = 0;
             
-            for (let startIdx = 0; startIdx < limitedMediaItems.length; startIdx += batchSize) {
-                const batch = limitedMediaItems.slice(startIdx, startIdx + batchSize);
-                console.log(`Processing Orleans media batch ${Math.floor(startIdx / batchSize) + 1}/${Math.ceil(limitedMediaItems.length / batchSize)}`);
+            for (let idx = 0; idx < mediaItems.length; idx++) {
+                const mediaRef = mediaItems[idx];
+                const mediaId = mediaRef['o:id'] || mediaRef.o_id || 
+                               (typeof mediaRef === 'object' && mediaRef['@id'] ? 
+                                mediaRef['@id'].split('/').pop() : mediaRef);
                 
-                const promises = batch.slice(0, maxConcurrent).map(async (mediaRef, batchIdx) => {
-                    const actualIdx = startIdx + batchIdx;
-                    const mediaId = mediaRef['o:id'] || mediaRef.o_id || 
-                                   (typeof mediaRef === 'object' && mediaRef['@id'] ? 
-                                    mediaRef['@id'].split('/').pop() : mediaRef);
+                if (!mediaId) {
+                    console.warn(`No media ID found for media item ${idx}`);
+                    continue;
+                }
+                
+                try {
+                    const mediaUrl = `${baseApiUrl}/media/${mediaId}`;
                     
-                    if (!mediaId) {
-                        console.warn(`No media ID found for media item ${actualIdx}`);
-                        return null;
-                    }
-                    
+                    // Use fetchWithProxyFallback with its built-in timeout
                     try {
-                        const mediaUrl = `${baseApiUrl}/media/${mediaId}`;
-                        // Add timeout to prevent hanging
-                        const mediaResponse = await Promise.race([
-                            this.fetchWithProxyFallback(mediaUrl),
-                            new Promise<never>((_, reject) => 
-                                setTimeout(() => reject(new Error('Media fetch timeout')), 10000)
-                            )
-                        ]);
+                        const mediaResponse = await this.fetchWithProxyFallback(mediaUrl);
                         
                         if (mediaResponse.ok) {
                             const mediaData = await mediaResponse.json();
@@ -2248,34 +2319,52 @@ export class EnhancedManuscriptDownloaderService {
                                     imageUrl = `${imageUrl}/full/max/0/default.jpg`;
                                 }
                                 
-                                return { index: actualIdx, url: imageUrl };
+                                pageLinks[idx] = imageUrl;
+                                processedCount++;
+                                
+                                // Progress logging every 10 items
+                                if (processedCount % 10 === 0) {
+                                    console.log(`Orleans: processed ${processedCount}/${mediaItems.length} media items`);
+                                }
                             } else {
                                 // Fallback: check for thumbnail URLs if IIIF source not available
                                 const thumbnails = mediaData.thumbnail_display_urls || mediaData['thumbnail_display_urls'];
                                 if (thumbnails && thumbnails.large) {
-                                    return { index: actualIdx, url: thumbnails.large };
+                                    pageLinks[idx] = thumbnails.large;
+                                    processedCount++;
                                 }
                             }
+                        } else {
+                            console.warn(`Orleans media ${mediaId} returned HTTP ${mediaResponse.status}`);
                         }
-                    } catch (mediaError: any) {
-                        console.warn(`Error processing media item ${mediaId}:`, mediaError.message);
+                    } catch (fetchError: any) {
+                        if (fetchError.name === 'AbortError') {
+                            console.warn(`Orleans media ${mediaId} request timed out`);
+                        } else {
+                            throw fetchError;
+                        }
                     }
-                    
-                    return null;
-                });
+                } catch (mediaError: any) {
+                    console.warn(`Error processing Orleans media item ${mediaId}:`, mediaError.message);
+                }
                 
-                const results = await Promise.all(promises);
-                results.filter(r => r !== null).forEach(result => {
-                    pageLinks[result!.index] = result!.url;
-                });
+                // Add small delay between requests to be respectful to the server
+                if (idx < mediaItems.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
             }
             
             // Filter out undefined values and maintain order
             const validPageLinks = pageLinks.filter(Boolean);
             console.log(`Successfully processed ${validPageLinks.length} page links for Orleans manuscript`);
             
-            if (pageLinks.length === 0) {
+            if (validPageLinks.length === 0) {
                 throw new Error('No valid image URLs found in Orléans manuscript');
+            }
+            
+            // Ensure we have a reasonable number of pages
+            if (validPageLinks.length < Math.min(5, mediaItems.length * 0.1)) {
+                console.warn(`Only ${validPageLinks.length}/${mediaItems.length} Orleans media items processed successfully`);
             }
             
             // Extract display name from item metadata
@@ -2296,8 +2385,8 @@ export class EnhancedManuscriptDownloaderService {
             displayName = displayName.replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').substring(0, 100);
             
             return {
-                pageLinks,
-                totalPages: pageLinks.length,
+                pageLinks: validPageLinks,
+                totalPages: validPageLinks.length,
                 displayName: displayName,
                 library: 'orleans',
                 originalUrl: orleansUrl,

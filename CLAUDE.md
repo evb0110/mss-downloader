@@ -49,6 +49,8 @@ npm run lint              # Linting
 - Dev server doesn't work correctly for Claude Code
 - Always use source project `barsky.club` as reference when broken
 - Bump patch version on every fix (not minor)
+- When fixing a bug, write a test suite for it, checking everything including downloading pdf and verifying it with poppler, and after fix run the suite as many times as needed to be sure everything works. Dev shouldn't have to test everything themselves
+- After each bug fix of url handling create a report for user with these urls
 
 ### Version History
 - **v1.0.29:** Added Unicatt (Biblioteca Ambrosiana) support with proxy fallback for geo-restricted access  
@@ -58,6 +60,9 @@ npm run lint              # Linting
 - **v1.0.54:** Added Orléans Médiathèques (Aurelia) library support with IIIF API integration for French regional manuscript collections
 - **v1.0.55:** Fixed Orléans manifest loading timeout by limiting to first 20 media items and adding API call timeouts
 - **v1.0.56:** Enhanced folder name sanitization to remove trailing periods for Windows compatibility (fixes Unicatt folder access issues)
+- **v1.0.57:** Fixed Orleans AbortError by adding retry logic and improved timeout handling for API calls
+- **v1.0.61:** Fixed ISOS 403 Forbidden errors by adding proper HTTP headers and using correct IIIF service URL format (/full/max/0/default.jpg), enhanced electron-store JSON sanitization to prevent corruption, and improved MIRA error handling for Trinity Dublin manifests
+- **v1.0.62:** Fixed Orleans library hanging on 'calculating' stage by replacing concurrent batch processing with sequential processing, removing problematic Promise.race timeouts, and adding proper progress logging
 
 ## TODO Management System
 
@@ -96,3 +101,4 @@ src/
 - `src/main/main.ts` - Main process entry + IPC handlers
 - `src/preload/preload.ts` - Secure IPC bridge
 - `src/shared/queueTypes.ts` - Shared TypeScript interfaces
+```
