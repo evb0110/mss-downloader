@@ -131,6 +131,53 @@ test.describe('Queue Management Operations', () => {
     await expect(stopQueueButton).not.toBeVisible();
   });
 
+  test('should resume queue after removing active download', async ({ page }) => {
+    // Add multiple items to queue
+    const urlInput = page.locator('[data-testid="url-input"]');
+    const addButton = page.locator('[data-testid="add-button"]');
+    
+    await urlInput.fill('https://www.e-codices.unifr.ch/en/csg/0391');
+    await addButton.click();
+    
+    const queueControls = page.locator('[data-testid="queue-controls"]');
+    const startQueueButton = queueControls.locator('[data-testid="start-queue"]');
+    const resumeQueueButton = queueControls.locator('button:has-text("Resume Queue")');
+    
+    // Start queue
+    await startQueueButton.click();
+    
+    // Wait a moment for download to start
+    await page.waitForTimeout(2000);
+    
+    // Delete the active download item
+    const queueItem = page.locator('[data-testid="queue-item"]').first();
+    const deleteButton = queueItem.locator('[data-testid="delete-button"]');
+    await deleteButton.click();
+    
+    // Confirm deletion if modal appears
+    const confirmButton = page.locator('[data-testid="confirm-delete"]');
+    if (await confirmButton.isVisible()) {
+      await confirmButton.click();
+    }
+    
+    // Should show resume button
+    await expect(resumeQueueButton).toBeVisible();
+    
+    // Resume should work and process remaining items
+    await resumeQueueButton.click();
+    
+    // Wait to ensure resume actually starts processing
+    await page.waitForTimeout(1000);
+    
+    // Should show proper queue controls (pause/stop buttons)
+    const pauseQueueButton = queueControls.locator('[data-testid="pause-queue"]');
+    const stopQueueButton = queueControls.locator('[data-testid="stop-queue"]');
+    
+    await expect(pauseQueueButton).toBeVisible();
+    await expect(stopQueueButton).toBeVisible();
+    await expect(resumeQueueButton).not.toBeVisible();
+  });
+
   test('should clear completed items', async ({ page }) => {
     // Simulate completed items by adding multiple items
     const urlInput = page.locator('[data-testid="url-input"]');

@@ -264,7 +264,7 @@ export class ManuscriptDownloaderService {
             }
             
             const manuscriptId = idMatch[1];
-            const manifestUrl = `https://cudl.lib.cam.ac.uk//iiif/${manuscriptId}`;
+            const manifestUrl = `https://cudl.lib.cam.ac.uk/iiif/${manuscriptId}`;
             
             const manifestData = await this.downloadTextContent(manifestUrl);
             const iiifManifest = JSON.parse(manifestData);

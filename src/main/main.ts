@@ -442,6 +442,13 @@ ipcMain.handle('queue-update-autosplit-threshold', async (_event, thresholdMB: n
   return enhancedDownloadQueue.updateAutoSplitThreshold(thresholdMB);
 });
 
+ipcMain.handle('queue-move-item', async (_event, fromIndex: number, toIndex: number) => {
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
+  }
+  return enhancedDownloadQueue.moveItem(fromIndex, toIndex);
+});
+
 ipcMain.handle('cleanup-indexeddb-cache', async () => {
   if (!imageCache) {
     throw new Error('Image cache not initialized');

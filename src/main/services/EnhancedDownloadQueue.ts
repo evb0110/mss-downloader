@@ -120,18 +120,37 @@ export class EnhancedDownloadQueue extends EventEmitter {
 
     private async saveToStorage(): Promise<void> {
         try {
-            // Save to both file and electron-store for compatibility
-            const data = JSON.stringify(this.state, null, 2);
+            // Clean and sanitize state before saving
+            const sanitizedState = this.sanitizeStateForSaving(this.state);
+            const data = JSON.stringify(sanitizedState, null, 2);
             await fs.writeFile(this.queueFile, data);
             
             try {
-                (this.store as any).set('queueState', this.state);
+                // Use the sanitized state for electron-store as well
+                (this.store as any).set('queueState', sanitizedState);
             } catch (storeError: any) {
                 console.warn('Failed to save to electron-store, but file saved successfully:', storeError.message);
             }
         } catch (error: any) {
             console.error('Failed to save queue:', error.message);
         }
+    }
+
+    private sanitizeStateForSaving(state: QueueState): QueueState {
+        // Create a deep copy and remove any non-serializable properties
+        const sanitized = JSON.parse(JSON.stringify(state, (_key, value) => {
+            // Remove function references, AbortControllers, and other non-serializable objects
+            if (typeof value === 'function' || 
+                value instanceof AbortController ||
+                value instanceof Error ||
+                (value && typeof value === 'object' && value.constructor && 
+                 !['Object', 'Array', 'Date', 'String', 'Number', 'Boolean'].includes(value.constructor.name))) {
+                return undefined;
+            }
+            return value;
+        }));
+        
+        return sanitized;
     }
 
     // Normalize URL for comparison
@@ -251,6 +270,19 @@ export class EnhancedDownloadQueue extends EventEmitter {
         this.saveToStorage();
         this.notifyListeners();
         
+        return true;
+    }
+
+    moveItem(fromIndex: number, toIndex: number): boolean {
+        if (fromIndex < 0 || fromIndex >= this.state.items.length ||
+            toIndex < 0 || toIndex >= this.state.items.length) {
+            return false;
+        }
+        
+        const [item] = this.state.items.splice(fromIndex, 1);
+        this.state.items.splice(toIndex, 0, item);
+        this.saveToStorage();
+        this.notifyListeners();
         return true;
     }
 
@@ -871,14 +903,39 @@ export class EnhancedDownloadQueue extends EventEmitter {
             // Use much longer timeout for Trinity Cambridge as their server is extremely slow (45+ seconds per image)
             const timeout = url.includes('mss-cat.trin.cam.ac.uk') ? 120000 : 30000; // 2 minutes for Trinity Cambridge
 
+            // Special headers for ISOS to avoid 403 Forbidden errors
+            let headers: Record<string, string> = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'image/*,*/*',
+                'Accept-Language': 'en-US,en;q=0.5',
+            };
+            
+            if (url.includes('isos.dias.ie')) {
+                headers = {
+                    ...headers,
+                    'Referer': 'https://www.isos.dias.ie/',
+                    'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Cache-Control': 'no-cache',
+                    'Sec-Fetch-Dest': 'image',
+                    'Sec-Fetch-Mode': 'no-cors',
+                    'Sec-Fetch-Site': 'same-origin'
+                };
+            }
+
             const req = client.request(url, { 
                 timeout,
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                    'Accept': 'image/*,*/*',
-                    'Accept-Language': 'en-US,en;q=0.5',
-                }
+                headers
             }, (res: any) => {
+                // Handle redirects (3xx status codes)
+                if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                    const redirectUrl = new URL(res.headers.location, url);
+                    this.downloadSinglePage(redirectUrl.toString())
+                        .then(resolve)
+                        .catch(reject);
+                    return;
+                }
+                
                 if (res.statusCode !== 200) {
                     reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
                     return;

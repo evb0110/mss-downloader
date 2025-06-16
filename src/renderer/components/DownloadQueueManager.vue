@@ -62,6 +62,55 @@ https://digi.vatlib.it/..."
         >
           {{ isProcessingUrls ? 'Adding to Queue...' : 'Add to Queue' }}
         </button>
+
+        <!-- Queue Settings (Empty Queue) -->
+        <Spoiler
+          title="⚙️ Default Download Settings"
+          class="settings-spoiler"
+        >
+          <div class="settings-content">
+            <div class="setting-group">
+              <label class="setting-label">
+                Auto-split threshold: {{ queueSettings.autoSplitThresholdMB }}MB
+              </label>
+              <p class="setting-description">
+                Large documents are automatically split into multiple parts based on this size limit. Changes recalculate existing queued items.
+              </p>
+              <input
+                v-model="queueSettings.autoSplitThresholdMB"
+                type="range"
+                min="30"
+                max="1000"
+                step="10"
+                class="setting-range"
+                @input="onAutoSplitThresholdChange"
+              >
+              <div class="range-labels">
+                <span>30MB</span>
+                <span>1000MB</span>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">
+                Concurrent downloads: {{ queueSettings.maxConcurrentDownloads }}
+              </label>
+              <input
+                v-model="queueSettings.maxConcurrentDownloads"
+                type="range"
+                min="1"
+                max="8"
+                step="1"
+                class="setting-range"
+                @input="updateQueueSettings"
+              >
+              <div class="range-labels">
+                <span>1</span>
+                <span>8</span>
+              </div>
+            </div>
+          </div>
+        </Spoiler>
       </template>
 
 
@@ -70,6 +119,55 @@ https://digi.vatlib.it/..."
         v-if="queueItems.length > 0"
         class="queue-section"
       >
+        <!-- Queue Settings (Non-Empty Queue) -->
+        <Spoiler
+          title="⚙️ Default Download Settings"
+          class="settings-spoiler"
+        >
+          <div class="settings-content">
+            <div class="setting-group">
+              <label class="setting-label">
+                Auto-split threshold: {{ queueSettings.autoSplitThresholdMB }}MB
+              </label>
+              <p class="setting-description">
+                Large documents are automatically split into multiple parts based on this size limit. Changes recalculate existing queued items.
+              </p>
+              <input
+                v-model="queueSettings.autoSplitThresholdMB"
+                type="range"
+                min="30"
+                max="1000"
+                step="10"
+                class="setting-range"
+                @input="onAutoSplitThresholdChange"
+              >
+              <div class="range-labels">
+                <span>30MB</span>
+                <span>1000MB</span>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">
+                Concurrent downloads: {{ queueSettings.maxConcurrentDownloads }}
+              </label>
+              <input
+                v-model="queueSettings.maxConcurrentDownloads"
+                type="range"
+                min="1"
+                max="8"
+                step="1"
+                class="setting-range"
+                @input="updateQueueSettings"
+              >
+              <div class="range-labels">
+                <span>1</span>
+                <span>8</span>
+              </div>
+            </div>
+          </div>
+        </Spoiler>
+
         <!-- Queue Progress Bar -->
         <div
           v-if="queueStats.total > 0"
@@ -237,54 +335,6 @@ https://digi.vatlib.it/..."
           </button>
         </div>
 
-        <!-- Queue Settings -->
-        <Spoiler
-          title="⚙️ Default Download Settings"
-          class="settings-spoiler"
-        >
-          <div class="settings-content">
-            <div class="setting-group">
-              <label class="setting-label">
-                Auto-split threshold: {{ queueSettings.autoSplitThresholdMB }}MB
-              </label>
-              <p class="setting-description">
-                Large documents are automatically split into multiple parts based on this size limit. Changes recalculate existing queued items.
-              </p>
-              <input
-                v-model="queueSettings.autoSplitThresholdMB"
-                type="range"
-                min="30"
-                max="1000"
-                step="10"
-                class="setting-range"
-                @input="onAutoSplitThresholdChange"
-              >
-              <div class="range-labels">
-                <span>30MB</span>
-                <span>1000MB</span>
-              </div>
-            </div>
-
-            <div class="setting-group">
-              <label class="setting-label">
-                Concurrent downloads: {{ queueSettings.maxConcurrentDownloads }}
-              </label>
-              <input
-                v-model="queueSettings.maxConcurrentDownloads"
-                type="range"
-                min="1"
-                max="8"
-                step="1"
-                class="setting-range"
-                @input="updateQueueSettings"
-              >
-              <div class="range-labels">
-                <span>1</span>
-                <span>8</span>
-              </div>
-            </div>
-          </div>
-        </Spoiler>
 
         <div class="queue-actions">
           <!-- Loading manifests indicator -->
@@ -299,121 +349,259 @@ https://digi.vatlib.it/..."
 
         <div class="queue-list">
           <div
-            v-for="item in queueItems"
-            :key="item.id"
-            class="queue-item"
-            :class="[`status-${item.status}`, { 'loading-manifest': item.status === 'loading' }]"
-            data-testid="queue-item"
+            v-for="group in groupedQueueItems"
+            :key="group.parent.id"
+            class="queue-group"
           >
-            <div class="queue-item-header">
-              <div class="queue-item-info">
-                <strong v-if="item.status === 'failed'">
-                  <span v-if="item.error">{{ item.error }}</span>
-                  <span v-else>Failed to Load Manifest</span>
-                  <a
-                    class="manuscript-error-link"
-                    style="cursor: pointer;"
-                    @click.prevent="openInBrowser(item.url)"
+            <!-- Parent Item -->
+            <div
+              class="queue-item parent-item"
+              :class="[`status-${getGroupStatus(group)}`, { 'loading-manifest': group.parent.status === 'loading' }]"
+              data-testid="queue-item"
+            >
+              <div class="queue-item-header">
+                <div class="queue-item-info">
+                  <strong v-if="group.parent.status === 'failed'">
+                    <span v-if="group.parent.error">{{ group.parent.error }}</span>
+                    <span v-else>Failed to Load Manifest</span>
+                    <a
+                      class="manuscript-error-link"
+                      style="cursor: pointer;"
+                      @click.prevent="openInBrowser(group.parent.url)"
+                    >
+                      {{ group.parent.url }}
+                    </a>
+                  </strong>
+                  <strong v-else>
+                    <a
+                      v-if="group.parent.status !== 'loading' && group.parent.url"
+                      class="manuscript-title-link"
+                      style="cursor: pointer;"
+                      @click.prevent="openInBrowser(group.parent.url)"
+                    >
+                      {{ group.parent.displayName }}
+                    </a>
+                    <span v-else>{{ group.parent.displayName }}</span>
+                    <span v-if="group.parts.length > 0" class="part-count-badge">
+                      ({{ group.parts.length }} parts)
+                    </span>
+                  </strong>
+                  <div class="queue-item-meta">
+                    <span
+                      class="status-badge"
+                      :class="`status-${getGroupStatus(group)}`"
+                    >{{ getGroupStatusText(group) }}</span>
+                    <span
+                      v-if="group.parent.status !== 'failed'"
+                      class="total-pages-badge"
+                    >
+                      {{ getTotalPagesText(group) }}
+                    </span>
+                    <span
+                      v-if="group.parent.status !== 'failed'"
+                      class="concurrency-badge"
+                    >
+                      Concurrency: {{ group.parent.downloadOptions?.concurrentDownloads || 3 }}
+                    </span>
+                  </div>
+                </div>
+                <div class="queue-item-controls">
+                  <button
+                    v-if="editingQueueItemId !== group.parent.id && getParentIndex(group.parent) > 0 && !hasActiveDownloads"
+                    class="move-up-btn"
+                    title="Move up in queue"
+                    @click="moveQueueItemUp(group.parent)"
                   >
-                    {{ item.url }}
-                  </a>
-                </strong>
-                <strong v-else>
-                  <a
-                    v-if="item.status !== 'loading' && item.url"
-                    class="manuscript-title-link"
-                    style="cursor: pointer;"
-                    @click.prevent="openInBrowser(item.url)"
+                    ↑
+                  </button>
+                  <button
+                    v-if="editingQueueItemId !== group.parent.id && getParentIndex(group.parent) < groupedQueueItems.length - 1 && !hasActiveDownloads"
+                    class="move-down-btn"
+                    title="Move down in queue"
+                    @click="moveQueueItemDown(group.parent)"
                   >
-                    {{ item.displayName }}
-                  </a>
-                  <span v-else>{{ item.displayName }}</span>
-                </strong>
-                <div class="queue-item-meta">
-                  <span
-                    class="status-badge"
-                    :class="`status-${item.status}`"
-                  >{{ getStatusText(item.status) }}</span>
-                  <span
-                    v-if="item.status !== 'failed'"
-                    class="total-pages-badge"
+                    ↓
+                  </button>
+                  <button
+                    v-if="group.parts.length > 0"
+                    class="toggle-parts-btn"
+                    :class="{ 'expanded': isPartsExpanded(group.parent.id) }"
+                    title="Toggle parts visibility"
+                    @click="togglePartsVisibility(group.parent.id)"
                   >
-                    <template v-if="item.downloadOptions && (item.downloadOptions.startPage !== 1 || item.downloadOptions.endPage !== item.totalPages)">
-                      Pages {{ item.downloadOptions.startPage || 1 }}–{{ item.downloadOptions.endPage || item.totalPages }} ({{ (item.downloadOptions.endPage || item.totalPages) - (item.downloadOptions.startPage || 1) + 1 }} of {{ item.totalPages }})
-                    </template>
-                    <template v-else>
-                      All {{ item.totalPages }} Pages
-                    </template>
-                  </span>
-                  <span
-                    v-if="item.status !== 'failed'"
-                    class="concurrency-badge"
+                    {{ isPartsExpanded(group.parent.id) ? '▼' : '▶' }}
+                  </button>
+                  <button
+                    v-if="editingQueueItemId !== group.parent.id"
+                    class="edit-btn"
+                    title="Edit download options"
+                    data-testid="edit-button"
+                    @click="startQueueItemEdit(group.parent)"
                   >
-                    Concurrency: {{ item.downloadOptions?.concurrentDownloads || 3 }}
-                  </span>
+                    Edit
+                  </button>
+                  <button
+                    v-if="canPauseGroup(group)"
+                    class="pause-item-btn"
+                    title="Pause this download"
+                    data-testid="pause-button"
+                    @click="pauseGroup(group)"
+                  >
+                    Pause
+                  </button>
+                  <button
+                    v-if="canResumeGroup(group)"
+                    class="resume-item-btn"
+                    title="Resume this download"
+                    data-testid="resume-button"
+                    @click="resumeGroup(group)"
+                  >
+                    Resume
+                  </button>
+                  <button
+                    v-if="canRestartGroup(group)"
+                    class="restart-item-btn"
+                    title="Restart download with current settings"
+                    @click="restartGroup(group)"
+                  >
+                    Restart
+                  </button>
+                  <button
+                    v-if="canShowInFinder(group)"
+                    class="show-finder-btn"
+                    :title="getShowInFinderText()"
+                    @click="showGroupInFinder(group)"
+                  >
+                    {{ getShowInFinderText() }}
+                  </button>
+                  <button
+                    class="remove-btn"
+                    title="Remove from queue"
+                    data-testid="delete-button"
+                    @click="removeParentWithParts(group.parent.id)"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
-              <div class="queue-item-controls">
-                <button
-                  v-if="editingQueueItemId !== item.id"
-                  class="edit-btn"
-                  title="Edit download options"
-                  data-testid="edit-button"
-                  @click="startQueueItemEdit(item)"
+
+              <!-- Auto-split parts (collapsible) -->
+              <div 
+                v-if="group.parts.length > 0 && isPartsExpanded(group.parent.id)"
+                class="auto-parts-list"
+              >
+                <div
+                  v-for="part in group.parts"
+                  :key="part.id"
+                  class="queue-item part-item"
+                  :class="[`status-${part.status}`, { 'loading-manifest': part.status === 'loading' }]"
+                  data-testid="queue-part"
                 >
-                  Edit
-                </button>
-                <button
-                  v-if="item.status === 'downloading'"
-                  class="pause-item-btn"
-                  title="Pause this download"
-                  data-testid="pause-button"
-                  @click="pauseQueueItem(item.id)"
-                >
-                  Pause
-                </button>
-                <button
-                  v-if="item.status === 'paused'"
-                  class="resume-item-btn"
-                  title="Resume this download"
-                  data-testid="resume-button"
-                  @click="resumeQueueItem(item.id)"
-                >
-                  Resume
-                </button>
-                <button
-                  v-if="item.status === 'completed' || item.status === 'failed'"
-                  class="restart-item-btn"
-                  title="Restart download with current settings"
-                  @click="restartQueueItem(item.id)"
-                >
-                  Restart
-                </button>
-                <button
-                  v-if="(item.status === 'completed' || item.status === 'failed') && item.outputPath"
-                  class="show-finder-btn"
-                  :title="getShowInFinderText()"
-                  @click="showItemInFinder(item.outputPath)"
-                >
-                  {{ getShowInFinderText() }}
-                </button>
-                <button
-                  class="remove-btn"
-                  title="Remove from queue"
-                  data-testid="delete-button"
-                  @click="removeQueueItem(item.id)"
-                >
-                  Delete
-                </button>
+                  <div class="queue-item-header">
+                    <div class="queue-item-info">
+                      <strong>
+                        {{ part.displayName }}
+                      </strong>
+                      <div class="queue-item-meta">
+                        <span
+                          class="status-badge"
+                          :class="`status-${part.status}`"
+                        >{{ getStatusText(part.status) }}</span>
+                        <span
+                          v-if="part.status !== 'failed'"
+                          class="total-pages-badge"
+                        >
+                          Pages {{ part.partInfo?.pageRange.start }}–{{ part.partInfo?.pageRange.end }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="queue-item-controls">
+                      <button
+                        v-if="part.status === 'downloading'"
+                        class="pause-item-btn"
+                        title="Pause this part"
+                        @click="pauseQueueItem(part.id)"
+                      >
+                        Pause
+                      </button>
+                      <button
+                        v-if="part.status === 'paused'"
+                        class="resume-item-btn"
+                        title="Resume this part"
+                        @click="resumeQueueItem(part.id)"
+                      >
+                        Resume
+                      </button>
+                      <button
+                        v-if="part.status === 'completed' || part.status === 'failed'"
+                        class="restart-item-btn"
+                        title="Restart this part"
+                        @click="restartQueueItem(part.id)"
+                      >
+                        Restart
+                      </button>
+                      <button
+                        v-if="(part.status === 'completed' || part.status === 'failed') && part.outputPath"
+                        class="show-finder-btn"
+                        :title="getShowInFinderText()"
+                        @click="showItemInFinder(part.outputPath)"
+                      >
+                        {{ getShowInFinderText() }}
+                      </button>
+                      <button
+                        class="remove-btn"
+                        title="Remove this part"
+                        @click="removeQueueItem(part.id)"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Progress bar for individual parts -->
+                  <div
+                    v-if="part.status === 'downloading' || (part.status === 'paused' && part.progress)"
+                    :key="`progress-${part.id}-${part.progress?.current || 0}`"
+                    class="item-progress"
+                  >
+                    <div class="item-progress-header">
+                      <span class="item-progress-label">
+                        {{ part.status === 'downloading' ? 'Part Progress' : 'Part Paused' }}
+                      </span>
+                      <span class="item-progress-stats">
+                        <template v-if="part.progress">
+                          {{ part.status === 'downloading'
+                            ? `Downloading ${part.progress.current} of ${part.progress.total}`
+                            : `Paused at ${part.progress.current} of ${part.progress.total}`
+                          }} ({{ part.progress.percentage }}%)
+                        </template>
+                        <template v-else>
+                          Initializing...
+                        </template>
+                      </span>
+                    </div>
+                    <div class="item-progress-bar">
+                      <div 
+                        class="item-progress-fill"
+                        :style="{ width: `${part.progress?.percentage || 0}%` }"
+                      />
+                    </div>
+                    <div
+                      v-if="part.progress?.eta"
+                      class="item-progress-eta"
+                    >
+                      Estimated Time: {{ part.progress.eta }}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
                         
-            <!-- Edit form (when editing) -->
-            <div
-              v-if="editingQueueItemId === item.id && editingQueueItem"
-              class="queue-edit-form"
-              data-testid="edit-modal"
-            >
+              <!-- Edit form (when editing) -->
+              <div
+                v-if="editingQueueItemId === group.parent.id && editingQueueItem"
+                class="queue-edit-form"
+                data-testid="edit-modal"
+              >
               <div class="edit-section">
                 <div class="edit-header">
                   <label>Page Range</label>
@@ -447,7 +635,7 @@ https://digi.vatlib.it/..."
                   <button
                     type="button"
                     class="select-all-btn"
-                    @click="selectAllPages(item.totalPages)"
+                    @click="selectAllPages(group.parent.totalPages)"
                   >
                     All Pages
                   </button>
@@ -480,45 +668,39 @@ https://digi.vatlib.it/..."
               </div>
             </div>
                         
-            <!-- Progress bar for downloading and paused items -->
-            <div
-              v-if="item.status === 'downloading' || (item.status === 'paused' && item.progress)"
-              :key="`progress-${item.id}-${item.progress?.current || 0}`"
-              class="item-progress"
-            >
-              <div class="item-progress-header">
-                <span class="item-progress-label">
-                  {{ item.status === 'downloading' ? 'Download Progress' : 'Paused Progress' }}
-                </span>
-                <span class="item-progress-stats">
-                  <template v-if="item.progress">
-                    {{ item.status === 'downloading'
-                      ? `Downloading ${item.progress.current} of ${item.progress.total}`
-                      : `Paused at ${item.progress.current} of ${item.progress.total}`
-                    }} ({{ item.progress.percentage }}%)
-                  </template>
-                  <template v-else>
-                    Initializing...
-                  </template>
-                </span>
-              </div>
-              <div class="item-progress-bar">
-                <div 
-                  class="item-progress-fill"
-                  :style="{ width: `${item.progress?.percentage || 0}%` }"
-                />
-              </div>
+              <!-- Overall progress bar for group -->
               <div
-                v-if="item.progress?.eta"
-                class="item-progress-eta"
+                v-if="shouldShowGroupProgress(group)"
+                :key="`progress-${group.parent.id}-${getGroupProgress(group)?.current || 0}`"
+                class="item-progress group-progress"
               >
-                Estimated Time: {{ item.progress.eta }}
+                <div class="item-progress-header">
+                  <span class="item-progress-label">
+                    {{ getGroupProgressLabel(group) }}
+                  </span>
+                  <span class="item-progress-stats">
+                    {{ getGroupProgressStats(group) }}
+                  </span>
+                </div>
+                <div class="item-progress-bar">
+                  <div 
+                    class="item-progress-fill"
+                    :style="{ width: `${getGroupProgress(group)?.percentage || 0}%` }"
+                  />
+                </div>
+                <div
+                  v-if="getGroupProgress(group)?.eta"
+                  class="item-progress-eta"
+                >
+                  Estimated Time: {{ getGroupProgress(group).eta }}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
   </div>
 
   <!-- Custom Modals -->
@@ -760,6 +942,248 @@ watchEffect(() => {
 const queueItems = computed(() => queueState.value.items || []);
 const isQueueProcessing = computed(() => queueState.value.isProcessing || false);
 const isQueuePaused = computed(() => queueState.value.isPaused || false);
+const hasActiveDownloads = computed(() => queueItems.value.some((item: QueuedManuscript) => item.status === 'downloading'));
+
+// Group items with their auto-split parts
+const groupedQueueItems = computed(() => {
+    const items = queueItems.value;
+    const parentItems: QueuedManuscript[] = [];
+    const partsMap = new Map<string, QueuedManuscript[]>();
+    const orphanedParts: QueuedManuscript[] = [];
+    
+    // Separate parent items and parts
+    items.forEach(item => {
+        if (item.isAutoPart && item.parentId) {
+            if (!partsMap.has(item.parentId)) {
+                partsMap.set(item.parentId, []);
+            }
+            partsMap.get(item.parentId)!.push(item);
+        } else {
+            parentItems.push(item);
+        }
+    });
+    
+    // Find orphaned parts (parts without parent items)
+    partsMap.forEach((parts, parentId) => {
+        const hasParent = parentItems.some(parent => parent.id === parentId);
+        if (!hasParent) {
+            orphanedParts.push(...parts);
+            partsMap.delete(parentId);
+        }
+    });
+    
+    // Sort parts by part number for each parent
+    partsMap.forEach(parts => {
+        parts.sort((a, b) => (a.partInfo?.partNumber || 0) - (b.partInfo?.partNumber || 0));
+    });
+    
+    // Create groups for parent items with their parts
+    const groups = parentItems.map(parent => ({
+        parent,
+        parts: partsMap.get(parent.id) || []
+    }));
+    
+    // Add orphaned parts as individual groups (treating them as parent items)
+    orphanedParts.forEach(orphan => {
+        groups.push({
+            parent: orphan,
+            parts: []
+        });
+    });
+    
+    return groups;
+});
+
+// Expanded parts state
+const expandedParts = ref<Set<string>>(new Set());
+
+// Helper functions for grouped display
+function getGroupStatus(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): string {
+    if (group.parts.length === 0) {
+        return group.parent.status;
+    }
+    
+    // For groups with parts, determine overall status
+    const allStatuses = [group.parent, ...group.parts].map(item => item.status);
+    
+    if (allStatuses.some(s => s === 'downloading')) return 'downloading';
+    if (allStatuses.some(s => s === 'failed')) return 'failed';
+    if (allStatuses.some(s => s === 'paused')) return 'paused';
+    if (allStatuses.every(s => s === 'completed')) return 'completed';
+    if (allStatuses.some(s => s === 'loading')) return 'loading';
+    
+    return 'pending';
+}
+
+function getGroupStatusText(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): string {
+    return getStatusText(getGroupStatus(group));
+}
+
+function getTotalPagesText(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): string {
+    if (group.parts.length === 0) {
+        const item = group.parent;
+        if (item.downloadOptions && (item.downloadOptions.startPage !== 1 || item.downloadOptions.endPage !== item.totalPages)) {
+            return `Pages ${item.downloadOptions.startPage || 1}–${item.downloadOptions.endPage || item.totalPages} (${(item.downloadOptions.endPage || item.totalPages) - (item.downloadOptions.startPage || 1) + 1} of ${item.totalPages})`;
+        } else {
+            return `All ${item.totalPages} Pages`;
+        }
+    } else {
+        const totalParts = group.parts.length;
+        const completedParts = group.parts.filter(p => p.status === 'completed').length;
+        return `${completedParts}/${totalParts} parts completed`;
+    }
+}
+
+function getParentIndex(parent: QueuedManuscript): number {
+    return groupedQueueItems.value.findIndex(group => group.parent.id === parent.id);
+}
+
+function isPartsExpanded(parentId: string): boolean {
+    return expandedParts.value.has(parentId);
+}
+
+function togglePartsVisibility(parentId: string) {
+    if (expandedParts.value.has(parentId)) {
+        expandedParts.value.delete(parentId);
+    } else {
+        expandedParts.value.add(parentId);
+    }
+}
+
+// Group action functions
+function canPauseGroup(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): boolean {
+    if (group.parts.length === 0) {
+        return group.parent.status === 'downloading';
+    }
+    return group.parts.some(part => part.status === 'downloading');
+}
+
+function canResumeGroup(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): boolean {
+    if (group.parts.length === 0) {
+        return group.parent.status === 'paused';
+    }
+    return group.parts.some(part => part.status === 'paused');
+}
+
+function canRestartGroup(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): boolean {
+    if (group.parts.length === 0) {
+        return group.parent.status === 'completed' || group.parent.status === 'failed';
+    }
+    return group.parts.some(part => part.status === 'completed' || part.status === 'failed');
+}
+
+function canShowInFinder(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): boolean {
+    if (group.parts.length === 0) {
+        return (group.parent.status === 'completed' || group.parent.status === 'failed') && !!group.parent.outputPath;
+    }
+    return group.parts.some(part => (part.status === 'completed' || part.status === 'failed') && !!part.outputPath);
+}
+
+async function pauseGroup(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }) {
+    if (group.parts.length === 0) {
+        await pauseQueueItem(group.parent.id);
+    } else {
+        for (const part of group.parts) {
+            if (part.status === 'downloading') {
+                await pauseQueueItem(part.id);
+            }
+        }
+    }
+}
+
+async function resumeGroup(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }) {
+    if (group.parts.length === 0) {
+        await resumeQueueItem(group.parent.id);
+    } else {
+        for (const part of group.parts) {
+            if (part.status === 'paused') {
+                await resumeQueueItem(part.id);
+            }
+        }
+    }
+}
+
+async function restartGroup(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }) {
+    if (group.parts.length === 0) {
+        await restartQueueItem(group.parent.id);
+    } else {
+        for (const part of group.parts) {
+            if (part.status === 'completed' || part.status === 'failed') {
+                await restartQueueItem(part.id);
+            }
+        }
+    }
+}
+
+async function showGroupInFinder(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }) {
+    if (group.parts.length === 0 && group.parent.outputPath) {
+        await showItemInFinder(group.parent.outputPath);
+    } else {
+        const completedPart = group.parts.find(part => part.status === 'completed' && part.outputPath);
+        if (completedPart?.outputPath) {
+            await showItemInFinder(completedPart.outputPath);
+        }
+    }
+}
+
+// Progress calculation functions
+function shouldShowGroupProgress(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): boolean {
+    if (group.parts.length === 0) {
+        return group.parent.status === 'downloading' || (group.parent.status === 'paused' && group.parent.progress);
+    }
+    return group.parts.some(part => part.status === 'downloading' || (part.status === 'paused' && part.progress));
+}
+
+function getGroupProgress(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }) {
+    if (group.parts.length === 0) {
+        return group.parent.progress;
+    }
+    
+    // Calculate combined progress from all parts
+    const partsWithProgress = group.parts.filter(part => part.progress);
+    if (partsWithProgress.length === 0) return null;
+    
+    const totalPages = group.parts.reduce((sum, part) => sum + (part.progress?.total || 0), 0);
+    const currentPages = group.parts.reduce((sum, part) => sum + (part.progress?.current || 0), 0);
+    const percentage = totalPages > 0 ? Math.round((currentPages / totalPages) * 100) : 0;
+    
+    // Estimate ETA from active downloading parts
+    const downloadingParts = group.parts.filter(part => part.status === 'downloading' && part.progress?.eta);
+    const eta = downloadingParts.length > 0 ? downloadingParts[0].progress?.eta : undefined;
+    
+    return {
+        current: currentPages,
+        total: totalPages,
+        percentage,
+        eta: eta || 'calculating...',
+        stage: 'downloading' as TStage
+    };
+}
+
+function getGroupProgressLabel(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): string {
+    const status = getGroupStatus(group);
+    if (group.parts.length === 0) {
+        return status === 'downloading' ? 'Download Progress' : 'Paused Progress';
+    }
+    return status === 'downloading' ? 'Overall Progress' : 'Overall Paused';
+}
+
+function getGroupProgressStats(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): string {
+    const progress = getGroupProgress(group);
+    const status = getGroupStatus(group);
+    
+    if (!progress) return 'Initializing...';
+    
+    if (group.parts.length === 0) {
+        return status === 'downloading'
+            ? `Downloading ${progress.current} of ${progress.total} (${progress.percentage}%)`
+            : `Paused at ${progress.current} of ${progress.total} (${progress.percentage}%)`;
+    } else {
+        const downloadingParts = group.parts.filter(part => part.status === 'downloading').length;
+        const completedParts = group.parts.filter(part => part.status === 'completed').length;
+        return `${completedParts}/${group.parts.length} parts completed, ${downloadingParts} downloading (${progress.percentage}%)`;
+    }
+}
 
 const queueStats = computed(() => {
     const items = queueItems.value;
@@ -1389,6 +1813,48 @@ function removeQueueItem(id: string) {
         'Are you sure you want to remove this manuscript from the queue?',
         async () => {
             await window.electronAPI.removeFromQueue(id);
+        },
+        'Remove',
+        'Cancel',
+    );
+}
+
+async function moveQueueItemUp(item: QueuedManuscript) {
+    const currentIndex = queueState.value.items.findIndex(i => i.id === item.id);
+    if (currentIndex > 0) {
+        await window.electronAPI.moveQueueItem(currentIndex, currentIndex - 1);
+    }
+}
+
+async function moveQueueItemDown(item: QueuedManuscript) {
+    const currentIndex = queueState.value.items.findIndex(i => i.id === item.id);
+    if (currentIndex < queueState.value.items.length - 1) {
+        await window.electronAPI.moveQueueItem(currentIndex, currentIndex + 1);
+    }
+}
+
+function removeParentWithParts(parentId: string) {
+    // Find all parts that belong to this parent
+    const parts = queueState.value.items.filter(item => item.isAutoPart && item.parentId === parentId);
+    const parentItem = queueState.value.items.find(item => item.id === parentId);
+    const totalItems = parts.length + (parentItem ? 1 : 0);
+    
+    const message = totalItems > 1 
+        ? `Are you sure you want to remove this manuscript and all ${parts.length} of its parts from the queue?`
+        : 'Are you sure you want to remove this manuscript from the queue?';
+    
+    showConfirm(
+        'Remove Manuscript?',
+        message,
+        async () => {
+            // Remove parent first
+            if (parentItem) {
+                await window.electronAPI.removeFromQueue(parentId);
+            }
+            // Remove all parts
+            for (const part of parts) {
+                await window.electronAPI.removeFromQueue(part.id);
+            }
         },
         'Remove',
         'Cancel',
@@ -2268,6 +2734,87 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 
 .remove-btn:hover {
     background: #c82333;
+}
+
+.move-up-btn,
+.move-down-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    min-width: 28px;
+    height: 28px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.move-up-btn:hover,
+.move-down-btn:hover {
+    background: #5a6268;
+}
+
+.queue-group {
+    margin-bottom: 16px;
+}
+
+.parent-item {
+    border-left: 4px solid #007bff;
+}
+
+.auto-parts-list {
+    margin-left: 20px;
+    margin-top: 8px;
+}
+
+.part-item {
+    border-left: 3px solid #6c757d;
+    margin-bottom: 8px;
+    background: #f8f9fa;
+}
+
+.part-count-badge {
+    color: #007bff;
+    font-weight: normal;
+    font-size: 0.9em;
+    margin-left: 8px;
+}
+
+.toggle-parts-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    min-width: 28px;
+    height: 28px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.toggle-parts-btn:hover {
+    background: #5a6268;
+}
+
+.toggle-parts-btn.expanded {
+    background: #007bff;
+}
+
+.toggle-parts-btn.expanded:hover {
+    background: #0056b3;
+}
+
+.group-progress {
+    border-left: 3px solid #007bff;
+    background: rgba(0, 123, 255, 0.1);
 }
 
 .queue-edit-form .edit-save-btn {

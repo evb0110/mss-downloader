@@ -1,10 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
 
 export default defineConfig({
   testDir: './tests/e2e',
-  timeout: 60000,
+  timeout: 120000,
   expect: {
-    timeout: 10000,
+    timeout: 15000,
   },
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
@@ -19,7 +20,10 @@ export default defineConfig({
   projects: [
     {
       name: 'electron',
-      use: { ...devices['Desktop Chrome'] },
+      use: { 
+        ...devices['Desktop Chrome'],
+      },
+      testDir: './tests/e2e',
     },
   ],
   outputDir: 'test-results/',

@@ -22,6 +22,7 @@ declare global {
       clearFailedFromQueue: () => Promise<void>;
       clearAllFromQueue: () => Promise<void>;
       updateQueueItem: (id: string, updates: any) => Promise<boolean>;
+      moveQueueItem: (fromIndex: number, toIndex: number) => Promise<boolean>;
       getQueueState: () => Promise<any>;
       onQueueStateChanged: (callback: (state: any) => void) => () => void;
       

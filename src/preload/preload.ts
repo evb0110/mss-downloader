@@ -76,6 +76,9 @@ const api = {
 
   updateQueueItem: (id: string, updates: Partial<QueuedManuscript>) =>
     ipcRenderer.invoke('queue-update-item', id, updates),
+
+  moveQueueItem: (fromIndex: number, toIndex: number) =>
+    ipcRenderer.invoke('queue-move-item', fromIndex, toIndex),
   
   getQueueState: (): Promise<QueueState> => 
     ipcRenderer.invoke('queue-get-state'),

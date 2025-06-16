@@ -171,9 +171,13 @@ export class DownloadQueue extends EventEmitter {
         this.notifyListeners();
     }
     
-    resumeProcessing(): void {
-        this.state.isPaused = false;
-        this.notifyListeners();
+    async resumeProcessing(): Promise<void> {
+        if (!this.state.isProcessing) {
+            await this.startProcessing();
+        } else {
+            this.state.isPaused = false;
+            this.notifyListeners();
+        }
     }
     
     stopProcessing(): void {

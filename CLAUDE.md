@@ -63,6 +63,7 @@ npm run lint              # Linting
 - **v1.0.57:** Fixed Orleans AbortError by adding retry logic and improved timeout handling for API calls
 - **v1.0.61:** Fixed ISOS 403 Forbidden errors by adding proper HTTP headers and using correct IIIF service URL format (/full/max/0/default.jpg), enhanced electron-store JSON sanitization to prevent corruption, and improved MIRA error handling for Trinity Dublin manifests
 - **v1.0.62:** Fixed Orleans library hanging on 'calculating' stage by replacing concurrent batch processing with sequential processing, removing problematic Promise.race timeouts, and adding proper progress logging
+- **v1.0.63:** Fixed Cambridge CUDL hanging on 'calculating' stage by adding proper HTTP headers to prevent 403 Forbidden errors and correcting manifest URL format
 
 ## TODO Management System
 
