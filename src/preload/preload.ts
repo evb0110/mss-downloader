@@ -95,6 +95,7 @@ const api = {
   // Cache management
   cleanupIndexedDBCache: () => ipcRenderer.invoke('cleanup-indexeddb-cache'),
   clearManifestCache: () => ipcRenderer.invoke('clear-manifest-cache'),
+  clearAllCaches: () => ipcRenderer.invoke('clear-all-caches'),
 
   // Downloads folder management
   openDownloadsFolder: () => ipcRenderer.invoke('open-downloads-folder'),

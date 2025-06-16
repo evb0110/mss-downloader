@@ -469,6 +469,19 @@ ipcMain.handle('clear-manifest-cache', async () => {
   }
 });
 
+ipcMain.handle('clear-all-caches', async () => {
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
+  }
+  
+  try {
+    await enhancedDownloadQueue.clearAllCaches();
+    return { success: true, message: 'All caches cleared successfully' };
+  } catch (error: any) {
+    throw new Error(`Failed to clear all caches: ${error.message}`);
+  }
+});
+
 ipcMain.handle('open-downloads-folder', async () => {
   const downloadsDir = app.getPath('downloads');
   

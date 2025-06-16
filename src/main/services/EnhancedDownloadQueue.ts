@@ -6,6 +6,7 @@ import { app } from 'electron';
 import Store from 'electron-store';
 import { EnhancedManuscriptDownloaderService } from './EnhancedManuscriptDownloaderService.js';
 import { configService } from './ConfigService.js';
+import { ManifestCache } from './ManifestCache.js';
 import type { QueuedManuscript, QueueState, TLibrary, TStage } from '../../shared/queueTypes';
 
 export class EnhancedDownloadQueue extends EventEmitter {
@@ -15,6 +16,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
     private processingAbortController: AbortController | null = null;
     private store: Store<{ queueState: QueueState }>;
     private queueFile: string;
+    private manifestCache: ManifestCache;
     
     private constructor() {
         super();
@@ -63,6 +65,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
         
         this.state = defaultState;
         this.currentDownloader = new EnhancedManuscriptDownloaderService();
+        this.manifestCache = new ManifestCache();
         this.loadFromStorage();
     }
     
@@ -510,6 +513,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 item.status = 'failed';
                 item.error = error.message;
                 item.retryCount = (item.retryCount || 0) + 1;
+                
+                // Perform error isolation and cache cleanup to prevent corruption spread
+                await this.handleDownloadError(item, error);
             }
         }
 
@@ -955,5 +961,144 @@ export class EnhancedDownloadQueue extends EventEmitter {
 
             req.end();
         });
+    }
+
+    /**
+     * Handle download errors with isolation and cache cleanup to prevent corruption spread
+     */
+    private async handleDownloadError(item: QueuedManuscript, error: any): Promise<void> {
+        try {
+            console.log(`Performing error isolation cleanup for: ${item.displayName}`);
+            
+            // Clear corrupted cache entries for this specific URL
+            await this.manifestCache.clearUrl(item.url);
+            
+            // Clean up any temporary files for this download
+            await this.cleanupTempFiles(item);
+            
+            // Reset any corrupted downloader state
+            await this.resetDownloaderState();
+            
+            // If this is a critical error, perform more aggressive cleanup
+            if (this.isCriticalError(error)) {
+                console.warn('Critical error detected, performing aggressive cache cleanup');
+                await this.performAggressiveCleanup();
+            }
+            
+        } catch (cleanupError: any) {
+            console.warn('Error during cleanup, but not propagating:', cleanupError.message);
+        }
+    }
+
+    /**
+     * Check if error is critical and might cause widespread corruption
+     */
+    private isCriticalError(error: any): boolean {
+        const errorMessage = error.message?.toLowerCase() || '';
+        const criticalPatterns = [
+            'json',
+            'parse',
+            'corrupt',
+            'invalid',
+            'store',
+            'cache',
+            'memory',
+            'aborted'
+        ];
+        
+        return criticalPatterns.some(pattern => errorMessage.includes(pattern));
+    }
+
+    /**
+     * Clean up temporary files for a specific download
+     */
+    private async cleanupTempFiles(item: QueuedManuscript): Promise<void> {
+        try {
+            const userDataPath = app.getPath('userData');
+            const tempImagesDir = path.join(userDataPath, 'temp-images');
+            
+            // Create a sanitized version of the item ID for file matching
+            const sanitizedId = item.id.replace(/[^a-zA-Z0-9]/g, '_');
+            
+            // Check if temp directory exists
+            if (fsSync.existsSync(tempImagesDir)) {
+                const files = await fs.readdir(tempImagesDir);
+                const itemFiles = files.filter(file => file.includes(sanitizedId));
+                
+                for (const file of itemFiles) {
+                    try {
+                        await fs.unlink(path.join(tempImagesDir, file));
+                        console.log(`Cleaned up temp file: ${file}`);
+                    } catch {
+                        // Ignore individual file cleanup errors
+                    }
+                }
+            }
+        } catch (error: any) {
+            console.warn('Failed to cleanup temp files:', error.message);
+        }
+    }
+
+    /**
+     * Reset downloader state to prevent corruption spread
+     */
+    private async resetDownloaderState(): Promise<void> {
+        try {
+            // Create a fresh downloader instance to avoid corrupted state
+            this.currentDownloader = new EnhancedManuscriptDownloaderService();
+            console.log('Reset downloader state after error');
+        } catch (error: any) {
+            console.warn('Failed to reset downloader state:', error.message);
+        }
+    }
+
+    /**
+     * Perform aggressive cleanup for critical errors
+     */
+    private async performAggressiveCleanup(): Promise<void> {
+        try {
+            // Clear all manifest cache
+            await this.manifestCache.clear();
+            
+            // Clean up all temp files
+            const userDataPath = app.getPath('userData');
+            const tempImagesDir = path.join(userDataPath, 'temp-images');
+            
+            if (fsSync.existsSync(tempImagesDir)) {
+                try {
+                    await fs.rmdir(tempImagesDir, { recursive: true });
+                    await fs.mkdir(tempImagesDir, { recursive: true });
+                    console.log('Cleaned up all temporary files');
+                } catch {
+                    // Directory might be in use, just continue
+                }
+            }
+            
+            // Reset store state cleanly
+            try {
+                const sanitizedState = this.sanitizeStateForSaving(this.state);
+                (this.store as any).set('queueState', sanitizedState);
+            } catch (storeError: any) {
+                console.warn('Failed to reset store state:', storeError.message);
+            }
+            
+            console.log('Aggressive cleanup completed');
+        } catch (error: any) {
+            console.warn('Failed aggressive cleanup:', error.message);
+        }
+    }
+
+    /**
+     * Public method to manually trigger cache cleanup (for user-initiated cache clearing)
+     */
+    public async clearAllCaches(): Promise<void> {
+        try {
+            console.log('Clearing all caches...');
+            await this.performAggressiveCleanup();
+            console.log('All caches cleared successfully');
+        } catch (error: any) {
+            console.error('Failed to clear caches:', error.message);
+            throw error;
+        }
     }
 }

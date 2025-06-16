@@ -62,29 +62,53 @@ export class ManifestCache {
     }
 
     async get(url: string): Promise<any | null> {
-        await this.init();
-        
-        const key = this.getCacheKey(url);
-        const cached = this.cache.get(key);
-        
-        if (cached && Date.now() - cached.timestamp < this.maxAge) {
-            return cached.manifest;
+        try {
+            await this.init();
+            
+            const key = this.getCacheKey(url);
+            const cached = this.cache.get(key);
+            
+            if (cached && Date.now() - cached.timestamp < this.maxAge) {
+                // Validate cached manifest before returning
+                if (this.isValidManifest(cached.manifest)) {
+                    return cached.manifest;
+                } else {
+                    // Remove corrupted entry
+                    console.warn(`Removing corrupted manifest cache entry for: ${url}`);
+                    this.cache.delete(key);
+                    await this.save();
+                }
+            }
+        } catch (error: any) {
+            console.warn(`Failed to get manifest from cache for ${url}:`, error.message);
+            // Don't propagate cache errors - just return null to trigger fresh fetch
         }
         
         return null;
     }
 
     async set(url: string, manifest: any): Promise<void> {
-        await this.init();
-        
-        const key = this.getCacheKey(url);
-        this.cache.set(key, {
-            manifest,
-            timestamp: Date.now(),
-            version: ManifestCache.CACHE_VERSION,
-        });
-        
-        await this.save();
+        try {
+            await this.init();
+            
+            // Validate manifest before caching
+            if (!this.isValidManifest(manifest)) {
+                console.warn(`Refusing to cache invalid manifest for: ${url}`);
+                return;
+            }
+            
+            const key = this.getCacheKey(url);
+            this.cache.set(key, {
+                manifest,
+                timestamp: Date.now(),
+                version: ManifestCache.CACHE_VERSION,
+            });
+            
+            await this.save();
+        } catch (error: any) {
+            console.warn(`Failed to cache manifest for ${url}:`, error.message);
+            // Don't propagate cache errors - download can continue without caching
+        }
     }
 
     private async save(): Promise<void> {
@@ -143,6 +167,46 @@ export class ManifestCache {
         const problematicDomains = ['bl.digirati.io', 'iiif.bl.uk'];
         for (const domain of problematicDomains) {
             await this.clearDomain(domain);
+        }
+    }
+
+    /**
+     * Validate manifest structure to prevent corruption
+     */
+    private isValidManifest(manifest: any): boolean {
+        if (!manifest || typeof manifest !== 'object') {
+            return false;
+        }
+        
+        // Check for required fields and basic structure
+        if (!manifest.pageLinks || !Array.isArray(manifest.pageLinks)) {
+            return false;
+        }
+        
+        // Check for common corruption indicators
+        if (manifest.pageLinks.some((link: any) => 
+            !link || typeof link !== 'string' || link.includes('undefined') || link.includes('null')
+        )) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * Clear cache entry for specific URL (used for error recovery)
+     */
+    async clearUrl(url: string): Promise<void> {
+        try {
+            await this.init();
+            const key = this.getCacheKey(url);
+            if (this.cache.has(key)) {
+                this.cache.delete(key);
+                await this.save();
+                console.log(`Cleared corrupted cache entry for: ${url}`);
+            }
+        } catch (error: any) {
+            console.warn(`Failed to clear cache entry for ${url}:`, error.message);
         }
     }
 }

@@ -275,7 +275,12 @@ export class ManuscriptDownloaderService {
             
             const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
                 const resource = canvas.images[0].resource;
-                return resource['@id'] || resource.id;
+                const rawUrl = resource['@id'] || resource.id;
+                // Convert bare IIIF identifier to proper IIIF image URL for Cambridge CUDL
+                if (rawUrl && rawUrl.includes('images.lib.cam.ac.uk/iiif/')) {
+                    return rawUrl + '/full/1000,/0/default.jpg';
+                }
+                return rawUrl;
             }).filter((link: string) => link);
             
             if (pageLinks.length === 0) {
