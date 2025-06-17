@@ -570,10 +570,15 @@ https://digi.vatlib.it/..."
                       </span>
                       <span class="item-progress-stats">
                         <template v-if="part.progress">
-                          {{ part.status === 'downloading'
-                            ? `Downloading ${part.progress.current} of ${part.progress.total}`
-                            : `Paused at ${part.progress.current} of ${part.progress.total}`
-                          }} ({{ part.progress.percentage }}%)
+                          <template v-if="part.progress.stage === 'loading-manifest'">
+                            Loading manifest: {{ part.progress.current }}/{{ part.progress.total }} pages ({{ part.progress.percentage }}%)
+                          </template>
+                          <template v-else>
+                            {{ part.status === 'downloading'
+                              ? `Downloading ${part.progress.current} of ${part.progress.total}`
+                              : `Paused at ${part.progress.current} of ${part.progress.total}`
+                            }} ({{ part.progress.percentage }}%)
+                          </template>
                         </template>
                         <template v-else>
                           Initializing...
@@ -1022,6 +1027,12 @@ function getGroupStatusText(group: { parent: QueuedManuscript; parts: QueuedManu
 function getTotalPagesText(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): string {
     if (group.parts.length === 0) {
         const item = group.parent;
+        
+        // Show loading message for items that are still loading manifests
+        if (item.status === 'loading' || item.totalPages === 0) {
+            return 'Loading manifest...';
+        }
+        
         if (item.downloadOptions && (item.downloadOptions.startPage !== 1 || item.downloadOptions.endPage !== item.totalPages)) {
             return `Pages ${item.downloadOptions.startPage || 1}–${item.downloadOptions.endPage || item.totalPages} (${(item.downloadOptions.endPage || item.totalPages) - (item.downloadOptions.startPage || 1) + 1} of ${item.totalPages})`;
         } else {
@@ -1129,7 +1140,23 @@ async function showGroupInFinder(group: { parent: QueuedManuscript; parts: Queue
 // Progress calculation functions
 function shouldShowGroupProgress(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): boolean {
     if (group.parts.length === 0) {
-        return group.parent.status === 'downloading' || (group.parent.status === 'paused' && group.parent.progress);
+        const result = group.parent.status === 'downloading' || 
+               (group.parent.status === 'paused' && group.parent.progress) ||
+               (group.parent.status === 'loading' && group.parent.progress && group.parent.progress.stage === 'loading-manifest');
+        
+        // Debug logging for Orleans loading
+        if (group.parent.status === 'loading' || group.parent.url?.includes('orleans')) {
+            console.log('shouldShowGroupProgress debug:', {
+                status: group.parent.status,
+                hasProgress: !!group.parent.progress,
+                progressStage: group.parent.progress?.stage,
+                progressData: group.parent.progress,
+                result,
+                url: group.parent.url
+            });
+        }
+        
+        return result;
     }
     return group.parts.some(part => part.status === 'downloading' || (part.status === 'paused' && part.progress));
 }
@@ -1175,6 +1202,11 @@ function getGroupProgressStats(group: { parent: QueuedManuscript; parts: QueuedM
     if (!progress) return 'Initializing...';
     
     if (group.parts.length === 0) {
+        // Handle manifest loading stage
+        if (progress.stage === 'loading-manifest') {
+            return `Loading manifest: ${progress.current}/${progress.total} pages (${progress.percentage}%)`;
+        }
+        
         return status === 'downloading'
             ? `Downloading ${progress.current} of ${progress.total} (${progress.percentage}%)`
             : `Paused at ${progress.current} of ${progress.total} (${progress.percentage}%)`;
@@ -1222,15 +1254,17 @@ const shouldShowResume = computed(() => {
     // If queue is empty, always show "Start"
     if (queueItems.value.length === 0) return false;
     
-    // If items are still loading, don't show resume
+    // If items are still loading manifests, always show "Start" (not "Resume")
     if (queueStats.value.loading > 0) return false;
     
     // If only pending items exist (no started/completed/failed items), show "Start"
-    const hasOnlyPendingItems = queueItems.value.every((item: QueuedManuscript) => item.status === 'pending' || item.status === 'loading');
-    if (hasOnlyPendingItems) return false;
+    const hasOnlyPendingAndLoadingItems = queueItems.value.every((item: QueuedManuscript) => 
+        item.status === 'pending' || item.status === 'loading'
+    );
+    if (hasOnlyPendingAndLoadingItems) return false;
     
-    // If a user has manually started the queue in this session, show resume
-    if (hasUserStartedQueue.value) return true;
+    // If a user has manually started the queue in this session and no items are loading, show resume
+    if (hasUserStartedQueue.value && queueStats.value.loading === 0) return true;
     
     // If queue is currently processing (auto-resumed), show appropriate button
     if (isQueueProcessing.value) return true;
@@ -1355,6 +1389,18 @@ async function initializeQueue() {
     
     // Subscribe to queue updates
     window.electronAPI.onQueueStateChanged((state: QueueState) => {
+        // Debug logging for Orleans progress data
+        const orleansItems = state.items?.filter(item => item.url?.includes('orleans') || item.status === 'loading');
+        if (orleansItems && orleansItems.length > 0) {
+            console.log('Queue state update - Orleans items:', orleansItems.map(item => ({
+                id: item.id,
+                status: item.status,
+                hasProgress: !!item.progress,
+                progressData: item.progress,
+                url: item.url
+            })));
+        }
+        
         // Force Vue to detect deep changes by creating completely new object references
         const newState = {
             ...state,
@@ -1932,13 +1978,13 @@ async function cleanupIndexedDBCache() {
     try {
         const confirmAction = async () => {
             await performButtonAction('cleanupCache', async () => {
-                await window.electronAPI.cleanupIndexedDBCache();
+                await window.electronAPI.clearAllCaches();
             });
         };
         
         showConfirm(
             'Cleanup Cache',
-            'Are you sure you want to clear the image cache? This will delete all downloaded images and may free up significant disk space.',
+            'Are you sure you want to clear all caches? This will delete all downloaded images and cached manifests, and may free up significant disk space.',
             confirmAction,
             'Cleanup',
             'Cancel',
@@ -2521,6 +2567,8 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     text-decoration: none;
     border-bottom: 1px dotted currentColor;
     transition: color 0.2s ease, border-color 0.2s ease;
+    display: inline-block;
+    max-width: fit-content;
 }
 
 .manuscript-title-link:hover {
@@ -2535,6 +2583,8 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     border-bottom: 1px dotted #dc3545;
     transition: color 0.2s ease, border-color 0.2s ease;
     word-break: break-all;
+    display: inline-block;
+    max-width: fit-content;
 }
 
 .manuscript-error-link:hover {
@@ -2963,17 +3013,20 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 }
 
 .item-progress-bar {
-    height: 6px;
-    background: #e9ecef;
-    border-radius: 3px;
+    height: 8px;
+    background: rgba(233, 236, 239, 0.5);
+    border-radius: 4px;
     overflow: hidden;
-    margin-bottom: 6px;
+    margin: 4px 0;
+    border: 1px solid rgba(233, 236, 239, 0.8);
 }
 
 .item-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #ffc107 0%, #fd7e14 100%);
+    background: linear-gradient(90deg, #17a2b8 0%, #138496 100%);
     transition: width 0.3s ease;
+    border-radius: 3px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .item-progress-eta {

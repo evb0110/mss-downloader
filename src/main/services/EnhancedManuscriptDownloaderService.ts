@@ -11,8 +11,8 @@ const MIN_VALID_IMAGE_SIZE_BYTES = 1024; // 1KB heuristic
 export class EnhancedManuscriptDownloaderService {
     private manifestCache: ManifestCache;
 
-    constructor() {
-        this.manifestCache = new ManifestCache();
+    constructor(manifestCache?: ManifestCache) {
+        this.manifestCache = manifestCache || new ManifestCache();
         // Clear potentially problematic cached manifests on startup
         this.manifestCache.clearProblematicUrls().catch(error => {
             console.warn('Failed to clear problematic cache entries:', error.message);
@@ -110,6 +110,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://mediatheques.orleans.fr/recherche/viewnotice/clef/FRAGMENTSDEDIFFERENTSLIVRESDELECRITURESAINTE--AUGUSTINSAINT----28/id/745380',
             description: 'Médiathèques d\'Orléans digital heritage library via IIIF/Omeka',
         },
+        {
+            name: 'Real Biblioteca del Monasterio de El Escorial (RBME)',
+            example: 'https://rbme.patrimonionacional.es/s/rbme/item/14374',
+            description: 'Real Biblioteca del Monasterio de El Escorial digital manuscripts via IIIF',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -179,6 +184,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('isos.dias.ie')) return 'isos';
         if (url.includes('mira.ie')) return 'mira';
         if (url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr')) return 'orleans';
+        if (url.includes('rbme.patrimonionacional.es')) return 'rbme';
         
         return null;
     }
@@ -307,7 +313,7 @@ export class EnhancedManuscriptDownloaderService {
     /**
      * Load manifest for different library types
      */
-    async loadManifest(originalUrl: string): Promise<ManuscriptManifest> {
+    async loadManifest(originalUrl: string, progressCallback?: (current: number, total: number, message?: string) => void): Promise<ManuscriptManifest> {
         // Check cache first
         const cachedManifest = await this.manifestCache.get(originalUrl);
         if (cachedManifest) {
@@ -375,7 +381,10 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadMiraManifest(originalUrl);
                     break;
                 case 'orleans':
-                    manifest = await this.loadOrleansManifest(originalUrl);
+                    manifest = await this.loadOrleansManifest(originalUrl, progressCallback);
+                    break;
+                case 'rbme':
+                    manifest = await this.loadRbmeManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -2132,6 +2141,21 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('Trinity College Dublin manifests are currently blocked due to access restrictions. This MIRA item points to a Trinity Dublin manuscript that cannot be accessed programmatically.');
             }
             
+            // Check for other institutions that might return HTML error pages
+            if (manifestText.trim().startsWith('<')) {
+                // Extract institution name from manifest URL for better error messages
+                let institution = 'Unknown institution';
+                if (manifestUrl.includes('digitalcollections.tcd.ie')) {
+                    institution = 'Trinity College Dublin';
+                } else if (manifestUrl.includes('isos.dias.ie')) {
+                    institution = 'Irish Script on Screen (ISOS)';
+                } else if (manifestUrl.includes('riaconservation.ie')) {
+                    institution = 'Royal Irish Academy';
+                }
+                
+                throw new Error(`Failed to access IIIF manifest from ${institution}. The manifest URL returned an HTML page instead of JSON data, indicating access restrictions or server issues. Manifest URL: ${manifestUrl}`);
+            }
+            
             let iiifManifest;
             try {
                 iiifManifest = JSON.parse(manifestText);
@@ -2172,8 +2196,9 @@ export class EnhancedManuscriptDownloaderService {
         }
     }
 
-    async loadOrleansManifest(orleansUrl: string): Promise<ManuscriptManifest> {
+    async loadOrleansManifest(orleansUrl: string, progressCallback?: (current: number, total: number, message?: string) => void): Promise<ManuscriptManifest> {
         console.log(`Starting Orleans manifest loading for: ${orleansUrl}`);
+        
         try {
             // Handle different types of URLs:
             // 1. Media notice pages: https://mediatheques.orleans.fr/recherche/viewnotice/clef/.../id/745380
@@ -2189,37 +2214,78 @@ export class EnhancedManuscriptDownloaderService {
                 if (orleansUrl.includes('FRAGMENTSDEDIFFERENTSLIVRESDELECRITURESAINTE')) {
                     // Direct search for the Augustine manuscript
                     searchQuery = 'Fragments de différents livres de l\'Écriture sainte';
+                } else if (orleansUrl.includes('OUVRAGESDEPSEUDOISIDORE--PSEUDOISIDORE')) {
+                    // Direct search for the Pseudo Isidore manuscript
+                    searchQuery = 'Ouvrages de Pseudo Isidore';
                 } else {
                     // Try to extract and search for other manuscripts
                     const titleMatch = orleansUrl.match(/clef\/([^/]+)/);
                     if (titleMatch) {
                         const encodedTitle = titleMatch[1];
-                        searchQuery = decodeURIComponent(encodedTitle.replace(/--/g, ' '));
+                        // Handle common Orleans URL patterns
+                        let decodedTitle = decodeURIComponent(encodedTitle.replace(/--/g, ' '));
+                        
+                        // Apply transformations for common patterns
+                        decodedTitle = decodedTitle
+                            .replace(/([A-Z]+)DE([A-Z]+)/g, '$1 de $2') // Add "de" between uppercase words
+                            .replace(/([A-Z])([A-Z]+)/g, (_match, first, rest) => first + rest.toLowerCase()) // Convert to proper case
+                            .replace(/\s+/g, ' ') // Normalize spaces
+                            .trim();
+                        
+                        searchQuery = decodedTitle;
                     } else {
                         throw new Error('Could not extract manuscript title from URL for search');
                     }
                 }
                 
-                console.log(`Searching Orleans API for: "${searchQuery}"`);
-                const searchUrl = `${baseApiUrl}/items?search=${encodeURIComponent(searchQuery)}`;
+                // Try multiple search strategies for better results
+                let searchResults: any[] = [];
+                const searchStrategies = [
+                    searchQuery, // Original full query
+                    searchQuery.split(' ').slice(0, 2).join(' '), // First two words
+                    searchQuery.split(' ')[0], // First word only
+                    searchQuery.toLowerCase(), // Lowercase version
+                    searchQuery.toLowerCase().split(' ').slice(0, 2).join(' '), // Lowercase first two words
+                    searchQuery.toLowerCase().split(' ')[0], // Lowercase first word
+                    // Extract partial terms for complex titles
+                    ...searchQuery.toLowerCase().split(' ').filter(word => word.length > 4) // Words longer than 4 chars
+                ];
                 
-                // Add retry logic for search as well
-                const searchResponse = await Promise.race([
-                    this.fetchWithProxyFallback(searchUrl),
-                    new Promise<never>((_, reject) => 
-                        setTimeout(() => reject(new Error('Search timeout')), 15000)
-                    )
-                ]);
-                
-                if (!searchResponse.ok) {
-                    throw new Error(`Orleans search failed: HTTP ${searchResponse.status}`);
+                for (let i = 0; i < searchStrategies.length && searchResults.length === 0; i++) {
+                    const currentQuery = searchStrategies[i];
+                    console.log(`Searching Orleans API (attempt ${i + 1}/${searchStrategies.length}) for: "${currentQuery}"`);
+                    const searchUrl = `${baseApiUrl}/items?search=${encodeURIComponent(currentQuery)}`;
+                    
+                    try {
+                        // Add retry logic for search as well with increased timeout
+                        const searchResponse = await Promise.race([
+                            this.fetchWithProxyFallback(searchUrl),
+                            new Promise<never>((_, reject) => 
+                                setTimeout(() => reject(new Error('Search timeout')), 30000)
+                            )
+                        ]);
+                        
+                        if (!searchResponse.ok) {
+                            console.warn(`Orleans search attempt ${i + 1} failed: HTTP ${searchResponse.status}`);
+                            continue;
+                        }
+                        
+                        const results = await searchResponse.json();
+                        if (Array.isArray(results) && results.length > 0) {
+                            searchResults = results;
+                            console.log(`Orleans search attempt ${i + 1} returned ${results.length} results`);
+                            break;
+                        }
+                    } catch (error: any) {
+                        console.warn(`Orleans search attempt ${i + 1} failed:`, error.message);
+                        if (i === searchStrategies.length - 1) {
+                            throw error; // Re-throw on final attempt
+                        }
+                    }
                 }
                 
-                const searchResults = await searchResponse.json();
-                console.log(`Orleans search returned ${Array.isArray(searchResults) ? searchResults.length : 0} results`);
-                
                 if (!Array.isArray(searchResults) || searchResults.length === 0) {
-                    throw new Error(`Manuscript "${searchQuery}" not found in Orleans search results`);
+                    throw new Error(`Manuscript not found in Orleans search results using any search strategy. Tried: ${searchStrategies.join(', ')}`);
                 }
                 
                 itemId = searchResults[0]['o:id']?.toString() || searchResults[0].o_id?.toString();
@@ -2252,7 +2318,7 @@ export class EnhancedManuscriptDownloaderService {
                     const itemResponse = await Promise.race([
                         this.fetchWithProxyFallback(itemUrl),
                         new Promise<never>((_, reject) => 
-                            setTimeout(() => reject(new Error('Item fetch timeout')), 15000)
+                            setTimeout(() => reject(new Error('Item fetch timeout')), 30000)
                         )
                     ]);
                     
@@ -2286,6 +2352,9 @@ export class EnhancedManuscriptDownloaderService {
             // Process media items to get IIIF URLs
             const pageLinks: string[] = [];
             console.log(`Processing ${mediaItems.length} media items for Orleans manuscript`);
+            
+            // Report initial progress
+            progressCallback?.(0, mediaItems.length, `Loading manifest: 0/${mediaItems.length} pages`);
             
             // Process media items sequentially to avoid overwhelming the server
             let processedCount = 0;
@@ -2327,9 +2396,10 @@ export class EnhancedManuscriptDownloaderService {
                                 pageLinks[idx] = imageUrl;
                                 processedCount++;
                                 
-                                // Progress logging every 10 items
-                                if (processedCount % 10 === 0) {
+                                // Progress logging and callback every 20 items to reduce UI updates
+                                if (processedCount % 20 === 0 || processedCount === mediaItems.length) {
                                     console.log(`Orleans: processed ${processedCount}/${mediaItems.length} media items`);
+                                    progressCallback?.(processedCount, mediaItems.length, `Loading manifest: ${processedCount}/${mediaItems.length} pages`);
                                 }
                             } else {
                                 // Fallback: check for thumbnail URLs if IIIF source not available
@@ -2337,6 +2407,12 @@ export class EnhancedManuscriptDownloaderService {
                                 if (thumbnails && thumbnails.large) {
                                     pageLinks[idx] = thumbnails.large;
                                     processedCount++;
+                                    
+                                    // Progress logging and callback for fallback case
+                                    if (processedCount % 20 === 0 || processedCount === mediaItems.length) {
+                                        console.log(`Orleans: processed ${processedCount}/${mediaItems.length} media items`);
+                                        progressCallback?.(processedCount, mediaItems.length, `Loading manifest: ${processedCount}/${mediaItems.length} pages`);
+                                    }
                                 }
                             }
                         } else {
@@ -2355,9 +2431,12 @@ export class EnhancedManuscriptDownloaderService {
                 
                 // Add small delay between requests to be respectful to the server
                 if (idx < mediaItems.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await new Promise(resolve => setTimeout(resolve, 50));
                 }
             }
+            
+            // Report final progress
+            progressCallback?.(mediaItems.length, mediaItems.length, `Manifest loaded: ${mediaItems.length} pages`);
             
             // Filter out undefined values and maintain order
             const validPageLinks = pageLinks.filter(Boolean);
@@ -2400,6 +2479,82 @@ export class EnhancedManuscriptDownloaderService {
         } catch (error: any) {
             console.error(`Orleans manifest loading failed:`, error);
             throw new Error(`Failed to load Orléans manuscript: ${error.message}`);
+        }
+    }
+
+    async loadRbmeManifest(rbmeUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // Extract the item ID from the URL
+            // Pattern: https://rbme.patrimonionacional.es/s/rbme/item/14374
+            const idMatch = rbmeUrl.match(/\/item\/(\d+)/);
+            if (!idMatch) {
+                throw new Error('Invalid RBME URL format - could not extract item ID');
+            }
+            
+            // Fetch the RBME page to extract the manifest URL
+            const pageResponse = await this.fetchDirect(rbmeUrl);
+            if (!pageResponse.ok) {
+                throw new Error(`Failed to fetch RBME page: HTTP ${pageResponse.status}`);
+            }
+            
+            const pageContent = await pageResponse.text();
+            
+            // Extract manifest URL from the page content
+            // Look for manifest URL in Universal Viewer configuration or meta tags
+            const manifestMatch = pageContent.match(/(?:manifest["']?\s*:\s*["']|"manifest"\s*:\s*["'])(https:\/\/rbdigital\.realbiblioteca\.es\/files\/manifests\/[^"']+)/);
+            if (!manifestMatch) {
+                throw new Error('Could not find IIIF manifest URL in RBME page');
+            }
+            
+            const manifestUrl = manifestMatch[1];
+            
+            // Fetch the IIIF manifest
+            const manifestResponse = await this.fetchDirect(manifestUrl);
+            if (!manifestResponse.ok) {
+                throw new Error(`Failed to fetch RBME manifest: HTTP ${manifestResponse.status}`);
+            }
+            
+            const iiifManifest = await manifestResponse.json();
+            
+            if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
+                throw new Error('Invalid IIIF manifest structure');
+            }
+            
+            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                const resource = canvas.images[0].resource;
+                const serviceUrl = resource.service?.['@id'] || resource.service?.id;
+                
+                if (serviceUrl) {
+                    // Use IIIF Image API to get full resolution images
+                    return `${serviceUrl}/full/max/0/default.jpg`;
+                } else {
+                    // Fallback to direct image URL
+                    return resource['@id'] || resource.id;
+                }
+            }).filter((link: string) => link);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No images found in RBME manifest');
+            }
+            
+            // Extract title and metadata
+            const label = iiifManifest.label || 'RBME Manuscript';
+            const displayName = typeof label === 'string' ? label : (label?.['@value'] || label?.value || 'RBME Manuscript');
+            
+            // Sanitize display name for filesystem
+            const sanitizedName = displayName.replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').replace(/\.+$/, '').substring(0, 100);
+            
+            return {
+                displayName: sanitizedName,
+                totalPages: pageLinks.length,
+                pageLinks,
+                library: 'rbme' as any,
+                originalUrl: rbmeUrl
+            };
+            
+        } catch (error: any) {
+            console.error(`RBME manifest loading failed:`, error);
+            throw new Error(`Failed to load RBME manuscript: ${error.message}`);
         }
     }
 

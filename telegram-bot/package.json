@@ -1,0 +1,20 @@
+{
+  "name": "mss-downloader-telegram-bot",
+  "version": "1.0.0",
+  "description": "Telegram bot for MSS Downloader build notifications",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "send-build": "node send-build.js",
+    "dev": "nodemon bot.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": ["telegram", "bot", "notifications", "builds"],
+  "author": "E. Barsky",
+  "license": "MIT"
+}

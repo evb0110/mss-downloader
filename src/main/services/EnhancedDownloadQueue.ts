@@ -64,8 +64,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
         }
         
         this.state = defaultState;
-        this.currentDownloader = new EnhancedManuscriptDownloaderService();
         this.manifestCache = new ManifestCache();
+        this.currentDownloader = new EnhancedManuscriptDownloaderService(this.manifestCache);
         this.loadFromStorage();
     }
     
@@ -186,6 +186,18 @@ export class EnhancedDownloadQueue extends EventEmitter {
     }
 
     private notifyListeners(): void {
+        // Debug logging for Orleans progress data
+        const orleansItems = this.state.items?.filter(item => item.url?.includes('orleans') || item.status === 'loading');
+        if (orleansItems && orleansItems.length > 0) {
+            console.log('Main process sending queue state - Orleans items:', orleansItems.map(item => ({
+                id: item.id,
+                status: item.status,
+                hasProgress: !!item.progress,
+                progressData: item.progress,
+                url: item.url
+            })));
+        }
+        
         this.emit('stateChanged', this.state);
     }
 
@@ -197,9 +209,44 @@ export class EnhancedDownloadQueue extends EventEmitter {
         }
 
         try {
-            const manifest = await this.currentDownloader.loadManifest(item.url);
+            // Set status to loading before manifest loading starts
+            item.status = 'loading';
+            this.notifyListeners();
             
-            // Update item with manifest information
+            let hasShownProgress = false;
+            const loadingStartTime = Date.now();
+            
+            // Create progress callback that updates the item
+            const progressCallback = (current: number, total: number, _message?: string) => {
+                // Only show progress for slow-loading manifests (> 30 items) or Orleans library
+                if (total > 30 || item.url.includes('orleans')) {
+                    hasShownProgress = true;
+                    item.progress = {
+                        current,
+                        total,
+                        percentage: Math.round((current / total) * 100),
+                        eta: '',
+                        stage: 'loading-manifest'
+                    };
+                    this.notifyListeners();
+                }
+            };
+
+            const manifest = await this.currentDownloader.loadManifest(item.url, progressCallback);
+            
+            // If we showed progress, ensure minimum display time of 2 seconds
+            if (hasShownProgress) {
+                const elapsed = Date.now() - loadingStartTime;
+                const minDisplayTime = 2000; // 2 seconds
+                if (elapsed < minDisplayTime) {
+                    console.log(`Manifest loaded quickly (${elapsed}ms), waiting ${minDisplayTime - elapsed}ms for progress visibility`);
+                    await new Promise(resolve => setTimeout(resolve, minDisplayTime - elapsed));
+                }
+            }
+            
+            // Update item with manifest information and set status back to queued
+            item.status = 'queued';
+            item.progress = undefined;
             item.totalPages = manifest.totalPages;
             item.library = manifest.library as TLibrary;
             
@@ -207,7 +254,10 @@ export class EnhancedDownloadQueue extends EventEmitter {
             this.notifyListeners();
         } catch (error: any) {
             console.warn(`Failed to load manifest for ${item.displayName}: ${error.message}`);
-            // Don't fail the entire process if manifest loading fails
+            // Reset status and clear progress on error
+            item.status = 'queued';
+            item.progress = undefined;
+            this.notifyListeners();
         }
     }
 
@@ -258,6 +308,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
             this.processingAbortController.abort();
         }
 
+        // Clear manifest cache for this item
+        this.manifestCache.clearUrl(item.url).catch((error: any) => {
+            console.warn(`Failed to clear manifest cache for ${item.url}:`, error.message);
+        });
+
         this.state.items = this.state.items.filter((item) => item.id !== id);
         this.saveToStorage();
         this.notifyListeners();
@@ -307,6 +362,12 @@ export class EnhancedDownloadQueue extends EventEmitter {
 
     clearAll(): void {
         // const totalCount = this.state.items.length;
+        
+        // Clear manifest cache for all items
+        this.manifestCache.clear().catch((error: any) => {
+            console.warn(`Failed to clear manifest cache:`, error.message);
+        });
+        
         this.state.items = [];
         this.saveToStorage();
         this.notifyListeners();
@@ -1057,7 +1118,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
     private async resetDownloaderState(): Promise<void> {
         try {
             // Create a fresh downloader instance to avoid corrupted state
-            this.currentDownloader = new EnhancedManuscriptDownloaderService();
+            this.currentDownloader = new EnhancedManuscriptDownloaderService(this.manifestCache);
             console.log('Reset downloader state after error');
         } catch (error: any) {
             console.warn('Failed to reset downloader state:', error.message);

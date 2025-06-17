@@ -37,6 +37,27 @@ npm run lint              # Linting
 - Don't build after completing tasks (unless explicitly needed)
 - On significant changes, update Playwright suite (ask permission or postpone)
 
+## Test Suite Guidelines - CRITICAL BROWSER POLICY
+
+**NEVER OPEN BROWSER WINDOWS DURING TESTING**
+- All Playwright tests MUST run in headless mode (`headless: true`)
+- User screen-shares on calls and browser windows compromise them
+- This is a security/privacy violation that must never happen
+- **CONFIGURED:** `playwright.config.ts` now enforces:
+  - `headless: true` for all tests
+  - `reporter: [['list'], ['json']]` instead of 'html' to prevent browser opening
+- **VIOLATION PREVENTION:** Any test that opens a browser window is a critical bug
+- Test functionality programmatically without visual browser windows
+- HTML reporter disabled because it automatically opens browser with results
+
+### MANDATORY TESTING COMMANDS FOR ALL CLAUDE INSTANCES:
+- **ONLY USE:** `npm run test:e2e` (headless mode)
+- **NEVER USE:** `npm run test:e2e:headed` or `npm run test:e2e:debug`
+- **NEVER CREATE:** HTML debug files that open in browsers
+- **NEVER RUN:** Any command that launches browser windows
+- **SECURITY CRITICAL:** User screen-shares on calls - browser windows expose them
+- **ALL CLAUDE INSTANCES:** Must follow this policy without exception
+
 ## Architecture & Testing
 
 - **Detailed architecture:** See [ARCHITECTURE.md](./ARCHITECTURE.md)
@@ -51,6 +72,8 @@ npm run lint              # Linting
 - Bump patch version on every fix (not minor)
 - When fixing a bug, write a test suite for it, checking everything including downloading pdf and verifying it with poppler, and after fix run the suite as many times as needed to be sure everything works. Dev shouldn't have to test everything themselves
 - After each bug fix of url handling create a report for user with these urls
+- **Reports & Results**: Always store all reports, test results, and analysis outputs in the `reports/` folder to keep project root clean
+- NB! When user adds new library, ensure that it's thoroughly tested and check pdf's validity.
 
 ### Version History
 - **v1.0.29:** Added Unicatt (Biblioteca Ambrosiana) support with proxy fallback for geo-restricted access  
@@ -64,6 +87,12 @@ npm run lint              # Linting
 - **v1.0.61:** Fixed ISOS 403 Forbidden errors by adding proper HTTP headers and using correct IIIF service URL format (/full/max/0/default.jpg), enhanced electron-store JSON sanitization to prevent corruption, and improved MIRA error handling for Trinity Dublin manifests
 - **v1.0.62:** Fixed Orleans library hanging on 'calculating' stage by replacing concurrent batch processing with sequential processing, removing problematic Promise.race timeouts, and adding proper progress logging
 - **v1.0.63:** Fixed Cambridge CUDL hanging on 'calculating' stage by adding proper HTTP headers to prevent 403 Forbidden errors and correcting manifest URL format
+- **v1.0.64:** Enhanced MIRA error handling to distinguish between accessible institutions (ISOS/RIA) and blocked ones (Trinity Dublin with reCAPTCHA). Added detailed error messages identifying specific institutions and manifest URLs causing access issues.
+- **v1.0.65:** Fixed manifest loading UI issues: page counter showing "1 of 0" now shows "Loading manifest...", Start Queue button text logic fixed to not show "Resume" during manifest loading, and improved loading state handling for better user experience.
+- **v1.0.66:** Enhanced Orléans timeout handling: increased search and item fetch timeouts from 15s to 30s, added multiple fallback search strategies (original query, partial matches, case-insensitive variants), and added specific URL handling for "OUVRAGESDEPSEUDOISIDORE--PSEUDOISIDORE" pattern to correctly map to "Ouvrages de Pseudo Isidore" API search.
+- **v1.0.67:** Added manifest loading progress bar for slow-loading manifests (>50 pages). Shows real-time progress during Orleans manuscript loading with "Loading manifest: X/Y pages (Z%)" display. Progress updates every 10 processed pages to provide visual feedback during long manifest loading operations.
+- **v1.0.68:** Enhanced cache management: "Cleanup Cache" button now clears both image and manifest caches, single item deletion clears that item's manifest cache, "Delete All" clears all manifest caches. Prevents stale cache entries and ensures fresh manifest loading when needed.
+- **v1.0.70:** Added Real Biblioteca del Monasterio de El Escorial (RBME) library support with IIIF v2 manifest integration for Spanish royal manuscript collections. Supports full resolution image downloads and proper metadata extraction.
 
 ## TODO Management System
 

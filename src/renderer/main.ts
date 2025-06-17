@@ -39,12 +39,12 @@ waitForElectronAPI().then(() => {
   
   // Get initial language from main process
   window.electronAPI.getLanguage().then(language => {
-    i18n.global.locale.value = language
+    i18n.global.locale.value = language as 'en' | 'ru'
   });
 
   // Listen for language changes from menu
   window.electronAPI.onLanguageChanged((language: string) => {
-    i18n.global.locale.value = language
+    i18n.global.locale.value = language as 'en' | 'ru'
   });
 }).catch(() => {
   console.error('electronAPI not available after waiting');

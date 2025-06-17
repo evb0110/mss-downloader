@@ -1,4 +1,4 @@
-export type TStage = 'downloading' | 'merging' | 'processing' | 'caching' | 'complete';
+export type TStage = 'loading-manifest' | 'downloading' | 'merging' | 'processing' | 'caching' | 'complete';
 export type TStatus = 'loading' | 'pending' | 'queued' | 'downloading' | 'completed' | 'failed' | 'paused';
 export type TLibrary = 'gallica' | 'unifr' | 'vatlib' | 'cecilia' | 'irht' | 'dijon' | 'laon' | 'durham' | 'sharedcanvas' | 'ugent' | 'bl' | 'loading';
 
