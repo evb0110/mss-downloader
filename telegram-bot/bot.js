@@ -125,7 +125,8 @@ Use the menu buttons below to interact with the bot:`;
         };
         
         this.bot.sendMessage(chatId, message, {
-            reply_markup: keyboard
+            reply_markup: keyboard,
+            parse_mode: 'HTML'
         });
     }
     
@@ -140,10 +141,10 @@ Use the menu buttons below to interact with the bot:`;
             });
             this.saveSubscribers();
             
-            this.bot.sendMessage(chatId, '✅ Successfully subscribed to build notifications!');
+            this.bot.sendMessage(chatId, '✅ Successfully subscribed to build notifications!', { parse_mode: 'HTML' });
             this.sendMainMenu(chatId, 'What would you like to do next?');
         } else {
-            this.bot.sendMessage(chatId, 'ℹ️ You are already subscribed to notifications.');
+            this.bot.sendMessage(chatId, 'ℹ️ You are already subscribed to notifications.', { parse_mode: 'HTML' });
             this.sendMainMenu(chatId, 'What would you like to do next?');
         }
     }
@@ -155,10 +156,10 @@ Use the menu buttons below to interact with the bot:`;
             this.subscribers.splice(index, 1);
             this.saveSubscribers();
             
-            this.bot.sendMessage(chatId, '✅ Successfully unsubscribed from notifications.');
+            this.bot.sendMessage(chatId, '✅ Successfully unsubscribed from notifications.', { parse_mode: 'HTML' });
             this.sendMainMenu(chatId, 'What would you like to do next?');
         } else {
-            this.bot.sendMessage(chatId, 'ℹ️ You are not currently subscribed.');
+            this.bot.sendMessage(chatId, 'ℹ️ You are not currently subscribed.', { parse_mode: 'HTML' });
             this.sendMainMenu(chatId, 'What would you like to do next?');
         }
     }
@@ -207,7 +208,7 @@ Use the menu buttons below to interact with the bot:`;
 ${subscriber ? 'Sending build file...' : 'Subscribe to get automatic notifications of new builds!'}`;
                 
                 // Use file handler to prepare file for delivery
-                this.bot.sendMessage(chatId, message)
+                this.bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
                     .then(async () => {
                         try {
                             const fileResult = await this.fileHandler.prepareFileForTelegram(buildFile);
@@ -215,7 +216,7 @@ ${subscriber ? 'Sending build file...' : 'Subscribe to get automatic notificatio
                             this.sendMainMenu(chatId, 'Anything else?');
                         } catch (error) {
                             console.error('Error sending latest build:', error);
-                            this.bot.sendMessage(chatId, '❌ Error preparing build file for delivery.');
+                            this.bot.sendMessage(chatId, '❌ Error preparing build file for delivery.', { parse_mode: 'HTML' });
                             this.sendMainMenu(chatId, 'Try again or subscribe for notifications:');
                         } finally {
                             this.fileHandler.cleanup();
@@ -223,18 +224,19 @@ ${subscriber ? 'Sending build file...' : 'Subscribe to get automatic notificatio
                     })
                     .catch(error => {
                         console.error('Error sending latest build message:', error);
-                        this.bot.sendMessage(chatId, '❌ Error sending build information.');
+                        this.bot.sendMessage(chatId, '❌ Error sending build information.', { parse_mode: 'HTML' });
                         this.sendMainMenu(chatId, 'Try again:');
                     });
             } else {
                 this.bot.sendMessage(chatId, 
-                    `📦 Latest version: v${version}\n\n❌ No build file found. Run 'npm run dist:win' to create Windows build.\n\n${subscriber ? 'You\'ll be notified of new builds!' : 'Subscribe to get notified about new builds!'}`
+                    `📦 Latest version: v${version}\n\n❌ No build file found. Run 'npm run dist:win' to create Windows build.\n\n${subscriber ? 'You\'ll be notified of new builds!' : 'Subscribe to get notified about new builds!'}`,
+                    { parse_mode: 'HTML' }
                 );
                 this.sendMainMenu(chatId, 'What would you like to do?');
             }
         } catch (error) {
             console.error('Error in handleLatest:', error);
-            this.bot.sendMessage(chatId, '❌ Could not retrieve latest build information.');
+            this.bot.sendMessage(chatId, '❌ Could not retrieve latest build information.', { parse_mode: 'HTML' });
             this.sendMainMenu(chatId, 'Try again:');
         }
     }
@@ -265,7 +267,7 @@ ${subscriber ? 'Sending build file...' : 'Subscribe to get automatic notificatio
                 if (fileResult) {
                     await this.sendFileToSubscriber(subscriber.chatId, message, fileResult);
                 } else {
-                    await this.bot.sendMessage(subscriber.chatId, message);
+                    await this.bot.sendMessage(subscriber.chatId, message, { parse_mode: 'HTML' });
                 }
                 
                 await new Promise(resolve => setTimeout(resolve, 500)); // Longer delay for file uploads
@@ -298,16 +300,16 @@ ${subscriber ? 'Sending build file...' : 'Subscribe to get automatic notificatio
                 `${message}\n\n🔗 Direct Download:\n${fileResult.downloadUrl}` :
                 `🔗 Direct Download:\n${fileResult.downloadUrl}`;
             
-            await this.bot.sendMessage(chatId, combinedMessage);
+            await this.bot.sendMessage(chatId, combinedMessage, { parse_mode: 'HTML' });
             return;
         }
         
         // Handle cloud upload (temporary)
         if (fileResult.type === 'cloud') {
             if (message) {
-                await this.bot.sendMessage(chatId, message);
+                await this.bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
             }
-            await this.bot.sendMessage(chatId, fileResult.instructions);
+            await this.bot.sendMessage(chatId, fileResult.instructions, { parse_mode: 'HTML' });
             return;
         }
         
@@ -318,7 +320,7 @@ ${subscriber ? 'Sending build file...' : 'Subscribe to get automatic notificatio
         
         // Add type-specific info
         if (fileResult.type === 'compressed_exe') {
-            fullMessage += `\n\n🎯 **Single Working EXE File**`;
+            fullMessage += `\n\n🎯 <b>Single Working EXE File</b>`;
             fullMessage += `\n🗜️ Compressed with ${fileResult.method}`;
             fullMessage += `\n📊 ${(fileResult.originalSize / 1024 / 1024).toFixed(2)}MB → ${(fileResult.totalSize / 1024 / 1024).toFixed(2)}MB (${fileResult.compressionRatio}% smaller)`;
         }
@@ -335,7 +337,7 @@ ${subscriber ? 'Sending build file...' : 'Subscribe to get automatic notificatio
         }
         
         // Send the message first
-        await this.bot.sendMessage(chatId, fullMessage);
+        await this.bot.sendMessage(chatId, fullMessage, { parse_mode: 'HTML' });
         
         // Then send file(s) if they exist
         if (fileResult.files && fileResult.files.length > 0) {
