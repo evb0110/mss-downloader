@@ -168,10 +168,14 @@ class GitHubReleasesManager {
 🔗 **Direct Download:**
 ${releaseInfo.downloadUrl}
 
-💡 **Instructions:**
-1. Click the link above
-2. Download will start automatically
-3. Run the installer as normal
+💡 **Installation Instructions:**
+1. Click the link above to download
+2. If Windows shows SmartScreen warning:
+   • Click "More info"
+   • Click "Run anyway"
+3. Follow the installer prompts
+
+⚠️ **SmartScreen Warning:** This is normal for unsigned software. The app is safe to install.
 
 ✅ **Permanent Link** - No expiration!`;
     }

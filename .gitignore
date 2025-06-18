@@ -92,3 +92,7 @@ playwright-report/
 *.jpeg
 *.webm
 *.mp4
+
+# Development certificates
+dev-cert.p12
+*.pfx

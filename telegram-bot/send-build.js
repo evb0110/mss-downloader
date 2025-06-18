@@ -117,6 +117,15 @@ async function sendBuild() {
 
 ${changelog}
 
+📥 *Installation Instructions:*
+1\\. Download the file from GitHub release
+2\\. If Windows shows SmartScreen warning:
+   • Click "*More info*"
+   • Click "*Run anyway*"
+3\\. Follow the installer prompts
+
+⚠️ *SmartScreen Warning:* This is normal for unsigned software\\. The app is safe to install\\.
+
 📥 Download and install to get the latest features and fixes!
         `.trim();
         
