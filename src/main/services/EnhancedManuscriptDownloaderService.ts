@@ -2310,13 +2310,8 @@ export class EnhancedManuscriptDownloaderService {
                     const searchUrl = `${baseApiUrl}/items?search=${encodeURIComponent(currentQuery)}`;
                     
                     try {
-                        // Add retry logic for search as well with increased timeout
-                        const searchResponse = await Promise.race([
-                            this.fetchWithProxyFallback(searchUrl),
-                            new Promise<never>((_, reject) => 
-                                setTimeout(() => reject(new Error('Search timeout')), 30000)
-                            )
-                        ]);
+                        // Use fetchDirect with extended Orleans timeout
+                        const searchResponse = await this.fetchDirect(searchUrl);
                         
                         if (!searchResponse.ok) {
                             console.warn(`Orleans search attempt ${i + 1} failed: HTTP ${searchResponse.status}`);
@@ -2368,12 +2363,8 @@ export class EnhancedManuscriptDownloaderService {
             
             while (retryCount < maxRetries) {
                 try {
-                    const itemResponse = await Promise.race([
-                        this.fetchWithProxyFallback(itemUrl),
-                        new Promise<never>((_, reject) => 
-                            setTimeout(() => reject(new Error('Item fetch timeout')), 30000)
-                        )
-                    ]);
+                    // Use fetchDirect with extended Orleans timeout instead of manual timeout
+                    const itemResponse = await this.fetchDirect(itemUrl);
                     
                     if (!itemResponse.ok) {
                         throw new Error(`Failed to fetch Orléans item: HTTP ${itemResponse.status}`);
@@ -2426,9 +2417,9 @@ export class EnhancedManuscriptDownloaderService {
                 try {
                     const mediaUrl = `${baseApiUrl}/media/${mediaId}`;
                     
-                    // Use fetchWithProxyFallback with its built-in timeout
+                    // Use fetchDirect with extended Orleans timeout (60 seconds)
                     try {
-                        const mediaResponse = await this.fetchWithProxyFallback(mediaUrl);
+                        const mediaResponse = await this.fetchDirect(mediaUrl);
                         
                         if (mediaResponse.ok) {
                             const mediaData = await mediaResponse.json();
