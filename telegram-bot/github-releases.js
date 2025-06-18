@@ -53,8 +53,9 @@ class GitHubReleasesManager {
             const uploadCommand = `gh release upload "${tagName}" "${buildFile}"`;
             execSync(uploadCommand, { stdio: 'inherit' });
             
-            // Get the download URL
-            const downloadUrl = `https://github.com/${this.repoOwner}/${this.repoName}/releases/download/${tagName}/${fileName}`;
+            // Get the download URL - properly encode filename for URL
+            const encodedFileName = encodeURIComponent(fileName);
+            const downloadUrl = `https://github.com/${this.repoOwner}/${this.repoName}/releases/download/${tagName}/${encodedFileName}`;
             
             console.log(`✅ Release created successfully!`);
             console.log(`📥 Download URL: ${downloadUrl}`);
