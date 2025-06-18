@@ -128,6 +128,7 @@ npm run dist:win && TELEGRAM_BOT_TOKEN="7825780367:AAEgMIQxaG5hbDNJw9oLtylRxd7Dd
 - **v1.0.72:** Fixed Stanford Parker Library HTTP 406 "Not Acceptable" errors by implementing proper headers (curl User-Agent instead of Chrome) and using direct IIIF image URLs from manifest (/full/full/ format). Downloads now work correctly for all Stanford Parker manuscripts.
 - **v1.0.73:** Completed Stanford Parker Library implementation with comprehensive testing. All 22 user-provided URLs now working. Created end-user report documenting the new functionality and successful integration with existing manuscript libraries.
 - **v1.0.74:** Fixed Orleans library hanging indefinitely on "calculating" stage after manifest loading by adding size estimation bypass (similar to Florus). Orleans manuscripts now proceed directly from manifest loading to downloading without attempting problematic first page download for size calculation.
+- **v1.0.77:** Added Internet Culturale support for Italy's national digital heritage platform, providing access to manuscripts from BNCF Florence, Biblioteca Medicea Laurenziana, and ICCU collections. Fixed API integration by correcting XML parsing, adding required parameters (teca, mode=all, fulltext=0), and implementing proper OAI identifier handling. Successfully tested with 10 Florence manuscript URLs across multiple institutions.
 
 ## TODO Management System
 

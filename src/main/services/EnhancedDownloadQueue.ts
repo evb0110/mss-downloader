@@ -515,11 +515,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
             if (!item.isAutoPart) {
                 const shouldSplit = await this.checkAndSplitLargeDocument(item);
                 if (shouldSplit) {
-                    // Document was split, mark as completed and return
-                    item.status = 'completed';
-                    item.completedAt = Date.now();
-                    this.saveToStorage();
-                    this.notifyListeners();
+                    // Document was split, the original item has been removed from queue
+                    // No need to mark as completed since it no longer exists
                     return;
                 }
             }

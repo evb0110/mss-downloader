@@ -752,17 +752,14 @@ https://digi.vatlib.it/..."
             :key="library.name"
             class="library-item"
           >
-            <h4 :class="{ 'library-warning': library.name.includes('⚠️') }">
-              {{ library.name }}
-            </h4>
-            <p class="library-description">
-              {{ library.description }}
-            </p>
-                    
             <Spoiler
-              title="Example URLs"
-              class="library-examples-spoiler"
+              :title="library.name"
+              :class="{ 'library-warning': library.name.includes('⚠️') }"
+              class="library-content-spoiler"
             >
+              <p class="library-description">
+                {{ library.description }}
+              </p>
               <div class="library-examples">
                 <div class="library-example">
                   <div class="example-label">
@@ -1190,9 +1187,13 @@ function getGroupProgress(group: { parent: QueuedManuscript; parts: QueuedManusc
 function getGroupProgressLabel(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): string {
     const status = getGroupStatus(group);
     if (group.parts.length === 0) {
-        return status === 'downloading' ? 'Download Progress' : 'Paused Progress';
+        if (status === 'downloading') return 'Download Progress';
+        if (status === 'loading') return 'Loading Progress';
+        return 'Paused Progress';
     }
-    return status === 'downloading' ? 'Overall Progress' : 'Overall Paused';
+    if (status === 'downloading') return 'Overall Progress';
+    if (status === 'loading') return 'Overall Loading';
+    return 'Overall Paused';
 }
 
 function getGroupProgressStats(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): string {
@@ -1200,6 +1201,7 @@ function getGroupProgressStats(group: { parent: QueuedManuscript; parts: QueuedM
     const status = getGroupStatus(group);
     
     if (!progress) return 'Initializing...';
+    if (typeof progress === 'number') return `${progress}%`;
     
     if (group.parts.length === 0) {
         // Handle manifest loading stage
@@ -1319,7 +1321,8 @@ function getStatusText(status: TStatus): string {
         'completed': 'Completed',
         'failed': 'Failed',
         'paused': 'Paused',
-        'loading': 'Loading'
+        'loading': 'Loading',
+        'queued': 'Queued'
     };
     return statusMap[status] || status;
 }
@@ -2808,10 +2811,6 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     background: #5a6268;
 }
 
-.queue-group {
-    margin-bottom: 16px;
-}
-
 .parent-item {
     border-left: 4px solid #007bff;
 }
@@ -3051,48 +3050,67 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     margin-top: 1.5rem;
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
-/* Two columns on larger screens */
-@media (min-width: 1024px) {
+/* Two columns on medium screens */
+@media (min-width: 768px) and (max-width: 1199px) {
     .libraries-list {
         grid-template-columns: 1fr 1fr;
-        gap: 1.5rem;
+        gap: 1rem;
+    }
+}
+
+/* Three columns on large screens */
+@media (min-width: 1200px) {
+    .libraries-list {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
     }
 }
 
 /* Responsive adjustments for medium screens */
 @media (min-width: 768px) and (max-width: 1023px) {
-    .libraries-list {
-        gap: 1.25rem;
-    }
-    
     .library-item {
-        padding: 0.875rem;
+        padding: 0.75rem;
     }
 }
 
 .library-item {
-    padding: 1rem;
+    padding: 0.75rem;
     background: white;
     border-radius: 6px;
     border: 1px solid #dee2e6;
     display: flex;
     flex-direction: column;
     height: fit-content;
+    position: relative;
 }
 
-.library-item h4 {
-    margin: 0 0 0.5rem 0;
-    color: #007bff;
-    font-size: 1.1rem;
+
+.library-content-spoiler {
+    margin-top: auto;
+    font-size: 0.75rem;
+}
+
+.library-content-spoiler[data-expanded="true"] .spoiler-content {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.75rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    margin-top: 0.25rem;
 }
 
 .library-description {
     margin: 0 0 0.75rem 0;
     color: #6c757d;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
 }
 
 .library-warning {
@@ -3101,7 +3119,7 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 }
 
 .library-example {
-    font-size: 0.85rem;
+    font-size: 0.7rem;
 }
 
 .library-example code {

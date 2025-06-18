@@ -36,6 +36,7 @@ const createWindow = () => {
       preload: preloadPath,
       webSecurity: false, // Disable for dev to avoid CORS issues
       allowRunningInsecureContent: true,
+      devTools: true, // Always enable devtools
     },
     title: 'Abba Ababus (MSS Downloader)',
     titleBarStyle: 'default',
@@ -59,8 +60,56 @@ const createWindow = () => {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
 
+  // Enable context menu in dev mode (works like browser)
+  if (isDev) {
+    mainWindow.webContents.on('context-menu', (_, params) => {
+      const contextMenu = Menu.buildFromTemplate([
+        { label: 'Cut', role: 'cut' },
+        { label: 'Copy', role: 'copy' },
+        { label: 'Paste', role: 'paste' },
+        { type: 'separator' },
+        { label: 'Select All', role: 'selectAll' },
+        { type: 'separator' },
+        { 
+          label: 'Inspect Element', 
+          click: () => {
+            if (mainWindow?.webContents.isDevToolsOpened()) {
+              // DevTools already open, inspect immediately
+              mainWindow.webContents.inspectElement(params.x, params.y);
+              mainWindow.webContents.devToolsWebContents?.focus();
+            } else {
+              // DevTools not open, wait for it to open
+              const onDevToolsOpened = () => {
+                mainWindow?.webContents.inspectElement(params.x, params.y);
+                // Focus DevTools after inspection
+                setTimeout(() => {
+                  mainWindow?.webContents.devToolsWebContents?.focus();
+                }, 100);
+                mainWindow?.webContents.removeListener('devtools-opened', onDevToolsOpened);
+              };
+              mainWindow?.webContents.once('devtools-opened', onDevToolsOpened);
+              mainWindow?.webContents.openDevTools({ mode: 'detach' });
+            }
+          }
+        },
+      ]);
+      contextMenu.popup({ window: mainWindow! });
+    });
+  }
+
   mainWindow.webContents.on('did-fail-load', (_, errorCode, errorDescription, validatedURL) => {
     console.error('Failed to load page:', { errorCode, errorDescription, validatedURL });
+  });
+
+  // Handle F12 key for DevTools toggle
+  mainWindow.webContents.on('before-input-event', (_, input) => {
+    if (input.key === 'F12' && input.type === 'keyDown') {
+      if (mainWindow?.webContents.isDevToolsOpened()) {
+        mainWindow.webContents.closeDevTools();
+      } else {
+        mainWindow?.webContents.openDevTools({ mode: 'detach' });
+      }
+    }
   });
 
   // Remove problematic event listeners for now
@@ -152,7 +201,11 @@ const createMenu = () => {
           label: 'Open DevTools',
           accelerator: 'F12',
           click: () => {
-            mainWindow?.webContents.openDevTools({ mode: 'detach' });
+            if (mainWindow?.webContents.isDevToolsOpened()) {
+              mainWindow.webContents.closeDevTools();
+            } else {
+              mainWindow?.webContents.openDevTools({ mode: 'detach' });
+            }
           },
         },
         {

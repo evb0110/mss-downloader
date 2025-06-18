@@ -125,6 +125,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://manuscripta.se/ms/101124',
             description: 'Swedish digital catalogue of medieval and early modern manuscripts via IIIF',
         },
+        {
+            name: 'Internet Culturale',
+            example: 'https://www.internetculturale.it/jmms/iccuviewer/iccu.jsp?id=oai%3Abncf.firenze.sbn.it%3A21%3AFI0098%3AManoscrittiInRete%3AB.R.231&mode=all&teca=Bncf',
+            description: 'Italian national digital heritage platform serving manuscripts from BNCF, Laurenziana, and other institutions',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -189,6 +194,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('iiif.bl.uk') || url.includes('bl.digirati.io')) return 'bl';
         if (url.includes('florus.bm-lyon.fr')) return 'florus';
         if (url.includes('digitallibrary.unicatt.it')) return 'unicatt';
+        if (url.includes('internetculturale.it')) return 'internet_culturale';
         if (url.includes('cudl.lib.cam.ac.uk')) return 'cudl';
         if (url.includes('mss-cat.trin.cam.ac.uk')) return 'trinity_cam';
         if (url.includes('isos.dias.ie')) return 'isos';
@@ -429,6 +435,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'manuscripta':
                     manifest = await this.loadManuscriptaManifest(originalUrl);
+                    break;
+                case 'internet_culturale':
+                    manifest = await this.loadInternetCulturaleManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -1167,8 +1176,8 @@ export class EnhancedManuscriptDownloaderService {
      */
     async downloadImageWithRetries(url: string, attempt = 0): Promise<ArrayBuffer> {
         try {
-            // Use proxy fallback for Unicatt images or when direct access fails
-            const response = url.includes('digitallibrary.unicatt.it') 
+            // Use proxy fallback for Unicatt and Orleans images or when direct access fails
+            const response = url.includes('digitallibrary.unicatt.it') || url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr')
                 ? await this.fetchWithProxyFallback(url)
                 : await this.fetchDirect(url);
             
@@ -2807,6 +2816,106 @@ export class EnhancedManuscriptDownloaderService {
         } catch (error: any) {
             console.error(`Manuscripta.se manifest loading failed:`, error);
             throw new Error(`Failed to load Manuscripta.se manuscript: ${error.message}`);
+        }
+    }
+
+    async loadInternetCulturaleManifest(internetCulturaleUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // Extract OAI identifier from URL
+            const oaiMatch = internetCulturaleUrl.match(/id=([^&]+)/);
+            if (!oaiMatch) {
+                throw new Error('Invalid Internet Culturale URL: missing OAI identifier');
+            }
+            
+            const oaiId = decodeURIComponent(oaiMatch[1]);
+            console.log(`Loading Internet Culturale manuscript with OAI ID: ${oaiId}`);
+            
+            // Extract teca parameter for institution info
+            const tecaMatch = internetCulturaleUrl.match(/teca=([^&]+)/);
+            const teca = tecaMatch ? decodeURIComponent(tecaMatch[1]) : 'Unknown';
+            
+            // Construct API URL for manifest data with all required parameters
+            const apiUrl = `https://www.internetculturale.it/jmms/magparser?id=${encodeURIComponent(oaiId)}&teca=${encodeURIComponent(teca)}&mode=all&fulltext=0`;
+            
+            // Set headers similar to browser request
+            const headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'text/xml, application/xml, */*; q=0.01',
+                'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
+                'Referer': internetCulturaleUrl,
+                'X-Requested-With': 'XMLHttpRequest',
+            };
+            
+            console.log(`Fetching Internet Culturale API: ${apiUrl}`);
+            
+            // Fetch manifest data from API
+            const response = await this.fetchDirect(apiUrl, { headers });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            const xmlText = await response.text();
+            
+            if (!xmlText || xmlText.trim().length === 0) {
+                throw new Error('Empty response from API');
+            }
+            
+            // Parse XML response
+            console.log('Parsing Internet Culturale XML manifest...');
+            
+            // Extract title from bibinfo section
+            let displayName = 'Internet Culturale Manuscript';
+            const titleMatch = xmlText.match(/<info key="Titolo">\s*<value>(.*?)<\/value>/);
+            if (titleMatch) {
+                displayName = titleMatch[1].trim();
+            } else {
+                // Fallback: extract from OAI ID
+                const parts = oaiId.split(':');
+                if (parts.length > 0) {
+                    displayName = parts[parts.length - 1].replace(/%/g, ' ').trim();
+                }
+            }
+            
+            // Extract page URLs from XML
+            const pageLinks: string[] = [];
+            const pageRegex = /<page[^>]+src="([^"]+)"[^>]*>/g;
+            let match;
+            
+            while ((match = pageRegex.exec(xmlText)) !== null) {
+                const relativePath = match[1];
+                // Convert relative path to absolute URL
+                const imageUrl = `https://www.internetculturale.it/jmms/${relativePath}`;
+                pageLinks.push(imageUrl);
+            }
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No image URLs found in XML manifest');
+            }
+            
+            // Add institution info to display name
+            if (teca && teca !== 'Unknown') {
+                displayName = `${displayName} (${teca})`;
+            }
+            
+            // Sanitize display name for Windows file system
+            const sanitizedName = displayName
+                .replace(/[<>:"/\\|?*]/g, '_')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .replace(/\.$/, ''); // Remove trailing period
+            
+            console.log(`Internet Culturale manifest loaded: ${pageLinks.length} pages`);
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'internet_culturale' as any,
+                displayName: sanitizedName,
+                originalUrl: internetCulturaleUrl,
+            };
+            
+        } catch (error: any) {
+            console.error(`Internet Culturale manifest loading failed:`, error);
+            throw new Error(`Failed to load Internet Culturale manuscript: ${error.message}`);
         }
     }
 
