@@ -7,6 +7,9 @@ node_modules/
 # Bot data
 subscribers.json
 
+# Temporary files
+temp/
+
 # Logs
 *.log
 npm-debug.log*

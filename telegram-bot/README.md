@@ -1,70 +1,69 @@
 # MSS Downloader Telegram Bot
 
-A Telegram bot for sending build notifications to subscribers when new Windows AMD64 builds are available.
+Telegram bot for automatic Windows AMD64 build notifications with GitHub Releases integration.
 
 ## Features
 
-- 📱 **Subscription Management**: Users can subscribe/unsubscribe to notifications
-- 🚀 **Build Notifications**: Automatically sends new builds to subscribers  
-- 📦 **File Sharing**: Sends build files directly (up to 50MB) or provides download instructions
-- 👥 **User Management**: Tracks subscribers and handles blocked users automatically
-- 🔧 **Manual Triggers**: Send builds or custom messages on demand
+- ✅ **Single EXE delivery** - No splitting, no compression artifacts
+- 🚀 **GitHub Releases integration** - Permanent download links
+- 📦 **2-release limit** - Automatic cleanup of old releases
+- 🔔 **Smart notifications** - Only for AMD64 builds
+- 🤖 **Streamlined interface** - Subscribe/Latest Build only
+
+## Prerequisites
+
+1. **GitHub CLI** installed and authenticated:
+   ```bash
+   # Install GitHub CLI (macOS)
+   brew install gh
+   
+   # Authenticate
+   gh auth login
+   ```
+
+2. **Telegram Bot Token**:
+   - Create bot with [@BotFather](https://t.me/botfather)
+   - Copy the token
 
 ## Setup
 
-### 1. Create Telegram Bot
+1. **Install dependencies**:
+   ```bash
+   cd telegram-bot
+   npm install
+   ```
 
-1. Message [@BotFather](https://t.me/botfather) on Telegram
-2. Send `/newbot` and follow the prompts
-3. Choose a name and username for your bot
-4. Save the bot token provided
+2. **Set environment variable**:
+   ```bash
+   export TELEGRAM_BOT_TOKEN="your_bot_token_here"
+   ```
 
-### 2. Install Dependencies
-
-```bash
-cd telegram-bot
-npm install
-```
-
-### 3. Set Environment Variable
-
-```bash
-export TELEGRAM_BOT_TOKEN="your_bot_token_here"
-```
-
-Or create a `.env` file:
-```bash
-echo "TELEGRAM_BOT_TOKEN=your_bot_token_here" > .env
-```
-
-### 4. Start the Bot
-
-```bash
-npm start
-```
+3. **Test GitHub integration**:
+   ```bash
+   gh auth status
+   ```
 
 ## Usage
 
-### Bot Commands (for users)
-
-- `/start` - Welcome message and command list
-- `/subscribe` - Subscribe to build notifications
-- `/unsubscribe` - Unsubscribe from notifications  
-- `/status` - Check subscription status and subscriber count
-- `/latest` - Get current version information
-
-### Sending Builds (for developers)
-
+### Start the bot:
 ```bash
-# Build the application first
-npm run dist
-
-# Send the latest build to all subscribers
-node telegram-bot/send-build.js
-
-# Send a custom message (no file)
-node telegram-bot/send-build.js --message "Custom announcement"
+npm run start
 ```
+
+### Send build notification:
+```bash
+# Build first
+npm run dist:win
+
+# Send to subscribers
+npm run send-build
+```
+
+### Bot Commands:
+- `/start` - Show main menu
+- `/subscribe` - Get build notifications
+- `/unsubscribe` - Stop notifications  
+- `/latest` - Download latest build
 
 ### Integration with Build Process
 
@@ -98,11 +97,31 @@ telegram-bot/
 
 - `TELEGRAM_BOT_TOKEN` - Required. Your bot token from BotFather
 
-### File Size Limits
+### Large File Handling
 
-- Files up to 50MB are sent directly via Telegram
-- Larger files receive a message with download instructions
-- Automatically detects and handles file sizes
+**Smart Processing Pipeline:**
+1. **Direct Send** (≤50MB) - Files sent immediately
+2. **Cloud Upload** (>50MB) - Upload to cloud storage, share direct download link  
+3. **Binary Splitting** (fallback) - Split original EXE into binary parts with auto-recombination script
+4. **User Instructions** - Clear guidance for each method
+
+**User Experience:**
+- **Files ≤50MB**: Instant download
+- **Large files (cloud)**: Direct download link to original EXE file
+- **Large files (split)**: Binary parts + automatic combination script
+- **No ZIP files**: Users always get the original EXE
+
+**Technical Details:**
+- **Cloud services**: transfer.sh, file.io (30-second timeout each)
+- **Binary splitting**: 45MB chunks with Windows batch recombination script
+- **Smart fallback**: Cloud upload → Binary splitting → Error message
+- **Automatic cleanup**: All temporary files removed after delivery
+
+**Binary Splitting Features:**
+- Original EXE split into parts (no compression)
+- Windows batch script for automatic recombination
+- Simple `copy /b` command to rebuild original file
+- Automatic cleanup after successful combination
 
 ### Subscriber Management
 

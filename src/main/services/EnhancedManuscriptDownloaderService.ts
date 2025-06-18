@@ -115,6 +115,16 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://rbme.patrimonionacional.es/s/rbme/item/14374',
             description: 'Real Biblioteca del Monasterio de El Escorial digital manuscripts via IIIF',
         },
+        {
+            name: 'Stanford Parker Library',
+            example: 'https://parker.stanford.edu/parker/catalog/zs345bj2650',
+            description: 'Stanford Parker Library on the Web - digitized manuscripts from Corpus Christi College, Cambridge via IIIF',
+        },
+        {
+            name: 'Manuscripta.se',
+            example: 'https://manuscripta.se/ms/101124',
+            description: 'Swedish digital catalogue of medieval and early modern manuscripts via IIIF',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -185,6 +195,8 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('mira.ie')) return 'mira';
         if (url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr')) return 'orleans';
         if (url.includes('rbme.patrimonionacional.es')) return 'rbme';
+        if (url.includes('parker.stanford.edu')) return 'parker';
+        if (url.includes('manuscripta.se')) return 'manuscripta';
         
         return null;
     }
@@ -262,7 +274,10 @@ export class EnhancedManuscriptDownloaderService {
     async fetchDirect(url: string, options: any = {}): Promise<Response> {
         const controller = new AbortController();
         // Use much longer timeout for Trinity Cambridge as their server is extremely slow (45+ seconds per image)
-        const timeout = url.includes('mss-cat.trin.cam.ac.uk') ? 120000 : configService.get('requestTimeout'); // 2 minutes for Trinity Cambridge
+        // Also use longer timeout for Orleans as their IIIF service can be slow
+        const timeout = url.includes('mss-cat.trin.cam.ac.uk') ? 120000 : 
+                       (url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr')) ? 60000 : 
+                       configService.get('requestTimeout'); // 2 minutes for Trinity Cambridge, 1 minute for Orleans
         const timeoutId = setTimeout(() => controller.abort(), timeout);
         
         // Special headers for ISOS to avoid 403 Forbidden errors
@@ -293,6 +308,29 @@ export class EnhancedManuscriptDownloaderService {
                 'Accept-Language': 'en-US,en;q=0.9',
                 'Cache-Control': 'no-cache',
                 'Connection': 'keep-alive'
+            };
+        }
+        
+        // Special headers for Orleans IIIF to avoid timeout/hanging issues
+        if (url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr')) {
+            headers = {
+                ...headers,
+                'Referer': 'https://aurelia.orleans.fr/',
+                'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+                'Sec-Fetch-Dest': 'image',
+                'Sec-Fetch-Mode': 'no-cors',
+                'Sec-Fetch-Site': 'cross-site'
+            };
+        }
+        
+        // Special headers for Stanford Parker Library IIIF to avoid HTTP 406 errors
+        if (url.includes('stacks.stanford.edu') || url.includes('dms-data.stanford.edu')) {
+            headers = {
+                'User-Agent': 'curl/7.68.0',
+                'Accept': '*/*'
             };
         }
         
@@ -385,6 +423,12 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'rbme':
                     manifest = await this.loadRbmeManifest(originalUrl);
+                    break;
+                case 'parker':
+                    manifest = await this.loadParkerManifest(originalUrl);
+                    break;
+                case 'manuscripta':
+                    manifest = await this.loadManuscriptaManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -2555,6 +2599,214 @@ export class EnhancedManuscriptDownloaderService {
         } catch (error: any) {
             console.error(`RBME manifest loading failed:`, error);
             throw new Error(`Failed to load RBME manuscript: ${error.message}`);
+        }
+    }
+
+    async loadParkerManifest(parkerUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // Extract the manuscript ID from the URL
+            // Pattern: https://parker.stanford.edu/parker/catalog/zs345bj2650
+            const idMatch = parkerUrl.match(/\/catalog\/([^/]+)(?:\/|$)/);
+            if (!idMatch) {
+                throw new Error('Invalid Stanford Parker URL format - could not extract manuscript ID');
+            }
+            
+            const manuscriptId = idMatch[1];
+            // Stanford Parker IIIF manifest URL pattern
+            const manifestUrl = `https://dms-data.stanford.edu/data/manifests/Parker/${manuscriptId}/manifest.json`;
+            
+            // Fetch the IIIF manifest
+            const manifestResponse = await this.fetchDirect(manifestUrl);
+            if (!manifestResponse.ok) {
+                throw new Error(`Failed to fetch Stanford Parker manifest: HTTP ${manifestResponse.status}`);
+            }
+            
+            const iiifManifest = await manifestResponse.json();
+            
+            // Handle both IIIF v2 and v3 formats
+            let canvases;
+            if (iiifManifest.sequences && iiifManifest.sequences[0]) {
+                // IIIF v2 format
+                canvases = iiifManifest.sequences[0].canvases;
+            } else if (iiifManifest.items) {
+                // IIIF v3 format
+                canvases = iiifManifest.items;
+            } else {
+                throw new Error('Invalid IIIF manifest structure - no sequences or items found');
+            }
+            
+            if (!canvases || canvases.length === 0) {
+                throw new Error('No pages found in manifest');
+            }
+            
+            const pageLinks = canvases.map((canvas: any) => {
+                let imageUrl;
+                
+                if (canvas.images && canvas.images[0]) {
+                    // IIIF v2 format - Stanford Parker provides direct image URLs
+                    const resource = canvas.images[0].resource;
+                    // Use the direct image URL provided by Stanford Parker
+                    imageUrl = resource['@id'] || resource.id;
+                } else if (canvas.items && canvas.items[0] && canvas.items[0].items && canvas.items[0].items[0]) {
+                    // IIIF v3 format
+                    const annotation = canvas.items[0].items[0];
+                    const body = annotation.body;
+                    imageUrl = body.id;
+                }
+                
+                return imageUrl;
+            }).filter((link: string) => link);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No images found in Stanford Parker manifest');
+            }
+            
+            // Extract title and metadata
+            const label = iiifManifest.label || iiifManifest.title || 'Stanford Parker Manuscript';
+            let displayName;
+            
+            if (typeof label === 'string') {
+                displayName = label;
+            } else if (label?.['@value']) {
+                displayName = label['@value'];
+            } else if (label?.value) {
+                displayName = label.value;
+            } else if (label?.en && Array.isArray(label.en)) {
+                displayName = label.en[0];
+            } else if (label?.en) {
+                displayName = label.en;
+            } else {
+                displayName = `Stanford_Parker_${manuscriptId}`;
+            }
+            
+            // Sanitize display name for filesystem
+            const sanitizedName = displayName.replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').replace(/\.+$/, '').substring(0, 150);
+            
+            return {
+                displayName: sanitizedName,
+                totalPages: pageLinks.length,
+                pageLinks,
+                library: 'parker' as any,
+                originalUrl: parkerUrl
+            };
+            
+        } catch (error: any) {
+            console.error(`Stanford Parker manifest loading failed:`, error);
+            throw new Error(`Failed to load Stanford Parker manuscript: ${error.message}`);
+        }
+    }
+
+    /**
+     * Load Manuscripta.se manifest (using IIIF manifest API)
+     */
+    async loadManuscriptaManifest(manuscriptaUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // Extract manuscript ID from URL: https://manuscripta.se/ms/101124 -> 101124
+            const idMatch = manuscriptaUrl.match(/\/ms\/(\d+)/);
+            if (!idMatch) {
+                throw new Error('Invalid Manuscripta.se URL format. Expected format: https://manuscripta.se/ms/{id}');
+            }
+            
+            const manuscriptId = idMatch[1];
+            const manifestUrl = `https://manuscripta.se/iiif/${manuscriptId}/manifest.json`;
+            
+            console.log(`Loading Manuscripta.se manifest from: ${manifestUrl}`);
+            
+            const manifestResponse = await this.fetchWithProxyFallback(manifestUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+            });
+            
+            if (!manifestResponse.ok) {
+                throw new Error(`Failed to fetch Manuscripta.se manifest: HTTP ${manifestResponse.status}`);
+            }
+            
+            const iiifManifest = await manifestResponse.json();
+            
+            // Extract title from manifest
+            let displayName = 'Manuscripta_' + manuscriptId;
+            if (iiifManifest.label) {
+                if (typeof iiifManifest.label === 'string') {
+                    displayName = iiifManifest.label;
+                } else if (Array.isArray(iiifManifest.label)) {
+                    displayName = iiifManifest.label[0];
+                } else if (typeof iiifManifest.label === 'object') {
+                    // IIIF 3.0 format with language maps
+                    const labelValues = Object.values(iiifManifest.label);
+                    if (labelValues.length > 0 && Array.isArray(labelValues[0])) {
+                        displayName = (labelValues[0] as string[])[0];
+                    }
+                }
+            }
+            
+            // Parse IIIF manifest structure - support both IIIF 2.x and 3.x
+            let canvases: any[] = [];
+            
+            if (iiifManifest.sequences && iiifManifest.sequences[0] && iiifManifest.sequences[0].canvases) {
+                // IIIF 2.x structure
+                canvases = iiifManifest.sequences[0].canvases;
+            } else if (iiifManifest.items) {
+                // IIIF 3.x structure
+                canvases = iiifManifest.items;
+            } else {
+                throw new Error('Invalid IIIF manifest structure - no canvases found');
+            }
+            
+            const pageLinks = canvases.map((canvas: any) => {
+                let imageUrl: string | null = null;
+                
+                // IIIF 2.x format
+                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                    const resource = canvas.images[0].resource;
+                    imageUrl = resource['@id'] || resource.id;
+                }
+                // IIIF 3.x format
+                else if (canvas.items && canvas.items[0] && canvas.items[0].items && canvas.items[0].items[0]) {
+                    const annotation = canvas.items[0].items[0];
+                    if (annotation.body && annotation.body.id) {
+                        imageUrl = annotation.body.id;
+                    }
+                }
+                
+                if (!imageUrl) {
+                    return null;
+                }
+                
+                // Convert to full resolution IIIF image URL if needed
+                if (imageUrl.includes('/iiif/') && !imageUrl.includes('/full/')) {
+                    // Ensure proper IIIF Image API format: {scheme}://{server}{/prefix}/{identifier}/full/max/0/default.jpg
+                    const iiifBase = imageUrl.split('/info.json')[0];
+                    return `${iiifBase}/full/max/0/default.jpg`;
+                }
+                
+                return imageUrl;
+            }).filter((link: string | null): link is string => link !== null);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No pages found in manifest');
+            }
+            
+            console.log(`Successfully loaded Manuscripta.se manifest: ${pageLinks.length} pages found`);
+            
+            // Sanitize display name for filesystem
+            const sanitizedName = displayName
+                .replace(/[<>:"/\\|?*\x00-\x1f]/g, '_')
+                .replace(/\.+$/, '')
+                .substring(0, 150) || `Manuscripta_${manuscriptId}`;
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'manuscripta' as any,
+                displayName: sanitizedName,
+                originalUrl: manuscriptaUrl,
+            };
+            
+        } catch (error: any) {
+            console.error(`Manuscripta.se manifest loading failed:`, error);
+            throw new Error(`Failed to load Manuscripta.se manuscript: ${error.message}`);
         }
     }
 

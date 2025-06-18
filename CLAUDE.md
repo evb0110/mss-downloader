@@ -75,6 +75,36 @@ npm run lint              # Linting
 - **Reports & Results**: Always store all reports, test results, and analysis outputs in the `reports/` folder to keep project root clean
 - NB! When user adds new library, ensure that it's thoroughly tested and check pdf's validity.
 
+### Version Release Workflow - MANDATORY FOR EVERY VERSION BUMP
+**CRITICAL: Follow this workflow whenever package.json version is bumped:**
+
+1. **Build Windows AMD64 Release**:
+   ```bash
+   npm run dist:win
+   ```
+
+2. **Create Changelog Entry**:
+   - Summarize changes in 1-2 sentences
+   - Focus on user-facing improvements or bug fixes
+   - Use format: "vX.X.X: [Brief description of main changes]"
+
+3. **Send Telegram Notification**:
+   ```bash
+   TELEGRAM_BOT_TOKEN="7825780367:AAEgMIQxaG5hbDNJw9oLtylRxd7Ddr9vzBo" node telegram-bot/send-build.js
+   ```
+
+4. **Verify Notification**:
+   - Check that notification was sent to all subscribers
+   - Ensure build file was attached (if <50MB) or download link provided
+
+**Example Workflow Commands:**
+```bash
+# After version bump in package.json
+npm run dist:win && TELEGRAM_BOT_TOKEN="7825780367:AAEgMIQxaG5hbDNJw9oLtylRxd7Ddr9vzBo" node telegram-bot/send-build.js
+```
+
+**Remember**: Every version increment should result in user notification via Telegram bot. This ensures subscribers get immediate access to fixes and new features.
+
 ### Version History
 - **v1.0.29:** Added Unicatt (Biblioteca Ambrosiana) support with proxy fallback for geo-restricted access  
 - **v1.0.31:** Added Cambridge CUDL, Trinity Cambridge, Dublin ISOS, Dublin MIRA, and Trinity Dublin libraries
@@ -92,7 +122,12 @@ npm run lint              # Linting
 - **v1.0.66:** Enhanced Orléans timeout handling: increased search and item fetch timeouts from 15s to 30s, added multiple fallback search strategies (original query, partial matches, case-insensitive variants), and added specific URL handling for "OUVRAGESDEPSEUDOISIDORE--PSEUDOISIDORE" pattern to correctly map to "Ouvrages de Pseudo Isidore" API search.
 - **v1.0.67:** Added manifest loading progress bar for slow-loading manifests (>50 pages). Shows real-time progress during Orleans manuscript loading with "Loading manifest: X/Y pages (Z%)" display. Progress updates every 10 processed pages to provide visual feedback during long manifest loading operations.
 - **v1.0.68:** Enhanced cache management: "Cleanup Cache" button now clears both image and manifest caches, single item deletion clears that item's manifest cache, "Delete All" clears all manifest caches. Prevents stale cache entries and ensures fresh manifest loading when needed.
-- **v1.0.70:** Added Real Biblioteca del Monasterio de El Escorial (RBME) library support with IIIF v2 manifest integration for Spanish royal manuscript collections. Supports full resolution image downloads and proper metadata extraction.
+- **v1.0.70:** Implemented Orleans manifest loading progress bar with real-time percentage updates (e.g., "Loading manifest: 40/370 pages (11%)"), visual progress bar with teal gradient, minimum 2-second display time for visibility, and improved progress bar styling with subtle background and better visual integration.
+- **v1.0.75:** Added Manuscripta.se support for Swedish digital manuscript catalogue. Supports IIIF 2.x and 3.x manifests with full resolution image downloading. Includes proxy fallback for connectivity issues and proper display name extraction from manifest metadata.
+- **v1.0.71:** Added Stanford Parker Library support for digitized manuscripts from Corpus Christi College, Cambridge. Implemented IIIF v2/v3 compatible manifest parsing with full resolution image downloading. Successfully tested with 20+ manuscript URLs providing access to medieval manuscripts with comprehensive metadata extraction.
+- **v1.0.72:** Fixed Stanford Parker Library HTTP 406 "Not Acceptable" errors by implementing proper headers (curl User-Agent instead of Chrome) and using direct IIIF image URLs from manifest (/full/full/ format). Downloads now work correctly for all Stanford Parker manuscripts.
+- **v1.0.73:** Completed Stanford Parker Library implementation with comprehensive testing. All 22 user-provided URLs now working. Created end-user report documenting the new functionality and successful integration with existing manuscript libraries.
+- **v1.0.74:** Fixed Orleans library hanging indefinitely on "calculating" stage after manifest loading by adding size estimation bypass (similar to Florus). Orleans manuscripts now proceed directly from manifest loading to downloading without attempting problematic first page download for size calculation.
 
 ## TODO Management System
 

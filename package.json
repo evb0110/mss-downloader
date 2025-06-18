@@ -1,6 +1,6 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.0.70",
+  "version": "1.0.76",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "main": "dist/main/main.js",
   "type": "module",
@@ -29,6 +29,7 @@
     "telegram:start": "cd telegram-bot && npm start",
     "telegram:install": "cd telegram-bot && npm install",
     "telegram:send": "cd telegram-bot && node send-build.js",
+    "release": "./release.sh",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
@@ -84,7 +85,21 @@
     "compression": "maximum",
     "icon": "assets/icon-512.png",
     "win": {
-      "target": "nsis",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "icon": "assets/icon.png"
     },
     "mac": {

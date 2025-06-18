@@ -858,11 +858,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 manifest = await this.currentDownloader!.loadManifest(item.url);
             }
             
-            // For Florus only - limited manifest data requires size estimation
-            if (manifest.library === 'florus') {
+            // For Florus and Orleans - skip first page download and use estimated size calculation
+            if (manifest.library === 'florus' || manifest.library === 'orleans') {
                 console.log(`${manifest.library} manuscript detected, using estimated size calculation`);
                 // Estimate based on typical manuscript page size
-                const avgPageSizeMB = 0.4; // 400KB average per page
+                const avgPageSizeMB = manifest.library === 'orleans' ? 0.6 : 0.4; // 600KB for Orleans IIIF, 400KB for Florus
                 const estimatedTotalSizeMB = avgPageSizeMB * manifest.totalPages;
                 item.estimatedSizeMB = estimatedTotalSizeMB;
                 
@@ -968,7 +968,10 @@ export class EnhancedDownloadQueue extends EventEmitter {
             const client = urlObj.protocol === 'https:' ? https.default : http.default;
 
             // Use much longer timeout for Trinity Cambridge as their server is extremely slow (45+ seconds per image)
-            const timeout = url.includes('mss-cat.trin.cam.ac.uk') ? 120000 : 30000; // 2 minutes for Trinity Cambridge
+            // Also use longer timeout for Orleans as their IIIF service can be slow
+            const timeout = url.includes('mss-cat.trin.cam.ac.uk') ? 120000 : 
+                           (url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr')) ? 60000 : 
+                           30000; // 2 minutes for Trinity Cambridge, 1 minute for Orleans, 30s default
 
             // Special headers for ISOS to avoid 403 Forbidden errors
             let headers: Record<string, string> = {
@@ -999,6 +1002,21 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     'Accept-Language': 'en-US,en;q=0.9',
                     'Cache-Control': 'no-cache',
                     'Connection': 'keep-alive'
+                };
+            }
+            
+            // Special headers for Orleans IIIF to avoid timeout/hanging issues
+            if (url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr')) {
+                headers = {
+                    ...headers,
+                    'Referer': 'https://aurelia.orleans.fr/',
+                    'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive',
+                    'Sec-Fetch-Dest': 'image',
+                    'Sec-Fetch-Mode': 'no-cors',
+                    'Sec-Fetch-Site': 'cross-site'
                 };
             }
 
