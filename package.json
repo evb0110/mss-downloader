@@ -102,7 +102,11 @@
           ]
         }
       ],
-      "icon": "assets/icon.png"
+      "icon": "assets/icon.png",
+      "publisherName": "Abba Ababus Manuscripts",
+      "verifyUpdateCodeSignature": false,
+      "requestedExecutionLevel": "asInvoker",
+      "sign": "./sign-windows.js"
     },
     "mac": {
       "target": "dmg",

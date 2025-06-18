@@ -147,6 +147,18 @@ User says "handle todos" → Follow workflow:
 5. Update `CLAUDE.md` with insights/changes
 6. Move completed todo to "Completed Tasks"
 7. Bump patch version in `package.json`
+8. Commit changes and push to GitHub (triggers automated build & notification)
+
+### Version Bump Workflow
+When user says "bump" or when completing todos → Follow this workflow:
+1. Bump patch version in `package.json`
+2. Commit changes with descriptive message
+3. Push to GitHub main branch
+4. GitHub Actions will automatically:
+   - Detect version change
+   - Build Windows AMD64 release
+   - Create GitHub release
+   - Send Telegram notifications to subscribers
 
 CRITICAL: Only mark tasks as completed in TODOS.md when they are ACTUALLY FULLY IMPLEMENTED AND WORKING. Never mark something as completed based on code changes alone - verify the functionality works as expected.
 
