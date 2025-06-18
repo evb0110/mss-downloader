@@ -265,7 +265,7 @@ ${subscriber ? 'Sending build file...' : 'Subscribe to get automatic notificatio
                 if (fileResult) {
                     await this.sendFileToSubscriber(subscriber.chatId, message, fileResult);
                 } else {
-                    await this.bot.sendMessage(subscriber.chatId, message);
+                    await this.bot.sendMessage(subscriber.chatId, message, { parse_mode: 'MarkdownV2' });
                 }
                 
                 await new Promise(resolve => setTimeout(resolve, 500)); // Longer delay for file uploads

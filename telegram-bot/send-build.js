@@ -5,6 +5,38 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
+function getChangelogFromCommits(version) {
+    try {
+        // Get the latest 3 commits for changelog
+        const commits = execSync('git log --oneline -3 --pretty=format:"%s"', { encoding: 'utf8' }).trim().split('\n');
+        
+        const changelogItems = commits
+            .filter(commit => !commit.includes('Bump version') && !commit.includes('Generated with Claude Code'))
+            .slice(0, 2) // Take max 2 meaningful commits
+            .map(commit => {
+                // Clean up commit message and escape for Telegram MarkdownV2
+                let cleaned = commit
+                    .replace(/^WEB-\d+\s+/, '') // Remove ticket numbers
+                    .replace(/🤖.*$/, '') // Remove Claude signature
+                    .trim();
+                
+                // Escape special characters for Telegram MarkdownV2
+                cleaned = cleaned.replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&');
+                
+                return `• ${cleaned}`;
+            });
+        
+        if (changelogItems.length > 0) {
+            return `📝 *What's New:*\n${changelogItems.join('\n')}`;
+        } else {
+            return `📝 *What's New:*\n• Bug fixes and improvements`;
+        }
+    } catch (error) {
+        console.error('Error generating changelog:', error.message);
+        return `📝 *What's New:*\n• Latest updates and improvements`;
+    }
+}
+
 async function sendBuild() {
     try {
         const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
@@ -64,16 +96,21 @@ async function sendBuild() {
         const stats = fs.statSync(fullBuildFile);
         const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
         
+        // Get changelog from recent commits
+        const changelog = getChangelogFromCommits(version);
+        
         const message = `
-🚀 New MSS Downloader Build Available!
+🚀 *MSS Downloader v${version}* Available\\!
 
-📦 Version: v${version}
-💻 Platform: Windows AMD64
-📁 File: ${buildFile}
-📊 Size: ${fileSizeMB} MB
-📅 Built: ${new Date().toLocaleString()}
+📦 *Version:* v${version}
+💻 *Platform:* Windows AMD64
+📁 *File:* ${buildFile.replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&')}
+📊 *Size:* ${fileSizeMB} MB
+📅 *Built:* ${new Date().toLocaleString()}
 
-Download and install to get the latest features and fixes!
+${changelog}
+
+📥 Download and install to get the latest features and fixes\\!
         `.trim();
         
         const bot = new MSSTelegramBot();
