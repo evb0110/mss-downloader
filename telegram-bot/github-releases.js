@@ -30,6 +30,27 @@ class GitHubReleasesManager {
         }
     }
     
+    // Convert filename to GitHub's sanitized format
+    sanitizeFilenameForGitHub(fileName) {
+        // GitHub converts filenames by:
+        // 1. Replacing spaces with dots
+        // 2. Extracting content from parentheses and adding with dots
+        // 3. Removing parentheses themselves
+        
+        let sanitized = fileName;
+        
+        // Extract content from parentheses and replace with dots
+        sanitized = sanitized.replace(/\s*\(([^)]+)\)\s*/g, '.$1.');
+        
+        // Replace remaining spaces with dots
+        sanitized = sanitized.replace(/\s+/g, '.');
+        
+        // Remove double dots
+        sanitized = sanitized.replace(/\.+/g, '.');
+        
+        return sanitized;
+    }
+
     async createRelease(version, buildFile, releaseNotes = '') {
         if (!fs.existsSync(buildFile)) {
             throw new Error(`Build file not found: ${buildFile}`);
@@ -53,17 +74,19 @@ class GitHubReleasesManager {
             const uploadCommand = `gh release upload "${tagName}" "${buildFile}"`;
             execSync(uploadCommand, { stdio: 'inherit' });
             
-            // Get the download URL - properly encode filename for URL
-            const encodedFileName = encodeURIComponent(fileName);
-            const downloadUrl = `https://github.com/${this.repoOwner}/${this.repoName}/releases/download/${tagName}/${encodedFileName}`;
+            // Get the download URL using GitHub's sanitized filename format
+            const sanitizedFileName = this.sanitizeFilenameForGitHub(fileName);
+            const downloadUrl = `https://github.com/${this.repoOwner}/${this.repoName}/releases/download/${tagName}/${sanitizedFileName}`;
             
             console.log(`✅ Release created successfully!`);
+            console.log(`📥 Original filename: ${fileName}`);
+            console.log(`📥 GitHub filename: ${sanitizedFileName}`);
             console.log(`📥 Download URL: ${downloadUrl}`);
             
             return {
                 tagName,
                 downloadUrl,
-                fileName,
+                fileName: sanitizedFileName, // Use sanitized filename
                 version
             };
             

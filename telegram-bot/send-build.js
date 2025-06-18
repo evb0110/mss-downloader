@@ -5,6 +5,13 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
+// Properly escape text for Telegram MarkdownV2
+function escapeMarkdownV2(text) {
+    // Only escape characters that actually need escaping in MarkdownV2
+    // According to Telegram docs: _*[]()~`>#+-=|{}.!
+    return text.replace(/[_*\[\]()~`>#+=|{}.!-]/g, '\\$&');
+}
+
 function getChangelogFromCommits(version) {
     try {
         // Get the latest 3 commits for changelog
@@ -14,14 +21,14 @@ function getChangelogFromCommits(version) {
             .filter(commit => !commit.includes('Bump version') && !commit.includes('Generated with Claude Code'))
             .slice(0, 2) // Take max 2 meaningful commits
             .map(commit => {
-                // Clean up commit message and escape for Telegram MarkdownV2
+                // Clean up commit message
                 let cleaned = commit
                     .replace(/^WEB-\d+\s+/, '') // Remove ticket numbers
                     .replace(/🤖.*$/, '') // Remove Claude signature
                     .trim();
                 
-                // Escape special characters for Telegram MarkdownV2
-                cleaned = cleaned.replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&');
+                // Escape for MarkdownV2
+                cleaned = escapeMarkdownV2(cleaned);
                 
                 return `• ${cleaned}`;
             });
@@ -100,17 +107,17 @@ async function sendBuild() {
         const changelog = getChangelogFromCommits(version);
         
         const message = `
-🚀 *MSS Downloader v${version}* Available\\!
+🚀 *MSS Downloader v${escapeMarkdownV2(version)}* Available!
 
-📦 *Version:* v${version}
+📦 *Version:* v${escapeMarkdownV2(version)}
 💻 *Platform:* Windows AMD64
-📁 *File:* ${buildFile.replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&')}
+📁 *File:* ${escapeMarkdownV2(buildFile)}
 📊 *Size:* ${fileSizeMB} MB
-📅 *Built:* ${new Date().toLocaleString()}
+📅 *Built:* ${escapeMarkdownV2(new Date().toLocaleString())}
 
 ${changelog}
 
-📥 Download and install to get the latest features and fixes\\!
+📥 Download and install to get the latest features and fixes!
         `.trim();
         
         const bot = new MSSTelegramBot();
