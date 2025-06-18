@@ -5,7 +5,7 @@ node_modules/
 .env
 
 # Bot data
-subscribers.json
+# subscribers.json - commenting out to enable CI/CD access
 
 # Temporary files
 temp/
