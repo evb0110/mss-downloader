@@ -50,6 +50,8 @@ jobs:
         run: npm install
       
       - name: Build Windows AMD64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run dist:win:x64
       
       - name: Install Telegram bot dependencies
