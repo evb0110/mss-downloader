@@ -265,7 +265,7 @@ ${subscriber ? 'Sending build file...' : 'Subscribe to get automatic notificatio
                 if (fileResult) {
                     await this.sendFileToSubscriber(subscriber.chatId, message, fileResult);
                 } else {
-                    await this.bot.sendMessage(subscriber.chatId, message, { parse_mode: 'MarkdownV2' });
+                    await this.bot.sendMessage(subscriber.chatId, message);
                 }
                 
                 await new Promise(resolve => setTimeout(resolve, 500)); // Longer delay for file uploads
@@ -293,10 +293,12 @@ ${subscriber ? 'Sending build file...' : 'Subscribe to get automatic notificatio
         
         // Handle GitHub Release (best experience - permanent)
         if (fileResult.type === 'github_release') {
-            if (message) {
-                await this.bot.sendMessage(chatId, message);
-            }
-            await this.bot.sendMessage(chatId, fileResult.instructions);
+            // Combine the message with the download link and instructions
+            const combinedMessage = message ? 
+                `${message}\n\n🔗 Direct Download:\n${fileResult.downloadUrl}` :
+                `🔗 Direct Download:\n${fileResult.downloadUrl}`;
+            
+            await this.bot.sendMessage(chatId, combinedMessage);
             return;
         }
         

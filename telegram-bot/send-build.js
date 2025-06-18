@@ -5,11 +5,10 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-// Properly escape text for Telegram MarkdownV2
-function escapeMarkdownV2(text) {
-    // Only escape characters that actually need escaping in MarkdownV2
-    // According to Telegram docs: _*[]()~`>#+-=|{}.!
-    return text.replace(/[_*\[\]()~`>#+=|{}.!-]/g, '\\$&');
+// Simple text formatting without MarkdownV2 complications
+function formatText(text) {
+    // Just return the text as-is, no escaping needed
+    return text;
 }
 
 function getChangelogFromCommits(version) {
@@ -27,20 +26,20 @@ function getChangelogFromCommits(version) {
                     .replace(/🤖.*$/, '') // Remove Claude signature
                     .trim();
                 
-                // Escape for MarkdownV2
-                cleaned = escapeMarkdownV2(cleaned);
+                // Simple format, no escaping
+                cleaned = formatText(cleaned);
                 
                 return `• ${cleaned}`;
             });
         
         if (changelogItems.length > 0) {
-            return `📝 *What's New:*\n${changelogItems.join('\n')}`;
+            return `📝 What's New:\n${changelogItems.join('\n')}`;
         } else {
-            return `📝 *What's New:*\n• Bug fixes and improvements`;
+            return `📝 What's New:\n• Bug fixes and improvements`;
         }
     } catch (error) {
         console.error('Error generating changelog:', error.message);
-        return `📝 *What's New:*\n• Latest updates and improvements`;
+        return `📝 What's New:\n• Latest updates and improvements`;
     }
 }
 
@@ -107,24 +106,24 @@ async function sendBuild() {
         const changelog = getChangelogFromCommits(version);
         
         const message = `
-🚀 *MSS Downloader v${escapeMarkdownV2(version)}* Available!
+🚀 MSS Downloader v${formatText(version)} Available!
 
-📦 *Version:* v${escapeMarkdownV2(version)}
-💻 *Platform:* Windows AMD64
-📁 *File:* ${escapeMarkdownV2(buildFile)}
-📊 *Size:* ${fileSizeMB} MB
-📅 *Built:* ${escapeMarkdownV2(new Date().toLocaleString())}
+📦 Version: v${formatText(version)}
+💻 Platform: Windows AMD64
+📁 File: ${formatText(buildFile)}
+📊 Size: ${fileSizeMB} MB
+📅 Built: ${formatText(new Date().toLocaleString())}
 
 ${changelog}
 
-📥 *Installation Instructions:*
-1\\. Download the file from GitHub release
-2\\. If Windows shows SmartScreen warning:
-   • Click "*More info*"
-   • Click "*Run anyway*"
-3\\. Follow the installer prompts
+📥 Installation Instructions:
+1. Download the file from GitHub release
+2. If Windows shows SmartScreen warning:
+   • Click "More info"
+   • Click "Run anyway"
+3. Follow the installer prompts
 
-⚠️ *SmartScreen Warning:* This is normal for unsigned software\\. The app is safe to install\\.
+⚠️ SmartScreen Warning: This is normal for unsigned software. The app is safe to install.
 
 📥 Download and install to get the latest features and fixes!
         `.trim();
