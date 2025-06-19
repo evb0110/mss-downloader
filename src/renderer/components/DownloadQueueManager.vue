@@ -1,5 +1,8 @@
 <template>
-  <div class="manuscript-downloader" data-testid="download-queue">
+  <div
+    class="manuscript-downloader"
+    data-testid="download-queue"
+  >
     <div class="info-buttons-row">
       <button
         class="info-btn"
@@ -22,9 +25,16 @@
     <div class="bulk-queue-form">
       <!-- Show input form directly if no queue items -->
       <template v-if="queueItems.length === 0">
-        <div class="empty-queue-message" data-testid="empty-queue-message">
+        <div
+          class="empty-queue-message"
+          data-testid="empty-queue-message"
+        >
           <div class="patron-saint">
-            <img :src="abbaAbabusImage" alt="Abba Ababus" class="patron-image" />
+            <img
+              :src="abbaAbabusImage"
+              alt="Abba Ababus"
+              class="patron-image"
+            >
             <div class="patron-text">
               <h3>Welcome to Abba Ababus (MSS Downloader)</h3>
               <p>Under the patronage of Abba Ababus</p>
@@ -50,7 +60,11 @@ https://digi.vatlib.it/..."
           <small class="help-text">Enter multiple manuscript URLs, one per line or separated by whitespace, semicolon, or comma. Press Ctrl+Enter (or Cmd+Enter on Mac) to add to queue.</small>
         </div>
 
-        <div v-if="errorMessage" class="error-message" data-testid="error-message">
+        <div
+          v-if="errorMessage"
+          class="error-message"
+          data-testid="error-message"
+        >
           {{ errorMessage }}
         </div>
                 
@@ -176,7 +190,10 @@ https://digi.vatlib.it/..."
         >
           <div class="queue-progress-header">
             <span class="queue-progress-label">Queue Progress</span>
-            <span class="queue-progress-stats" data-testid="total-items">
+            <span
+              class="queue-progress-stats"
+              data-testid="total-items"
+            >
               <template v-if="queueStats.loading > 0">
                 Loading {{ queueStats.loading }} manifest{{ queueStats.loading > 1 ? 's' : '' }}...
               </template>
@@ -185,7 +202,10 @@ https://digi.vatlib.it/..."
               </template>
             </span>
           </div>
-          <div class="queue-progress-bar" data-testid="progress-bar">
+          <div
+            class="queue-progress-bar"
+            data-testid="progress-bar"
+          >
             <!-- Individual segments for each item in queue order -->
             <div
               v-for="item in queueItems"
@@ -237,7 +257,10 @@ https://digi.vatlib.it/..."
           </div>
         </div>
 
-        <div class="queue-controls" data-testid="queue-controls">
+        <div
+          class="queue-controls"
+          data-testid="queue-controls"
+        >
           <button
             v-if="!isQueueProcessing && !isQueuePaused"
             class="start-btn"
@@ -382,7 +405,10 @@ https://digi.vatlib.it/..."
                       {{ group.parent.displayName }}
                     </a>
                     <span v-else>{{ group.parent.displayName }}</span>
-                    <span v-if="group.parts.length > 0" class="part-count-badge">
+                    <span
+                      v-if="group.parts.length > 0"
+                      class="part-count-badge"
+                    >
                       ({{ group.parts.length }} parts)
                     </span>
                   </strong>
@@ -402,6 +428,13 @@ https://digi.vatlib.it/..."
                       class="concurrency-badge"
                     >
                       Concurrency: {{ group.parent.downloadOptions?.concurrentDownloads || 3 }}
+                    </span>
+                    <span
+                      v-if="group.parent.libraryOptimizations?.optimizationDescription"
+                      class="optimization-badge"
+                      :title="group.parent.libraryOptimizations.optimizationDescription"
+                    >
+                      ⚡ Optimized
                     </span>
                   </div>
                 </div>
@@ -607,71 +640,71 @@ https://digi.vatlib.it/..."
                 class="queue-edit-form"
                 data-testid="edit-modal"
               >
-              <div class="edit-section">
-                <div class="edit-header">
-                  <label>Page Range</label>
+                <div class="edit-section">
+                  <div class="edit-header">
+                    <label>Page Range</label>
+                  </div>
+                  <div class="page-range">
+                    <input
+                      v-model.number="editingQueueItem.startPage"
+                      type="number"
+                      min="1"
+                      class="page-input"
+                      data-testid="page-range-input"
+                      @blur="validateQueueEditInputs"
+                    >
+                    <span>–</span>
+                    <input
+                      v-model.number="editingQueueItem.endPage"
+                      type="number"
+                      min="1"
+                      class="page-input"
+                      @blur="validateQueueEditInputs"
+                    >
+                    <button
+                      :disabled="hasEditQueueValidationErrors || !hasQueueItemChanges"
+                      class="edit-btn edit-save-btn"
+                      title="Apply changes"
+                      data-testid="save-button"
+                      @click="saveQueueItemEdit()"
+                    >
+                      Apply
+                    </button>
+                    <button
+                      type="button"
+                      class="select-all-btn"
+                      @click="selectAllPages(group.parent.totalPages)"
+                    >
+                      All Pages
+                    </button>
+                    <button
+                      class="edit-btn edit-cancel-btn"
+                      title="Cancel changes"
+                      @click="cancelQueueItemEdit()"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  <p
+                    v-if="hasEditQueueValidationErrors"
+                    class="error-message"
+                  >
+                    Invalid page range or duplicate entry.
+                  </p>
                 </div>
-                <div class="page-range">
-                  <input
-                    v-model.number="editingQueueItem.startPage"
-                    type="number"
-                    min="1"
-                    class="page-input"
-                    data-testid="page-range-input"
-                    @blur="validateQueueEditInputs"
-                  >
-                  <span>–</span>
-                  <input
-                    v-model.number="editingQueueItem.endPage"
-                    type="number"
-                    min="1"
-                    class="page-input"
-                    @blur="validateQueueEditInputs"
-                  >
-                  <button
-                    :disabled="hasEditQueueValidationErrors || !hasQueueItemChanges"
-                    class="edit-btn edit-save-btn"
-                    title="Apply changes"
-                    data-testid="save-button"
-                    @click="saveQueueItemEdit()"
-                  >
-                    Apply
-                  </button>
-                  <button
-                    type="button"
-                    class="select-all-btn"
-                    @click="selectAllPages(group.parent.totalPages)"
-                  >
-                    All Pages
-                  </button>
-                  <button
-                    class="edit-btn edit-cancel-btn"
-                    title="Cancel changes"
-                    @click="cancelQueueItemEdit()"
-                  >
-                    Cancel
-                  </button>
-                </div>
-                <p
-                  v-if="hasEditQueueValidationErrors"
-                  class="error-message"
-                >
-                  Invalid page range or duplicate entry.
-                </p>
-              </div>
                             
-              <div class="edit-section">
-                <label>Concurrent Downloads: {{ editingQueueItem.concurrentDownloads }}</label>
-                <input
-                  v-model.number="editingQueueItem.concurrentDownloads"
-                  type="range"
-                  min="1"
-                  max="8"
-                  class="concurrency-slider"
-                  data-testid="concurrency-input"
-                >
+                <div class="edit-section">
+                  <label>Concurrent Downloads: {{ editingQueueItem.concurrentDownloads }}</label>
+                  <input
+                    v-model.number="editingQueueItem.concurrentDownloads"
+                    type="range"
+                    min="1"
+                    max="8"
+                    class="concurrency-slider"
+                    data-testid="concurrency-input"
+                  >
+                </div>
               </div>
-            </div>
                         
               <!-- Overall progress bar for group -->
               <div
@@ -705,7 +738,6 @@ https://digi.vatlib.it/..."
         </div>
       </div>
     </div>
-
   </div>
 
   <!-- Custom Modals -->
@@ -2661,6 +2693,25 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     font-weight: 600;
     border: 1px solid #bee5eb;
     white-space: nowrap;
+}
+
+.optimization-badge {
+    background: linear-gradient(135deg, #ffd700, #ffed4a);
+    color: #7c3d00;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 600;
+    border: 1px solid #ddb105;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: help;
+    animation: subtle-pulse 2s ease-in-out infinite;
+}
+
+@keyframes subtle-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.02); opacity: 0.9; }
 }
 
 .queue-item-controls {

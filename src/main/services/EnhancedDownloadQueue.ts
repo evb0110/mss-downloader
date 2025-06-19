@@ -7,6 +7,7 @@ import Store from 'electron-store';
 import { EnhancedManuscriptDownloaderService } from './EnhancedManuscriptDownloaderService.js';
 import { configService } from './ConfigService.js';
 import { ManifestCache } from './ManifestCache.js';
+import { LibraryOptimizationService } from './LibraryOptimizationService.js';
 import type { QueuedManuscript, QueueState, TLibrary, TStage } from '../../shared/queueTypes';
 
 export class EnhancedDownloadQueue extends EventEmitter {
@@ -249,6 +250,25 @@ export class EnhancedDownloadQueue extends EventEmitter {
             item.progress = undefined;
             item.totalPages = manifest.totalPages;
             item.library = manifest.library as TLibrary;
+            
+            // Apply library-specific optimizations
+            const optimizations = LibraryOptimizationService.applyOptimizations(
+                this.state.globalSettings.autoSplitThresholdMB,
+                this.state.globalSettings.concurrentDownloads,
+                item.library
+            );
+            
+            // Store optimization settings with the item
+            if (LibraryOptimizationService.hasOptimizations(item.library)) {
+                item.libraryOptimizations = {
+                    autoSplitThresholdMB: optimizations.autoSplitThresholdMB,
+                    maxConcurrentDownloads: optimizations.maxConcurrentDownloads,
+                    timeoutMultiplier: optimizations.timeoutMultiplier,
+                    enableProgressiveBackoff: optimizations.enableProgressiveBackoff,
+                    optimizationDescription: optimizations.optimizationDescription
+                };
+                console.log(`Applied library optimizations for ${item.library}: ${optimizations.optimizationDescription}`);
+            }
             
             this.saveToStorage();
             this.notifyListeners();
@@ -543,7 +563,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     item.library = manifest.library as TLibrary;
                     this.notifyListeners();
                 },
-                maxConcurrent: this.state.globalSettings.concurrentDownloads,
+                maxConcurrent: item.libraryOptimizations?.maxConcurrentDownloads || 
+                               this.state.globalSettings.concurrentDownloads,
                 skipExisting: false,
                 // Pass through download options for page range
                 startPage: item.downloadOptions?.startPage,
@@ -855,15 +876,21 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 manifest = await this.currentDownloader!.loadManifest(item.url);
             }
             
-            // For Florus and Orleans - skip first page download and use estimated size calculation
-            if (manifest.library === 'florus' || manifest.library === 'orleans') {
+            // For Florus, Orleans, and Internet Culturale - skip first page download and use estimated size calculation
+            if (manifest.library === 'florus' || manifest.library === 'orleans' || manifest.library === 'internet_culturale') {
                 console.log(`${manifest.library} manuscript detected, using estimated size calculation`);
                 // Estimate based on typical manuscript page size
-                const avgPageSizeMB = manifest.library === 'orleans' ? 0.6 : 0.4; // 600KB for Orleans IIIF, 400KB for Florus
+                const avgPageSizeMB = manifest.library === 'orleans' ? 0.6 : 
+                                    manifest.library === 'internet_culturale' ? 0.8 : 
+                                    0.4; // 600KB for Orleans IIIF, 800KB for Internet Culturale IIIF, 400KB for Florus
                 const estimatedTotalSizeMB = avgPageSizeMB * manifest.totalPages;
                 item.estimatedSizeMB = estimatedTotalSizeMB;
                 
-                if (estimatedTotalSizeMB > this.state.globalSettings.autoSplitThresholdMB) {
+                // Get library-specific threshold or use global
+                const effectiveThreshold = item.libraryOptimizations?.autoSplitThresholdMB || 
+                                         this.state.globalSettings.autoSplitThresholdMB;
+                
+                if (estimatedTotalSizeMB > effectiveThreshold) {
                     await this.splitQueueItem(item, manifest, estimatedTotalSizeMB);
                     return true;
                 }
@@ -881,7 +908,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
             // Store the estimated size for future recalculations
             item.estimatedSizeMB = estimatedTotalSizeMB;
             
-            if (estimatedTotalSizeMB > this.state.globalSettings.autoSplitThresholdMB) {
+            // Get library-specific threshold or use global
+            const effectiveThreshold = item.libraryOptimizations?.autoSplitThresholdMB || 
+                                     this.state.globalSettings.autoSplitThresholdMB;
+            
+            if (estimatedTotalSizeMB > effectiveThreshold) {
                 await this.splitQueueItem(item, manifest, estimatedTotalSizeMB);
                 return true;
             }

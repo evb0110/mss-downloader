@@ -1,6 +1,19 @@
 export type TStage = 'loading-manifest' | 'downloading' | 'merging' | 'processing' | 'caching' | 'complete';
 export type TStatus = 'loading' | 'pending' | 'queued' | 'downloading' | 'completed' | 'failed' | 'paused';
-export type TLibrary = 'gallica' | 'unifr' | 'vatlib' | 'cecilia' | 'irht' | 'dijon' | 'laon' | 'durham' | 'sharedcanvas' | 'ugent' | 'bl' | 'loading';
+export type TLibrary = 'gallica' | 'unifr' | 'vatlib' | 'cecilia' | 'irht' | 'dijon' | 'laon' | 'durham' | 'sharedcanvas' | 'ugent' | 'bl' | 'loading' | 'florus' | 'unicatt' | 'cudl' | 'trinity_cam' | 'isos' | 'mira' | 'orleans' | 'rbme' | 'parker' | 'manuscripta' | 'internet_culturale';
+
+export interface LibraryOptimizationSettings {
+    // Auto-split threshold in MB (overrides global setting)
+    autoSplitThresholdMB?: number;
+    // Maximum concurrent downloads (overrides global setting)
+    maxConcurrentDownloads?: number;
+    // Base timeout multiplier for this library
+    timeoutMultiplier?: number;
+    // Progressive backoff settings
+    enableProgressiveBackoff?: boolean;
+    // Description of applied optimizations for UI display
+    optimizationDescription?: string;
+}
 
 export interface QueuedManuscript {
     id: string;
@@ -39,6 +52,8 @@ export interface QueuedManuscript {
         pageRange: { start: number; end: number };
     };
     estimatedSizeMB?: number; // Estimated size based on actual downloaded data
+    // Library-specific optimization settings
+    libraryOptimizations?: LibraryOptimizationSettings;
 }
 
 export interface QueueState {

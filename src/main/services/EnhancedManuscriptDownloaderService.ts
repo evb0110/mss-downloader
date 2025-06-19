@@ -4,7 +4,9 @@ import { app } from 'electron';
 import { PDFDocument } from 'pdf-lib';
 import { ManifestCache } from './ManifestCache.js';
 import { configService } from './ConfigService.js';
+import { LibraryOptimizationService } from './LibraryOptimizationService.js';
 import type { ManuscriptManifest, LibraryInfo } from '../../shared/types';
+import type { TLibrary } from '../../shared/queueTypes';
 
 const MIN_VALID_IMAGE_SIZE_BYTES = 1024; // 1KB heuristic
 
@@ -277,13 +279,16 @@ export class EnhancedManuscriptDownloaderService {
     /**
      * Direct fetch (no proxy needed in Electron main process)
      */
-    async fetchDirect(url: string, options: any = {}): Promise<Response> {
+    async fetchDirect(url: string, options: any = {}, attempt: number = 1): Promise<Response> {
         const controller = new AbortController();
-        // Use much longer timeout for Trinity Cambridge as their server is extremely slow (45+ seconds per image)
-        // Also use longer timeout for Orleans as their IIIF service can be slow
-        const timeout = url.includes('mss-cat.trin.cam.ac.uk') ? 120000 : 
-                       (url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr')) ? 60000 : 
-                       configService.get('requestTimeout'); // 2 minutes for Trinity Cambridge, 1 minute for Orleans
+        
+        // Detect library and apply optimized timeout
+        const library = this.detectLibrary(url) as TLibrary;
+        const baseTimeout = configService.get('requestTimeout');
+        const timeout = library ? 
+            LibraryOptimizationService.getTimeoutForLibrary(baseTimeout, library, attempt) :
+            baseTimeout;
+            
         const timeoutId = setTimeout(() => controller.abort(), timeout);
         
         // Special headers for ISOS to avoid 403 Forbidden errors
@@ -337,6 +342,18 @@ export class EnhancedManuscriptDownloaderService {
             headers = {
                 'User-Agent': 'curl/7.68.0',
                 'Accept': '*/*'
+            };
+        }
+        
+        // Special headers for Internet Culturale to improve performance
+        if (url.includes('internetculturale.it')) {
+            headers = {
+                ...headers,
+                'Referer': 'https://www.internetculturale.it/',
+                'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                'Accept-Language': 'it-IT,it;q=0.9,en;q=0.8',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive'
             };
         }
         
@@ -469,7 +486,7 @@ export class EnhancedManuscriptDownloaderService {
             
             const ark = arkMatch[0];
             
-            // Try IIIF manifest first (modern approach)
+            // Try IIIF manifest first to get page count and metadata (modern approach)
             const manifestUrl = `https://gallica.bnf.fr/iiif/${ark}/manifest.json`;
             
             try {
@@ -477,9 +494,9 @@ export class EnhancedManuscriptDownloaderService {
                 if (manifestResponse.ok) {
                     const manifest = await manifestResponse.json();
                     
-                    // Extract pages from IIIF manifest
-                    const pageLinks: string[] = [];
+                    // Extract page count and metadata from IIIF manifest
                     let displayName = `Gallica Document ${ark}`;
+                    let totalPages = 0;
                     
                     if (manifest.label) {
                         displayName = typeof manifest.label === 'string' ? manifest.label : 
@@ -491,15 +508,17 @@ export class EnhancedManuscriptDownloaderService {
                     
                     for (const sequence of sequences) {
                         const canvases = sequence.canvases || sequence.items || [];
-                        
-                        for (let i = 0; i < canvases.length; i++) {
-                            const pageNum = i + 1;
-                            const imageUrl = `https://gallica.bnf.fr/iiif/${ark}/f${pageNum}/full/max/0/native.jpg`;
-                            pageLinks.push(imageUrl);
-                        }
+                        totalPages += canvases.length;
                     }
                     
-                    if (pageLinks.length > 0) {
+                    if (totalPages > 0) {
+                        // Use the working .highres format instead of broken IIIF URLs
+                        const pageLinks: string[] = [];
+                        for (let i = 1; i <= totalPages; i++) {
+                            const imageUrl = `https://gallica.bnf.fr/${ark}/f${i}.highres`;
+                            pageLinks.push(imageUrl);
+                        }
+                        
                         const gallicaManifest = {
                             pageLinks,
                             totalPages: pageLinks.length,
@@ -518,9 +537,9 @@ export class EnhancedManuscriptDownloaderService {
                 // IIIF manifest failed, try fallback
             }
             
-            // Fallback: Direct IIIF image testing approach
+            // Fallback: Direct .highres testing approach (using working URL format)
             
-            // Test if we can access IIIF images directly and find the page count
+            // Test if we can access .highres images directly and find the page count
             let totalPages = 0;
             
             // Binary search to find total pages efficiently
@@ -530,7 +549,7 @@ export class EnhancedManuscriptDownloaderService {
             
             while (low <= high) {
                 const mid = Math.floor((low + high) / 2);
-                const testUrl = `https://gallica.bnf.fr/iiif/${ark}/f${mid}/full/max/0/native.jpg`;
+                const testUrl = `https://gallica.bnf.fr/${ark}/f${mid}.highres`;
                 
                 try {
                     const response = await this.fetchDirect(testUrl);
@@ -551,7 +570,7 @@ export class EnhancedManuscriptDownloaderService {
                 // Try a few common page counts
                 const commonCounts = [1, 2, 5, 10, 20, 50, 100];
                 for (const count of commonCounts) {
-                    const testUrl = `https://gallica.bnf.fr/iiif/${ark}/f${count}/full/max/0/native.jpg`;
+                    const testUrl = `https://gallica.bnf.fr/${ark}/f${count}.highres`;
                     try {
                         const response = await this.fetchDirect(testUrl);
                         if (response.ok) {
@@ -569,10 +588,10 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('Could not determine page count for Gallica document');
             }
             
-            // Generate IIIF image URLs
+            // Generate .highres image URLs
             const pageLinks = [];
             for (let i = 1; i <= totalPages; i++) {
-                const imageUrl = `https://gallica.bnf.fr/iiif/${ark}/f${i}/full/max/0/native.jpg`;
+                const imageUrl = `https://gallica.bnf.fr/${ark}/f${i}.highres`;
                 pageLinks.push(imageUrl);
             }
             
@@ -1176,10 +1195,10 @@ export class EnhancedManuscriptDownloaderService {
      */
     async downloadImageWithRetries(url: string, attempt = 0): Promise<ArrayBuffer> {
         try {
-            // Use proxy fallback for Unicatt and Orleans images or when direct access fails
-            const response = url.includes('digitallibrary.unicatt.it') || url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr')
+            // Use proxy fallback for Unicatt, Orleans, and Internet Culturale images or when direct access fails
+            const response = url.includes('digitallibrary.unicatt.it') || url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr') || url.includes('internetculturale.it')
                 ? await this.fetchWithProxyFallback(url)
-                : await this.fetchDirect(url);
+                : await this.fetchDirect(url, {}, attempt + 1); // Pass attempt number for timeout calculation
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -1196,7 +1215,17 @@ export class EnhancedManuscriptDownloaderService {
         } catch (error: any) {
             const maxRetries = configService.get('maxRetries');
             if (attempt < maxRetries) {
-                const delay = this.calculateRetryDelay(attempt);
+                // Check if library supports progressive backoff
+                const library = this.detectLibrary(url) as TLibrary;
+                const useProgressiveBackoff = library && 
+                    LibraryOptimizationService.getOptimizationsForLibrary(library).enableProgressiveBackoff;
+                    
+                const delay = useProgressiveBackoff 
+                    ? LibraryOptimizationService.calculateProgressiveBackoff(attempt + 1)
+                    : this.calculateRetryDelay(attempt);
+                
+                console.log(`Retrying ${url} (attempt ${attempt + 1}/${maxRetries}) after ${delay}ms delay` + 
+                           (useProgressiveBackoff ? ' (progressive backoff)' : ''));
                 
                 await this.sleep(delay);
                 return this.downloadImageWithRetries(url, attempt + 1);
