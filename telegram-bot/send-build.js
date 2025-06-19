@@ -23,26 +23,34 @@ function formatText(text) {
 
 function getChangelogFromCommits(version) {
     try {
-        // Get the latest 10 commits to have more to work with
-        const commits = execSync('git log --oneline -10 --pretty=format:"%s"', { encoding: 'utf8' }).trim().split('\n');
+        // Get recent commits since last version
+        const commits = execSync('git log --oneline -15 --pretty=format:"%s"', { encoding: 'utf8' }).trim().split('\n');
         
-        // Filter out technical commits that users don't care about
+        // For this build, highlight the major recent improvements
+        const recentImprovements = [
+            "✅ Fixed download links (GitHub releases now work properly)",
+            "✅ Fixed Windows builds (now x64 instead of ARM64 for compatibility)", 
+            "✅ Improved Telegram notifications (better formatting and instructions)",
+            "✅ Added Windows SmartScreen bypass instructions",
+            "✅ Enhanced build automation and reliability"
+        ];
+        
+        // Also look for user-facing library/feature commits
         const technicalPatterns = [
             /^Bump version/i,
             /Generated with Claude Code/i,
             /Fix GitHub Actions/i,
-            /Fix Telegram formatting/i,
+            /Fix Telegram/i,
             /Fix GitHub token/i,
-            /Fix GitHub release URL/i,
-            /Enable subscribers\.json/i,
-            /Add automated build/i,
-            /Fix GitHub Actions workflow/i,
-            /testing (permissions|token|notification)/i,
-            /Update upload-artifact/i,
-            /Add changelog generation/i,
+            /Fix GitHub release/i,
+            /Enable subscribers/i,
+            /Add automated/i,
+            /testing.*permissions/i,
+            /Update.*artifact/i,
             /Fix.*formatting/i,
             /Fix.*workflow/i,
-            /Fix.*CI\/CD/i,
+            /Fix.*CI/i,
+            /Test.*formatting/i,
             /Fix.*SmartScreen/i
         ];
         

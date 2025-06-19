@@ -60,15 +60,19 @@ const createWindow = () => {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
 
-  // Enable context menu in dev mode (works like browser)
-  if (isDev) {
-    mainWindow.webContents.on('context-menu', (_, params) => {
-      const contextMenu = Menu.buildFromTemplate([
-        { label: 'Cut', role: 'cut' },
-        { label: 'Copy', role: 'copy' },
-        { label: 'Paste', role: 'paste' },
-        { type: 'separator' },
-        { label: 'Select All', role: 'selectAll' },
+  // Enable context menu (works like browser)
+  mainWindow.webContents.on('context-menu', (_, params) => {
+    const contextMenuItems: Electron.MenuItemConstructorOptions[] = [
+      { label: 'Cut', role: 'cut' },
+      { label: 'Copy', role: 'copy' },
+      { label: 'Paste', role: 'paste' },
+      { type: 'separator' },
+      { label: 'Select All', role: 'selectAll' },
+    ];
+
+    // Add inspect element only in dev mode
+    if (isDev) {
+      contextMenuItems.push(
         { type: 'separator' },
         { 
           label: 'Inspect Element', 
@@ -91,11 +95,13 @@ const createWindow = () => {
               mainWindow?.webContents.openDevTools({ mode: 'detach' });
             }
           }
-        },
-      ]);
-      contextMenu.popup({ window: mainWindow! });
-    });
-  }
+        }
+      );
+    }
+
+    const contextMenu = Menu.buildFromTemplate(contextMenuItems);
+    contextMenu.popup({ window: mainWindow! });
+  });
 
   mainWindow.webContents.on('did-fail-load', (_, errorCode, errorDescription, validatedURL) => {
     console.error('Failed to load page:', { errorCode, errorDescription, validatedURL });
