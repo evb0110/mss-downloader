@@ -170,12 +170,10 @@ ${releaseInfo.downloadUrl}
 
 💡 **Installation Instructions:**
 1. Click the link above to download
-2. If Windows shows SmartScreen warning:
-   • Click "More info"
-   • Click "Run anyway"
+2. Run the installer (digitally signed and safe)
 3. Follow the installer prompts
 
-⚠️ **SmartScreen Warning:** This is normal for unsigned software. The app is safe to install.
+💡 **Note:** The app is digitally signed for security. Windows should install without warnings.
 
 ✅ **Permanent Link** - No expiration!`;
     }

@@ -28,11 +28,11 @@ function getChangelogFromCommits(version) {
         
         // For this build, highlight the major recent improvements
         const recentImprovements = [
-            "✅ Fixed download links (GitHub releases now work properly)",
-            "✅ Fixed Windows builds (now x64 instead of ARM64 for compatibility)", 
-            "✅ Improved Telegram notifications (better formatting and instructions)",
-            "✅ Added Windows SmartScreen bypass instructions",
-            "✅ Enhanced build automation and reliability"
+            "✅ Added LibraryOptimizationService for better download performance",
+            "✅ Implemented dynamic download step size optimization",
+            "✅ Added library-specific auto-split thresholds and concurrency limits",
+            "✅ Enhanced timeout handling with progressive backoff",
+            "✅ Added ⚡ Optimized UI badges for performance indicators"
         ];
         
         // Also look for user-facing library/feature commits
@@ -56,6 +56,8 @@ function getChangelogFromCommits(version) {
         
         // Look for user-facing commits that mention features/fixes
         const userFacingPatterns = [
+            /^VERSION-.*optimization/i,
+            /^VERSION-.*LibraryOptimization/i,
             /Add.*support/i,
             /Added.*support/i,
             /Fixed.*hanging/i,
@@ -113,7 +115,8 @@ function getChangelogFromCommits(version) {
             });
         
         // For recent versions (1.0.89+), show the major improvements we just made
-        const versionNum = parseFloat(version);
+        const versionParts = version.split('.');
+        const versionNum = parseFloat(versionParts[0] + '.' + (versionParts[1] || '0') + (versionParts[2] || '0').padStart(2, '0'));
         if (versionNum >= 1.089) {
             // Show recent major improvements
             const improvements = recentImprovements.slice(0, 3); // Show top 3
@@ -257,14 +260,64 @@ async function sendBuild() {
         // Check release folder first
         if (fs.existsSync(releasePath)) {
             const files = fs.readdirSync(releasePath);
-            const windowsBuilds = files.filter(file => 
-                (file.includes('win') && file.includes('x64')) || 
+            
+            // First try to find builds matching the exact version from package.json
+            let windowsBuilds = files.filter(file => 
                 (file.includes('Setup') && file.includes(version)) ||
                 (file.includes(version) && file.endsWith('.exe') && !file.includes('arm64'))
-            ).sort((a, b) => {
+            );
+            
+            // If no exact version match found, find the latest available Setup build
+            if (windowsBuilds.length === 0) {
+                console.log(`⚠️  No builds found for version ${version}, looking for latest available build...`);
+                
+                const setupFiles = files.filter(f => f.includes('Setup') && f.endsWith('.exe') && !f.includes('.blockmap'));
+                const versionedSetupFiles = setupFiles
+                    .map(f => {
+                        const versionMatch = f.match(/Setup (\d+\.\d+\.\d+)/);
+                        if (versionMatch) {
+                            return { file: f, version: versionMatch[1] };
+                        }
+                        return null;
+                    })
+                    .filter(f => f !== null)
+                    .sort((a, b) => {
+                        // Sort by version number (descending)
+                        const aVersion = a.version.split('.').map(n => parseInt(n));
+                        const bVersion = b.version.split('.').map(n => parseInt(n));
+                        
+                        for (let i = 0; i < 3; i++) {
+                            if (aVersion[i] !== bVersion[i]) {
+                                return bVersion[i] - aVersion[i];
+                            }
+                        }
+                        return 0;
+                    });
+                
+                if (versionedSetupFiles.length > 0) {
+                    // Prefer x64 builds over arm64
+                    const latestVersion = versionedSetupFiles[0].version;
+                    const latestBuilds = versionedSetupFiles.filter(f => f.version === latestVersion);
+                    
+                    windowsBuilds = latestBuilds.map(f => f.file);
+                    console.log(`📦 Found latest available build version: ${latestVersion}`);
+                }
+            }
+            
+            // Sort builds to prefer Setup files and x64 over arm64
+            windowsBuilds.sort((a, b) => {
                 // Prefer Setup files over portable
                 if (a.includes('Setup') && !b.includes('Setup')) return -1;
                 if (!a.includes('Setup') && b.includes('Setup')) return 1;
+                
+                // Prefer x64 over arm64
+                if (a.includes('x64') && !b.includes('x64')) return -1;
+                if (!a.includes('x64') && b.includes('x64')) return 1;
+                
+                // Prefer non-arm64 over arm64
+                if (!a.includes('arm64') && b.includes('arm64')) return -1;
+                if (a.includes('arm64') && !b.includes('arm64')) return 1;
+                
                 return 0;
             });
             
@@ -293,9 +346,13 @@ async function sendBuild() {
             process.exit(1);
         }
         
+        // Extract the actual version from the build file name
+        const buildVersionMatch = buildFile.match(/(\d+\.\d+\.\d+)/);
+        const actualVersion = buildVersionMatch ? buildVersionMatch[1] : version;
+        
         const windowsBuilds = [buildFile];
         
-        console.log(`📦 Found Windows builds for v${version}:`);
+        console.log(`📦 Found Windows builds for v${actualVersion}:`);
         windowsBuilds.forEach(build => console.log(`  - ${build}`));
         
         const fullBuildFile = path.join(buildPath, buildFile);
@@ -303,12 +360,12 @@ async function sendBuild() {
         const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
         
         // Get changelog from recent commits
-        const changelog = getChangelogFromCommits(version);
+        const changelog = getChangelogFromCommits(actualVersion);
         
         const message = `
-🚀 ${bold(`MSS Downloader v${version} Available!`)}
+🚀 ${bold(`MSS Downloader v${actualVersion} Available!`)}
 
-📦 Version: v${formatText(version)}
+📦 Version: v${formatText(actualVersion)}
 💻 Platform: Windows AMD64
 📁 File: ${formatText(buildFile)}
 📊 Size: ${fileSizeMB} MB
@@ -318,12 +375,10 @@ ${changelog}
 
 ${bold("📥 Installation Instructions:")}
 1. Download the file from GitHub release
-2. If Windows shows SmartScreen warning:
-   • Click "More info"
-   • Click "Run anyway"
+2. Run the installer (digitally signed and safe)
 3. Follow the installer prompts
 
-⚠️ SmartScreen Warning: This is normal for unsigned software. The app is safe to install.
+💡 ${bold("Note:")} The app is digitally signed for security. Windows should install without warnings.
 
 📥 Download and install to get the latest features and fixes!
         `.trim();
