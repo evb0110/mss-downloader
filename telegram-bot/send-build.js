@@ -112,6 +112,20 @@ function getChangelogFromCommits(version) {
                 }
             });
         
+        // For recent versions (1.0.89+), show the major improvements we just made
+        const versionNum = parseFloat(version);
+        if (versionNum >= 1.089) {
+            // Show recent major improvements
+            const improvements = recentImprovements.slice(0, 3); // Show top 3
+            
+            // Add any library/feature commits found
+            if (changelogItems.length > 0) {
+                improvements.push(...changelogItems.slice(0, 2));
+            }
+            
+            return `${bold("📝 What's New:")}\n${improvements.join('\n')}`;
+        }
+        
         if (changelogItems.length > 0) {
             return `${bold("📝 What's New:")}\n${changelogItems.join('\n')}`;
         } else {
