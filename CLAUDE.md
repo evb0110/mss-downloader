@@ -162,6 +162,9 @@ When user says "bump" or when completing todos → Follow this workflow:
 
 CRITICAL: Only mark tasks as completed in TODOS.md when they are ACTUALLY FULLY IMPLEMENTED AND WORKING. Never mark something as completed based on code changes alone - verify the functionality works as expected.
 
+### Commit and Push Guidelines
+- **Whenever agent or user bump the version, it should be commited and pushed by the agent**
+
 ## File Structure
 
 ```
