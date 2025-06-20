@@ -28,11 +28,11 @@ function getChangelogFromCommits(version) {
         
         // For this build, highlight the major recent improvements
         const recentImprovements = [
+            "✅ Fixed right-click context menu to enable Cut/Copy/Paste functionality",
             "✅ Added LibraryOptimizationService for better download performance",
             "✅ Implemented dynamic download step size optimization",
             "✅ Added library-specific auto-split thresholds and concurrency limits",
-            "✅ Enhanced timeout handling with progressive backoff",
-            "✅ Added ⚡ Optimized UI badges for performance indicators"
+            "✅ Enhanced timeout handling with progressive backoff"
         ];
         
         // Also look for user-facing library/feature commits
@@ -79,7 +79,12 @@ function getChangelogFromCommits(version) {
             /Enhanced.*timeout/i,
             /Fixed.*403/i,
             /Fixed.*HTTP/i,
-            /support.*IIIF/i
+            /support.*IIIF/i,
+            /Fixed.*right.?click/i,
+            /Fix.*context.*menu/i,
+            /Enhanced.*context.*menu/i,
+            /Add.*copy.*paste/i,
+            /Enable.*Cut.*Copy.*Paste/i
         ];
         
         const changelogItems = [];
@@ -167,6 +172,18 @@ function extractUserFacingChange(commitMessage) {
     const errorMatch = commitMessage.match(/Fix(?:ed)?\s+([^:]+?)\s+(403|HTTP|timeout|error)/i);
     if (errorMatch) {
         return `Fixed ${errorMatch[1]} ${errorMatch[2]} issues`;
+    }
+    
+    // If it mentions fixing right-click or context menu issues
+    const contextMenuMatch = commitMessage.match(/Fix(?:ed)?\s+([^:]*?)\s*(right.?click|context.*menu)/i);
+    if (contextMenuMatch) {
+        return `Fixed right-click context menu functionality`;
+    }
+    
+    // If it mentions adding copy/paste functionality
+    const copyPasteMatch = commitMessage.match(/(Add|Enable).*copy.*paste/i);
+    if (copyPasteMatch) {
+        return `Added copy/paste functionality to context menu`;
     }
     
     // If it mentions improving download functionality
