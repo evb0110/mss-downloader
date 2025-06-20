@@ -62,13 +62,24 @@ const createWindow = () => {
 
   // Enable context menu (works like browser)
   mainWindow.webContents.on('context-menu', (_, params) => {
-    const contextMenuItems: Electron.MenuItemConstructorOptions[] = [
-      { label: 'Cut', role: 'cut' },
-      { label: 'Copy', role: 'copy' },
-      { label: 'Paste', role: 'paste' },
-      { type: 'separator' },
-      { label: 'Select All', role: 'selectAll' },
-    ];
+    const contextMenuItems: Electron.MenuItemConstructorOptions[] = [];
+
+    // Always add editing options based on context
+    if (params.isEditable) {
+      contextMenuItems.push(
+        { label: 'Cut', role: 'cut', enabled: params.editFlags.canCut },
+        { label: 'Copy', role: 'copy', enabled: params.editFlags.canCopy },
+        { label: 'Paste', role: 'paste', enabled: params.editFlags.canPaste },
+        { type: 'separator' },
+        { label: 'Select All', role: 'selectAll', enabled: params.editFlags.canSelectAll }
+      );
+    } else {
+      // For non-editable content, still show copy and select all
+      contextMenuItems.push(
+        { label: 'Copy', role: 'copy', enabled: params.editFlags.canCopy },
+        { label: 'Select All', role: 'selectAll', enabled: params.editFlags.canSelectAll }
+      );
+    }
 
     // Add inspect element only in dev mode
     if (isDev) {
