@@ -3174,13 +3174,26 @@ export class EnhancedManuscriptDownloaderService {
             let manuscriptId = manuscriptIdMatch[1];
             
             // If this is a pageview URL, we need to get the parent manuscript ID
-            // The IIIF manifest is based on the parent manuscript ID, not individual page ID
+            // by fetching the pageview page and extracting the titleinfo ID
             if (grazUrl.includes('/pageview/')) {
-                // For pageview URLs, we need to derive the manuscript ID
-                // Based on the example: pageview/8224540 corresponds to titleinfo/8224538
-                // This might need adjustment based on the actual relationship
-                const pageId = parseInt(manuscriptId);
-                manuscriptId = (pageId - 2).toString(); // Assuming pattern from example
+                try {
+                    console.log(`Fetching pageview page to find titleinfo ID: ${grazUrl}`);
+                    const pageResponse = await this.fetchDirect(grazUrl);
+                    if (pageResponse.ok) {
+                        const pageHtml = await pageResponse.text();
+                        const titleinfoMatch = pageHtml.match(/titleinfo\/(\d+)/);
+                        if (titleinfoMatch) {
+                            manuscriptId = titleinfoMatch[1];
+                            console.log(`Found titleinfo ID: ${manuscriptId}`);
+                        } else {
+                            console.warn('Could not find titleinfo ID in pageview page, using original ID');
+                        }
+                    } else {
+                        console.warn('Could not fetch pageview page, using original ID');
+                    }
+                } catch (error) {
+                    console.warn('Error fetching pageview page, using original ID:', error);
+                }
             }
             
             // Construct IIIF manifest URL

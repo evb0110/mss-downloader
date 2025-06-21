@@ -876,14 +876,15 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 manifest = await this.currentDownloader!.loadManifest(item.url);
             }
             
-            // For Florus, Orleans, Internet Culturale, and Manuscripta - skip first page download and use estimated size calculation
-            if (manifest.library === 'florus' || manifest.library === 'orleans' || manifest.library === 'internet_culturale' || manifest.library === 'manuscripta') {
+            // For Florus, Orleans, Internet Culturale, Manuscripta, and Graz - skip first page download and use estimated size calculation
+            if (manifest.library === 'florus' || manifest.library === 'orleans' || manifest.library === 'internet_culturale' || manifest.library === 'manuscripta' || manifest.library === 'graz') {
                 console.log(`${manifest.library} manuscript detected, using estimated size calculation`);
                 // Estimate based on typical manuscript page size
                 const avgPageSizeMB = manifest.library === 'orleans' ? 0.6 : 
                                     manifest.library === 'internet_culturale' ? 0.8 : 
                                     manifest.library === 'manuscripta' ? 0.7 :
-                                    0.4; // 600KB for Orleans IIIF, 800KB for Internet Culturale IIIF, 700KB for Manuscripta IIIF, 400KB for Florus
+                                    manifest.library === 'graz' ? 0.8 :
+                                    0.4; // 600KB for Orleans IIIF, 800KB for Internet Culturale IIIF, 700KB for Manuscripta IIIF, 800KB for Graz IIIF, 400KB for Florus
                 const estimatedTotalSizeMB = avgPageSizeMB * manifest.totalPages;
                 item.estimatedSizeMB = estimatedTotalSizeMB;
                 
