@@ -527,10 +527,7 @@ export class MultiplatformMSSBot {
     
     console.log(`Notifying subscribers for platforms: ${Object.keys(builds).join(', ')}`);
     
-    // TEMPORARY: Only notify evb0110 until download links are fixed
-    const testSubscribers = this.subscribers.filter(sub => sub.username === 'evb0110');
-    
-    for (const subscriber of testSubscribers) {
+    for (const subscriber of this.subscribers) {
       try {
         console.log(`Notifying ${subscriber.username} (${subscriber.chatId})`);
         
@@ -549,11 +546,14 @@ export class MultiplatformMSSBot {
             const response = await fetch('https://api.github.com/repos/evb0110/mss-downloader/releases/latest');
             const release = await response.json();
             
+            const availableAssets: string[] = [];
+            const missingPlatforms: string[] = [];
+            
             for (const { platform } of subscribedBuilds) {
               const platformName = `${this.platforms[platform].emoji} ${this.platforms[platform].name}`;
               
               // Find the matching asset for this platform
-              let downloadUrl = `https://github.com/evb0110/mss-downloader/releases/latest`;
+              let downloadUrl: string | null = null;
               
               if (release.assets) {
                 let assetPattern: RegExp;
@@ -571,7 +571,18 @@ export class MultiplatformMSSBot {
                 }
               }
               
-              enhancedMessage += `\n🔗 [${platformName}](${downloadUrl})`;
+              if (downloadUrl) {
+                enhancedMessage += `\n🔗 [${platformName}](${downloadUrl})`;
+                availableAssets.push(platformName);
+              } else {
+                missingPlatforms.push(platformName);
+              }
+            }
+            
+            // Add note about missing platforms
+            if (missingPlatforms.length > 0) {
+              enhancedMessage += `\n\n⚠️ <i>Not yet available: ${missingPlatforms.join(', ')}</i>`;
+              enhancedMessage += `\n📄 <a href="https://github.com/evb0110/mss-downloader/releases/latest">View all releases</a>`;
             }
           } catch (error) {
             console.error('Failed to fetch GitHub release info:', error);
