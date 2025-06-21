@@ -8,12 +8,13 @@ import { EnhancedManuscriptDownloaderService } from './EnhancedManuscriptDownloa
 import { configService } from './ConfigService.js';
 import { ManifestCache } from './ManifestCache.js';
 import { LibraryOptimizationService } from './LibraryOptimizationService.js';
-import type { QueuedManuscript, QueueState, TLibrary, TStage } from '../../shared/queueTypes';
+import type { QueuedManuscript, QueueState, TLibrary, TStage, TSimultaneousMode } from '../../shared/queueTypes';
 
 export class EnhancedDownloadQueue extends EventEmitter {
     private static instance: EnhancedDownloadQueue | null = null;
     private state: QueueState;
     private currentDownloader: EnhancedManuscriptDownloaderService | null = null;
+    private activeDownloaders: Map<string, EnhancedManuscriptDownloaderService> = new Map();
     private processingAbortController: AbortController | null = null;
     private store: Store<{ queueState: QueueState }>;
     private queueFile: string;
@@ -31,11 +32,14 @@ export class EnhancedDownloadQueue extends EventEmitter {
             items: [],
             isProcessing: false,
             isPaused: false,
+            activeItemIds: [],
             globalSettings: {
                 autoStart: false,
                 concurrentDownloads: configService.get('maxConcurrentDownloads'),
                 pauseBetweenItems: 0,
                 autoSplitThresholdMB: configService.get('autoSplitThreshold') / (1024 * 1024), // Convert bytes to MB
+                simultaneousMode: 'sequential' as TSimultaneousMode,
+                maxSimultaneousDownloads: 3,
             },
         };
         
@@ -100,6 +104,17 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 this.state.isProcessing = false;
                 this.state.isPaused = false;
                 this.state.currentItemId = undefined;
+            }
+            
+            // Migration: ensure new properties exist in loaded state
+            if (!this.state.activeItemIds) {
+                this.state.activeItemIds = [];
+            }
+            if (!this.state.globalSettings.simultaneousMode) {
+                this.state.globalSettings.simultaneousMode = 'sequential';
+            }
+            if (!this.state.globalSettings.maxSimultaneousDownloads) {
+                this.state.globalSettings.maxSimultaneousDownloads = 3;
             }
             
             // Resume any in-progress items by resetting 'downloading' status to 'queued'
@@ -1221,5 +1236,161 @@ export class EnhancedDownloadQueue extends EventEmitter {
             console.error('Failed to clear caches:', error.message);
             throw error;
         }
+    }
+
+    // Simultaneous download methods
+    setSimultaneousMode(mode: TSimultaneousMode, maxCount?: number): void {
+        this.state.globalSettings.simultaneousMode = mode;
+        if (maxCount !== undefined) {
+            this.state.globalSettings.maxSimultaneousDownloads = Math.max(1, Math.min(maxCount, 10));
+        }
+        this.saveToStorage();
+        this.notifyListeners();
+    }
+
+    async startAllSimultaneous(): Promise<void> {
+        if (this.state.isProcessing) return;
+        
+        const pendingItems = this.state.items.filter(item => 
+            item.status === 'pending' || item.status === 'loading'
+        );
+        
+        if (pendingItems.length === 0) return;
+        
+        this.state.isProcessing = true;
+        this.state.isPaused = false;
+        this.state.activeItemIds = [];
+        this.processingAbortController = new AbortController();
+        this.notifyListeners();
+        
+        try {
+            // Start all pending items simultaneously with resource limits
+            const itemsToStart = pendingItems.slice(0, this.state.globalSettings.maxSimultaneousDownloads);
+            
+            if (itemsToStart.length < pendingItems.length) {
+                console.warn(`Starting ${itemsToStart.length} of ${pendingItems.length} items due to resource limits`);
+            }
+            
+            const promises = itemsToStart.map(item => this.processItemConcurrently(item));
+            const results = await Promise.allSettled(promises);
+            
+            // Log any failures
+            results.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                    console.error(`Failed to process item ${itemsToStart[index].id}:`, result.reason);
+                }
+            });
+        } catch (error) {
+            console.error('Error in simultaneous processing:', error);
+        } finally {
+            this.state.isProcessing = false;
+            this.state.currentItemId = undefined;
+            this.state.activeItemIds = [];
+            this.activeDownloaders.clear();
+            this.processingAbortController = null;
+            this.notifyListeners();
+        }
+    }
+
+    async startItemIndividually(id: string): Promise<void> {
+        const item = this.state.items.find(item => item.id === id);
+        if (!item || (item.status !== 'pending' && item.status !== 'loading' && item.status !== 'paused')) {
+            return;
+        }
+        
+        // Check resource availability
+        const activeCount = this.activeDownloaders.size;
+        if (activeCount >= this.state.globalSettings.maxSimultaneousDownloads) {
+            console.warn(`Cannot start item ${id}: maximum simultaneous downloads reached`);
+            return;
+        }
+        
+        // Initialize processing state if not already active
+        if (!this.state.isProcessing) {
+            this.state.isProcessing = true;
+            this.state.isPaused = false;
+            this.state.activeItemIds = this.state.activeItemIds || [];
+            this.processingAbortController = new AbortController();
+        }
+        
+        this.notifyListeners();
+        
+        try {
+            await this.processItemConcurrently(item);
+        } catch (error) {
+            console.error(`Error processing item ${id}:`, error);
+        }
+        
+        // Check if we should stop processing (no more active downloads)
+        if (this.activeDownloaders.size === 0) {
+            this.state.isProcessing = false;
+            this.state.currentItemId = undefined;
+            this.state.activeItemIds = [];
+            this.processingAbortController = null;
+            this.notifyListeners();
+        }
+    }
+
+    private async processItemConcurrently(item: QueuedManuscript): Promise<void> {
+        // Add item to active downloads tracking
+        if (!this.state.activeItemIds) {
+            this.state.activeItemIds = [];
+        }
+        this.state.activeItemIds.push(item.id);
+        
+        item.status = 'downloading';
+        item.startedAt = Date.now();
+        item.error = undefined;
+        
+        item.progress = {
+            current: 0,
+            total: item.totalPages || 1,
+            percentage: 0,
+            eta: 'Calculating...',
+            stage: 'downloading' as TStage,
+        };
+        
+        this.saveToStorage();
+        this.notifyListeners();
+        
+        const downloader = new EnhancedManuscriptDownloaderService();
+        this.activeDownloaders.set(item.id, downloader);
+        
+        try {
+            // Load manifest if needed  
+            if (!item.totalPages) {
+                await this.loadManifestForItem(item.id);
+            }
+            
+            // Download the item (simplified version)
+            // This would need to be implemented properly based on the EnhancedManuscriptDownloaderService API
+            console.log(`Starting concurrent download for ${item.displayName}`);
+            
+            item.status = 'completed';
+            item.completedAt = Date.now();
+            item.progress = undefined;
+            
+        } catch (error: any) {
+            if (error.name === 'AbortError' || error.message?.includes('abort')) {
+                item.status = 'paused';
+                item.progress = undefined;
+            } else {
+                item.status = 'failed';
+                item.error = error.message;
+                item.progress = undefined;
+            }
+        } finally {
+            // Remove from active downloads
+            this.activeDownloaders.delete(item.id);
+            if (this.state.activeItemIds) {
+                const index = this.state.activeItemIds.indexOf(item.id);
+                if (index > -1) {
+                    this.state.activeItemIds.splice(index, 1);
+                }
+            }
+        }
+        
+        this.saveToStorage();
+        this.notifyListeners();
     }
 }

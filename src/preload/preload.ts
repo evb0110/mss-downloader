@@ -86,6 +86,19 @@ const api = {
   updateAutoSplitThreshold: (thresholdMB: number) =>
     ipcRenderer.invoke('queue-update-autosplit-threshold', thresholdMB),
   
+  // Simultaneous download methods
+  startAllSimultaneous: () =>
+    ipcRenderer.invoke('queue-start-all-simultaneous'),
+  
+  startItemIndividually: (id: string) =>
+    ipcRenderer.invoke('queue-start-item-individual', id),
+  
+  setSimultaneousMode: (mode: string, maxCount?: number) =>
+    ipcRenderer.invoke('queue-set-simultaneous-mode', mode, maxCount),
+  
+  getSimultaneousState: () =>
+    ipcRenderer.invoke('queue-get-simultaneous-state'),
+  
   onQueueStateChanged: (callback: (state: QueueState) => void) => {
     ipcRenderer.on('queue-state-changed', (_, state) => callback(state));
     // Return unsubscribe function

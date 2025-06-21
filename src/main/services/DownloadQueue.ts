@@ -2,13 +2,14 @@ import { EventEmitter } from 'events';
 import { ManuscriptDownloaderService } from './ManuscriptDownloaderService.js';
 import { ElectronPdfMerger } from './ElectronPdfMerger.js';
 import { configService } from './ConfigService.js';
-import type { QueuedManuscript, QueueState, TStage, TLibrary } from '../../shared/queueTypes.js';
+import type { QueuedManuscript, QueueState, TStage, TLibrary, TSimultaneousMode } from '../../shared/queueTypes.js';
 import Store from 'electron-store';
 
 export class DownloadQueue extends EventEmitter {
     private static instance: DownloadQueue | null = null;
     private state: QueueState;
     private currentDownloader: ManuscriptDownloaderService | null = null;
+    private activeDownloaders: Map<string, ManuscriptDownloaderService> = new Map();
     private processingAbortController: AbortController | null = null;
     private pdfMerger: ElectronPdfMerger;
     private store: any;
@@ -21,11 +22,14 @@ export class DownloadQueue extends EventEmitter {
             items: [],
             isProcessing: false,
             isPaused: false,
+            activeItemIds: [],
             globalSettings: {
                 autoStart: false,
                 concurrentDownloads: configService.get('maxConcurrentDownloads'),
                 pauseBetweenItems: 0,
                 autoSplitThresholdMB: 800,
+                simultaneousMode: 'sequential' as TSimultaneousMode,
+                maxSimultaneousDownloads: 3,
             },
         };
         this.store = new Store<{
@@ -198,7 +202,15 @@ export class DownloadQueue extends EventEmitter {
         if (!item || item.status !== 'downloading') return false;
         
         item.status = 'paused';
-        this.cancelCurrent();
+        
+        // Check if this is the current sequential download
+        if (this.state.currentItemId === id) {
+            this.cancelCurrent();
+        } else {
+            // Cancel specific concurrent downloader
+            this.cancelSpecificDownloader(id);
+        }
+        
         this.notifyListeners();
         return true;
     }
@@ -225,6 +237,125 @@ export class DownloadQueue extends EventEmitter {
         
         // Recalculate splits for all existing items
         this.recalculateAutoSplits();
+    }
+    
+    // Simultaneous download methods
+    setSimultaneousMode(mode: TSimultaneousMode, maxCount?: number): void {
+        this.state.globalSettings.simultaneousMode = mode;
+        if (maxCount !== undefined) {
+            this.state.globalSettings.maxSimultaneousDownloads = Math.max(1, Math.min(maxCount, 10));
+        }
+        this.saveToStorage();
+        this.notifyListeners();
+    }
+    
+    async startAllSimultaneous(): Promise<void> {
+        if (this.state.isProcessing) return;
+        
+        const pendingItems = this.state.items.filter(item => 
+            item.status === 'pending' || item.status === 'loading'
+        );
+        
+        if (pendingItems.length === 0) return;
+        
+        this.state.isProcessing = true;
+        this.state.isPaused = false;
+        this.state.activeItemIds = [];
+        this.processingAbortController = new AbortController();
+        this.notifyListeners();
+        
+        try {
+            // Start all pending items simultaneously with resource limits
+            const itemsToStart = pendingItems.slice(0, this.state.globalSettings.maxSimultaneousDownloads);
+            
+            if (itemsToStart.length < pendingItems.length) {
+                console.warn(`Starting ${itemsToStart.length} of ${pendingItems.length} items due to resource limits`);
+            }
+            
+            const promises = itemsToStart.map(item => this.processItemConcurrently(item));
+            const results = await Promise.allSettled(promises);
+            
+            // Log any failures
+            results.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                    console.error(`Failed to process item ${itemsToStart[index].id}:`, result.reason);
+                }
+            });
+        } catch (error) {
+            console.error('Error in simultaneous processing:', error);
+        } finally {
+            // Clean up any orphaned downloaders before stopping
+            this.cleanupOrphanedDownloaders();
+            
+            this.state.isProcessing = false;
+            this.state.currentItemId = undefined;
+            this.state.activeItemIds = [];
+            this.activeDownloaders.clear();
+            this.processingAbortController = null;
+            this.notifyListeners();
+        }
+    }
+    
+    async startItemIndividually(id: string): Promise<void> {
+        const item = this.state.items.find(item => item.id === id);
+        if (!item || (item.status !== 'pending' && item.status !== 'loading' && item.status !== 'paused')) {
+            return;
+        }
+        
+        // Check system resource availability
+        if (!this.checkSystemResourceAvailability()) {
+            console.warn(`Cannot start item ${id}: system resource limits reached`);
+            return;
+        }
+        
+        // Initialize processing state if not already active
+        if (!this.state.isProcessing) {
+            this.state.isProcessing = true;
+            this.state.isPaused = false;
+            this.state.activeItemIds = this.state.activeItemIds || [];
+            this.processingAbortController = new AbortController();
+        }
+        
+        this.notifyListeners();
+        
+        try {
+            await this.processItemConcurrently(item);
+        } catch (error) {
+            console.error(`Error processing item ${id}:`, error);
+        }
+        
+        // Check if we should stop processing (no more active downloads)
+        if (this.getActiveDownloadCount() === 0) {
+            this.state.isProcessing = false;
+            this.state.currentItemId = undefined;
+            this.state.activeItemIds = [];
+            this.processingAbortController = null;
+            this.notifyListeners();
+        }
+    }
+    
+    private getActiveDownloadCount(): number {
+        return this.activeDownloaders.size;
+    }
+    
+    
+    private checkSystemResourceAvailability(): boolean {
+        const activeCount = this.getActiveDownloadCount();
+        const maxAllowed = this.state.globalSettings.maxSimultaneousDownloads;
+        
+        // Basic resource checks
+        if (activeCount >= maxAllowed) {
+            console.warn(`Resource limit reached: ${activeCount}/${maxAllowed} simultaneous downloads`);
+            return false;
+        }
+        
+        // Memory usage check (basic heuristic)
+        if (activeCount >= 8) {
+            console.warn('High resource usage detected, limiting simultaneous downloads');
+            return false;
+        }
+        
+        return true;
     }
     
     private recalculateAutoSplits(): void {
@@ -484,6 +615,127 @@ export class DownloadQueue extends EventEmitter {
         this.notifyListeners();
     }
     
+    private async processItemConcurrently(item: QueuedManuscript): Promise<void> {
+        // Add item to active downloads tracking
+        if (!this.state.activeItemIds) {
+            this.state.activeItemIds = [];
+        }
+        this.state.activeItemIds.push(item.id);
+        
+        item.status = 'downloading';
+        item.startedAt = Date.now();
+        item.error = undefined;
+        
+        item.progress = {
+            current: 0,
+            total: item.totalPages || 1,
+            percentage: 0,
+            eta: 'Calculating...',
+            stage: 'downloading' as TStage,
+        };
+        
+        this.saveToStorage();
+        this.notifyListeners();
+        
+        const downloader = new ManuscriptDownloaderService(this.pdfMerger);
+        this.activeDownloaders.set(item.id, downloader);
+        
+        try {
+            const manifest = await downloader.parseManuscriptUrl(item.url);
+            
+            item.totalPages = manifest.totalPages;
+            item.displayName = manifest.displayName;
+            item.library = manifest.library as TLibrary;
+            item.status = 'downloading';
+
+            const startPage = Math.max(1, item.downloadOptions?.startPage || 1);
+            const endPage = Math.min(manifest.totalPages, item.downloadOptions?.endPage || manifest.totalPages);
+            const pageCount = endPage - startPage + 1;
+            
+            const selectedPageLinks = manifest.pageLinks.slice(startPage - 1, endPage);
+            
+            // Check if document should be auto-split
+            // Skip size estimation for libraries that hang on first page download
+            const shouldCheckSplit = !item.isAutoPart && pageCount > 50 && 
+                manifest.library !== 'orleans' && manifest.library !== 'florus' && 
+                manifest.library !== 'manuscripta';
+            if (shouldCheckSplit) {
+                const splitResult = await this.checkAndSplitLargeDocument(item, manifest, selectedPageLinks);
+                if (splitResult) {
+                    throw new Error('DOCUMENT_WAS_SPLIT');
+                }
+            }
+            
+            let lastProgressUpdate = 0;
+            let lastPercentage = -1;
+            
+            await downloader.downloadManuscriptPagesWithOptions(selectedPageLinks, {
+                displayName: manifest.displayName,
+                startPage,
+                endPage,
+                totalPages: manifest.totalPages,
+                onProgress: (progress) => {
+                    if (!this.state.isPaused && item.progress) {
+                        const now = Date.now();
+                        const calculatedPercentage = Math.round((progress.downloadedPages / pageCount) * 100);
+                        const shouldUpdate = (now - lastProgressUpdate > 500) || (calculatedPercentage !== lastPercentage);
+
+                        if (shouldUpdate) {
+                            const actualCurrentPage = startPage + progress.downloadedPages - 1;
+                            item.progress = {
+                                current: progress.downloadedPages,
+                                total: pageCount,
+                                percentage: calculatedPercentage,
+                                eta: this.formatTime(progress.estimatedTimeRemaining || 0),
+                                stage: 'downloading' as TStage,
+                                actualCurrentPage,
+                            };
+                            lastProgressUpdate = now;
+                            lastPercentage = calculatedPercentage;
+                            this.saveToStorage();
+                            this.notifyListeners();
+                        }
+                    }
+                },
+                onStatusChange: (_status) => {
+                    // Not used for queue items directly
+                },
+                onError: (error) => {
+                    throw new Error(error);
+                },
+            });
+            
+            item.status = 'completed';
+            item.completedAt = Date.now();
+            item.progress = undefined;
+            
+        } catch (error: any) {
+            if (error.message === 'DOCUMENT_WAS_SPLIT') {
+                item.status = 'completed';
+                item.progress = undefined;
+            } else if (error.name === 'AbortError' || error.message?.includes('abort')) {
+                item.status = 'paused';
+                item.progress = undefined;
+            } else {
+                item.status = 'failed';
+                item.error = error.message;
+                item.progress = undefined;
+            }
+        } finally {
+            // Remove from active downloads
+            this.activeDownloaders.delete(item.id);
+            if (this.state.activeItemIds) {
+                const index = this.state.activeItemIds.indexOf(item.id);
+                if (index > -1) {
+                    this.state.activeItemIds.splice(index, 1);
+                }
+            }
+        }
+        
+        this.saveToStorage();
+        this.notifyListeners();
+    }
+    
     private getNextPendingItem(): QueuedManuscript | null {
         return this.state.items.find((item) => item.status === 'pending' || item.status === 'loading') || null;
     }
@@ -492,6 +744,51 @@ export class DownloadQueue extends EventEmitter {
         if (this.currentDownloader) {
             this.currentDownloader.abort();
             this.currentDownloader = null;
+        }
+        
+        // Cancel all active simultaneous downloads
+        for (const downloader of this.activeDownloaders.values()) {
+            downloader.abort();
+        }
+        this.activeDownloaders.clear();
+        
+        if (this.state.activeItemIds) {
+            this.state.activeItemIds = [];
+        }
+    }
+    
+    private cancelSpecificDownloader(itemId: string): void {
+        const downloader = this.activeDownloaders.get(itemId);
+        if (downloader) {
+            downloader.abort();
+            this.activeDownloaders.delete(itemId);
+            
+            if (this.state.activeItemIds) {
+                const index = this.state.activeItemIds.indexOf(itemId);
+                if (index > -1) {
+                    this.state.activeItemIds.splice(index, 1);
+                }
+            }
+        }
+    }
+    
+    private cleanupOrphanedDownloaders(): void {
+        // Clean up any downloaders that don't match current active items
+        const activeIds = this.state.activeItemIds || [];
+        const downloaderIds = Array.from(this.activeDownloaders.keys());
+        
+        for (const downloaderId of downloaderIds) {
+            if (!activeIds.includes(downloaderId)) {
+                console.warn(`Cleaning up orphaned downloader: ${downloaderId}`);
+                this.cancelSpecificDownloader(downloaderId);
+            }
+        }
+        
+        // Clean up any active item IDs that don't have downloaders
+        if (this.state.activeItemIds) {
+            this.state.activeItemIds = this.state.activeItemIds.filter(id => 
+                this.activeDownloaders.has(id)
+            );
         }
     }
     
@@ -528,6 +825,18 @@ export class DownloadQueue extends EventEmitter {
 
     private loadFromStorage(): void {
         const storedState = this.store.get('queueState', this.state) as QueueState;
+        
+        // Migration: ensure new properties exist in loaded state
+        if (!storedState.activeItemIds) {
+            storedState.activeItemIds = [];
+        }
+        if (!storedState.globalSettings.simultaneousMode) {
+            storedState.globalSettings.simultaneousMode = 'sequential';
+        }
+        if (!storedState.globalSettings.maxSimultaneousDownloads) {
+            storedState.globalSettings.maxSimultaneousDownloads = 3;
+        }
+        
         this.state = storedState;
     }
     

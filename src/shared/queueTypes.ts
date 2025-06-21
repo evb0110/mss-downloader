@@ -56,15 +56,21 @@ export interface QueuedManuscript {
     libraryOptimizations?: LibraryOptimizationSettings;
 }
 
+export type TSimultaneousMode = 'sequential' | 'all' | 'custom';
+
 export interface QueueState {
     items: QueuedManuscript[];
     isProcessing: boolean;
     isPaused: boolean;
-    currentItemId?: string;
+    currentItemId?: string; // For sequential mode compatibility
+    activeItemIds?: string[]; // For simultaneous mode tracking
     globalSettings: {
         autoStart: boolean;
         concurrentDownloads: number;
         pauseBetweenItems: number; // seconds
         autoSplitThresholdMB: number; // Size limit in MB for auto-splitting
+        // Simultaneous download settings
+        simultaneousMode: TSimultaneousMode;
+        maxSimultaneousDownloads: number;
     };
 } 

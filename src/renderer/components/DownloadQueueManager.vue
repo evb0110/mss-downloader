@@ -179,6 +179,45 @@ https://digi.vatlib.it/..."
                 <span>8</span>
               </div>
             </div>
+
+            <div class="setting-group">
+              <label class="setting-label">
+                Download Mode: {{ queueState.globalSettings.simultaneousMode === 'sequential' ? 'Sequential' : queueState.globalSettings.simultaneousMode === 'all' ? 'All Simultaneous' : `Max ${queueState.globalSettings.maxSimultaneousDownloads} Simultaneous` }}
+              </label>
+              <p class="setting-description">
+                Sequential downloads one at a time. Simultaneous downloads multiple manuscripts at once for faster completion.
+              </p>
+              <div class="mode-controls">
+                <select 
+                  :value="queueState.globalSettings.simultaneousMode"
+                  @change="handleModeChange($event)"
+                  class="mode-select"
+                >
+                  <option value="sequential">Sequential (One at a time)</option>
+                  <option value="all">All Simultaneous</option>
+                  <option value="custom">Custom Limit</option>
+                </select>
+                <div 
+                  v-if="queueState.globalSettings.simultaneousMode === 'custom'"
+                  class="max-simultaneous-control"
+                >
+                  <label>Max: {{ queueState.globalSettings.maxSimultaneousDownloads }}</label>
+                  <input
+                    :value="queueState.globalSettings.maxSimultaneousDownloads"
+                    type="range"
+                    min="1"
+                    max="10"
+                    step="1"
+                    class="setting-range"
+                    @input="handleMaxSimultaneousChange($event)"
+                  >
+                  <div class="range-labels">
+                    <span>1</span>
+                    <span>10</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </Spoiler>
 
@@ -261,8 +300,9 @@ https://digi.vatlib.it/..."
           class="queue-controls"
           data-testid="queue-controls"
         >
+          <!-- Sequential Mode Start Button -->
           <button
-            v-if="!isQueueProcessing && !isQueuePaused"
+            v-if="!isQueueProcessing && !isQueuePaused && queueState.globalSettings.simultaneousMode === 'sequential'"
             class="start-btn"
             :disabled="isProcessingUrls || !hasReadyItems || queueStats.loading > 0"
             data-testid="start-queue"
@@ -273,6 +313,22 @@ https://digi.vatlib.it/..."
             </template>
             <template v-else>
               {{ shouldShowResume ? 'Resume Queue' : 'Start Queue' }}
+            </template>
+          </button>
+
+          <!-- Simultaneous Mode Start Buttons -->
+          <button
+            v-if="!isQueueProcessing && !isQueuePaused && queueState.globalSettings.simultaneousMode !== 'sequential'"
+            class="start-all-btn"
+            :disabled="isProcessingUrls || !hasReadyItems || queueStats.loading > 0"
+            data-testid="start-all-simultaneous"
+            @click="startAllSimultaneous"
+          >
+            <template v-if="queueStats.loading > 0">
+              Loading Manifests...
+            </template>
+            <template v-else>
+              {{ queueState.globalSettings.simultaneousMode === 'all' ? 'Start All Simultaneous' : `Start All (Max ${queueState.globalSettings.maxSimultaneousDownloads})` }}
             </template>
           </button>
           <button
@@ -498,6 +554,15 @@ https://digi.vatlib.it/..."
                     @click="restartGroup(group)"
                   >
                     Restart
+                  </button>
+                  <button
+                    v-if="canStartIndividualGroup(group)"
+                    class="start-individual-btn"
+                    title="Start this download individually"
+                    data-testid="start-individual-button"
+                    @click="startIndividualGroup(group)"
+                  >
+                    Start
                   </button>
                   <button
                     v-if="canShowInFinder(group)"
@@ -863,7 +928,7 @@ https://digi.vatlib.it/..."
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watchEffect, onMounted } from 'vue';
-import type { QueuedManuscript, QueueState, TStatus, TLibrary } from '../../shared/queueTypes';
+import type { QueuedManuscript, QueueState, TStatus, TLibrary, TSimultaneousMode } from '../../shared/queueTypes';
 import type { LibraryInfo, ManuscriptManifest } from '../../shared/types';
 import Modal from './Modal.vue';
 import Spoiler from './Spoiler.vue';
@@ -896,6 +961,16 @@ declare global {
       onQueueStateChanged: (callback: (state: QueueState) => void) => () => void;
       cleanupIndexedDBCache: () => Promise<void>;
       showItemInFinder: (filePath: string) => Promise<boolean>;
+      
+      // Simultaneous download methods
+      startAllSimultaneous: () => Promise<void>;
+      startItemIndividually: (id: string) => Promise<void>;
+      setSimultaneousMode: (mode: string, maxCount?: number) => Promise<void>;
+      getSimultaneousState: () => Promise<{
+        simultaneousMode: string;
+        maxSimultaneousDownloads: number;
+        activeDownloads: number;
+      }>;
     };
   }
 }
@@ -911,11 +986,14 @@ const queueState = ref<QueueState>({
     items: [],
     isProcessing: false,
     isPaused: false,
+    activeItemIds: [],
     globalSettings: {
         autoStart: false,
         concurrentDownloads: 3,
         pauseBetweenItems: 0,
         autoSplitThresholdMB: 800,
+        simultaneousMode: 'sequential' as TSimultaneousMode,
+        maxSimultaneousDownloads: 3,
     },
 });
 
@@ -1162,6 +1240,33 @@ async function showGroupInFinder(group: { parent: QueuedManuscript; parts: Queue
         const completedPart = group.parts.find(part => part.status === 'completed' && part.outputPath);
         if (completedPart?.outputPath) {
             await showItemInFinder(completedPart.outputPath);
+        }
+    }
+}
+
+// Individual start functionality for simultaneous mode
+function canStartIndividualGroup(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): boolean {
+    // Only show start button in simultaneous modes
+    if (queueState.value.globalSettings.simultaneousMode === 'sequential') {
+        return false;
+    }
+    
+    // Check if group can be started (has pending items)
+    if (group.parts.length === 0) {
+        return group.parent.status === 'pending' || group.parent.status === 'paused';
+    }
+    return group.parts.some(part => part.status === 'pending' || part.status === 'paused');
+}
+
+async function startIndividualGroup(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }) {
+    if (group.parts.length === 0) {
+        await startItemIndividually(group.parent.id);
+    } else {
+        // Start all pending/paused parts in the group
+        for (const part of group.parts) {
+            if (part.status === 'pending' || part.status === 'paused') {
+                await startItemIndividually(part.id);
+            }
         }
     }
 }
@@ -1761,6 +1866,38 @@ async function resumeQueue() {
 async function stopQueue() {
     await window.electronAPI.stopQueueProcessing();
     hasUserStartedQueue.value = false; // Reset when queue is stopped manually
+}
+
+// Simultaneous download functions
+async function startAllSimultaneous() {
+    await window.electronAPI.startAllSimultaneous();
+    hasUserStartedQueue.value = true;
+}
+
+async function startItemIndividually(id: string) {
+    await window.electronAPI.startItemIndividually(id);
+}
+
+async function setSimultaneousMode(mode: TSimultaneousMode, maxCount?: number) {
+    await window.electronAPI.setSimultaneousMode(mode, maxCount);
+    // Update local state
+    queueState.value.globalSettings.simultaneousMode = mode;
+    if (maxCount !== undefined) {
+        queueState.value.globalSettings.maxSimultaneousDownloads = maxCount;
+    }
+}
+
+// UI event handlers for simultaneous mode controls
+async function handleModeChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const mode = target.value as TSimultaneousMode;
+    await setSimultaneousMode(mode);
+}
+
+async function handleMaxSimultaneousChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const maxCount = parseInt(target.value);
+    await setSimultaneousMode('custom', maxCount);
 }
 
 async function restartAllCompletedFailed() {
@@ -3555,6 +3692,105 @@ label {
         width: 60px;
         height: 75px;
     }
+}
+
+/* Simultaneous Download Controls */
+.mode-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.mode-select {
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: white;
+    font-size: 0.9em;
+    color: #495057;
+}
+
+.mode-select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.max-simultaneous-control {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.max-simultaneous-control label {
+    font-size: 0.85em;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Start All Button */
+.start-all-btn {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+.start-all-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+    background: linear-gradient(135deg, #218838 0%, #1e9a85 100%);
+}
+
+.start-all-btn:disabled {
+    background: #adb5bd;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.6;
+}
+
+/* Individual Start Button */
+.start-individual-btn {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 0.8em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    box-shadow: 0 1px 3px rgba(0, 123, 255, 0.3);
+}
+
+.start-individual-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.4);
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+}
+
+.start-individual-btn:disabled {
+    background: #adb5bd;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.6;
 }
 
 </style>
