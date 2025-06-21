@@ -11,24 +11,49 @@ const __dirname = path.dirname(__filename);
 // Track all launched electron apps for cleanup
 const launchedApps = new Set<ElectronApplication>();
 
+// Cleanup function that kills processes more aggressively
+async function forceCleanupElectronApp(app: ElectronApplication) {
+  try {
+    // First try graceful close
+    await app.close();
+  } catch (error) {
+    console.warn('Graceful close failed, attempting force kill:', error);
+    
+    try {
+      // Force kill electron processes
+      const { exec } = await import('child_process');
+      const { promisify } = await import('util');
+      const execAsync = promisify(exec);
+      
+      const projectName = 'mss-downloader';
+      
+      // Kill any remaining electron processes from this project
+      await execAsync(`pkill -f "${projectName}.*electron" || true`);
+      await execAsync(`pkill -f "Electron.*${projectName}" || true`);
+      
+    } catch (killError) {
+      console.warn('Force kill also failed:', killError);
+    }
+  }
+}
+
 // Global cleanup on process exit
 process.on('exit', async () => {
   for (const app of launchedApps) {
-    try {
-      await app.close();
-    } catch (error) {
-      console.warn('Failed to close Electron app during cleanup:', error);
-    }
+    await forceCleanupElectronApp(app);
   }
 });
 
 process.on('SIGINT', async () => {
   for (const app of launchedApps) {
-    try {
-      await app.close();
-    } catch (error) {
-      console.warn('Failed to close Electron app during SIGINT cleanup:', error);
-    }
+    await forceCleanupElectronApp(app);
+  }
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  for (const app of launchedApps) {
+    await forceCleanupElectronApp(app);
   }
   process.exit(0);
 });
@@ -45,13 +70,22 @@ export const test = base.extend<{
       args: [
         path.join(__dirname, '../../../dist/main/main.js'), 
         '--headless',
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding',
         `--user-data-dir=${userDataDir}`
       ],
       env: {
         NODE_ENV: 'test',
+        ELECTRON_DISABLE_SECURITY_WARNINGS: 'true',
+        DISPLAY: ':99' // Ensure headless display
       },
       executablePath: undefined, // Let Playwright find Electron
       timeout: 30000,
+      // Explicitly disable headed mode
+      headless: true,
     });
     
     // Track this app for cleanup
@@ -61,7 +95,7 @@ export const test = base.extend<{
     
     // Clean up
     try {
-      await electronApp.close();
+      await forceCleanupElectronApp(electronApp);
       launchedApps.delete(electronApp);
     } catch (error) {
       console.warn('Failed to close Electron app:', error);

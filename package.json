@@ -1,6 +1,6 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "main": "dist/main/main.js",
   "type": "module",
@@ -32,7 +32,7 @@
     "lint:fix": "eslint src --ext .vue,.js,.ts --fix",
     "test:e2e": "npm run build && npx playwright test",
     "test:e2e:start": "npm run build && (npx playwright test & echo $! > .test-pid) && wait",
-    "test:e2e:kill": "if [ -f .test-pid ]; then pkill -P $(cat .test-pid) 2>/dev/null; kill $(cat .test-pid) 2>/dev/null; rm -f .test-pid; fi; pkill -f 'mss-downloader.*electron.*dist/main/main.js' 2>/dev/null || true; echo 'Test processes cleaned up'",
+    "test:e2e:kill": "if [ -f .test-pid ]; then pkill -P $(cat .test-pid) 2>/dev/null; kill $(cat .test-pid) 2>/dev/null; rm -f .test-pid; fi; pkill -f 'mss-downloader.*electron' 2>/dev/null || true; pkill -f 'Electron.*mss-downloader' 2>/dev/null || true; pgrep -f 'mss-downloader.*electron|electron.*mss-downloader' | xargs kill -9 2>/dev/null || true; echo 'Test processes cleaned up'",
     "test:e2e:headed": "npm run build && npx playwright test --headed",
     "test:e2e:debug": "npm run build && npx playwright test --debug",
     "telegram:start": "cd telegram-bot && npm run start",

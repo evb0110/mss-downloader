@@ -74,7 +74,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd telegram-bot
-          node send-multiplatform-build.js
+          npm run send-multiplatform-build
       
       - name: Upload Windows AMD64 artifacts
         uses: actions/upload-artifact@v4

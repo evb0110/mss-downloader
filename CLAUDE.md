@@ -178,11 +178,18 @@ When user says "bump" or when completing todos → Follow this workflow:
 1. Bump patch version in `package.json`
 2. Commit changes with descriptive message
 3. Push to GitHub main branch
-4. GitHub Actions will automatically:
+4. **MANDATORY: Check GitHub Actions build status** after pushing
+5. GitHub Actions will automatically:
    - Detect version change
    - Build Windows AMD64 release
    - Create GitHub release
    - Send Telegram notifications to subscribers
+
+**CRITICAL BUILD MONITORING:**
+- Always check GitHub Actions status after pushing version bumps
+- If builds fail, investigate immediately and fix before next version bump
+- Common failures: Telegram bot dependency issues, missing TypeScript compilation
+- Use: `curl -s "https://api.github.com/repos/evb0110/mss-downloader/actions/runs?per_page=3" | jq -r '.workflow_runs[] | "\(.status) \(.conclusion) \(.name)"'`
 
 CRITICAL: Only mark tasks as completed in TODOS.md when they are ACTUALLY FULLY IMPLEMENTED AND WORKING. Never mark something as completed based on code changes alone - verify the functionality works as expected.
 
