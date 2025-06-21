@@ -188,7 +188,8 @@ When user says "bump" or when completing todos → Follow this workflow:
 **CRITICAL BUILD MONITORING:**
 - Always check GitHub Actions status after pushing version bumps
 - If builds fail, investigate immediately and fix before next version bump
-- Common failures: Telegram bot dependency issues, missing TypeScript compilation, wrong script invocation
+- **CRITICAL**: Ensure package.json version changes are actually committed! GitHub Actions only triggers on committed version changes
+- Common failures: Telegram bot dependency issues, missing TypeScript compilation, wrong script invocation, uncommitted version changes
 - Use: `curl -s "https://api.github.com/repos/evb0110/mss-downloader/actions/runs?per_page=3" | jq -r '.workflow_runs[] | "\(.status) \(.conclusion) \(.name)"'`
 
 **TELEGRAM BOT ISSUES RESOLVED:**

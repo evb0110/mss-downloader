@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 
-const MultiplatformMSSBot = require('./multiplatform-bot');
-const BuildUtils = require('./build-utils');
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import { MultiplatformMSSBot } from './dist/multiplatform-bot.js';
+import { BuildUtils } from './dist/build-utils.js';
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // HTML formatting utilities for Telegram
 function escapeHTML(text) {
@@ -32,7 +36,7 @@ function getChangelogFromCommits(version) {
             /^Bump version/i,
             /Generated with Claude Code/i,
             /Fix GitHub Actions/i,
-            /Fix Telegram.*bot(?!.*subscription)/i, // Skip "Fix Telegram bot" but not "Fix Telegram bot subscription issues"
+            /Fix Telegram.*bot/i, // Skip Telegram bot commits - subscription issues handled separately
             /Fix GitHub token/i,
             /Fix GitHub release/i,
             /Enable subscribers/i,
@@ -57,6 +61,8 @@ function getChangelogFromCommits(version) {
             /Fix.*library/i,
             /Fix.*manifest/i,
             /Fix.*subscription/i,
+            /Fix.*duplicate.*messages/i,
+            /Fix.*missing.*download.*links/i,
             /Add.*simultaneous.*download/i,
             /Enhanced.*handling/i,
             /support.*library/i,

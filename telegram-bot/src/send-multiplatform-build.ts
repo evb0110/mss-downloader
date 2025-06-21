@@ -33,8 +33,6 @@ function getChangelogFromCommits(version: string): string {
     const technicalPatterns = [
       /^Bump version/i,
       /Generated with Claude Code/i,
-      /Fix GitHub Actions/i,
-      /Fix Telegram.*bot(?!.*subscription)/i,
       /Fix GitHub token/i,
       /Fix GitHub release/i,
       /Enable subscribers/i,
@@ -58,6 +56,8 @@ function getChangelogFromCommits(version: string): string {
       /Fix.*library/i,
       /Fix.*manifest/i,
       /Fix.*subscription/i,
+      /Fix.*duplicate.*messages/i,
+      /Fix.*missing.*download.*links/i,
       /Add.*simultaneous.*download/i,
       /Enhanced.*handling/i,
       /support.*library/i,
@@ -69,10 +69,16 @@ function getChangelogFromCommits(version: string): string {
     
     commits
       .filter(commit => {
+        // User-facing patterns take precedence - include if user-facing regardless of technical
+        if (userFacingPatterns.some(pattern => pattern.test(commit))) {
+          return true;
+        }
+        // Skip if technical but not user-facing
         if (technicalPatterns.some(pattern => pattern.test(commit))) {
           return false;
         }
-        return userFacingPatterns.some(pattern => pattern.test(commit));
+        // Skip if neither technical nor user-facing
+        return false;
       })
       .forEach(commit => {
         if (changelogItems.length >= 3) return;

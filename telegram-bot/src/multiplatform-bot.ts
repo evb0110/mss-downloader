@@ -535,28 +535,7 @@ export class MultiplatformMSSBot {
         await this.bot.sendMessage(subscriber.chatId, message, { parse_mode: 'HTML' });
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Then send files for each platform the subscriber wants
-        const subscribedBuilds = (subscriber.platforms || [])
-          .filter(platform => builds[platform])
-          .map(platform => ({ platform, build: builds[platform]! }));
-        
-        if (subscribedBuilds.length > 0) {
-          for (const { platform, build } of subscribedBuilds) {
-            try {
-              const platformMessage = `🎯 <b>${this.platforms[platform].emoji} ${this.platforms[platform].name}</b>`;
-              const fileResult = await this.fileHandler.prepareFileForTelegram(build.file);
-              await this.sendFileToSubscriber(subscriber.chatId, platformMessage, fileResult);
-              await new Promise(resolve => setTimeout(resolve, 800));
-            } catch (fileError: any) {
-              console.error(`Failed to send ${platform} file to ${subscriber.chatId}:`, fileError);
-              // Send download link as fallback
-              await this.bot.sendMessage(subscriber.chatId, 
-                `❌ File too large for Telegram. Download directly:\n🔗 https://github.com/evb0110/mss-downloader/releases/latest`, 
-                { parse_mode: 'HTML' }
-              );
-            }
-          }
-        }
+        // DO NOT send separate platform messages - user complained about duplicates!
         
       } catch (error: any) {
         console.error(`Failed to notify subscriber ${subscriber.chatId}:`, error);
@@ -573,7 +552,7 @@ export class MultiplatformMSSBot {
     console.log('Notification complete');
   }
   
-  private async sendFileToSubscriber(chatId: number, message: string, fileResult: FileResult): Promise<void> {
+  private async sendFileToSubscriber(chatId: number, message: string, fileResult: FileResult, platform?: Platform): Promise<void> {
     let fullMessage = message;
     
     if (fileResult.type === 'github_release' && fileResult.downloadUrl) {
@@ -599,11 +578,22 @@ export class MultiplatformMSSBot {
       fullMessage += `\n\n${fileResult.instructions}`;
     }
     
-    await this.bot.sendMessage(chatId, fullMessage, { parse_mode: 'HTML' });
+    // Only send message if there's content to send
+    if (fullMessage.trim()) {
+      await this.bot.sendMessage(chatId, fullMessage, { parse_mode: 'HTML' });
+    }
     
     if (fileResult.files && fileResult.files.length > 0) {
       for (const fileInfo of fileResult.files) {
-        await this.bot.sendDocument(chatId, fileInfo.path);
+        // Create caption with platform info if provided
+        const caption = platform ? 
+          `${this.platforms[platform].emoji} ${this.platforms[platform].name}` : 
+          undefined;
+        
+        await this.bot.sendDocument(chatId, fileInfo.path, {
+          caption: caption,
+          parse_mode: 'HTML'
+        });
         
         if (fileResult.files.length > 1) {
           await new Promise(resolve => setTimeout(resolve, 300));
