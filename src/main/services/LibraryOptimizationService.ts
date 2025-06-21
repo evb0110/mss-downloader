@@ -56,6 +56,7 @@ export class LibraryOptimizationService {
         'isos': {},
         'mira': {},
         'manuscripta': {},
+        'graz': {},
         'loading': {}
     };
 

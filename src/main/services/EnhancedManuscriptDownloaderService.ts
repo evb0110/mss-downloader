@@ -132,6 +132,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://www.internetculturale.it/jmms/iccuviewer/iccu.jsp?id=oai%3Abncf.firenze.sbn.it%3A21%3AFI0098%3AManoscrittiInRete%3AB.R.231&mode=all&teca=Bncf',
             description: 'Italian national digital heritage platform serving manuscripts from BNCF, Laurenziana, and other institutions',
         },
+        {
+            name: 'University of Graz',
+            example: 'https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538',
+            description: 'University of Graz digital manuscript collection with IIIF support',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -205,6 +210,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('rbme.patrimonionacional.es')) return 'rbme';
         if (url.includes('parker.stanford.edu')) return 'parker';
         if (url.includes('manuscripta.se')) return 'manuscripta';
+        if (url.includes('unipub.uni-graz.at')) return 'graz';
         
         return null;
     }
@@ -455,6 +461,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'internet_culturale':
                     manifest = await this.loadInternetCulturaleManifest(originalUrl);
+                    break;
+                case 'graz':
+                    manifest = await this.loadGrazManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -2936,6 +2945,110 @@ export class EnhancedManuscriptDownloaderService {
         } catch (error: any) {
             console.error(`Internet Culturale manifest loading failed:`, error);
             throw new Error(`Failed to load Internet Culturale manuscript: ${error.message}`);
+        }
+    }
+
+    async loadGrazManifest(grazUrl: string): Promise<ManuscriptManifest> {
+        try {
+            console.log(`Loading University of Graz manifest: ${grazUrl}`);
+            
+            // Extract manuscript ID from URL
+            // URL patterns: 
+            // - https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538
+            // - https://unipub.uni-graz.at/obvugrscript/content/pageview/8224540
+            const manuscriptIdMatch = grazUrl.match(/\/(\d+)$/);
+            if (!manuscriptIdMatch) {
+                throw new Error('Could not extract manuscript ID from Graz URL');
+            }
+            
+            let manuscriptId = manuscriptIdMatch[1];
+            
+            // If this is a pageview URL, we need to get the parent manuscript ID
+            // The IIIF manifest is based on the parent manuscript ID, not individual page ID
+            if (grazUrl.includes('/pageview/')) {
+                // For pageview URLs, we need to derive the manuscript ID
+                // Based on the example: pageview/8224540 corresponds to titleinfo/8224538
+                // This might need adjustment based on the actual relationship
+                const pageId = parseInt(manuscriptId);
+                manuscriptId = (pageId - 2).toString(); // Assuming pattern from example
+            }
+            
+            // Construct IIIF manifest URL
+            const manifestUrl = `https://unipub.uni-graz.at/i3f/v20/${manuscriptId}/manifest`;
+            console.log(`Fetching IIIF manifest from: ${manifestUrl}`);
+            
+            // Fetch the IIIF manifest
+            const headers = {
+                'Accept': 'application/json, application/ld+json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            };
+            
+            const response = await this.fetchDirect(manifestUrl, { headers });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch IIIF manifest: ${response.status} ${response.statusText}`);
+            }
+            
+            const manifest = await response.json();
+            console.log(`IIIF manifest loaded, processing canvases...`);
+            
+            const pageLinks: string[] = [];
+            let displayName = 'University of Graz Manuscript';
+            
+            // Extract title from manifest metadata
+            if (manifest.label) {
+                if (typeof manifest.label === 'string') {
+                    displayName = manifest.label;
+                } else if (manifest.label['@value']) {
+                    displayName = manifest.label['@value'];
+                } else if (manifest.label.en) {
+                    displayName = Array.isArray(manifest.label.en) ? manifest.label.en[0] : manifest.label.en;
+                } else if (manifest.label.de) {
+                    displayName = Array.isArray(manifest.label.de) ? manifest.label.de[0] : manifest.label.de;
+                }
+            }
+            
+            // Process IIIF sequences and canvases
+            if (manifest.sequences && manifest.sequences.length > 0) {
+                const sequence = manifest.sequences[0];
+                if (sequence.canvases) {
+                    for (const canvas of sequence.canvases) {
+                        if (canvas.images && canvas.images.length > 0) {
+                            const image = canvas.images[0];
+                            if (image.resource && image.resource['@id']) {
+                                // Use the full resolution image URL
+                                const imageUrl = image.resource['@id'];
+                                pageLinks.push(imageUrl);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No page images found in IIIF manifest');
+            }
+            
+            // Sanitize display name for filesystem
+            const sanitizedName = displayName
+                .replace(/[<>:"/\\|?*]/g, '_')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .replace(/\.$/, ''); // Remove trailing period
+            
+            console.log(`University of Graz manifest loaded: ${pageLinks.length} pages`);
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'graz' as any,
+                displayName: sanitizedName,
+                originalUrl: grazUrl,
+            };
+            
+        } catch (error: any) {
+            console.error(`University of Graz manifest loading failed:`, error);
+            throw new Error(`Failed to load University of Graz manuscript: ${error.message}`);
         }
     }
 
