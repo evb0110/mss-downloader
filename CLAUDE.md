@@ -166,6 +166,11 @@ CRITICAL: Only mark tasks as completed in TODOS.md when they are ACTUALLY FULLY 
 ### Commit and Push Guidelines
 - **Whenever agent or user bump the version, it should be commited and pushed by the agent**
 
+## Deployment & Development Memory
+
+### Development Process Memories
+- After push always wait to check that build was successful on github and everything was pushed to the bot
+
 ## File Structure
 
 ```
