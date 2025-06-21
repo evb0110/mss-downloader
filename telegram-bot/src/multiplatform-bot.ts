@@ -528,26 +528,43 @@ export class MultiplatformMSSBot {
     console.log(`Notifying subscribers for platforms: ${Object.keys(builds).join(', ')}`);
     
     for (const subscriber of this.subscribers) {
-      for (const platform of subscriber.platforms || []) {
-        if (builds[platform]) {
-          try {
-            console.log(`Notifying ${subscriber.username} (${subscriber.chatId}) for ${platform}`);
-            
-            const platformMessage = `${message}\n\n🎯 <b>${this.platforms[platform].emoji} ${this.platforms[platform].name}</b>`;
-            
-            const fileResult = await this.fileHandler.prepareFileForTelegram(builds[platform].file);
-            await this.sendFileToSubscriber(subscriber.chatId, platformMessage, fileResult);
-            
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          } catch (error: any) {
-            console.error(`Failed to notify subscriber ${subscriber.chatId} for ${platform}:`, error);
-            
-            if (error.response && error.response.body && error.response.body.error_code === 403) {
-              console.log(`Removing blocked subscriber: ${subscriber.chatId}`);
-              this.subscribers = this.subscribers.filter(sub => sub.chatId !== subscriber.chatId);
-              this.saveSubscribers();
+      try {
+        console.log(`Notifying ${subscriber.username} (${subscriber.chatId})`);
+        
+        // Send the main notification message first
+        await this.bot.sendMessage(subscriber.chatId, message, { parse_mode: 'HTML' });
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Then send files for each platform the subscriber wants
+        const subscribedBuilds = (subscriber.platforms || [])
+          .filter(platform => builds[platform])
+          .map(platform => ({ platform, build: builds[platform]! }));
+        
+        if (subscribedBuilds.length > 0) {
+          for (const { platform, build } of subscribedBuilds) {
+            try {
+              const platformMessage = `🎯 <b>${this.platforms[platform].emoji} ${this.platforms[platform].name}</b>`;
+              const fileResult = await this.fileHandler.prepareFileForTelegram(build.file);
+              await this.sendFileToSubscriber(subscriber.chatId, platformMessage, fileResult);
+              await new Promise(resolve => setTimeout(resolve, 800));
+            } catch (fileError: any) {
+              console.error(`Failed to send ${platform} file to ${subscriber.chatId}:`, fileError);
+              // Send download link as fallback
+              await this.bot.sendMessage(subscriber.chatId, 
+                `❌ File too large for Telegram. Download directly:\n🔗 https://github.com/evb0110/mss-downloader/releases/latest`, 
+                { parse_mode: 'HTML' }
+              );
             }
           }
+        }
+        
+      } catch (error: any) {
+        console.error(`Failed to notify subscriber ${subscriber.chatId}:`, error);
+        
+        if (error.response && error.response.body && error.response.body.error_code === 403) {
+          console.log(`Removing blocked subscriber: ${subscriber.chatId}`);
+          this.subscribers = this.subscribers.filter(sub => sub.chatId !== subscriber.chatId);
+          this.saveSubscribers();
         }
       }
     }

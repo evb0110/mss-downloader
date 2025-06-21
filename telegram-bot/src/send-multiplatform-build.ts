@@ -135,6 +135,12 @@ function extractUserFacingChange(commitMessage: string): string {
     if (description.match(/Fix.*FLORUS.*hanging/i)) {
       return 'Fixed FLORUS hanging on calculating stage';
     }
+    if (description.match(/Fix.*Orleans.*persistent.*hanging/i)) {
+      return 'Fixed Orleans library persistent hanging issue with batch processing';
+    }
+    if (description.match(/Fix.*GitHub.*Actions.*Telegram/i)) {
+      return 'Fixed automated build notifications to work with TypeScript bot';
+    }
     if (description.match(/Complete.*Stanford.*Parker.*Graz/i)) {
       return 'Completed Stanford Parker and Graz library support verification';
     }
