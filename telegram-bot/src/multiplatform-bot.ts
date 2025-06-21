@@ -527,15 +527,33 @@ export class MultiplatformMSSBot {
     
     console.log(`Notifying subscribers for platforms: ${Object.keys(builds).join(', ')}`);
     
-    for (const subscriber of this.subscribers) {
+    // TEMPORARY: Only notify evb0110 until download links are fixed
+    const testSubscribers = this.subscribers.filter(sub => sub.username === 'evb0110');
+    
+    for (const subscriber of testSubscribers) {
       try {
         console.log(`Notifying ${subscriber.username} (${subscriber.chatId})`);
         
-        // Send the main notification message first
-        await this.bot.sendMessage(subscriber.chatId, message, { parse_mode: 'HTML' });
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Build enhanced message with download links (NO separate messages!)
+        const subscribedBuilds = (subscriber.platforms || [])
+          .filter(platform => builds[platform])
+          .map(platform => ({ platform, build: builds[platform]! }));
         
-        // DO NOT send separate platform messages - user complained about duplicates!
+        let enhancedMessage = message;
+        
+        if (subscribedBuilds.length > 0) {
+          enhancedMessage += '\n\n📥 **Direct Downloads:**';
+          for (const { platform } of subscribedBuilds) {
+            const platformName = `${this.platforms[platform].emoji} ${this.platforms[platform].name}`;
+            enhancedMessage += `\n🔗 [${platformName}](https://github.com/evb0110/mss-downloader/releases/latest)`;
+          }
+        }
+        
+        // Send ONLY the enhanced main message (no additional messages!)
+        await this.bot.sendMessage(subscriber.chatId, enhancedMessage, { 
+          parse_mode: 'HTML',
+          disable_web_page_preview: false 
+        });
         
       } catch (error: any) {
         console.error(`Failed to notify subscriber ${subscriber.chatId}:`, error);
