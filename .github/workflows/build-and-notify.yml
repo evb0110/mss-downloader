@@ -58,21 +58,43 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run dist:win:x64
       
+      - name: Build Windows ARM64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist:win:arm
+      
+      - name: Build Linux AppImage
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist:linux
+      
       - name: Install Telegram bot dependencies
         run: |
           cd telegram-bot
           npm install
       
-      - name: Send Telegram notification
+      - name: Send Multiplatform Telegram notification
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd telegram-bot
-          node send-build.js
+          node send-multiplatform-build.js
       
-      - name: Upload build artifacts
+      - name: Upload Windows AMD64 artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build-v${{ needs.check-version.outputs.version }}
-          path: release/*.exe
+          name: windows-amd64-build-v${{ needs.check-version.outputs.version }}
+          path: release/*x64*.exe
+          
+      - name: Upload Windows ARM64 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-arm64-build-v${{ needs.check-version.outputs.version }}
+          path: release/*arm64*.exe
+          
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-v${{ needs.check-version.outputs.version }}
+          path: release/*.AppImage

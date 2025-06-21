@@ -31,12 +31,24 @@ class MSSTelegramBot {
         try {
             if (fs.existsSync(this.subscribersFile)) {
                 const data = fs.readFileSync(this.subscribersFile, 'utf8');
-                return JSON.parse(data);
+                const subscribers = JSON.parse(data);
+                
+                // Migrate old format to new format for compatibility
+                return subscribers.map(sub => {
+                    if (!sub.platforms) {
+                        sub.platforms = ['amd64']; // Default to AMD64 for backward compatibility
+                    }
+                    return sub;
+                });
             }
         } catch (error) {
             console.error('Error loading subscribers:', error);
         }
         return [];
+    }
+    
+    getSubscriber(chatId) {
+        return this.subscribers.find(sub => sub.chatId === chatId);
     }
     
     saveSubscribers() {
@@ -112,7 +124,8 @@ Use the menu buttons below to interact with the bot:`;
     }
     
     sendMainMenu(chatId, message) {
-        const isSubscribed = this.subscribers.find(sub => sub.chatId === chatId);
+        const subscriber = this.getSubscriber(chatId);
+        const isSubscribed = subscriber && subscriber.platforms && subscriber.platforms.length > 0;
         
         const keyboard = {
             inline_keyboard: [
@@ -132,16 +145,25 @@ Use the menu buttons below to interact with the bot:`;
     
     handleSubscribe(chatId, user) {
         const username = user.username || user.first_name || 'Unknown';
+        let subscriber = this.getSubscriber(chatId);
         
-        if (!this.subscribers.find(sub => sub.chatId === chatId)) {
-            this.subscribers.push({
+        if (!subscriber) {
+            subscriber = {
                 chatId,
                 username,
-                subscribedAt: new Date().toISOString()
-            });
+                subscribedAt: new Date().toISOString(),
+                platforms: ['amd64'] // Default to AMD64 for old bot compatibility
+            };
+            this.subscribers.push(subscriber);
             this.saveSubscribers();
             
-            this.bot.sendMessage(chatId, '✅ Successfully subscribed to build notifications!', { parse_mode: 'HTML' });
+            this.bot.sendMessage(chatId, '✅ Successfully subscribed to Windows AMD64 build notifications!', { parse_mode: 'HTML' });
+            this.sendMainMenu(chatId, 'What would you like to do next?');
+        } else if (!subscriber.platforms || subscriber.platforms.length === 0) {
+            subscriber.platforms = ['amd64'];
+            this.saveSubscribers();
+            
+            this.bot.sendMessage(chatId, '✅ Successfully subscribed to Windows AMD64 build notifications!', { parse_mode: 'HTML' });
             this.sendMainMenu(chatId, 'What would you like to do next?');
         } else {
             this.bot.sendMessage(chatId, 'ℹ️ You are already subscribed to notifications.', { parse_mode: 'HTML' });
@@ -150,13 +172,13 @@ Use the menu buttons below to interact with the bot:`;
     }
     
     handleUnsubscribe(chatId) {
-        const index = this.subscribers.findIndex(sub => sub.chatId === chatId);
+        let subscriber = this.getSubscriber(chatId);
         
-        if (index !== -1) {
-            this.subscribers.splice(index, 1);
+        if (subscriber && subscriber.platforms && subscriber.platforms.length > 0) {
+            subscriber.platforms = []; // Clear all platform subscriptions
             this.saveSubscribers();
             
-            this.bot.sendMessage(chatId, '✅ Successfully unsubscribed from notifications.', { parse_mode: 'HTML' });
+            this.bot.sendMessage(chatId, '✅ Successfully unsubscribed from all notifications.', { parse_mode: 'HTML' });
             this.sendMainMenu(chatId, 'What would you like to do next?');
         } else {
             this.bot.sendMessage(chatId, 'ℹ️ You are not currently subscribed.', { parse_mode: 'HTML' });
@@ -164,76 +186,91 @@ Use the menu buttons below to interact with the bot:`;
         }
     }
     
-    handleLatest(chatId) {
+    async handleLatest(chatId) {
         try {
-            const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
-            const version = packageJson.version;
+            // Use BuildUtils for reliable build detection
+            const BuildUtils = require('./build-utils');
+            const buildResult = BuildUtils.findSinglePlatformBuild('amd64');
             
-            const distPath = path.join(__dirname, '..', 'dist');
-            const releasePath = path.join(__dirname, '..', 'release');
+            const subscriber = this.getSubscriber(chatId);
             
-            // Check both dist and release folders for Windows builds
-            let buildFile = null;
-            let buildFileName = null;
-            
-            for (const folder of [releasePath, distPath]) {
-                if (fs.existsSync(folder)) {
-                    const files = fs.readdirSync(folder);
-                    const windowsBuilds = files.filter(file => 
-                        file.includes('win') && 
-                        (file.endsWith('.exe') || file.endsWith('.zip') || file.endsWith('.msi'))
-                    );
-                    
-                    if (windowsBuilds.length > 0) {
-                        buildFile = path.join(folder, windowsBuilds[0]);
-                        buildFileName = windowsBuilds[0];
-                        break;
-                    }
-                }
+            if (!buildResult.buildFile) {
+                this.bot.sendMessage(chatId, 
+                    `📦 Latest version: v${buildResult.version}\n\n❌ No build files found. Builds may be in progress.\n\n${subscriber ? 'You\'ll be notified when new builds are available!' : 'Subscribe to get notified about new builds!'}`,
+                    { parse_mode: 'HTML' }
+                );
+                this.sendMainMenu(chatId, 'What would you like to do?');
+                return;
             }
             
-            const subscriber = this.subscribers.find(sub => sub.chatId === chatId);
-            
-            if (buildFile && fs.existsSync(buildFile)) {
-                const stats = fs.statSync(buildFile);
-                const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
-                const buildDate = stats.mtime.toLocaleDateString();
+            // Try to get GitHub release link first
+            try {
+                const GitHubReleasesManager = require('./github-releases');
+                const githubManager = new GitHubReleasesManager();
+                const existingRelease = await githubManager.getExistingRelease(buildResult.version);
                 
-                const message = `📦 Latest Build: v${version}
+                if (existingRelease) {
+                    const message = `📦 <b>Latest Build: v${buildResult.version}</b>
+
 💻 Platform: Windows AMD64
-📁 File: ${buildFileName}
+📁 File: ${existingRelease.fileName}
+📊 Size: ${(existingRelease.size / 1024 / 1024).toFixed(2)} MB
+📅 Built: ${new Date(existingRelease.publishedAt).toLocaleDateString()}
+
+🔗 <b>Direct Download:</b>
+${existingRelease.downloadUrl}
+
+💡 <b>Installation Instructions:</b>
+1. Click the link above to download
+2. Run the installer (digitally signed and safe)
+3. Follow the installer prompts
+
+✅ <b>Permanent Link</b> - No expiration!`;
+
+                    await this.bot.sendMessage(chatId, message, { 
+                        parse_mode: 'HTML',
+                        disable_web_page_preview: true 
+                    });
+                    this.sendMainMenu(chatId, 'Anything else?');
+                    return;
+                }
+            } catch (error) {
+                console.log('GitHub release not available, trying file delivery...');
+            }
+            
+            // Fall back to file delivery
+            const stats = fs.statSync(buildResult.buildFile);
+            const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
+            const buildDate = stats.mtime.toLocaleDateString();
+            
+            const message = `📦 Latest Build: v${buildResult.version}
+💻 Platform: Windows AMD64
+📁 File: ${buildResult.buildFileName}
 📊 Size: ${fileSizeMB} MB
 📅 Built: ${buildDate}
 
 ${subscriber ? 'Sending build file...' : 'Subscribe to get automatic notifications of new builds!'}`;
-                
-                // Use file handler to prepare file for delivery
-                this.bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
-                    .then(async () => {
-                        try {
-                            const fileResult = await this.fileHandler.prepareFileForTelegram(buildFile);
-                            await this.sendFileToSubscriber(chatId, '', fileResult);
-                            this.sendMainMenu(chatId, 'Anything else?');
-                        } catch (error) {
-                            console.error('Error sending latest build:', error);
-                            this.bot.sendMessage(chatId, '❌ Error preparing build file for delivery.', { parse_mode: 'HTML' });
-                            this.sendMainMenu(chatId, 'Try again or subscribe for notifications:');
-                        } finally {
-                            this.fileHandler.cleanup();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error sending latest build message:', error);
-                        this.bot.sendMessage(chatId, '❌ Error sending build information.', { parse_mode: 'HTML' });
-                        this.sendMainMenu(chatId, 'Try again:');
-                    });
-            } else {
-                this.bot.sendMessage(chatId, 
-                    `📦 Latest version: v${version}\n\n❌ No build file found. Run 'npm run dist:win' to create Windows build.\n\n${subscriber ? 'You\'ll be notified of new builds!' : 'Subscribe to get notified about new builds!'}`,
-                    { parse_mode: 'HTML' }
-                );
-                this.sendMainMenu(chatId, 'What would you like to do?');
-            }
+            
+            // Use file handler to prepare file for delivery
+            this.bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
+                .then(async () => {
+                    try {
+                        const fileResult = await this.fileHandler.prepareFileForTelegram(buildResult.buildFile);
+                        await this.sendFileToSubscriber(chatId, '', fileResult);
+                        this.sendMainMenu(chatId, 'Anything else?');
+                    } catch (error) {
+                        console.error('Error sending latest build:', error);
+                        this.bot.sendMessage(chatId, '❌ Error preparing build file for delivery.', { parse_mode: 'HTML' });
+                        this.sendMainMenu(chatId, 'Try again or subscribe for notifications:');
+                    } finally {
+                        this.fileHandler.cleanup();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending latest build message:', error);
+                    this.bot.sendMessage(chatId, '❌ Error sending build information.', { parse_mode: 'HTML' });
+                    this.sendMainMenu(chatId, 'Try again:');
+                });
         } catch (error) {
             console.error('Error in handleLatest:', error);
             this.bot.sendMessage(chatId, '❌ Could not retrieve latest build information.', { parse_mode: 'HTML' });

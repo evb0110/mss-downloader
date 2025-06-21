@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const MSSTelegramBot = require('./bot');
+const MultiplatformMSSBot = require('./multiplatform-bot');
 const BuildUtils = require('./build-utils');
 const fs = require('fs');
 const path = require('path');
@@ -29,11 +29,11 @@ function getChangelogFromCommits(version) {
         
         // For this build, highlight the major recent improvements
         const recentImprovements = [
-            "✅ Fixed right-click context menu to enable Cut/Copy/Paste functionality",
-            "✅ Added LibraryOptimizationService for better download performance",
-            "✅ Implemented dynamic download step size optimization",
-            "✅ Added library-specific auto-split thresholds and concurrency limits",
-            "✅ Enhanced timeout handling with progressive backoff"
+            "✅ Added multi-platform build support (Windows x64, ARM64, Linux)",
+            "✅ Implemented hierarchical subscription menu system",
+            "✅ Enhanced Telegram bot with platform-specific notifications",
+            "✅ Fixed right-click context menu Cut/Copy/Paste functionality",
+            "✅ Added LibraryOptimizationService for better download performance"
         ];
         
         // Also look for user-facing library/feature commits
@@ -101,7 +101,7 @@ function getChangelogFromCommits(version) {
                 return userFacingPatterns.some(pattern => pattern.test(commit));
             })
             .forEach(commit => {
-                if (changelogItems.length >= 3) return; // Max 3 items
+                if (changelogItems.length >= 2) return; // Max 2 items from commits
                 
                 // Clean up commit message
                 let cleaned = commit
@@ -120,10 +120,10 @@ function getChangelogFromCommits(version) {
                 }
             });
         
-        // For recent versions (1.0.89+), show the major improvements we just made
+        // For recent versions (1.0.97+), show the major improvements we just made
         const versionParts = version.split('.');
         const versionNum = parseFloat(versionParts[0] + '.' + (versionParts[1] || '0') + (versionParts[2] || '0').padStart(2, '0'));
-        if (versionNum >= 1.089) {
+        if (versionNum >= 1.097) {
             // Show recent major improvements
             const improvements = recentImprovements.slice(0, 3); // Show top 3
             
@@ -261,118 +261,110 @@ function getChangelogFromVersionHistory(version) {
         console.error('Error reading version history:', error.message);
     }
     
-    return `${bold("📝 What's New:")}\n• Latest updates and improvements`;
+    return `${bold("📝 What's New:")}\n• Latest updates and improvements with multi-platform support`;
 }
 
-async function sendBuild() {
+function findAllBuilds() {
+    // Use the new BuildUtils for reliable build detection
+    return BuildUtils.findLatestBuilds();
+}
+
+async function sendMultiplatformBuild() {
     try {
-        // Use the new BuildUtils for reliable build detection
-        const buildResult = BuildUtils.findSinglePlatformBuild('amd64');
+        const { version, builds } = findAllBuilds();
         
-        if (!buildResult.buildFile) {
-            console.error('❌ No Windows AMD64 builds found. Run "npm run dist:win:x64" first.');
+        if (Object.keys(builds).length === 0) {
+            console.error('❌ No builds found for version', version);
             process.exit(1);
         }
         
-        const buildFile = buildResult.buildFileName;
-        const buildPath = path.dirname(buildResult.buildFile);
-        const actualVersion = buildResult.version;
-        
-        const windowsBuilds = [buildFile];
-        
-        console.log(`📦 Found Windows builds for v${actualVersion}:`);
-        windowsBuilds.forEach(build => console.log(`  - ${build}`));
-        
-        const fullBuildFile = path.join(buildPath, buildFile);
-        const stats = fs.statSync(fullBuildFile);
-        const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
+        console.log(`📦 Found builds for v${version}:`);
+        Object.keys(builds).forEach(platform => {
+            console.log(`  - ${platform}: ${builds[platform].name} (${builds[platform].size}MB)`);
+        });
         
         // Get changelog from recent commits
-        const changelog = getChangelogFromCommits(actualVersion);
+        const changelog = getChangelogFromCommits(version);
+        
+        const platformSummary = Object.keys(builds).map(platform => {
+            const platformNames = {
+                'amd64': '🖥️ Windows AMD64',
+                'arm64': '💻 Windows ARM64',
+                'linux': '🐧 Linux AppImage'
+            };
+            return `${platformNames[platform]}: ${builds[platform].size}MB`;
+        }).join('\n');
         
         const message = `
-🚀 ${bold(`MSS Downloader v${actualVersion} Available!`)}
+🚀 ${bold(`MSS Downloader v${version} Available!`)}
 
-📦 Version: v${formatText(actualVersion)}
-💻 Platform: Windows AMD64
-📁 File: ${formatText(buildFile)}
-📊 Size: ${fileSizeMB} MB
+📦 Version: v${formatText(version)}
+💻 Platforms Available:
+${platformSummary}
 📅 Built: ${formatText(new Date().toLocaleString())}
 
 ${changelog}
 
-${bold("📥 Installation Instructions:")}
-1. Download the file from GitHub release
-2. Run the installer (digitally signed and safe)
-3. Follow the installer prompts
+${bold("🎯 Multi-Platform Support:")}
+Now supporting Windows x64, Windows ARM64, and Linux!
+Each subscriber will receive builds for their subscribed platforms.
 
-💡 ${bold("Note:")} The app is digitally signed for security. Windows should install without warnings.
+${bold("📥 Installation Instructions:")}
+1. Download the appropriate file for your platform
+2. Run the installer (Windows) or AppImage (Linux)
+3. Follow the installation prompts
+
+💡 ${bold("Note:")} All builds are digitally signed (Windows) or verified (Linux) for security.
 
 📥 Download and install to get the latest features and fixes!
         `.trim();
         
-        const bot = new MSSTelegramBot();
+        const bot = new MultiplatformMSSBot();
         
-        console.log('🤖 Sending build notification...');
+        console.log('🤖 Sending multiplatform build notification...');
+        await bot.notifySubscribers(message, builds);
         
-        // Override the bot's file handler to add URL validation
-        const originalNotifySubscribers = bot.notifySubscribers.bind(bot);
-        bot.notifySubscribers = async function(message, file) {
-            // Call original with validation wrapper
-            const originalSendFileToSubscriber = bot.sendFileToSubscriber.bind(bot);
-            bot.sendFileToSubscriber = async function(chatId, message, fileResult) {
-                // Validate GitHub release URLs before sending
-                if (fileResult.type === 'github_release' && fileResult.downloadUrl) {
-                    const validation = BuildUtils.validateDownloadUrl(fileResult.downloadUrl);
-                    if (!validation.valid) {
-                        console.error(`❌ URL validation failed: ${validation.reason}`);
-                        console.error(`❌ Invalid URL: ${fileResult.downloadUrl}`);
-                        throw new Error(`URL validation failed: ${validation.reason}`);
-                    }
-                    console.log(`✅ URL validation passed: v${validation.version} - ${validation.filename}`);
-                }
-                return originalSendFileToSubscriber(chatId, message, fileResult);
-            };
-            
-            return originalNotifySubscribers(message, file);
-        };
-        
-        await bot.notifySubscribers(message, fullBuildFile);
-        
-        console.log('✅ Build notification sent successfully!');
+        console.log('✅ Multiplatform build notification sent successfully!');
         process.exit(0);
         
     } catch (error) {
-        console.error('❌ Error sending build:', error);
+        console.error('❌ Error sending multiplatform build:', error);
         process.exit(1);
     }
 }
 
 function showHelp() {
     console.log(`
-MSS Downloader Build Sender
+MSS Downloader Multiplatform Build Sender
 
 Usage:
-  node send-build.js                 Send latest build to subscribers
-  node send-build.js --help          Show this help
-  node send-build.js --message "msg" Send custom message (no file)
+  node send-multiplatform-build.js            Send latest builds to subscribers
+  node send-multiplatform-build.js --help     Show this help
+  node send-multiplatform-build.js --message "msg" Send custom message (no files)
 
 Prerequisites:
   - TELEGRAM_BOT_TOKEN environment variable must be set
-  - Run "npm run dist" to create Windows builds
+  - Run build commands to create platform builds:
+    * npm run dist:win:x64  (Windows AMD64)
+    * npm run dist:win:arm  (Windows ARM64) 
+    * npm run dist:linux    (Linux AppImage)
   - At least one subscriber must be registered
 
 Examples:
   export TELEGRAM_BOT_TOKEN="your_bot_token_here"
-  npm run dist
-  node telegram-bot/send-build.js
+  npm run dist:win:x64 && npm run dist:win:arm && npm run dist:linux
+  node telegram-bot/send-multiplatform-build.js
     `);
 }
 
 async function sendMessage(customMessage) {
     try {
-        const bot = new MSSTelegramBot();
-        await bot.notifySubscribers(customMessage);
+        const bot = new MultiplatformMSSBot();
+        // Send to all subscribers regardless of platform preference for custom messages
+        for (const subscriber of bot.subscribers) {
+            await bot.bot.sendMessage(subscriber.chatId, customMessage, { parse_mode: 'HTML' });
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
         console.log('✅ Custom message sent successfully!');
         process.exit(0);
     } catch (error) {
@@ -392,5 +384,5 @@ const messageIndex = args.indexOf('--message');
 if (messageIndex !== -1 && args[messageIndex + 1]) {
     sendMessage(args[messageIndex + 1]);
 } else {
-    sendBuild();
+    sendMultiplatformBuild();
 }

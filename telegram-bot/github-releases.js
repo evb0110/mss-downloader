@@ -104,9 +104,9 @@ class GitHubReleasesManager {
             // Sort by creation date (newest first)
             releases.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
-            // Delete releases beyond the limit
-            if (releases.length >= this.maxReleases) {
-                const releasesToDelete = releases.slice(this.maxReleases - 1); // Keep maxReleases-1, delete the rest
+            // Delete releases beyond the limit  
+            if (releases.length > this.maxReleases) {
+                const releasesToDelete = releases.slice(this.maxReleases); // Keep maxReleases, delete the rest
                 
                 for (const release of releasesToDelete) {
                     try {
@@ -180,6 +180,23 @@ ${releaseInfo.downloadUrl}
     
     async uploadBuild(version, buildFile, releaseNotes = '') {
         try {
+            // First check if the release already exists
+            const existingRelease = await this.getExistingRelease(version);
+            if (existingRelease) {
+                console.log(`✅ Using existing GitHub release: v${version}`);
+                console.log(`📥 Download URL: ${existingRelease.downloadUrl}`);
+                
+                return {
+                    type: 'github_release',
+                    downloadUrl: existingRelease.downloadUrl,
+                    fileName: existingRelease.fileName,
+                    version: version,
+                    tagName: `v${version}`,
+                    instructions: this.formatReleaseMessage(existingRelease)
+                };
+            }
+            
+            // If not, create a new release
             const releaseInfo = await this.createRelease(version, buildFile, releaseNotes);
             
             return {
@@ -192,6 +209,39 @@ ${releaseInfo.downloadUrl}
             };
         } catch (error) {
             throw new Error(`GitHub release upload failed: ${error.message}`);
+        }
+    }
+    
+    async getExistingRelease(version) {
+        try {
+            const tagName = `v${version}`;
+            const releaseJson = execSync(`gh release view "${tagName}" --json assets,publishedAt`, { encoding: 'utf8' });
+            const release = JSON.parse(releaseJson);
+            
+            // Find the appropriate asset (prefer x64, then general Setup files)
+            const asset = release.assets.find(a => 
+                (a.name.includes('x64') || a.name.includes('Setup')) && 
+                a.name.endsWith('.exe') && 
+                !a.name.includes('arm64')
+            );
+            
+            if (asset) {
+                const sanitizedFileName = this.sanitizeFilenameForGitHub(asset.name);
+                const downloadUrl = `https://github.com/${this.repoOwner}/${this.repoName}/releases/download/${tagName}/${sanitizedFileName}`;
+                
+                return {
+                    tagName,
+                    downloadUrl,
+                    fileName: sanitizedFileName,
+                    size: asset.size,
+                    publishedAt: release.publishedAt
+                };
+            }
+            
+            return null;
+        } catch (error) {
+            // Release doesn't exist
+            return null;
         }
     }
 }

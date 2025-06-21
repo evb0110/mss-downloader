@@ -23,6 +23,11 @@ export class EnhancedManuscriptDownloaderService {
 
     static readonly SUPPORTED_LIBRARIES: LibraryInfo[] = [
         {
+            name: 'NYPL Digital Collections',
+            example: 'https://digitalcollections.nypl.org/items/6a709e10-1cda-013b-b83f-0242ac110002',
+            description: 'New York Public Library digital manuscript collections',
+        },
+        {
             name: 'Gallica (BnF)',
             example: 'https://gallica.bnf.fr/ark:/12148/btv1b8449691v/f1.highres',
             description: 'French National Library digital manuscripts (supports any f{page}.* format)',
@@ -188,6 +193,7 @@ export class EnhancedManuscriptDownloaderService {
             throw new Error('Trinity College Dublin is not currently supported due to aggressive captcha protection. Please download manuscripts manually through their website.');
         }
         
+        if (url.includes('digitalcollections.nypl.org')) return 'nypl';
         if (url.includes('gallica.bnf.fr')) return 'gallica';
         if (url.includes('e-codices.unifr.ch') || url.includes('e-codices.ch')) return 'unifr';
         if (url.includes('digi.vatlib.it')) return 'vatlib';
@@ -396,6 +402,9 @@ export class EnhancedManuscriptDownloaderService {
         
         try {
             switch (library) {
+                case 'nypl':
+                    manifest = await this.loadNyplManifest(originalUrl);
+                    break;
                 case 'gallica':
                     manifest = await this.loadGallicaManifest(originalUrl);
                     break;
@@ -479,6 +488,79 @@ export class EnhancedManuscriptDownloaderService {
             
         } catch (error: any) {
             console.error(`Failed to load manifest: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Load NYPL Digital Collections manifest
+     */
+    async loadNyplManifest(nyplUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // Extract UUID from URL like https://digitalcollections.nypl.org/items/6a709e10-1cda-013b-b83f-0242ac110002
+            const uuidMatch = nyplUrl.match(/\/items\/([a-f0-9-]+)/);
+            if (!uuidMatch) {
+                throw new Error('Invalid NYPL URL format');
+            }
+            
+            const uuid = uuidMatch[1];
+            
+            // Fetch the main page to extract JavaScript data
+            const pageResponse = await this.fetchDirect(nyplUrl);
+            if (!pageResponse.ok) {
+                throw new Error(`Failed to fetch NYPL page: ${pageResponse.status}`);
+            }
+            
+            const pageContent = await pageResponse.text();
+            
+            // Extract item_data from JavaScript
+            const itemDataMatch = pageContent.match(/var\s+item_data\s*=\s*({.*?});/s);
+            if (!itemDataMatch) {
+                throw new Error('Could not find item_data in NYPL page');
+            }
+            
+            let itemData;
+            try {
+                itemData = JSON.parse(itemDataMatch[1]);
+            } catch {
+                throw new Error('Failed to parse item_data JSON');
+            }
+            
+            // Extract high resolution image links
+            const highresLinks = itemData.highres_links || [];
+            if (!highresLinks.length) {
+                throw new Error('No high resolution images found');
+            }
+            
+            // Extract display name
+            let displayName = `NYPL Document ${uuid}`;
+            if (itemData.title) {
+                displayName = Array.isArray(itemData.title) ? itemData.title[0] : itemData.title;
+            }
+            
+            // Convert relative URLs to absolute if needed
+            const pageLinks = highresLinks.map((link: string) => {
+                if (link.startsWith('http')) {
+                    return link;
+                } else if (link.startsWith('/')) {
+                    return `https://images.nypl.org${link}`;
+                } else {
+                    return `https://images.nypl.org/${link}`;
+                }
+            });
+            
+            const nyplManifest = {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'nypl' as const,
+                displayName,
+                originalUrl: nyplUrl,
+            };
+            
+            return nyplManifest;
+            
+        } catch (error: any) {
+            console.error(`Failed to load NYPL manifest: ${error.message}`);
             throw error;
         }
     }

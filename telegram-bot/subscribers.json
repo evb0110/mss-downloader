@@ -2,6 +2,19 @@
   {
     "chatId": 53582187,
     "username": "evb0110",
-    "subscribedAt": "2025-06-17T17:47:39.953Z"
+    "subscribedAt": "2025-06-17T17:47:39.953Z",
+    "platforms": [
+      "amd64",
+      "arm64",
+      "linux"
+    ]
+  },
+  {
+    "chatId": 7585343382,
+    "username": "textornew",
+    "subscribedAt": "2025-06-20T16:10:10.301Z",
+    "platforms": [
+      "amd64"
+    ]
   }
 ]

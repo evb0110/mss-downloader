@@ -40,6 +40,7 @@ export class LibraryOptimizationService {
             optimizationDescription: 'Internet Culturale optimizations: 3 concurrent downloads, extended timeouts'
         },
         // Default libraries (no special optimizations)
+        'nypl': {},
         'gallica': {},
         'unifr': {},
         'vatlib': {},

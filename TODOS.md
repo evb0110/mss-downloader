@@ -2,9 +2,13 @@
 
 ## Pending Tasks
 
+- Add support for Morgan Library & Museum: Test and implement support for Morgan Library manuscripts. Test URLs: https://www.themorgan.org/collection/lindau-gospels/thumbs, https://www.themorgan.org/collection/gospel-book/143812/thumbs, https://www.themorgan.org/collection/arenberg-gospels/thumbs, https://www.themorgan.org/collection/gospel-book/159129, https://ica.themorgan.org/manuscript/thumbs/159109, https://ica.themorgan.org/manuscript/thumbs/131052, https://www.themorgan.org/collection/gospel-book/128491/thumbs
+
 - Add support for Stanford Parker Library: https://parker.stanford.edu/parker/catalog/ - Support URLs like https://parker.stanford.edu/parker/catalog/zs345bj2650 (22 URLs provided, similar format)
 
 ## Completed Tasks
+
+- Add support for NYPL Digital Collections: Implemented support for New York Public Library digital manuscripts using web scraping approach to extract high-resolution image links from JavaScript item_data. Successfully integrated with existing downloader architecture. Test URLs working: https://digitalcollections.nypl.org/items/6a709e10-1cda-013b-b83f-0242ac110002 (Landeve'nnec Gospels, 15 pages) and https://digitalcollections.nypl.org/items/89620130-9eeb-013d-0806-0242ac110002 (Gospel Lectionary, 15 pages).
 
 - Fix Gallica BNF hanging issue: Fixed downloads freezing instead of starting by correcting IIIF URL format from broken `/iiif/{ark}/f{page}/full/max/0/native.jpg` to working `/{ark}/f{page}.highres` format. Updated manifest parsing and binary search fallback logic. Both test URLs now work: https://gallica.bnf.fr/ark:/12148/btv1b8426288h/f1.planchecontact (554 pages) and https://gallica.bnf.fr/ark:/12148/btv1b10033169h/f1.planchecontact (404 pages).
 
