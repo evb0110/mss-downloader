@@ -2663,87 +2663,139 @@ export class EnhancedManuscriptDownloaderService {
             // Report initial progress
             progressCallback?.(0, mediaItems.length, `Loading manifest: 0/${mediaItems.length} pages`);
             
-            // Process media items sequentially to avoid overwhelming the server
+            // Process media items with batch processing and circuit breaker to prevent hanging
             let processedCount = 0;
+            const batchSize = 8; // Process in small batches to avoid overwhelming server
+            const maxFailedBatches = 3; // Stop if too many batches fail consecutively
+            const maxTotalFailures = Math.floor(mediaItems.length * 0.2); // Allow 20% failures max
             
-            for (let idx = 0; idx < mediaItems.length; idx++) {
-                const mediaRef = mediaItems[idx];
-                const mediaId = mediaRef['o:id'] || mediaRef.o_id || 
-                               (typeof mediaRef === 'object' && mediaRef['@id'] ? 
-                                mediaRef['@id'].split('/').pop() : mediaRef);
+            let failedBatchCount = 0;
+            let totalFailures = 0;
+            
+            // For very large manuscripts (>200 pages), limit to first 200 pages to prevent hanging
+            const maxPagesToProcess = Math.min(mediaItems.length, 200);
+            if (mediaItems.length > 200) {
+                console.log(`Orleans manuscript has ${mediaItems.length} pages, limiting to first ${maxPagesToProcess} pages for stability`);
+                progressCallback?.(0, maxPagesToProcess, `Loading manifest (limited): 0/${maxPagesToProcess} pages`);
+            }
+            
+            const itemsToProcess = mediaItems.slice(0, maxPagesToProcess);
+            
+            // Process items in batches with circuit breaker
+            for (let batchStart = 0; batchStart < itemsToProcess.length; batchStart += batchSize) {
+                const batchEnd = Math.min(batchStart + batchSize, itemsToProcess.length);
+                const batch = itemsToProcess.slice(batchStart, batchEnd);
                 
-                if (!mediaId) {
-                    console.warn(`No media ID found for media item ${idx}`);
-                    continue;
-                }
+                console.log(`Orleans: processing batch ${Math.floor(batchStart / batchSize) + 1} (items ${batchStart + 1}-${batchEnd})`);
                 
-                try {
+                // Process batch with Promise.allSettled for parallel processing
+                const batchPromises = batch.map(async (mediaRef, batchIdx) => {
+                    const idx = batchStart + batchIdx;
+                    const mediaId = mediaRef['o:id'] || mediaRef.o_id || 
+                                   (typeof mediaRef === 'object' && mediaRef['@id'] ? 
+                                    mediaRef['@id'].split('/').pop() : mediaRef);
+                    
+                    if (!mediaId) {
+                        throw new Error(`No media ID found for media item ${idx}`);
+                    }
+                    
                     const mediaUrl = `${baseApiUrl}/media/${mediaId}`;
                     
-                    // Use fetchDirect with extended Orleans timeout (60 seconds)
                     try {
                         const mediaResponse = await this.fetchDirect(mediaUrl);
                         
-                        if (mediaResponse.ok) {
-                            const mediaData = await mediaResponse.json();
-                            
-                            // Extract IIIF image URL from the media data
-                            const iiifSource = mediaData['o:source'] || mediaData.o_source;
-                            
-                            if (iiifSource && typeof iiifSource === 'string') {
-                                // Convert IIIF service URL to full resolution image URL
-                                let imageUrl = iiifSource;
-                                
-                                // If it's an IIIF image service URL, convert to full resolution
-                                if (imageUrl.includes('/iiif/3/') || imageUrl.includes('/iiif/2/')) {
-                                    // IIIF Image API URL - convert to full size JPEG
-                                    imageUrl = `${imageUrl}/full/max/0/default.jpg`;
-                                }
-                                
-                                pageLinks[idx] = imageUrl;
-                                processedCount++;
-                                
-                                // Progress logging and callback every 20 items to reduce UI updates
-                                if (processedCount % 20 === 0 || processedCount === mediaItems.length) {
-                                    console.log(`Orleans: processed ${processedCount}/${mediaItems.length} media items`);
-                                    progressCallback?.(processedCount, mediaItems.length, `Loading manifest: ${processedCount}/${mediaItems.length} pages`);
-                                }
-                            } else {
-                                // Fallback: check for thumbnail URLs if IIIF source not available
-                                const thumbnails = mediaData.thumbnail_display_urls || mediaData['thumbnail_display_urls'];
-                                if (thumbnails && thumbnails.large) {
-                                    pageLinks[idx] = thumbnails.large;
-                                    processedCount++;
-                                    
-                                    // Progress logging and callback for fallback case
-                                    if (processedCount % 20 === 0 || processedCount === mediaItems.length) {
-                                        console.log(`Orleans: processed ${processedCount}/${mediaItems.length} media items`);
-                                        progressCallback?.(processedCount, mediaItems.length, `Loading manifest: ${processedCount}/${mediaItems.length} pages`);
-                                    }
-                                }
-                            }
-                        } else {
-                            console.warn(`Orleans media ${mediaId} returned HTTP ${mediaResponse.status}`);
+                        if (!mediaResponse.ok) {
+                            throw new Error(`HTTP ${mediaResponse.status}`);
                         }
+                        
+                        const mediaData = await mediaResponse.json();
+                        
+                        // Extract IIIF image URL from the media data
+                        const iiifSource = mediaData['o:source'] || mediaData.o_source;
+                        
+                        if (iiifSource && typeof iiifSource === 'string') {
+                            let imageUrl = iiifSource;
+                            
+                            // If it's an IIIF image service URL, convert to full resolution
+                            if (imageUrl.includes('/iiif/3/') || imageUrl.includes('/iiif/2/')) {
+                                imageUrl = `${imageUrl}/full/max/0/default.jpg`;
+                            }
+                            
+                            return { idx, imageUrl, mediaId };
+                        } else {
+                            // Fallback: check for thumbnail URLs
+                            const thumbnails = mediaData.thumbnail_display_urls || mediaData['thumbnail_display_urls'];
+                            if (thumbnails && thumbnails.large) {
+                                return { idx, imageUrl: thumbnails.large, mediaId };
+                            }
+                        }
+                        
+                        throw new Error('No valid image URL found');
+                        
                     } catch (fetchError: any) {
                         if (fetchError.name === 'AbortError') {
-                            console.warn(`Orleans media ${mediaId} request timed out`);
-                        } else {
-                            throw fetchError;
+                            throw new Error(`Request timed out for media ${mediaId}`);
                         }
+                        throw fetchError;
                     }
-                } catch (mediaError: any) {
-                    console.warn(`Error processing Orleans media item ${mediaId}:`, mediaError.message);
+                });
+                
+                // Execute batch with timeout
+                const batchResults = await Promise.allSettled(batchPromises);
+                
+                // Process results and count failures
+                let batchFailures = 0;
+                
+                for (const result of batchResults) {
+                    if (result.status === 'fulfilled') {
+                        const { idx, imageUrl } = result.value;
+                        pageLinks[idx] = imageUrl;
+                        processedCount++;
+                    } else {
+                        batchFailures++;
+                        totalFailures++;
+                        console.warn(`Orleans batch processing error:`, result.reason?.message || result.reason);
+                    }
                 }
                 
-                // Add small delay between requests to be respectful to the server
-                if (idx < mediaItems.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 50));
+                // Circuit breaker logic
+                if (batchFailures === batch.length) {
+                    failedBatchCount++;
+                    console.warn(`Orleans: entire batch failed (${failedBatchCount}/${maxFailedBatches} consecutive failures)`);
+                    
+                    if (failedBatchCount >= maxFailedBatches) {
+                        throw new Error(`Orleans API appears to be blocked - ${maxFailedBatches} consecutive batch failures. Processed ${processedCount}/${itemsToProcess.length} pages.`);
+                    }
+                } else {
+                    failedBatchCount = 0; // Reset consecutive failure count on any success
+                }
+                
+                // Check total failure threshold
+                if (totalFailures > maxTotalFailures) {
+                    throw new Error(`Too many Orleans API failures (${totalFailures}/${itemsToProcess.length}). Server may be rate limiting. Processed ${processedCount} pages.`);
+                }
+                
+                // Progress reporting
+                if (processedCount % 20 === 0 || batchEnd >= itemsToProcess.length) {
+                    const progressMessage = itemsToProcess.length < mediaItems.length 
+                        ? `Loading manifest (limited): ${processedCount}/${itemsToProcess.length} pages`
+                        : `Loading manifest: ${processedCount}/${itemsToProcess.length} pages`;
+                    
+                    console.log(`Orleans: processed ${processedCount}/${itemsToProcess.length} media items (${totalFailures} failures)`);
+                    progressCallback?.(processedCount, itemsToProcess.length, progressMessage);
+                }
+                
+                // Add longer delay between batches to be respectful to the server
+                if (batchEnd < itemsToProcess.length) {
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay between batches
                 }
             }
             
             // Report final progress
-            progressCallback?.(mediaItems.length, mediaItems.length, `Manifest loaded: ${mediaItems.length} pages`);
+            const finalMessage = itemsToProcess.length < mediaItems.length 
+                ? `Manifest loaded (limited): ${processedCount} pages` 
+                : `Manifest loaded: ${processedCount} pages`;
+            progressCallback?.(processedCount, itemsToProcess.length, finalMessage);
             
             // Filter out undefined values and maintain order
             const validPageLinks = pageLinks.filter(Boolean);
@@ -2754,8 +2806,16 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             // Ensure we have a reasonable number of pages
-            if (validPageLinks.length < Math.min(5, mediaItems.length * 0.1)) {
-                console.warn(`Only ${validPageLinks.length}/${mediaItems.length} Orleans media items processed successfully`);
+            const minExpectedPages = Math.min(5, itemsToProcess.length * 0.1);
+            if (validPageLinks.length < minExpectedPages) {
+                console.warn(`Only ${validPageLinks.length}/${itemsToProcess.length} Orleans media items processed successfully`);
+            }
+            
+            // Log summary of processing
+            if (itemsToProcess.length < mediaItems.length) {
+                console.log(`Orleans: Successfully processed ${validPageLinks.length} pages (limited from ${mediaItems.length} total pages for stability)`);
+            } else {
+                console.log(`Orleans: Successfully processed ${validPageLinks.length}/${mediaItems.length} pages`);
             }
             
             // Extract display name from item metadata

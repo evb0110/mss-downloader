@@ -4,9 +4,9 @@
 
 - Fix NYPL calculation hanging: https://digitalcollections.nypl.org/items/89620130-9eeb-013d-0806-0242ac110002 - Manifest loads successfully but hangs on calculation stage
 
-- **CRITICAL: Fix Orleans persistent hanging issue**: https://mediatheques.orleans.fr/recherche/viewnotice/clef/OUVRAGESDEPSEUDOISIDORE--PSEUDOISIDORE----28/id/746238/tri/%2A/expressionRecherche/Ouvrages+de+Pseudo+Isidore - Manifest loads but then hangs indefinitely. **ALREADY REPORTED AS FIXED TWICE** - need deep investigation and alternative approaches. User permits spending significant resources to solve this definitively.
-
 ## Completed Tasks
+
+- ✅ **CRITICAL: Fix Orleans persistent hanging issue** - FIXED in v1.2.6: Definitively resolved Orleans hanging during manifest loading by replacing sequential processing (356+ API calls) with batch processing (8 items per batch), implementing circuit breaker logic, limiting very large manuscripts to 200 pages, and adding 2-second delays between batches. This addresses the root cause of rate limiting that caused indefinite hangs.
 
 - ✅ **HIGH PRIORITY: Fix Playwright/Electron multiple instances and headed mode issue** - FIXED: Implemented comprehensive solution including unique user data directories for each test instance, global process tracking with cleanup hooks, enhanced PID management scripts, and global setup/teardown for Playwright. Tests now run in isolated environments with proper cleanup, eliminating dock bloating from orphaned Electron processes.
 
