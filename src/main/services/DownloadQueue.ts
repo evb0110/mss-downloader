@@ -409,7 +409,9 @@ export class DownloadQueue extends EventEmitter {
             const selectedPageLinks = manifest.pageLinks.slice(startPage - 1, endPage);
             
             // Check if document should be auto-split
-            const shouldCheckSplit = !item.isAutoPart && pageCount > 50; // Only check for non-part items with decent size
+            // Skip size estimation for libraries that hang on first page download (Orleans v1.0.74, FLORUS v1.0.98)
+            const shouldCheckSplit = !item.isAutoPart && pageCount > 50 && 
+                manifest.library !== 'orleans' && manifest.library !== 'florus'; // Only check for non-part items with decent size, excluding Orleans and FLORUS
             if (shouldCheckSplit) {
                 const splitResult = await this.checkAndSplitLargeDocument(item, manifest, selectedPageLinks);
                 if (splitResult) {
