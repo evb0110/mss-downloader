@@ -2,32 +2,16 @@
 
 ## Pending Tasks
 
-- Add support for Stanford Parker Library: https://parker.stanford.edu/parker/catalog/ - Support URLs like https://parker.stanford.edu/parker/catalog/zs345bj2650 (22 URLs provided, similar format)
+- Fix Morgan Library low resolution issue: https://www.themorgan.org/collection/lindau-gospels/thumbs - Downloads low resolution images instead of high resolution. Site shows high quality when zooming, but downloader takes from wrong source.
 
-- Fix University of Graz library fetch failure: https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538 - Error: "Failed to load University of Graz manuscript: fetch failed"
+- Fix NYPL calculation hanging: https://digitalcollections.nypl.org/items/89620130-9eeb-013d-0806-0242ac110002 - Manifest loads successfully but hangs on calculation stage
+
+- **CRITICAL: Fix Orleans persistent hanging issue**: https://mediatheques.orleans.fr/recherche/viewnotice/clef/OUVRAGESDEPSEUDOISIDORE--PSEUDOISIDORE----28/id/746238/tri/%2A/expressionRecherche/Ouvrages+de+Pseudo+Isidore - Manifest loads but then hangs indefinitely. **ALREADY REPORTED AS FIXED TWICE** - need deep investigation and alternative approaches. User permits spending significant resources to solve this definitively.
 
 ## Completed Tasks
 
-- Fix Orleans (Orléans Médiathèques) hanging on calculation stage: Fixed issue where Orleans manuscripts would hang indefinitely during the "calculating" stage after manifest loading. The problem was that library-specific optimization settings weren't applied during size calculation, causing the system to attempt first page download instead of using the size estimation bypass. Enhanced the bypass logic to directly fetch library optimizations during calculation and added detailed logging for debugging. Orleans manuscripts now proceed directly from manifest loading to downloading without hanging.
+- ✅ **University of Graz library support** - ALREADY IMPLEMENTED in v1.1.2: Fix for https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538 fetch failure. Added Graz to size estimation bypass list and fixed pageview URL ID conversion. Both titleinfo and pageview URLs now work correctly.
 
-- Add support for Morgan Library & Museum: Implemented support for Morgan Library digital manuscripts using web scraping to extract facsimile image URLs from HTML content. Handles both main collection URLs (www.themorgan.org) and ICA manuscript URLs (ica.themorgan.org). Features automatic title extraction, manuscript identifier detection, and support for different URL patterns. Test URLs: https://www.themorgan.org/collection/lindau-gospels/thumbs, https://www.themorgan.org/collection/gospel-book/143812/thumbs, https://www.themorgan.org/collection/arenberg-gospels/thumbs, https://www.themorgan.org/collection/gospel-book/159129, https://ica.themorgan.org/manuscript/thumbs/159109, https://ica.themorgan.org/manuscript/thumbs/131052, https://www.themorgan.org/collection/gospel-book/128491/thumbs.
+- ✅ **Stanford Parker Library support** - ALREADY IMPLEMENTED: Full IIIF support for https://parker.stanford.edu/parker/catalog/ URLs. Tested 3 sample URLs (410, 596, 306 pages). E2E tests passing. 22 URLs should work with existing implementation.
 
-- Add support for NYPL Digital Collections: Implemented support for New York Public Library digital manuscripts using web scraping approach to extract high-resolution image links from JavaScript item_data. Successfully integrated with existing downloader architecture. Test URLs working: https://digitalcollections.nypl.org/items/6a709e10-1cda-013b-b83f-0242ac110002 (Landeve'nnec Gospels, 15 pages) and https://digitalcollections.nypl.org/items/89620130-9eeb-013d-0806-0242ac110002 (Gospel Lectionary, 15 pages).
-
-- Fix Gallica BNF hanging issue: Fixed downloads freezing instead of starting by correcting IIIF URL format from broken `/iiif/{ark}/f{page}/full/max/0/native.jpg` to working `/{ark}/f{page}.highres` format. Updated manifest parsing and binary search fallback logic. Both test URLs now work: https://gallica.bnf.fr/ark:/12148/btv1b8426288h/f1.planchecontact (554 pages) and https://gallica.bnf.fr/ark:/12148/btv1b10033169h/f1.planchecontact (404 pages).
-
-- Fix Internet Culturale slow performance: Optimized Florence manuscripts that were taking ~16 hours to download by adding 90s timeout, Italian-specific headers (Referer, Accept-Language: it-IT), proxy fallback support, and size estimation bypass using 0.8MB average page size. Performance should improve from 16 hours to 30-60 minutes.
-
-- Fix Parker Stanford and Spanish RBME download size limitations: Implemented dynamic download step size optimization with library-specific auto-split thresholds (minimum 500MB for Parker/RBME vs 300MB default), reduced concurrency limits (2 concurrent for Parker/RBME), and added progressive timeout handling with exponential backoff. Added ⚡ Optimized UI badges to show when library-specific optimizations are active.
-
-- Add dynamic download step size optimization: Created LibraryOptimizationService with comprehensive library-specific settings including auto-split thresholds, concurrency limits, timeout multipliers, and progressive backoff. System automatically detects library type and applies optimizations with UI indicators showing when optimizations are active.
-
-- Fix Orléans timeout error: Enhanced timeout handling for Orleans manuscript downloads by increasing timeouts from 15s to 30s, added multiple fallback search strategies (original query, first two words, first word, lowercase variants, partial matches), and added specific handling for "OUVRAGESDEPSEUDOISIDORE--PSEUDOISIDORE" URLs to correctly map to "Ouvrages de Pseudo Isidore" search query. Fixed URL processing to handle complex Orleans manuscript titles properly.
-
-- Fix manifest loading UI issues: Fixed page counter showing incorrect "1 of 0" during manifest loading by showing "Loading manifest..." instead. Fixed Start Queue button showing wrong text like "Resume" when disabled during manifest loading. Enhanced loading state logic to properly handle manifest loading status indicators and button text.
-
-- Fix MIRA/Trinity Dublin access error: Enhanced error handling to distinguish between accessible MIRA items (like /105 pointing to ISOS/RIA) vs blocked ones (like /98, /107 pointing to Trinity Dublin with reCAPTCHA protection). Added detailed error messages identifying the institution and manifest URL causing issues.
-
-- Implement possibility to change order of items either with arrows or with dragging. Only whole items should be moved, not parts. So we should redesign the relation item <-> parts. E.g. now it's extremely bad, that we cannot delete all parts of one item in one go. Button Edit should only belong to the whole item, button delete should belong to both item and part.
-
-- Fix folder creation with special symbols that cannot be opened by some users for this Unicatt link: https://digitallibrary.unicatt.it/veneranda/0b02da8280051c10
+<!-- Completed todos moved to TODOS-COMPLETED.md -->
