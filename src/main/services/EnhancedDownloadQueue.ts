@@ -893,7 +893,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
             
             // For Florus, Orleans, Internet Culturale, Manuscripta, and Graz - skip first page download and use estimated size calculation
             if (manifest.library === 'florus' || manifest.library === 'orleans' || manifest.library === 'internet_culturale' || manifest.library === 'manuscripta' || manifest.library === 'graz') {
-                console.log(`${manifest.library} manuscript detected, using estimated size calculation`);
+                console.log(`${manifest.library} manuscript detected, using estimated size calculation (bypassing first page download)`);
                 // Estimate based on typical manuscript page size
                 const avgPageSizeMB = manifest.library === 'orleans' ? 0.6 : 
                                     manifest.library === 'internet_culturale' ? 0.8 : 
@@ -903,14 +903,19 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 const estimatedTotalSizeMB = avgPageSizeMB * manifest.totalPages;
                 item.estimatedSizeMB = estimatedTotalSizeMB;
                 
-                // Get library-specific threshold or use global
-                const effectiveThreshold = item.libraryOptimizations?.autoSplitThresholdMB || 
+                // Get library-specific optimizations directly since item.libraryOptimizations may not be set yet
+                const libraryOpts = LibraryOptimizationService.getOptimizationsForLibrary(manifest.library as TLibrary);
+                const effectiveThreshold = libraryOpts.autoSplitThresholdMB || 
                                          this.state.globalSettings.autoSplitThresholdMB;
                 
+                console.log(`${manifest.library} size check: ${estimatedTotalSizeMB}MB vs threshold ${effectiveThreshold}MB`);
+                
                 if (estimatedTotalSizeMB > effectiveThreshold) {
+                    console.log(`${manifest.library} manuscript exceeds threshold, splitting into parts`);
                     await this.splitQueueItem(item, manifest, estimatedTotalSizeMB);
                     return true;
                 }
+                console.log(`${manifest.library} manuscript within threshold, proceeding with single download`);
                 return false;
             }
             

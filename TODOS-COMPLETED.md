@@ -1,14 +1,4 @@
-# TODOs
-
-## Pending Tasks
-
-- Add support for Stanford Parker Library: https://parker.stanford.edu/parker/catalog/ - Support URLs like https://parker.stanford.edu/parker/catalog/zs345bj2650 (22 URLs provided, similar format)
-
-- Fix University of Graz library fetch failure: https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538 - Error: "Failed to load University of Graz manuscript: fetch failed"
-
-## Completed Tasks
-
-- Fix Orleans (Orléans Médiathèques) hanging on calculation stage: Fixed issue where Orleans manuscripts would hang indefinitely during the "calculating" stage after manifest loading. The problem was that library-specific optimization settings weren't applied during size calculation, causing the system to attempt first page download instead of using the size estimation bypass. Enhanced the bypass logic to directly fetch library optimizations during calculation and added detailed logging for debugging. Orleans manuscripts now proceed directly from manifest loading to downloading without hanging.
+# Completed TODOs
 
 - Add support for Morgan Library & Museum: Implemented support for Morgan Library digital manuscripts using web scraping to extract facsimile image URLs from HTML content. Handles both main collection URLs (www.themorgan.org) and ICA manuscript URLs (ica.themorgan.org). Features automatic title extraction, manuscript identifier detection, and support for different URL patterns. Test URLs: https://www.themorgan.org/collection/lindau-gospels/thumbs, https://www.themorgan.org/collection/gospel-book/143812/thumbs, https://www.themorgan.org/collection/arenberg-gospels/thumbs, https://www.themorgan.org/collection/gospel-book/159129, https://ica.themorgan.org/manuscript/thumbs/159109, https://ica.themorgan.org/manuscript/thumbs/131052, https://www.themorgan.org/collection/gospel-book/128491/thumbs.
 
