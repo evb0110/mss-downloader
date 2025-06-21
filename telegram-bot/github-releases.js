@@ -180,8 +180,10 @@ ${releaseInfo.downloadUrl}
     
     async uploadBuild(version, buildFile, releaseNotes = '') {
         try {
-            // First check if the release already exists
-            const existingRelease = await this.getExistingRelease(version);
+            const fileName = path.basename(buildFile);
+            
+            // First check if the release already exists for this specific file
+            const existingRelease = await this.getExistingRelease(version, fileName);
             if (existingRelease) {
                 console.log(`✅ Using existing GitHub release: v${version}`);
                 console.log(`📥 Download URL: ${existingRelease.downloadUrl}`);
@@ -212,18 +214,47 @@ ${releaseInfo.downloadUrl}
         }
     }
     
-    async getExistingRelease(version) {
+    async getExistingRelease(version, targetFileName = null) {
         try {
             const tagName = `v${version}`;
             const releaseJson = execSync(`gh release view "${tagName}" --json assets,publishedAt`, { encoding: 'utf8' });
             const release = JSON.parse(releaseJson);
             
-            // Find the appropriate asset (prefer x64, then general Setup files)
-            const asset = release.assets.find(a => 
-                (a.name.includes('x64') || a.name.includes('Setup')) && 
-                a.name.endsWith('.exe') && 
-                !a.name.includes('arm64')
-            );
+            let asset = null;
+            
+            if (targetFileName) {
+                // Try to find exact match first
+                const targetSanitized = this.sanitizeFilenameForGitHub(targetFileName);
+                asset = release.assets.find(a => 
+                    this.sanitizeFilenameForGitHub(a.name) === targetSanitized
+                );
+                
+                // If no exact match, try platform-specific matching
+                if (!asset) {
+                    if (targetFileName.includes('arm64')) {
+                        asset = release.assets.find(a => 
+                            a.name.includes('arm64') && 
+                            (a.name.endsWith('.exe') || a.name.endsWith('.AppImage'))
+                        );
+                    } else if (targetFileName.includes('x64') || targetFileName.includes('Setup')) {
+                        asset = release.assets.find(a => 
+                            (a.name.includes('x64') || (a.name.includes('Setup') && !a.name.includes('arm64'))) && 
+                            a.name.endsWith('.exe')
+                        );
+                    } else if (targetFileName.endsWith('.AppImage')) {
+                        asset = release.assets.find(a => 
+                            a.name.endsWith('.AppImage')
+                        );
+                    }
+                }
+            } else {
+                // Fallback: Find the appropriate asset (prefer x64, then general Setup files)
+                asset = release.assets.find(a => 
+                    (a.name.includes('x64') || a.name.includes('Setup')) && 
+                    a.name.endsWith('.exe') && 
+                    !a.name.includes('arm64')
+                );
+            }
             
             if (asset) {
                 const sanitizedFileName = this.sanitizeFilenameForGitHub(asset.name);
