@@ -1,3 +1,6 @@
+// ⚠️ DEPRECATED: This bot only supports AMD64 builds
+// Use multiplatform-bot.js for full platform support
+
 const TelegramBot = require('node-telegram-bot-api');
 const fs = require('fs');
 const path = require('path');

@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 
+// ⚠️ DEPRECATED: This script only supports AMD64 builds
+// Use send-multiplatform-build.js for full platform support
+console.warn('⚠️  WARNING: send-build.js is DEPRECATED');
+console.warn('📱 Use send-multiplatform-build.js for multiplatform support');
+console.warn('🔄 Redirecting to multiplatform script...\n');
+
 const MSSTelegramBot = require('./bot');
 const BuildUtils = require('./build-utils');
 const fs = require('fs');

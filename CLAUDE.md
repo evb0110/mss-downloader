@@ -90,7 +90,7 @@ npm run lint              # Linting
 
 3. **Send Telegram Notification**:
    ```bash
-   TELEGRAM_BOT_TOKEN="7825780367:AAEgMIQxaG5hbDNJw9oLtylRxd7Ddr9vzBo" node telegram-bot/send-build.js
+   TELEGRAM_BOT_TOKEN="7825780367:AAEgMIQxaG5hbDNJw9oLtylRxd7Ddr9vzBo" node telegram-bot/send-multiplatform-build.js
    ```
 
 4. **Verify Notification**:
@@ -100,7 +100,7 @@ npm run lint              # Linting
 **Example Workflow Commands:**
 ```bash
 # After version bump in package.json
-npm run dist:win && TELEGRAM_BOT_TOKEN="7825780367:AAEgMIQxaG5hbDNJw9oLtylRxd7Ddr9vzBo" node telegram-bot/send-build.js
+npm run dist:win && TELEGRAM_BOT_TOKEN="7825780367:AAEgMIQxaG5hbDNJw9oLtylRxd7Ddr9vzBo" node telegram-bot/send-multiplatform-build.js
 ```
 
 **Remember**: Every version increment should result in user notification via Telegram bot. This ensures subscribers get immediate access to fixes and new features.
