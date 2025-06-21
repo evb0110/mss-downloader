@@ -35,9 +35,11 @@
     "test:e2e:kill": "if [ -f .test-pid ]; then pkill -P $(cat .test-pid) 2>/dev/null; kill $(cat .test-pid) 2>/dev/null; rm -f .test-pid; else echo 'No test process to kill'; fi",
     "test:e2e:headed": "npm run build && npx playwright test --headed",
     "test:e2e:debug": "npm run build && npx playwright test --debug",
-    "telegram:start": "cd telegram-bot && npm start",
+    "telegram:start": "cd telegram-bot && npm run start",
     "telegram:install": "cd telegram-bot && npm install",
-    "telegram:send": "cd telegram-bot && node send-build.js",
+    "telegram:send": "cd telegram-bot && npm run send-build",
+    "telegram:send-multiplatform": "cd telegram-bot && npm run send-multiplatform-build",
+    "telegram:test": "cd telegram-bot && npm run test",
     "release": "./release.sh",
     "postinstall": "electron-builder install-app-deps"
   },

@@ -164,7 +164,7 @@ IMPORTANT: When user adds a todo, ONLY add it to TODOS.md - do NOT start working
 
 ### Handling TODOs  
 User says "handle todos" → Follow workflow:
-1. Read first pending todo from `TODOS.md`
+1. Read first pending todo from `TODOS.md` - ONLY select todos WITHOUT ✅ checkmark
 2. Fix/implement the task
 3. Report completion to user
 4. Update test suite if needed (`npm run test:e2e` or `npm run test:e2e:start`/`npm run test:e2e:kill` for PID management)
