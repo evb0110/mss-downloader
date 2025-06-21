@@ -560,7 +560,22 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
             } else {
-                // Main Morgan format - look for facsimile images
+                // Main Morgan format - look for styled images and convert to original high-res
+                const styledImageRegex = /\/sites\/default\/files\/styles\/[^"']*\/public\/images\/collection\/[^"'?]+\.jpg/g;
+                const styledMatches = pageContent.match(styledImageRegex) || [];
+                
+                for (const match of styledMatches) {
+                    // Convert styled image to original high-resolution version
+                    // From: /sites/default/files/styles/large__650_x_650_/public/images/collection/filename.jpg
+                    // To: /sites/default/files/images/collection/filename.jpg
+                    const originalPath = match.replace(/\/styles\/[^\/]+\/public\//, '/');
+                    const fullUrl = `${baseUrl}${originalPath}`;
+                    if (!pageLinks.includes(fullUrl)) {
+                        pageLinks.push(fullUrl);
+                    }
+                }
+                
+                // Fallback: look for facsimile images (legacy format)
                 const facsimileRegex = /\/sites\/default\/files\/facsimile\/[^"']+\.jpg/g;
                 const facsimileMatches = pageContent.match(facsimileRegex) || [];
                 
@@ -576,7 +591,7 @@ export class EnhancedManuscriptDownloaderService {
                 const directMatches = pageContent.match(directImageRegex) || [];
                 
                 for (const match of directMatches) {
-                    if (!pageLinks.includes(match) && match.includes('facsimile')) {
+                    if (!pageLinks.includes(match) && (match.includes('facsimile') || match.includes('images/collection'))) {
                         pageLinks.push(match);
                     }
                 }

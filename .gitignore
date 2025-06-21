@@ -96,3 +96,8 @@ playwright-report/
 # Development certificates
 dev-cert.p12
 *.pfx
+
+# PID files for process management
+.dev-pid
+.dev-headless-pid
+.test-pid

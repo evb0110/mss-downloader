@@ -14,11 +14,29 @@ Complete Electron application for downloading manuscripts from digital libraries
 
 ```bash
 npm run dev                # Development (builds workers + main Electron app)
+npm run dev:headless       # Development in headless mode (no UI)
 npm run build             # Production build
 npm run dist              # Distribution build
 npm run test:e2e          # Run E2E tests
 npm run lint              # Linting
 ```
+
+### PID Management Commands (Use ONLY These)
+```bash
+# Development with PID tracking
+npm run dev:start          # Start development with PID capture
+npm run dev:kill           # Kill development process by PID
+
+# Headless development with PID tracking  
+npm run dev:headless:start # Start headless development with PID capture
+npm run dev:headless:kill  # Kill headless development process by PID
+
+# Testing with PID tracking
+npm run test:e2e:start     # Start E2E tests with PID capture
+npm run test:e2e:kill      # Kill E2E test process by PID
+```
+
+**CRITICAL:** Always use PID-based commands to avoid killing unrelated processes. Never use `killall npm` or `killall node`.
 
 ## Developer Context
 
@@ -26,7 +44,7 @@ npm run lint              # Linting
 - Frontend developer with 6 years Vue/TypeScript experience
 - Show minimal thinking necessary, no excessive branching
 - No comments in code snippets - explanations outside code
-- **Development process:** If you start `npm run dev` for testing, always kill it after
+- **Development process:** If you start `npm run dev:start` for testing, always use `npm run dev:kill` after. NEVER use killall or kill -9 commands.
 - **Reference project:** `/Users/e.barsky/Desktop/Personal/site/barsky.club` - use as source when something breaks
 
 ## Development Principles
@@ -51,12 +69,15 @@ npm run lint              # Linting
 - HTML reporter disabled because it automatically opens browser with results
 
 ### MANDATORY TESTING COMMANDS FOR ALL CLAUDE INSTANCES:
-- **ONLY USE:** `npm run test:e2e` (headless mode)
-- **NEVER USE:** `npm run test:e2e:headed` or `npm run test:e2e:debug`
+- **PREFERRED:** `npm run test:e2e:start` and `npm run test:e2e:kill` for PID management
+- **ACCEPTABLE:** `npm run test:e2e` (direct headless mode)
+- **FORBIDDEN:** `npm run test:e2e:headed` or `npm run test:e2e:debug` (unless explicitly asked by user)
 - **NEVER CREATE:** HTML debug files that open in browsers
-- **NEVER RUN:** Any command that launches browser windows
+- **NEVER RUN:** Any command that launches browser windows (unless explicitly asked by user)
 - **SECURITY CRITICAL:** User screen-shares on calls - browser windows expose them
 - **ALL CLAUDE INSTANCES:** Must follow this policy without exception
+- **PROCESS SAFETY:** Always prefer PID-based commands to avoid killing unrelated processes
+- **KILL POLICY:** NEVER use `killall`, `pkill`, or `kill -9` without specific PID
 
 ## Architecture & Testing
 
@@ -131,6 +152,7 @@ npm run dist:win && TELEGRAM_BOT_TOKEN="7825780367:AAEgMIQxaG5hbDNJw9oLtylRxd7Dd
 - **v1.0.77:** Added Internet Culturale support for Italy's national digital heritage platform, providing access to manuscripts from BNCF Florence, Biblioteca Medicea Laurenziana, and ICCU collections. Fixed API integration by correcting XML parsing, adding required parameters (teca, mode=all, fulltext=0), and implementing proper OAI identifier handling. Successfully tested with 10 Florence manuscript URLs across multiple institutions.
 - **v1.0.98:** Fixed Manuscripta.se hanging issue during download process by adding it to the list of libraries that skip first page download for size estimation (similar to Orleans fix in v1.0.74). The downloader was hanging on calculating stage when trying to download the first page to estimate total size, now uses estimated size calculation instead.
 - **v1.1.4:** Fixed FLORUS (BM Lyon) hanging issue during download process by adding it to the list of libraries that skip first page download for size estimation (similar to Orleans fix in v1.0.74 and Manuscripta fix in v1.0.98). FLORUS manuscripts now proceed directly from manifest loading to downloading without attempting problematic first page download for size calculation.
+- **v1.2.2:** Fixed Morgan Library (themorgan.org) manifest loading failures. Updated regex patterns to recognize new styled image format (/sites/default/files/styles/.../public/images/collection/) and convert to original high-resolution versions (/sites/default/files/images/collection/). Restored full functionality for Morgan Library manuscripts including Lindau Gospels.
 
 ## TODO Management System
 
@@ -145,7 +167,7 @@ User says "handle todos" → Follow workflow:
 1. Read first pending todo from `TODOS.md`
 2. Fix/implement the task
 3. Report completion to user
-4. Update test suite if needed (`npm run test:e2e`)
+4. Update test suite if needed (`npm run test:e2e` or `npm run test:e2e:start`/`npm run test:e2e:kill` for PID management)
 5. Update `CLAUDE.md` with insights/changes
 6. Move completed todo to "Completed Tasks"
 7. Bump patch version in `package.json`
