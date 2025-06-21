@@ -28,6 +28,11 @@ export class EnhancedManuscriptDownloaderService {
             description: 'New York Public Library digital manuscript collections',
         },
         {
+            name: 'Morgan Library & Museum',
+            example: 'https://www.themorgan.org/collection/lindau-gospels/thumbs',
+            description: 'Morgan Library & Museum digital manuscript collections',
+        },
+        {
             name: 'Gallica (BnF)',
             example: 'https://gallica.bnf.fr/ark:/12148/btv1b8449691v/f1.highres',
             description: 'French National Library digital manuscripts (supports any f{page}.* format)',
@@ -194,6 +199,7 @@ export class EnhancedManuscriptDownloaderService {
         }
         
         if (url.includes('digitalcollections.nypl.org')) return 'nypl';
+        if (url.includes('themorgan.org')) return 'morgan';
         if (url.includes('gallica.bnf.fr')) return 'gallica';
         if (url.includes('e-codices.unifr.ch') || url.includes('e-codices.ch')) return 'unifr';
         if (url.includes('digi.vatlib.it')) return 'vatlib';
@@ -405,6 +411,9 @@ export class EnhancedManuscriptDownloaderService {
                 case 'nypl':
                     manifest = await this.loadNyplManifest(originalUrl);
                     break;
+                case 'morgan':
+                    manifest = await this.loadMorganManifest(originalUrl);
+                    break;
                 case 'gallica':
                     manifest = await this.loadGallicaManifest(originalUrl);
                     break;
@@ -488,6 +497,125 @@ export class EnhancedManuscriptDownloaderService {
             
         } catch (error: any) {
             console.error(`Failed to load manifest: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Load Morgan Library & Museum manifest
+     */
+    async loadMorganManifest(morganUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // Handle different Morgan URL patterns
+            let baseUrl: string;
+            let displayName: string = 'Morgan Library Manuscript';
+            
+            if (morganUrl.includes('ica.themorgan.org')) {
+                // ICA format: https://ica.themorgan.org/manuscript/thumbs/159109
+                const icaMatch = morganUrl.match(/\/manuscript\/thumbs\/(\d+)/);
+                if (!icaMatch) {
+                    throw new Error('Invalid Morgan ICA URL format');
+                }
+                baseUrl = 'https://ica.themorgan.org';
+                displayName = `Morgan ICA Manuscript ${icaMatch[1]}`;
+            } else {
+                // Main format: https://www.themorgan.org/collection/lindau-gospels/thumbs
+                // or https://www.themorgan.org/collection/gospel-book/159129
+                const mainMatch = morganUrl.match(/\/collection\/([^/]+)(?:\/(\d+))?(?:\/thumbs)?/);
+                if (!mainMatch) {
+                    throw new Error('Invalid Morgan URL format');
+                }
+                baseUrl = 'https://www.themorgan.org';
+                
+                // Extract display name from URL
+                displayName = mainMatch[1].replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            }
+            
+            // Ensure we're fetching the thumbs page
+            let thumbsUrl = morganUrl;
+            if (!thumbsUrl.includes('/thumbs') && !thumbsUrl.includes('ica.themorgan.org')) {
+                thumbsUrl = thumbsUrl.replace(/\/?$/, '/thumbs');
+            }
+            
+            // Fetch the thumbs page to extract image data
+            const pageResponse = await this.fetchDirect(thumbsUrl);
+            if (!pageResponse.ok) {
+                throw new Error(`Failed to fetch Morgan page: ${pageResponse.status}`);
+            }
+            
+            const pageContent = await pageResponse.text();
+            
+            // Extract image URLs from the page
+            const pageLinks: string[] = [];
+            
+            if (morganUrl.includes('ica.themorgan.org')) {
+                // ICA format - look for image references
+                const icaImageRegex = /icaimages\/\d+\/[^"']+\.jpg/g;
+                const icaMatches = pageContent.match(icaImageRegex) || [];
+                
+                for (const match of icaMatches) {
+                    const fullUrl = `https://ica.themorgan.org/${match}`;
+                    if (!pageLinks.includes(fullUrl)) {
+                        pageLinks.push(fullUrl);
+                    }
+                }
+            } else {
+                // Main Morgan format - look for facsimile images
+                const facsimileRegex = /\/sites\/default\/files\/facsimile\/[^"']+\.jpg/g;
+                const facsimileMatches = pageContent.match(facsimileRegex) || [];
+                
+                for (const match of facsimileMatches) {
+                    const fullUrl = `${baseUrl}${match}`;
+                    if (!pageLinks.includes(fullUrl)) {
+                        pageLinks.push(fullUrl);
+                    }
+                }
+                
+                // Also look for any direct image references
+                const directImageRegex = /https?:\/\/[^"']*themorgan\.org[^"']*\.jpg/g;
+                const directMatches = pageContent.match(directImageRegex) || [];
+                
+                for (const match of directMatches) {
+                    if (!pageLinks.includes(match) && match.includes('facsimile')) {
+                        pageLinks.push(match);
+                    }
+                }
+            }
+            
+            // Try to extract title from page content
+            const titleMatch = pageContent.match(/<title[^>]*>([^<]+)</i);
+            if (titleMatch) {
+                const pageTitle = titleMatch[1].replace(/\s*\|\s*The Morgan Library.*$/i, '').trim();
+                if (pageTitle && pageTitle !== 'The Morgan Library & Museum') {
+                    displayName = pageTitle;
+                }
+            }
+            
+            // Look for manuscript identifier in content
+            const msMatch = pageContent.match(/MS\s+M\.?\s*(\d+)/i);
+            if (msMatch) {
+                displayName = `${displayName} (MS M.${msMatch[1]})`;
+            }
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No images found on Morgan Library page');
+            }
+            
+            // Remove duplicates and sort
+            const uniquePageLinks = [...new Set(pageLinks)].sort();
+            
+            const morganManifest = {
+                pageLinks: uniquePageLinks,
+                totalPages: uniquePageLinks.length,
+                library: 'morgan' as const,
+                displayName,
+                originalUrl: morganUrl,
+            };
+            
+            return morganManifest;
+            
+        } catch (error: any) {
+            console.error(`Failed to load Morgan manifest: ${error.message}`);
             throw error;
         }
     }

@@ -41,6 +41,7 @@ export class LibraryOptimizationService {
         },
         // Default libraries (no special optimizations)
         'nypl': {},
+        'morgan': {},
         'gallica': {},
         'unifr': {},
         'vatlib': {},
