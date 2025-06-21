@@ -14,6 +14,18 @@ import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Function to read app version
+async function getAppVersion(): Promise<string> {
+  try {
+    const packageJsonPath = join(__dirname, '../../package.json');
+    const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
+    return packageJson.version;
+  } catch (error) {
+    console.warn('Could not read version from package.json:', error);
+    return '1.0.0';
+  }
+}
+
 const isDev = (process.env.NODE_ENV === 'development' || !app.isPackaged) && process.env.NODE_ENV !== 'test';
 
 let mainWindow: BrowserWindow | null = null;
@@ -239,12 +251,13 @@ const createMenu = () => {
       submenu: [
         {
           label: 'About',
-          click: () => {
+          click: async () => {
+            const version = await getAppVersion();
             dialog.showMessageBox(mainWindow!, {
               type: 'info',
-              title: 'About Manuscript Downloader',
-              message: 'Manuscript Downloader v1.0.0',
-              detail: 'Download manuscripts from Gallica BnF, e-codices Unifr, and Vatican Library',
+              title: 'About Abba Ababus (MSS Downloader)',
+              message: `Abba Ababus (MSS Downloader) v${version}`,
+              detail: 'Download manuscripts from digital libraries worldwide including Gallica BnF, e-codices, Vatican Library, and 25+ other institutions',
             });
           },
         },
