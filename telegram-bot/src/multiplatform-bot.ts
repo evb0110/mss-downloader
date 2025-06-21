@@ -543,9 +543,43 @@ export class MultiplatformMSSBot {
         
         if (subscribedBuilds.length > 0) {
           enhancedMessage += '\n\n📥 **Direct Downloads:**';
-          for (const { platform } of subscribedBuilds) {
-            const platformName = `${this.platforms[platform].emoji} ${this.platforms[platform].name}`;
-            enhancedMessage += `\n🔗 [${platformName}](https://github.com/evb0110/mss-downloader/releases/latest)`;
+          
+          // Try to get direct download URLs from GitHub releases API
+          try {
+            const response = await fetch('https://api.github.com/repos/evb0110/mss-downloader/releases/latest');
+            const release = await response.json();
+            
+            for (const { platform } of subscribedBuilds) {
+              const platformName = `${this.platforms[platform].emoji} ${this.platforms[platform].name}`;
+              
+              // Find the matching asset for this platform
+              let downloadUrl = `https://github.com/evb0110/mss-downloader/releases/latest`;
+              
+              if (release.assets) {
+                let assetPattern: RegExp;
+                if (platform === 'amd64') {
+                  assetPattern = /Setup.*x64.*\.exe$/;
+                } else if (platform === 'arm64') {
+                  assetPattern = /Setup.*arm64.*\.exe$/;
+                } else if (platform === 'linux') {
+                  assetPattern = /\.AppImage$/;
+                }
+                
+                const asset = release.assets.find((asset: any) => assetPattern.test(asset.name));
+                if (asset) {
+                  downloadUrl = asset.browser_download_url;
+                }
+              }
+              
+              enhancedMessage += `\n🔗 [${platformName}](${downloadUrl})`;
+            }
+          } catch (error) {
+            console.error('Failed to fetch GitHub release info:', error);
+            // Fallback to generic releases page
+            for (const { platform } of subscribedBuilds) {
+              const platformName = `${this.platforms[platform].emoji} ${this.platforms[platform].name}`;
+              enhancedMessage += `\n🔗 [${platformName}](https://github.com/evb0110/mss-downloader/releases/latest)`;
+            }
           }
         }
         
