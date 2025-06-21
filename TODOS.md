@@ -2,6 +2,10 @@
 
 ## Pending Tasks
 
+- ✅ **HIGH PRIORITY: Fix Telegram bot changelog message** - RESOLVED: Bot now sends actual version-specific changelog instead of generic multi-platform marketing text. Removed hardcoded promotional content and now shows real changes from VERSION commits. Message format streamlined to focus on actual improvements.
+
+- **Rewrite Telegram bot using TypeScript and ES modules** - Before implementing the rewrite, write comprehensive tests to ensure the transition goes smoothly without breaking user experience. The bot needs to maintain all current functionality while moving to modern TypeScript/ES modules architecture.
+
 - **HIGH PRIORITY: Fix Playwright/Electron multiple instances and headed mode issue** - Last time Playwright was run headlessly, it bloated dock with multiple Electron instances. User asked to fix it but headed mode was restored. Need extensive investigation reading docs to ensure: 1) Never start Electron in headed mode, 2) Never have more than one Electron running, 3) Proper cleanup of all instances after tests.
 
 

@@ -279,23 +279,12 @@ async function sendMultiplatformBuild() {
         const message = `
 🚀 ${bold(`MSS Downloader v${version} Available!`)}
 
-📦 Version: v${formatText(version)}
-💻 Platforms Available:
-${platformSummary}
-📅 Built: ${formatText(new Date().toLocaleString())}
-
 ${changelog}
 
-${bold("🎯 Multi-Platform Support:")}
-Now supporting Windows x64, Windows ARM64, and Linux!
-Each subscriber will receive builds for their subscribed platforms.
+💻 ${bold("Available Platforms:")}
+${platformSummary}
 
-${bold("📥 Installation Instructions:")}
-1. Download the appropriate file for your platform
-2. Run the installer (Windows) or AppImage (Linux)
-3. Follow the installation prompts
-
-💡 ${bold("Note:")} All builds are digitally signed (Windows) or verified (Linux) for security.
+📅 Built: ${formatText(new Date().toLocaleString())}
 
 📥 Download and install to get the latest features and fixes!
         `.trim();
