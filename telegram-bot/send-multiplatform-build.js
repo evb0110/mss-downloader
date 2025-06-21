@@ -27,21 +27,12 @@ function getChangelogFromCommits(version) {
         // Get recent commits since last version
         const commits = execSync('git log --oneline -15 --pretty=format:"%s"', { encoding: 'utf8' }).trim().split('\n');
         
-        // For this build, highlight the major recent improvements
-        const recentImprovements = [
-            "✅ Added multi-platform build support (Windows x64, ARM64, Linux)",
-            "✅ Implemented hierarchical subscription menu system",
-            "✅ Enhanced Telegram bot with platform-specific notifications",
-            "✅ Fixed right-click context menu Cut/Copy/Paste functionality",
-            "✅ Added LibraryOptimizationService for better download performance"
-        ];
-        
-        // Also look for user-facing library/feature commits
+        // Technical commits to skip
         const technicalPatterns = [
             /^Bump version/i,
             /Generated with Claude Code/i,
             /Fix GitHub Actions/i,
-            /Fix Telegram/i,
+            /Fix Telegram.*bot(?!.*subscription)/i, // Skip "Fix Telegram bot" but not "Fix Telegram bot subscription issues"
             /Fix GitHub token/i,
             /Fix GitHub release/i,
             /Enable subscribers/i,
@@ -52,50 +43,24 @@ function getChangelogFromCommits(version) {
             /Fix.*workflow/i,
             /Fix.*CI/i,
             /Test.*formatting/i,
-            /Fix.*SmartScreen/i
+            /Fix.*SmartScreen/i,
+            /Fix multiplatform GitHub releases/i,
+            /Complete.*worktree.*merge/i
         ];
         
-        // Look for user-facing commits that mention features/fixes
+        // Look for user-facing commits
         const userFacingPatterns = [
-            /^VERSION-.*optimization/i,
-            /^VERSION-.*LibraryOptimization/i,
-            /^VERSION-.*Fix/i,
-            /^VERSION-.*Fixed/i,
-            /^VERSION-.*Add/i,
-            /^VERSION-.*Added/i,
-            /^VERSION-.*Enhance/i,
-            /^VERSION-.*Enhanced/i,
-            /Add.*support/i,
-            /Added.*support/i,
-            /Fixed?.*hanging/i,
-            /Fixed?.*error/i,
-            /Fixed?.*issue/i,
-            /Fixed?.*loading/i,
-            /Fixed?.*manifest/i,
-            /Fixed?.*library/i,
-            /Enhanced.*handling/i,
-            /Implement.*progress/i,
-            /Add.*library/i,
-            /Fix.*download/i,
+            /^VERSION-/i,
+            /Fix.*hanging/i,
+            /Fix.*Orleans/i,
             /Fix.*Morgan/i,
             /Fix.*library/i,
-            /Enhanced.*cache/i,
-            /Added.*progress/i,
-            /Improve.*download/i,
-            /Enhance.*manuscript/i,
+            /Fix.*manifest/i,
+            /Fix.*subscription/i,
+            /Add.*simultaneous.*download/i,
+            /Enhanced.*handling/i,
             /support.*library/i,
-            /add.*support.*library/i,
-            /Fixed?.*AbortError/i,
-            /Fixed?.*timeout/i,
-            /Enhanced.*timeout/i,
-            /Fixed?.*403/i,
-            /Fixed?.*HTTP/i,
-            /support.*IIIF/i,
-            /Fixed?.*right.?click/i,
-            /Fix.*context.*menu/i,
-            /Enhanced.*context.*menu/i,
-            /Add.*copy.*paste/i,
-            /Enable.*Cut.*Copy.*Paste/i
+            /Added.*support/i
         ];
         
         const changelogItems = [];
@@ -111,12 +76,12 @@ function getChangelogFromCommits(version) {
                 return userFacingPatterns.some(pattern => pattern.test(commit));
             })
             .forEach(commit => {
-                if (changelogItems.length >= 2) return; // Max 2 items from commits
+                if (changelogItems.length >= 3) return; // Max 3 items from commits
                 
                 // Clean up commit message
                 let cleaned = commit
                     .replace(/^WEB-\d+\s+/, '') // Remove ticket numbers
-                    .replace(/🤖.*$/, '') // Remove Claude signature
+                    .replace(/🤖.*Generated with.*$/, '') // Remove Claude signature
                     .replace(/\s+Update version.*$/, '') // Remove version update mentions
                     .trim();
                 
@@ -126,24 +91,9 @@ function getChangelogFromCommits(version) {
                 // Avoid duplicates
                 if (!seenChanges.has(cleaned.toLowerCase())) {
                     seenChanges.add(cleaned.toLowerCase());
-                    changelogItems.push(`• ${formatText(cleaned)}`);
+                    changelogItems.push(`✅ ${formatText(cleaned)}`);
                 }
             });
-        
-        // For recent versions (1.0.97+), show the major improvements we just made
-        const versionParts = version.split('.');
-        const versionNum = parseFloat(versionParts[0] + '.' + (versionParts[1] || '0') + (versionParts[2] || '0').padStart(2, '0'));
-        if (versionNum >= 1.097) {
-            // Show recent major improvements
-            const improvements = recentImprovements.slice(0, 3); // Show top 3
-            
-            // Add any library/feature commits found
-            if (changelogItems.length > 0) {
-                improvements.push(...changelogItems.slice(0, 2));
-            }
-            
-            return `${bold("📝 What's New:")}\n${improvements.join('\n')}`;
-        }
         
         if (changelogItems.length > 0) {
             return `${bold("📝 What's New:")}\n${changelogItems.join('\n')}`;
@@ -160,31 +110,67 @@ function getChangelogFromCommits(version) {
 function extractUserFacingChange(commitMessage) {
     // Extract the most important part of the commit for users
     
-    // If it's a VERSION commit, extract after the colon
-    const versionMatch = commitMessage.match(/^VERSION-[^:]+:\s*(.+)/i);
+    // If it's a VERSION commit, extract the meaningful part
+    const versionMatch = commitMessage.match(/^VERSION-[^:]*(?::\s*(.+))?/i);
     if (versionMatch) {
-        return versionMatch[1].trim();
+        let description = versionMatch[1] ? versionMatch[1].trim() : '';
+        
+        // If no description after colon, extract from the whole commit
+        if (!description) {
+            // Handle commits like "VERSION-1.2.4 Complete Stanford Parker..."
+            const shortVersionMatch = commitMessage.match(/^VERSION-[\d.]+\s+(.+)/i);
+            if (shortVersionMatch) {
+                description = shortVersionMatch[1].trim();
+            }
+        }
+        
+        // Extract the first sentence or main feature described
+        const firstSentence = description.split('.')[0].trim();
+        if (firstSentence.length > 20) {
+            description = firstSentence;
+        }
+        
+        // Clean up specific patterns
+        if (description.match(/Add.*simultaneous.*download/i)) {
+            return 'Added simultaneous download functionality';
+        }
+        if (description.match(/Fix.*About.*dialog.*version/i)) {
+            return 'Fixed About dialog version display and improved process management';
+        }
+        if (description.match(/Update.*About.*dialog.*version/i)) {
+            return 'Fixed About dialog version display and improved process management';
+        }
+        if (description.match(/Fix.*Morgan.*Library.*manifest/i)) {
+            return 'Fixed Morgan Library manifest loading for themorgan.org manuscripts';
+        }
+        if (description.match(/Fix.*FLORUS.*hanging/i)) {
+            return 'Fixed FLORUS hanging on calculating stage';
+        }
+        if (description.match(/Complete.*Stanford.*Parker.*Graz/i)) {
+            return 'Completed Stanford Parker and Graz library support verification';
+        }
+        
+        return description;
+    }
+    
+    // Handle non-VERSION commits
+    
+    // Fix Orleans hanging
+    if (commitMessage.match(/Fix.*Orleans.*hanging/i)) {
+        return 'Fixed Orleans library hanging on calculation stage';
+    }
+    
+    // Fix Telegram bot subscription issues
+    if (commitMessage.match(/Fix.*Telegram.*bot.*subscription/i)) {
+        return 'Fixed Telegram bot subscription issues';
     }
     
     // If it mentions fixing a specific library like Morgan
     const specificLibraryMatch = commitMessage.match(/Fix(?:ed)?\s+(Morgan\s+Library|themorgan\.org|Gallica|Vatican|CUDL|ISOS|MIRA|Trinity|Cambridge|Orleans|Manuscripta|Stanford|Parker|FLORUS|BM\s+Lyon)[^:]*(?::\s*(.+))?/i);
     if (specificLibraryMatch) {
         const libraryName = specificLibraryMatch[1];
-        const description = specificLibraryMatch[2] || 'manifest loading';
+        const description = specificLibraryMatch[2] || 'issues';
         return `Fixed ${libraryName} ${description}`;
-    }
-    
-    // If it mentions adding support for a specific library, extract that
-    const libraryMatch = commitMessage.match(/Add(?:ed)?\s+([^:,]+?)\s+support/i);
-    if (libraryMatch) {
-        const libraryName = libraryMatch[1].trim();
-        return `Added ${libraryName} support`;
-    }
-    
-    // If it mentions multiple library support, extract that
-    const multiLibraryMatch = commitMessage.match(/Add(?:ed)?\s+([^:]+?library|libraries)/i);
-    if (multiLibraryMatch) {
-        return `Added new manuscript library support`;
     }
     
     // If it mentions fixing a hanging issue, that's important
@@ -193,34 +179,11 @@ function extractUserFacingChange(commitMessage) {
         return `Fixed ${hangingMatch[1]} hanging issue`;
     }
     
-    // If it mentions fixing HTTP/403/timeout errors, extract that
-    const errorMatch = commitMessage.match(/Fix(?:ed)?\s+([^:]+?)\s+(403|HTTP|timeout|error)/i);
-    if (errorMatch) {
-        return `Fixed ${errorMatch[1]} ${errorMatch[2]} issues`;
-    }
-    
-    // If it mentions fixing right-click or context menu issues
-    const contextMenuMatch = commitMessage.match(/Fix(?:ed)?\s+([^:]*?)\s*(right.?click|context.*menu)/i);
-    if (contextMenuMatch) {
-        return `Fixed right-click context menu functionality`;
-    }
-    
-    // If it mentions adding copy/paste functionality
-    const copyPasteMatch = commitMessage.match(/(Add|Enable).*copy.*paste/i);
-    if (copyPasteMatch) {
-        return `Added copy/paste functionality to context menu`;
-    }
-    
-    // If it mentions improving download functionality
-    const downloadMatch = commitMessage.match(/Improve(?:d)?\s+download\s+functionality/i);
-    if (downloadMatch) {
-        return `Improved download functionality`;
-    }
-    
-    // If it mentions enhancing manuscript downloader
-    const manuscriptMatch = commitMessage.match(/Enhance(?:d)?\s+manuscript\s+downloader/i);
-    if (manuscriptMatch) {
-        return `Enhanced manuscript downloader`;
+    // If it mentions adding support for a specific library, extract that
+    const libraryMatch = commitMessage.match(/Add(?:ed)?\s+([^:,]+?)\s+support/i);
+    if (libraryMatch) {
+        const libraryName = libraryMatch[1].trim();
+        return `Added ${libraryName} support`;
     }
     
     // General fix pattern
@@ -235,16 +198,10 @@ function extractUserFacingChange(commitMessage) {
         return `Enhanced ${enhanceMatch[1]}`;
     }
     
-    // General implementation pattern  
-    const implementMatch = commitMessage.match(/Implement(?:ed)?\s+([^:,]+?)(?:\s+by|\s+-|\s+and|$)/i);
-    if (implementMatch) {
-        return `Implemented ${implementMatch[1]}`;
-    }
-    
     // Take the first meaningful part before colon
-    const beforeColon = commitMessage.split(':')[0].trim();
-    if (beforeColon.length > 10) {
-        return beforeColon;
+    const colIndex = commitMessage.indexOf(':');
+    if (colIndex > 10) {
+        return commitMessage.substring(0, colIndex).trim();
     }
     
     return commitMessage.trim();
