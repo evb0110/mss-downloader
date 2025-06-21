@@ -188,8 +188,14 @@ When user says "bump" or when completing todos → Follow this workflow:
 **CRITICAL BUILD MONITORING:**
 - Always check GitHub Actions status after pushing version bumps
 - If builds fail, investigate immediately and fix before next version bump
-- Common failures: Telegram bot dependency issues, missing TypeScript compilation
+- Common failures: Telegram bot dependency issues, missing TypeScript compilation, wrong script invocation
 - Use: `curl -s "https://api.github.com/repos/evb0110/mss-downloader/actions/runs?per_page=3" | jq -r '.workflow_runs[] | "\(.status) \(.conclusion) \(.name)"'`
+
+**TELEGRAM BOT ISSUES RESOLVED:**
+- Fixed duplicate messages: Bot was sending separate message per platform subscription instead of unified message
+- Fixed missing download links: Improved file handling with GitHub releases fallback
+- Fixed generic changelog: Added pattern matching for Orleans, GitHub Actions, and other meaningful fixes
+- GitHub workflow updated to use `npm run send-multiplatform-build` instead of direct JS execution
 
 CRITICAL: Only mark tasks as completed in TODOS.md when they are ACTUALLY FULLY IMPLEMENTED AND WORKING. Never mark something as completed based on code changes alone - verify the functionality works as expected.
 
