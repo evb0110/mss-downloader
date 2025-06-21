@@ -10,13 +10,13 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: 1,
+  workers: 1, // CRITICAL: Single worker to prevent multiple Electron instances
   reporter: [['list'], ['json', { outputFile: 'test-results/results.json' }]],
   use: {
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    headless: true,
+    headless: true, // CRITICAL: Always headless to prevent dock bloating
   },
   projects: [
     {
@@ -28,4 +28,6 @@ export default defineConfig({
     },
   ],
   outputDir: 'test-results/',
+  globalSetup: './tests/e2e/global-setup.ts',
+  globalTeardown: './tests/e2e/global-teardown.ts',
 });
