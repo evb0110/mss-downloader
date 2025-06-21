@@ -59,29 +59,39 @@ function getChangelogFromCommits(version) {
         const userFacingPatterns = [
             /^VERSION-.*optimization/i,
             /^VERSION-.*LibraryOptimization/i,
+            /^VERSION-.*Fix/i,
+            /^VERSION-.*Fixed/i,
+            /^VERSION-.*Add/i,
+            /^VERSION-.*Added/i,
+            /^VERSION-.*Enhance/i,
+            /^VERSION-.*Enhanced/i,
             /Add.*support/i,
             /Added.*support/i,
-            /Fixed.*hanging/i,
-            /Fixed.*error/i,
-            /Fixed.*issue/i,
+            /Fixed?.*hanging/i,
+            /Fixed?.*error/i,
+            /Fixed?.*issue/i,
+            /Fixed?.*loading/i,
+            /Fixed?.*manifest/i,
+            /Fixed?.*library/i,
             /Enhanced.*handling/i,
             /Implement.*progress/i,
             /Add.*library/i,
             /Fix.*download/i,
+            /Fix.*Morgan/i,
+            /Fix.*library/i,
             /Enhanced.*cache/i,
-            /Fixed.*loading/i,
             /Added.*progress/i,
             /Improve.*download/i,
             /Enhance.*manuscript/i,
             /support.*library/i,
             /add.*support.*library/i,
-            /Fixed.*AbortError/i,
-            /Fixed.*timeout/i,
+            /Fixed?.*AbortError/i,
+            /Fixed?.*timeout/i,
             /Enhanced.*timeout/i,
-            /Fixed.*403/i,
-            /Fixed.*HTTP/i,
+            /Fixed?.*403/i,
+            /Fixed?.*HTTP/i,
             /support.*IIIF/i,
-            /Fixed.*right.?click/i,
+            /Fixed?.*right.?click/i,
             /Fix.*context.*menu/i,
             /Enhanced.*context.*menu/i,
             /Add.*copy.*paste/i,
@@ -149,6 +159,20 @@ function getChangelogFromCommits(version) {
 
 function extractUserFacingChange(commitMessage) {
     // Extract the most important part of the commit for users
+    
+    // If it's a VERSION commit, extract after the colon
+    const versionMatch = commitMessage.match(/^VERSION-[^:]+:\s*(.+)/i);
+    if (versionMatch) {
+        return versionMatch[1].trim();
+    }
+    
+    // If it mentions fixing a specific library like Morgan
+    const specificLibraryMatch = commitMessage.match(/Fix(?:ed)?\s+(Morgan\s+Library|themorgan\.org|Gallica|Vatican|CUDL|ISOS|MIRA|Trinity|Cambridge|Orleans|Manuscripta|Stanford|Parker|FLORUS|BM\s+Lyon)[^:]*(?::\s*(.+))?/i);
+    if (specificLibraryMatch) {
+        const libraryName = specificLibraryMatch[1];
+        const description = specificLibraryMatch[2] || 'manifest loading';
+        return `Fixed ${libraryName} ${description}`;
+    }
     
     // If it mentions adding support for a specific library, extract that
     const libraryMatch = commitMessage.match(/Add(?:ed)?\s+([^:,]+?)\s+support/i);
