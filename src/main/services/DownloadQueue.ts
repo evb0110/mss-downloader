@@ -540,9 +540,10 @@ export class DownloadQueue extends EventEmitter {
             const selectedPageLinks = manifest.pageLinks.slice(startPage - 1, endPage);
             
             // Check if document should be auto-split
-            // Skip size estimation for libraries that hang on first page download (Orleans v1.0.74, FLORUS v1.0.98)
+            // Skip size estimation for libraries that hang on first page download (Orleans v1.0.74, Manuscripta v1.0.98, FLORUS v1.1.4, Modena v1.3.21)
             const shouldCheckSplit = !item.isAutoPart && pageCount > 50 && 
-                manifest.library !== 'orleans' && manifest.library !== 'florus'; // Only check for non-part items with decent size, excluding Orleans and FLORUS
+                manifest.library !== 'orleans' && manifest.library !== 'florus' && 
+                manifest.library !== 'manuscripta' && manifest.library !== 'modena'; // Only check for non-part items with decent size, excluding problematic libraries
             if (shouldCheckSplit) {
                 const splitResult = await this.checkAndSplitLargeDocument(item, manifest, selectedPageLinks);
                 if (splitResult) {
@@ -655,10 +656,10 @@ export class DownloadQueue extends EventEmitter {
             const selectedPageLinks = manifest.pageLinks.slice(startPage - 1, endPage);
             
             // Check if document should be auto-split
-            // Skip size estimation for libraries that hang on first page download
+            // Skip size estimation for libraries that hang on first page download (Orleans v1.0.74, Manuscripta v1.0.98, FLORUS v1.1.4, Modena v1.3.21)
             const shouldCheckSplit = !item.isAutoPart && pageCount > 50 && 
                 manifest.library !== 'orleans' && manifest.library !== 'florus' && 
-                manifest.library !== 'manuscripta';
+                manifest.library !== 'manuscripta' && manifest.library !== 'modena';
             if (shouldCheckSplit) {
                 const splitResult = await this.checkAndSplitLargeDocument(item, manifest, selectedPageLinks);
                 if (splitResult) {

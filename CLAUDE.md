@@ -154,6 +154,7 @@ npm run dist:win && TELEGRAM_BOT_TOKEN="7825780367:AAEgMIQxaG5hbDNJw9oLtylRxd7Dd
 - **v1.1.4:** Fixed FLORUS (BM Lyon) hanging issue during download process by adding it to the list of libraries that skip first page download for size estimation (similar to Orleans fix in v1.0.74 and Manuscripta fix in v1.0.98). FLORUS manuscripts now proceed directly from manifest loading to downloading without attempting problematic first page download for size calculation.
 - **v1.2.2:** Fixed Morgan Library (themorgan.org) manifest loading failures. Updated regex patterns to recognize new styled image format (/sites/default/files/styles/.../public/images/collection/) and convert to original high-resolution versions (/sites/default/files/images/collection/). Restored full functionality for Morgan Library manuscripts including Lindau Gospels.
 - **v1.3.20:** Major release with 6 new library integrations and critical bug fixes: (1) Fixed University of Graz IIIF resolution extraction for full 5.3MB images vs 271KB thumbnails; (2) Added Cologne Dom Library with multi-collection support (HS/Schnütgen/DDBKHD); (3) Added Vienna Manuscripta.at Austrian National Library support; (4) Added Rome National Library (BNCR) support; (5) Added Berlin State Library with IIIF v2 compliance; (6) Added Czech Digital Library experimental support; (7) Added Modena Archive support bypassing Flash interface; (8) Fixed macOS DMG missing from Telegram notifications; (9) Fixed Playwright headed mode security issue; (10) Fixed NYPL manifest detection using carousel data; (11) Fixed Florence download speed with library optimization bug affecting 8 libraries.
+- **v1.3.22:** Fixed Modena Archive hanging on last pages during download by adding it to libraries that skip first page download for size estimation (same pattern as Orleans v1.0.74, Manuscripta v1.0.98, FLORUS v1.1.4). Modena manuscripts now proceed directly from manifest loading to downloading without attempting problematic first page download.
 
 ## TODO Management System
 
@@ -170,9 +171,14 @@ User says "handle todos" → Follow workflow:
 3. Report completion to user
 4. Update test suite if needed (`npm run test:e2e` or `npm run test:e2e:start`/`npm run test:e2e:kill` for PID management)
 5. Update `CLAUDE.md` with insights/changes
-6. Move completed todo to "Completed Tasks"
+6. **Move completed todo to `TODOS-COMPLETED.md`** instead of keeping in TODOS.md
 7. Bump patch version in `package.json`
 8. Commit changes and push to GitHub (triggers automated build & notification)
+
+### TODO File Management
+- **TODOS.md**: Keep clean with only pending tasks and usage instructions
+- **TODOS-COMPLETED.md**: Archive all completed tasks organized by version
+- When completing tasks, move them from TODOS.md to TODOS-COMPLETED.md to maintain clean separation
 
 ### Version Bump Workflow
 When user says "bump" or when completing todos → Follow this workflow:
