@@ -7,15 +7,6 @@ on:
 permissions:
   contents: write
   packages: read
-  actions: read
-  checks: write
-  deployments: write
-  issues: write
-  packages: write
-  pull-requests: write
-  repository-projects: write
-  security-events: write
-  statuses: write
 
 jobs:
   check-version:
@@ -72,46 +63,39 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run dist:win:arm
       
-      - name: Create GitHub Release with all builds
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # List available build files for debugging
-          echo "=== Available build files ==="
-          ls -la release/ || echo "No release directory found"
-          
-          # Simple approach: create release and upload files in one step
-          # Find AMD64 build
-          AMD64_FILE=$(find release -name "*Setup*${{ needs.check-version.outputs.version }}*x64*.exe" | head -1)
-          ARM64_FILE=$(find release -name "*Setup*${{ needs.check-version.outputs.version }}*arm64*.exe" | head -1)
-          
-          echo "Found AMD64: $AMD64_FILE"
-          echo "Found ARM64: $ARM64_FILE"
-          
-          # Build file list for upload
-          FILES_TO_UPLOAD=""
-          if [ -f "$AMD64_FILE" ]; then
-            FILES_TO_UPLOAD="$FILES_TO_UPLOAD $AMD64_FILE"
-          fi
-          if [ -f "$ARM64_FILE" ]; then
-            FILES_TO_UPLOAD="$FILES_TO_UPLOAD $ARM64_FILE"
-          fi
-          
-          if [ -n "$FILES_TO_UPLOAD" ]; then
-            # Delete existing release if it exists
-            gh release delete "v${{ needs.check-version.outputs.version }}" --yes || true
-            
-            # Create release with files
-            gh release create "v${{ needs.check-version.outputs.version }}" \
-              --title "MSS Downloader v${{ needs.check-version.outputs.version }}" \
-              --notes "Automated release for version ${{ needs.check-version.outputs.version }}" \
-              $FILES_TO_UPLOAD
-            
-            echo "Release created with files: $FILES_TO_UPLOAD"
-          else
-            echo "No build files found to upload"
-            exit 1
-          fi
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.check-version.outputs.version }}
+          release_name: MSS Downloader v${{ needs.check-version.outputs.version }}
+          body: Automated release for version ${{ needs.check-version.outputs.version }}
+          draft: false
+          prerelease: false
+      
+      - name: Upload AMD64 Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release/Abba Ababus (MSS Downloader) Setup ${{ needs.check-version.outputs.version }}-x64.exe
+          asset_name: Abba.Ababus.MSS.Downloader.Setup.${{ needs.check-version.outputs.version }}-x64.exe
+          asset_content_type: application/octet-stream
+        continue-on-error: true
+      
+      - name: Upload ARM64 Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release/Abba Ababus (MSS Downloader) Setup ${{ needs.check-version.outputs.version }}-arm64.exe
+          asset_name: Abba.Ababus.MSS.Downloader.Setup.${{ needs.check-version.outputs.version }}-arm64.exe
+          asset_content_type: application/octet-stream
+        continue-on-error: true
       
       - name: Install Telegram bot dependencies
         run: |
