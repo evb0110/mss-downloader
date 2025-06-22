@@ -572,7 +572,7 @@ export class MultiplatformMSSBot {
               
               // Only show platforms that have actual download links
               if (downloadUrl) {
-                enhancedMessage += `\n🔗 [${platformName}](${downloadUrl})`;
+                enhancedMessage += `\n🔗 <a href="${downloadUrl}">${platformName}</a>`;
                 foundAnyDownloads = true;
               }
             }

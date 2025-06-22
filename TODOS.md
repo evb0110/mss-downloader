@@ -4,6 +4,8 @@
 
 ## Completed Tasks
 
+- ✅ **Fix markdown link rendering in Telegram bot** - FIXED: Converted markdown format links `[text](url)` to proper HTML format `<a href="url">text</a>` to match the HTML parse mode used by the bot. Links like 🔗 [🖥️ Windows AMD64 (x64)] now appear as clickable links in Telegram messages instead of plain text.
+
 - ✅ **Fix NYPL calculation hanging** - FIXED in v1.3.8: Added NYPL to size estimation bypass list to prevent hanging during calculation stage. NYPL manuscripts now use estimated size calculation (1.2MB average page size) instead of attempting problematic first page download for size estimation, matching fix pattern used for Orleans, Manuscripta, FLORUS, and other libraries.
 
 - ✅ **CRITICAL: Fix Orleans persistent hanging issue** - FIXED in v1.2.6: Definitively resolved Orleans hanging during manifest loading by replacing sequential processing (356+ API calls) with batch processing (8 items per batch), implementing circuit breaker logic, limiting very large manuscripts to 200 pages, and adding 2-second delays between batches. This addresses the root cause of rate limiting that caused indefinite hangs.
