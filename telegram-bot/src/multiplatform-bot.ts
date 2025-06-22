@@ -126,7 +126,7 @@ export class MultiplatformMSSBot {
     this.bot.onText(/\/start/, (msg) => {
       const chatId = msg.chat.id;
       const welcomeMessage = [
-        '🤖 Welcome to MSS Downloader Build Bot!',
+        '🤖 MSS Downloader Build Bot',
         '',
         'This bot sends notifications when new builds are available for multiple platforms:',
         `${this.platforms.amd64.emoji} ${this.platforms.amd64.name}`,
@@ -134,18 +134,24 @@ export class MultiplatformMSSBot {
         `${this.platforms.linux.emoji} ${this.platforms.linux.name}`,
         `${this.platforms.mac.emoji} ${this.platforms.mac.name}`,
         '',
-        'Use the menu buttons below to manage your subscriptions:'
+        'You are automatically subscribed to receive notifications.',
+        'Send /unsubscribe if you want to stop receiving notifications.'
       ].join('\n');
       
-      this.sendMainMenu(chatId, welcomeMessage);
+      this.bot.sendMessage(chatId, welcomeMessage, { parse_mode: 'HTML' });
     });
     
     this.bot.onText(/\/subscribe/, (msg) => {
-      this.showSubscribeMenu(msg.chat.id);
+      const chatId = msg.chat.id;
+      const user = msg.from!;
+      // Auto-subscribe to all platforms
+      this.handleSubscribe(chatId, user, 'all');
     });
     
     this.bot.onText(/\/unsubscribe/, (msg) => {
-      this.showUnsubscribeMenu(msg.chat.id);
+      const chatId = msg.chat.id;
+      // Unsubscribe from all platforms
+      this.handleUnsubscribe(chatId, 'all');
     });
     
     this.bot.onText(/\/latest/, (msg) => {
@@ -194,20 +200,11 @@ export class MultiplatformMSSBot {
     this.bot.on('message', (msg) => {
       if (msg.text && !msg.text.startsWith('/')) {
         const chatId = msg.chat.id;
-        this.sendMainMenu(chatId, 'Choose an option:');
+        this.bot.sendMessage(chatId, 'Use /subscribe to get notifications or /help for commands.', { parse_mode: 'HTML' });
       }
     });
     
-    this.bot.on('callback_query', async (callbackQuery) => {
-      if (!callbackQuery.message) return;
-      
-      const message = callbackQuery.message;
-      const data = callbackQuery.data || '';
-      const chatId = message.chat.id;
-      
-      this.bot.answerCallbackQuery(callbackQuery.id);
-      await this.handleCallback(chatId, data, callbackQuery.from);
-    });
+    // Callback handling removed - using simple text commands only
   }
   
   private setupMenu(): void {
