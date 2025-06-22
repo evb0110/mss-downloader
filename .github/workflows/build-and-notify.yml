@@ -63,6 +63,33 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run dist:win:arm
       
+      - name: Create GitHub Release with all builds
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Create release
+          gh release create "v${{ needs.check-version.outputs.version }}" \
+            --title "MSS Downloader v${{ needs.check-version.outputs.version }}" \
+            --notes "Automated release for version ${{ needs.check-version.outputs.version }}" \
+            --draft=false \
+            --prerelease=false
+          
+          # Upload all available build files
+          if [ -f "release/Abba Ababus (MSS Downloader) Setup ${{ needs.check-version.outputs.version }}-x64.exe" ]; then
+            gh release upload "v${{ needs.check-version.outputs.version }}" \
+              "release/Abba Ababus (MSS Downloader) Setup ${{ needs.check-version.outputs.version }}-x64.exe" \
+              --clobber
+          fi
+          
+          if [ -f "release/Abba Ababus (MSS Downloader) Setup ${{ needs.check-version.outputs.version }}-arm64.exe" ]; then
+            gh release upload "v${{ needs.check-version.outputs.version }}" \
+              "release/Abba Ababus (MSS Downloader) Setup ${{ needs.check-version.outputs.version }}-arm64.exe" \
+              --clobber
+          fi
+          
+          # List what was uploaded for debugging
+          gh release view "v${{ needs.check-version.outputs.version }}"
+      
       - name: Install Telegram bot dependencies
         run: |
           cd telegram-bot

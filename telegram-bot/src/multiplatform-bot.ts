@@ -539,15 +539,14 @@ export class MultiplatformMSSBot {
         let enhancedMessage = message;
         
         if (subscribedBuilds.length > 0) {
-          enhancedMessage += '\n\n📥 **Direct Downloads:**';
+          enhancedMessage += '\n\n📥 <b>Direct Downloads:</b>';
           
           // Try to get direct download URLs from GitHub releases API
           try {
             const response = await fetch('https://api.github.com/repos/evb0110/mss-downloader/releases/latest');
             const release = await response.json();
             
-            const availableAssets: string[] = [];
-            const missingPlatforms: string[] = [];
+            let foundAnyDownloads = false;
             
             for (const { platform } of subscribedBuilds) {
               const platformName = `${this.platforms[platform].emoji} ${this.platforms[platform].name}`;
@@ -571,26 +570,21 @@ export class MultiplatformMSSBot {
                 }
               }
               
+              // Only show platforms that have actual download links
               if (downloadUrl) {
                 enhancedMessage += `\n🔗 [${platformName}](${downloadUrl})`;
-                availableAssets.push(platformName);
-              } else {
-                missingPlatforms.push(platformName);
+                foundAnyDownloads = true;
               }
             }
             
-            // Add note about missing platforms
-            if (missingPlatforms.length > 0) {
-              enhancedMessage += `\n\n⚠️ <i>Not yet available: ${missingPlatforms.join(', ')}</i>`;
-              enhancedMessage += `\n📄 <a href="https://github.com/evb0110/mss-downloader/releases/latest">View all releases</a>`;
+            // If no downloads found, fall back to releases page
+            if (!foundAnyDownloads) {
+              enhancedMessage += `\n🔗 <a href="https://github.com/evb0110/mss-downloader/releases/latest">Download from GitHub Releases</a>`;
             }
           } catch (error) {
             console.error('Failed to fetch GitHub release info:', error);
             // Fallback to generic releases page
-            for (const { platform } of subscribedBuilds) {
-              const platformName = `${this.platforms[platform].emoji} ${this.platforms[platform].name}`;
-              enhancedMessage += `\n🔗 [${platformName}](https://github.com/evb0110/mss-downloader/releases/latest)`;
-            }
+            enhancedMessage += `\n🔗 <a href="https://github.com/evb0110/mss-downloader/releases/latest">Download from GitHub Releases</a>`;
           }
         }
         
