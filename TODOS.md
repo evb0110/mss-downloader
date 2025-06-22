@@ -2,7 +2,7 @@
 
 ## Pending Tasks
 
-*No pending tasks currently*
+No pending tasks currently.
 
 ## Usage
 

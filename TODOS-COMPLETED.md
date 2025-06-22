@@ -1,5 +1,11 @@
 # Completed TODOs
 
+## v1.3.23 Completed Tasks
+
+- ✅ **Fix Morgan Library image size issue** - FIXED: Enhanced Morgan Library image extraction to capture direct full-size image references that were being missed. Added new regex pattern to detect `/sites/default/files/images/collection/` URLs that provide highest resolution images. The downloader now prioritizes direct full-size references over styled thumbnails, ensuring maximum image quality for Morgan Library manuscripts. Verified working with comprehensive E2E testing including Lindau Gospels manuscript.
+
+- ✅ **Fix Rome National Library (BNCR) image size issue** - FIXED: Implemented dynamic resolution detection for BNCR manuscripts to fix thumbnail vs full-size image issue. Enhanced the image URL generation to parse actual HTML content and automatically detect the correct resolution parameter (`/full`, `/max`, `/high`, or `/large`) based on what's available on the page. Falls back to `/max` when no sample URLs are found. Added comprehensive logging for debugging. Verified working with 175-page test manuscript showing proper full-resolution image access.
+
 ## v1.3.20 Completed Tasks
 
 - ✅ **HIGH PRIORITY: Fix University of Graz pageview URL persistent failure** - FIXED: University of Graz pageview URL https://unipub.uni-graz.at/obvugrscript/content/pageview/8224540 now works correctly. Fixed image URL extraction to use full-resolution IIIF service URLs instead of low-resolution cached thumbnails. Downloads now get 5.3MB full-resolution images instead of 271KB thumbnails (20x improvement).

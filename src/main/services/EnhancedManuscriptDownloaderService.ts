@@ -629,6 +629,17 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
                 
+                // Look for direct full-size image references (primary source for high-resolution images)
+                const fullSizeImageRegex = /\/sites\/default\/files\/images\/collection\/[^"'?]+\.jpg/g;
+                const fullSizeMatches = pageContent.match(fullSizeImageRegex) || [];
+                
+                for (const match of fullSizeMatches) {
+                    const fullUrl = `${baseUrl}${match}`;
+                    if (!pageLinks.includes(fullUrl)) {
+                        pageLinks.push(fullUrl);
+                    }
+                }
+                
                 // Fallback: look for facsimile images (legacy format)
                 const facsimileRegex = /\/sites\/default\/files\/facsimile\/[^"']+\.jpg/g;
                 const facsimileMatches = pageContent.match(facsimileRegex) || [];
@@ -3678,7 +3689,7 @@ export class EnhancedManuscriptDownloaderService {
             
             const manuscriptId = manuscriptId1;
             
-            // Fetch the first page to get metadata
+            // Fetch the first page to get metadata and examine image URLs
             const pageResponse = await this.fetchDirect(romeUrl);
             if (!pageResponse.ok) {
                 throw new Error(`Failed to load Rome page: HTTP ${pageResponse.status}`);
@@ -3703,13 +3714,43 @@ export class EnhancedManuscriptDownloaderService {
             
             const totalPages = parseInt(pageCountMatch[1], 10);
             
-            // Generate page links
+            // Look for actual image URLs in the page HTML to understand the correct format
+            // BNCR may use different resolution endpoints - check for existing img tags
+            const imageMatch = html.match(/src="([^"]*\/img\/manoscrittoantico\/[^"]*)"/) ||
+                              html.match(/href="([^"]*\/img\/manoscrittoantico\/[^"]*)"/) ||
+                              html.match(/"([^"]*\/img\/manoscrittoantico\/[^"]*\/(?:full|max|high|large)[^"]*)"/);
+            
+            let imageUrlTemplate = '';
+            if (imageMatch) {
+                const sampleImageUrl = imageMatch[1];
+                console.log(`Found sample image URL in page: ${sampleImageUrl}`);
+                
+                // Extract the pattern and determine if we need different resolution parameters
+                if (sampleImageUrl.includes('/full/')) {
+                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/full`;
+                } else if (sampleImageUrl.includes('/max/')) {
+                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/max`;
+                } else if (sampleImageUrl.includes('/high/')) {
+                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/high`;
+                } else {
+                    // If no resolution parameter found, try to extract the pattern and add full resolution
+                    const basePattern = sampleImageUrl.replace(/\/\d+\/[^/]*$/, '');
+                    imageUrlTemplate = `${basePattern}/PAGENUM/full`;
+                }
+            } else {
+                // Fallback to original format, but also try 'max' which is commonly used for full resolution
+                imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/max`;
+                console.log('No sample image URL found in page HTML, using max resolution template');
+            }
+            
+            // Generate page links using the determined template
             const pageLinks: string[] = [];
             for (let i = 1; i <= totalPages; i++) {
-                pageLinks.push(`http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/${i}/full`);
+                pageLinks.push(imageUrlTemplate.replace('PAGENUM', i.toString()));
             }
             
             console.log(`Rome National Library: Found ${totalPages} pages for "${title}"`);
+            console.log(`Using image URL template: ${imageUrlTemplate.replace('PAGENUM', '1')} (first page example)`);
             
             return {
                 pageLinks,
