@@ -35,9 +35,10 @@ export class LibraryOptimizationService {
             optimizationDescription: 'Unicatt Ambrosiana optimizations: 2 concurrent downloads, extended timeouts'
         },
         'internet_culturale': {
-            maxConcurrentDownloads: 3, // Italian platform with moderate limits
+            maxConcurrentDownloads: 4, // Italian platform with moderate limits - increased for better performance
             timeoutMultiplier: 1.5,
-            optimizationDescription: 'Internet Culturale optimizations: 3 concurrent downloads, extended timeouts'
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'Internet Culturale optimizations: 4 concurrent downloads, extended timeouts with progressive backoff'
         },
         // Default libraries (no special optimizations)
         'nypl': {},
@@ -83,6 +84,17 @@ export class LibraryOptimizationService {
             maxConcurrentDownloads: 3, // German State Library server, moderate limits
             timeoutMultiplier: 1.5, // Increased timeout for IIIF manifest processing
             optimizationDescription: 'Berlin State Library optimizations: 3 concurrent downloads, extended timeouts for IIIF manifest processing'
+        },
+        'czech': {
+            maxConcurrentDownloads: 2, // Czech library server, conservative limits
+            timeoutMultiplier: 2.0, // Double timeout for page discovery
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'Czech Digital Library optimizations: 2 concurrent downloads, extended timeouts for page discovery (Experimental)'
+        },
+        'modena': {
+            maxConcurrentDownloads: 3, // Modena Diocesan Archive, mobile images
+            timeoutMultiplier: 1.5, // Increased timeout for mobile interface discovery
+            optimizationDescription: 'Modena Diocesan Archive optimizations: 3 concurrent downloads, Flash bypass via mobile interface'
         },
         'loading': {}
     };

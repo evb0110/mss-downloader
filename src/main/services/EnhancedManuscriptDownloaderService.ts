@@ -167,6 +167,16 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://digital.staatsbibliothek-berlin.de/werkansicht?PPN=PPN782404456&view=picture-download&PHYSID=PHYS_0005&DMDID=DMDLOG_0001',
             description: 'Staatsbibliothek zu Berlin digital manuscript collections via IIIF',
         },
+        {
+            name: 'Czech Digital Library (VKOL)',
+            example: 'https://dig.vkol.cz/dig/mii87/0001rx.htm',
+            description: 'Czech digital manuscript library (Experimental)',
+        },
+        {
+            name: 'Modena Diocesan Archive',
+            example: 'https://archiviodiocesano.mo.it/archivio/flip/ACMo-OI-7/',
+            description: 'Modena Diocesan Archive digital manuscripts (Flash interface bypassed)',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -247,6 +257,8 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('manuscripta.at')) return 'vienna_manuscripta';
         if (url.includes('digitale.bnc.roma.sbn.it')) return 'rome';
         if (url.includes('digital.staatsbibliothek-berlin.de')) return 'berlin';
+        if (url.includes('dig.vkol.cz')) return 'czech';
+        if (url.includes('archiviodiocesano.mo.it')) return 'modena';
         
         return null;
     }
@@ -519,6 +531,12 @@ export class EnhancedManuscriptDownloaderService {
                 case 'berlin':
                     manifest = await this.loadBerlinManifest(originalUrl);
                     break;
+                case 'czech':
+                    manifest = await this.loadCzechManifest(originalUrl);
+                    break;
+                case 'modena':
+                    manifest = await this.loadModenaManifest(originalUrl);
+                    break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
             }
@@ -684,7 +702,7 @@ export class EnhancedManuscriptDownloaderService {
             
             const uuid = uuidMatch[1];
             
-            // Fetch the main page to extract JavaScript data
+            // Fetch the main page to extract carousel data
             const pageResponse = await this.fetchDirect(nyplUrl);
             if (!pageResponse.ok) {
                 throw new Error(`Failed to fetch NYPL page: ${pageResponse.status}`);
@@ -692,41 +710,59 @@ export class EnhancedManuscriptDownloaderService {
             
             const pageContent = await pageResponse.text();
             
-            // Extract item_data from JavaScript
-            const itemDataMatch = pageContent.match(/var\s+item_data\s*=\s*({.*?});/s);
-            if (!itemDataMatch) {
-                throw new Error('Could not find item_data in NYPL page');
+            // Extract carousel data which contains image IDs
+            const carouselMatch = pageContent.match(/data-items="([^"]+)"/);
+            if (!carouselMatch) {
+                throw new Error('Could not find carousel data in NYPL page');
             }
             
-            let itemData;
+            // Decode HTML entities and parse JSON
+            const carouselDataHtml = carouselMatch[1];
+            const carouselDataJson = carouselDataHtml
+                .replace(/&quot;/g, '"')
+                .replace(/&#39;/g, "'")
+                .replace(/&amp;/g, '&');
+            
+            let carouselItems;
             try {
-                itemData = JSON.parse(itemDataMatch[1]);
-            } catch {
-                throw new Error('Failed to parse item_data JSON');
+                carouselItems = JSON.parse(carouselDataJson);
+            } catch (error: any) {
+                throw new Error(`Failed to parse carousel JSON: ${error.message}`);
             }
             
-            // Extract high resolution image links
-            const highresLinks = itemData.highres_links || [];
-            if (!highresLinks.length) {
-                throw new Error('No high resolution images found');
+            if (!Array.isArray(carouselItems) || carouselItems.length === 0) {
+                throw new Error('No carousel items found');
             }
             
-            // Extract display name
-            let displayName = `NYPL Document ${uuid}`;
-            if (itemData.title) {
-                displayName = Array.isArray(itemData.title) ? itemData.title[0] : itemData.title;
-            }
-            
-            // Convert relative URLs to absolute if needed
-            const pageLinks = highresLinks.map((link: string) => {
-                if (link.startsWith('http')) {
-                    return link;
-                } else if (link.startsWith('/')) {
-                    return `https://images.nypl.org${link}`;
-                } else {
-                    return `https://images.nypl.org/${link}`;
+            // Extract image IDs and construct IIIF URLs
+            const pageLinks = carouselItems.map((item: any) => {
+                if (!item.image_id) {
+                    throw new Error(`Missing image_id for item ${item.id || 'unknown'}`);
                 }
+                // Use canonical IIIF URL format for full resolution images
+                return `https://iiif.nypl.org/iiif/2/${item.image_id}/full/full/0/default.jpg`;
             });
+            
+            // Extract display name from the first item or fallback to title from item_data
+            let displayName = `NYPL Document ${uuid}`;
+            if (carouselItems[0]?.title_full) {
+                displayName = carouselItems[0].title_full;
+            } else if (carouselItems[0]?.title) {
+                displayName = carouselItems[0].title;
+            } else {
+                // Fallback: try to extract from item_data as well
+                const itemDataMatch = pageContent.match(/var\s+item_data\s*=\s*({.*?});/s);
+                if (itemDataMatch) {
+                    try {
+                        const itemData = JSON.parse(itemDataMatch[1]);
+                        if (itemData.title) {
+                            displayName = Array.isArray(itemData.title) ? itemData.title[0] : itemData.title;
+                        }
+                    } catch {
+                        // Ignore parsing errors for fallback title
+                    }
+                }
+            }
             
             const nyplManifest = {
                 pageLinks,
@@ -1601,7 +1637,22 @@ export class EnhancedManuscriptDownloaderService {
                 });
             };
             
-            const actualMaxConcurrent = maxConcurrent || configService.get('maxConcurrentDownloads');
+            // Apply library-specific optimization settings for concurrent downloads
+            const globalMaxConcurrent = maxConcurrent || configService.get('maxConcurrentDownloads');
+            const library = manifest.library as TLibrary;
+            const autoSplitThresholdMB = Math.round(configService.get('autoSplitThreshold') / (1024 * 1024)); // Convert bytes to MB
+            const optimizations = LibraryOptimizationService.applyOptimizations(
+                autoSplitThresholdMB,
+                globalMaxConcurrent,
+                library
+            );
+            const actualMaxConcurrent = optimizations.maxConcurrentDownloads;
+            
+            // Log optimization info for debugging
+            if (optimizations.optimizationDescription) {
+                console.log(`Applying ${library} optimizations: ${optimizations.optimizationDescription}`);
+                console.log(`Using ${actualMaxConcurrent} concurrent downloads (global: ${globalMaxConcurrent})`);
+            }
             const semaphore = new Array(actualMaxConcurrent).fill(null);
             let nextPageIndex = actualStartPage - 1; // Convert to 0-based index
             
@@ -3761,6 +3812,161 @@ export class EnhancedManuscriptDownloaderService {
         } catch (error: any) {
             console.error('Error loading Berlin State Library manifest:', error);
             throw new Error(`Failed to load Berlin State Library manuscript: ${error.message}`);
+        }
+    }
+
+    /**
+     * Load Czech Digital Library (VKOL) manifest
+     */
+    async loadCzechManifest(czechUrl: string): Promise<ManuscriptManifest> {
+        console.log('Loading Czech Digital Library manifest for:', czechUrl);
+        
+        try {
+            // Parse the URL to extract manuscript ID and base path
+            // URL format: https://dig.vkol.cz/dig/mii87/0001rx.htm
+            const urlMatch = czechUrl.match(/dig\.vkol\.cz\/dig\/([^\/]+)\/(\d{4})[rv]x\.htm/);
+            if (!urlMatch) {
+                throw new Error('Could not parse Czech Digital Library URL format');
+            }
+
+            const [, manuscriptId] = urlMatch;
+            
+            console.log(`Czech library: manuscript ID ${manuscriptId}`);
+
+            // Fetch the main page to get manuscript metadata
+            const response = await this.fetchWithProxyFallback(czechUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to load Czech library page: HTTP ${response.status}`);
+            }
+
+            const htmlContent = await response.text();
+            
+            // Extract title/name from HTML - look for the manuscript title
+            let title = `Czech Manuscript ${manuscriptId}`;
+            const titleMatch = htmlContent.match(/<title[^>]*>([^<]+)<\/title>/i);
+            if (titleMatch) {
+                title = titleMatch[1].trim().replace(/\s+/g, ' ');
+            }
+
+            // Try to extract total page count from HTML content
+            // Look for patterns like "185 ff." (folios) or similar folio count indicators
+            let maxFolio = 185; // Default based on the example analysis
+            
+            const folioMatch = htmlContent.match(/(\d+)\s*ff?\.|Obsah.*?(\d+)\s*ff?\./i);
+            if (folioMatch) {
+                const detectedFolios = parseInt(folioMatch[1] || folioMatch[2]);
+                if (detectedFolios > 0 && detectedFolios < 1000) { // Sanity check
+                    maxFolio = detectedFolios;
+                    console.log(`Czech library: detected ${maxFolio} folios from HTML content`);
+                }
+            }
+
+            let pageLinks: string[] = [];
+
+            // Generate page URLs for recto and verso pages
+            // Pattern: 0001r, 0001v, 0002r, 0002v, etc.
+            for (let folioNum = 1; folioNum <= maxFolio; folioNum++) {
+                const paddedNum = folioNum.toString().padStart(4, '0');
+                
+                // Add recto page (r)
+                const rectoImageUrl = `https://dig.vkol.cz/dig/${manuscriptId}/inet/${paddedNum}r.jpg`;
+                pageLinks.push(rectoImageUrl);
+                
+                // Add verso page (v)
+                const versoImageUrl = `https://dig.vkol.cz/dig/${manuscriptId}/inet/${paddedNum}v.jpg`;
+                pageLinks.push(versoImageUrl);
+            }
+
+            console.log(`Czech Digital Library: Generated ${pageLinks.length} page URLs for "${title}"`);
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'czech',
+                displayName: title,
+                originalUrl: czechUrl
+            };
+            
+        } catch (error: any) {
+            console.error('Error loading Czech Digital Library manifest:', error);
+            throw new Error(`Failed to load Czech Digital Library manuscript: ${error.message}`);
+        }
+    }
+
+    /**
+     * Load Modena Diocesan Archive manifest by bypassing Flash interface and accessing mobile images directly
+     */
+    async loadModenaManifest(modenaUrl: string): Promise<ManuscriptManifest> {
+        try {
+            console.log(`Loading Modena Diocesan Archive manuscript: ${modenaUrl}`);
+            
+            // Extract manuscript ID from URL
+            // Expected format: https://archiviodiocesano.mo.it/archivio/flip/ACMo-OI-7/
+            const manuscriptIdMatch = modenaUrl.match(/\/flip\/([^/]+)\/?$/);
+            if (!manuscriptIdMatch) {
+                throw new Error('Invalid Modena URL format. Expected: https://archiviodiocesano.mo.it/archivio/flip/MANUSCRIPT_ID/');
+            }
+            
+            const manuscriptId = manuscriptIdMatch[1];
+            console.log(`Extracted manuscript ID: ${manuscriptId}`);
+            
+            // Access mobile interface to determine page count
+            const mobileUrl = `${modenaUrl.replace(/\/$/, '')}/mobile/index.html`;
+            console.log(`Fetching mobile interface: ${mobileUrl}`);
+            
+            const mobileResponse = await this.fetchDirect(mobileUrl);
+            const mobileHtml = await mobileResponse.text();
+            
+            // Extract total pages from JavaScript configuration
+            // Look for total page count in mobile interface
+            let totalPages = 231; // Default fallback based on ACMo-OI-7
+            
+            // Try to extract from mobile page display (e.g., "Page: 1/11")
+            const pageDisplayMatch = mobileHtml.match(/Page:\s*\d+\/(\d+)/);
+            if (pageDisplayMatch) {
+                const displayedTotal = parseInt(pageDisplayMatch[1]);
+                console.log(`Found page display total: ${displayedTotal}`);
+            }
+            
+            // Try to extract from JavaScript config (more reliable for actual total)
+            const totalPagesMatch = mobileHtml.match(/totalPages['":\s]*(\d+)/i);
+            if (totalPagesMatch) {
+                totalPages = parseInt(totalPagesMatch[1]);
+                console.log(`Found JavaScript total pages: ${totalPages}`);
+            }
+            
+            // Verify that images are accessible by testing first page
+            const baseImageUrl = `${modenaUrl.replace(/\/$/, '')}/files/mobile/`;
+            const firstPageUrl = `${baseImageUrl}1.jpg`;
+            
+            console.log(`Testing image access: ${firstPageUrl}`);
+            const testResponse = await this.fetchDirect(firstPageUrl);
+            if (!testResponse.ok) {
+                throw new Error(`Cannot access manuscript images. Status: ${testResponse.status}`);
+            }
+            
+            console.log(`Image access confirmed. Generating URLs for ${totalPages} pages`);
+            
+            // Generate page URLs using the discovered pattern
+            const pageLinks: string[] = [];
+            for (let page = 1; page <= totalPages; page++) {
+                pageLinks.push(`${baseImageUrl}${page}.jpg`);
+            }
+            
+            const displayName = `Modena_${manuscriptId}`;
+            console.log(`Generated ${pageLinks.length} page URLs for "${displayName}"`);
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'modena',
+                displayName,
+                originalUrl: modenaUrl
+            };
+            
+        } catch (error: any) {
+            console.error('Error loading Modena Diocesan Archive manifest:', error);
+            throw new Error(`Failed to load Modena manuscript: ${error.message}`);
         }
     }
 

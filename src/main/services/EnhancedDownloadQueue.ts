@@ -892,7 +892,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
             }
             
             // For Florus, Orleans, Internet Culturale, Manuscripta, Graz, Cologne, Rome, and NYPL - skip first page download and use estimated size calculation
-            if (manifest.library === 'florus' || manifest.library === 'orleans' || manifest.library === 'internet_culturale' || manifest.library === 'manuscripta' || manifest.library === 'graz' || manifest.library === 'cologne' || manifest.library === 'rome' || manifest.library === 'nypl') {
+            if (manifest.library === 'florus' || manifest.library === 'orleans' || manifest.library === 'internet_culturale' || manifest.library === 'manuscripta' || manifest.library === 'graz' || manifest.library === 'cologne' || manifest.library === 'rome' || manifest.library === 'nypl' || manifest.library === 'czech') {
                 console.log(`${manifest.library} manuscript detected, using estimated size calculation (bypassing first page download)`);
                 // Estimate based on typical manuscript page size
                 const avgPageSizeMB = manifest.library === 'orleans' ? 0.6 : 
@@ -902,7 +902,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                                     manifest.library === 'cologne' ? 0.5 :
                                     manifest.library === 'rome' ? 0.3 :
                                     manifest.library === 'nypl' ? 1.2 :
-                                    0.4; // 600KB for Orleans IIIF, 800KB for Internet Culturale IIIF, 700KB for Manuscripta IIIF, 800KB for Graz IIIF, 500KB for Cologne webcache, 300KB for Rome, 1.2MB for NYPL IIIF, 400KB for Florus
+                                    manifest.library === 'czech' ? 0.5 :
+                                    0.4; // 600KB for Orleans IIIF, 800KB for Internet Culturale IIIF, 700KB for Manuscripta IIIF, 800KB for Graz IIIF, 500KB for Cologne webcache, 300KB for Rome, 1.2MB for NYPL IIIF, 500KB for Czech, 400KB for Florus
                 const estimatedTotalSizeMB = avgPageSizeMB * manifest.totalPages;
                 item.estimatedSizeMB = estimatedTotalSizeMB;
                 

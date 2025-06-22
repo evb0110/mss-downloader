@@ -37,7 +37,10 @@ let enhancedDownloadQueue: EnhancedDownloadQueue | null = null;
 
 const createWindow = () => {
   const preloadPath = join(__dirname, '../preload/preload.js');
-  const isHeadless = process.argv.includes('--headless') || process.env.NODE_ENV === 'test';
+  const isHeadless = process.argv.includes('--headless') || 
+                     process.env.NODE_ENV === 'test' ||
+                     process.env.DISPLAY === ':99' || // Playwright test display
+                     process.env.CI === 'true';
   
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -60,6 +63,9 @@ const createWindow = () => {
       minimizable: false,
       maximizable: false,
       resizable: false,
+      opacity: 0, // Make completely transparent
+      focusable: false, // Prevent focus
+      alwaysOnTop: false, // Ensure it stays in background
     }),
   });
 
@@ -152,7 +158,9 @@ const createWindow = () => {
   }
 
   mainWindow.once('ready-to-show', () => {
-    if (!isHeadless) {
+    // CRITICAL: Never show window during tests or headless mode
+    // This prevents browser windows from opening during Playwright tests
+    if (!isHeadless && process.env.NODE_ENV !== 'test') {
       mainWindow?.show();
     }
   });
