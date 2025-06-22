@@ -37,10 +37,12 @@ jobs:
           
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
-  build-and-notify:
+  build-windows:
     needs: check-version
     if: needs.check-version.outputs.version-changed == 'true'
     runs-on: windows-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - uses: actions/checkout@v4
       
@@ -97,6 +99,69 @@ jobs:
           asset_content_type: application/octet-stream
         continue-on-error: true
       
+      - name: Upload Windows AMD64 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-amd64-build-v${{ needs.check-version.outputs.version }}
+          path: release/*x64*.exe
+          
+      - name: Upload Windows ARM64 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-arm64-build-v${{ needs.check-version.outputs.version }}
+          path: release/*arm64*.exe
+
+  build-linux:
+    needs: [check-version, build-windows]
+    if: needs.check-version.outputs.version-changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Build Linux AppImage
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist:linux
+      
+      - name: Upload Linux AppImage Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.build-windows.outputs.upload_url }}
+          asset_path: release/Abba Ababus (MSS Downloader) ${{ needs.check-version.outputs.version }}.AppImage
+          asset_name: Abba.Ababus.MSS.Downloader.${{ needs.check-version.outputs.version }}.AppImage
+          asset_content_type: application/octet-stream
+        continue-on-error: true
+      
+      - name: Upload Linux AppImage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-appimage-build-v${{ needs.check-version.outputs.version }}
+          path: release/*.AppImage
+
+  notify:
+    needs: [check-version, build-windows, build-linux]
+    if: needs.check-version.outputs.version-changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
       - name: Install Telegram bot dependencies
         run: |
           cd telegram-bot
@@ -109,15 +174,3 @@ jobs:
         run: |
           cd telegram-bot
           npm run send-multiplatform-build
-      
-      - name: Upload Windows AMD64 artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-amd64-build-v${{ needs.check-version.outputs.version }}
-          path: release/*x64*.exe
-          
-      - name: Upload Windows ARM64 artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-arm64-build-v${{ needs.check-version.outputs.version }}
-          path: release/*arm64*.exe
