@@ -7,6 +7,15 @@ on:
 permissions:
   contents: write
   packages: read
+  actions: read
+  checks: write
+  deployments: write
+  issues: write
+  packages: write
+  pull-requests: write
+  repository-projects: write
+  security-events: write
+  statuses: write
 
 jobs:
   check-version:
@@ -69,28 +78,40 @@ jobs:
         run: |
           # List available build files for debugging
           echo "=== Available build files ==="
-          ls -la release/ || echo "No release directory"
+          ls -la release/ || echo "No release directory found"
           
-          # Delete existing release if it exists (to handle retries)
-          gh release delete "v${{ needs.check-version.outputs.version }}" --yes || echo "Release doesn't exist yet"
+          # Simple approach: create release and upload files in one step
+          # Find AMD64 build
+          AMD64_FILE=$(find release -name "*Setup*${{ needs.check-version.outputs.version }}*x64*.exe" | head -1)
+          ARM64_FILE=$(find release -name "*Setup*${{ needs.check-version.outputs.version }}*arm64*.exe" | head -1)
           
-          # Create release
-          gh release create "v${{ needs.check-version.outputs.version }}" \
-            --title "MSS Downloader v${{ needs.check-version.outputs.version }}" \
-            --notes "Automated release for version ${{ needs.check-version.outputs.version }}" \
-            --draft=false \
-            --prerelease=false
+          echo "Found AMD64: $AMD64_FILE"
+          echo "Found ARM64: $ARM64_FILE"
           
-          # Upload all available build files (try both naming patterns)
-          for file in release/*Setup*${{ needs.check-version.outputs.version }}*.exe; do
-            if [ -f "$file" ] && [[ ! "$file" == *.blockmap ]]; then
-              echo "Uploading: $file"
-              gh release upload "v${{ needs.check-version.outputs.version }}" "$file" --clobber
-            fi
-          done
+          # Build file list for upload
+          FILES_TO_UPLOAD=""
+          if [ -f "$AMD64_FILE" ]; then
+            FILES_TO_UPLOAD="$FILES_TO_UPLOAD $AMD64_FILE"
+          fi
+          if [ -f "$ARM64_FILE" ]; then
+            FILES_TO_UPLOAD="$FILES_TO_UPLOAD $ARM64_FILE"
+          fi
           
-          # List what was uploaded for debugging
-          gh release view "v${{ needs.check-version.outputs.version }}"
+          if [ -n "$FILES_TO_UPLOAD" ]; then
+            # Delete existing release if it exists
+            gh release delete "v${{ needs.check-version.outputs.version }}" --yes || true
+            
+            # Create release with files
+            gh release create "v${{ needs.check-version.outputs.version }}" \
+              --title "MSS Downloader v${{ needs.check-version.outputs.version }}" \
+              --notes "Automated release for version ${{ needs.check-version.outputs.version }}" \
+              $FILES_TO_UPLOAD
+            
+            echo "Release created with files: $FILES_TO_UPLOAD"
+          else
+            echo "No build files found to upload"
+            exit 1
+          fi
       
       - name: Install Telegram bot dependencies
         run: |
