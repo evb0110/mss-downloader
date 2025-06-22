@@ -67,6 +67,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # List available build files for debugging
+          echo "=== Available build files ==="
+          ls -la release/ || echo "No release directory"
+          
+          # Delete existing release if it exists (to handle retries)
+          gh release delete "v${{ needs.check-version.outputs.version }}" --yes || echo "Release doesn't exist yet"
+          
           # Create release
           gh release create "v${{ needs.check-version.outputs.version }}" \
             --title "MSS Downloader v${{ needs.check-version.outputs.version }}" \
@@ -74,18 +81,13 @@ jobs:
             --draft=false \
             --prerelease=false
           
-          # Upload all available build files
-          if [ -f "release/Abba Ababus (MSS Downloader) Setup ${{ needs.check-version.outputs.version }}-x64.exe" ]; then
-            gh release upload "v${{ needs.check-version.outputs.version }}" \
-              "release/Abba Ababus (MSS Downloader) Setup ${{ needs.check-version.outputs.version }}-x64.exe" \
-              --clobber
-          fi
-          
-          if [ -f "release/Abba Ababus (MSS Downloader) Setup ${{ needs.check-version.outputs.version }}-arm64.exe" ]; then
-            gh release upload "v${{ needs.check-version.outputs.version }}" \
-              "release/Abba Ababus (MSS Downloader) Setup ${{ needs.check-version.outputs.version }}-arm64.exe" \
-              --clobber
-          fi
+          # Upload all available build files (try both naming patterns)
+          for file in release/*Setup*${{ needs.check-version.outputs.version }}*.exe; do
+            if [ -f "$file" ] && [[ ! "$file" == *.blockmap ]]; then
+              echo "Uploading: $file"
+              gh release upload "v${{ needs.check-version.outputs.version }}" "$file" --clobber
+            fi
+          done
           
           # List what was uploaded for debugging
           gh release view "v${{ needs.check-version.outputs.version }}"
