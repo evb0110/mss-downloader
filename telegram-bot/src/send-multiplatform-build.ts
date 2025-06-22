@@ -235,13 +235,56 @@ function getChangelogFromVersionHistory(version: string): string {
   return `${bold("📝 What's New:")}\n• Latest updates and improvements with multi-platform support`;
 }
 
-function findAllBuilds() {
+async function findAllBuilds() {
+  // If running in GitHub Actions, try to get builds from GitHub releases instead of local files
+  if (process.env.GITHUB_ACTIONS) {
+    try {
+      const packageJsonPath = path.join(__dirname, '..', '..', 'package.json');
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+      const version = packageJson.version;
+      
+      console.log(`🔍 Running in GitHub Actions, checking GitHub releases for v${version}...`);
+      
+      const response = await fetch('https://api.github.com/repos/evb0110/mss-downloader/releases/latest');
+      const release = await response.json();
+      
+      if (release.tag_name === `v${version}` && release.assets) {
+        console.log(`✅ Found GitHub release v${version} with ${release.assets.length} assets`);
+        
+        const builds: Partial<Record<Platform, BuildInfo>> = {};
+        
+        for (const asset of release.assets) {
+          const name = asset.name;
+          const size = parseFloat((asset.size / (1024 * 1024)).toFixed(2));
+          
+          if (name.includes('x64') && name.endsWith('.exe')) {
+            builds.amd64 = { file: asset.browser_download_url, name, size };
+            console.log(`  - Found AMD64: ${name} (${size}MB)`);
+          } else if (name.includes('arm64') && name.endsWith('.exe')) {
+            builds.arm64 = { file: asset.browser_download_url, name, size };
+            console.log(`  - Found ARM64: ${name} (${size}MB)`);
+          } else if (name.endsWith('.AppImage')) {
+            builds.linux = { file: asset.browser_download_url, name, size };
+            console.log(`  - Found Linux: ${name} (${size}MB)`);
+          }
+        }
+        
+        return { version, builds };
+      } else {
+        console.log(`⚠️ GitHub release not found or version mismatch. Expected v${version}, found ${release.tag_name}`);
+      }
+    } catch (error) {
+      console.error('⚠️ Failed to fetch from GitHub API, falling back to local files:', error);
+    }
+  }
+  
+  // Fallback to local file search
   return BuildUtils.findLatestBuilds();
 }
 
 async function sendMultiplatformBuild(): Promise<void> {
   try {
-    const { version, builds } = findAllBuilds();
+    const { version, builds } = await findAllBuilds();
     
     if (Object.keys(builds).length === 0) {
       console.error('❌ No builds found for version', version);
