@@ -132,6 +132,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run dist:linux
       
+      - name: Debug - List release directory contents
+        run: |
+          echo "Contents of release directory:"
+          ls -la release/ || echo "Release directory not found"
+          echo "Searching for AppImage files:"
+          find . -name "*.AppImage" -type f || echo "No AppImage files found"
+      
       - name: Upload Linux AppImage Release Asset
         uses: actions/upload-release-asset@v1
         env:
