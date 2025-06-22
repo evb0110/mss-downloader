@@ -29,8 +29,15 @@ if [ -z "$CHANGELOG" ]; then
 fi
 
 echo ""
-echo "🔨 Building Windows AMD64 release..."
-npm run dist:win
+echo "🔨 Building all platform releases..."
+echo "📦 Building Windows AMD64..."
+npm run dist:win:x64
+echo "📦 Building Windows ARM64..."
+npm run dist:win:arm
+echo "📦 Building macOS..."
+npm run dist:mac
+echo "📦 Building Linux AppImage..."
+npm run dist:linux
 
 echo ""
 echo "📱 Sending Telegram notification..."
@@ -46,13 +53,13 @@ NOTIFICATION_MESSAGE="🚀 New MSS Downloader v$CURRENT_VERSION Released!
 
 📋 Changes: $CHANGELOG
 
-💻 Platform: Windows AMD64
+💻 Platforms: Windows (AMD64, ARM64), macOS, Linux
 📅 Released: $(date '+%Y-%m-%d %H:%M')
 
 Download the latest build attached below!"
 
-# Send notification
-node telegram-bot/send-build.js --message "$NOTIFICATION_MESSAGE"
+# Send multiplatform notification using TypeScript bot
+cd telegram-bot && npm run send-multiplatform-build
 
 echo ""
 echo "✅ Release workflow completed successfully!"

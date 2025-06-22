@@ -630,6 +630,8 @@ export class MultiplatformMSSBot {
                   assetPattern = /\.AppImage$/;
                 } else if (platform === 'mac') {
                   assetPattern = /\.dmg$/;
+                } else {
+                  continue; // Skip unknown platforms
                 }
                 
                 const asset = release.assets.find((asset: any) => assetPattern.test(asset.name));

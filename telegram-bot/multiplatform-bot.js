@@ -28,7 +28,8 @@ class MultiplatformMSSBot {
         this.platforms = {
             'amd64': { name: 'Windows AMD64 (x64)', emoji: '🖥️' },
             'arm64': { name: 'Windows ARM64', emoji: '💻' },
-            'linux': { name: 'Linux AppImage', emoji: '🐧' }
+            'linux': { name: 'Linux AppImage', emoji: '🐧' },
+            'mac': { name: 'macOS (Apple Silicon)', emoji: '🍎' }
         };
         
         this.setupCommands();
@@ -181,6 +182,10 @@ Use the menu buttons below to manage your subscriptions:`;
                 [
                     { text: `${this.platforms.linux.emoji} ${subscribedPlatforms.includes('linux') ? '✅' : ''} Linux`, 
                       callback_data: 'subscribe_linux' },
+                    { text: `${this.platforms.mac.emoji} ${subscribedPlatforms.includes('mac') ? '✅' : ''} macOS`, 
+                      callback_data: 'subscribe_mac' }
+                ],
+                [
                     { text: '🌟 All Platforms', callback_data: 'subscribe_all' }
                 ],
                 [
@@ -190,7 +195,7 @@ Use the menu buttons below to manage your subscriptions:`;
         };
         
         this.bot.sendMessage(chatId, 
-            `🔔 <b>Subscribe to Build Notifications</b>\n\nSelect which platforms you want to receive notifications for:\n\n${this.platforms.amd64.emoji} <b>${this.platforms.amd64.name}</b>\n${this.platforms.arm64.emoji} <b>${this.platforms.arm64.name}</b>\n${this.platforms.linux.emoji} <b>${this.platforms.linux.name}</b>\n\n✅ = Currently subscribed`, 
+            `🔔 <b>Subscribe to Build Notifications</b>\n\nSelect which platforms you want to receive notifications for:\n\n${this.platforms.amd64.emoji} <b>${this.platforms.amd64.name}</b>\n${this.platforms.arm64.emoji} <b>${this.platforms.arm64.name}</b>\n${this.platforms.linux.emoji} <b>${this.platforms.linux.name}</b>\n${this.platforms.mac.emoji} <b>${this.platforms.mac.name}</b>\n\n✅ = Currently subscribed`, 
             {
                 reply_markup: keyboard,
                 parse_mode: 'HTML'
@@ -292,7 +297,7 @@ Use the menu buttons below to manage your subscriptions:`;
         }
         
         if (platform === 'all') {
-            subscriber.platforms = ['amd64', 'arm64', 'linux'];
+            subscriber.platforms = ['amd64', 'arm64', 'linux', 'mac'];
             this.saveSubscribers();
             this.bot.sendMessage(chatId, '✅ Successfully subscribed to all platforms!', { parse_mode: 'HTML' });
             
