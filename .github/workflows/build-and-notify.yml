@@ -138,7 +138,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.build-windows.outputs.upload_url }}
-          asset_path: release/Abba Ababus (MSS Downloader) ${{ needs.check-version.outputs.version }}.AppImage
+          asset_path: release/abba-ababus-mss-downloader-${{ needs.check-version.outputs.version }}-x86_64.AppImage
           asset_name: Abba.Ababus.MSS.Downloader.${{ needs.check-version.outputs.version }}.AppImage
           asset_content_type: application/octet-stream
         continue-on-error: true
