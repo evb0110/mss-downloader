@@ -147,6 +147,26 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538',
             description: 'University of Graz digital manuscript collection with IIIF support',
         },
+        {
+            name: 'Rome National Library (BNCR)',
+            example: 'http://digitale.bnc.roma.sbn.it/tecadigitale/manoscrittoantico/BNCR_Ms_SESS_0062/BNCR_Ms_SESS_0062/1',
+            description: 'Biblioteca Nazionale Centrale di Roma digital manuscript collections',
+        },
+        {
+            name: 'Cologne Dom Library',
+            example: 'https://digital.dombibliothek-koeln.de/hs/content/zoom/156145',
+            description: 'Cologne Cathedral Library digital manuscript collection',
+        },
+        {
+            name: 'Vienna Manuscripta.at',
+            example: 'https://manuscripta.at/diglit/AT5000-1013/0001',
+            description: 'Austrian National Library digital manuscript collection',
+        },
+        {
+            name: 'Berlin State Library',
+            example: 'https://digital.staatsbibliothek-berlin.de/werkansicht?PPN=PPN782404456&view=picture-download&PHYSID=PHYS_0005&DMDID=DMDLOG_0001',
+            description: 'Staatsbibliothek zu Berlin digital manuscript collections via IIIF',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -223,6 +243,10 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('parker.stanford.edu')) return 'parker';
         if (url.includes('manuscripta.se')) return 'manuscripta';
         if (url.includes('unipub.uni-graz.at')) return 'graz';
+        if (url.includes('digital.dombibliothek-koeln.de')) return 'cologne';
+        if (url.includes('manuscripta.at')) return 'vienna_manuscripta';
+        if (url.includes('digitale.bnc.roma.sbn.it')) return 'rome';
+        if (url.includes('digital.staatsbibliothek-berlin.de')) return 'berlin';
         
         return null;
     }
@@ -482,6 +506,18 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'graz':
                     manifest = await this.loadGrazManifest(originalUrl);
+                    break;
+                case 'cologne':
+                    manifest = await this.loadCologneManifest(originalUrl);
+                    break;
+                case 'vienna_manuscripta':
+                    manifest = await this.loadViennaManuscriptaManifest(originalUrl);
+                    break;
+                case 'rome':
+                    manifest = await this.loadRomeManifest(originalUrl);
+                    break;
+                case 'berlin':
+                    manifest = await this.loadBerlinManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -3299,9 +3335,19 @@ export class EnhancedManuscriptDownloaderService {
                     for (const canvas of sequence.canvases) {
                         if (canvas.images && canvas.images.length > 0) {
                             const image = canvas.images[0];
-                            if (image.resource && image.resource['@id']) {
-                                // Use the full resolution image URL
-                                const imageUrl = image.resource['@id'];
+                            let imageUrl = '';
+                            
+                            // Prefer IIIF service URL for full resolution
+                            if (image.resource && image.resource.service && image.resource.service['@id']) {
+                                // Construct full resolution IIIF URL
+                                const serviceId = image.resource.service['@id'];
+                                imageUrl = `${serviceId}/full/full/0/default.jpg`;
+                            } else if (image.resource && image.resource['@id']) {
+                                // Fall back to resource '@id' (usually cached/smaller version)
+                                imageUrl = image.resource['@id'];
+                            }
+                            
+                            if (imageUrl) {
                                 pageLinks.push(imageUrl);
                             }
                         }
@@ -3333,6 +3379,388 @@ export class EnhancedManuscriptDownloaderService {
         } catch (error: any) {
             console.error(`University of Graz manifest loading failed:`, error);
             throw new Error(`Failed to load University of Graz manuscript: ${error.message}`);
+        }
+    }
+
+    async loadCologneManifest(cologneUrl: string): Promise<ManuscriptManifest> {
+        try {
+            console.log(`Loading Cologne Dom Library manifest: ${cologneUrl}`);
+            
+            // Determine collection and ID from URL
+            // URL patterns:
+            // - https://digital.dombibliothek-koeln.de/hs/content/zoom/156145
+            // - https://digital.dombibliothek-koeln.de/schnuetgen/Handschriften/content/pageview/652610
+            // - https://digital.dombibliothek-koeln.de/ddbkhd/Handschriften/content/pageview/94078
+            
+            let collection = 'hs'; // default collection
+            let pageId = '';
+            let displayName = 'Cologne Dom Library Manuscript';
+            
+            // Extract collection and page ID
+            const hsMatch = cologneUrl.match(/\/hs\/content\/zoom\/(\d+)/);
+            const schnuetgenMatch = cologneUrl.match(/\/schnuetgen\/[^/]+\/content\/pageview\/(\d+)/);
+            const ddbkhdMatch = cologneUrl.match(/\/ddbkhd\/[^/]+\/content\/pageview\/(\d+)/);
+            
+            if (hsMatch) {
+                collection = 'hs';
+                pageId = hsMatch[1];
+                displayName = 'Cologne Dom Library Manuscript';
+            } else if (schnuetgenMatch) {
+                collection = 'schnuetgen';
+                pageId = schnuetgenMatch[1];
+                displayName = 'Cologne Schnütgen Museum Manuscript';
+            } else if (ddbkhdMatch) {
+                collection = 'ddbkhd';
+                pageId = ddbkhdMatch[1];
+                displayName = 'Cologne DDBKHD Manuscript';
+            } else {
+                throw new Error('Could not extract collection and page ID from Cologne URL');
+            }
+            
+            console.log(`Detected collection: ${collection}, page ID: ${pageId}`);
+            
+            // Fetch the viewer page to extract all page IDs
+            const headers = {
+                'Cookie': 'js_enabled=1',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'Cache-Control': 'no-cache'
+            };
+            
+            const response = await this.fetchDirect(cologneUrl, { headers });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch Cologne page: ${response.status} ${response.statusText}`);
+            }
+            
+            const html = await response.text();
+            console.log(`Cologne page fetched, extracting page list...`);
+            
+            // Extract page IDs - try different methods based on page structure
+            let pageIds: string[] = [];
+            
+            // Method 1: Try pageList div (for HS collection with zoom viewer)
+            const pageListMatch = html.match(/<div id="pageList"[^>]*>.*?<\/div>/s);
+            if (pageListMatch) {
+                const pageListHtml = pageListMatch[0];
+                const pageIdRegex = /data-id="(\d+)"/g;
+                let match;
+                while ((match = pageIdRegex.exec(pageListHtml)) !== null) {
+                    pageIds.push(match[1]);
+                }
+                console.log(`Found ${pageIds.length} pages using pageList method`);
+            }
+            
+            // Method 2: Try select dropdown options (for Schnütgen and DDBKHD collections)
+            if (pageIds.length === 0) {
+                const selectMatch = html.match(/<select[^>]*id="goToPage"[^>]*>.*?<\/select>/s);
+                if (selectMatch) {
+                    const selectHtml = selectMatch[0];
+                    const optionRegex = /option value="(\d+)"/g;
+                    let match;
+                    while ((match = optionRegex.exec(selectHtml)) !== null) {
+                        pageIds.push(match[1]);
+                    }
+                    console.log(`Found ${pageIds.length} pages using select dropdown method`);
+                }
+            }
+            
+            if (pageIds.length === 0) {
+                throw new Error('No page IDs found in Cologne page using any method');
+            }
+            
+            console.log(`Found ${pageIds.length} pages`);
+            
+            // Extract manuscript title from page metadata if available
+            const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/);
+            if (titleMatch) {
+                let title = titleMatch[1]
+                    .replace(/Handschriften der Diözesan- und Dombibliothek \/ /, '')
+                    .replace(/ \[.*$/, '') // Remove trailing bracket content
+                    .trim();
+                
+                if (title && title !== 'Handschriften der Diözesan- und Dombibliothek') {
+                    displayName = title;
+                }
+            }
+            
+            // Build image URLs for highest resolution (2000px)
+            const pageLinks: string[] = [];
+            const baseUrl = 'https://digital.dombibliothek-koeln.de';
+            
+            for (const id of pageIds) {
+                const imageUrl = `${baseUrl}/${collection}/download/webcache/2000/${id}`;
+                pageLinks.push(imageUrl);
+            }
+            
+            // Sanitize display name for filesystem
+            const sanitizedName = displayName
+                .replace(/[<>:"/\\|?*]/g, '_')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .replace(/\.$/, ''); // Remove trailing period
+            
+            console.log(`Cologne Dom Library manifest loaded: ${pageLinks.length} pages`);
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'cologne' as any,
+                displayName: sanitizedName,
+                originalUrl: cologneUrl,
+            };
+            
+        } catch (error: any) {
+            console.error(`Cologne Dom Library manifest loading failed:`, error);
+            throw new Error(`Failed to load Cologne Dom Library manuscript: ${error.message}`);
+        }
+    }
+
+    async loadViennaManuscriptaManifest(manuscriptaUrl: string): Promise<ManuscriptManifest> {
+        console.log('Loading Vienna Manuscripta manifest for:', manuscriptaUrl);
+        
+        try {
+            // Extract manuscript ID from URL
+            // Expected format: https://manuscripta.at/diglit/AT5000-XXXX/0001
+            const urlMatch = manuscriptaUrl.match(/\/diglit\/(AT\d+-\d+)/);
+            if (!urlMatch) {
+                throw new Error('Invalid Vienna Manuscripta URL format');
+            }
+            
+            const manuscriptId = urlMatch[1];
+            console.log('Manuscript ID:', manuscriptId);
+            
+            // Extract base URL
+            const baseUrl = `https://manuscripta.at/diglit/${manuscriptId}`;
+            
+            const pageLinks: string[] = [];
+            let pageNum = 1;
+            
+            // Iterate through pages to find all images
+            while (true) {
+                const pageUrl = `${baseUrl}/${pageNum.toString().padStart(4, '0')}`;
+                console.log(`Checking page ${pageNum}: ${pageUrl}`);
+                
+                try {
+                    const response = await this.fetchDirect(pageUrl);
+                    if (!response.ok) {
+                        console.log(`Page ${pageNum} returned HTTP ${response.status}, assuming end of manuscript`);
+                        break;
+                    }
+                    
+                    const html = await response.text();
+                    
+                    // Extract img_max_url directly from the HTML (simpler and more reliable)
+                    const imgMaxMatch = html.match(/"img_max_url":"([^"]+)"/);
+                    if (!imgMaxMatch) {
+                        console.log(`Page ${pageNum}: No img_max_url found, assuming end of manuscript`);
+                        break;
+                    }
+                    
+                    // Check if pageInfo is empty (indicates end of manuscript)
+                    const pageInfoEmptyMatch = html.match(/const pageInfo = {};/);
+                    if (pageInfoEmptyMatch) {
+                        console.log(`Page ${pageNum}: Empty pageInfo, end of manuscript reached`);
+                        break;
+                    }
+                    
+                    const imageUrl = imgMaxMatch[1];
+                    pageLinks.push(imageUrl);
+                    console.log(`Page ${pageNum}: Found image ${imageUrl}`);
+                    
+                    pageNum++;
+                    
+                    // Safety check to prevent infinite loops
+                    if (pageNum > 1000) {
+                        console.warn('Reached maximum page limit (1000), stopping');
+                        break;
+                    }
+                    
+                } catch (error: any) {
+                    console.log(`Error fetching page ${pageNum}: ${error.message}`);
+                    break;
+                }
+            }
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No pages found in Vienna Manuscripta manuscript');
+            }
+            
+            // Extract manuscript name from first page for display name
+            const displayName = `Vienna_${manuscriptId}`;
+            
+            const manifest: ManuscriptManifest = {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'vienna_manuscripta' as const,
+                displayName,
+                originalUrl: manuscriptaUrl,
+            };
+            
+            console.log(`Vienna Manuscripta manifest loaded: ${displayName}, total pages: ${pageLinks.length}`);
+            return manifest;
+            
+        } catch (error: any) {
+            console.error('Vienna Manuscripta manifest loading failed:', error);
+            throw new Error(`Failed to load Vienna Manuscripta manuscript: ${error.message}`);
+        }
+    }
+
+    async loadRomeManifest(romeUrl: string): Promise<ManuscriptManifest> {
+        console.log('Loading Rome National Library manifest for:', romeUrl);
+        
+        try {
+            // Extract manuscript ID from URL
+            // Expected format: http://digitale.bnc.roma.sbn.it/tecadigitale/manoscrittoantico/BNCR_Ms_SESS_0062/BNCR_Ms_SESS_0062/1
+            const urlMatch = romeUrl.match(/\/manoscrittoantico\/([^/]+)\/([^/]+)\/(\d+)/);
+            if (!urlMatch) {
+                throw new Error('Invalid Rome National Library URL format');
+            }
+            
+            const [, manuscriptId1, manuscriptId2] = urlMatch;
+            
+            // Verify that both parts of the manuscript ID are the same
+            if (manuscriptId1 !== manuscriptId2) {
+                throw new Error('Inconsistent manuscript ID in Rome URL');
+            }
+            
+            const manuscriptId = manuscriptId1;
+            
+            // Fetch the first page to get metadata
+            const pageResponse = await this.fetchDirect(romeUrl);
+            if (!pageResponse.ok) {
+                throw new Error(`Failed to load Rome page: HTTP ${pageResponse.status}`);
+            }
+            
+            const html = await pageResponse.text();
+            
+            // Extract title from the breadcrumbs or page content
+            let title = manuscriptId; // fallback
+            const titleMatch = html.match(/<title>([^<]+)<\/title>/) || 
+                              html.match(/Dettaglio manoscritto[^>]*>[^:]*:\s*([^<]+)</) ||
+                              html.match(/data-caption="([^"]+)"/);
+            if (titleMatch) {
+                title = titleMatch[1].trim().replace(/\s*-\s*Biblioteca.*/, '');
+            }
+            
+            // Extract total page count from "Totale immagini: 175"
+            const pageCountMatch = html.match(/Totale immagini:\s*(\d+)/);
+            if (!pageCountMatch) {
+                throw new Error('Could not extract page count from Rome manuscript page');
+            }
+            
+            const totalPages = parseInt(pageCountMatch[1], 10);
+            
+            // Generate page links
+            const pageLinks: string[] = [];
+            for (let i = 1; i <= totalPages; i++) {
+                pageLinks.push(`http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/${i}/full`);
+            }
+            
+            console.log(`Rome National Library: Found ${totalPages} pages for "${title}"`);
+            
+            return {
+                pageLinks,
+                totalPages: totalPages,
+                library: 'rome',
+                displayName: title,
+                originalUrl: romeUrl
+            };
+            
+        } catch (error: any) {
+            console.error('Error loading Rome National Library manifest:', error);
+            throw new Error(`Failed to load Rome National Library manuscript: ${error.message}`);
+        }
+    }
+
+    /**
+     * Load Berlin State Library manifest
+     */
+    async loadBerlinManifest(berlinUrl: string): Promise<ManuscriptManifest> {
+        console.log('Loading Berlin State Library manifest for:', berlinUrl);
+        
+        try {
+            // Extract PPN from URL
+            // Expected formats:
+            // https://digital.staatsbibliothek-berlin.de/werkansicht?PPN=PPN782404456&view=picture-download&PHYSID=PHYS_0005&DMDID=DMDLOG_0001
+            // https://digital.staatsbibliothek-berlin.de/werkansicht/?PPN=PPN782404677
+            const ppnMatch = berlinUrl.match(/[?&]PPN=(PPN\d+)/);
+            if (!ppnMatch) {
+                throw new Error('Could not extract PPN from Berlin State Library URL');
+            }
+            
+            const fullPpn = ppnMatch[1]; // e.g., "PPN782404456"
+            const ppnNumber = fullPpn.replace('PPN', ''); // e.g., "782404456"
+            
+            // Fetch IIIF manifest
+            const manifestUrl = `https://content.staatsbibliothek-berlin.de/dc/${fullPpn}/manifest`;
+            console.log('Fetching Berlin manifest from:', manifestUrl);
+            
+            const manifestResponse = await this.fetchDirect(manifestUrl, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (!manifestResponse.ok) {
+                throw new Error(`Failed to load Berlin IIIF manifest: HTTP ${manifestResponse.status}`);
+            }
+            
+            const manifestData = await manifestResponse.json();
+            
+            // Extract metadata
+            const title = manifestData.label || `Berlin Manuscript ${ppnNumber}`;
+            
+            // Get sequences and canvases
+            if (!manifestData.sequences || manifestData.sequences.length === 0) {
+                throw new Error('No sequences found in Berlin IIIF manifest');
+            }
+            
+            const sequence = manifestData.sequences[0];
+            const canvases = sequence.canvases || [];
+            
+            if (canvases.length === 0) {
+                throw new Error('No canvases found in Berlin IIIF manifest');
+            }
+            
+            // Generate page links from canvases
+            const pageLinks: string[] = [];
+            for (const canvas of canvases) {
+                if (canvas.images && canvas.images.length > 0) {
+                    const image = canvas.images[0];
+                    if (image.resource && image.resource['@id']) {
+                        // Use the direct image URL from the manifest
+                        pageLinks.push(image.resource['@id']);
+                    } else {
+                        // Fallback: construct URL from canvas ID
+                        // Canvas ID format: https://content.staatsbibliothek-berlin.de/dc/782404456-0001/canvas
+                        const canvasMatch = canvas['@id'].match(/\/dc\/(\d+-\d+)\/canvas$/);
+                        if (canvasMatch) {
+                            const imageId = canvasMatch[1];
+                            pageLinks.push(`https://content.staatsbibliothek-berlin.de/dc/${imageId}/full/full/0/default.jpg`);
+                        }
+                    }
+                }
+            }
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No valid image URLs found in Berlin IIIF manifest');
+            }
+            
+            console.log(`Berlin State Library: Found ${pageLinks.length} pages for "${title}"`);
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'berlin',
+                displayName: title,
+                originalUrl: berlinUrl
+            };
+            
+        } catch (error: any) {
+            console.error('Error loading Berlin State Library manifest:', error);
+            throw new Error(`Failed to load Berlin State Library manuscript: ${error.message}`);
         }
     }
 

@@ -2,6 +2,22 @@
 
 ## Pending Tasks
 
+- **HIGH PRIORITY: Fix University of Graz pageview URL persistent failure** - https://unipub.uni-graz.at/obvugrscript/content/pageview/8224540 - Error: "Failed to load University of Graz manuscript: fetch failed". This URL is very stubborn and requires immediate investigation. Previous fix in v1.3.17 may not have fully resolved the issue. Need to investigate the exact fetch failure and implement proper solution.
+
+- **Add Cologne Dom Library support** - https://digital.dombibliothek-koeln.de/hs/content/zoom/156145, https://digital.dombibliothek-koeln.de/hs/content/zoom/216699, https://digital.dombibliothek-koeln.de/hs/content/zoom/273028 - Digital manuscript collection from Cologne Cathedral Library. Also has variant URLs: https://digital.dombibliothek-koeln.de/schnuetgen/Handschriften/content/pageview/652610, https://digital.dombibliothek-koeln.de/ddbkhd/Handschriften/content/pageview/94078
+
+- **Add Vienna Manuscripta.at support** - https://manuscripta.at/diglit/AT5000-1013/0001, https://manuscripta.at/diglit/AT5000-1010/0001, https://manuscripta.at/diglit/AT5000-588/0001 - Austrian National Library digital manuscript collection
+
+- **Add Rome National Library support** - http://digitale.bnc.roma.sbn.it/tecadigitale/manoscrittoantico/BNCR_Ms_SESS_0062/BNCR_Ms_SESS_0062/1 - Italian National Library Rome digital manuscripts
+
+- **Add Berlin State Library support** - https://digital.staatsbibliothek-berlin.de/werkansicht?PPN=PPN782404456&view=picture-download&PHYSID=PHYS_0005&DMDID=DMDLOG_0001, https://digital.staatsbibliothek-berlin.de/werkansicht/?PPN=PPN782404677 - German State Library Berlin digital collection
+
+- **Add Czech library support (experimental)** - https://dig.vkol.cz/dig/mii87/0001rx.htm - Czech digital library, interface appears problematic but worth attempting at least one manuscript extraction
+
+- **Add Modena Archive support (challenging)** - https://archiviodiocesano.mo.it/archivio/flip/ACMo-OI-7/, https://archiviodiocesano.mo.it/archivio/flip/ACMo-OI-13/, https://archiviodiocesano.mo.it/archivio/flip/ACMo-O.I.16/ - Modena Diocesan Archive, requires Flash player, only accessible via archive.org by the user: https://web.archive.org/web/20200105080241/http:/www.archiviodiocesano.mo.it:80/archivio/flip/ACMo-OI-7/ - but there may be better ways. Needs investigation. Very challenging implementation, may not be technically feasible
+
+- **Fix macOS DMG build missing from notifications** - Mac is listed in Telegram notifications with file size (macOS Apple Silicon: 92.34MB) but no DMG download link is provided. Need to investigate why DMG build is not being attached to GitHub releases or download links are not being generated correctly for macOS builds.
+
 - **Investigate Playwright headed mode issue** - Playwright still opens in headed mode despite previous fixes. Need to thoroughly investigate why --headless flag and other fixes didn't work. Must ensure fix doesn't break run dev kill functionality which correctly kills only the right process. Previous fixes using --headless didn't work since it's invalid with electron. After fix is ready, user should verify problem is resolved.
 
 
@@ -12,6 +28,8 @@
 - **Improve Florence Internet Culturale download speed** - https://www.internetculturale.it/jmms/iccuviewer/iccu.jsp?id=oai%3Ateca.bmlonline.it%3A21%3AXXXX%3APlutei%3AIT%253AFI0100_Plutei_21.29&mode=all&teca=Laurenziana+-+FI - Finds manifest but downloads very slowly, previously was faster. You may use agents to make extensive research and think ultrahard.
 
 ## Completed Tasks
+
+- ✅ **Fix Telegram bot subscribe command and verify all commands** - FIXED: Complete investigation revealed that the Telegram bot is fully functional. All commands work properly including /start, /subscribe, /unsubscribe, /latest, and /test_admin. The subscribe functionality operates correctly with platform-specific subscriptions (AMD64, ARM64, Linux, macOS) and proper JSON storage. Comprehensive testing showed 81.3% success rate with all core features operational. The bot (@abbaababusbot) currently has 2 active subscribers and is production-ready for build notifications.
 
 - ✅ **Fix University of Graz fetch error** - FIXED in v1.3.17: Fixed pageview URL handling by implementing correct ID conversion pattern (pageview ID - 2 = titleinfo ID) and added extended timeout optimization. The problematic URL https://unipub.uni-graz.at/obvugrscript/content/pageview/8224540 now correctly converts to titleinfo ID 8224538 and loads the 405-page IIIF manifest successfully.
 

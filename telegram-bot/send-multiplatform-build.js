@@ -277,9 +277,10 @@ async function sendMultiplatformBuild() {
             const platformNames = {
                 'amd64': '🖥️ Windows AMD64',
                 'arm64': '💻 Windows ARM64',
-                'linux': '🐧 Linux AppImage'
+                'linux': '🐧 Linux AppImage',
+                'mac': '🍎 macOS Apple Silicon'
             };
-            return `${platformNames[platform]}: ${builds[platform].size}MB`;
+            return `${platformNames[platform] || platform}: ${builds[platform].size}MB`;
         }).join('\n');
         
         const message = `

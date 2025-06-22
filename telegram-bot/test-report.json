@@ -1,0 +1,128 @@
+{
+  "summary": {
+    "total": 16,
+    "successful": 13,
+    "failed": 3,
+    "successRate": "81.3",
+    "duration": "15.72s",
+    "timestamp": "2025-06-22T10:04:14.685Z"
+  },
+  "results": [
+    {
+      "test": "Bot Info",
+      "success": true,
+      "message": "Bot is active: @abbaababusbot",
+      "details": "ID: 7825780367, Name: abba-ababus-mss-downloader",
+      "timestamp": "2025-06-22T10:03:59.347Z"
+    },
+    {
+      "test": "Bot Commands",
+      "success": true,
+      "message": "Found 4 registered commands",
+      "details": "/start - Start the bot and show main menu, /subscribe - Subscribe to build notifications, /unsubscribe - Unsubscribe from notifications, /latest - Download latest builds for all platforms",
+      "timestamp": "2025-06-22T10:03:59.447Z"
+    },
+    {
+      "test": "Webhook Info",
+      "success": true,
+      "message": "No webhook set (using polling)",
+      "details": "Pending updates: 1",
+      "timestamp": "2025-06-22T10:03:59.524Z"
+    },
+    {
+      "test": "Subscribers File",
+      "success": true,
+      "message": "Found 2 subscribers",
+      "details": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/telegram-bot/subscribers.json",
+      "timestamp": "2025-06-22T10:03:59.525Z"
+    },
+    {
+      "test": "Build Files",
+      "success": true,
+      "message": "Found 0 build files in dist/",
+      "details": "",
+      "timestamp": "2025-06-22T10:03:59.526Z"
+    },
+    {
+      "test": "Module: node-telegram-bot-api",
+      "success": true,
+      "message": "Module loaded successfully",
+      "details": null,
+      "timestamp": "2025-06-22T10:03:59.526Z"
+    },
+    {
+      "test": "Module: ./build-utils",
+      "success": false,
+      "message": "Failed to load module",
+      "details": "require is not defined",
+      "timestamp": "2025-06-22T10:03:59.528Z"
+    },
+    {
+      "test": "Module: ./file-handler",
+      "success": false,
+      "message": "Failed to load module",
+      "details": "require is not defined",
+      "timestamp": "2025-06-22T10:03:59.529Z"
+    },
+    {
+      "test": "Module: ./github-releases",
+      "success": false,
+      "message": "Failed to load module",
+      "details": "require is not defined",
+      "timestamp": "2025-06-22T10:03:59.530Z"
+    },
+    {
+      "test": "/start command",
+      "success": true,
+      "message": "Command sent successfully",
+      "details": "Message ID: 270",
+      "timestamp": "2025-06-22T10:04:01.713Z"
+    },
+    {
+      "test": "/subscribe command",
+      "success": true,
+      "message": "Command sent successfully",
+      "details": "Message ID: 271",
+      "timestamp": "2025-06-22T10:04:03.855Z"
+    },
+    {
+      "test": "/unsubscribe command",
+      "success": true,
+      "message": "Command sent successfully",
+      "details": "Message ID: 272",
+      "timestamp": "2025-06-22T10:04:06.016Z"
+    },
+    {
+      "test": "/latest command",
+      "success": true,
+      "message": "Command sent successfully",
+      "details": "Message ID: 273",
+      "timestamp": "2025-06-22T10:04:08.198Z"
+    },
+    {
+      "test": "/test_admin command",
+      "success": true,
+      "message": "Command sent successfully",
+      "details": "Message ID: 274",
+      "timestamp": "2025-06-22T10:04:10.358Z"
+    },
+    {
+      "test": "/help command",
+      "success": true,
+      "message": "Command sent successfully",
+      "details": "Message ID: 275",
+      "timestamp": "2025-06-22T10:04:12.511Z"
+    },
+    {
+      "test": "Non-command message",
+      "success": true,
+      "message": "Message sent successfully, should show menu",
+      "details": "Message ID: 276",
+      "timestamp": "2025-06-22T10:04:14.685Z"
+    }
+  ],
+  "recommendations": [
+    "Review failed tests and fix any missing functionality",
+    "Install missing dependencies with npm install"
+  ]
+}

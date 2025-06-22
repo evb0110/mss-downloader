@@ -64,6 +64,26 @@ export class LibraryOptimizationService {
             enableProgressiveBackoff: true,
             optimizationDescription: 'University of Graz optimizations: 2 concurrent downloads, extended timeouts for large IIIF manifests'
         },
+        'cologne': {
+            maxConcurrentDownloads: 3, // German library server, moderate limits
+            timeoutMultiplier: 1.5, // Increased timeout for JavaScript protection handling
+            optimizationDescription: 'Cologne Dom Library optimizations: 3 concurrent downloads, extended timeouts for JS protection'
+        },
+        'vienna_manuscripta': {
+            maxConcurrentDownloads: 2, // Austrian National Library server, moderate limits
+            timeoutMultiplier: 1.5, // Increased timeout for manifest parsing
+            optimizationDescription: 'Vienna Manuscripta optimizations: 2 concurrent downloads, extended timeouts for page discovery'
+        },
+        'rome': {
+            maxConcurrentDownloads: 3, // Italian National Library server, moderate limits
+            timeoutMultiplier: 1.5, // Increased timeout for HTML parsing
+            optimizationDescription: 'Rome National Library optimizations: 3 concurrent downloads, extended timeouts for page discovery'
+        },
+        'berlin': {
+            maxConcurrentDownloads: 3, // German State Library server, moderate limits
+            timeoutMultiplier: 1.5, // Increased timeout for IIIF manifest processing
+            optimizationDescription: 'Berlin State Library optimizations: 3 concurrent downloads, extended timeouts for IIIF manifest processing'
+        },
         'loading': {}
     };
 

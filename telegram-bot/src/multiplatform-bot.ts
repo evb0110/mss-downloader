@@ -40,6 +40,8 @@ export class MultiplatformMSSBot {
   private fileHandler: TelegramFileHandler;
   private adminUsername: string;
   private platforms: Record<Platform, PlatformInfo>;
+  private readonly ADMIN_CHAT_ID = 53582187;
+  private readonly isDevelopment: boolean;
 
   constructor() {
     this.token = process.env.TELEGRAM_BOT_TOKEN || '';
@@ -61,6 +63,7 @@ export class MultiplatformMSSBot {
     this.subscribers = this.loadSubscribers();
     this.fileHandler = new SimpleFileHandler();
     this.adminUsername = 'evb0110';
+    this.isDevelopment = process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true';
     
     this.platforms = {
       'amd64': { name: 'Windows AMD64 (x64) - Default', emoji: '🖥️' },
@@ -104,12 +107,15 @@ export class MultiplatformMSSBot {
     return this.subscribers.find(sub => sub.chatId === chatId);
   }
   
+  private isAdmin(chatId: number): boolean {
+    return chatId === this.ADMIN_CHAT_ID;
+  }
+
   private async notifyAdmin(message: string): Promise<void> {
     try {
-      const adminChatId = 53582187;
-      console.log(`Sending admin notification to chat ID: ${adminChatId}`);
+      console.log(`Sending admin notification to chat ID: ${this.ADMIN_CHAT_ID}`);
       
-      await this.bot.sendMessage(adminChatId, message, { parse_mode: 'HTML' });
+      await this.bot.sendMessage(this.ADMIN_CHAT_ID, message, { parse_mode: 'HTML' });
       console.log('Admin notification sent successfully');
     } catch (error) {
       console.error('Error notifying admin:', error);
@@ -148,10 +154,41 @@ export class MultiplatformMSSBot {
     
     this.bot.onText(/\/test_admin/, async (msg) => {
       const chatId = msg.chat.id;
-      if (chatId === 53582187) {
+      if (this.isAdmin(chatId)) {
         await this.notifyAdmin('🧪 <b>Test Notification</b>\n\nThis is a test message to verify admin notifications are working.');
         this.bot.sendMessage(chatId, 'Test notification sent!');
+      } else {
+        this.bot.sendMessage(chatId, '❌ This command is only available to administrators.');
       }
+    });
+
+    // Test notification command - ADMIN ONLY
+    this.bot.onText(/\/test_notification/, async (msg) => {
+      const chatId = msg.chat.id;
+      if (!this.isAdmin(chatId)) {
+        this.bot.sendMessage(chatId, '❌ Test commands are only available to administrators.');
+        return;
+      }
+      
+      console.log(`Admin testing notification system from ${chatId}`);
+      const testMessage = '🧪 <b>Test Build Notification</b>\n\nThis is a test message to verify the notification system works correctly.\n\nOnly admin receives this message.';
+      
+      // Use test mode to only notify admin
+      await this.notifySubscribers(testMessage, {}, true);
+      this.bot.sendMessage(chatId, '✅ Test notification sent (admin only).');
+    });
+
+    // Add additional test commands - ADMIN ONLY  
+    this.bot.onText(/\/test_(?!admin|notification)(.*)/, async (msg) => {
+      const chatId = msg.chat.id;
+      if (!this.isAdmin(chatId)) {
+        this.bot.sendMessage(chatId, '❌ Test commands are only available to administrators.');
+        return;
+      }
+      
+      const testType = msg.text?.match(/\/test_(.+)/)?.[1];
+      console.log(`Admin test command: /test_${testType} from ${chatId}`);
+      this.bot.sendMessage(chatId, `🧪 Test command "/test_${testType}" received by admin.`);
     });
     
     this.bot.on('message', (msg) => {
@@ -174,12 +211,22 @@ export class MultiplatformMSSBot {
   }
   
   private setupMenu(): void {
-    this.bot.setMyCommands([
+    const commands = [
       { command: 'start', description: 'Start the bot and show main menu' },
       { command: 'subscribe', description: 'Subscribe to build notifications' },
       { command: 'unsubscribe', description: 'Unsubscribe from notifications' },
       { command: 'latest', description: 'Download latest builds for all platforms' }
-    ]).catch(error => {
+    ];
+
+    // Add admin-only commands to the menu
+    if (this.isDevelopment) {
+      commands.push(
+        { command: 'test_admin', description: '[ADMIN] Test admin notifications' },
+        { command: 'test_notification', description: '[ADMIN] Test build notifications (admin only)' }
+      );
+    }
+
+    this.bot.setMyCommands(commands).catch(error => {
       console.error('Error setting bot commands:', error);
     });
   }
@@ -529,15 +576,24 @@ export class MultiplatformMSSBot {
     }
   }
   
-  async notifySubscribers(message: string, builds: Partial<Record<Platform, BuildInfo>> = {}): Promise<void> {
+  async notifySubscribers(message: string, builds: Partial<Record<Platform, BuildInfo>> = {}, testMode: boolean = false): Promise<void> {
     if (this.subscribers.length === 0) {
       console.log('No subscribers to notify');
       return;
     }
     
-    console.log(`Notifying subscribers for platforms: ${Object.keys(builds).join(', ')}`);
+    // In test mode, only notify admin
+    const subscribersToNotify = testMode || this.isDevelopment 
+      ? this.subscribers.filter(sub => sub.chatId === this.ADMIN_CHAT_ID)
+      : this.subscribers;
     
-    for (const subscriber of this.subscribers) {
+    if (testMode) {
+      console.log('🧪 TEST MODE: Only notifying admin user');
+    }
+    
+    console.log(`Notifying ${subscribersToNotify.length} subscribers for platforms: ${Object.keys(builds).join(', ')}`);
+    
+    for (const subscriber of subscribersToNotify) {
       try {
         console.log(`Notifying ${subscriber.username} (${subscriber.chatId})`);
         
@@ -572,6 +628,8 @@ export class MultiplatformMSSBot {
                   assetPattern = /Setup.*arm64.*\.exe$/;
                 } else if (platform === 'linux') {
                   assetPattern = /\.AppImage$/;
+                } else if (platform === 'mac') {
+                  assetPattern = /\.dmg$/;
                 }
                 
                 const asset = release.assets.find((asset: any) => assetPattern.test(asset.name));
@@ -672,6 +730,11 @@ export class MultiplatformMSSBot {
   start(): void {
     console.log('MSS Downloader Multiplatform Telegram Bot started');
     console.log(`Subscribers loaded: ${this.subscribers.length}`);
+    console.log(`Mode: ${this.isDevelopment ? '🧪 DEVELOPMENT (Test mode active)' : '🚀 PRODUCTION'}`);
+    
+    if (this.isDevelopment) {
+      console.log('⚠️  In development mode, notifications will only be sent to admin (evb0110)');
+    }
     
     this.bot.on('error', (error) => {
       console.error('Bot error:', error);
