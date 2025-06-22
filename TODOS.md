@@ -2,7 +2,8 @@
 
 ## Pending Tasks
 
-- **Fix University of Graz fetch error** - https://unipub.uni-graz.at/obvugrscript/content/pageview/8224540 - Error: Failed to load University of Graz manuscript: fetch failed. You need to curl everything and find the right way. You may use agents to make extensive research and think ultrahard.
+- **Investigate Playwright headed mode issue** - Playwright still opens in headed mode despite previous fixes. Need to thoroughly investigate why --headless flag and other fixes didn't work. Must ensure fix doesn't break run dev kill functionality which correctly kills only the right process. Previous fixes using --headless didn't work since it's invalid with electron. After fix is ready, user should verify problem is resolved.
+
 
 - **Fix Morgan Library high resolution zoom** - https://www.themorgan.org/collection/lindau-gospels/thumbs and https://www.themorgan.org/collection/gospel-book/143812/thumbs - Currently downloading in minimal resolution, ignoring zoom functionality on website. The right link for the image will be the following: https://www.themorgan.org/sites/default/files/images/collection/76874v_0004_0005.jpg . You need to curl everything and find the right way. You may use agents to make extensive research and think ultrahard.
 
@@ -11,6 +12,8 @@
 - **Improve Florence Internet Culturale download speed** - https://www.internetculturale.it/jmms/iccuviewer/iccu.jsp?id=oai%3Ateca.bmlonline.it%3A21%3AXXXX%3APlutei%3AIT%253AFI0100_Plutei_21.29&mode=all&teca=Laurenziana+-+FI - Finds manifest but downloads very slowly, previously was faster. You may use agents to make extensive research and think ultrahard.
 
 ## Completed Tasks
+
+- ✅ **Fix University of Graz fetch error** - FIXED in v1.3.17: Fixed pageview URL handling by implementing correct ID conversion pattern (pageview ID - 2 = titleinfo ID) and added extended timeout optimization. The problematic URL https://unipub.uni-graz.at/obvugrscript/content/pageview/8224540 now correctly converts to titleinfo ID 8224538 and loads the 405-page IIIF manifest successfully.
 
 - ✅ **Fix markdown link rendering in Telegram bot** - FIXED: Converted markdown format links `[text](url)` to proper HTML format `<a href="url">text</a>` to match the HTML parse mode used by the bot. Links like 🔗 [🖥️ Windows AMD64 (x64)] now appear as clickable links in Telegram messages instead of plain text.
 

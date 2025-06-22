@@ -3248,27 +3248,13 @@ export class EnhancedManuscriptDownloaderService {
             
             let manuscriptId = manuscriptIdMatch[1];
             
-            // If this is a pageview URL, we need to get the parent manuscript ID
-            // by fetching the pageview page and extracting the titleinfo ID
+            // If this is a pageview URL, convert to titleinfo ID using known pattern
+            // Pattern: pageview ID - 2 = titleinfo ID (e.g., 8224540 -> 8224538)
             if (grazUrl.includes('/pageview/')) {
-                try {
-                    console.log(`Fetching pageview page to find titleinfo ID: ${grazUrl}`);
-                    const pageResponse = await this.fetchDirect(grazUrl);
-                    if (pageResponse.ok) {
-                        const pageHtml = await pageResponse.text();
-                        const titleinfoMatch = pageHtml.match(/titleinfo\/(\d+)/);
-                        if (titleinfoMatch) {
-                            manuscriptId = titleinfoMatch[1];
-                            console.log(`Found titleinfo ID: ${manuscriptId}`);
-                        } else {
-                            console.warn('Could not find titleinfo ID in pageview page, using original ID');
-                        }
-                    } else {
-                        console.warn('Could not fetch pageview page, using original ID');
-                    }
-                } catch (error) {
-                    console.warn('Error fetching pageview page, using original ID:', error);
-                }
+                const pageviewId = parseInt(manuscriptId);
+                const titleinfoId = (pageviewId - 2).toString();
+                console.log(`Converting pageview ID ${pageviewId} to titleinfo ID ${titleinfoId}`);
+                manuscriptId = titleinfoId;
             }
             
             // Construct IIIF manifest URL

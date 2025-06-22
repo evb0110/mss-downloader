@@ -1,6 +1,6 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.3.16",
+  "version": "1.3.17",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "main": "dist/main/main.js",
   "type": "module",
