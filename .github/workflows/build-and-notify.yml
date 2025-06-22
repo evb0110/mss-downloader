@@ -149,8 +149,46 @@ jobs:
           name: linux-appimage-build-v${{ needs.check-version.outputs.version }}
           path: release/*.AppImage
 
+  build-mac:
+    needs: [check-version, build-windows]
+    if: needs.check-version.outputs.version-changed == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Build macOS DMG
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist:mac
+      
+      - name: Upload macOS DMG Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.build-windows.outputs.upload_url }}
+          asset_path: release/Abba Ababus (MSS Downloader)-${{ needs.check-version.outputs.version }}.dmg
+          asset_name: Abba.Ababus.MSS.Downloader.${{ needs.check-version.outputs.version }}.dmg
+          asset_content_type: application/octet-stream
+        continue-on-error: true
+      
+      - name: Upload macOS DMG artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg-build-v${{ needs.check-version.outputs.version }}
+          path: release/*.dmg
+
   notify:
-    needs: [check-version, build-windows, build-linux]
+    needs: [check-version, build-windows, build-linux, build-mac]
     if: needs.check-version.outputs.version-changed == 'true'
     runs-on: ubuntu-latest
     steps:

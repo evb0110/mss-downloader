@@ -5,7 +5,7 @@ export interface Subscriber {
   platforms: Platform[];
 }
 
-export type Platform = 'amd64' | 'arm64' | 'linux';
+export type Platform = 'amd64' | 'arm64' | 'linux' | 'mac';
 
 export interface PlatformInfo {
   name: string;

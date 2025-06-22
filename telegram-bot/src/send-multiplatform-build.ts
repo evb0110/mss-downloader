@@ -266,6 +266,9 @@ async function findAllBuilds() {
           } else if (name.endsWith('.AppImage')) {
             builds.linux = { file: asset.browser_download_url, name, size };
             console.log(`  - Found Linux: ${name} (${size}MB)`);
+          } else if (name.endsWith('.dmg') || name.endsWith('.pkg')) {
+            builds.mac = { file: asset.browser_download_url, name, size };
+            console.log(`  - Found macOS: ${name} (${size}MB)`);
           }
         }
         
@@ -300,9 +303,10 @@ async function sendMultiplatformBuild(): Promise<void> {
     
     const platformSummary = Object.entries(builds).map(([platform, build]) => {
       const platformNames = {
-        'amd64': '🖥️ Windows AMD64',
+        'amd64': '🖥️ Windows AMD64 (Default)',
         'arm64': '💻 Windows ARM64',
-        'linux': '🐧 Linux AppImage'
+        'linux': '🐧 Linux AppImage',
+        'mac': '🍎 macOS (Apple Silicon)'
       };
       return `${platformNames[platform as Platform]}: ${build.size}MB`;
     }).join('\n');

@@ -96,6 +96,24 @@ export class BuildUtils {
         }
       }
       
+      // Find Mac build
+      const macCandidates = files.filter(file => 
+        file.endsWith('.dmg') || file.endsWith('.pkg')
+      );
+      
+      const macBuild = macCandidates.find(file => file.includes(currentVersion));
+      
+      if (macBuild) {
+        const fullPath = path.join(releasePath, macBuild);
+        if (fs.existsSync(fullPath)) {
+          builds.mac = {
+            file: fullPath,
+            name: macBuild,
+            size: parseFloat((fs.statSync(fullPath).size / (1024 * 1024)).toFixed(2))
+          };
+        }
+      }
+      
       return { version: currentVersion, builds };
       
     } catch (error) {
@@ -144,6 +162,10 @@ export class BuildUtils {
       } else if (platform === 'linux') {
         candidates = files.filter(file => 
           file.endsWith('.AppImage')
+        );
+      } else if (platform === 'mac') {
+        candidates = files.filter(file => 
+          file.endsWith('.dmg') || file.endsWith('.pkg')
         );
       }
       

@@ -63,9 +63,10 @@ export class MultiplatformMSSBot {
     this.adminUsername = 'evb0110';
     
     this.platforms = {
-      'amd64': { name: 'Windows AMD64 (x64)', emoji: '🖥️' },
+      'amd64': { name: 'Windows AMD64 (x64) - Default', emoji: '🖥️' },
       'arm64': { name: 'Windows ARM64', emoji: '💻' },
-      'linux': { name: 'Linux AppImage', emoji: '🐧' }
+      'linux': { name: 'Linux AppImage', emoji: '🐧' },
+      'mac': { name: 'macOS (Apple Silicon)', emoji: '🍎' }
     };
     
     this.setupCommands();
@@ -125,6 +126,7 @@ export class MultiplatformMSSBot {
         `${this.platforms.amd64.emoji} ${this.platforms.amd64.name}`,
         `${this.platforms.arm64.emoji} ${this.platforms.arm64.name}`,
         `${this.platforms.linux.emoji} ${this.platforms.linux.name}`,
+        `${this.platforms.mac.emoji} ${this.platforms.mac.name}`,
         '',
         'Use the menu buttons below to manage your subscriptions:'
       ].join('\n');
@@ -220,6 +222,10 @@ export class MultiplatformMSSBot {
         [
           { text: `${this.platforms.linux.emoji} ${subscribedPlatforms.includes('linux') ? '✅' : ''} Linux`, 
             callback_data: 'subscribe_linux' },
+          { text: `${this.platforms.mac.emoji} ${subscribedPlatforms.includes('mac') ? '✅' : ''} macOS`, 
+            callback_data: 'subscribe_mac' }
+        ],
+        [
           { text: '🌟 All Platforms', callback_data: 'subscribe_all' }
         ],
         [
@@ -236,6 +242,7 @@ export class MultiplatformMSSBot {
       `${this.platforms.amd64.emoji} <b>${this.platforms.amd64.name}</b>`,
       `${this.platforms.arm64.emoji} <b>${this.platforms.arm64.name}</b>`,
       `${this.platforms.linux.emoji} <b>${this.platforms.linux.name}</b>`,
+      `${this.platforms.mac.emoji} <b>${this.platforms.mac.name}</b>`,
       '',
       '✅ = Currently subscribed'
     ].join('\n');
@@ -265,6 +272,9 @@ export class MultiplatformMSSBot {
     }
     if (subscribedPlatforms.includes('linux')) {
       buttons.push({ text: `${this.platforms.linux.emoji} Unsubscribe Linux`, callback_data: 'unsubscribe_linux' });
+    }
+    if (subscribedPlatforms.includes('mac')) {
+      buttons.push({ text: `${this.platforms.mac.emoji} Unsubscribe macOS`, callback_data: 'unsubscribe_mac' });
     }
     
     const keyboard = {
@@ -346,7 +356,7 @@ export class MultiplatformMSSBot {
     }
     
     if (platform === 'all') {
-      subscriber.platforms = ['amd64', 'arm64', 'linux'];
+      subscriber.platforms = ['amd64', 'arm64', 'linux', 'mac'];
       this.saveSubscribers();
       this.bot.sendMessage(chatId, '✅ Successfully subscribed to all platforms!', { parse_mode: 'HTML' });
       
@@ -355,7 +365,7 @@ export class MultiplatformMSSBot {
         '',
         `👤 User: @${username}`,
         `💬 Chat ID: ${chatId}`,
-        '📱 Platforms: All (AMD64, ARM64, Linux)',
+        '📱 Platforms: All (AMD64, ARM64, Linux, macOS)',
         `📅 ${new Date().toLocaleString()}`
       ].join('\n');
       

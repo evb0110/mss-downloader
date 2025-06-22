@@ -2,6 +2,14 @@
 
 ## Pending Tasks
 
+- **Fix University of Graz fetch error** - https://unipub.uni-graz.at/obvugrscript/content/pageview/8224540 - Error: Failed to load University of Graz manuscript: fetch failed
+
+- **Fix Morgan Library high resolution zoom** - https://www.themorgan.org/collection/lindau-gospels/thumbs and https://www.themorgan.org/collection/gospel-book/143812/thumbs - Currently downloading in minimal resolution, ignoring zoom functionality on website. The right link for the image will be the following: https://www.themorgan.org/sites/default/files/images/collection/76874v_0004_0005.jpg . You need to curl everything and find the right way.
+
+- **Fix NYPL manifest detection** - https://digitalcollections.nypl.org/items/89620130-9eeb-013d-0806-0242ac110002 - Cannot detect manifest, Start button remains disabled immediately
+
+- **Improve Florence Internet Culturale download speed** - https://www.internetculturale.it/jmms/iccuviewer/iccu.jsp?id=oai%3Ateca.bmlonline.it%3A21%3AXXXX%3APlutei%3AIT%253AFI0100_Plutei_21.29&mode=all&teca=Laurenziana+-+FI - Finds manifest but downloads very slowly, previously was faster
+
 ## Completed Tasks
 
 - ✅ **Fix markdown link rendering in Telegram bot** - FIXED: Converted markdown format links `[text](url)` to proper HTML format `<a href="url">text</a>` to match the HTML parse mode used by the bot. Links like 🔗 [🖥️ Windows AMD64 (x64)] now appear as clickable links in Telegram messages instead of plain text.
