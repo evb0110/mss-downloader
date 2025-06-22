@@ -58,7 +58,12 @@ export class LibraryOptimizationService {
         'isos': {},
         'mira': {},
         'manuscripta': {},
-        'graz': {},
+        'graz': {
+            maxConcurrentDownloads: 2, // Austrian university server, moderate limits
+            timeoutMultiplier: 2.0, // Double timeout for large IIIF manifests (289KB)
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'University of Graz optimizations: 2 concurrent downloads, extended timeouts for large IIIF manifests'
+        },
         'loading': {}
     };
 
