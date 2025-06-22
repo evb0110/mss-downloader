@@ -1429,8 +1429,8 @@ export class EnhancedManuscriptDownloaderService {
      */
     async downloadImageWithRetries(url: string, attempt = 0): Promise<ArrayBuffer> {
         try {
-            // Use proxy fallback for Unicatt, Orleans, and Internet Culturale images or when direct access fails
-            const response = url.includes('digitallibrary.unicatt.it') || url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr') || url.includes('internetculturale.it')
+            // Use proxy fallback for Unicatt, Orleans, Internet Culturale, and Graz images or when direct access fails
+            const response = url.includes('digitallibrary.unicatt.it') || url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr') || url.includes('internetculturale.it') || url.includes('unipub.uni-graz.at')
                 ? await this.fetchWithProxyFallback(url)
                 : await this.fetchDirect(url, {}, attempt + 1); // Pass attempt number for timeout calculation
             
@@ -3267,7 +3267,7 @@ export class EnhancedManuscriptDownloaderService {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             };
             
-            const response = await this.fetchDirect(manifestUrl, { headers });
+            const response = await this.fetchWithProxyFallback(manifestUrl, { headers });
             
             if (!response.ok) {
                 throw new Error(`Failed to fetch IIIF manifest: ${response.status} ${response.statusText}`);
