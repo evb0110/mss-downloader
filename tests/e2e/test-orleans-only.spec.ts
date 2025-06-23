@@ -25,8 +25,8 @@ test.describe('Orleans Library Test', () => {
     console.log('✅ Orleans library found in supported libraries');
     console.log('Orleans library:', orleansLib);
     
-    // Test URL detection and manifest loading
-    const orleansUrl = 'https://mediatheques.orleans.fr/recherche/viewnotice/clef/FRAGMENTSDEDIFFERENTSLIVRESDELECRITURESAINTE--AUGUSTINSAINT----28/id/745380';
+    // Test URL detection and manifest loading - using user's provided URL
+    const orleansUrl = 'https://mediatheques.orleans.fr/recherche/viewnotice/clef/OUVRAGESDEPSEUDOISIDORE--PSEUDOISIDORE----28/id/746238/tri/%2A/expressionRecherche/Ouvrages+de+Pseudo+Isidore';
     
     // Clear any existing items
     const deleteAllButton = page.locator('button:has-text("Delete All")');
@@ -96,6 +96,13 @@ test.describe('Orleans Library Test', () => {
         // Log current state for debugging
         console.log(`  Current title: "${currentTitle}"`);
         console.log(`  Current status: "${status}"`);
+        
+        // Check for progress information
+        const progressElement = queueItem.locator('.progress-text, .progress-info');
+        const progressText = await progressElement.textContent();
+        if (progressText) {
+          console.log(`  Progress: "${progressText}"`);
+        }
       }
     }
     

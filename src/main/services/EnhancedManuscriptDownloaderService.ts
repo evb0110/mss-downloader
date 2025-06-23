@@ -2763,12 +2763,13 @@ export class EnhancedManuscriptDownloaderService {
             
             // Process media items with batch processing and circuit breaker to prevent hanging
             let processedCount = 0;
-            const batchSize = 8; // Process in small batches to avoid overwhelming server
-            const maxFailedBatches = 3; // Stop if too many batches fail consecutively
-            const maxTotalFailures = Math.floor(mediaItems.length * 0.2); // Allow 20% failures max
+            const batchSize = 4; // Smaller batches for Orleans to reduce API load
+            const maxFailedBatches = 5; // Allow more failed batches before giving up
+            const maxTotalFailures = Math.floor(mediaItems.length * 0.3); // Allow 30% failures max
             
             let failedBatchCount = 0;
             let totalFailures = 0;
+            let lastProgressUpdate = Date.now();
             
             // For very large manuscripts (>200 pages), limit to first 200 pages to prevent hanging
             const maxPagesToProcess = Math.min(mediaItems.length, 200);
@@ -2808,23 +2809,18 @@ export class EnhancedManuscriptDownloaderService {
                         
                         const mediaData = await mediaResponse.json();
                         
-                        // Extract IIIF image URL from the media data
-                        const iiifSource = mediaData['o:source'] || mediaData.o_source;
+                        // Orleans uses files/large/{hash}.jpg pattern - extract from thumbnail_display_urls or construct from filename
+                        const thumbnails = mediaData.thumbnail_display_urls || mediaData['thumbnail_display_urls'];
                         
-                        if (iiifSource && typeof iiifSource === 'string') {
-                            let imageUrl = iiifSource;
-                            
-                            // If it's an IIIF image service URL, convert to full resolution
-                            if (imageUrl.includes('/iiif/3/') || imageUrl.includes('/iiif/2/')) {
-                                imageUrl = `${imageUrl}/full/max/0/default.jpg`;
-                            }
-                            
-                            return { idx, imageUrl, mediaId };
+                        if (thumbnails && thumbnails.large) {
+                            // Use the direct large thumbnail URL (preferred method)
+                            return { idx, imageUrl: thumbnails.large, mediaId };
                         } else {
-                            // Fallback: check for thumbnail URLs
-                            const thumbnails = mediaData.thumbnail_display_urls || mediaData['thumbnail_display_urls'];
-                            if (thumbnails && thumbnails.large) {
-                                return { idx, imageUrl: thumbnails.large, mediaId };
+                            // Fallback: construct URL from o:filename hash
+                            const filename = mediaData['o:filename'] || mediaData.o_filename;
+                            if (filename && typeof filename === 'string') {
+                                const imageUrl = `https://aurelia.orleans.fr/files/large/${filename}.jpg`;
+                                return { idx, imageUrl, mediaId };
                             }
                         }
                         
@@ -2873,19 +2869,28 @@ export class EnhancedManuscriptDownloaderService {
                     throw new Error(`Too many Orleans API failures (${totalFailures}/${itemsToProcess.length}). Server may be rate limiting. Processed ${processedCount} pages.`);
                 }
                 
-                // Progress reporting
-                if (processedCount % 20 === 0 || batchEnd >= itemsToProcess.length) {
+                // Progress reporting and stall detection
+                const now = Date.now();
+                const shouldReport = processedCount % 10 === 0 || batchEnd >= itemsToProcess.length;
+                
+                if (shouldReport) {
                     const progressMessage = itemsToProcess.length < mediaItems.length 
                         ? `Loading manifest (limited): ${processedCount}/${itemsToProcess.length} pages`
                         : `Loading manifest: ${processedCount}/${itemsToProcess.length} pages`;
                     
                     console.log(`Orleans: processed ${processedCount}/${itemsToProcess.length} media items (${totalFailures} failures)`);
                     progressCallback?.(processedCount, itemsToProcess.length, progressMessage);
+                    lastProgressUpdate = now;
+                }
+                
+                // Check for stalled progress (no progress for >5 minutes)
+                if (now - lastProgressUpdate > 300000) {
+                    throw new Error(`Orleans manifest loading stalled - no progress for 5 minutes. Processed ${processedCount}/${itemsToProcess.length} pages.`);
                 }
                 
                 // Add longer delay between batches to be respectful to the server
                 if (batchEnd < itemsToProcess.length) {
-                    await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay between batches
+                    await new Promise(resolve => setTimeout(resolve, 3000)); // 3 second delay between batches
                 }
             }
             
@@ -2903,10 +2908,15 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('No valid image URLs found in Orléans manuscript');
             }
             
-            // Ensure we have a reasonable number of pages
-            const minExpectedPages = Math.min(5, itemsToProcess.length * 0.1);
+            // Ensure we have a reasonable number of pages (more lenient threshold)
+            const minExpectedPages = Math.min(3, itemsToProcess.length * 0.05); // Only require 5% minimum
             if (validPageLinks.length < minExpectedPages) {
                 console.warn(`Only ${validPageLinks.length}/${itemsToProcess.length} Orleans media items processed successfully`);
+                
+                // If we have very few pages, it might be worth throwing an error
+                if (validPageLinks.length < 2) {
+                    throw new Error(`Insufficient Orleans pages loaded: only ${validPageLinks.length} pages out of ${itemsToProcess.length} total`);
+                }
             }
             
             // Log summary of processing
@@ -3399,14 +3409,33 @@ export class EnhancedManuscriptDownloaderService {
                             const image = canvas.images[0];
                             let imageUrl = '';
                             
-                            // Prefer IIIF service URL for full resolution
-                            if (image.resource && image.resource.service && image.resource.service['@id']) {
-                                // Construct full resolution IIIF URL
+                            // Use webcache URLs for highest resolution
+                            if (image.resource && image.resource['@id']) {
+                                const resourceId = image.resource['@id'];
+                                
+                                // Convert webcache URLs to highest available resolution
+                                // Pattern: https://unipub.uni-graz.at/download/webcache/SIZE/PAGE_ID
+                                if (resourceId.includes('/download/webcache/')) {
+                                    // Extract page ID from the URL
+                                    const pageIdMatch = resourceId.match(/\/webcache\/\d+\/(\d+)$/);
+                                    if (pageIdMatch) {
+                                        const pageId = pageIdMatch[1];
+                                        // Use highest available resolution (2000px)
+                                        imageUrl = `https://unipub.uni-graz.at/download/webcache/2000/${pageId}`;
+                                    } else {
+                                        console.warn(`University of Graz: Unexpected webcache URL format: ${resourceId}`);
+                                        // Fallback to original URL if pattern doesn't match
+                                        imageUrl = resourceId;
+                                    }
+                                } else {
+                                    // Not a webcache URL, use as-is
+                                    imageUrl = resourceId;
+                                }
+                            } else if (image.resource && image.resource.service && image.resource.service['@id']) {
+                                // Legacy fallback to IIIF service URL (shouldn't be needed for Graz)
                                 const serviceId = image.resource.service['@id'];
                                 imageUrl = `${serviceId}/full/full/0/default.jpg`;
-                            } else if (image.resource && image.resource['@id']) {
-                                // Fall back to resource '@id' (usually cached/smaller version)
-                                imageUrl = image.resource['@id'];
+                                console.warn(`University of Graz: Using legacy IIIF service URL: ${imageUrl}`);
                             }
                             
                             if (imageUrl) {
@@ -3429,6 +3458,10 @@ export class EnhancedManuscriptDownloaderService {
                 .replace(/\.$/, ''); // Remove trailing period
             
             console.log(`University of Graz manifest loaded: ${pageLinks.length} pages`);
+            if (pageLinks.length > 0) {
+                console.log(`First page URL: ${pageLinks[0]}`);
+                console.log(`Last page URL: ${pageLinks[pageLinks.length - 1]}`);
+            }
             
             return {
                 pageLinks,
