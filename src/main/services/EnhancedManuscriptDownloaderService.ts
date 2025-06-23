@@ -745,13 +745,13 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('No carousel items found');
             }
             
-            // Extract image IDs and construct IIIF URLs
+            // Extract image IDs and construct high-resolution image URLs
             const pageLinks = carouselItems.map((item: any) => {
                 if (!item.image_id) {
                     throw new Error(`Missing image_id for item ${item.id || 'unknown'}`);
                 }
-                // Use canonical IIIF URL format for full resolution images
-                return `https://iiif.nypl.org/iiif/2/${item.image_id}/full/full/0/default.jpg`;
+                // Use images.nypl.org format for full resolution images (&t=g parameter)
+                return `https://images.nypl.org/index.php?id=${item.image_id}&t=g`;
             });
             
             // Extract display name from the first item or fallback to title from item_data
@@ -3960,21 +3960,89 @@ export class EnhancedManuscriptDownloaderService {
             
             // Extract total pages from JavaScript configuration
             // Look for total page count in mobile interface
-            let totalPages = 231; // Default fallback based on ACMo-OI-7
+            let totalPages = 0;
             
             // Try to extract from mobile page display (e.g., "Page: 1/11")
             const pageDisplayMatch = mobileHtml.match(/Page:\s*\d+\/(\d+)/);
             if (pageDisplayMatch) {
                 const displayedTotal = parseInt(pageDisplayMatch[1]);
                 console.log(`Found page display total: ${displayedTotal}`);
+                if (!totalPages || displayedTotal > totalPages) {
+                    totalPages = displayedTotal;
+                }
             }
             
             // Try to extract from JavaScript config (more reliable for actual total)
             const totalPagesMatch = mobileHtml.match(/totalPages['":\s]*(\d+)/i);
             if (totalPagesMatch) {
-                totalPages = parseInt(totalPagesMatch[1]);
-                console.log(`Found JavaScript total pages: ${totalPages}`);
+                const jsTotal = parseInt(totalPagesMatch[1]);
+                console.log(`Found JavaScript total pages: ${jsTotal}`);
+                if (!totalPages || jsTotal > totalPages) {
+                    totalPages = jsTotal;
+                }
             }
+            
+            // Try to extract from data-pages attribute or similar
+            const dataPagesMatch = mobileHtml.match(/data-pages[='"\s]*(\d+)/i);
+            if (dataPagesMatch) {
+                const dataTotal = parseInt(dataPagesMatch[1]);
+                console.log(`Found data-pages total: ${dataTotal}`);
+                if (!totalPages || dataTotal > totalPages) {
+                    totalPages = dataTotal;
+                }
+            }
+            
+            // Try to extract from pages array or configuration
+            const pagesArrayMatch = mobileHtml.match(/pages\s*[:=]\s*\[(.*?)\]/s);
+            if (pagesArrayMatch) {
+                const pagesContent = pagesArrayMatch[1];
+                const pageCount = (pagesContent.match(/,/g) || []).length + 1;
+                console.log(`Found pages array with ${pageCount} items`);
+                if (!totalPages || pageCount > totalPages) {
+                    totalPages = pageCount;
+                }
+            }
+            
+            // Fallback: try to determine by checking sequential image availability
+            if (!totalPages) {
+                console.log('No explicit page count found, attempting to determine by checking image availability');
+                const baseImageUrl = `${modenaUrl.replace(/\/$/, '')}/files/mobile/`;
+                
+                // Binary search to find the last available page
+                let low = 1;
+                let high = 500; // Reasonable upper bound
+                let lastFound = 0;
+                
+                while (low <= high) {
+                    const mid = Math.floor((low + high) / 2);
+                    const testUrl = `${baseImageUrl}${mid}.jpg`;
+                    
+                    try {
+                        const testResponse = await this.fetchDirect(testUrl, { timeout: 5000 });
+                        if (testResponse.ok) {
+                            lastFound = mid;
+                            low = mid + 1;
+                        } else {
+                            high = mid - 1;
+                        }
+                    } catch {
+                        high = mid - 1;
+                    }
+                }
+                
+                if (lastFound > 0) {
+                    totalPages = lastFound;
+                    console.log(`Determined page count by availability check: ${totalPages}`);
+                }
+            }
+            
+            // Ultimate fallback only as last resort
+            if (!totalPages) {
+                console.warn('Could not determine page count, using fallback of 231 pages');
+                totalPages = 231;
+            }
+            
+            console.log(`Final determined page count: ${totalPages}`);
             
             // Verify that images are accessible by testing first page
             const baseImageUrl = `${modenaUrl.replace(/\/$/, '')}/files/mobile/`;
