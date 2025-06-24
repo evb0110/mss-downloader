@@ -96,6 +96,11 @@ export class LibraryOptimizationService {
             timeoutMultiplier: 1.5, // Increased timeout for mobile interface discovery
             optimizationDescription: 'Modena Diocesan Archive optimizations: 3 concurrent downloads, Flash bypass via mobile interface'
         },
+        'bdl': {
+            maxConcurrentDownloads: 4, // BDL IIIF service
+            timeoutMultiplier: 1.2, // Standard IIIF timeout
+            optimizationDescription: 'BDL optimizations: 4 concurrent downloads, IIIF image service'
+        },
         'loading': {}
     };
 

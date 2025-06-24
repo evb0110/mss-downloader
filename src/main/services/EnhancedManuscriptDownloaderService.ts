@@ -177,6 +177,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://archiviodiocesano.mo.it/archivio/flip/ACMo-OI-7/',
             description: 'Modena Diocesan Archive digital manuscripts (Flash interface bypassed)',
         },
+        {
+            name: 'BDL (Biblioteca Digitale Lombarda)',
+            example: 'https://www.bdl.servizirl.it/bdl/bookreader/index.html?path=fe&cdOggetto=3903',
+            description: 'Biblioteca Digitale Lombarda digital manuscripts via IIIF',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -259,6 +264,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('digital.staatsbibliothek-berlin.de')) return 'berlin';
         if (url.includes('dig.vkol.cz')) return 'czech';
         if (url.includes('archiviodiocesano.mo.it')) return 'modena';
+        if (url.includes('bdl.servizirl.it')) return 'bdl';
         
         return null;
     }
@@ -536,6 +542,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'modena':
                     manifest = await this.loadModenaManifest(originalUrl);
+                    break;
+                case 'bdl':
+                    manifest = await this.loadBDLManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -4316,6 +4325,83 @@ export class EnhancedManuscriptDownloaderService {
         } catch (error: any) {
             console.error('Error loading Modena Diocesan Archive manifest:', error);
             throw new Error(`Failed to load Modena manuscript: ${error.message}`);
+        }
+    }
+
+    /**
+     * Load BDL (Biblioteca Digitale Lombarda) manuscript manifest
+     */
+    async loadBDLManifest(bdlUrl: string): Promise<ManuscriptManifest> {
+        try {
+            console.log(`Loading BDL manuscript: ${bdlUrl}`);
+            
+            // Extract manuscript ID from URL
+            // Expected format: https://www.bdl.servizirl.it/bdl/bookreader/index.html?path=fe&cdOggetto=3903
+            const urlParams = new URLSearchParams(bdlUrl.split('?')[1]);
+            const manuscriptId = urlParams.get('cdOggetto');
+            const pathType = urlParams.get('path');
+            
+            if (!manuscriptId) {
+                throw new Error('Invalid BDL URL format. Missing cdOggetto parameter.');
+            }
+            
+            if (!pathType) {
+                throw new Error('Invalid BDL URL format. Missing path parameter.');
+            }
+            
+            console.log(`Extracted manuscript ID: ${manuscriptId}, path: ${pathType}`);
+            
+            // Determine service path (public for fe, private for be)
+            const servicePath = pathType === 'fe' ? 'public' : 'private';
+            
+            // Fetch pages JSON from BDL API
+            const pagesApiUrl = `https://www.bdl.servizirl.it/bdl/${servicePath}/rest/json/item/${manuscriptId}/bookreader/pages`;
+            console.log(`Fetching pages from: ${pagesApiUrl}`);
+            
+            const response = await this.fetchWithProxyFallback(pagesApiUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch BDL pages: HTTP ${response.status}`);
+            }
+            
+            const pagesData = await response.json();
+            
+            if (!Array.isArray(pagesData) || pagesData.length === 0) {
+                throw new Error('Invalid or empty pages data from BDL API');
+            }
+            
+            console.log(`Found ${pagesData.length} pages in BDL manuscript`);
+            
+            // Extract image URLs from pages data
+            const pageLinks: string[] = [];
+            
+            for (const page of pagesData) {
+                if (page.idMediaServer) {
+                    // Construct IIIF URL for full resolution image
+                    const imageUrl = `https://www.bdl.servizirl.it/cantaloupe/iiif/2/${page.idMediaServer}/full/full/0/default.jpg`;
+                    pageLinks.push(imageUrl);
+                } else {
+                    console.warn(`Page ${page.id} missing idMediaServer, skipping`);
+                }
+            }
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No valid image URLs found in BDL pages data');
+            }
+            
+            const displayName = `BDL_${manuscriptId}`;
+            console.log(`Generated ${pageLinks.length} page URLs for "${displayName}"`);
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'bdl',
+                displayName,
+                originalUrl: bdlUrl
+            };
+            
+        } catch (error: any) {
+            console.error('Error loading BDL manuscript manifest:', error);
+            throw new Error(`Failed to load BDL manuscript: ${error.message}`);
         }
     }
 

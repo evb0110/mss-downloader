@@ -892,7 +892,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
             }
             
             // For Florus, Orleans, Internet Culturale, Manuscripta, Graz, Cologne, Rome, NYPL, Czech, and Modena - skip first page download and use estimated size calculation
-            if (manifest.library === 'florus' || manifest.library === 'orleans' || manifest.library === 'internet_culturale' || manifest.library === 'manuscripta' || manifest.library === 'graz' || manifest.library === 'cologne' || manifest.library === 'rome' || manifest.library === 'nypl' || manifest.library === 'czech' || manifest.library === 'modena') {
+            if (manifest.library === 'florus' || manifest.library === 'orleans' || manifest.library === 'internet_culturale' || manifest.library === 'manuscripta' || manifest.library === 'graz' || manifest.library === 'cologne' || manifest.library === 'rome' || manifest.library === 'nypl' || manifest.library === 'czech' || manifest.library === 'modena' || manifest.library === 'bdl') {
                 console.log(`${manifest.library} manuscript detected, using estimated size calculation (bypassing first page download)`);
                 // Estimate based on typical manuscript page size
                 const avgPageSizeMB = manifest.library === 'orleans' ? 0.6 : 
@@ -904,7 +904,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                                     manifest.library === 'nypl' ? 1.2 :
                                     manifest.library === 'czech' ? 0.5 :
                                     manifest.library === 'modena' ? 0.4 :
-                                    0.4; // 600KB for Orleans IIIF, 800KB for Internet Culturale IIIF, 700KB for Manuscripta IIIF, 800KB for Graz IIIF, 500KB for Cologne webcache, 300KB for Rome, 1.2MB for NYPL IIIF, 500KB for Czech, 400KB for Modena mobile, 400KB for Florus
+                                    manifest.library === 'bdl' ? 0.5 :
+                                    0.4; // 600KB for Orleans IIIF, 800KB for Internet Culturale IIIF, 700KB for Manuscripta IIIF, 800KB for Graz IIIF, 500KB for Cologne webcache, 300KB for Rome, 1.2MB for NYPL IIIF, 500KB for Czech, 400KB for Modena mobile, 500KB for BDL IIIF, 400KB for Florus
                 const estimatedTotalSizeMB = avgPageSizeMB * manifest.totalPages;
                 item.estimatedSizeMB = estimatedTotalSizeMB;
                 
