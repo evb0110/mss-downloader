@@ -2,9 +2,6 @@
 
 ## Pending Tasks
 
-- Florence (Internet Culturale) splits file into parts but then hangs - need to fix hanging issue during download process
-
-https://www.internetculturale.it/jmms/iccuviewer/iccu.jsp?id=oai%3Ateca.bmlonline.it%3A21%3AXXXX%3APlutei%3AIT%253AFI0100_Plutei_21.29&mode=all&teca=Laurenziana+-+FI
 
 - Add support for BDL (Biblioteca Digitale Lombarda) manuscript library with IIIF endpoint integration
 

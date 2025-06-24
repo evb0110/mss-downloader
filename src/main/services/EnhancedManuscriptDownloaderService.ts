@@ -3504,7 +3504,13 @@ export class EnhancedManuscriptDownloaderService {
             let match;
             
             while ((match = pageRegex.exec(xmlText)) !== null) {
-                const relativePath = match[1];
+                let relativePath = match[1];
+                
+                // Fix Florence URL issue: use 'web' instead of 'normal' for working images
+                if (relativePath.includes('cacheman/normal/')) {
+                    relativePath = relativePath.replace('cacheman/normal/', 'cacheman/web/');
+                }
+                
                 // Convert relative path to absolute URL
                 const imageUrl = `https://www.internetculturale.it/jmms/${relativePath}`;
                 pageLinks.push(imageUrl);

@@ -1,5 +1,9 @@
 # Completed TODOs
 
+## v1.3.29 Completed Tasks
+
+- ✅ **Fix Florence (Internet Culturale) hanging issue during download process** - FIXED: Resolved hanging issue by fixing incorrect image URLs that were returning 404 Not Found errors. Analysis revealed that image URLs using `cacheman/normal/` path pattern were non-functional, while `cacheman/web/` path pattern worked correctly. Enhanced the `loadInternetCulturaleManifest` function to automatically replace `cacheman/normal/` with `cacheman/web/` in image URLs. All Florence manuscripts now download successfully with working 27KB images instead of 404 errors. Test URL with 578 pages (462MB) confirmed working with proper auto-split functionality. This was a different type of hanging issue compared to previous libraries - URL accessibility rather than size estimation timeout.
+
 ## v1.3.27 Completed Tasks
 
 - ✅ **Implement blank page replacement for failed downloads** - COMPLETED: Enhanced the manuscript downloader to replace failed page downloads with blank placeholder pages instead of skipping them entirely. Added new `convertImagesToPDFWithBlanks` function that creates blank pages with "Page X couldn't be downloaded" messages for any missing images. Updated the download logic to track failed pages and create complete page arrays maintaining proper page numbering. PDFs now show correct total page count with placeholder pages for failures, and items display status messages like "4 of 50 pages couldn't be downloaded" when applicable.
