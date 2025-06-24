@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { app } from 'electron';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
 import { ManifestCache } from './ManifestCache.js';
 import { configService } from './ConfigService.js';
 import { LibraryOptimizationService } from './LibraryOptimizationService.js';
@@ -1631,6 +1631,7 @@ export class EnhancedManuscriptDownloaderService {
             
             
             const imagePaths: string[] = [];
+            const failedPages: number[] = [];
             const writePromises: Promise<void>[] = [];
             const startTime = Date.now();
             let completedPages = 0;
@@ -1739,6 +1740,8 @@ export class EnhancedManuscriptDownloaderService {
                         imagePaths[pageIndex] = imgPath;
                     } catch (error: any) {
                         console.error(`\n❌ Failed to download page ${pageIndex + 1}: ${error.message}`);
+                        // Track failed page
+                        failedPages.push(pageIndex + 1);
                         // Don't mark path for failed downloads
                     }
                 }
@@ -1766,6 +1769,12 @@ export class EnhancedManuscriptDownloaderService {
                 eta: '0s' 
             });
             
+            // Create complete array with placeholders for failed pages
+            const completeImagePaths: (string | null)[] = [];
+            for (let i = 0; i < manifest.totalPages; i++) {
+                completeImagePaths[i] = imagePaths[i] || null;
+            }
+            
             const validImagePaths = imagePaths.filter(Boolean);
             
             if (validImagePaths.length === 0) {
@@ -1781,19 +1790,19 @@ export class EnhancedManuscriptDownloaderService {
             
             if (shouldSplit) {
                 // Split into multiple PDFs like barsky.club
-                const totalParts = Math.ceil(validImagePaths.length / maxPagesPerPart);
+                const totalParts = Math.ceil(completeImagePaths.length / maxPagesPerPart);
                 const createdFiles: string[] = [];
                 
                 for (let partIndex = 0; partIndex < totalParts; partIndex++) {
                     const startIdx = partIndex * maxPagesPerPart;
-                    const endIdx = Math.min(startIdx + maxPagesPerPart, validImagePaths.length);
-                    const partImages = validImagePaths.slice(startIdx, endIdx);
+                    const endIdx = Math.min(startIdx + maxPagesPerPart, completeImagePaths.length);
+                    const partImages = completeImagePaths.slice(startIdx, endIdx);
                     
                     const partNumber = String(partIndex + 1).padStart(2, '0');
                     const partFilename = `${sanitizedName}_part_${partNumber}.pdf`;
                     const partFilepath = path.join(targetDir, partFilename);
                     
-                    await this.convertImagesToPDF(partImages, partFilepath);
+                    await this.convertImagesToPDFWithBlanks(partImages, partFilepath);
                     createdFiles.push(partFilepath);
                 }
                 
@@ -1817,7 +1826,7 @@ export class EnhancedManuscriptDownloaderService {
                 };
             } else {
                 // Single PDF
-                await this.convertImagesToPDF(validImagePaths, filepath);
+                await this.convertImagesToPDFWithBlanks(completeImagePaths, filepath);
                 
                 // Clean up temporary images
                 for (const p of validImagePaths) {
@@ -1828,11 +1837,17 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
                 
+                const failedPagesCount = failedPages.length;
+                const statusMessage = failedPagesCount > 0 
+                    ? `${failedPagesCount} of ${manifest.totalPages} pages couldn't be downloaded`
+                    : undefined;
+                
                 return { 
                     success: true, 
                     filepath, 
-                    totalPages: validImagePaths.length, 
-                    failedPages: manifest.totalPages - validImagePaths.length 
+                    totalPages: manifest.totalPages, // Total pages including blanks
+                    failedPages: failedPagesCount,
+                    statusMessage 
                 };
             }
             
@@ -1952,6 +1967,178 @@ export class EnhancedManuscriptDownloaderService {
             await fs.writeFile(outputPath, finalPdfBytes);
         }
         
+    }
+
+    async convertImagesToPDFWithBlanks(imagePaths: (string | null)[], outputPath: string): Promise<void> {
+        const totalImages = imagePaths.length;
+        const maxMemoryMB = 1024;
+        const batchSize = Math.min(50, Math.max(10, Math.floor(maxMemoryMB / 20)));
+        
+        const allPdfBytes: Uint8Array[] = [];
+        let processedCount = 0;
+        
+        for (let i = 0; i < totalImages; i += batchSize) {
+            const batch = imagePaths.slice(i, Math.min(i + batchSize, totalImages));
+            
+            try {
+                const batchPdfDoc = await PDFDocument.create();
+                let pagesInBatch = 0;
+                
+                for (let j = 0; j < batch.length; j++) {
+                    const imagePath = batch[j];
+                    const pageNumber = i + j + 1;
+                    
+                    if (imagePath === null) {
+                        // Create blank page for missing image
+                        const page = batchPdfDoc.addPage([595, 842]); // A4 size
+                        const { height } = page.getSize();
+                        
+                        page.drawText(`Page ${pageNumber} couldn't be downloaded`, {
+                            x: 50,
+                            y: height - 100,
+                            size: 16,
+                            color: rgb(0.7, 0.7, 0.7),
+                        });
+                        
+                        page.drawText('This page was unavailable during download', {
+                            x: 50,
+                            y: height - 130,
+                            size: 12,
+                            color: rgb(0.5, 0.5, 0.5),
+                        });
+                        
+                        pagesInBatch++;
+                        processedCount++;
+                        continue;
+                    }
+                    
+                    // Process valid image (same logic as original function)
+                    try {
+                        await fs.access(imagePath);
+                        const stats = await fs.stat(imagePath);
+                        
+                        if (stats.size < MIN_VALID_IMAGE_SIZE_BYTES) {
+                            // Create blank page for invalid image
+                            const page = batchPdfDoc.addPage([595, 842]);
+                            const { height } = page.getSize();
+                            
+                            page.drawText(`Page ${pageNumber} couldn't be downloaded`, {
+                                x: 50,
+                                y: height - 100,
+                                size: 16,
+                                color: rgb(0.7, 0.7, 0.7),
+                            });
+                            
+                            page.drawText('Image file was too small or corrupted', {
+                                x: 50,
+                                y: height - 130,
+                                size: 12,
+                                color: rgb(0.5, 0.5, 0.5),
+                            });
+                            
+                            pagesInBatch++;
+                            processedCount++;
+                            continue;
+                        }
+                        
+                        const imageBuffer = await fs.readFile(imagePath);
+                        
+                        let image;
+                        try {
+                            image = await batchPdfDoc.embedJpg(imageBuffer);
+                        } catch {
+                            try {
+                                image = await batchPdfDoc.embedPng(imageBuffer);
+                            } catch (embedError: any) {
+                                // Create blank page for embed failure
+                                const page = batchPdfDoc.addPage([595, 842]);
+                                const { height } = page.getSize();
+                                
+                                page.drawText(`Page ${pageNumber} couldn't be downloaded`, {
+                                    x: 50,
+                                    y: height - 100,
+                                    size: 16,
+                                    color: rgb(0.7, 0.7, 0.7),
+                                });
+                                
+                                page.drawText('Image format not supported', {
+                                    x: 50,
+                                    y: height - 130,
+                                    size: 12,
+                                    color: rgb(0.5, 0.5, 0.5),
+                                });
+                                
+                                pagesInBatch++;
+                                processedCount++;
+                                continue;
+                            }
+                        }
+                        
+                        const { width, height } = image;
+                        const page = batchPdfDoc.addPage([width, height]);
+                        page.drawImage(image, {
+                            x: 0,
+                            y: 0,
+                            width,
+                            height,
+                        });
+                        
+                        pagesInBatch++;
+                        processedCount++;
+                        
+                    } catch (error: any) {
+                        // Create blank page for any other errors
+                        const page = batchPdfDoc.addPage([595, 842]);
+                        const { height } = page.getSize();
+                        
+                        page.drawText(`Page ${pageNumber} couldn't be downloaded`, {
+                            x: 50,
+                            y: height - 100,
+                            size: 16,
+                            color: rgb(0.7, 0.7, 0.7),
+                        });
+                        
+                        page.drawText(error.message || 'Unknown error occurred', {
+                            x: 50,
+                            y: height - 130,
+                            size: 10,
+                            color: rgb(0.5, 0.5, 0.5),
+                        });
+                        
+                        pagesInBatch++;
+                        processedCount++;
+                    }
+                }
+                
+                if (pagesInBatch > 0) {
+                    const batchPdfBytes = await batchPdfDoc.save();
+                    allPdfBytes.push(batchPdfBytes);
+                }
+                
+            } catch (batchError: any) {
+                console.error(`Error processing batch ${Math.floor(i / batchSize) + 1}:`, batchError.message);
+            }
+        }
+        
+        if (allPdfBytes.length === 0) {
+            throw new Error('No pages were processed into PDF');
+        }
+        
+        if (allPdfBytes.length === 1) {
+            await fs.writeFile(outputPath, allPdfBytes[0]);
+        } else {
+            const finalPdfDoc = await PDFDocument.create();
+            
+            for (const pdfBytes of allPdfBytes) {
+                const pdfDoc = await PDFDocument.load(pdfBytes);
+                const pageIndices = pdfDoc.getPageIndices();
+                const pages = await finalPdfDoc.copyPages(pdfDoc, pageIndices);
+                pages.forEach((page) => finalPdfDoc.addPage(page));
+            }
+            
+            const finalPdfBytes = await finalPdfDoc.save();
+            await fs.writeFile(outputPath, finalPdfBytes);
+        }
     }
 
     async loadFlorusManifest(florusUrl: string): Promise<ManuscriptManifest> {
@@ -3547,7 +3734,7 @@ export class EnhancedManuscriptDownloaderService {
             console.log(`Cologne page fetched, extracting page list...`);
             
             // Extract page IDs - try different methods based on page structure
-            let pageIds: string[] = [];
+            const pageIds: string[] = [];
             
             // Method 1: Try pageList div (for HS collection with zoom viewer)
             const pageListMatch = html.match(/<div id="pageList"[^>]*>.*?<\/div>/s);
@@ -3584,7 +3771,7 @@ export class EnhancedManuscriptDownloaderService {
             // Extract manuscript title from page metadata if available
             const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/);
             if (titleMatch) {
-                let title = titleMatch[1]
+                const title = titleMatch[1]
                     .replace(/Handschriften der Diözesan- und Dombibliothek \/ /, '')
                     .replace(/ \[.*$/, '') // Remove trailing bracket content
                     .trim();
@@ -3949,7 +4136,7 @@ export class EnhancedManuscriptDownloaderService {
                 }
             }
 
-            let pageLinks: string[] = [];
+            const pageLinks: string[] = [];
 
             // Generate page URLs for recto and verso pages
             // Pattern: 0001r, 0001v, 0002r, 0002v, etc.

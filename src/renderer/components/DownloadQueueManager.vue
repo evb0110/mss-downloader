@@ -190,12 +190,18 @@ https://digi.vatlib.it/..."
               <div class="mode-controls">
                 <select 
                   :value="queueState.globalSettings.simultaneousMode"
-                  @change="handleModeChange($event)"
                   class="mode-select"
+                  @change="handleModeChange($event)"
                 >
-                  <option value="sequential">Sequential (One at a time)</option>
-                  <option value="all">All Simultaneous</option>
-                  <option value="custom">Custom Limit</option>
+                  <option value="sequential">
+                    Sequential (One at a time)
+                  </option>
+                  <option value="all">
+                    All Simultaneous
+                  </option>
+                  <option value="custom">
+                    Custom Limit
+                  </option>
                 </select>
                 <div 
                   v-if="queueState.globalSettings.simultaneousMode === 'custom'"

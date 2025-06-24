@@ -2,6 +2,8 @@
 
 ## v1.3.27 Completed Tasks
 
+- ✅ **Implement blank page replacement for failed downloads** - COMPLETED: Enhanced the manuscript downloader to replace failed page downloads with blank placeholder pages instead of skipping them entirely. Added new `convertImagesToPDFWithBlanks` function that creates blank pages with "Page X couldn't be downloaded" messages for any missing images. Updated the download logic to track failed pages and create complete page arrays maintaining proper page numbering. PDFs now show correct total page count with placeholder pages for failures, and items display status messages like "4 of 50 pages couldn't be downloaded" when applicable.
+
 - ✅ **Fix Orleans library page order scrambling issue** - FIXED: Resolved the critical Orleans library page sequence ordering issue where pages were being downloaded in scrambled order due to array filtering removing failed pages and collapsing the array. Enhanced the page link processing in `loadOrleansManifest` function to preserve original page order by using sequential iteration instead of `filter(Boolean)` which was causing page position shifts. Orleans manuscripts now maintain correct page sequence during download, ensuring proper manuscript assembly with pages in their original order.
 
 ## v1.3.23 Completed Tasks
