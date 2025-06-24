@@ -2900,9 +2900,23 @@ export class EnhancedManuscriptDownloaderService {
                 : `Manifest loaded: ${processedCount} pages`;
             progressCallback?.(processedCount, itemsToProcess.length, finalMessage);
             
-            // Filter out undefined values and maintain order
-            const validPageLinks = pageLinks.filter(Boolean);
-            console.log(`Successfully processed ${validPageLinks.length} page links for Orleans manuscript`);
+            // Preserve page order by keeping original positions, only filter out sparse array gaps
+            const validPageLinks: string[] = [];
+            let validPageCount = 0;
+            
+            // Process pageLinks array in order, maintaining sequence
+            for (let i = 0; i < pageLinks.length; i++) {
+                const pageUrl = pageLinks[i];
+                if (pageUrl && typeof pageUrl === 'string') {
+                    validPageLinks.push(pageUrl);
+                    validPageCount++;
+                } else if (pageLinks[i] === undefined && i < itemsToProcess.length) {
+                    // For failed pages within the expected range, log warning but don't break sequence
+                    console.warn(`Orleans: Page ${i + 1} failed to load, skipping in sequence`);
+                }
+            }
+            
+            console.log(`Successfully processed ${validPageCount} page links for Orleans manuscript (maintained original order)`);
             
             if (validPageLinks.length === 0) {
                 throw new Error('No valid image URLs found in Orléans manuscript');

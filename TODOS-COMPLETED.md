@@ -1,5 +1,9 @@
 # Completed TODOs
 
+## v1.3.27 Completed Tasks
+
+- ✅ **Fix Orleans library page order scrambling issue** - FIXED: Resolved the critical Orleans library page sequence ordering issue where pages were being downloaded in scrambled order due to array filtering removing failed pages and collapsing the array. Enhanced the page link processing in `loadOrleansManifest` function to preserve original page order by using sequential iteration instead of `filter(Boolean)` which was causing page position shifts. Orleans manuscripts now maintain correct page sequence during download, ensuring proper manuscript assembly with pages in their original order.
+
 ## v1.3.23 Completed Tasks
 
 - ✅ **Fix Morgan Library image size issue** - FIXED: Enhanced Morgan Library image extraction to capture direct full-size image references that were being missed. Added new regex pattern to detect `/sites/default/files/images/collection/` URLs that provide highest resolution images. The downloader now prioritizes direct full-size references over styled thumbnails, ensuring maximum image quality for Morgan Library manuscripts. Verified working with comprehensive E2E testing including Lindau Gospels manuscript.
