@@ -11,9 +11,11 @@ export const test = base.extend<{ electronApp: ElectronApplication }>({
     // Launch Electron app
     const electronApp = await electron.launch({
       args: [path.join(__dirname, '../dist/main/main.js'), '--headless'],
+      headless: true,
       env: {
         ...process.env,
         NODE_ENV: 'test',
+        DISPLAY: ':99'
       },
     });
 

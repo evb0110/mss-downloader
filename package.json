@@ -1,6 +1,6 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.3.30",
+  "version": "1.3.32",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "main": "dist/main/main.js",
   "type": "module",
@@ -9,7 +9,7 @@
     "dev:main": "npm run build:preload && tsc --project tsconfig.main.json && NODE_ENV=development electron dist/main/main.js",
     "dev:main:headless": "npm run build:preload && tsc --project tsconfig.main.json && NODE_ENV=development electron dist/main/main.js --headless",
     "dev:headless": "npm run dev:renderer && concurrently --names \"MAIN,RENDERER\" --prefix-colors \"yellow,cyan\" \"npm run dev:main:headless\" \"npm run dev:renderer:watch\"",
-    "dev:start": "(npm run dev & echo $! > .dev-pid) && wait",
+    "dev:start": "(npm run dev:headless & echo $! > .dev-pid) && wait",
     "dev:kill": "if [ -f .dev-pid ]; then pkill -P $(cat .dev-pid) 2>/dev/null; kill $(cat .dev-pid) 2>/dev/null; rm -f .dev-pid; else echo 'No dev process to kill'; fi",
     "dev:headless:start": "(npm run dev:headless & echo $! > .dev-headless-pid) && wait",
     "dev:headless:kill": "if [ -f .dev-headless-pid ]; then pkill -P $(cat .dev-headless-pid) 2>/dev/null; kill $(cat .dev-headless-pid) 2>/dev/null; rm -f .dev-headless-pid; else echo 'No headless dev process to kill'; fi",

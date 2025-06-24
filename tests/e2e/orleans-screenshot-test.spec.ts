@@ -14,11 +14,13 @@ test.beforeAll(async () => {
     }
 
     electronApp = await electron.launch({
-        args: [path.join(process.cwd(), 'dist/main/main.js')],
+        args: [path.join(process.cwd(), 'dist/main/main.js'), '--headless'],
         cwd: process.cwd(),
+        headless: true,
         env: { 
             ...process.env, 
             NODE_ENV: 'test',
+            DISPLAY: ':99',
             ELECTRON_USER_DATA: userDataPath
         }
     });

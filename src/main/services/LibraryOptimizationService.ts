@@ -101,6 +101,21 @@ export class LibraryOptimizationService {
             timeoutMultiplier: 1.2, // Standard IIIF timeout
             optimizationDescription: 'BDL optimizations: 4 concurrent downloads, IIIF image service'
         },
+        'monte_cassino': {
+            maxConcurrentDownloads: 3, // Monte Cassino IIIF service
+            timeoutMultiplier: 1.5, // Increased timeout for IIIF manifest processing
+            optimizationDescription: 'Monte Cassino optimizations: 3 concurrent downloads, extended timeouts for IIIF manifests'
+        },
+        'vallicelliana': {
+            maxConcurrentDownloads: 4, // Vallicelliana IIIF v3 DAM service
+            timeoutMultiplier: 1.3, // Slightly increased timeout for DAM platform
+            optimizationDescription: 'Vallicelliana Library optimizations: 4 concurrent downloads, DAM platform compatibility'
+        },
+        'verona': {
+            maxConcurrentDownloads: 3, // Verona IIIF service via NBM
+            timeoutMultiplier: 1.5, // Increased timeout for complex URL mapping and IIIF manifest processing
+            optimizationDescription: 'Verona Biblioteca Manoscritta optimizations: 3 concurrent downloads, extended timeouts for complex interface'
+        },
         'loading': {}
     };
 

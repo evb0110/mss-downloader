@@ -10,8 +10,14 @@ test.describe('Cache Corruption Fix', () => {
   test.beforeAll(async () => {
     // Launch Electron app
     electronApp = await electron.launch({
-      args: [path.join(__dirname, '../../dist/main/main.js')],
+      args: [path.join(__dirname, '../../dist/main/main.js'), '--headless'],
+      headless: true,
       timeout: 30000,
+      env: { 
+        ...process.env, 
+        NODE_ENV: 'test',
+        DISPLAY: ':99'
+      }
     });
     page = await electronApp.firstWindow();
     await page.waitForLoadState('domcontentloaded');

@@ -631,7 +631,7 @@ export class EnhancedManuscriptDownloaderService {
                     // Convert styled image to original high-resolution version
                     // From: /sites/default/files/styles/large__650_x_650_/public/images/collection/filename.jpg
                     // To: /sites/default/files/images/collection/filename.jpg
-                    const originalPath = match.replace(/\/styles\/[^\/]+\/public\//, '/');
+                    const originalPath = match.replace(/\/styles\/[^/]+\/public\//, '/');
                     const fullUrl = `${baseUrl}${originalPath}`;
                     if (!pageLinks.includes(fullUrl)) {
                         pageLinks.push(fullUrl);
@@ -4114,7 +4114,7 @@ export class EnhancedManuscriptDownloaderService {
         try {
             // Parse the URL to extract manuscript ID and base path
             // URL format: https://dig.vkol.cz/dig/mii87/0001rx.htm
-            const urlMatch = czechUrl.match(/dig\.vkol\.cz\/dig\/([^\/]+)\/(\d{4})[rv]x\.htm/);
+            const urlMatch = czechUrl.match(/dig\.vkol\.cz\/dig\/([^/]+)\/(\d{4})[rv]x\.htm/);
             if (!urlMatch) {
                 throw new Error('Could not parse Czech Digital Library URL format');
             }

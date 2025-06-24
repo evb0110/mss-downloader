@@ -35,12 +35,14 @@ let imageCache: ElectronImageCache | null = null;
 let pdfMerger: ElectronPdfMerger | null = null;
 let enhancedDownloadQueue: EnhancedDownloadQueue | null = null;
 
+// Global headless detection - available to all functions
+const isHeadless = process.argv.includes('--headless') || 
+                   process.env.NODE_ENV === 'test' ||
+                   process.env.DISPLAY === ':99' || // Playwright test display
+                   process.env.CI === 'true';
+
 const createWindow = () => {
   const preloadPath = join(__dirname, '../preload/preload.js');
-  const isHeadless = process.argv.includes('--headless') || 
-                     process.env.NODE_ENV === 'test' ||
-                     process.env.DISPLAY === ':99' || // Playwright test display
-                     process.env.CI === 'true';
   
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -69,8 +71,8 @@ const createWindow = () => {
     }),
   });
 
-  // Force devtools open immediately (but not for tests)
-  if (isDev && process.env.NODE_ENV !== 'test') {
+  // Force devtools open immediately (but not for tests or headless mode)
+  if (isDev && process.env.NODE_ENV !== 'test' && !isHeadless) {
     // Disable autofill to prevent console errors
     mainWindow.webContents.on('devtools-opened', () => {
       // DevTools is open, but we can't disable autofill from here
@@ -99,8 +101,8 @@ const createWindow = () => {
       );
     }
 
-    // Add inspect element only in dev mode
-    if (isDev) {
+    // Add inspect element only in dev mode and not in headless mode
+    if (isDev && !isHeadless) {
       contextMenuItems.push(
         { type: 'separator' },
         { 
@@ -136,9 +138,9 @@ const createWindow = () => {
     console.error('Failed to load page:', { errorCode, errorDescription, validatedURL });
   });
 
-  // Handle F12 key for DevTools toggle
+  // Handle F12 key for DevTools toggle (not in headless mode)
   mainWindow.webContents.on('before-input-event', (_, input) => {
-    if (input.key === 'F12' && input.type === 'keyDown') {
+    if (input.key === 'F12' && input.type === 'keyDown' && !isHeadless) {
       if (mainWindow?.webContents.isDevToolsOpened()) {
         mainWindow.webContents.closeDevTools();
       } else {
@@ -238,10 +240,13 @@ const createMenu = () => {
           label: 'Open DevTools',
           accelerator: 'F12',
           click: () => {
-            if (mainWindow?.webContents.isDevToolsOpened()) {
-              mainWindow.webContents.closeDevTools();
-            } else {
-              mainWindow?.webContents.openDevTools({ mode: 'detach' });
+            // Don't open DevTools in headless mode
+            if (!isHeadless) {
+              if (mainWindow?.webContents.isDevToolsOpened()) {
+                mainWindow.webContents.closeDevTools();
+              } else {
+                mainWindow?.webContents.openDevTools({ mode: 'detach' });
+              }
             }
           },
         },
@@ -684,9 +689,15 @@ ipcMain.handle('solve-captcha', async (_event, url: string) => {
     captchaWindow.loadURL(url);
     
     captchaWindow.once('ready-to-show', () => {
-      captchaWindow.show();
-      console.log('[MAIN] Captcha window shown for URL:', url);
-      
+      // CRITICAL: Never show captcha window during tests or headless mode
+      if (!isHeadless && process.env.NODE_ENV !== 'test') {
+        captchaWindow.show();
+        console.log('[MAIN] Captcha window shown for URL:', url);
+      } else {
+        console.log('[MAIN] Captcha window creation skipped due to headless mode');
+        captchaWindow.close();
+        resolve({ success: false, error: 'Captcha cannot be solved in headless mode' });
+      }
     });
 
     
