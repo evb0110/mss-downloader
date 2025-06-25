@@ -217,27 +217,33 @@ export class MultiplatformMSSBot {
         const chatId = message!.chat.id;
         const callbackId = callbackQuery.id;
         
-        // Create unique key for deduplication
-        const dedupeKey = `${chatId}_${data}_${Date.now().toString().slice(-6)}`;
+        // Create unique key for deduplication using callback ID (more reliable)
+        const dedupeKey = `${chatId}_${data}_${callbackId}`;
         
-        // Check if we've processed this callback recently (within 5 seconds)
+        // Check if we've processed this exact callback already
         if (this.processedCallbacks.has(dedupeKey)) {
-          console.log(`⚠️  Duplicate callback ignored: ${data} from ${chatId}`);
-          await this.bot.answerCallbackQuery(callbackId, { text: 'Already processing...' });
+          console.log(`⚠️  Duplicate callback ignored: ${data} from ${chatId} (callback ID: ${callbackId})`);
+          await this.bot.answerCallbackQuery(callbackId, { text: 'Request already processed' });
           return;
         }
         
-        // Add to processed set with auto-cleanup after 5 seconds
+        // Add to processed set with cleanup after 10 seconds (longer timeout for safety)
         this.processedCallbacks.add(dedupeKey);
-        setTimeout(() => this.processedCallbacks.delete(dedupeKey), 5000);
+        setTimeout(() => this.processedCallbacks.delete(dedupeKey), 10000);
+        
+        // REFRESH subscriber state before processing any callback to ensure consistency
+        this.subscribers = this.loadSubscribers();
         
         await this.bot.answerCallbackQuery(callbackId);
-        await this.handleCallback(chatId, data!, callbackQuery.from);
+        await this.handleCallback(chatId, data!, callbackQuery.from, message!.message_id);
         
       } catch (error) {
         console.error('Error processing callback query:', error);
         if (callbackQuery.id) {
-          await this.bot.answerCallbackQuery(callbackQuery.id, { text: 'Error processing request' });
+          await this.bot.answerCallbackQuery(callbackQuery.id, { 
+            text: 'Error processing request. Please try again.',
+            show_alert: true 
+          });
         }
       }
     });
@@ -382,7 +388,7 @@ export class MultiplatformMSSBot {
     });
   }
   
-  private async handleCallback(chatId: number, data: string, user: TelegramBot.User): Promise<void> {
+  private async handleCallback(chatId: number, data: string, user: TelegramBot.User, messageId?: number): Promise<void> {
     if (data === 'main_menu') {
       this.sendMainMenu(chatId, 'Main Menu:');
       return;
@@ -410,18 +416,21 @@ export class MultiplatformMSSBot {
     
     if (data.startsWith('subscribe_')) {
       const platform = data.replace('subscribe_', '') as Platform | 'all';
-      await this.handleSubscribe(chatId, user, platform);
+      await this.handleSubscribe(chatId, user, platform, messageId);
       return;
     }
     
     if (data.startsWith('unsubscribe_')) {
       const platform = data.replace('unsubscribe_', '') as Platform | 'all';
-      await this.handleUnsubscribe(chatId, platform);
+      await this.handleUnsubscribe(chatId, platform, messageId);
       return;
     }
   }
   
-  private async handleSubscribe(chatId: number, user: TelegramBot.User, platform: Platform | 'all'): Promise<void> {
+  private async handleSubscribe(chatId: number, user: TelegramBot.User, platform: Platform | 'all', messageId?: number): Promise<void> {
+    // REFRESH subscriber state from file before processing to ensure consistency
+    this.subscribers = this.loadSubscribers();
+    
     const username = user.username || user.first_name || 'Unknown';
     let subscriber = this.getSubscriber(chatId);
     
@@ -440,7 +449,18 @@ export class MultiplatformMSSBot {
       const wasAlreadySubscribed = allPlatforms.every(p => subscriber.platforms.includes(p));
       
       if (wasAlreadySubscribed) {
-        this.bot.sendMessage(chatId, 'ℹ️ You are already subscribed to all platforms.', { parse_mode: 'HTML' });
+        // ENHANCED: Show current subscription details for clarity
+        const currentSubs = subscriber.platforms.map(p => `${this.platforms[p].emoji} ${this.platforms[p].name}`).join('\n');
+        const enhancedMessage = [
+          'ℹ️ You are already subscribed to all platforms.',
+          '',
+          '📊 Your current subscriptions:',
+          currentSubs,
+          '',
+          `📅 Subscribed since: ${new Date(subscriber.subscribedAt).toLocaleDateString()}`
+        ].join('\n');
+        
+        this.bot.sendMessage(chatId, enhancedMessage, { parse_mode: 'HTML' });
       } else {
         subscriber.platforms = allPlatforms;
         this.saveSubscribers();
@@ -479,7 +499,7 @@ export class MultiplatformMSSBot {
       }
     }
     
-    this.showSubscribeMenu(chatId);
+    /* Removed duplicate menu call - this was causing the menu duplication bug */
   }
   
   public static getInstance(): MultiplatformMSSBot {
@@ -510,12 +530,15 @@ export class MultiplatformMSSBot {
     }
   }
   
-  private async handleUnsubscribe(chatId: number, platform: Platform | 'all'): Promise<void> {
+  private async handleUnsubscribe(chatId: number, platform: Platform | 'all', messageId?: number): Promise<void> {
+    // REFRESH subscriber state from file before processing to ensure consistency
+    this.subscribers = this.loadSubscribers();
+    
     const subscriber = this.getSubscriber(chatId);
     
     if (!subscriber || !subscriber.platforms || subscriber.platforms.length === 0) {
       this.bot.sendMessage(chatId, 'ℹ️ You are not currently subscribed to any platforms.', { parse_mode: 'HTML' });
-      this.sendMainMenu(chatId, 'What would you like to do?');
+      /* Removed duplicate main menu call - this was causing menu duplication */
       return;
     }
     
@@ -535,7 +558,7 @@ export class MultiplatformMSSBot {
       
       await this.notifyAdmin(adminMessage);
       
-      this.sendMainMenu(chatId, 'What would you like to do next?');
+      /* Removed duplicate main menu call - this was causing menu duplication */
     } else if (this.platforms[platform as Platform]) {
       const platformKey = platform as Platform;
       const index = subscriber.platforms.indexOf(platformKey);
@@ -557,11 +580,13 @@ export class MultiplatformMSSBot {
       } else {
         this.bot.sendMessage(chatId, `ℹ️ You are not subscribed to ${this.platforms[platformKey].name}.`, { parse_mode: 'HTML' });
       }
-      this.showUnsubscribeMenu(chatId);
+      /* Removed duplicate unsubscribe menu call - this was causing menu duplication */
     }
   }
   
   private showSubscriptions(chatId: number): void {
+    // REFRESH subscriber state from file before showing to ensure accuracy
+    this.subscribers = this.loadSubscribers();
     const subscriber = this.getSubscriber(chatId);
     
     if (!subscriber || !subscriber.platforms || subscriber.platforms.length === 0) {
@@ -569,17 +594,19 @@ export class MultiplatformMSSBot {
     } else {
       const subscriptionList = subscriber.platforms.map(p => `${this.platforms[p].emoji} ${this.platforms[p].name}`).join('\n');
       const messageText = [
-        '📊 <b>Your Subscriptions:</b>',
+        '📊 <b>Your Current Subscriptions:</b>',
         '',
         subscriptionList,
         '',
-        `Subscribed since: ${new Date(subscriber.subscribedAt).toLocaleDateString()}`
+        `📅 Subscribed since: ${new Date(subscriber.subscribedAt).toLocaleDateString()}`,
+        '',
+        '💡 Use the buttons below to modify your subscriptions.'
       ].join('\n');
       
       this.bot.sendMessage(chatId, messageText, { parse_mode: 'HTML' });
     }
     
-    this.sendMainMenu(chatId, 'What would you like to do next?');
+    /* Removed sendMainMenu call here - this was causing menu duplication after showing subscriptions */
   }
   
   private findLatestBuilds() {
@@ -600,7 +627,7 @@ export class MultiplatformMSSBot {
       ].join('\n');
       
       this.bot.sendMessage(chatId, messageText, { parse_mode: 'HTML' });
-      this.sendMainMenu(chatId, 'What would you like to do?');
+      /* Removed duplicate main menu call - this was causing menu duplication */
       return;
     }
     
@@ -635,12 +662,12 @@ export class MultiplatformMSSBot {
       }
       
       this.fileHandler.cleanup();
-      this.sendMainMenu(chatId, 'Anything else?');
+      /* Removed duplicate main menu call - this was causing menu duplication */
       
     } catch (error) {
       console.error('Error in handleLatest:', error);
       this.bot.sendMessage(chatId, '❌ Error retrieving latest builds.', { parse_mode: 'HTML' });
-      this.sendMainMenu(chatId, 'Try again:');
+      /* Removed duplicate main menu call - this was causing menu duplication */
     }
   }
   
