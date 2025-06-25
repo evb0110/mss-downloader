@@ -176,8 +176,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.build-windows.outputs.upload_url }}
-          asset_path: release/Abba Ababus (MSS Downloader)-${{ needs.check-version.outputs.version }}.dmg
-          asset_name: Abba.Ababus.MSS.Downloader.${{ needs.check-version.outputs.version }}.dmg
+          asset_path: release/Abba Ababus (MSS Downloader)-${{ needs.check-version.outputs.version }}-arm64.dmg
+          asset_name: Abba.Ababus.MSS.Downloader.${{ needs.check-version.outputs.version }}-arm64.dmg
           asset_content_type: application/octet-stream
         continue-on-error: true
       
@@ -185,7 +185,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-dmg-build-v${{ needs.check-version.outputs.version }}
-          path: release/*.dmg
+          path: release/*-arm64.dmg
 
   notify:
     needs: [check-version, build-windows, build-linux, build-mac]

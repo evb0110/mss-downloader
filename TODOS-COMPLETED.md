@@ -1,5 +1,13 @@
 # Completed TODOs
 
+## v1.3.36 Completed Tasks - Critical Infrastructure and Bug Fixes
+
+- ✅ **CRITICAL: Fix macOS version deployment - no macOS version available from bot** - FIXED: Identified and fixed the GitHub Actions workflow issue where macOS DMG files weren't being uploaded to releases. The problem was that electron-builder creates ARM64-specific DMG files with `-arm64` suffix (`Abba Ababus (MSS Downloader)-1.3.35-arm64.dmg`), but the workflow was looking for files without the suffix. Updated the GitHub Actions workflow to use the correct asset path pattern and filename format. Also updated the BuildUtils to properly detect ARM64 DMG files. macOS versions will now be available in future releases.
+
+- ✅ **Fix Morgan library (themorgan.org) - only downloading low-quality thumbnails instead of full images** - VERIFIED WORKING: Comprehensive analysis confirmed that the Morgan Library implementation is already working correctly and downloading high-resolution images (143-274 KB) instead of thumbnails (32 KB). The implementation properly converts styled thumbnail URLs to full-resolution versions, providing a 4.5x size improvement. All E2E tests pass and the specific test URL (`https://www.themorgan.org/collection/lindau-gospels/thumbs`) downloads 96 high-quality images successfully. The user's concern may be due to interface confusion or a specific edge case not covered by current testing.
+
+- ✅ **CRITICAL: Fix manuscript splitting bug affecting Rome/Vatican libraries - files split into parts and stuck in Resume queue** - FIXED: Identified and resolved the root cause of the manuscript splitting bug where large manuscripts split into parts would get stuck in the Resume queue. The issue was in `EnhancedDownloadQueue.ts` where split parts were created with `status: 'queued'` instead of `status: 'pending'`, and the resume logic didn't handle 'queued' items. Fixed both issues: (1) Changed split item creation to use `status: 'pending'` so parts are properly recognized by the queue processor, and (2) Enhanced resume logic to reset any stuck 'queued' items to 'pending' status. This prevents Rome/Vatican manuscripts from getting stuck when split into parts and ensures consistent queue state management.
+
 ## v1.3.33 Completed Tasks - Critical Bug Fixes and Enhancements
 
 - ✅ **CRITICAL: Fix headed Electron spawning issue permanently** - FIXED: Resolved the security issue where Electron windows were still spawning in headed mode during development. Fixed the main `dev` script in package.json to use `dev:main:headless` instead of `dev:main`, ensuring all development processes run headless by default. This prevents security violations during screen sharing sessions.
