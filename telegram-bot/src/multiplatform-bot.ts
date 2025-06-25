@@ -42,6 +42,9 @@ export class MultiplatformMSSBot {
   private platforms: Record<Platform, PlatformInfo>;
   private readonly ADMIN_CHAT_ID = 53582187;
   private readonly isDevelopment: boolean;
+  private processedCallbacks: Set<string> = new Set();
+  private static instance: MultiplatformMSSBot | null = null;
+  private isShuttingDown: boolean = false;
 
   constructor() {
     this.token = process.env.TELEGRAM_BOT_TOKEN || '';
@@ -51,13 +54,16 @@ export class MultiplatformMSSBot {
     
     this.bot = new TelegramBot(this.token, { 
       polling: {
-        interval: 300,
+        interval: 2000, // Reduced from 300ms to 2000ms to prevent API rate limiting
         autoStart: true,
         params: {
-          timeout: 10
+          timeout: 30, // Increased from 10s to 30s for better reliability
+          allowed_updates: ['message', 'callback_query'] // Only process relevant updates
         }
       }
     });
+    
+    MultiplatformMSSBot.instance = this;
     
     this.subscribersFile = path.join(__dirname, '..', 'subscribers.json');
     this.subscribers = this.loadSubscribers();
@@ -205,12 +211,35 @@ export class MultiplatformMSSBot {
     });
     
     this.bot.on('callback_query', async (callbackQuery) => {
-      const message = callbackQuery.message;
-      const data = callbackQuery.data;
-      const chatId = message!.chat.id;
-      
-      this.bot.answerCallbackQuery(callbackQuery.id);
-      await this.handleCallback(chatId, data!, callbackQuery.from);
+      try {
+        const message = callbackQuery.message;
+        const data = callbackQuery.data;
+        const chatId = message!.chat.id;
+        const callbackId = callbackQuery.id;
+        
+        // Create unique key for deduplication
+        const dedupeKey = `${chatId}_${data}_${Date.now().toString().slice(-6)}`;
+        
+        // Check if we've processed this callback recently (within 5 seconds)
+        if (this.processedCallbacks.has(dedupeKey)) {
+          console.log(`⚠️  Duplicate callback ignored: ${data} from ${chatId}`);
+          await this.bot.answerCallbackQuery(callbackId, { text: 'Already processing...' });
+          return;
+        }
+        
+        // Add to processed set with auto-cleanup after 5 seconds
+        this.processedCallbacks.add(dedupeKey);
+        setTimeout(() => this.processedCallbacks.delete(dedupeKey), 5000);
+        
+        await this.bot.answerCallbackQuery(callbackId);
+        await this.handleCallback(chatId, data!, callbackQuery.from);
+        
+      } catch (error) {
+        console.error('Error processing callback query:', error);
+        if (callbackQuery.id) {
+          await this.bot.answerCallbackQuery(callbackQuery.id, { text: 'Error processing request' });
+        }
+      }
     });
   }
   
@@ -407,20 +436,27 @@ export class MultiplatformMSSBot {
     }
     
     if (platform === 'all') {
-      subscriber.platforms = ['amd64', 'arm64', 'linux', 'mac'];
-      this.saveSubscribers();
-      this.bot.sendMessage(chatId, '✅ Successfully subscribed to all platforms!', { parse_mode: 'HTML' });
+      const allPlatforms = ['amd64', 'arm64', 'linux', 'mac'] as Platform[];
+      const wasAlreadySubscribed = allPlatforms.every(p => subscriber.platforms.includes(p));
       
-      const adminMessage = [
-        '🔔 <b>New Subscription - All Platforms</b>',
-        '',
-        `👤 User: @${username}`,
-        `💬 Chat ID: ${chatId}`,
-        '📱 Platforms: All (AMD64, ARM64, Linux, macOS)',
-        `📅 ${new Date().toLocaleString()}`
-      ].join('\n');
-      
-      await this.notifyAdmin(adminMessage);
+      if (wasAlreadySubscribed) {
+        this.bot.sendMessage(chatId, 'ℹ️ You are already subscribed to all platforms.', { parse_mode: 'HTML' });
+      } else {
+        subscriber.platforms = allPlatforms;
+        this.saveSubscribers();
+        this.bot.sendMessage(chatId, '✅ Successfully subscribed to all platforms!', { parse_mode: 'HTML' });
+        
+        const adminMessage = [
+          '🔔 <b>New Subscription - All Platforms</b>',
+          '',
+          `👤 User: @${username}`,
+          `💬 Chat ID: ${chatId}`,
+          '📱 Platforms: All (AMD64, ARM64, Linux, macOS)',
+          `📅 ${new Date().toLocaleString()}`
+        ].join('\n');
+        
+        await this.notifyAdmin(adminMessage);
+      }
     } else if (this.platforms[platform as Platform]) {
       const platformKey = platform as Platform;
       if (!subscriber.platforms.includes(platformKey)) {
@@ -444,6 +480,34 @@ export class MultiplatformMSSBot {
     }
     
     this.showSubscribeMenu(chatId);
+  }
+  
+  public static getInstance(): MultiplatformMSSBot {
+    if (!MultiplatformMSSBot.instance) {
+      console.log('🤖 Creating new bot instance...');
+      MultiplatformMSSBot.instance = new MultiplatformMSSBot();
+    } else {
+      console.log('♻️  Reusing existing bot instance');
+    }
+    return MultiplatformMSSBot.instance;
+  }
+  
+  public async shutdown(): Promise<void> {
+    if (this.isShuttingDown) {
+      return;
+    }
+    
+    this.isShuttingDown = true;
+    console.log('🔄 Shutting down bot...');
+    
+    try {
+      await this.bot.stopPolling();
+      this.processedCallbacks.clear();
+      MultiplatformMSSBot.instance = null;
+      console.log('✅ Bot shutdown complete');
+    } catch (error) {
+      console.error('Error during bot shutdown:', error);
+    }
   }
   
   private async handleUnsubscribe(chatId: number, platform: Platform | 'all'): Promise<void> {

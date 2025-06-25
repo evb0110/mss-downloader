@@ -326,12 +326,15 @@ async function sendMultiplatformBuild(): Promise<void> {
     
     const message = messageLines.join('\n');
     
-    const bot = new MultiplatformMSSBot();
+    const bot = MultiplatformMSSBot.getInstance();
     
     console.log('🤖 Sending multiplatform build notification...');
     await bot.notifySubscribers(message, builds);
     
     console.log('✅ Multiplatform build notification sent successfully!');
+    
+    // Clean shutdown to prevent lingering processes
+    await bot.shutdown();
     process.exit(0);
     
   } catch (error) {
@@ -368,9 +371,10 @@ function showHelp(): void {
 
 async function sendMessage(customMessage: string): Promise<void> {
   try {
-    const bot = new MultiplatformMSSBot();
+    const bot = MultiplatformMSSBot.getInstance();
     // This is a simplified version - we'd need to expose subscribers or create a method
     console.log('✅ Custom message functionality needs to be implemented!');
+    await bot.shutdown();
     process.exit(0);
   } catch (error) {
     console.error('❌ Error sending message:', error);
