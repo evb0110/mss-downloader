@@ -1778,10 +1778,11 @@ export class EnhancedManuscriptDownloaderService {
                 eta: '0s' 
             });
             
-            // Create complete array with placeholders for failed pages
+            // Create complete array with placeholders for failed pages - only for the requested page range
             const completeImagePaths: (string | null)[] = [];
-            for (let i = 0; i < manifest.totalPages; i++) {
-                completeImagePaths[i] = imagePaths[i] || null;
+            for (let i = 0; i < totalPagesToDownload; i++) {
+                const actualPageIndex = actualStartPage - 1 + i; // Convert to 0-based index
+                completeImagePaths[i] = imagePaths[actualPageIndex] || null;
             }
             
             const validImagePaths = imagePaths.filter(Boolean);
@@ -1811,7 +1812,8 @@ export class EnhancedManuscriptDownloaderService {
                     const partFilename = `${sanitizedName}_part_${partNumber}.pdf`;
                     const partFilepath = path.join(targetDir, partFilename);
                     
-                    await this.convertImagesToPDFWithBlanks(partImages, partFilepath);
+                    const partStartPage = actualStartPage + startIdx;
+                    await this.convertImagesToPDFWithBlanks(partImages, partFilepath, partStartPage);
                     createdFiles.push(partFilepath);
                 }
                 
@@ -1835,7 +1837,7 @@ export class EnhancedManuscriptDownloaderService {
                 };
             } else {
                 // Single PDF
-                await this.convertImagesToPDFWithBlanks(completeImagePaths, filepath);
+                await this.convertImagesToPDFWithBlanks(completeImagePaths, filepath, actualStartPage);
                 
                 // Clean up temporary images
                 for (const p of validImagePaths) {
@@ -1978,7 +1980,7 @@ export class EnhancedManuscriptDownloaderService {
         
     }
 
-    async convertImagesToPDFWithBlanks(imagePaths: (string | null)[], outputPath: string): Promise<void> {
+    async convertImagesToPDFWithBlanks(imagePaths: (string | null)[], outputPath: string, startPageNumber: number = 1): Promise<void> {
         const totalImages = imagePaths.length;
         const maxMemoryMB = 1024;
         const batchSize = Math.min(50, Math.max(10, Math.floor(maxMemoryMB / 20)));
@@ -1995,24 +1997,59 @@ export class EnhancedManuscriptDownloaderService {
                 
                 for (let j = 0; j < batch.length; j++) {
                     const imagePath = batch[j];
-                    const pageNumber = i + j + 1;
+                    const pageNumber = startPageNumber + i + j;
                     
                     if (imagePath === null) {
-                        // Create blank page for missing image
+                        // Create informative page for missing image
                         const page = batchPdfDoc.addPage([595, 842]); // A4 size
                         const { height } = page.getSize();
                         
-                        page.drawText(`Page ${pageNumber} couldn't be downloaded`, {
+                        page.drawText(`Page ${pageNumber} - Download Failed`, {
                             x: 50,
                             y: height - 100,
-                            size: 16,
-                            color: rgb(0.7, 0.7, 0.7),
+                            size: 18,
+                            color: rgb(0.6, 0.2, 0.2),
                         });
                         
-                        page.drawText('This page was unavailable during download', {
+                        page.drawText('This page could not be downloaded after multiple attempts.', {
                             x: 50,
-                            y: height - 130,
+                            y: height - 140,
                             size: 12,
+                            color: rgb(0.4, 0.4, 0.4),
+                        });
+                        
+                        page.drawText('Possible causes:', {
+                            x: 50,
+                            y: height - 170,
+                            size: 11,
+                            color: rgb(0.3, 0.3, 0.3),
+                        });
+                        
+                        page.drawText('• Server temporarily unavailable', {
+                            x: 70,
+                            y: height - 190,
+                            size: 10,
+                            color: rgb(0.3, 0.3, 0.3),
+                        });
+                        
+                        page.drawText('• Network connectivity issues', {
+                            x: 70,
+                            y: height - 205,
+                            size: 10,
+                            color: rgb(0.3, 0.3, 0.3),
+                        });
+                        
+                        page.drawText('• Image file corrupted or missing from source', {
+                            x: 70,
+                            y: height - 220,
+                            size: 10,
+                            color: rgb(0.3, 0.3, 0.3),
+                        });
+                        
+                        page.drawText('You may try downloading this manuscript again later.', {
+                            x: 50,
+                            y: height - 250,
+                            size: 10,
                             color: rgb(0.5, 0.5, 0.5),
                         });
                         
@@ -2027,21 +2064,35 @@ export class EnhancedManuscriptDownloaderService {
                         const stats = await fs.stat(imagePath);
                         
                         if (stats.size < MIN_VALID_IMAGE_SIZE_BYTES) {
-                            // Create blank page for invalid image
+                            // Create informative page for corrupted/small image
                             const page = batchPdfDoc.addPage([595, 842]);
                             const { height } = page.getSize();
                             
-                            page.drawText(`Page ${pageNumber} couldn't be downloaded`, {
+                            page.drawText(`Page ${pageNumber} - File Corrupted`, {
                                 x: 50,
                                 y: height - 100,
-                                size: 16,
-                                color: rgb(0.7, 0.7, 0.7),
+                                size: 18,
+                                color: rgb(0.6, 0.2, 0.2),
                             });
                             
-                            page.drawText('Image file was too small or corrupted', {
+                            page.drawText(`Image file was too small (${stats.size} bytes) or corrupted.`, {
                                 x: 50,
-                                y: height - 130,
+                                y: height - 140,
                                 size: 12,
+                                color: rgb(0.4, 0.4, 0.4),
+                            });
+                            
+                            page.drawText('The server provided an invalid or incomplete image file.', {
+                                x: 50,
+                                y: height - 170,
+                                size: 11,
+                                color: rgb(0.3, 0.3, 0.3),
+                            });
+                            
+                            page.drawText('You may try downloading this manuscript again later.', {
+                                x: 50,
+                                y: height - 200,
+                                size: 10,
                                 color: rgb(0.5, 0.5, 0.5),
                             });
                             
@@ -2059,21 +2110,35 @@ export class EnhancedManuscriptDownloaderService {
                             try {
                                 image = await batchPdfDoc.embedPng(imageBuffer);
                             } catch (embedError: any) {
-                                // Create blank page for embed failure
+                                // Create informative page for embed failure
                                 const page = batchPdfDoc.addPage([595, 842]);
                                 const { height } = page.getSize();
                                 
-                                page.drawText(`Page ${pageNumber} couldn't be downloaded`, {
+                                page.drawText(`Page ${pageNumber} - Format Error`, {
                                     x: 50,
                                     y: height - 100,
-                                    size: 16,
-                                    color: rgb(0.7, 0.7, 0.7),
+                                    size: 18,
+                                    color: rgb(0.6, 0.2, 0.2),
                                 });
                                 
-                                page.drawText('Image format not supported', {
+                                page.drawText('Image format not supported by PDF generator.', {
                                     x: 50,
-                                    y: height - 130,
+                                    y: height - 140,
                                     size: 12,
+                                    color: rgb(0.4, 0.4, 0.4),
+                                });
+                                
+                                page.drawText('The image file exists but uses an unsupported format.', {
+                                    x: 50,
+                                    y: height - 170,
+                                    size: 11,
+                                    color: rgb(0.3, 0.3, 0.3),
+                                });
+                                
+                                page.drawText('Please report this issue if it affects many pages.', {
+                                    x: 50,
+                                    y: height - 200,
+                                    size: 10,
                                     color: rgb(0.5, 0.5, 0.5),
                                 });
                                 
@@ -2096,20 +2161,43 @@ export class EnhancedManuscriptDownloaderService {
                         processedCount++;
                         
                     } catch (error: any) {
-                        // Create blank page for any other errors
+                        // Create informative page for any other errors
                         const page = batchPdfDoc.addPage([595, 842]);
                         const { height } = page.getSize();
                         
-                        page.drawText(`Page ${pageNumber} couldn't be downloaded`, {
+                        page.drawText(`Page ${pageNumber} - Processing Error`, {
                             x: 50,
                             y: height - 100,
-                            size: 16,
-                            color: rgb(0.7, 0.7, 0.7),
+                            size: 18,
+                            color: rgb(0.6, 0.2, 0.2),
                         });
                         
-                        page.drawText(error.message || 'Unknown error occurred', {
+                        page.drawText('An unexpected error occurred while processing this page.', {
                             x: 50,
-                            y: height - 130,
+                            y: height - 140,
+                            size: 12,
+                            color: rgb(0.4, 0.4, 0.4),
+                        });
+                        
+                        page.drawText('Error details:', {
+                            x: 50,
+                            y: height - 170,
+                            size: 11,
+                            color: rgb(0.3, 0.3, 0.3),
+                        });
+                        
+                        const errorMsg = error.message || 'Unknown error occurred';
+                        const truncatedError = errorMsg.length > 60 ? errorMsg.substring(0, 60) + '...' : errorMsg;
+                        page.drawText(truncatedError, {
+                            x: 50,
+                            y: height - 190,
+                            size: 9,
+                            color: rgb(0.2, 0.2, 0.2),
+                        });
+                        
+                        page.drawText('Please report this error if it affects many pages.', {
+                            x: 50,
+                            y: height - 220,
                             size: 10,
                             color: rgb(0.5, 0.5, 0.5),
                         });
