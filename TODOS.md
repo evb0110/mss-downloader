@@ -2,7 +2,7 @@
 
 ## Pending Tasks
 
-- **CRITICAL**: Fix headed Electron spawning issue permanently - despite multiple reported fixes, the application still spawns headed Electron windows. Apply comprehensive analysis with additional agents to identify and resolve all sources of headed mode activation.
+<!-- All tasks completed in v1.3.33 -->
 
 ## Usage
 

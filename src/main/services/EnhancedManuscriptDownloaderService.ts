@@ -23,64 +23,14 @@ export class EnhancedManuscriptDownloaderService {
 
     static readonly SUPPORTED_LIBRARIES: LibraryInfo[] = [
         {
-            name: 'NYPL Digital Collections',
-            example: 'https://digitalcollections.nypl.org/items/6a709e10-1cda-013b-b83f-0242ac110002',
-            description: 'New York Public Library digital manuscript collections',
+            name: 'BDL (Biblioteca Digitale Lombarda)',
+            example: 'https://www.bdl.servizirl.it/bdl/bookreader/index.html?path=fe&cdOggetto=3903',
+            description: 'Biblioteca Digitale Lombarda digital manuscripts via IIIF',
         },
         {
-            name: 'Morgan Library & Museum',
-            example: 'https://www.themorgan.org/collection/lindau-gospels/thumbs',
-            description: 'Morgan Library & Museum digital manuscript collections',
-        },
-        {
-            name: 'Gallica (BnF)',
-            example: 'https://gallica.bnf.fr/ark:/12148/btv1b8449691v/f1.highres',
-            description: 'French National Library digital manuscripts (supports any f{page}.* format)',
-        },
-        {
-            name: 'e-codices (Unifr)',
-            example: 'https://www.e-codices.ch/en/sbe/0610/1',
-            description: 'Swiss virtual manuscript library',
-        },
-        {
-            name: 'Vatican Library',
-            example: 'https://digi.vatlib.it/view/MSS_Vat.lat.3225',
-            description: 'Vatican Apostolic Library digital collections',
-        },
-        {
-            name: 'Cecilia (Grand Albigeois)',
-            example: 'https://cecilia.mediatheques.grand-albigeois.fr/viewer/124/?offset=#page=1&viewer=picture&o=&n=0&q=',
-            description: 'Grand Albigeois mediatheques digital collections',
-        },
-        {
-            name: 'IRHT (CNRS)',
-            example: 'https://arca.irht.cnrs.fr/ark:/63955/md14nk323d72',
-            description: 'Institut de recherche et d\'histoire des textes digital manuscripts',
-        },
-        {
-            name: 'Dijon Patrimoine',
-            example: 'http://patrimoine.bm-dijon.fr/pleade/img-viewer/MS00114/?ns=FR212316101_CITEAUX_MS00114_000_01_PS.jpg',
-            description: 'Bibliothèque municipale de Dijon digital manuscripts',
-        },
-        {
-            name: 'Laon Bibliothèque',
-            example: 'https://bibliotheque-numerique.ville-laon.fr/viewer/1459/?offset=#page=1&viewer=picture&o=download&n=0&q=',
-            description: 'Bibliothèque municipale de Laon digital manuscripts',
-        },
-        {
-            name: 'Durham University',
-            example: 'https://iiif.durham.ac.uk/index.html?manifest=t1mp2676v52p',
-            description: 'Durham University Library digital manuscripts via IIIF',
-        },
-        {
-            name: 'SharedCanvas',
-            example: 'https://sharedcanvas.be/IIIF/viewer/mirador/B_OB_MS310',
-            description: 'SharedCanvas-based digital manuscript viewers and collections',
-        },
-        {
-            name: 'UGent Library',
-            example: 'https://lib.ugent.be/viewer/archive.ugent.be%3A644DCADE-4FE7-11E9-9AC5-81E62282636C',
-            description: 'Ghent University Library digital manuscript collections via IIIF',
+            name: 'Berlin State Library',
+            example: 'https://digital.staatsbibliothek-berlin.de/werkansicht?PPN=PPN782404456&view=picture-download&PHYSID=PHYS_0005&DMDID=DMDLOG_0001',
+            description: 'Staatsbibliothek zu Berlin digital manuscript collections via IIIF',
         },
         {
             name: 'British Library',
@@ -88,24 +38,29 @@ export class EnhancedManuscriptDownloaderService {
             description: 'British Library digital manuscript collections via IIIF',
         },
         {
-            name: 'Florus (BM Lyon)',
-            example: 'https://florus.bm-lyon.fr/visualisation.php?cote=MS0425&vue=128',
-            description: 'Bibliothèque municipale de Lyon digital manuscripts',
-        },
-        {
-            name: 'Unicatt (Ambrosiana)',
-            example: 'https://digitallibrary.unicatt.it/veneranda/0b02da82800c3ea6',
-            description: 'Biblioteca Ambrosiana digital manuscripts',
-        },
-        {
             name: 'Cambridge University Digital Library',
             example: 'https://cudl.lib.cam.ac.uk/view/MS-II-00006-00032/1',
             description: 'Cambridge University Library digital manuscripts via IIIF',
         },
         {
-            name: 'Trinity College Cambridge',
-            example: 'https://mss-cat.trin.cam.ac.uk/Manuscript/B.10.5/UV',
-            description: 'Trinity College Cambridge digital manuscripts',
+            name: 'Cecilia (Grand Albigeois)',
+            example: 'https://cecilia.mediatheques.grand-albigeois.fr/viewer/124/?offset=#page=1&viewer=picture&o=&n=0&q=',
+            description: 'Grand Albigeois mediatheques digital collections',
+        },
+        {
+            name: 'Cologne Dom Library',
+            example: 'https://digital.dombibliothek-koeln.de/hs/content/zoom/156145',
+            description: 'Cologne Cathedral Library digital manuscript collection',
+        },
+        {
+            name: 'Czech Digital Library (VKOL)',
+            example: 'https://dig.vkol.cz/dig/mii87/0001rx.htm',
+            description: 'Czech digital manuscript library (Experimental)',
+        },
+        {
+            name: 'Dijon Patrimoine',
+            example: 'http://patrimoine.bm-dijon.fr/pleade/img-viewer/MS00114/?ns=FR212316101_CITEAUX_MS00114_000_01_PS.jpg',
+            description: 'Bibliothèque municipale de Dijon digital manuscripts',
         },
         {
             name: 'Dublin ISOS (DIAS)',
@@ -118,6 +73,61 @@ export class EnhancedManuscriptDownloaderService {
             description: 'Manuscript, Inscription and Realia Archive (Dublin)',
         },
         {
+            name: 'Durham University',
+            example: 'https://iiif.durham.ac.uk/index.html?manifest=t1mp2676v52p',
+            description: 'Durham University Library digital manuscripts via IIIF',
+        },
+        {
+            name: 'e-codices (Unifr)',
+            example: 'https://www.e-codices.ch/en/sbe/0610/1',
+            description: 'Swiss virtual manuscript library',
+        },
+        {
+            name: 'Florus (BM Lyon)',
+            example: 'https://florus.bm-lyon.fr/visualisation.php?cote=MS0425&vue=128',
+            description: 'Bibliothèque municipale de Lyon digital manuscripts',
+        },
+        {
+            name: 'Gallica (BnF)',
+            example: 'https://gallica.bnf.fr/ark:/12148/btv1b8449691v/f1.highres',
+            description: 'French National Library digital manuscripts (supports any f{page}.* format)',
+        },
+        {
+            name: 'Internet Culturale',
+            example: 'https://www.internetculturale.it/jmms/iccuviewer/iccu.jsp?id=oai%3Abncf.firenze.sbn.it%3A21%3AFI0098%3AManoscrittiInRete%3AB.R.231&mode=all&teca=Bncf',
+            description: 'Italian national digital heritage platform serving manuscripts from BNCF, Laurenziana, and other institutions',
+        },
+        {
+            name: 'IRHT (CNRS)',
+            example: 'https://arca.irht.cnrs.fr/ark:/63955/md14nk323d72',
+            description: 'Institut de recherche et d\'histoire des textes digital manuscripts',
+        },
+        {
+            name: 'Laon Bibliothèque',
+            example: 'https://bibliotheque-numerique.ville-laon.fr/viewer/1459/?offset=#page=1&viewer=picture&o=download&n=0&q=',
+            description: 'Bibliothèque municipale de Laon digital manuscripts',
+        },
+        {
+            name: 'Manuscripta.se',
+            example: 'https://manuscripta.se/ms/101124',
+            description: 'Swedish digital catalogue of medieval and early modern manuscripts via IIIF',
+        },
+        {
+            name: 'Modena Diocesan Archive',
+            example: 'https://archiviodiocesano.mo.it/archivio/flip/ACMo-OI-7/',
+            description: 'Modena Diocesan Archive digital manuscripts (Flash interface bypassed)',
+        },
+        {
+            name: 'Morgan Library & Museum',
+            example: 'https://www.themorgan.org/collection/lindau-gospels/thumbs',
+            description: 'Morgan Library & Museum digital manuscript collections',
+        },
+        {
+            name: 'NYPL Digital Collections',
+            example: 'https://digitalcollections.nypl.org/items/6a709e10-1cda-013b-b83f-0242ac110002',
+            description: 'New York Public Library digital manuscript collections',
+        },
+        {
             name: 'Orléans Médiathèques (Aurelia)',
             example: 'https://mediatheques.orleans.fr/recherche/viewnotice/clef/FRAGMENTSDEDIFFERENTSLIVRESDELECRITURESAINTE--AUGUSTINSAINT----28/id/745380',
             description: 'Médiathèques d\'Orléans digital heritage library via IIIF/Omeka',
@@ -128,19 +138,34 @@ export class EnhancedManuscriptDownloaderService {
             description: 'Real Biblioteca del Monasterio de El Escorial digital manuscripts via IIIF',
         },
         {
+            name: 'Rome National Library (BNCR)',
+            example: 'http://digitale.bnc.roma.sbn.it/tecadigitale/manoscrittoantico/BNCR_Ms_SESS_0062/BNCR_Ms_SESS_0062/1',
+            description: 'Biblioteca Nazionale Centrale di Roma digital manuscript collections',
+        },
+        {
+            name: 'SharedCanvas',
+            example: 'https://sharedcanvas.be/IIIF/viewer/mirador/B_OB_MS310',
+            description: 'SharedCanvas-based digital manuscript viewers and collections',
+        },
+        {
             name: 'Stanford Parker Library',
             example: 'https://parker.stanford.edu/parker/catalog/zs345bj2650',
             description: 'Stanford Parker Library on the Web - digitized manuscripts from Corpus Christi College, Cambridge via IIIF',
         },
         {
-            name: 'Manuscripta.se',
-            example: 'https://manuscripta.se/ms/101124',
-            description: 'Swedish digital catalogue of medieval and early modern manuscripts via IIIF',
+            name: 'Trinity College Cambridge',
+            example: 'https://mss-cat.trin.cam.ac.uk/Manuscript/B.10.5/UV',
+            description: 'Trinity College Cambridge digital manuscripts',
         },
         {
-            name: 'Internet Culturale',
-            example: 'https://www.internetculturale.it/jmms/iccuviewer/iccu.jsp?id=oai%3Abncf.firenze.sbn.it%3A21%3AFI0098%3AManoscrittiInRete%3AB.R.231&mode=all&teca=Bncf',
-            description: 'Italian national digital heritage platform serving manuscripts from BNCF, Laurenziana, and other institutions',
+            name: 'UGent Library',
+            example: 'https://lib.ugent.be/viewer/archive.ugent.be%3A644DCADE-4FE7-11E9-9AC5-81E62282636C',
+            description: 'Ghent University Library digital manuscript collections via IIIF',
+        },
+        {
+            name: 'Unicatt (Ambrosiana)',
+            example: 'https://digitallibrary.unicatt.it/veneranda/0b02da82800c3ea6',
+            description: 'Biblioteca Ambrosiana digital manuscripts',
         },
         {
             name: 'University of Graz',
@@ -148,39 +173,14 @@ export class EnhancedManuscriptDownloaderService {
             description: 'University of Graz digital manuscript collection with IIIF support',
         },
         {
-            name: 'Rome National Library (BNCR)',
-            example: 'http://digitale.bnc.roma.sbn.it/tecadigitale/manoscrittoantico/BNCR_Ms_SESS_0062/BNCR_Ms_SESS_0062/1',
-            description: 'Biblioteca Nazionale Centrale di Roma digital manuscript collections',
-        },
-        {
-            name: 'Cologne Dom Library',
-            example: 'https://digital.dombibliothek-koeln.de/hs/content/zoom/156145',
-            description: 'Cologne Cathedral Library digital manuscript collection',
+            name: 'Vatican Library',
+            example: 'https://digi.vatlib.it/view/MSS_Vat.lat.3225',
+            description: 'Vatican Apostolic Library digital collections',
         },
         {
             name: 'Vienna Manuscripta.at',
             example: 'https://manuscripta.at/diglit/AT5000-1013/0001',
             description: 'Austrian National Library digital manuscript collection',
-        },
-        {
-            name: 'Berlin State Library',
-            example: 'https://digital.staatsbibliothek-berlin.de/werkansicht?PPN=PPN782404456&view=picture-download&PHYSID=PHYS_0005&DMDID=DMDLOG_0001',
-            description: 'Staatsbibliothek zu Berlin digital manuscript collections via IIIF',
-        },
-        {
-            name: 'Czech Digital Library (VKOL)',
-            example: 'https://dig.vkol.cz/dig/mii87/0001rx.htm',
-            description: 'Czech digital manuscript library (Experimental)',
-        },
-        {
-            name: 'Modena Diocesan Archive',
-            example: 'https://archiviodiocesano.mo.it/archivio/flip/ACMo-OI-7/',
-            description: 'Modena Diocesan Archive digital manuscripts (Flash interface bypassed)',
-        },
-        {
-            name: 'BDL (Biblioteca Digitale Lombarda)',
-            example: 'https://www.bdl.servizirl.it/bdl/bookreader/index.html?path=fe&cdOggetto=3903',
-            description: 'Biblioteca Digitale Lombarda digital manuscripts via IIIF',
         },
     ];
 

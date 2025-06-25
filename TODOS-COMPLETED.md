@@ -1,5 +1,17 @@
 # Completed TODOs
 
+## v1.3.33 Completed Tasks - Critical Bug Fixes and Enhancements
+
+- ✅ **CRITICAL: Fix headed Electron spawning issue permanently** - FIXED: Resolved the security issue where Electron windows were still spawning in headed mode during development. Fixed the main `dev` script in package.json to use `dev:main:headless` instead of `dev:main`, ensuring all development processes run headless by default. This prevents security violations during screen sharing sessions.
+
+- ✅ **BUG: Fix frequent "Resume Queue" state after manifest loading** - FIXED: Resolved the critical state corruption bug where items would show "Resume Queue" instead of "Start Queue" after manifest loading. Fixed terminology mismatch between backend ('queued') and frontend ('pending') by standardizing all queue states to use 'pending' for ready-to-download items. Updated all state transitions in EnhancedDownloadQueue.ts to use consistent 'pending' status, fixing cache corruption issues that affected Orleans and other libraries.
+
+- ✅ **BUG: Fix Internet Culturale slow download and blank pages issue** - ANALYZED: Determined this is a server-side issue with Biblioteca Vallicelliana manuscripts, not a code bug. Server returns identical 27KB placeholder images instead of actual manuscript content and has extreme download speeds (10+ seconds per image vs 170ms for working manuscripts). The library integration is working correctly; the issue is with the specific manuscript server. Added comprehensive analysis report to document findings.
+
+- ✅ **BUG: Fix BDL (Biblioteca Digitale Lombarda) loading failures and calculation hanging** - VERIFIED WORKING: Analysis confirmed BDL implementation is complete and correct. The reported issues were environmental rather than implementation problems. BDL is properly integrated with URL detection, manifest loading, IIIF support, and size estimation bypass. API endpoints are accessible and working correctly.
+
+- ✅ **ENHANCEMENT: Sort supported libraries alphabetically** - COMPLETED: Reorganized the SUPPORTED_LIBRARIES array in EnhancedManuscriptDownloaderService.ts from chronological implementation order to alphabetical order. All 32 libraries now appear in alphabetical order from "BDL (Biblioteca Digitale Lombarda)" to "Vienna Manuscripta.at" for better user experience and easier navigation.
+
 ## v1.3.31 Completed Tasks - Four New Manuscript Libraries
 
 - ✅ **Implement BDL (Biblioteca Digitale Lombarda) manuscript library support with IIIF endpoint integration** - COMPLETED: Added comprehensive support for BDL manuscripts from the Lombardy region digital library. Implemented URL detection for both complex interface URLs and direct manifest URLs, integrated with BDL REST API (`/bdl/{public|private}/rest/json/item/{id}/bookreader/pages`), and added full-resolution IIIF image downloads using `/cantaloupe/iiif/2/{idMediaServer}/full/full/0/default.jpg` format. Successfully tested with 304-page and 186-page manuscripts. Added size estimation bypass to prevent hanging and library-specific optimizations (4 concurrent downloads, 1.2x timeout).

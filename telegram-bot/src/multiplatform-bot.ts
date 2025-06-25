@@ -204,7 +204,14 @@ export class MultiplatformMSSBot {
       }
     });
     
-    // Callback handling removed - using simple text commands only
+    this.bot.on('callback_query', async (callbackQuery) => {
+      const message = callbackQuery.message;
+      const data = callbackQuery.data;
+      const chatId = message!.chat.id;
+      
+      this.bot.answerCallbackQuery(callbackQuery.id);
+      await this.handleCallback(chatId, data!, callbackQuery.from);
+    });
   }
   
   private setupMenu(): void {

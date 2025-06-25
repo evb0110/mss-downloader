@@ -117,11 +117,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 this.state.globalSettings.maxSimultaneousDownloads = 3;
             }
             
-            // Resume any in-progress items by resetting 'downloading' status to 'queued'
+            // Resume any in-progress items by resetting 'downloading' status to 'pending'
             // Also clean up progress data and other transient fields
             this.state.items.forEach((item) => {
                 if (item.status === 'downloading') {
-                    item.status = 'queued';
+                    item.status = 'pending';
                     item.progress = undefined; // Clear progress data
                     item.eta = undefined; // Clear ETA
                 }
@@ -260,8 +260,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 }
             }
             
-            // Update item with manifest information and set status back to queued
-            item.status = 'queued';
+            // Update item with manifest information and set status back to pending
+            item.status = 'pending';
             item.progress = undefined;
             item.totalPages = manifest.totalPages;
             item.library = manifest.library as TLibrary;
@@ -290,7 +290,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
         } catch (error: any) {
             console.warn(`Failed to load manifest for ${item.displayName}: ${error.message}`);
             // Reset status and clear progress on error
-            item.status = 'queued';
+            item.status = 'pending';
             item.progress = undefined;
             this.notifyListeners();
         }
@@ -312,12 +312,12 @@ export class EnhancedDownloadQueue extends EventEmitter {
         const newItem: QueuedManuscript = {
             id: this.generateId(),
             addedAt: Date.now(),
-            status: 'queued', // Ensure status is always 'queued' for new items
+            status: 'pending', // Ensure status is always 'pending' for new items
             ...manuscript,
         };
         
-        // Force status to be 'queued' regardless of input
-        newItem.status = 'queued';
+        // Force status to be 'pending' regardless of input
+        newItem.status = 'pending';
 
         this.state.items.push(newItem);
         
@@ -427,7 +427,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
         const item = this.state.items.find((item) => item.id === id);
         if (!item || item.status !== 'paused') return false;
 
-        item.status = 'queued';
+        item.status = 'pending';
         this.saveToStorage();
         this.notifyListeners();
         
@@ -494,7 +494,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
         try {
             while (true) {
                 const nextItem = this.state.items.find((item) => {
-                    if (item.status === 'queued' || item.status === 'pending') {
+                    if (item.status === 'pending') {
                         return true;
                     }
                     // Don't auto-retry items that failed with CAPTCHA_REQUIRED
@@ -678,7 +678,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     parentGroups.set(item.parentId, []);
                 }
                 parentGroups.get(item.parentId)!.push(item);
-            } else if (!item.isAutoPart && item.status === 'queued') {
+            } else if (!item.isAutoPart && item.status === 'pending') {
                 // Only recalculate for queued standalone items
                 standaloneItems.push(item);
             }
@@ -694,7 +694,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
         // For each parent group, recalculate splits
         for (const [parentId, parts] of parentGroups) {
             // Only recalculate if all parts are still queued or paused
-            const canRecalculate = parts.every(p => p.status === 'queued' || p.status === 'paused');
+            const canRecalculate = parts.every(p => p.status === 'pending' || p.status === 'paused');
             if (parts.length > 0 && canRecalculate) {
                 this.recalculatePartsForGroup(parentId, parts);
             }
