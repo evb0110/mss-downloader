@@ -75,6 +75,7 @@ npm run lint              # Linting and fixing
 - **Queue State Management**: Always use `status: 'pending'` for items that should be processed. The resume logic only handles 'pending' and 'downloading' statuses. Split items using `status: 'queued'` get stuck in Resume queue.
 - **GitHub Actions Asset Paths**: electron-builder creates platform-specific filenames (e.g., `-arm64.dmg` for macOS), so GitHub Actions workflows must use correct asset path patterns.
 - **Library Issue Verification**: When users report library issues, always verify with comprehensive analysis - implementations may already be working correctly, and the issue could be UI confusion or specific edge cases.
+- **Telegram Bot Management**: (1) Ensure only one bot instance runs to avoid 409 Conflict errors, (2) Always refresh subscriber state (`this.subscribers = this.loadSubscribers()`) before subscription operations, (3) Remove duplicate menu calls from callback handlers to prevent button duplication, (4) Use TypeScript version with proper ES modules.
 
 ### Version Bump Workflow
 When user says "bump" or when completing todos → Follow this workflow:

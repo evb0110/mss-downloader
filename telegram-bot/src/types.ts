@@ -24,10 +24,13 @@ export interface BuildsData {
 }
 
 export interface FileResult {
-  type: 'github_release' | 'cloud' | 'compressed_exe' | 'binary_split' | 'compressed' | 'direct';
+  type: 'github_release' | 'cloud' | 'compressed_exe' | 'binary_split' | 'compressed' | 'direct' | 'url';
   files?: FileInfo[];
   instructions?: string;
   downloadUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  version?: string;
   method?: string;
   originalSize?: number;
   totalSize?: number;
@@ -37,6 +40,7 @@ export interface FileResult {
 
 export interface FileInfo {
   path: string;
+  name?: string;
   part?: string | number;
   totalParts?: number;
 }

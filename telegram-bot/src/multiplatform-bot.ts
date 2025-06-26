@@ -20,11 +20,43 @@ interface TelegramFileHandler {
 }
 
 class SimpleFileHandler implements TelegramFileHandler {
+  private maxFileSize = 50 * 1024 * 1024; // 50MB Telegram limit
+
   async prepareFileForTelegram(filePath: string): Promise<FileResult> {
-    return {
-      type: 'direct',
-      files: [{ path: filePath }]
-    };
+    if (!fs.existsSync(filePath)) {
+      throw new Error('File not found');
+    }
+    
+    const stats = fs.statSync(filePath);
+    const fileName = path.basename(filePath);
+    
+    // If file is under the limit, return as direct
+    if (stats.size <= this.maxFileSize) {
+      return {
+        type: 'direct',
+        files: [{ path: filePath }]
+      };
+    }
+    
+    // For large files, provide GitHub Releases URL
+    try {
+      const packageJsonPath = path.join(__dirname, '..', '..', 'package.json');
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+      const version = packageJson.version;
+      
+      const githubUrl = `https://github.com/evb0110/mss-downloader/releases/download/v${version}/${fileName}`;
+      
+      return {
+        type: 'github_release',
+        downloadUrl: githubUrl,
+        fileName: fileName,
+        fileSize: stats.size,
+        version: version
+      };
+    } catch (error) {
+      console.error('Failed to generate GitHub URL:', error);
+      throw new Error(`File too large (${(stats.size / 1024 / 1024).toFixed(2)}MB) and cannot provide download URL`);
+    }
   }
   
   cleanup(): void {
@@ -43,6 +75,7 @@ export class MultiplatformMSSBot {
   private readonly ADMIN_CHAT_ID = 53582187;
   private readonly isDevelopment: boolean;
   private processedCallbacks: Set<string> = new Set();
+  private processedMessages: Set<string> = new Set();
   private static instance: MultiplatformMSSBot | null = null;
   private isShuttingDown: boolean = false;
 
@@ -161,6 +194,19 @@ export class MultiplatformMSSBot {
     });
     
     this.bot.onText(/\/latest/, (msg) => {
+      const messageId = `${msg.chat.id}_${msg.message_id}_latest`;
+      if (this.processedMessages.has(messageId)) {
+        console.log(`⚠️  Skipping duplicate /latest command from ${msg.chat.id}`);
+        return;
+      }
+      this.processedMessages.add(messageId);
+      
+      // Clean up old messages (keep only last 100)
+      if (this.processedMessages.size > 100) {
+        const oldMessages = Array.from(this.processedMessages).slice(0, 50);
+        oldMessages.forEach(id => this.processedMessages.delete(id));
+      }
+      
       this.handleLatest(msg.chat.id);
     });
     
@@ -414,6 +460,17 @@ export class MultiplatformMSSBot {
       return;
     }
     
+    if (data.startsWith('latest_platform_')) {
+      const platform = data.replace('latest_platform_', '') as Platform;
+      await this.handleLatestPlatform(chatId, platform);
+      return;
+    }
+    
+    if (data === 'latest_all_platforms') {
+      await this.handleLatestPlatform(chatId, 'all');
+      return;
+    }
+    
     if (data.startsWith('subscribe_')) {
       const platform = data.replace('subscribe_', '') as Platform | 'all';
       await this.handleSubscribe(chatId, user, platform, messageId);
@@ -614,8 +671,11 @@ export class MultiplatformMSSBot {
   }
   
   private async handleLatest(chatId: number): Promise<void> {
+    console.log(`📦 Handling /latest command for chat ${chatId}`);
+    const startTime = Date.now();
     const { version, builds } = this.findLatestBuilds();
-    const subscriber = this.getSubscriber(chatId);
+    const buildTime = Date.now() - startTime;
+    console.log(`📦 Build detection took ${buildTime}ms, found ${Object.keys(builds).length} builds for v${version}`);
     
     if (Object.keys(builds).length === 0) {
       const messageText = [
@@ -623,52 +683,115 @@ export class MultiplatformMSSBot {
         '',
         '❌ No build files found. Builds may be in progress.',
         '',
-        subscriber ? 'You\'ll be notified when new builds are available!' : 'Subscribe to get notified about new builds!'
+        'You\'ll be notified when new builds are available!'
       ].join('\n');
       
       this.bot.sendMessage(chatId, messageText, { parse_mode: 'HTML' });
-      /* Removed duplicate main menu call - this was causing menu duplication */
       return;
     }
     
+    const keyboard = {
+      inline_keyboard: [
+        ...Object.keys(builds).map(platform => ([{
+          text: `${this.platforms[platform as Platform].emoji} ${this.platforms[platform as Platform].name}`,
+          callback_data: `latest_platform_${platform}`
+        }])),
+        [{ text: '📥 All Platforms', callback_data: 'latest_all_platforms' }],
+        [{ text: '🔙 Main Menu', callback_data: 'main_menu' }]
+      ]
+    };
+    
+    const messageText = [
+      `📦 <b>Latest Builds: v${version}</b>`,
+      '',
+      'Choose a platform to download:'
+    ].join('\n');
+    
     try {
-      const messageParts = [`📦 <b>Latest Builds: v${version}</b>`, ''];
-      
-      for (const [platform, build] of Object.entries(builds)) {
-        const platformKey = platform as Platform;
-        messageParts.push(
-          `${this.platforms[platformKey].emoji} <b>${this.platforms[platformKey].name}</b>`,
-          `📁 ${build.name}`,
-          `📊 Size: ${build.size} MB`,
-          ''
-        );
+      await this.bot.sendMessage(chatId, messageText, {
+        reply_markup: keyboard,
+        parse_mode: 'HTML'
+      });
+      console.log(`✅ Successfully sent /latest menu to chat ${chatId}`);
+    } catch (error) {
+      console.error(`❌ Error sending /latest menu to chat ${chatId}:`, error);
+      // Send a simple text message as fallback
+      try {
+        await this.bot.sendMessage(chatId, `📦 Latest Builds: v${version}\n\n❌ Menu display error. Use /help for alternatives.`);
+      } catch (fallbackError) {
+        console.error(`❌ Fallback message also failed:`, fallbackError);
       }
+    }
+  }
+  
+  private async handleLatestPlatform(chatId: number, platform: Platform | 'all'): Promise<void> {
+    const { version, builds } = this.findLatestBuilds();
+    
+    if (Object.keys(builds).length === 0) {
+      const messageText = [
+        `📦 Latest version: v${version}`,
+        '',
+        '❌ No build files found. Builds may be in progress.',
+        '',
+        'You\'ll be notified when new builds are available!'
+      ].join('\n');
       
-      messageParts.push(subscriber ? 'Files will be sent to you shortly...' : 'Subscribe to get automatic notifications of new builds!');
-      
-      await this.bot.sendMessage(chatId, messageParts.join('\n'), { parse_mode: 'HTML' });
-      
-      // Send files
-      for (const [platform, build] of Object.entries(builds)) {
-        const platformKey = platform as Platform;
+      this.bot.sendMessage(chatId, messageText, { parse_mode: 'HTML' });
+      return;
+    }
+    
+    if (platform === 'all') {
+      // Send all platform builds
+      for (const [platformKey, build] of Object.entries(builds)) {
+        const plt = platformKey as Platform;
         try {
+          const messageText = [
+            `📦 <b>Latest ${this.platforms[plt].name} Build: v${version}</b>`,
+            '',
+            `${this.platforms[plt].emoji} <b>${this.platforms[plt].name}</b>`,
+            `📁 ${build.name}`,
+            `📊 Size: ${build.size} MB`
+          ].join('\n');
+          
           const fileResult = await this.fileHandler.prepareFileForTelegram(build.file);
-          await this.sendFileToSubscriber(chatId, `${this.platforms[platformKey].emoji} ${this.platforms[platformKey].name}:`, fileResult);
+          await this.sendFileToSubscriber(chatId, messageText, fileResult);
           await new Promise(resolve => setTimeout(resolve, 1000));
         } catch (error) {
-          console.error(`Error sending ${platform} build:`, error);
-          await this.bot.sendMessage(chatId, `❌ Error preparing ${this.platforms[platformKey].name} build for delivery.`, { parse_mode: 'HTML' });
+          console.error(`Error sending ${platformKey} build:`, error);
+          await this.bot.sendMessage(chatId, `❌ Error preparing ${this.platforms[plt].name} build for delivery.`, { parse_mode: 'HTML' });
         }
       }
+    } else {
+      // Send specific platform build
+      const build = builds[platform];
+      if (!build) {
+        this.bot.sendMessage(chatId, `❌ No ${this.platforms[platform].name} build found for v${version}.`, { parse_mode: 'HTML' });
+        return;
+      }
       
-      this.fileHandler.cleanup();
-      /* Removed duplicate main menu call - this was causing menu duplication */
-      
-    } catch (error) {
-      console.error('Error in handleLatest:', error);
-      this.bot.sendMessage(chatId, '❌ Error retrieving latest builds.', { parse_mode: 'HTML' });
-      /* Removed duplicate main menu call - this was causing menu duplication */
+      try {
+        const messageText = [
+          `📦 <b>Latest ${this.platforms[platform].name} Build: v${version}</b>`,
+          '',
+          `${this.platforms[platform].emoji} <b>${this.platforms[platform].name}</b>`,
+          `📁 ${build.name}`,
+          `📊 Size: ${build.size} MB`
+        ].join('\n');
+        
+        console.log(`🔄 Processing ${platform} build file: ${build.file}`);
+        const fileResult = await this.fileHandler.prepareFileForTelegram(build.file);
+        console.log(`📁 File result type: ${fileResult.type}, hasDownloadUrl: ${!!fileResult.downloadUrl}`);
+        await this.sendFileToSubscriber(chatId, messageText, fileResult);
+        console.log(`✅ Successfully sent ${platform} build to chat ${chatId}`);
+      } catch (error) {
+        console.error(`❌ Error sending ${platform} build:`, error);
+        console.error(`❌ Error stack:`, error instanceof Error ? error.stack : 'No stack trace');
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        await this.bot.sendMessage(chatId, `❌ Error preparing ${this.platforms[platform].name} build for delivery: ${errorMessage}`, { parse_mode: 'HTML' });
+      }
     }
+    
+    this.fileHandler.cleanup();
   }
   
   async notifySubscribers(message: string, builds: Partial<Record<Platform, BuildInfo>> = {}, testMode: boolean = false): Promise<void> {

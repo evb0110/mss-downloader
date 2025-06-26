@@ -3,7 +3,12 @@
     "chatId": 53582187,
     "username": "evb0110",
     "subscribedAt": "2025-06-17T17:47:39.953Z",
-    "platforms": []
+    "platforms": [
+      "amd64",
+      "arm64",
+      "linux",
+      "mac"
+    ]
   },
   {
     "chatId": 7585343382,

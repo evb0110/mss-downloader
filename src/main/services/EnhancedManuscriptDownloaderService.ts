@@ -3257,6 +3257,8 @@ export class EnhancedManuscriptDownloaderService {
 
     async loadRbmeManifest(rbmeUrl: string): Promise<ManuscriptManifest> {
         try {
+            console.log(`Loading RBME manuscript: ${rbmeUrl}`);
+            
             // Extract the item ID from the URL
             // Pattern: https://rbme.patrimonionacional.es/s/rbme/item/14374
             const idMatch = rbmeUrl.match(/\/item\/(\d+)/);
@@ -3264,30 +3266,87 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('Invalid RBME URL format - could not extract item ID');
             }
             
-            // Fetch the RBME page to extract the manifest URL
-            const pageResponse = await this.fetchDirect(rbmeUrl);
-            if (!pageResponse.ok) {
-                throw new Error(`Failed to fetch RBME page: HTTP ${pageResponse.status}`);
-            }
+            const itemId = idMatch[1];
+            console.log(`Extracted RBME item ID: ${itemId}`);
             
-            const pageContent = await pageResponse.text();
+            // Fetch the RBME page to extract the manifest URL with timeout
+            console.log('Fetching RBME page content...');
+            const pageController = new AbortController();
+            const pageTimeoutId = setTimeout(() => {
+                pageController.abort();
+                console.error(`RBME page request timed out after 30 seconds for item: ${itemId}`);
+            }, 30000); // 30 second timeout
+            
+            let pageContent: string;
+            try {
+                const pageResponse = await this.fetchDirect(rbmeUrl, {
+                    signal: pageController.signal,
+                    headers: {
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                clearTimeout(pageTimeoutId);
+                
+                if (!pageResponse.ok) {
+                    throw new Error(`Failed to fetch RBME page: HTTP ${pageResponse.status} ${pageResponse.statusText}`);
+                }
+                
+                pageContent = await pageResponse.text();
+                console.log(`RBME page content loaded, length: ${pageContent.length}`);
+                
+            } catch (pageError: any) {
+                clearTimeout(pageTimeoutId);
+                if (pageError.name === 'AbortError') {
+                    throw new Error('RBME page request timed out. The server may be experiencing high load.');
+                }
+                throw pageError;
+            }
             
             // Extract manifest URL from the page content
             // Look for manifest URL in Universal Viewer configuration or meta tags
             const manifestMatch = pageContent.match(/(?:manifest["']?\s*:\s*["']|"manifest"\s*:\s*["'])(https:\/\/rbdigital\.realbiblioteca\.es\/files\/manifests\/[^"']+)/);
             if (!manifestMatch) {
+                console.error('Failed to find manifest URL in page content');
+                console.log('Page content preview:', pageContent.substring(0, 500));
                 throw new Error('Could not find IIIF manifest URL in RBME page');
             }
             
             const manifestUrl = manifestMatch[1];
+            console.log(`Found RBME manifest URL: ${manifestUrl}`);
             
-            // Fetch the IIIF manifest
-            const manifestResponse = await this.fetchDirect(manifestUrl);
-            if (!manifestResponse.ok) {
-                throw new Error(`Failed to fetch RBME manifest: HTTP ${manifestResponse.status}`);
+            // Fetch the IIIF manifest with timeout
+            const manifestController = new AbortController();
+            const manifestTimeoutId = setTimeout(() => {
+                manifestController.abort();
+                console.error(`RBME manifest request timed out after 30 seconds: ${manifestUrl}`);
+            }, 30000); // 30 second timeout
+            
+            let iiifManifest: any;
+            try {
+                const manifestResponse = await this.fetchDirect(manifestUrl, {
+                    signal: manifestController.signal,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                clearTimeout(manifestTimeoutId);
+                
+                if (!manifestResponse.ok) {
+                    throw new Error(`Failed to fetch RBME manifest: HTTP ${manifestResponse.status} ${manifestResponse.statusText}`);
+                }
+                
+                iiifManifest = await manifestResponse.json();
+                console.log(`RBME manifest loaded successfully for item: ${itemId}`);
+                
+            } catch (manifestError: any) {
+                clearTimeout(manifestTimeoutId);
+                if (manifestError.name === 'AbortError') {
+                    throw new Error('RBME manifest request timed out. The server may be experiencing high load.');
+                }
+                throw manifestError;
             }
-            
-            const iiifManifest = await manifestResponse.json();
             
             if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
                 throw new Error('Invalid IIIF manifest structure');
@@ -3430,6 +3489,8 @@ export class EnhancedManuscriptDownloaderService {
      */
     async loadManuscriptaManifest(manuscriptaUrl: string): Promise<ManuscriptManifest> {
         try {
+            console.log(`Loading Manuscripta.se manuscript: ${manuscriptaUrl}`);
+            
             // Extract manuscript ID from URL: https://manuscripta.se/ms/101124 -> 101124
             const idMatch = manuscriptaUrl.match(/\/ms\/(\d+)/);
             if (!idMatch) {
@@ -3441,18 +3502,45 @@ export class EnhancedManuscriptDownloaderService {
             
             console.log(`Loading Manuscripta.se manifest from: ${manifestUrl}`);
             
-            const manifestResponse = await this.fetchWithProxyFallback(manifestUrl, {
-                headers: {
-                    'Accept': 'application/json',
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            // Add timeout and enhanced error handling for Manuscripta.se
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => {
+                controller.abort();
+                console.error(`Manuscripta.se manifest request timed out after 30 seconds for ID: ${manuscriptId}`);
+            }, 30000); // 30 second timeout
+            
+            let iiifManifest: any;
+            try {
+                const manifestResponse = await this.fetchWithProxyFallback(manifestUrl, {
+                    signal: controller.signal,
+                    headers: {
+                        'Accept': 'application/json',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                clearTimeout(timeoutId);
+                
+                if (!manifestResponse.ok) {
+                    throw new Error(`Failed to fetch Manuscripta.se manifest: HTTP ${manifestResponse.status} ${manifestResponse.statusText}`);
                 }
-            });
-            
-            if (!manifestResponse.ok) {
-                throw new Error(`Failed to fetch Manuscripta.se manifest: HTTP ${manifestResponse.status}`);
+                
+                iiifManifest = await manifestResponse.json();
+                
+                // Validate manifest structure
+                if (!iiifManifest) {
+                    throw new Error('Empty manifest received from Manuscripta.se');
+                }
+                
+                console.log(`Manuscripta.se manifest loaded successfully for ID: ${manuscriptId}`);
+                
+            } catch (fetchError: any) {
+                clearTimeout(timeoutId);
+                if (fetchError.name === 'AbortError') {
+                    throw new Error('Manuscripta.se manifest request timed out. The server may be experiencing high load.');
+                }
+                throw fetchError;
             }
-            
-            const iiifManifest = await manifestResponse.json();
             
             // Extract title from manifest
             let displayName = 'Manuscripta_' + manuscriptId;
@@ -4442,50 +4530,99 @@ export class EnhancedManuscriptDownloaderService {
             // Determine service path (public for fe, private for be)
             const servicePath = pathType === 'fe' ? 'public' : 'private';
             
-            // Fetch pages JSON from BDL API
+            // Fetch pages JSON from BDL API with enhanced timeout
             const pagesApiUrl = `https://www.bdl.servizirl.it/bdl/${servicePath}/rest/json/item/${manuscriptId}/bookreader/pages`;
             console.log(`Fetching pages from: ${pagesApiUrl}`);
             
-            const response = await this.fetchWithProxyFallback(pagesApiUrl);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch BDL pages: HTTP ${response.status}`);
-            }
+            // Add timeout and retry logic for BDL API call
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => {
+                controller.abort();
+                console.error('BDL API request timed out after 30 seconds');
+            }, 30000); // 30 second timeout for manifest loading
             
-            const pagesData = await response.json();
-            
-            if (!Array.isArray(pagesData) || pagesData.length === 0) {
-                throw new Error('Invalid or empty pages data from BDL API');
-            }
-            
-            console.log(`Found ${pagesData.length} pages in BDL manuscript`);
-            
-            // Extract image URLs from pages data
-            const pageLinks: string[] = [];
-            
-            for (const page of pagesData) {
-                if (page.idMediaServer) {
-                    // Construct IIIF URL for full resolution image
-                    const imageUrl = `https://www.bdl.servizirl.it/cantaloupe/iiif/2/${page.idMediaServer}/full/full/0/default.jpg`;
-                    pageLinks.push(imageUrl);
-                } else {
-                    console.warn(`Page ${page.id} missing idMediaServer, skipping`);
+            try {
+                const response = await this.fetchWithProxyFallback(pagesApiUrl, {
+                    signal: controller.signal,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch BDL pages: HTTP ${response.status} ${response.statusText}`);
                 }
+                
+                const pagesData = await response.json();
+                
+                if (!Array.isArray(pagesData) || pagesData.length === 0) {
+                    throw new Error('Invalid or empty pages data from BDL API');
+                }
+                
+                console.log(`Found ${pagesData.length} pages in BDL manuscript`);
+                
+                // Extract image URLs from pages data with validation
+                const pageLinks: string[] = [];
+                
+                for (const page of pagesData) {
+                    if (page.idMediaServer) {
+                        // Construct IIIF URL for full resolution image
+                        const imageUrl = `https://www.bdl.servizirl.it/cantaloupe/iiif/2/${page.idMediaServer}/full/full/0/default.jpg`;
+                        pageLinks.push(imageUrl);
+                    } else {
+                        console.warn(`Page ${page.id || 'unknown'} missing idMediaServer, skipping`);
+                    }
+                }
+                
+                if (pageLinks.length === 0) {
+                    throw new Error('No valid image URLs found in BDL pages data');
+                }
+                
+                // Validate first image URL to ensure it's accessible
+                console.log('Validating first image URL...');
+                const firstImageController = new AbortController();
+                const firstImageTimeoutId = setTimeout(() => {
+                    firstImageController.abort();
+                }, 10000); // 10 second timeout for validation
+                
+                try {
+                    const firstImageResponse = await fetch(pageLinks[0], {
+                        method: 'HEAD',
+                        signal: firstImageController.signal
+                    });
+                    clearTimeout(firstImageTimeoutId);
+                    
+                    if (!firstImageResponse.ok) {
+                        console.warn(`First image validation failed: HTTP ${firstImageResponse.status}`);
+                    } else {
+                        console.log('First image URL validated successfully');
+                    }
+                } catch (validationError) {
+                    clearTimeout(firstImageTimeoutId);
+                    console.warn('First image validation failed:', validationError);
+                    // Don't fail the entire process, just log the warning
+                }
+                
+                const displayName = `BDL_${manuscriptId}`;
+                console.log(`Generated ${pageLinks.length} page URLs for "${displayName}"`);
+                
+                return {
+                    pageLinks,
+                    totalPages: pageLinks.length,
+                    library: 'bdl',
+                    displayName,
+                    originalUrl: bdlUrl
+                };
+                
+            } catch (fetchError: any) {
+                clearTimeout(timeoutId);
+                if (fetchError.name === 'AbortError') {
+                    throw new Error('BDL API request timed out. The server may be experiencing high load.');
+                }
+                throw fetchError;
             }
-            
-            if (pageLinks.length === 0) {
-                throw new Error('No valid image URLs found in BDL pages data');
-            }
-            
-            const displayName = `BDL_${manuscriptId}`;
-            console.log(`Generated ${pageLinks.length} page URLs for "${displayName}"`);
-            
-            return {
-                pageLinks,
-                totalPages: pageLinks.length,
-                library: 'bdl',
-                displayName,
-                originalUrl: bdlUrl
-            };
             
         } catch (error: any) {
             console.error('Error loading BDL manuscript manifest:', error);

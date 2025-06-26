@@ -523,6 +523,29 @@ export class DownloadQueue extends EventEmitter {
         this.saveToStorage();
         this.notifyListeners();
         
+        // Add timeout monitoring for downloads (15 minutes max)
+        const DOWNLOAD_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+        
+        const timeoutId = setTimeout(() => {
+            if (item.status === 'downloading') {
+                console.error(`Download timeout detected for item ${item.id} after ${DOWNLOAD_TIMEOUT_MS / 1000} seconds`);
+                item.status = 'failed';
+                item.error = `Download timeout - exceeded 15 minutes. This may indicate a server issue or infinite loop.`;
+                item.progress = undefined;
+                this.saveToStorage();
+                this.notifyListeners();
+                
+                // Attempt to abort current downloader
+                if (this.currentDownloader) {
+                    try {
+                        this.currentDownloader.abort();
+                    } catch (abortError) {
+                        console.warn('Failed to abort downloader:', abortError);
+                    }
+                }
+            }
+        }, DOWNLOAD_TIMEOUT_MS);
+        
         try {
             this.currentDownloader = new ManuscriptDownloaderService(this.pdfMerger);
             
@@ -555,6 +578,13 @@ export class DownloadQueue extends EventEmitter {
             let lastProgressUpdate = 0;
             let lastPercentage = -1;
             
+            // Add special handling for Manuscripta.se to prevent infinite loops
+            const isManuscriptaSe = manifest.library === 'manuscripta';
+            
+            if (isManuscriptaSe) {
+                console.log(`Processing Manuscripta.se download with enhanced monitoring: ${item.displayName}`);
+            }
+            
             await this.currentDownloader.downloadManuscriptPagesWithOptions(selectedPageLinks, {
                 displayName: manifest.displayName,
                 startPage,
@@ -568,6 +598,12 @@ export class DownloadQueue extends EventEmitter {
 
                         if (shouldUpdate) {
                             const actualCurrentPage = startPage + progress.downloadedPages - 1;
+                            
+                            // Special logging for Manuscripta.se to track progress
+                            if (isManuscriptaSe) {
+                                console.log(`Manuscripta.se progress: ${progress.downloadedPages}/${pageCount} (${calculatedPercentage}%)`);
+                            }
+                            
                             item.progress = {
                                 current: progress.downloadedPages,
                                 total: pageCount,
@@ -609,6 +645,7 @@ export class DownloadQueue extends EventEmitter {
                 item.progress = undefined;
             }
         } finally {
+            clearTimeout(timeoutId);
             this.currentDownloader = null;
         }
         
@@ -637,6 +674,30 @@ export class DownloadQueue extends EventEmitter {
         
         this.saveToStorage();
         this.notifyListeners();
+        
+        // Add timeout monitoring for concurrent downloads (15 minutes max)
+        const DOWNLOAD_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+        
+        const timeoutId = setTimeout(() => {
+            if (item.status === 'downloading') {
+                console.error(`Concurrent download timeout detected for item ${item.id} after ${DOWNLOAD_TIMEOUT_MS / 1000} seconds`);
+                item.status = 'failed';
+                item.error = `Download timeout - exceeded 15 minutes. This may indicate a server issue or infinite loop.`;
+                item.progress = undefined;
+                this.saveToStorage();
+                this.notifyListeners();
+                
+                // Attempt to abort downloader
+                const downloader = this.activeDownloaders.get(item.id);
+                if (downloader) {
+                    try {
+                        downloader.abort();
+                    } catch (abortError) {
+                        console.warn('Failed to abort concurrent downloader:', abortError);
+                    }
+                }
+            }
+        }, DOWNLOAD_TIMEOUT_MS);
         
         const downloader = new ManuscriptDownloaderService(this.pdfMerger);
         this.activeDownloaders.set(item.id, downloader);
@@ -723,6 +784,7 @@ export class DownloadQueue extends EventEmitter {
                 item.progress = undefined;
             }
         } finally {
+            clearTimeout(timeoutId);
             // Remove from active downloads
             this.activeDownloaders.delete(item.id);
             if (this.state.activeItemIds) {
@@ -847,20 +909,48 @@ export class DownloadQueue extends EventEmitter {
         selectedPageLinks: string[]
     ): Promise<boolean> {
         try {
+            // Update status to indicate we're checking document size
+            item.progress = {
+                current: 0,
+                total: 1,
+                percentage: 0,
+                eta: 'Checking document size...',
+                stage: 'processing' as TStage,
+            };
+            this.saveToStorage();
+            this.notifyListeners();
+            
             // Download first page to get actual size estimation
             const firstPageUrl = selectedPageLinks[0];
             if (!firstPageUrl) return false;
             
+            console.log(`Checking document size for ${manifest.library} manuscript: ${manifest.displayName}`);
             const firstPageBuffer = await this.downloadSinglePage(firstPageUrl);
             
             const firstPageSizeMB = firstPageBuffer.length / (1024 * 1024);
             const estimatedTotalSizeMB = firstPageSizeMB * manifest.totalPages;
             
+            console.log(`Size estimation: ${firstPageSizeMB.toFixed(2)}MB per page, ${estimatedTotalSizeMB.toFixed(2)}MB total`);
+            
             if (estimatedTotalSizeMB > this.state.globalSettings.autoSplitThresholdMB) {
+                console.log(`Document will be auto-split due to size (${estimatedTotalSizeMB.toFixed(2)}MB > ${this.state.globalSettings.autoSplitThresholdMB}MB)`);
+                
+                // Update status to indicate splitting
+                item.progress = {
+                    current: 0,
+                    total: 1,
+                    percentage: 50,
+                    eta: 'Splitting large document...',
+                    stage: 'processing' as TStage,
+                };
+                this.saveToStorage();
+                this.notifyListeners();
+                
                 await this.splitQueueItem(item, manifest, estimatedTotalSizeMB);
                 return true;
             }
             
+            console.log(`Document size OK (${estimatedTotalSizeMB.toFixed(2)}MB), no splitting needed`);
             return false;
         } catch (error) {
             console.error('Error checking document size:', error);
@@ -877,10 +967,14 @@ export class DownloadQueue extends EventEmitter {
         const numberOfParts = Math.ceil(estimatedSizeMB / thresholdMB);
         const pagesPerPart = Math.ceil(manifest.totalPages / numberOfParts);
         
+        console.log(`Splitting ${manifest.displayName} into ${numberOfParts} parts (${pagesPerPart} pages each)`);
+        console.log(`Original size: ${estimatedSizeMB.toFixed(2)}MB, Threshold: ${thresholdMB}MB`);
+        
         // Remove original item from queue
         const originalIndex = this.state.items.findIndex(item => item.id === originalItem.id);
         if (originalIndex !== -1) {
             this.state.items.splice(originalIndex, 1);
+            console.log(`Removed original item "${originalItem.displayName}" from queue`);
         }
         
         // Create parts
@@ -916,8 +1010,10 @@ export class DownloadQueue extends EventEmitter {
             
             // Insert part at the original position + i
             this.state.items.splice(originalIndex + i, 0, partItem);
+            console.log(`Created part ${partNumber}/${numberOfParts}: "${partItem.displayName}" (pages ${startPage}-${endPage})`);
         }
         
+        console.log(`Document splitting completed: ${numberOfParts} parts created and added to queue`);
         this.saveToStorage();
         this.notifyListeners();
     }

@@ -1,5 +1,17 @@
 # Completed TODOs
 
+## v1.3.37 Completed Tasks - Critical Telegram Bot Fixes & Library Download Issues
+
+- ✅ **Fix BDL Servizi RL manuscript download issue - finds manifest but doesn't proceed** - FIXED: Enhanced BDL Servizi RL implementation with 30-second timeout for manifest loading, improved error handling with specific abort detection, first image URL validation, and comprehensive logging. Added enhanced timeout and retry logic for both API calls and image validation to prevent hanging after manifest detection.
+
+- ✅ **Fix Manuscripta.se infinite loop issue - downloads but gets stuck in loop mode** - FIXED: Added 15-minute timeout monitoring for all downloads to prevent infinite processing loops. Enhanced progress tracking with specific Manuscripta.se logging, improved error handling with abort mechanisms, and timeout detection with automatic recovery. System now properly transitions to 'completed' status and prevents endless processing cycles.
+
+- ✅ **Fix RBME file splitting display issue - shows as single file but creates multiple parts** - FIXED: Enhanced auto-splitting logic with detailed progress reporting and user-visible status updates. Added "Checking document size..." and "Splitting large document..." status messages, improved logging to show splitting decisions and part creation details, and better notification system when documents are automatically divided into multiple parts with clear page range indicators.
+
+## v1.3.37 Completed Tasks - Critical Telegram Bot Fixes
+
+- ✅ **CRITICAL: Fix Telegram bot unresponsive commands and button functionality** - FIXED: Completely resolved the critical Telegram bot issues causing 28-minute command delays and non-functional buttons. Root causes identified: (1) Multiple bot instances running simultaneously causing 409 Conflict errors, (2) Button duplication bug in callback handlers creating duplicate menus instead of processing actions, (3) Subscription state inconsistency due to stale in-memory data. Fixes implemented: (1) Cleaned up all processes and ensured only TypeScript bot instance runs, (2) Removed duplicate menu calls from `handleSubscribe()`, `handleUnsubscribe()`, and related methods, (3) Added state refresh (`this.subscribers = this.loadSubscribers()`) before all subscription operations, (4) Enhanced callback deduplication using callback ID instead of timestamp, (5) Improved error handling and user feedback. Bot now responds immediately to commands, processes button clicks correctly without duplication, and maintains consistent subscription states.
+
 ## v1.3.36 Completed Tasks - Critical Infrastructure and Bug Fixes
 
 - ✅ **CRITICAL: Fix macOS version deployment - no macOS version available from bot** - FIXED: Identified and fixed the GitHub Actions workflow issue where macOS DMG files weren't being uploaded to releases. The problem was that electron-builder creates ARM64-specific DMG files with `-arm64` suffix (`Abba Ababus (MSS Downloader)-1.3.35-arm64.dmg`), but the workflow was looking for files without the suffix. Updated the GitHub Actions workflow to use the correct asset path pattern and filename format. Also updated the BuildUtils to properly detect ARM64 DMG files. macOS versions will now be available in future releases.
