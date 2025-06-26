@@ -595,12 +595,31 @@ export class EnhancedDownloadQueue extends EventEmitter {
             });
 
             if (result.success) {
-                item.status = 'completed';
-                item.completedAt = Date.now();
-                item.progress = 1;
-                item.outputPath = result.filepath;
-                // Do NOT update totalPages here - it should always reflect the manifest total, not download count
+                // Verify the output file actually exists before marking as completed
+                const fs = await import('fs/promises');
+                const path = await import('path');
                 
+                try {
+                    // Check if file exists and has reasonable size
+                    const stats = await fs.stat(result.filepath);
+                    const minExpectedSize = Math.max(1024 * 100, (item.totalPages || 1) * 50 * 1024); // At least 100KB or ~50KB per page
+                    
+                    if (stats.size < minExpectedSize) {
+                        throw new Error(`Output file too small: ${stats.size} bytes (expected at least ${minExpectedSize})`);
+                    }
+                    
+                    console.log(`✅ Download verified: ${path.basename(result.filepath)} (${(stats.size / (1024 * 1024)).toFixed(1)}MB)`);
+                    
+                    item.status = 'completed';
+                    item.completedAt = Date.now();
+                    item.progress = 1;
+                    item.outputPath = result.filepath;
+                    // Do NOT update totalPages here - it should always reflect the manifest total, not download count
+                    
+                } catch (verificationError: any) {
+                    console.error(`❌ File verification failed for ${item.title}:`, verificationError.message);
+                    throw new Error(`Download appeared successful but file verification failed: ${verificationError.message}`);
+                }
             } else {
                 throw new Error('Download failed without specific error');
             }

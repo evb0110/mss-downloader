@@ -1739,6 +1739,7 @@ export class EnhancedManuscriptDownloaderService {
                     await fs.access(imgPath);
                     // Mark path for skipped file
                     imagePaths[pageIndex] = imgPath;
+                    completedPages++; // Count cached files as completed
                 } catch {
                     // Not present: fetch and write
                     try {
@@ -1747,16 +1748,15 @@ export class EnhancedManuscriptDownloaderService {
                         writePromises.push(writePromise);
                         // Only mark path if download succeeded
                         imagePaths[pageIndex] = imgPath;
+                        completedPages++; // Only increment on successful download
                     } catch (error: any) {
                         console.error(`\n❌ Failed to download page ${pageIndex + 1}: ${error.message}`);
                         // Track failed page
                         failedPages.push(pageIndex + 1);
                         // Don't mark path for failed downloads
+                        // Don't increment completedPages for failures
                     }
                 }
-                
-                // Always increment completed pages to track overall progress
-                completedPages++;
                 updateProgress();
             };
             
@@ -1789,6 +1789,18 @@ export class EnhancedManuscriptDownloaderService {
             
             if (validImagePaths.length === 0) {
                 throw new Error('No images were successfully downloaded');
+            }
+            
+            // Enhanced validation for manuscripta.se to prevent infinite loops
+            if (manifest.library === 'manuscripta') {
+                const successRate = validImagePaths.length / totalPagesToDownload;
+                const minSuccessRate = 0.8; // At least 80% success rate required
+                
+                if (successRate < minSuccessRate) {
+                    throw new Error(`Manuscripta.se download had low success rate: ${Math.round(successRate * 100)}% (${validImagePaths.length}/${totalPagesToDownload} pages). Minimum ${Math.round(minSuccessRate * 100)}% required to prevent infinite loops.`);
+                }
+                
+                console.log(`✅ Manuscripta.se validation passed: ${Math.round(successRate * 100)}% success rate (${validImagePaths.length}/${totalPagesToDownload} pages)`);
             }
             
             validImagePaths.sort((a, b) => {
@@ -1956,7 +1968,7 @@ export class EnhancedManuscriptDownloaderService {
         
         if (allPdfBytes.length === 1) {
             // Single batch, just write it
-            await fs.writeFile(outputPath, allPdfBytes[0]);
+            await this.writeFileWithVerification(outputPath, allPdfBytes[0]);
         } else {
             // Multiple batches, merge them
             const finalPdfDoc = await PDFDocument.create();
@@ -1975,7 +1987,7 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             const finalPdfBytes = await finalPdfDoc.save();
-            await fs.writeFile(outputPath, finalPdfBytes);
+            await this.writeFileWithVerification(outputPath, finalPdfBytes);
         }
         
     }
@@ -4630,5 +4642,40 @@ export class EnhancedManuscriptDownloaderService {
         }
     }
 
+    /*
+     * Write file with atomic operation and verification
+     */
+    private async writeFileWithVerification(outputPath: string, data: Buffer): Promise<void> {
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        
+        // Use atomic write pattern: write to temp file, then rename
+        const tempPath = `${outputPath}.tmp`;
+        
+        try {
+            // Write to temporary file first
+            await fs.writeFile(tempPath, data);
+            
+            // Verify the temp file was written correctly
+            const stats = await fs.stat(tempPath);
+            if (stats.size !== data.length) {
+                throw new Error(`File size mismatch: wrote ${data.length} bytes, got ${stats.size} bytes`);
+            }
+            
+            // Atomically move temp file to final location
+            await fs.rename(tempPath, outputPath);
+            
+            console.log(`✅ File written and verified: ${path.basename(outputPath)} (${(stats.size / (1024 * 1024)).toFixed(1)}MB)`);
+            
+        } catch (error: any) {
+            // Clean up temp file if it exists
+            try {
+                await fs.unlink(tempPath);
+            } catch {
+                // Ignore cleanup errors
+            }
+            throw new Error(`File write verification failed: ${error.message}`);
+        }
+    }
 
 }
