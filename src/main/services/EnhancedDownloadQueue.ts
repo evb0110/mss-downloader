@@ -617,7 +617,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     // Do NOT update totalPages here - it should always reflect the manifest total, not download count
                     
                 } catch (verificationError: any) {
-                    console.error(`❌ File verification failed for ${item.title}:`, verificationError.message);
+                    console.error(`❌ File verification failed for ${item.displayName}:`, verificationError.message);
                     throw new Error(`Download appeared successful but file verification failed: ${verificationError.message}`);
                 }
             } else {

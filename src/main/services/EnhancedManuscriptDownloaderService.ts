@@ -1968,7 +1968,7 @@ export class EnhancedManuscriptDownloaderService {
         
         if (allPdfBytes.length === 1) {
             // Single batch, just write it
-            await this.writeFileWithVerification(outputPath, allPdfBytes[0]);
+            await this.writeFileWithVerification(outputPath, Buffer.from(allPdfBytes[0]));
         } else {
             // Multiple batches, merge them
             const finalPdfDoc = await PDFDocument.create();
@@ -1987,7 +1987,7 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             const finalPdfBytes = await finalPdfDoc.save();
-            await this.writeFileWithVerification(outputPath, finalPdfBytes);
+            await this.writeFileWithVerification(outputPath, Buffer.from(finalPdfBytes));
         }
         
     }
