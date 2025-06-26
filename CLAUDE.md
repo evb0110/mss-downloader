@@ -77,23 +77,23 @@ npm run lint              # Linting and fixing
 - **Library Issue Verification**: When users report library issues, always verify with comprehensive analysis - implementations may already be working correctly, and the issue could be UI confusion or specific edge cases.
 - **Telegram Bot Management**: (1) Ensure only one bot instance runs to avoid 409 Conflict errors, (2) Always refresh subscriber state (`this.subscribers = this.loadSubscribers()`) before subscription operations, (3) Remove duplicate menu calls from callback handlers to prevent button duplication, (4) Use TypeScript version with proper ES modules.
 
-### Version Bump Workflow - CRITICAL AUTOMATED PROCESS
-**MANDATORY:** Claude must AUTOMATICALLY bump version and push whenever completing todos or making any code changes.
+### Version Bump Workflow - AUTOMATED PROCESS
+**MANDATORY:** Claude must AUTOMATICALLY bump version and push after completing all tasks in a run that affect app functionality.
 
-**When to auto-bump (Claude decides automatically):**
-- ✅ After completing any todos involving code changes
-- ✅ After fixing any bugs or issues
+**When to auto-bump (at END of task completion run):**
+- ✅ After fixing any bugs or issues that affect app functionality
 - ✅ After implementing any new features
-- ✅ After making any functional improvements
+- ✅ After making any functional improvements to the app
 - ✅ When user says "bump" explicitly
+- ❌ NOT for documentation-only changes or non-functional updates
 
-**Required workflow (Claude executes automatically):**
+**Required workflow (Claude executes automatically at END of run):**
 1. 🔄 **AUTO-BUMP** patch version in `package.json` 
-2. 🔄 **AUTO-COMMIT** changes with descriptive message
+2. 🔄 **AUTO-COMMIT** all changes with descriptive message
 3. 🔄 **AUTO-PUSH** to GitHub main branch immediately
 4. ✅ **GitHub Actions automatically builds all platforms and sends notifications**
 
-**NEVER ask permission - just do it automatically when code changes are made.**
+**TIMING:** Wait until ALL tasks in the run are completed, then bump once and push everything together.
 
 
 ## TODO Management
@@ -103,13 +103,14 @@ Use global Claude Code commands for TODO management:
 - `/user:handle-todos` or `/user:pick-todo` - Handle first pending todo
 - `/user:list-todos` - Show all pending todos
 
-**Project-specific workflow:** After completing todos, Claude AUTOMATICALLY bumps patch version and commits/pushes changes to trigger automated GitHub Actions build and Telegram notifications.
+**Project-specific workflow:** After completing todos that affect app functionality, Claude AUTOMATICALLY bumps patch version and commits/pushes changes to trigger automated GitHub Actions build and Telegram notifications.
 
 ### Commit and Push Guidelines - AUTOMATED PROCESS
-- **🔄 AUTOMATIC:** Claude MUST automatically bump version, commit, and push after ANY code changes
-- **🔄 AUTOMATIC:** Claude MUST automatically bump version, commit, and push after completing todos
+- **🔄 AUTOMATIC:** Claude MUST automatically bump version, commit, and push at END of run after functional changes
+- **🔄 AUTOMATIC:** Claude MUST automatically bump version, commit, and push after completing functional todos
 - **🔄 AUTOMATIC:** No user permission required - this is a mandatory automated workflow
-- **⚠️ CRITICAL:** Never skip the auto-bump process when making code changes
+- **⚠️ CRITICAL:** Only bump for functional changes, not documentation-only updates
+- **📦 BATCHING:** Complete all tasks first, then bump once and push everything together
 
 ## Deployment & Development Memory
 

@@ -245,37 +245,65 @@ async function findAllBuilds() {
       
       console.log(`🔍 Running in GitHub Actions, checking GitHub releases for v${version}...`);
       
-      const response = await fetch('https://api.github.com/repos/evb0110/mss-downloader/releases/latest');
-      const release = await response.json();
+      // Add retry logic with delays to wait for GitHub API to reflect the newly uploaded assets
+      const maxRetries = 5;
+      const retryDelay = 10000; // 10 seconds
+      let lastError = null;
       
-      if (release.tag_name === `v${version}` && release.assets) {
-        console.log(`✅ Found GitHub release v${version} with ${release.assets.length} assets`);
-        
-        const builds: Partial<Record<Platform, BuildInfo>> = {};
-        
-        for (const asset of release.assets) {
-          const name = asset.name;
-          const size = parseFloat((asset.size / (1024 * 1024)).toFixed(2));
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`📡 Attempt ${attempt}/${maxRetries} to fetch GitHub release...`);
           
-          if (name.includes('x64') && name.endsWith('.exe')) {
-            builds.amd64 = { file: asset.browser_download_url, name, size };
-            console.log(`  - Found AMD64: ${name} (${size}MB)`);
-          } else if (name.includes('arm64') && name.endsWith('.exe')) {
-            builds.arm64 = { file: asset.browser_download_url, name, size };
-            console.log(`  - Found ARM64: ${name} (${size}MB)`);
-          } else if (name.endsWith('.AppImage')) {
-            builds.linux = { file: asset.browser_download_url, name, size };
-            console.log(`  - Found Linux: ${name} (${size}MB)`);
-          } else if (name.endsWith('.dmg') || name.endsWith('.pkg')) {
-            builds.mac = { file: asset.browser_download_url, name, size };
-            console.log(`  - Found macOS: ${name} (${size}MB)`);
+          const response = await fetch('https://api.github.com/repos/evb0110/mss-downloader/releases/latest');
+          const release = await response.json();
+          
+          if (release.tag_name === `v${version}` && release.assets && release.assets.length > 0) {
+            console.log(`✅ Found GitHub release v${version} with ${release.assets.length} assets`);
+            
+            const builds: Partial<Record<Platform, BuildInfo>> = {};
+            
+            for (const asset of release.assets) {
+              const name = asset.name;
+              const size = parseFloat((asset.size / (1024 * 1024)).toFixed(2));
+              
+              if (name.includes('x64') && name.endsWith('.exe')) {
+                builds.amd64 = { file: asset.browser_download_url, name, size };
+                console.log(`  - Found AMD64: ${name} (${size}MB)`);
+              } else if (name.includes('arm64') && name.endsWith('.exe')) {
+                builds.arm64 = { file: asset.browser_download_url, name, size };
+                console.log(`  - Found ARM64: ${name} (${size}MB)`);
+              } else if (name.endsWith('.AppImage')) {
+                builds.linux = { file: asset.browser_download_url, name, size };
+                console.log(`  - Found Linux: ${name} (${size}MB)`);
+              } else if (name.endsWith('.dmg') || name.endsWith('.pkg')) {
+                builds.mac = { file: asset.browser_download_url, name, size };
+                console.log(`  - Found macOS: ${name} (${size}MB)`);
+              }
+            }
+            
+            // Only return builds if we found at least one platform
+            if (Object.keys(builds).length > 0) {
+              console.log(`✅ Successfully found ${Object.keys(builds).length} platform builds`);
+              return { version, builds };
+            } else {
+              console.log(`⚠️ GitHub release v${version} exists but no platform builds found in assets`);
+            }
+          } else {
+            console.log(`⚠️ GitHub release not ready yet. Expected v${version}, found ${release.tag_name}, assets: ${release.assets?.length || 0}`);
           }
+        } catch (error) {
+          lastError = error;
+          console.error(`❌ Attempt ${attempt} failed:`, error);
         }
         
-        return { version, builds };
-      } else {
-        console.log(`⚠️ GitHub release not found or version mismatch. Expected v${version}, found ${release.tag_name}`);
+        // Wait before retrying (except on last attempt)
+        if (attempt < maxRetries) {
+          console.log(`⏳ Waiting ${retryDelay/1000} seconds before retry...`);
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+        }
       }
+      
+      console.error(`❌ All ${maxRetries} attempts failed. Last error:`, lastError);
     } catch (error) {
       console.error('⚠️ Failed to fetch from GitHub API, falling back to local files:', error);
     }

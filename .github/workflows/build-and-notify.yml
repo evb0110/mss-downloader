@@ -205,6 +205,11 @@ jobs:
           cd telegram-bot
           npm install
       
+      - name: Wait for GitHub API to propagate release assets
+        run: |
+          echo "⏳ Waiting 30 seconds for GitHub API to fully propagate the release assets..."
+          sleep 30
+      
       - name: Send Multiplatform Telegram notification
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
