@@ -38,7 +38,8 @@ export class LibraryOptimizationService {
             maxConcurrentDownloads: 4, // Italian platform with moderate limits - increased for better performance
             timeoutMultiplier: 1.5,
             enableProgressiveBackoff: true,
-            optimizationDescription: 'Internet Culturale optimizations: 4 concurrent downloads, extended timeouts with progressive backoff'
+            autoSplitThresholdMB: 400, // Lower threshold for large manuscripts to prevent timeouts
+            optimizationDescription: 'Internet Culturale optimizations: 4 concurrent downloads, extended timeouts with progressive backoff, auto-split at 400MB'
         },
         // Default libraries (no special optimizations)
         'nypl': {},
@@ -143,10 +144,7 @@ export class LibraryOptimizationService {
         const libraryOpts = this.getOptimizationsForLibrary(library);
 
         return {
-            autoSplitThresholdMB: Math.max(
-                libraryOpts.autoSplitThresholdMB || globalAutoSplitThresholdMB,
-                globalAutoSplitThresholdMB
-            ),
+            autoSplitThresholdMB: libraryOpts.autoSplitThresholdMB || globalAutoSplitThresholdMB,
             maxConcurrentDownloads: Math.min(
                 libraryOpts.maxConcurrentDownloads || globalMaxConcurrent,
                 globalMaxConcurrent

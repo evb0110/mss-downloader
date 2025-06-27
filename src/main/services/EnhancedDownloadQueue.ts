@@ -574,8 +574,15 @@ export class EnhancedDownloadQueue extends EventEmitter {
             timeoutMultiplier = Math.max(timeoutMultiplier, 3); // At least 45 minutes
         }
         
+        // Apply library-specific timeout multipliers from LibraryOptimizationService
+        const libraryConfig = LibraryOptimizationService.getOptimizationsForLibrary(item.library);
+        if (libraryConfig.timeoutMultiplier) {
+            timeoutMultiplier *= libraryConfig.timeoutMultiplier;
+        }
+        
         const downloadTimeoutMs = baseTimeoutMinutes * timeoutMultiplier * 60 * 1000;
-        console.log(`Setting timeout for ${item.displayName}: ${downloadTimeoutMs / (1000 * 60)} minutes (${item.totalPages || 'unknown'} pages)`);
+        const libraryMultiplierInfo = libraryConfig.timeoutMultiplier ? ` [${item.library}: ${libraryConfig.timeoutMultiplier}x]` : '';
+        console.log(`Setting timeout for ${item.displayName}: ${downloadTimeoutMs / (1000 * 60)} minutes (${item.totalPages || 'unknown'} pages)${libraryMultiplierInfo}`);
         
         // Set up timeout with proper cleanup
         const timeoutId = setTimeout(() => {
