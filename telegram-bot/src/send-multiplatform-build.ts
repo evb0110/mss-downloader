@@ -32,6 +32,8 @@ function getChangelogFromCommits(version: string): string {
     
     const technicalPatterns = [
       /^Bump version/i,
+      /VERSION-.*:\s*Version bump$/i,
+      /^\d+\.\d+\.\d+$/,
       /Generated with Claude Code/i,
       /Fix GitHub token/i,
       /Fix GitHub release/i,
@@ -45,23 +47,31 @@ function getChangelogFromCommits(version: string): string {
       /Test.*formatting/i,
       /Fix.*SmartScreen/i,
       /Fix multiplatform GitHub releases/i,
-      /Complete.*worktree.*merge/i
+      /Complete.*worktree.*merge/i,
+      /Complete.*implementation$/i
     ];
     
     const userFacingPatterns = [
       /^VERSION-/i,
-      /Fix.*hanging/i,
-      /Fix.*Orleans/i,
-      /Fix.*Morgan/i,
-      /Fix.*library/i,
-      /Fix.*manifest/i,
-      /Fix.*subscription/i,
-      /Fix.*duplicate.*messages/i,
-      /Fix.*missing.*download.*links/i,
-      /Add.*simultaneous.*download/i,
-      /Enhanced.*handling/i,
-      /support.*library/i,
-      /Added.*support/i
+      /^Fix.*hanging/i,
+      /^Fix.*Orleans/i,
+      /^Fix.*Morgan/i,
+      /^Fix.*library/i,
+      /^Fix.*manifest/i,
+      /^Fix.*subscription/i,
+      /^Fix.*duplicate.*messages/i,
+      /^Fix.*missing.*download.*links/i,
+      /^Fix.*timeout/i,
+      /^Fix.*InternetCulturale/i,
+      /^Fix.*download/i,
+      /^Fix.*bug/i,
+      /^Fix.*critical/i,
+      /^Add.*simultaneous.*download/i,
+      /^Enhanced.*handling/i,
+      /^Add.*support/i,
+      /^Added.*support/i,
+      /^Implement/i,
+      /^Improve/i
     ];
     
     const changelogItems: string[] = [];
@@ -69,13 +79,13 @@ function getChangelogFromCommits(version: string): string {
     
     commits
       .filter(commit => {
-        // User-facing patterns take precedence - include if user-facing regardless of technical
-        if (userFacingPatterns.some(pattern => pattern.test(commit))) {
-          return true;
-        }
-        // Skip if technical but not user-facing
+        // First check if it's a technical commit - exclude these even if they match user-facing patterns
         if (technicalPatterns.some(pattern => pattern.test(commit))) {
           return false;
+        }
+        // Include if it matches user-facing patterns
+        if (userFacingPatterns.some(pattern => pattern.test(commit))) {
+          return true;
         }
         // Skip if neither technical nor user-facing
         return false;
@@ -109,6 +119,7 @@ function getChangelogFromCommits(version: string): string {
 }
 
 function extractUserFacingChange(commitMessage: string): string {
+  // Handle VERSION- prefixed commits
   const versionMatch = commitMessage.match(/^VERSION-[^:]*(?::\s*(.+))?/i);
   if (versionMatch) {
     let description = versionMatch[1] ? versionMatch[1].trim() : '';
@@ -124,8 +135,25 @@ function extractUserFacingChange(commitMessage: string): string {
     if (firstSentence.length > 20) {
       description = firstSentence;
     }
+  } else {
+    // Handle non-VERSION commits directly
+    let description = commitMessage;
     
-    // Clean up specific patterns
+    // Extract first sentence and clean it up
+    const firstSentence = description.split('.')[0].trim();
+    if (firstSentence.length > 10) {
+      description = firstSentence;
+    }
+    
+    // Add specific patterns for InternetCulturale timeout fix
+    if (description.match(/Fix.*InternetCulturale.*timeout/i)) {
+      return 'Fixed InternetCulturale download timeout for large manuscripts';
+    }
+    if (description.match(/Fix.*download.*timeout/i)) {
+      return 'Fixed download timeout issues for large manuscripts';
+    }
+    
+    // Clean up other specific patterns
     if (description.match(/Add.*simultaneous.*download/i)) {
       return 'Added simultaneous download functionality';
     }
@@ -154,7 +182,7 @@ function extractUserFacingChange(commitMessage: string): string {
     return description;
   }
   
-  // Handle non-VERSION commits
+  // Handle non-VERSION commits (this part shouldn't be reached now due to new structure)
   if (commitMessage.match(/Fix.*Orleans.*hanging/i)) {
     return 'Fixed Orleans library hanging on calculation stage';
   }
