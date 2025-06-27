@@ -1,6 +1,6 @@
 {
   "name": "mss-downloader-telegram-bot",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Telegram bot for MSS Downloader build notifications (TypeScript/ES Modules)",
   "type": "module",
   "main": "dist/bot.js",
