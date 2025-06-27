@@ -90,7 +90,25 @@ export class EnhancedPdfMerger {
 
     // Memory-efficient processing for large documents
     async createPDFChunked(imageBuffers: Buffer[], options: any = {}): Promise<Uint8Array> {
-        const { title = 'Manuscript', onProgress, chunkSize = 50 } = options;
+        const { title = 'Manuscript', onProgress, library, totalPages: expectedTotalPages } = options;
+        let { chunkSize = 50 } = options;
+        
+        // Dynamic batch size for large manuscripts to prevent memory issues
+        if (library === 'manuscripta' && expectedTotalPages) {
+            if (expectedTotalPages > 300) {
+                chunkSize = 10; // Very small batches for 300+ page manuscripta.se
+                console.log(`Large manuscripta.se manuscript detected (${expectedTotalPages} pages), using very small batch size: ${chunkSize}`);
+            } else if (expectedTotalPages > 200) {
+                chunkSize = 15;
+                console.log(`Large manuscripta.se manuscript detected (${expectedTotalPages} pages), using small batch size: ${chunkSize}`);
+            } else if (expectedTotalPages > 100) {
+                chunkSize = 25;
+            }
+        } else if (imageBuffers.length > 200) {
+            // General large manuscript handling
+            chunkSize = Math.max(8, Math.min(30, Math.floor(150 / Math.sqrt(imageBuffers.length))));
+            console.log(`Large manuscript detected (${imageBuffers.length} pages), using calculated batch size: ${chunkSize}`);
+        }
         
         const pdfDoc = await PDFDocument.create();
         pdfDoc.setTitle(title);
@@ -125,6 +143,11 @@ export class EnhancedPdfMerger {
             // Force garbage collection between chunks if available
             if (global.gc) {
                 global.gc();
+                // For very large manuscripts, add a small delay to allow memory cleanup
+                if (library === 'manuscripta' && expectedTotalPages && expectedTotalPages > 200) {
+                    await new Promise(resolve => setTimeout(resolve, 150)); // 150ms pause for memory cleanup
+                    console.log(`Memory cleanup pause after batch ${Math.floor(processedPages / chunkSize)} of ${chunks.length}`);
+                }
             }
         }
         

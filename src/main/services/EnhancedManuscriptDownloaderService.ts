@@ -1825,7 +1825,7 @@ export class EnhancedManuscriptDownloaderService {
                     const partFilepath = path.join(targetDir, partFilename);
                     
                     const partStartPage = actualStartPage + startIdx;
-                    await this.convertImagesToPDFWithBlanks(partImages, partFilepath, partStartPage);
+                    await this.convertImagesToPDFWithBlanks(partImages, partFilepath, partStartPage, manifest);
                     createdFiles.push(partFilepath);
                 }
                 
@@ -1849,7 +1849,7 @@ export class EnhancedManuscriptDownloaderService {
                 };
             } else {
                 // Single PDF
-                await this.convertImagesToPDFWithBlanks(completeImagePaths, filepath, actualStartPage);
+                await this.convertImagesToPDFWithBlanks(completeImagePaths, filepath, actualStartPage, manifest);
                 
                 // Clean up temporary images
                 for (const p of validImagePaths) {
@@ -1883,10 +1883,23 @@ export class EnhancedManuscriptDownloaderService {
     /**
      * Convert images to PDF with robust error handling and memory management
      */
-    async convertImagesToPDF(imagePaths: string[], outputPath: string): Promise<void> {
+    async convertImagesToPDF(imagePaths: string[], outputPath: string, manifest?: any): Promise<void> {
         const totalImages = imagePaths.length;
         const maxMemoryMB = 1024; // 1GB memory limit
-        const batchSize = Math.min(50, Math.max(10, Math.floor(maxMemoryMB / 20))); // Adaptive batch size
+        
+        // Special handling for large manuscripta.se files to prevent infinite loops
+        let batchSize;
+        if (manifest?.library === 'manuscripta' && totalImages > 300) {
+            batchSize = 8; // Very small batches for 300+ page manuscripta.se
+            console.log(`Large manuscripta.se manuscript detected (${totalImages} pages), using very small batch size: ${batchSize}`);
+        } else if (manifest?.library === 'manuscripta' && totalImages > 200) {
+            batchSize = 12; // Small batches for 200+ page manuscripta.se
+            console.log(`Large manuscripta.se manuscript detected (${totalImages} pages), using small batch size: ${batchSize}`);
+        } else if (manifest?.library === 'manuscripta' && totalImages > 100) {
+            batchSize = 20;
+        } else {
+            batchSize = Math.min(50, Math.max(10, Math.floor(maxMemoryMB / 20))); // Adaptive batch size
+        }
         
         const allPdfBytes: Uint8Array[] = [];
         let processedCount = 0;
@@ -1952,6 +1965,16 @@ export class EnhancedManuscriptDownloaderService {
                     // Save batch PDF
                     const batchPdfBytes = await batchPdfDoc.save();
                     allPdfBytes.push(batchPdfBytes);
+                    
+                    // Force garbage collection after each batch if available
+                    if (global.gc) {
+                        global.gc();
+                        // For large manuscripta.se files, add extra memory cleanup time
+                        if (manifest?.library === 'manuscripta' && totalImages > 200) {
+                            await new Promise(resolve => setTimeout(resolve, 200)); // 200ms pause
+                            console.log(`Memory cleanup completed after batch ${batchNum}/${Math.ceil(totalImages / batchSize)}`);
+                        }
+                    }
                 }
                 
             } catch (batchError: any) {
@@ -1992,10 +2015,23 @@ export class EnhancedManuscriptDownloaderService {
         
     }
 
-    async convertImagesToPDFWithBlanks(imagePaths: (string | null)[], outputPath: string, startPageNumber: number = 1): Promise<void> {
+    async convertImagesToPDFWithBlanks(imagePaths: (string | null)[], outputPath: string, startPageNumber: number = 1, manifest?: any): Promise<void> {
         const totalImages = imagePaths.length;
         const maxMemoryMB = 1024;
-        const batchSize = Math.min(50, Math.max(10, Math.floor(maxMemoryMB / 20)));
+        
+        // Special handling for large manuscripta.se files to prevent infinite loops
+        let batchSize;
+        if (manifest?.library === 'manuscripta' && totalImages > 300) {
+            batchSize = 8; // Very small batches for 300+ page manuscripta.se
+            console.log(`Large manuscripta.se manuscript detected (${totalImages} pages), using very small batch size: ${batchSize}`);
+        } else if (manifest?.library === 'manuscripta' && totalImages > 200) {
+            batchSize = 12; // Small batches for 200+ page manuscripta.se
+            console.log(`Large manuscripta.se manuscript detected (${totalImages} pages), using small batch size: ${batchSize}`);
+        } else if (manifest?.library === 'manuscripta' && totalImages > 100) {
+            batchSize = 20;
+        } else {
+            batchSize = Math.min(50, Math.max(10, Math.floor(maxMemoryMB / 20)));
+        }
         
         const allPdfBytes: Uint8Array[] = [];
         let processedCount = 0;
@@ -2222,6 +2258,18 @@ export class EnhancedManuscriptDownloaderService {
                 if (pagesInBatch > 0) {
                     const batchPdfBytes = await batchPdfDoc.save();
                     allPdfBytes.push(batchPdfBytes);
+                    
+                    // Force garbage collection after each batch if available
+                    if (global.gc) {
+                        global.gc();
+                        // For large manuscripta.se files, add extra memory cleanup time
+                        if (manifest?.library === 'manuscripta' && totalImages > 200) {
+                            await new Promise(resolve => setTimeout(resolve, 200)); // 200ms pause
+                            const batchNum = Math.floor(i / batchSize) + 1;
+                            const totalBatches = Math.ceil(totalImages / batchSize);
+                            console.log(`Memory cleanup completed after batch ${batchNum}/${totalBatches}`);
+                        }
+                    }
                 }
                 
             } catch (batchError: any) {

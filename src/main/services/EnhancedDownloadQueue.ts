@@ -503,9 +503,16 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     if (item.status === 'pending') {
                         return true;
                     }
-                    // Don't auto-retry items that failed with CAPTCHA_REQUIRED
+                    // Don't auto-retry items that failed with CAPTCHA_REQUIRED or exceeded max retries
                     if (item.status === 'failed' && item.error && !item.error.includes('CAPTCHA_REQUIRED:')) {
-                        return true;
+                        const maxRetries = 3; // Maximum retry attempts to prevent infinite loops
+                        const retryCount = item.retryCount || 0;
+                        if (retryCount < maxRetries) {
+                            console.log(`Auto-retrying ${item.displayName} (attempt ${retryCount + 1}/${maxRetries})`);
+                            return true;
+                        } else {
+                            console.log(`${item.displayName} exceeded maximum retries (${maxRetries}), skipping`);
+                        }
                     }
                     return false;
                 });
@@ -550,6 +557,39 @@ export class EnhancedDownloadQueue extends EventEmitter {
         
         this.processingAbortController = new AbortController();
         this.notifyListeners();
+
+        // Calculate dynamic timeout based on file size and library
+        const baseTimeoutMinutes = 15;
+        let timeoutMultiplier = 1;
+        
+        // Large manuscripts need significantly more time
+        if (item.totalPages && item.totalPages > 300) {
+            timeoutMultiplier = 3; // 45 minutes for 300+ pages
+        } else if (item.totalPages && item.totalPages > 200) {
+            timeoutMultiplier = 2; // 30 minutes for 200+ pages
+        }
+        
+        // Manuscripta.se specifically needs extra time due to large file sizes
+        if (item.library === 'manuscripta' && item.totalPages && item.totalPages > 100) {
+            timeoutMultiplier = Math.max(timeoutMultiplier, 3); // At least 45 minutes
+        }
+        
+        const downloadTimeoutMs = baseTimeoutMinutes * timeoutMultiplier * 60 * 1000;
+        console.log(`Setting timeout for ${item.displayName}: ${downloadTimeoutMs / (1000 * 60)} minutes (${item.totalPages || 'unknown'} pages)`);
+        
+        // Set up timeout with proper cleanup
+        const timeoutId = setTimeout(() => {
+            if (item.status === 'downloading') {
+                console.error(`Download timeout for ${item.displayName} after ${downloadTimeoutMs / (1000 * 60)} minutes`);
+                item.status = 'failed';
+                item.error = `Download timeout - exceeded ${downloadTimeoutMs / (1000 * 60)} minutes. Large manuscripts (${item.totalPages || 'unknown'} pages) may require manual splitting.`;
+                if (this.processingAbortController) {
+                    this.processingAbortController.abort();
+                }
+                this.saveToStorage();
+                this.notifyListeners();
+            }
+        }, downloadTimeoutMs);
 
         try {
             // Check if document should be auto-split (only for non-part items)
@@ -633,9 +673,21 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 item.error = error.message;
                 item.retryCount = (item.retryCount || 0) + 1;
                 
+                // For large manuscript infinite loop prevention
+                if (item.library === 'manuscripta' && item.totalPages && item.totalPages > 300) {
+                    const maxRetries = 2; // Fewer retries for large manuscripta.se files
+                    if (item.retryCount >= maxRetries) {
+                        item.error = `${error.message} (Large manuscript - max ${maxRetries} retries exceeded to prevent infinite loops)`;
+                        console.error(`Large manuscripta.se manuscript retry limit reached: ${item.displayName}`);
+                    }
+                }
+                
                 // Perform error isolation and cache cleanup to prevent corruption spread
                 await this.handleDownloadError(item, error);
             }
+        } finally {
+            // Clear timeout
+            clearTimeout(timeoutId);
         }
 
         this.saveToStorage();
