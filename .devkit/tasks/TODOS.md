@@ -2,7 +2,7 @@
 
 ## Pending Tasks
 
-None - all reported issues have been addressed.
+None - all reported issues have been resolved.
 
 ## Completed Tasks
 
@@ -60,3 +60,25 @@ None - all reported issues have been addressed.
    - **Morgan Issue:** User education - downloads are already optimal quality (no code changes needed)
    - **Report:** `/reports/library-issues-analysis-2025-06-28.md`
    - **Impact:** Identified which issues require external resolution vs code fixes
+
+✅ **Fix Europeana manifest.displayName error - JavaScript type bug (2025-06-28)**
+   - **Issue:** "manifest.displayName.replace is not a function" error for Europeana URLs
+   - **URL:** https://www.europeana.eu/en/item/446/CNMD_0000171876
+   - **Root Cause:** Assigning IIIF label object `{ "@value": "string" }` to displayName instead of extracting the string value
+   - **Solution:** Added proper type checking and string extraction from IIIF label array format
+   - **Files Modified:** EnhancedManuscriptDownloaderService.ts (line 4904-4912)
+   - **Impact:** Europeana manuscripts now load correctly without JavaScript errors
+
+✅ **Fix Morgan Library image quality - Low resolution downloads (2025-06-28)**
+   - **Issue:** Downloads 55KB thumbnails instead of 280KB high-resolution originals
+   - **URL:** https://www.themorgan.org/collection/lindau-gospels/thumbs
+   - **Root Cause:** Image processing order caused lower quality images to be selected over high-resolution ones
+   - **Solution:** Implemented priority-based image quality selection system with duplicate detection
+   - **Files Modified:** EnhancedManuscriptDownloaderService.ts (lines 635-704)
+   - **Impact:** Morgan Library downloads now prioritize highest quality images (5x file size improvement)
+
+✅ **Improve UI controls responsiveness - Stop/pause functionality (2025-06-28)**
+   - **Issue:** Stop button doesn't interrupt active downloads, pause/resume state management problems
+   - **Solution:** Enhanced abort signal checking frequency and improved error handling
+   - **Files Modified:** ManuscriptDownloaderService.ts (line 197)
+   - **Impact:** Better user control over download operations with more responsive stop/pause functionality

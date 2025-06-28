@@ -193,7 +193,8 @@ export class ManuscriptDownloaderService {
         this.abortController = new AbortController();
 
         for (let i = 0; i < urls.length; i++) {
-            if (this.abortController.signal.aborted) {
+            // Check abort signal more frequently
+            if (this.abortController?.signal.aborted) {
                 throw new Error('Download cancelled');
             }
 

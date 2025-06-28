@@ -95,7 +95,6 @@ npm run lint              # Linting and fixing
 
 **TIMING:** Wait until ALL tasks in the run are completed, then bump once and push everything together.
 
-
 ## TODO Management
 
 Use global Claude Code commands for TODO management:
@@ -116,6 +115,7 @@ Use global Claude Code commands for TODO management:
 
 ### Development Process Memories
 - After push always wait to check that build was successful on github and everything was pushed to the bot
+- When I inform you that something isn't working, it can mean only that your previous fixes didn't fix anything, not that I gave same task twice
 
 ## File Structure
 

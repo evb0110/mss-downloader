@@ -632,7 +632,24 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
             } else {
-                // Main Morgan format - look for styled images and convert to original high-res
+                // Main Morgan format - priority-based image quality selection
+                const imagesByPriority: { [key: number]: string[] } = {
+                    1: [], // Highest priority: direct full-size images
+                    2: [], // Medium priority: converted styled images
+                    3: [], // Low priority: facsimile images
+                    4: []  // Lowest priority: other direct references
+                };
+                
+                // Priority 1: Look for direct full-size image references (highest quality)
+                const fullSizeImageRegex = /\/sites\/default\/files\/images\/collection\/[^"'?]+\.jpg/g;
+                const fullSizeMatches = pageContent.match(fullSizeImageRegex) || [];
+                
+                for (const match of fullSizeMatches) {
+                    const fullUrl = `${baseUrl}${match}`;
+                    imagesByPriority[1].push(fullUrl);
+                }
+                
+                // Priority 2: Extract styled images and convert to originals
                 const styledImageRegex = /\/sites\/default\/files\/styles\/[^"']*\/public\/images\/collection\/[^"'?]+\.jpg/g;
                 const styledMatches = pageContent.match(styledImageRegex) || [];
                 
@@ -642,40 +659,47 @@ export class EnhancedManuscriptDownloaderService {
                     // To: /sites/default/files/images/collection/filename.jpg
                     const originalPath = match.replace(/\/styles\/[^/]+\/public\//, '/');
                     const fullUrl = `${baseUrl}${originalPath}`;
-                    if (!pageLinks.includes(fullUrl)) {
-                        pageLinks.push(fullUrl);
-                    }
+                    imagesByPriority[2].push(fullUrl);
                 }
                 
-                // Look for direct full-size image references (primary source for high-resolution images)
-                const fullSizeImageRegex = /\/sites\/default\/files\/images\/collection\/[^"'?]+\.jpg/g;
-                const fullSizeMatches = pageContent.match(fullSizeImageRegex) || [];
-                
-                for (const match of fullSizeMatches) {
-                    const fullUrl = `${baseUrl}${match}`;
-                    if (!pageLinks.includes(fullUrl)) {
-                        pageLinks.push(fullUrl);
-                    }
-                }
-                
-                // Fallback: look for facsimile images (legacy format)
+                // Priority 3: Fallback to facsimile images (legacy format)
                 const facsimileRegex = /\/sites\/default\/files\/facsimile\/[^"']+\.jpg/g;
                 const facsimileMatches = pageContent.match(facsimileRegex) || [];
                 
                 for (const match of facsimileMatches) {
                     const fullUrl = `${baseUrl}${match}`;
-                    if (!pageLinks.includes(fullUrl)) {
-                        pageLinks.push(fullUrl);
-                    }
+                    imagesByPriority[3].push(fullUrl);
                 }
                 
-                // Also look for any direct image references
+                // Priority 4: Other direct image references
                 const directImageRegex = /https?:\/\/[^"']*themorgan\.org[^"']*\.jpg/g;
                 const directMatches = pageContent.match(directImageRegex) || [];
                 
                 for (const match of directMatches) {
-                    if (!pageLinks.includes(match) && (match.includes('facsimile') || match.includes('images/collection'))) {
-                        pageLinks.push(match);
+                    if (match.includes('facsimile') || match.includes('images/collection')) {
+                        imagesByPriority[4].push(match);
+                    }
+                }
+                
+                // Select highest quality images based on priority
+                const uniqueImageUrls = new Set<string>();
+                const getFilenameFromUrl = (url: string) => {
+                    const match = url.match(/([^/]+)\.jpg$/);
+                    return match ? match[1] : url;
+                };
+                
+                // Add images by priority, avoiding duplicates based on filename
+                for (let priority = 1; priority <= 4; priority++) {
+                    for (const imageUrl of imagesByPriority[priority]) {
+                        const filename = getFilenameFromUrl(imageUrl);
+                        const isDuplicate = Array.from(uniqueImageUrls).some(existingUrl => 
+                            getFilenameFromUrl(existingUrl) === filename
+                        );
+                        
+                        if (!isDuplicate) {
+                            uniqueImageUrls.add(imageUrl);
+                            pageLinks.push(imageUrl);
+                        }
                     }
                 }
             }
@@ -4848,7 +4872,7 @@ export class EnhancedManuscriptDownloaderService {
         try {
             // Extract collection ID and record ID from URL
             // Expected format: https://www.europeana.eu/en/item/{collectionId}/{recordId}
-            const urlMatch = europeanaUrl.match(/\/item\/(\d+)\/([^\/\?]+)/);
+            const urlMatch = europeanaUrl.match(/\/item\/(\d+)\/([^/?]+)/);
             if (!urlMatch) {
                 throw new Error('Invalid Europeana URL format');
             }
@@ -4901,7 +4925,15 @@ export class EnhancedManuscriptDownloaderService {
                 if (typeof iiifManifest.label === 'string') {
                     displayName = iiifManifest.label;
                 } else if (Array.isArray(iiifManifest.label)) {
-                    displayName = iiifManifest.label[0] || displayName;
+                    // Handle IIIF label array format with objects containing @value
+                    const firstLabel = iiifManifest.label[0];
+                    if (typeof firstLabel === 'string') {
+                        displayName = firstLabel;
+                    } else if (firstLabel && typeof firstLabel === 'object' && '@value' in firstLabel) {
+                        displayName = firstLabel['@value'] as string;
+                    } else {
+                        displayName = firstLabel || displayName;
+                    }
                 } else if (typeof iiifManifest.label === 'object') {
                     // Handle multilingual labels (IIIF 3.0 format)
                     const labelValues = Object.values(iiifManifest.label);
