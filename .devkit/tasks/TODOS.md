@@ -82,3 +82,12 @@ None - all reported issues have been resolved.
    - **Solution:** Enhanced abort signal checking frequency and improved error handling
    - **Files Modified:** ManuscriptDownloaderService.ts (line 197)
    - **Impact:** Better user control over download operations with more responsive stop/pause functionality
+
+✅ **Fix Vienna Manuscripta page range detection - Broken page-specific URLs (2025-06-28)**
+   - **Issue:** https://manuscripta.at/diglit/AT5000-963/0001 downloads entire manuscript instead of from page 1 onward
+   - **URL:** https://manuscripta.at/diglit/AT5000-963/0001
+   - **Root Cause:** URL parsing regex only extracted manuscript ID, completely ignored page number
+   - **Solution:** Enhanced URL parsing to capture both manuscript ID and page number, added page filtering logic
+   - **Files Modified:** EnhancedManuscriptDownloaderService.ts (lines 4163-4175, 4207-4217, 4293-4303)
+   - **Impact:** Page-specific URLs now work correctly, downloading only requested page ranges
+   - **Report:** `/reports/manuscripta-at-page-range-fix-2025-06-28.md`

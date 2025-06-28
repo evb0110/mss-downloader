@@ -4157,15 +4157,22 @@ export class EnhancedManuscriptDownloaderService {
         console.log('Loading Vienna Manuscripta manifest for:', manuscriptaUrl);
         
         try {
-            // Extract manuscript ID from URL
-            // Expected format: https://manuscripta.at/diglit/AT5000-XXXX/0001
-            const urlMatch = manuscriptaUrl.match(/\/diglit\/(AT\d+-\d+)/);
+            // Extract manuscript ID and page number from URL
+            // Expected format: https://manuscripta.at/diglit/AT5000-XXXX/0001 (specific page)
+            // or: https://manuscripta.at/diglit/AT5000-XXXX (entire manuscript)
+            const urlMatch = manuscriptaUrl.match(/\/diglit\/(AT\d+-\d+)(?:\/(\d{4}))?/);
             if (!urlMatch) {
                 throw new Error('Invalid Vienna Manuscripta URL format');
             }
             
             const manuscriptId = urlMatch[1];
+            const startPage = urlMatch[2] ? parseInt(urlMatch[2], 10) : null;
             console.log('Manuscript ID:', manuscriptId);
+            if (startPage) {
+                console.log('Page range: Starting from page', startPage);
+            } else {
+                console.log('Page range: Entire manuscript');
+            }
             
             // Try IIIF manifest first (much faster than page discovery)
             try {
@@ -4197,11 +4204,23 @@ export class EnhancedManuscriptDownloaderService {
                         }).filter((url: string | null): url is string => url !== null);
                         
                         if (pageLinks.length > 0) {
+                            // Apply page range filtering if specific page was requested
+                            let filteredPageLinks = pageLinks;
+                            if (startPage !== null) {
+                                const pageIndex = startPage - 1; // Convert to 0-based index
+                                if (pageIndex >= 0 && pageIndex < pageLinks.length) {
+                                    filteredPageLinks = pageLinks.slice(pageIndex);
+                                    console.log(`Vienna Manuscripta: Filtered to ${filteredPageLinks.length} pages starting from page ${startPage}`);
+                                } else {
+                                    console.warn(`Vienna Manuscripta: Requested page ${startPage} is out of range (1-${pageLinks.length})`);
+                                }
+                            }
+                            
                             const displayName = iiifManifest.label || `Vienna_${manuscriptId}`;
                             
                             return {
-                                pageLinks,
-                                totalPages: pageLinks.length,
+                                pageLinks: filteredPageLinks,
+                                totalPages: filteredPageLinks.length,
                                 library: 'vienna_manuscripta' as const,
                                 displayName: typeof displayName === 'string' ? displayName : displayName[0] || `Vienna_${manuscriptId}`,
                                 originalUrl: manuscriptaUrl,
@@ -4270,18 +4289,30 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('No pages found in Vienna Manuscripta manuscript');
             }
             
+            // Apply page range filtering if specific page was requested
+            let filteredPageLinks = pageLinks;
+            if (startPage !== null) {
+                const pageIndex = startPage - 1; // Convert to 0-based index
+                if (pageIndex >= 0 && pageIndex < pageLinks.length) {
+                    filteredPageLinks = pageLinks.slice(pageIndex);
+                    console.log(`Vienna Manuscripta: Filtered to ${filteredPageLinks.length} pages starting from page ${startPage}`);
+                } else {
+                    console.warn(`Vienna Manuscripta: Requested page ${startPage} is out of range (1-${pageLinks.length})`);
+                }
+            }
+            
             // Extract manuscript name from first page for display name
             const displayName = `Vienna_${manuscriptId}`;
             
             const manifest: ManuscriptManifest = {
-                pageLinks,
-                totalPages: pageLinks.length,
+                pageLinks: filteredPageLinks,
+                totalPages: filteredPageLinks.length,
                 library: 'vienna_manuscripta' as const,
                 displayName,
                 originalUrl: manuscriptaUrl,
             };
             
-            console.log(`Vienna Manuscripta manifest loaded: ${displayName}, total pages: ${pageLinks.length}`);
+            console.log(`Vienna Manuscripta manifest loaded: ${displayName}, total pages: ${filteredPageLinks.length}`);
             return manifest;
             
         } catch (error: any) {
