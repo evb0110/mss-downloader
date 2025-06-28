@@ -4950,7 +4950,7 @@ export class EnhancedManuscriptDownloaderService {
                     
                     console.log(`Europeana: No external IIIF manifest found in Record API, falling back to Europeana's own IIIF`);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.log(`Europeana: Record API failed (${error.message}), falling back to Europeana's own IIIF`);
             }
             
