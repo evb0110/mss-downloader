@@ -24,6 +24,11 @@ npm run dev:headless:kill  # Kill headless development process by PID
 npm run test:e2e:start     # Start E2E tests with PID capture
 npm run test:e2e:kill      # Kill E2E test process by PID
 
+# Process monitoring and cleanup
+npm run ps                # Monitor running processes
+npm run cleanup           # Clean up all project processes
+npm run cleanup:all       # Comprehensive cleanup
+
 # Other commands
 npm run build             # Production build
 npm run dist              # Distribution build
@@ -31,6 +36,13 @@ npm run lint              # Linting and fixing
 ```
 
 **CRITICAL:** Always use PID-based commands to avoid killing unrelated processes. Never use `killall npm` or `killall node`.
+
+### Process Management
+- **Enhanced PID tracking**: All processes tracked with robust cleanup
+- **Automatic cleanup**: Scripts register cleanup functions on exit
+- **Comprehensive monitoring**: `npm run ps` shows all running processes
+- **Emergency cleanup**: `npm run cleanup:all` for stuck processes
+- **Documentation**: See `.devkit/docs/process-management.md` for details
 
 ## Developer Context
 
