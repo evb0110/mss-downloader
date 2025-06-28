@@ -118,113 +118,99 @@ function getChangelogFromCommits(version: string): string {
   }
 }
 
+    } else {
+      // Fallback to version history from CLAUDE.md only if no relevant commits found
+      return getChangelogFromVersionHistory(version);
+    }
+  } catch (error) {
+    console.error('Error generating changelog:', error);
+    // Always return a generic message on error to avoid empty changelog
+    return `${bold("📝 What's New:")}
+• Latest updates and improvements with multi-platform support`;
+  }
+}
+
 function extractUserFacingChange(commitMessage: string): string {
-  // Handle VERSION- prefixed commits
+  // Prioritize specific, user-friendly patterns
+  
+  // 1. VERSION- prefixed commits
   const versionMatch = commitMessage.match(/^VERSION-[^:]*(?::\s*(.+))?/i);
   if (versionMatch) {
     let description = versionMatch[1] ? versionMatch[1].trim() : '';
-    
     if (!description) {
       const shortVersionMatch = commitMessage.match(/^VERSION-[\d.]+\s+(.+)/i);
       if (shortVersionMatch) {
         description = shortVersionMatch[1].trim();
       }
     }
-    
+    // Take the first sentence for conciseness
     const firstSentence = description.split('.')[0].trim();
-    if (firstSentence.length > 20) {
-      description = firstSentence;
-    }
-  } else {
-    // Handle non-VERSION commits directly
-    let description = commitMessage;
-    
-    // Extract first sentence and clean it up
-    const firstSentence = description.split('.')[0].trim();
-    if (firstSentence.length > 10) {
-      description = firstSentence;
-    }
-    
-    // Add specific patterns for InternetCulturale timeout fix
-    if (description.match(/Fix.*InternetCulturale.*timeout/i)) {
-      return 'Fixed InternetCulturale download timeout for large manuscripts';
-    }
-    if (description.match(/Fix.*download.*timeout/i)) {
-      return 'Fixed download timeout issues for large manuscripts';
-    }
-    
-    // Clean up other specific patterns
-    if (description.match(/Add.*simultaneous.*download/i)) {
-      return 'Added simultaneous download functionality';
-    }
-    if (description.match(/Fix.*About.*dialog.*version/i)) {
-      return 'Fixed About dialog version display and improved process management';
-    }
-    if (description.match(/Update.*About.*dialog.*version/i)) {
-      return 'Fixed About dialog version display and improved process management';
-    }
-    if (description.match(/Fix.*Morgan.*Library.*manifest/i)) {
-      return 'Fixed Morgan Library manifest loading for themorgan.org manuscripts';
-    }
-    if (description.match(/Fix.*FLORUS.*hanging/i)) {
-      return 'Fixed FLORUS hanging on calculating stage';
-    }
-    if (description.match(/Fix.*Orleans.*persistent.*hanging/i)) {
-      return 'Fixed Orleans library persistent hanging issue with batch processing';
-    }
-    if (description.match(/Fix.*GitHub.*Actions.*Telegram/i)) {
-      return 'Fixed automated build notifications to work with TypeScript bot';
-    }
-    if (description.match(/Complete.*Stanford.*Parker.*Graz/i)) {
-      return 'Completed Stanford Parker and Graz library support verification';
-    }
-    
-    return description;
+    return firstSentence || 'Version update';
   }
-  
-  // Handle non-VERSION commits (this part shouldn't be reached now due to new structure)
-  if (commitMessage.match(/Fix.*Orleans.*hanging/i)) {
-    return 'Fixed Orleans library hanging on calculation stage';
+
+  // 2. Fixes for specific libraries or common issues
+  const specificFixes = {
+    'InternetCulturale.*timeout': 'Fixed InternetCulturale download timeout for large manuscripts',
+    'download.*timeout': 'Fixed download timeout issues for large manuscripts',
+    'Morgan.*Library.*manifest': 'Fixed Morgan Library manifest loading',
+    'FLORUS.*hanging': 'Fixed FLORUS hanging on calculating stage',
+    'Orleans.*persistent.*hanging': 'Fixed Orleans library persistent hanging issue',
+    'GitHub.*Actions.*Telegram': 'Fixed automated build notifications',
+    'About.*dialog.*version': 'Fixed About dialog version display',
+    'Telegram bot.*subscription': 'Fixed Telegram bot subscription issues',
+    'duplicate.*messages': 'Fixed duplicate messages in Telegram bot',
+    'missing.*download.*links': 'Fixed missing download links in Telegram bot',
+    'infinite loop': 'Fixed infinite loop bug in downloads',
+    'auto-split': 'Improved auto-splitting logic for large documents',
+    'low quality': 'Improved image quality for downloads',
+    'hanging': 'Fixed hanging issues in downloads',
+    'error': 'Fixed various bugs and errors',
+    'bug': 'Fixed various bugs and errors',
+    'critical': 'Fixed critical issues'
+  };
+
+  for (const pattern in specificFixes) {
+    if (commitMessage.match(new RegExp(pattern, 'i'))) {
+      return specificFixes[pattern];
+    }
   }
-  
-  if (commitMessage.match(/Fix.*Telegram.*bot.*subscription/i)) {
-    return 'Fixed Telegram bot subscription issues';
+
+  // 3. General patterns for new features or enhancements
+  const generalPatterns = {
+    'Add.*simultaneous.*download': 'Added simultaneous download functionality',
+    'Add(?:ed)?\s+([^:,]+?)\s+support': 'Added $1 support',
+    'Implement(?:ed)?\s+([^:,]+?)(?:\s+by|\s+-|\s+and|$)': 'Implemented $1',
+    'Enhanc(?:e|ed)\s+([^:,]+?)(?:\s+by|\s+-|\s+and|$)': 'Enhanced $1',
+    'Improve(?:d)?\s+([^:,]+?)(?:\s+by|\s+-|\s+and|$)': 'Improved $1',
+    'Refactor': 'Improved code structure and performance',
+    'Update': 'Updated dependencies and internal tools'
+  };
+
+  for (const pattern in generalPatterns) {
+    const match = commitMessage.match(new RegExp(pattern, 'i'));
+    if (match) {
+      return match[1] ? generalPatterns[pattern].replace('$1', match[1].trim()) : generalPatterns[pattern];
+    }
   }
-  
-  const specificLibraryMatch = commitMessage.match(/Fix(?:ed)?\s+(Morgan\s+Library|themorgan\.org|Gallica|Vatican|CUDL|ISOS|MIRA|Trinity|Cambridge|Orleans|Manuscripta|Stanford|Parker|FLORUS|BM\s+Lyon)[^:]*(?::\s*(.+))?/i);
-  if (specificLibraryMatch) {
-    const libraryName = specificLibraryMatch[1];
-    const description = specificLibraryMatch[2] || 'issues';
-    return `Fixed ${libraryName} ${description}`;
+
+  // Fallback: Take the first sentence or a cleaned version of the commit message
+  const firstSentence = commitMessage.split('.')[0].trim();
+  if (firstSentence.length > 10) {
+    return firstSentence;
   }
-  
-  const hangingMatch = commitMessage.match(/Fix(?:ed)?\s+([^:]+?)\s+hanging/i);
-  if (hangingMatch) {
-    return `Fixed ${hangingMatch[1]} hanging issue`;
+
+  // Clean up common prefixes/suffixes if no specific pattern matched
+  let cleaned = commitMessage
+    .replace(/^(feat|fix|chore|docs|style|refactor|perf|test)\s*(\([^)]+\))?:\s*/i, '') // Remove conventional commit prefixes
+    .replace(/\[\w+\]\s*/, '') // Remove [TAG] prefixes
+    .trim();
+
+  // Ensure it starts with a capital letter if it's a sentence
+  if (cleaned.length > 0) {
+    cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
   }
-  
-  const libraryMatch = commitMessage.match(/Add(?:ed)?\s+([^:,]+?)\s+support/i);
-  if (libraryMatch) {
-    const libraryName = libraryMatch[1].trim();
-    return `Added ${libraryName} support`;
-  }
-  
-  const fixMatch = commitMessage.match(/Fix(?:ed)?\s+([^:,]+?)(?:\s+by|\s+-|\s+and|$)/i);
-  if (fixMatch) {
-    return `Fixed ${fixMatch[1]}`;
-  }
-  
-  const enhanceMatch = commitMessage.match(/Enhanc(?:e|ed)\s+([^:,]+?)(?:\s+by|\s+-|\s+and|$)/i);
-  if (enhanceMatch) {
-    return `Enhanced ${enhanceMatch[1]}`;
-  }
-  
-  const colIndex = commitMessage.indexOf(':');
-  if (colIndex > 10) {
-    return commitMessage.substring(0, colIndex).trim();
-  }
-  
-  return commitMessage.trim();
+
+  return cleaned || 'Latest updates and improvements';
 }
 
 function getChangelogFromVersionHistory(version: string): string {
