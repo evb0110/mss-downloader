@@ -182,6 +182,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://manuscripta.at/diglit/AT5000-1013/0001',
             description: 'Austrian National Library digital manuscript collection',
         },
+        {
+            name: 'Europeana Collections',
+            example: 'https://www.europeana.eu/en/item/446/CNMD_00000171777',
+            description: 'European cultural heritage manuscripts via IIIF manifest API',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -265,6 +270,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('dig.vkol.cz')) return 'czech';
         if (url.includes('archiviodiocesano.mo.it')) return 'modena';
         if (url.includes('bdl.servizirl.it')) return 'bdl';
+        if (url.includes('europeana.eu')) return 'europeana';
         
         return null;
     }
@@ -546,6 +552,9 @@ export class EnhancedManuscriptDownloaderService {
                 case 'bdl':
                     manifest = await this.loadBDLManifest(originalUrl);
                     break;
+                case 'europeana':
+                    manifest = await this.loadEuropeanaManifest(originalUrl);
+                    break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
             }
@@ -722,7 +731,7 @@ export class EnhancedManuscriptDownloaderService {
             
             const uuid = uuidMatch[1];
             
-            // Fetch the main page to extract carousel data
+            // Fetch the main page to extract parent collection data
             const pageResponse = await this.fetchDirect(nyplUrl);
             if (!pageResponse.ok) {
                 throw new Error(`Failed to fetch NYPL page: ${pageResponse.status}`);
@@ -730,58 +739,112 @@ export class EnhancedManuscriptDownloaderService {
             
             const pageContent = await pageResponse.text();
             
-            // Extract carousel data which contains image IDs
-            const carouselMatch = pageContent.match(/data-items="([^"]+)"/);
-            if (!carouselMatch) {
-                throw new Error('Could not find carousel data in NYPL page');
-            }
-            
-            // Decode HTML entities and parse JSON
-            const carouselDataHtml = carouselMatch[1];
-            const carouselDataJson = carouselDataHtml
-                .replace(/&quot;/g, '"')
-                .replace(/&#39;/g, "'")
-                .replace(/&amp;/g, '&');
-            
-            let carouselItems;
-            try {
-                carouselItems = JSON.parse(carouselDataJson);
-            } catch (error: any) {
-                throw new Error(`Failed to parse carousel JSON: ${error.message}`);
-            }
-            
-            if (!Array.isArray(carouselItems) || carouselItems.length === 0) {
-                throw new Error('No carousel items found');
-            }
-            
-            // Extract image IDs and construct high-resolution image URLs
-            const pageLinks = carouselItems.map((item: any) => {
-                if (!item.image_id) {
-                    throw new Error(`Missing image_id for item ${item.id || 'unknown'}`);
-                }
-                // Use images.nypl.org format for full resolution images (&t=g parameter)
-                return `https://images.nypl.org/index.php?id=${item.image_id}&t=g`;
-            });
-            
-            // Extract display name from the first item or fallback to title from item_data
+            // Extract parent UUID from captures API endpoint in the page data
+            const capturesUrlMatch = pageContent.match(/data-fetch-url="([^"]*\/items\/([a-f0-9-]+)\/captures[^"]*)"/);
+            let pageLinks: string[] = [];
             let displayName = `NYPL Document ${uuid}`;
-            if (carouselItems[0]?.title_full) {
-                displayName = carouselItems[0].title_full;
-            } else if (carouselItems[0]?.title) {
-                displayName = carouselItems[0].title;
-            } else {
-                // Fallback: try to extract from item_data as well
-                const itemDataMatch = pageContent.match(/var\s+item_data\s*=\s*({.*?});/s);
-                if (itemDataMatch) {
-                    try {
-                        const itemData = JSON.parse(itemDataMatch[1]);
-                        if (itemData.title) {
-                            displayName = Array.isArray(itemData.title) ? itemData.title[0] : itemData.title;
+            
+            if (capturesUrlMatch) {
+                const capturesPath = capturesUrlMatch[1];
+                const parentUuid = capturesUrlMatch[2];
+                
+                console.log(`NYPL: Found parent collection ${parentUuid}, fetching complete manifest`);
+                
+                try {
+                    // Call the captures API to get all pages
+                    const capturesUrl = `https://digitalcollections.nypl.org${capturesPath}?per_page=500`;
+                    const capturesResponse = await this.fetchDirect(capturesUrl);
+                    
+                    if (capturesResponse.ok) {
+                        const capturesData = await capturesResponse.json();
+                        
+                        if (capturesData.response?.captures && Array.isArray(capturesData.response.captures)) {
+                            const captures = capturesData.response.captures;
+                            
+                            console.log(`NYPL: Retrieved ${captures.length} pages from captures API (total: ${capturesData.response.total})`);
+                            
+                            // Extract image IDs and construct high-resolution image URLs
+                            pageLinks = captures.map((item: any) => {
+                                if (!item.image_id) {
+                                    throw new Error(`Missing image_id for capture ${item.id || 'unknown'}`);
+                                }
+                                // Use images.nypl.org format for full resolution images (&t=g parameter)
+                                return `https://images.nypl.org/index.php?id=${item.image_id}&t=g`;
+                            });
+                            
+                            // Extract display name from the first capture
+                            if (captures[0]?.title) {
+                                displayName = captures[0].title;
+                            }
                         }
-                    } catch {
-                        // Ignore parsing errors for fallback title
+                    }
+                } catch (apiError: any) {
+                    console.warn(`NYPL: Captures API failed (${apiError.message}), falling back to carousel data`);
+                }
+            }
+            
+            // Fallback to original carousel method if captures API failed or no data
+            if (pageLinks.length === 0) {
+                console.log('NYPL: Using fallback carousel data method');
+                
+                // Extract carousel data which contains image IDs
+                const carouselMatch = pageContent.match(/data-items="([^"]+)"/);
+                if (!carouselMatch) {
+                    throw new Error('Could not find carousel data in NYPL page');
+                }
+                
+                // Decode HTML entities and parse JSON
+                const carouselDataHtml = carouselMatch[1];
+                const carouselDataJson = carouselDataHtml
+                    .replace(/&quot;/g, '"')
+                    .replace(/&#39;/g, "'")
+                    .replace(/&amp;/g, '&');
+                
+                let carouselItems;
+                try {
+                    carouselItems = JSON.parse(carouselDataJson);
+                } catch (error: any) {
+                    throw new Error(`Failed to parse carousel JSON: ${error.message}`);
+                }
+                
+                if (!Array.isArray(carouselItems) || carouselItems.length === 0) {
+                    throw new Error('No carousel items found');
+                }
+                
+                // Extract image IDs and construct high-resolution image URLs
+                pageLinks = carouselItems.map((item: any) => {
+                    if (!item.image_id) {
+                        throw new Error(`Missing image_id for item ${item.id || 'unknown'}`);
+                    }
+                    // Use images.nypl.org format for full resolution images (&t=g parameter)
+                    return `https://images.nypl.org/index.php?id=${item.image_id}&t=g`;
+                });
+                
+                // Extract display name from the first item or fallback to title from item_data
+                if (carouselItems[0]?.title_full) {
+                    displayName = carouselItems[0].title_full;
+                } else if (carouselItems[0]?.title) {
+                    displayName = carouselItems[0].title;
+                } else {
+                    // Fallback: try to extract from item_data as well
+                    const itemDataMatch = pageContent.match(/var\s+item_data\s*=\s*({.*?});/s);
+                    if (itemDataMatch) {
+                        try {
+                            const itemData = JSON.parse(itemDataMatch[1]);
+                            if (itemData.title) {
+                                displayName = Array.isArray(itemData.title) ? itemData.title[0] : itemData.title;
+                            }
+                        } catch {
+                            // Ignore parsing errors for fallback title
+                        }
                     }
                 }
+                
+                console.warn(`NYPL: Using carousel fallback method - got ${pageLinks.length} pages. If this manuscript has more pages, there may be an issue with the captures API.`);
+            }
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No pages found in NYPL manifest');
             }
             
             const nyplManifest = {
@@ -791,6 +854,8 @@ export class EnhancedManuscriptDownloaderService {
                 displayName,
                 originalUrl: nyplUrl,
             };
+            
+            console.log(`NYPL: Created manifest for "${displayName}" with ${pageLinks.length} pages`);
             
             return nyplManifest;
             
@@ -4078,7 +4143,54 @@ export class EnhancedManuscriptDownloaderService {
             const manuscriptId = urlMatch[1];
             console.log('Manuscript ID:', manuscriptId);
             
-            // Extract base URL
+            // Try IIIF manifest first (much faster than page discovery)
+            try {
+                const manifestUrl = `https://manuscripta.at/diglit/iiif/${manuscriptId}/manifest.json`;
+                console.log(`Vienna Manuscripta: Attempting IIIF manifest at ${manifestUrl}`);
+                
+                const manifestResponse = await this.fetchDirect(manifestUrl);
+                if (manifestResponse.ok) {
+                    const iiifManifest = await manifestResponse.json();
+                    
+                    if (iiifManifest.sequences && iiifManifest.sequences[0] && iiifManifest.sequences[0].canvases) {
+                        const canvases = iiifManifest.sequences[0].canvases;
+                        console.log(`Vienna Manuscripta: IIIF manifest loaded successfully with ${canvases.length} pages`);
+                        
+                        // Extract highest quality image URLs from IIIF manifest
+                        const pageLinks = canvases.map((canvas: any) => {
+                            if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                                const resource = canvas.images[0].resource;
+                                
+                                // Check for service URL (IIIF Image API)
+                                if (resource.service && resource.service['@id']) {
+                                    return resource.service['@id'] + '/full/max/0/default.jpg';
+                                }
+                                
+                                // Fallback to resource @id
+                                return resource['@id'] || resource.id;
+                            }
+                            return null;
+                        }).filter((url: string | null): url is string => url !== null);
+                        
+                        if (pageLinks.length > 0) {
+                            const displayName = iiifManifest.label || `Vienna_${manuscriptId}`;
+                            
+                            return {
+                                pageLinks,
+                                totalPages: pageLinks.length,
+                                library: 'vienna_manuscripta' as const,
+                                displayName: typeof displayName === 'string' ? displayName : displayName[0] || `Vienna_${manuscriptId}`,
+                                originalUrl: manuscriptaUrl,
+                            };
+                        }
+                    }
+                }
+            } catch (iiifError: any) {
+                console.warn(`Vienna Manuscripta: IIIF manifest failed (${iiifError.message}), falling back to page discovery`);
+            }
+            
+            // Fallback to original page discovery method
+            console.log('Vienna Manuscripta: Using page discovery fallback method');
             const baseUrl = `https://manuscripta.at/diglit/${manuscriptId}`;
             
             const pageLinks: string[] = [];
@@ -4210,22 +4322,25 @@ export class EnhancedManuscriptDownloaderService {
                 const sampleImageUrl = imageMatch[1];
                 console.log(`Found sample image URL in page: ${sampleImageUrl}`);
                 
-                // Extract the pattern and determine if we need different resolution parameters
-                if (sampleImageUrl.includes('/full/')) {
-                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/full`;
-                } else if (sampleImageUrl.includes('/max/')) {
-                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/max`;
+                // Extract the pattern and determine best resolution parameters - prioritize original quality
+                if (sampleImageUrl.includes('/original/')) {
+                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/original`;
+                } else if (sampleImageUrl.includes('/full/')) {
+                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/original`;
                 } else if (sampleImageUrl.includes('/high/')) {
-                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/high`;
+                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/original`;
+                } else if (sampleImageUrl.includes('/max/')) {
+                    // /max returns HTML, not images - use /original instead
+                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/original`;
                 } else {
-                    // If no resolution parameter found, try to extract the pattern and add full resolution
+                    // If no resolution parameter found, try to extract the pattern and add highest quality
                     const basePattern = sampleImageUrl.replace(/\/\d+\/[^/]*$/, '');
-                    imageUrlTemplate = `${basePattern}/PAGENUM/full`;
+                    imageUrlTemplate = `${basePattern}/PAGENUM/original`;
                 }
             } else {
-                // Fallback to original format, but also try 'max' which is commonly used for full resolution
-                imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/max`;
-                console.log('No sample image URL found in page HTML, using max resolution template');
+                // Fallback to original resolution which provides highest quality (3x better than /full)
+                imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/original`;
+                console.log('No sample image URL found in page HTML, using original resolution template for best quality');
             }
             
             // Generate page links using the determined template
@@ -4723,6 +4838,93 @@ export class EnhancedManuscriptDownloaderService {
                 // Ignore cleanup errors
             }
             throw new Error(`File write verification failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Load Europeana manifest (using IIIF manifest API)
+     */
+    async loadEuropeanaManifest(europeanaUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // Extract collection ID and record ID from URL
+            // Expected format: https://www.europeana.eu/en/item/{collectionId}/{recordId}
+            const urlMatch = europeanaUrl.match(/\/item\/(\d+)\/([^\/\?]+)/);
+            if (!urlMatch) {
+                throw new Error('Invalid Europeana URL format');
+            }
+            
+            const collectionId = urlMatch[1];
+            const recordId = urlMatch[2];
+            
+            // Construct IIIF manifest URL
+            const manifestUrl = `https://iiif.europeana.eu/presentation/${collectionId}/${recordId}/manifest`;
+            console.log(`Europeana: Loading IIIF manifest from ${manifestUrl}`);
+            
+            const manifestResponse = await this.fetchDirect(manifestUrl);
+            if (!manifestResponse.ok) {
+                throw new Error(`Failed to fetch Europeana IIIF manifest: HTTP ${manifestResponse.status}`);
+            }
+            
+            const iiifManifest = await manifestResponse.json();
+            
+            if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
+                throw new Error('Invalid IIIF manifest structure from Europeana');
+            }
+            
+            const canvases = iiifManifest.sequences[0].canvases;
+            console.log(`Europeana: Processing ${canvases.length} pages from IIIF manifest`);
+            
+            // Extract image URLs from IIIF manifest
+            const pageLinks = canvases.map((canvas: any) => {
+                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                    const resource = canvas.images[0].resource;
+                    
+                    // Check for IIIF Image API service
+                    if (resource.service && resource.service['@id']) {
+                        // Use full resolution IIIF Image API endpoint
+                        return `${resource.service['@id']}/full/full/0/default.jpg`;
+                    }
+                    
+                    // Fallback to direct resource URL
+                    return resource['@id'] || resource.id;
+                }
+                return null;
+            }).filter((url: string | null): url is string => url !== null);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No image URLs found in Europeana IIIF manifest');
+            }
+            
+            // Extract display name from manifest
+            let displayName = `Europeana_${recordId}`;
+            if (iiifManifest.label) {
+                if (typeof iiifManifest.label === 'string') {
+                    displayName = iiifManifest.label;
+                } else if (Array.isArray(iiifManifest.label)) {
+                    displayName = iiifManifest.label[0] || displayName;
+                } else if (typeof iiifManifest.label === 'object') {
+                    // Handle multilingual labels (IIIF 3.0 format)
+                    const labelValues = Object.values(iiifManifest.label);
+                    if (labelValues.length > 0 && Array.isArray(labelValues[0])) {
+                        displayName = (labelValues[0] as string[])[0] || displayName;
+                    }
+                }
+            }
+            
+            const europeanaManifest = {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'europeana' as const,
+                displayName,
+                originalUrl: europeanaUrl,
+            };
+            
+            console.log(`Europeana: Created manifest for "${displayName}" with ${pageLinks.length} pages`);
+            return europeanaManifest;
+            
+        } catch (error: any) {
+            console.error(`Failed to load Europeana manifest: ${error.message}`);
+            throw error;
         }
     }
 

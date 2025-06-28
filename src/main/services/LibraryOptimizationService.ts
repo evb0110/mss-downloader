@@ -117,6 +117,11 @@ export class LibraryOptimizationService {
             timeoutMultiplier: 1.5, // Increased timeout for complex URL mapping and IIIF manifest processing
             optimizationDescription: 'Verona Biblioteca Manoscritta optimizations: 3 concurrent downloads, extended timeouts for complex interface'
         },
+        'europeana': {
+            maxConcurrentDownloads: 4, // Europeana IIIF aggregator with good performance
+            timeoutMultiplier: 1.0, // Standard timeout for well-maintained IIIF service
+            optimizationDescription: 'Europeana Collections optimizations: 4 concurrent downloads, IIIF manifest-based access'
+        },
         'loading': {}
     };
 

@@ -29,7 +29,7 @@ The application follows a standard Electron architecture:
 
 - **Main Process (`src/main`):** Handles all backend logic, including file system operations, network requests, and download queue management.
 - **Renderer Process (`src/renderer`):** Manages the user interface, built with Vue.js.
-- **Preload Script (`src/preload`):** Securely exposes APIs from the main process to the renderer process.
+- **Preload Script (`src/preload`)::** Securely exposes APIs from the main process to the renderer process.
 - **Shared Code (`src/shared`):** Contains TypeScript types and interfaces used by both the main and renderer processes.
 - **Web Workers (`src/workers`):** Offloads intensive tasks like PDF creation to a separate thread to avoid blocking the main thread.
 
@@ -40,6 +40,13 @@ The application follows a standard Electron architecture:
 - `src/main/services/DownloadQueue.ts`: Core queue management logic.
 - `src/main/services/UnifiedManuscriptDownloader.ts`: Unified downloader service.
 - `src/renderer/components/DownloadQueueManager.vue`: The main UI component for the download queue.
+
+## Detailed Analysis Reports
+
+-   **Main Process Analysis:** See [.devkit/analysis/main-process-analysis.md](.devkit/analysis/main-process-analysis.md)
+-   **Renderer Process Analysis:** See [.devkit/analysis/renderer-process-analysis.md](.devkit/analysis/renderer-process-analysis.md)
+-   **Telegram Bot Analysis:** See [.devkit/analysis/telegram-bot-analysis.md](.devkit/analysis/telegram-bot-analysis.md)
+-   **Build and Deployment Analysis:** See [.devkit/analysis/build-and-deploy-analysis.md](.devkit/analysis/build-and-deploy-analysis.md)
 
 ## Development & Build Scripts
 

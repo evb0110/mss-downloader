@@ -1,6 +1,6 @@
 export type TStage = 'loading-manifest' | 'downloading' | 'merging' | 'processing' | 'caching' | 'complete';
 export type TStatus = 'loading' | 'pending' | 'queued' | 'downloading' | 'completed' | 'failed' | 'paused';
-export type TLibrary = 'nypl' | 'morgan' | 'gallica' | 'unifr' | 'vatlib' | 'cecilia' | 'irht' | 'dijon' | 'laon' | 'durham' | 'sharedcanvas' | 'ugent' | 'bl' | 'loading' | 'florus' | 'unicatt' | 'cudl' | 'trinity_cam' | 'isos' | 'mira' | 'orleans' | 'rbme' | 'parker' | 'manuscripta' | 'internet_culturale' | 'graz' | 'cologne' | 'vienna_manuscripta' | 'rome' | 'berlin' | 'czech' | 'modena' | 'bdl' | 'monte_cassino' | 'vallicelliana' | 'verona';
+export type TLibrary = 'nypl' | 'morgan' | 'gallica' | 'unifr' | 'vatlib' | 'cecilia' | 'irht' | 'dijon' | 'laon' | 'durham' | 'sharedcanvas' | 'ugent' | 'bl' | 'loading' | 'florus' | 'unicatt' | 'cudl' | 'trinity_cam' | 'isos' | 'mira' | 'orleans' | 'rbme' | 'parker' | 'manuscripta' | 'internet_culturale' | 'graz' | 'cologne' | 'vienna_manuscripta' | 'rome' | 'berlin' | 'czech' | 'modena' | 'bdl' | 'monte_cassino' | 'vallicelliana' | 'verona' | 'europeana';
 
 export interface LibraryOptimizationSettings {
     // Auto-split threshold in MB (overrides global setting)
