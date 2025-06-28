@@ -83,6 +83,11 @@ export class EnhancedManuscriptDownloaderService {
             description: 'Swiss virtual manuscript library',
         },
         {
+            name: 'e-manuscripta.ch',
+            example: 'https://www.e-manuscripta.ch/zuzcmi/content/zoom/3229497',
+            description: 'Swiss digital manuscript platform (Zurich libraries)',
+        },
+        {
             name: 'Florus (BM Lyon)',
             example: 'https://florus.bm-lyon.fr/visualisation.php?cote=MS0425&vue=128',
             description: 'Bibliothèque municipale de Lyon digital manuscripts',
@@ -242,6 +247,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('themorgan.org')) return 'morgan';
         if (url.includes('gallica.bnf.fr')) return 'gallica';
         if (url.includes('e-codices.unifr.ch') || url.includes('e-codices.ch')) return 'unifr';
+        if (url.includes('e-manuscripta.ch')) return 'e_manuscripta';
         if (url.includes('digi.vatlib.it')) return 'vatlib';
         if (url.includes('cecilia.mediatheques.grand-albigeois.fr')) return 'cecilia';
         if (url.includes('arca.irht.cnrs.fr')) return 'irht';
@@ -554,6 +560,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'europeana':
                     manifest = await this.loadEuropeanaManifest(originalUrl);
+                    break;
+                case 'e_manuscripta':
+                    manifest = await this.loadEManuscriptaManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -4897,7 +4906,7 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     /**
-     * Load Europeana manifest (using IIIF manifest API)
+     * Load Europeana manifest (using Record API to find external IIIF manifests)
      */
     async loadEuropeanaManifest(europeanaUrl: string): Promise<ManuscriptManifest> {
         try {
@@ -4911,9 +4920,43 @@ export class EnhancedManuscriptDownloaderService {
             const collectionId = urlMatch[1];
             const recordId = urlMatch[2];
             
-            // Construct IIIF manifest URL
+            console.log(`Europeana: Loading record data for ${collectionId}/${recordId}`);
+            
+            // First, try to get external IIIF manifest URL via Europeana Record API
+            const recordApiUrl = `https://api.europeana.eu/record/${collectionId}/${recordId}.json?wskey=api2demo`;
+            
+            try {
+                const recordResponse = await this.fetchDirect(recordApiUrl);
+                if (recordResponse.ok) {
+                    const recordData = await recordResponse.json();
+                    
+                    // Look for external IIIF manifest in webResources
+                    if (recordData.object?.aggregations?.[0]?.webResources) {
+                        for (const resource of recordData.object.aggregations[0].webResources) {
+                            if (resource.dctermsIsReferencedBy && Array.isArray(resource.dctermsIsReferencedBy)) {
+                                for (const manifestUrl of resource.dctermsIsReferencedBy) {
+                                    if (manifestUrl.includes('manifest.json') || manifestUrl.includes('/manifest')) {
+                                        console.log(`Europeana: Found external IIIF manifest: ${manifestUrl}`);
+                                        
+                                        // Load the external IIIF manifest
+                                        const externalManifest = await this.loadGenericIIIFManifest(manifestUrl, europeanaUrl, recordData.object?.proxies?.[0]?.dcTitle?.def?.[0] || `Europeana_${recordId}`);
+                                        console.log(`Europeana: Successfully loaded external manifest with ${externalManifest.totalPages} pages`);
+                                        return externalManifest;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    console.log(`Europeana: No external IIIF manifest found in Record API, falling back to Europeana's own IIIF`);
+                }
+            } catch (error) {
+                console.log(`Europeana: Record API failed (${error.message}), falling back to Europeana's own IIIF`);
+            }
+            
+            // Fallback: Use Europeana's own IIIF manifest (limited)
             const manifestUrl = `https://iiif.europeana.eu/presentation/${collectionId}/${recordId}/manifest`;
-            console.log(`Europeana: Loading IIIF manifest from ${manifestUrl}`);
+            console.log(`Europeana: Loading Europeana's own IIIF manifest from ${manifestUrl}`);
             
             const manifestResponse = await this.fetchDirect(manifestUrl);
             if (!manifestResponse.ok) {
@@ -4927,7 +4970,7 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             const canvases = iiifManifest.sequences[0].canvases;
-            console.log(`Europeana: Processing ${canvases.length} pages from IIIF manifest`);
+            console.log(`Europeana: Processing ${canvases.length} pages from Europeana's own IIIF manifest`);
             
             // Extract image URLs from IIIF manifest
             const pageLinks = canvases.map((canvas: any) => {
@@ -4987,6 +5030,192 @@ export class EnhancedManuscriptDownloaderService {
             
         } catch (error: any) {
             console.error(`Failed to load Europeana manifest: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Load a generic IIIF manifest from any URL
+     */
+    async loadGenericIIIFManifest(manifestUrl: string, originalUrl: string, displayName: string): Promise<ManuscriptManifest> {
+        try {
+            console.log(`Loading generic IIIF manifest from: ${manifestUrl}`);
+            
+            const manifestResponse = await this.fetchDirect(manifestUrl);
+            if (!manifestResponse.ok) {
+                throw new Error(`Failed to fetch IIIF manifest: HTTP ${manifestResponse.status}`);
+            }
+            
+            const iiifManifest = await manifestResponse.json();
+            
+            if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
+                throw new Error('Invalid IIIF manifest structure');
+            }
+            
+            const canvases = iiifManifest.sequences[0].canvases;
+            console.log(`Generic IIIF: Processing ${canvases.length} pages from manifest`);
+            
+            // Extract image URLs from IIIF manifest
+            const pageLinks = canvases.map((canvas: any) => {
+                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                    const resource = canvas.images[0].resource;
+                    
+                    // Check for IIIF Image API service
+                    if (resource.service && resource.service['@id']) {
+                        // Use full resolution IIIF Image API endpoint
+                        return `${resource.service['@id']}/full/full/0/default.jpg`;
+                    } else if (resource.service && resource.service.id) {
+                        // IIIF 3.0 format
+                        return `${resource.service.id}/full/max/0/default.jpg`;
+                    }
+                    
+                    // Fallback to direct resource URL
+                    return resource['@id'] || resource.id;
+                }
+                return null;
+            }).filter((url: string | null): url is string => url !== null);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No image URLs found in IIIF manifest');
+            }
+            
+            // Extract display name from manifest if not provided
+            let finalDisplayName = displayName;
+            if (!finalDisplayName && iiifManifest.label) {
+                if (typeof iiifManifest.label === 'string') {
+                    finalDisplayName = iiifManifest.label;
+                } else if (Array.isArray(iiifManifest.label)) {
+                    const firstLabel = iiifManifest.label[0];
+                    if (typeof firstLabel === 'string') {
+                        finalDisplayName = firstLabel;
+                    } else if (firstLabel && typeof firstLabel === 'object' && '@value' in firstLabel) {
+                        finalDisplayName = firstLabel['@value'] as string;
+                    }
+                } else if (typeof iiifManifest.label === 'object') {
+                    // Handle multilingual labels (IIIF 3.0 format)
+                    const labelValues = Object.values(iiifManifest.label);
+                    if (labelValues.length > 0 && Array.isArray(labelValues[0])) {
+                        finalDisplayName = (labelValues[0] as string[])[0];
+                    }
+                }
+            }
+            
+            if (!finalDisplayName) {
+                finalDisplayName = 'IIIF_Manuscript';
+            }
+            
+            const manifest = {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'europeana' as const, // Keep as europeana since this is called from Europeana context
+                displayName: finalDisplayName,
+                originalUrl,
+            };
+            
+            console.log(`Generic IIIF: Created manifest for "${finalDisplayName}" with ${pageLinks.length} pages`);
+            return manifest;
+            
+        } catch (error: any) {
+            console.error(`Failed to load generic IIIF manifest: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async loadEManuscriptaManifest(manuscriptaUrl: string): Promise<ManuscriptManifest> {
+        try {
+            console.log(`Loading e-manuscripta.ch manifest from: ${manuscriptaUrl}`);
+            
+            // Extract manuscript ID and library from URL
+            // URL format: https://www.e-manuscripta.ch/{library}/content/zoom/{id}
+            const urlPattern = /e-manuscripta\.ch\/([^/]+)\/content\/zoom\/(\d+)/;
+            const urlMatch = manuscriptaUrl.match(urlPattern);
+            
+            if (!urlMatch) {
+                throw new Error('Invalid e-manuscripta.ch URL format. Expected: https://www.e-manuscripta.ch/{library}/content/zoom/{id}');
+            }
+            
+            const [, library, manuscriptId] = urlMatch;
+            
+            // Fetch the viewer page to extract metadata and determine page count
+            const viewerResponse = await this.fetchDirect(manuscriptaUrl);
+            if (!viewerResponse.ok) {
+                throw new Error(`Failed to load viewer page: HTTP ${viewerResponse.status}`);
+            }
+            
+            const viewerHtml = await viewerResponse.text();
+            
+            // Extract title/manuscript name from the page
+            let displayName = `e-manuscripta ${manuscriptId}`;
+            const titleMatch = viewerHtml.match(/<title[^>]*>([^<]+)<\/title>/i);
+            if (titleMatch && titleMatch[1] && !titleMatch[1].includes('e-manuscripta.ch')) {
+                displayName = titleMatch[1].trim();
+            }
+            
+            // Look for page navigation to determine total pages
+            // Search for page navigation links like [1] [2] ... [464]
+            const pageNavRegex = /\[(\d+)\]/g;
+            const pageMatches = Array.from(viewerHtml.matchAll(pageNavRegex));
+            const pageNumbers = pageMatches.map(match => parseInt(match[1], 10));
+            const totalPages = pageNumbers.length > 0 ? Math.max(...pageNumbers) : 1;
+            
+            console.log(`e-manuscripta: Found ${totalPages} pages for ${displayName}`);
+            
+            // Check navigation links to understand the ID increment pattern
+            // Look for "next page" and "previous page" links to understand the sequence
+            const nextPagePattern = new RegExp(`/${library}/content/zoom/(\\d+)`, 'g');
+            const navigationMatches = Array.from(viewerHtml.matchAll(nextPagePattern));
+            const navigationIds = [...new Set(navigationMatches.map(match => parseInt(match[1], 10)))];
+            
+            // Try to find the increment pattern by looking at navigation
+            const baseId = parseInt(manuscriptId, 10);
+            let increment = 1; // Default increment
+            
+            if (navigationIds.length > 1) {
+                // Calculate the most common increment between consecutive IDs
+                const sortedIds = navigationIds.sort((a, b) => a - b);
+                const increments = [];
+                for (let i = 1; i < sortedIds.length; i++) {
+                    increments.push(sortedIds[i] - sortedIds[i-1]);
+                }
+                
+                // Find the most common increment
+                const incrementCounts = increments.reduce((acc, inc) => {
+                    acc[inc] = (acc[inc] || 0) + 1;
+                    return acc;
+                }, {} as Record<number, number>);
+                
+                const mostCommonIncrement = Object.entries(incrementCounts)
+                    .sort(([,a], [,b]) => b - a)[0];
+                
+                if (mostCommonIncrement) {
+                    increment = parseInt(mostCommonIncrement[0]);
+                    console.log(`e-manuscripta: Detected increment pattern: ${increment}`);
+                }
+            }
+            
+            // Generate page links using the detected increment
+            const pageLinks: string[] = [];
+            for (let i = 0; i < totalPages; i++) {
+                const imageId = baseId + (i * increment);
+                const imageUrl = `https://www.e-manuscripta.ch/${library}/download/webcache/0/${imageId}`;
+                pageLinks.push(imageUrl);
+            }
+            
+            console.log(`e-manuscripta: Generated ${pageLinks.length} image URLs with increment ${increment} starting from ID ${baseId}`);
+            
+            const eManuscriptaManifest: ManuscriptManifest = {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'e_manuscripta',
+                displayName,
+                originalUrl: manuscriptaUrl,
+            };
+            
+            console.log(`e-manuscripta: Created manifest for "${displayName}" with ${pageLinks.length} pages`);
+            return eManuscriptaManifest;
+            
+        } catch (error: any) {
+            console.error(`Failed to load e-manuscripta.ch manifest: ${error.message}`);
             throw error;
         }
     }

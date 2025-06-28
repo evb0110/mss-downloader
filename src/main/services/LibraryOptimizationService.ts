@@ -122,6 +122,11 @@ export class LibraryOptimizationService {
             timeoutMultiplier: 1.0, // Standard timeout for well-maintained IIIF service
             optimizationDescription: 'Europeana Collections optimizations: 4 concurrent downloads, IIIF manifest-based access'
         },
+        'e_manuscripta': {
+            maxConcurrentDownloads: 3, // Swiss e-manuscripta platform with good infrastructure
+            timeoutMultiplier: 1.2, // Slightly increased timeout for webcache system
+            optimizationDescription: 'e-manuscripta.ch optimizations: 3 concurrent downloads, webcache-based access'
+        },
         'loading': {}
     };
 
