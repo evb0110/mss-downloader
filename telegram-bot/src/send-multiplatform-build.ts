@@ -28,7 +28,8 @@ function formatText(text: string): string {
 
 function getChangelogFromCommits(version: string): string {
   try {
-    const commits = execSync('git log --oneline -5 --pretty=format:"%s"', { encoding: 'utf8' }).trim().split('\n');
+    // Get more commits to find changes since last version
+    const commits = execSync('git log --oneline -15 --pretty=format:"%s"', { encoding: 'utf8' }).trim().split('\n');
     
     // Find the most recent VERSION commit for the current version
     const currentVersionCommit = commits.find(commit => 
@@ -41,49 +42,22 @@ function getChangelogFromCommits(version: string): string {
       
       // Only show meaningful changes, skip generic internal improvements
       if (!cleaned.match(/^Internal improvements|^Version bump|^Stability fixes$/i)) {
+        // But also look for additional changes since last version
+        const additionalChanges = getChangesSinceLastVersion(commits, version);
+        if (additionalChanges.length > 0) {
+          const allChanges = [cleaned, ...additionalChanges].slice(0, 3); // Limit to 3 total changes
+          return `${bold("📝 What's New:")}\n${allChanges.map(change => `✅ ${formatText(change)}`).join('\n')}`;
+        }
         return `${bold("📝 What's New:")}\n✅ ${formatText(cleaned)}`;
       }
     }
     
-    // Fallback: Look for recent meaningful changes (last 5 commits)
-    const technicalPatterns = [
-      /^Bump version/i,
-      /VERSION-.*:\s*Version bump$/i,
-      /^\d+\.\d+\.\d+$/,
-      /Generated with Claude Code/i,
-      /Fix GitHub token/i,
-      /Fix GitHub release/i,
-      /Enable subscribers/i,
-      /Add automated/i,
-      /testing.*permissions/i,
-      /Update.*artifact/i,
-      /Fix.*formatting/i,
-      /Fix.*workflow/i,
-      /Fix.*CI/i,
-      /Test.*formatting/i,
-      /Fix.*SmartScreen/i,
-      /Fix multiplatform GitHub releases/i,
-      /Complete.*worktree.*merge/i,
-      /Complete.*implementation$/i,
-      /Implement.*comprehensive.*process.*management/i
-    ];
+    // Fallback: Look for recent meaningful changes since last version
+    const changesSinceLastVersion = getChangesSinceLastVersion(commits, version);
     
-    const meaningfulCommits = commits
-      .slice(0, 5)  // Look at last 5 commits for meaningful changes
-      .filter(commit => {
-        // Skip technical commits
-        if (technicalPatterns.some(pattern => pattern.test(commit))) {
-          return false;
-        }
-        // Include VERSION commits or obvious fixes - add broader patterns
-        return commit.match(/^VERSION-|^Fix.*library|^Fix.*UI|^Add.*support|^Improve|^Fix.*Europeana|^Fix.*manuscrip/i);
-      })
-      .slice(0, 1)  // Take only the first meaningful commit
-      .map(commit => extractUserFacingChange(commit))
-      .filter(change => !change.match(/^Internal improvements|^Version bump|^Stability fixes$/i));
-    
-    if (meaningfulCommits.length > 0) {
-      return `${bold("📝 What's New:")}\n✅ ${formatText(meaningfulCommits[0])}`;
+    if (changesSinceLastVersion.length > 0) {
+      const changes = changesSinceLastVersion.slice(0, 3); // Limit to 3 changes max
+      return `${bold("📝 What's New:")}\n${changes.map(change => `✅ ${formatText(change)}`).join('\n')}`;
     }
     
     return getChangelogFromVersionHistory(version);
@@ -91,6 +65,72 @@ function getChangelogFromCommits(version: string): string {
     console.error('Error generating changelog:', error);
     return getChangelogFromVersionHistory(version);
   }
+}
+
+function getChangesSinceLastVersion(commits: string[], currentVersion: string): string[] {
+  const technicalPatterns = [
+    /^Bump version/i,
+    /VERSION-.*:\s*Version bump$/i,
+    /^\d+\.\d+\.\d+$/,
+    /Generated with Claude Code/i,
+    /Fix GitHub token/i,
+    /Fix GitHub release/i,
+    /Enable subscribers/i,
+    /Add automated/i,
+    /testing.*permissions/i,
+    /Update.*artifact/i,
+    /Fix.*formatting/i,
+    /Fix.*workflow/i,
+    /Fix.*CI/i,
+    /Test.*formatting/i,
+    /Fix.*SmartScreen/i,
+    /Fix multiplatform GitHub releases/i,
+    /Complete.*worktree.*merge/i,
+    /Complete.*implementation$/i,
+    /Implement.*comprehensive.*process.*management/i,
+    /Enhance.*Telegram.*bot.*changelog/i,
+    /Fix.*TypeScript.*error/i,
+    /add.*type.*annotation/i,
+    /Trigger.*build.*for/i
+  ];
+
+  // Find the current version commit index
+  const currentVersionIndex = commits.findIndex(commit => 
+    commit.match(new RegExp(`^VERSION-${currentVersion.replace(/\./g, '\\.')}:`, 'i'))
+  );
+  
+  // Find the previous version commit index
+  let previousVersionIndex = -1;
+  for (let i = currentVersionIndex + 1; i < commits.length; i++) {
+    if (commits[i].match(/^VERSION-\d+\.\d+\.\d+:/i)) {
+      previousVersionIndex = i;
+      break;
+    }
+  }
+  
+  // Get commits between current and previous version (or last 10 if no previous version found)
+  const startIndex = currentVersionIndex >= 0 ? currentVersionIndex : 0;
+  const endIndex = previousVersionIndex >= 0 ? previousVersionIndex : Math.min(startIndex + 10, commits.length);
+  const commitsToAnalyze = commits.slice(startIndex, endIndex);
+  
+  // Filter for meaningful commits
+  const meaningfulCommits = commitsToAnalyze
+    .filter(commit => {
+      // Skip technical commits
+      if (technicalPatterns.some(pattern => pattern.test(commit))) {
+        return false;
+      }
+      // Include VERSION commits or obvious fixes
+      return commit.match(/^VERSION-|^Fix.*library|^Fix.*UI|^Add.*support|^Improve|^Fix.*Europeana|^Fix.*manuscrip|^Fix.*Morgan|^Fix.*Gallica|^Fix.*Vatican|^Add.*library/i);
+    })
+    .map(commit => extractUserFacingChange(commit))
+    .filter(change => !change.match(/^Internal improvements|^Version bump|^Stability fixes$/i))
+    .filter((change, index, array) => {
+      // Remove duplicates (case-insensitive)
+      return array.findIndex(c => c.toLowerCase() === change.toLowerCase()) === index;
+    });
+
+  return meaningfulCommits;
 }
 
 function extractUserFacingChange(commitMessage: string): string {
@@ -267,7 +307,7 @@ function getChangelogFromVersionHistory(version: string): string {
         return commit.match(/(?:Fix|Fixed|Add|Added|Improve|Enhanced|Support).*(?:library|Library|downloads?|manuscript|Manuscripta|Vienna|Morgan|Europeana|NYPL|quality|UI|page|range)/i) ||
                commit.match(/VERSION-[^:]*:\s*(?!Version bump|Internal|Implement\s+comprehensive\s+process)/i);
       })
-      .slice(0, 2)
+      .slice(0, 3)
       .map(commit => {
         // Extract meaningful part from commit message
         let change = commit.replace(/^VERSION-[^:]*:\s*/i, '').trim();
