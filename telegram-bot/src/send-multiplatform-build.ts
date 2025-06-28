@@ -28,8 +28,24 @@ function formatText(text: string): string {
 
 function getChangelogFromCommits(version: string): string {
   try {
-    const commits = execSync('git log --oneline -15 --pretty=format:"%s"', { encoding: 'utf8' }).trim().split('\n');
+    const commits = execSync('git log --oneline -5 --pretty=format:"%s"', { encoding: 'utf8' }).trim().split('\n');
     
+    // Find the most recent VERSION commit for the current version
+    const currentVersionCommit = commits.find(commit => 
+      commit.match(new RegExp(`^VERSION-${version.replace(/\./g, '\\.')}:`, 'i'))
+    );
+    
+    if (currentVersionCommit) {
+      // Extract the change description from this specific version commit
+      const cleaned = extractUserFacingChange(currentVersionCommit);
+      
+      // Only show meaningful changes, skip generic internal improvements
+      if (!cleaned.match(/^Internal improvements|^Version bump|^Stability fixes$/i)) {
+        return `${bold("📝 What's New:")}\n✅ ${formatText(cleaned)}`;
+      }
+    }
+    
+    // Fallback: Look for recent meaningful changes (last 3 commits only)
     const technicalPatterns = [
       /^Bump version/i,
       /VERSION-.*:\s*Version bump$/i,
@@ -48,70 +64,29 @@ function getChangelogFromCommits(version: string): string {
       /Fix.*SmartScreen/i,
       /Fix multiplatform GitHub releases/i,
       /Complete.*worktree.*merge/i,
-      /Complete.*implementation$/i
+      /Complete.*implementation$/i,
+      /Implement.*comprehensive.*process.*management/i
     ];
     
-    const userFacingPatterns = [
-      /^VERSION-/i,
-      /^Fix.*hanging/i,
-      /^Fix.*Orleans/i,
-      /^Fix.*Morgan/i,
-      /^Fix.*library/i,
-      /^Fix.*manifest/i,
-      /^Fix.*subscription/i,
-      /^Fix.*duplicate.*messages/i,
-      /^Fix.*missing.*download.*links/i,
-      /^Fix.*timeout/i,
-      /^Fix.*InternetCulturale/i,
-      /^Fix.*download/i,
-      /^Fix.*bug/i,
-      /^Fix.*critical/i,
-      /^Add.*simultaneous.*download/i,
-      /^Enhanced.*handling/i,
-      /^Add.*support/i,
-      /^Added.*support/i,
-      /^Implement/i,
-      /^Improve/i
-    ];
-    
-    const changelogItems: string[] = [];
-    const seenChanges = new Set<string>();
-    
-    commits
+    const meaningfulCommits = commits
+      .slice(0, 3)  // Only look at last 3 commits
       .filter(commit => {
-        // First check if it's a technical commit - exclude these even if they match user-facing patterns
+        // Skip technical commits
         if (technicalPatterns.some(pattern => pattern.test(commit))) {
           return false;
         }
-        // Include if it matches user-facing patterns
-        if (userFacingPatterns.some(pattern => pattern.test(commit))) {
-          return true;
-        }
-        // Skip if neither technical nor user-facing
-        return false;
+        // Include VERSION commits or obvious fixes
+        return commit.match(/^VERSION-|^Fix.*library|^Fix.*UI|^Add.*support|^Improve/i);
       })
-      .forEach(commit => {
-        if (changelogItems.length >= 3) return;
-        
-        let cleaned = commit
-          .replace(/^WEB-\d+\s+/, '')
-          .replace(/🤖.*Generated with.*$/, '')
-          .replace(/\s+Update version.*$/, '')
-          .trim();
-        
-        cleaned = extractUserFacingChange(cleaned);
-        
-        if (!seenChanges.has(cleaned.toLowerCase())) {
-          seenChanges.add(cleaned.toLowerCase());
-          changelogItems.push(`✅ ${formatText(cleaned)}`);
-        }
-      });
+      .slice(0, 1)  // Take only the first meaningful commit
+      .map(commit => extractUserFacingChange(commit))
+      .filter(change => !change.match(/^Internal improvements|^Version bump|^Stability fixes$/i));
     
-    if (changelogItems.length > 0) {
-      return `${bold("📝 What's New:")}\n${changelogItems.join('\n')}`;
-    } else {
-      return getChangelogFromVersionHistory(version);
+    if (meaningfulCommits.length > 0) {
+      return `${bold("📝 What's New:")}\n✅ ${formatText(meaningfulCommits[0])}`;
     }
+    
+    return getChangelogFromVersionHistory(version);
   } catch (error) {
     console.error('Error generating changelog:', error);
     return getChangelogFromVersionHistory(version);
@@ -131,10 +106,53 @@ function extractUserFacingChange(commitMessage: string): string {
       }
     }
     
-    const firstSentence = description.split('.')[0].trim();
-    if (firstSentence.length > 20) {
-      description = firstSentence;
+    // Extract user-facing changes from VERSION commit descriptions
+    if (description) {
+      // Fix Vienna Manuscripta page range detection for specific page URLs
+      if (description.match(/Fix.*Vienna.*Manuscripta.*page.*range/i)) {
+        return 'Fixed Vienna Manuscripta page downloads - Page-specific URLs now work correctly';
+      }
+      
+      // Fix critical library and UI issues
+      if (description.match(/Fix.*critical.*library.*UI/i)) {
+        return 'Fixed multiple critical library issues and improved UI responsiveness';
+      }
+      
+      // Implement comprehensive process management system
+      if (description.match(/Implement.*comprehensive.*process.*management/i)) {
+        return 'Internal improvements and stability fixes';
+      }
+      
+      // Generic library fixes
+      if (description.match(/Fix.*library/i)) {
+        const libraryMatch = description.match(/Fix\s+([^,]+?)\s+(?:library|downloads?|issues?)/i);
+        if (libraryMatch) {
+          return `Fixed ${libraryMatch[1]} library downloads`;
+        }
+        return 'Fixed library download issues';
+      }
+      
+      // UI improvements
+      if (description.match(/Fix.*UI|Improve.*UI|Enhanced?.*UI/i)) {
+        return 'Improved user interface and controls';
+      }
+      
+      // Quality improvements
+      if (description.match(/quality|resolution|image/i)) {
+        return 'Improved download quality and image resolution';
+      }
+      
+      // Split up long descriptions into first meaningful part
+      const firstSentence = description.split(/[.;-]/)[0].trim();
+      if (firstSentence.length > 20) {
+        return firstSentence;
+      }
+      
+      return description;
     }
+    
+    // If no description after colon, return generic message for VERSION commits
+    return 'Internal improvements and stability fixes';
   } else {
     // Handle non-VERSION commits directly
     let description = commitMessage;
@@ -192,31 +210,31 @@ function extractUserFacingChange(commitMessage: string): string {
   }
   
   const specificLibraryMatch = commitMessage.match(/Fix(?:ed)?\s+(Morgan\s+Library|themorgan\.org|Gallica|Vatican|CUDL|ISOS|MIRA|Trinity|Cambridge|Orleans|Manuscripta|Stanford|Parker|FLORUS|BM\s+Lyon)[^:]*(?::\s*(.+))?/i);
-  if (specificLibraryMatch) {
-    const libraryName = specificLibraryMatch[1];
-    const description = specificLibraryMatch[2] || 'issues';
+  if (specificLibraryMatch?.[1]) {
+    const libraryName = specificLibraryMatch![1];
+    const description = specificLibraryMatch![2] || 'issues';
     return `Fixed ${libraryName} ${description}`;
   }
   
   const hangingMatch = commitMessage.match(/Fix(?:ed)?\s+([^:]+?)\s+hanging/i);
-  if (hangingMatch) {
-    return `Fixed ${hangingMatch[1]} hanging issue`;
+  if (hangingMatch?.[1]) {
+    return `Fixed ${hangingMatch![1]} hanging issue`;
   }
   
   const libraryMatch = commitMessage.match(/Add(?:ed)?\s+([^:,]+?)\s+support/i);
-  if (libraryMatch) {
-    const libraryName = libraryMatch[1].trim();
+  if (libraryMatch?.[1]) {
+    const libraryName = libraryMatch![1].trim();
     return `Added ${libraryName} support`;
   }
   
   const fixMatch = commitMessage.match(/Fix(?:ed)?\s+([^:,]+?)(?:\s+by|\s+-|\s+and|$)/i);
-  if (fixMatch) {
-    return `Fixed ${fixMatch[1]}`;
+  if (fixMatch?.[1]) {
+    return `Fixed ${fixMatch![1]}`;
   }
   
   const enhanceMatch = commitMessage.match(/Enhanc(?:e|ed)\s+([^:,]+?)(?:\s+by|\s+-|\s+and|$)/i);
-  if (enhanceMatch) {
-    return `Enhanced ${enhanceMatch[1]}`;
+  if (enhanceMatch?.[1]) {
+    return `Enhanced ${enhanceMatch![1]}`;
   }
   
   const colIndex = commitMessage.indexOf(':');
@@ -228,6 +246,56 @@ function extractUserFacingChange(commitMessage: string): string {
 }
 
 function getChangelogFromVersionHistory(version: string): string {
+  // Try to extract meaningful changes from git logs using a more aggressive approach
+  try {
+    const commits = execSync('git log --oneline -10 --pretty=format:"%s"', { encoding: 'utf8' }).trim().split('\n');
+    
+    // Look for any library mentions or specific fixes, even in technical commits
+    const meaningfulChanges = commits
+      .filter(commit => {
+        // Look for library names, fix patterns, or improvements
+        return commit.match(/(?:Fix|Fixed|Add|Added|Improve|Enhanced|Support).*(?:library|Library|downloads?|manuscript|Manuscripta|Vienna|Morgan|Europeana|NYPL|quality|UI|page|range)/i) ||
+               commit.match(/VERSION-[^:]*:\s*(?!Version bump|Internal|Implement\s+comprehensive\s+process)/i);
+      })
+      .slice(0, 2)
+      .map(commit => {
+        // Extract meaningful part from commit message
+        let change = commit.replace(/^VERSION-[^:]*:\s*/i, '').trim();
+        
+        // Apply specific transformations for user-facing language
+        if (change.match(/Fix.*Vienna.*Manuscripta.*page.*range/i)) {
+          return '✅ Fixed Vienna Manuscripta page downloads - Page-specific URLs now work correctly';
+        }
+        if (change.match(/Fix.*Europeana.*manifest.*displayName/i)) {
+          return '✅ Fixed Europeana library downloads';
+        }
+        if (change.match(/Fix.*Morgan.*Library.*quality/i)) {
+          return '✅ Enhanced Morgan Library image quality (5x improvement)';
+        }
+        if (change.match(/Fix.*critical.*library.*UI/i)) {
+          return '✅ Fixed multiple critical library issues and improved UI responsiveness';
+        }
+        if (change.match(/Improve.*UI.*controls.*responsiveness/i)) {
+          return '✅ Improved download controls responsiveness';
+        }
+        
+        // Generic cleanup for other patterns
+        change = change.replace(/^(Fix|Fixed|Add|Added|Improve|Enhanced)\s+/i, '');
+        if (change.length > 60) {
+          change = change.split(/[.;-]/)[0].trim();
+        }
+        
+        return `✅ ${change.charAt(0).toUpperCase() + change.slice(1)}`;
+      });
+    
+    if (meaningfulChanges.length > 0) {
+      return `${bold("📝 What's New:")}\n${meaningfulChanges.join('\n')}`;
+    }
+  } catch (error) {
+    console.error('Error reading git commits for changelog:', error);
+  }
+  
+  // Try to read from CLAUDE.md version history as backup
   try {
     const claudeContent = fs.readFileSync(path.join(__dirname, '..', '..', 'CLAUDE.md'), 'utf8');
     const versionHistoryMatch = claudeContent.match(/### Version History\n([\s\S]*?)(?=\n##|\n### |$)/);
@@ -250,7 +318,7 @@ function getChangelogFromVersionHistory(version: string): string {
         .filter((item): item is { version: string; description: string } => item !== null)
         .reverse()
         .slice(0, 2)
-        .map(item => `• ${item.description}`);
+        .map(item => `✅ ${item.description}`);
       
       if (recentVersions.length > 0) {
         return `${bold("📝 What's New:")}\n${recentVersions.join('\n')}`;
@@ -260,7 +328,8 @@ function getChangelogFromVersionHistory(version: string): string {
     console.error('Error reading version history:', error);
   }
   
-  return `${bold("📝 What's New:")}\n• Latest updates and improvements with multi-platform support`;
+  // Last resort fallback - but at least make it more specific
+  return `${bold("📝 What's New:")}\n✅ Bug fixes and stability improvements`;
 }
 
 async function findAllBuilds() {
