@@ -45,7 +45,7 @@ function getChangelogFromCommits(version: string): string {
       }
     }
     
-    // Fallback: Look for recent meaningful changes (last 3 commits only)
+    // Fallback: Look for recent meaningful changes (last 5 commits)
     const technicalPatterns = [
       /^Bump version/i,
       /VERSION-.*:\s*Version bump$/i,
@@ -69,14 +69,14 @@ function getChangelogFromCommits(version: string): string {
     ];
     
     const meaningfulCommits = commits
-      .slice(0, 3)  // Only look at last 3 commits
+      .slice(0, 5)  // Look at last 5 commits for meaningful changes
       .filter(commit => {
         // Skip technical commits
         if (technicalPatterns.some(pattern => pattern.test(commit))) {
           return false;
         }
-        // Include VERSION commits or obvious fixes
-        return commit.match(/^VERSION-|^Fix.*library|^Fix.*UI|^Add.*support|^Improve/i);
+        // Include VERSION commits or obvious fixes - add broader patterns
+        return commit.match(/^VERSION-|^Fix.*library|^Fix.*UI|^Add.*support|^Improve|^Fix.*Europeana|^Fix.*manuscrip/i);
       })
       .slice(0, 1)  // Take only the first meaningful commit
       .map(commit => extractUserFacingChange(commit))
@@ -108,6 +108,16 @@ function extractUserFacingChange(commitMessage: string): string {
     
     // Extract user-facing changes from VERSION commit descriptions
     if (description) {
+      // Fix Europeana manuscript pagination by detecting external IIIF manifests
+      if (description.match(/Fix.*Europeana.*manuscript.*pagination.*detecting.*external.*IIIF.*manifests/i)) {
+        return 'Fixed Europeana manuscripts - Now downloads complete manuscripts (452 pages) instead of single preview page';
+      }
+      
+      // Fix Europeana pagination fix (broader pattern)
+      if (description.match(/Europeana.*pagination.*fix/i)) {
+        return 'Fixed Europeana manuscripts - Now downloads complete manuscripts instead of single preview page';
+      }
+      
       // Fix Vienna Manuscripta page range detection for specific page URLs
       if (description.match(/Fix.*Vienna.*Manuscripta.*page.*range/i)) {
         return 'Fixed Vienna Manuscripta page downloads - Page-specific URLs now work correctly';
@@ -263,6 +273,9 @@ function getChangelogFromVersionHistory(version: string): string {
         let change = commit.replace(/^VERSION-[^:]*:\s*/i, '').trim();
         
         // Apply specific transformations for user-facing language
+        if (change.match(/Fix.*Europeana.*manuscript.*pagination.*detecting.*external.*IIIF.*manifests/i)) {
+          return '✅ Fixed Europeana manuscripts - Now downloads complete manuscripts (452 pages) instead of single preview page';
+        }
         if (change.match(/Fix.*Vienna.*Manuscripta.*page.*range/i)) {
           return '✅ Fixed Vienna Manuscripta page downloads - Page-specific URLs now work correctly';
         }
