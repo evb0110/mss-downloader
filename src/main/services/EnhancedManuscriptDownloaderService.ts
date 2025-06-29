@@ -145,7 +145,7 @@ export class EnhancedManuscriptDownloaderService {
         {
             name: 'Rome National Library (BNCR)',
             example: 'http://digitale.bnc.roma.sbn.it/tecadigitale/manoscrittoantico/BNCR_Ms_SESS_0062/BNCR_Ms_SESS_0062/1',
-            description: 'Biblioteca Nazionale Centrale di Roma digital manuscript collections',
+            description: 'Biblioteca Nazionale Centrale di Roma digital manuscript collections (manoscrittoantico and libroantico)',
         },
         {
             name: 'SharedCanvas',
@@ -3919,16 +3919,34 @@ export class EnhancedManuscriptDownloaderService {
             const manifestUrl = `https://unipub.uni-graz.at/i3f/v20/${manuscriptId}/manifest`;
             console.log(`Fetching IIIF manifest from: ${manifestUrl}`);
             
-            // Fetch the IIIF manifest
+            // Fetch the IIIF manifest with extended timeout for large manifests
             const headers = {
                 'Accept': 'application/json, application/ld+json',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             };
             
-            const response = await this.fetchWithProxyFallback(manifestUrl, { headers });
+            // Use extended timeout (2 minutes) for Graz's large IIIF manifests (289KB)
+            const controller = new AbortController();
+            const extendedTimeout = 120000; // 2 minutes for large manifests
+            const timeoutId = setTimeout(() => controller.abort(), extendedTimeout);
             
-            if (!response.ok) {
-                throw new Error(`Failed to fetch IIIF manifest: ${response.status} ${response.statusText}`);
+            let response: Response;
+            try {
+                response = await this.fetchWithProxyFallback(manifestUrl, { 
+                    headers,
+                    signal: controller.signal 
+                });
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch IIIF manifest: ${response.status} ${response.statusText}`);
+                }
+            } catch (error: any) {
+                clearTimeout(timeoutId);
+                if (error.name === 'AbortError') {
+                    throw new Error('University of Graz manifest loading timed out (2 minutes). The manifest may be very large or the server may be slow.');
+                }
+                throw error;
             }
             
             const manifest = await response.json();
@@ -4213,26 +4231,22 @@ export class EnhancedManuscriptDownloaderService {
                         }).filter((url: string | null): url is string => url !== null);
                         
                         if (pageLinks.length > 0) {
-                            // Apply page range filtering if specific page was requested
-                            let filteredPageLinks = pageLinks;
+                            // DO NOT pre-filter pageLinks here to avoid hanging issues
+                            // Page range filtering will be handled during download process
+                            console.log(`Vienna Manuscripta: IIIF manifest loaded with ${pageLinks.length} total pages available`);
                             if (startPage !== null) {
-                                const pageIndex = startPage - 1; // Convert to 0-based index
-                                if (pageIndex >= 0 && pageIndex < pageLinks.length) {
-                                    filteredPageLinks = pageLinks.slice(pageIndex);
-                                    console.log(`Vienna Manuscripta: Filtered to ${filteredPageLinks.length} pages starting from page ${startPage}`);
-                                } else {
-                                    console.warn(`Vienna Manuscripta: Requested page ${startPage} is out of range (1-${pageLinks.length})`);
-                                }
+                                console.log(`Vienna Manuscripta: URL specifies starting from page ${startPage} - this will be handled during download`);
                             }
                             
                             const displayName = iiifManifest.label || `Vienna_${manuscriptId}`;
                             
                             return {
-                                pageLinks: filteredPageLinks,
-                                totalPages: filteredPageLinks.length,
+                                pageLinks: pageLinks, // Return full page list, filtering handled in download
+                                totalPages: pageLinks.length, // Total pages available
                                 library: 'vienna_manuscripta' as const,
                                 displayName: typeof displayName === 'string' ? displayName : displayName[0] || `Vienna_${manuscriptId}`,
                                 originalUrl: manuscriptaUrl,
+                                startPageFromUrl: startPage ?? undefined, // Store URL page number for later use
                             };
                         }
                     }
@@ -4298,30 +4312,26 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('No pages found in Vienna Manuscripta manuscript');
             }
             
-            // Apply page range filtering if specific page was requested
-            let filteredPageLinks = pageLinks;
+            // DO NOT pre-filter pageLinks here to avoid hanging issues
+            // Page range filtering will be handled during download process
+            console.log(`Vienna Manuscripta: Page discovery found ${pageLinks.length} total pages available`);
             if (startPage !== null) {
-                const pageIndex = startPage - 1; // Convert to 0-based index
-                if (pageIndex >= 0 && pageIndex < pageLinks.length) {
-                    filteredPageLinks = pageLinks.slice(pageIndex);
-                    console.log(`Vienna Manuscripta: Filtered to ${filteredPageLinks.length} pages starting from page ${startPage}`);
-                } else {
-                    console.warn(`Vienna Manuscripta: Requested page ${startPage} is out of range (1-${pageLinks.length})`);
-                }
+                console.log(`Vienna Manuscripta: URL specifies starting from page ${startPage} - this will be handled during download`);
             }
             
             // Extract manuscript name from first page for display name
             const displayName = `Vienna_${manuscriptId}`;
             
             const manifest: ManuscriptManifest = {
-                pageLinks: filteredPageLinks,
-                totalPages: filteredPageLinks.length,
+                pageLinks: pageLinks, // Return full page list, filtering handled in download
+                totalPages: pageLinks.length, // Total pages available
                 library: 'vienna_manuscripta' as const,
                 displayName,
                 originalUrl: manuscriptaUrl,
+                startPageFromUrl: startPage ?? undefined, // Store URL page number for later use
             };
             
-            console.log(`Vienna Manuscripta manifest loaded: ${displayName}, total pages: ${filteredPageLinks.length}`);
+            console.log(`Vienna Manuscripta manifest loaded: ${displayName}, total pages: ${pageLinks.length}`);
             return manifest;
             
         } catch (error: any) {
@@ -4334,14 +4344,16 @@ export class EnhancedManuscriptDownloaderService {
         console.log('Loading Rome National Library manifest for:', romeUrl);
         
         try {
-            // Extract manuscript ID from URL
-            // Expected format: http://digitale.bnc.roma.sbn.it/tecadigitale/manoscrittoantico/BNCR_Ms_SESS_0062/BNCR_Ms_SESS_0062/1
-            const urlMatch = romeUrl.match(/\/manoscrittoantico\/([^/]+)\/([^/]+)\/(\d+)/);
+            // Extract manuscript ID and collection type from URL
+            // Expected formats: 
+            // - http://digitale.bnc.roma.sbn.it/tecadigitale/manoscrittoantico/BNCR_Ms_SESS_0062/BNCR_Ms_SESS_0062/1
+            // - http://digitale.bnc.roma.sbn.it/tecadigitale/libroantico/BVEE112879/BVEE112879/1
+            const urlMatch = romeUrl.match(/\/(manoscrittoantico|libroantico)\/([^/]+)\/([^/]+)\/(\d+)/);
             if (!urlMatch) {
                 throw new Error('Invalid Rome National Library URL format');
             }
             
-            const [, manuscriptId1, manuscriptId2] = urlMatch;
+            const [, collectionType, manuscriptId1, manuscriptId2] = urlMatch;
             
             // Verify that both parts of the manuscript ID are the same
             if (manuscriptId1 !== manuscriptId2) {
@@ -4349,6 +4361,7 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             const manuscriptId = manuscriptId1;
+            console.log(`Processing Rome ${collectionType} manuscript: ${manuscriptId}`);
             
             // Fetch the first page to get metadata and examine image URLs
             const pageResponse = await this.fetchDirect(romeUrl);
@@ -4377,34 +4390,50 @@ export class EnhancedManuscriptDownloaderService {
             
             // Look for actual image URLs in the page HTML to understand the correct format
             // BNCR may use different resolution endpoints - check for existing img tags
-            const imageMatch = html.match(/src="([^"]*\/img\/manoscrittoantico\/[^"]*)"/) ||
-                              html.match(/href="([^"]*\/img\/manoscrittoantico\/[^"]*)"/) ||
-                              html.match(/"([^"]*\/img\/manoscrittoantico\/[^"]*\/(?:full|max|high|large)[^"]*)"/);
+            const imagePatterns = [
+                new RegExp(`src="([^"]*\\/img\\/${collectionType}\\/[^"]*)"`, 'i'),
+                new RegExp(`href="([^"]*\\/img\\/${collectionType}\\/[^"]*)"`, 'i'),
+                new RegExp(`"([^"]*\\/img\\/${collectionType}\\/[^"]*\\/(?:full|max|high|large|original)[^"]*)"`, 'i')
+            ];
+            
+            let sampleImageUrl = '';
+            for (const pattern of imagePatterns) {
+                const match = html.match(pattern);
+                if (match) {
+                    sampleImageUrl = match[1];
+                    console.log(`Found sample image URL in page: ${sampleImageUrl}`);
+                    break;
+                }
+            }
             
             let imageUrlTemplate = '';
-            if (imageMatch) {
-                const sampleImageUrl = imageMatch[1];
-                console.log(`Found sample image URL in page: ${sampleImageUrl}`);
-                
-                // Extract the pattern and determine best resolution parameters - prioritize original quality
+            if (sampleImageUrl) {
+                // Extract the pattern and determine best resolution parameters
+                // Use appropriate resolution based on collection type and availability
                 if (sampleImageUrl.includes('/original/')) {
-                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/original`;
+                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/PAGENUM/original`;
                 } else if (sampleImageUrl.includes('/full/')) {
-                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/original`;
+                    // For libroantico, use /full; for manoscrittoantico, upgrade to /original
+                    const resolution = collectionType === 'libroantico' ? 'full' : 'original';
+                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/PAGENUM/${resolution}`;
                 } else if (sampleImageUrl.includes('/high/')) {
-                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/original`;
+                    const resolution = collectionType === 'libroantico' ? 'full' : 'original';
+                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/PAGENUM/${resolution}`;
                 } else if (sampleImageUrl.includes('/max/')) {
-                    // /max returns HTML, not images - use /original instead
-                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/original`;
+                    // /max returns HTML, not images - use best available resolution
+                    const resolution = collectionType === 'libroantico' ? 'full' : 'original';
+                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/PAGENUM/${resolution}`;
                 } else {
                     // If no resolution parameter found, try to extract the pattern and add highest quality
                     const basePattern = sampleImageUrl.replace(/\/\d+\/[^/]*$/, '');
-                    imageUrlTemplate = `${basePattern}/PAGENUM/original`;
+                    const resolution = collectionType === 'libroantico' ? 'full' : 'original';
+                    imageUrlTemplate = `${basePattern}/PAGENUM/${resolution}`;
                 }
             } else {
-                // Fallback to original resolution which provides highest quality (3x better than /full)
-                imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/manoscrittoantico/${manuscriptId}/${manuscriptId}/PAGENUM/original`;
-                console.log('No sample image URL found in page HTML, using original resolution template for best quality');
+                // Fallback based on collection type
+                const resolution = collectionType === 'libroantico' ? 'full' : 'original';
+                imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/PAGENUM/${resolution}`;
+                console.log(`No sample image URL found in page HTML, using ${resolution} resolution template for ${collectionType} collection`);
             }
             
             // Generate page links using the determined template
@@ -5151,57 +5180,86 @@ export class EnhancedManuscriptDownloaderService {
                 displayName = titleMatch[1].trim();
             }
             
-            // Look for page navigation to determine total pages
-            // Search for page navigation links like [1] [2] ... [464]
-            const pageNavRegex = /\[(\d+)\]/g;
-            const pageMatches = Array.from(viewerHtml.matchAll(pageNavRegex));
-            const pageNumbers = pageMatches.map(match => parseInt(match[1], 10));
-            const totalPages = pageNumbers.length > 0 ? Math.max(...pageNumbers) : 1;
+            // Look for page navigation dropdown to get actual page IDs
+            // Find the complete goToPage select element first
+            const selectStart = viewerHtml.indexOf('<select id="goToPage"');
+            const selectEnd = viewerHtml.indexOf('</select>', selectStart);
             
-            console.log(`e-manuscripta: Found ${totalPages} pages for ${displayName}`);
+            let pageMatches: RegExpMatchArray[] = [];
             
-            // Check navigation links to understand the ID increment pattern
-            // Look for "next page" and "previous page" links to understand the sequence
-            const nextPagePattern = new RegExp(`/${library}/content/zoom/(\\d+)`, 'g');
-            const navigationMatches = Array.from(viewerHtml.matchAll(nextPagePattern));
-            const navigationIds = [...new Set(navigationMatches.map(match => parseInt(match[1], 10)))];
-            
-            // Try to find the increment pattern by looking at navigation
-            const baseId = parseInt(manuscriptId, 10);
-            let increment = 1; // Default increment
-            
-            if (navigationIds.length > 1) {
-                // Calculate the most common increment between consecutive IDs
-                const sortedIds = navigationIds.sort((a, b) => a - b);
-                const increments = [];
-                for (let i = 1; i < sortedIds.length; i++) {
-                    increments.push(sortedIds[i] - sortedIds[i-1]);
-                }
+            if (selectStart !== -1 && selectEnd !== -1) {
+                const selectElement = viewerHtml.substring(selectStart, selectEnd + 9);
+                console.log(`e-manuscripta: Found goToPage select element (${selectElement.length} chars)`);
                 
-                // Find the most common increment
-                const incrementCounts = increments.reduce((acc, inc) => {
-                    acc[inc] = (acc[inc] || 0) + 1;
-                    return acc;
-                }, {} as Record<number, number>);
-                
-                const mostCommonIncrement = Object.entries(incrementCounts)
-                    .sort(([,a], [,b]) => b - a)[0];
-                
-                if (mostCommonIncrement) {
-                    increment = parseInt(mostCommonIncrement[0]);
-                    console.log(`e-manuscripta: Detected increment pattern: ${increment}`);
-                }
+                // Parse options from within the select element
+                const pageDropdownRegex = /<option\s+value="(\d+)"\s*>\s*\[(\d+)\]\s*/g;
+                pageMatches = Array.from(selectElement.matchAll(pageDropdownRegex));
+                console.log(`e-manuscripta: Extracted ${pageMatches.length} pages from goToPage dropdown`);
+            } else {
+                console.warn('e-manuscripta: goToPage select element not found, trying global search');
+                // Fallback: try global search (less reliable)
+                const pageDropdownRegex = /<option\s+value="(\d+)"\s*>\s*\[(\d+)\]\s*<\/option>/g;
+                pageMatches = Array.from(viewerHtml.matchAll(pageDropdownRegex));
             }
             
-            // Generate page links using the detected increment
-            const pageLinks: string[] = [];
-            for (let i = 0; i < totalPages; i++) {
-                const imageId = baseId + (i * increment);
-                const imageUrl = `https://www.e-manuscripta.ch/${library}/download/webcache/0/${imageId}`;
-                pageLinks.push(imageUrl);
+            if (pageMatches.length === 0) {
+                // Fallback: look for any bracketed page numbers in navigation
+                const pageNavRegex = /\[(\d+)\]/g;
+                const navMatches = Array.from(viewerHtml.matchAll(pageNavRegex));
+                if (navMatches.length === 0) {
+                    console.warn('e-manuscripta: No page navigation found, assuming single page');
+                    const pageLinks = [`https://www.e-manuscripta.ch/${library}/download/webcache/0/${manuscriptId}`];
+                    return {
+                        pageLinks,
+                        totalPages: 1,
+                        library: 'e_manuscripta',
+                        displayName,
+                        originalUrl: manuscriptaUrl,
+                    };
+                }
+                
+                console.warn('e-manuscripta: Could not find page dropdown, falling back to unreliable navigation links');
+                const pageNumbers = navMatches.map(match => parseInt(match[1], 10));
+                const totalPages = Math.max(...pageNumbers);
+                
+                // Generate page links using simple increment (unreliable fallback)
+                const baseId = parseInt(manuscriptId, 10);
+                const pageLinks: string[] = [];
+                for (let i = 0; i < totalPages; i++) {
+                    const imageId = baseId + i;
+                    const imageUrl = `https://www.e-manuscripta.ch/${library}/download/webcache/0/${imageId}`;
+                    pageLinks.push(imageUrl);
+                }
+                
+                console.log(`e-manuscripta: Fallback - generated ${pageLinks.length} URLs with simple increment`);
+                return {
+                    pageLinks,
+                    totalPages: pageLinks.length,
+                    library: 'e_manuscripta',
+                    displayName,
+                    originalUrl: manuscriptaUrl,
+                };
             }
             
-            console.log(`e-manuscripta: Generated ${pageLinks.length} image URLs with increment ${increment} starting from ID ${baseId}`);
+            // Extract actual page IDs and their corresponding page numbers from dropdown
+            const pageData = pageMatches.map(match => ({
+                pageId: match[1],
+                pageNumber: parseInt(match[2], 10)
+            }));
+            
+            // Sort by page number to ensure correct order
+            pageData.sort((a, b) => a.pageNumber - b.pageNumber);
+            
+            console.log(`e-manuscripta: Found ${pageData.length} pages for ${displayName}`);
+            console.log(`e-manuscripta: Page range [${pageData[0]?.pageNumber}] to [${pageData[pageData.length - 1]?.pageNumber}]`);
+            console.log(`e-manuscripta: First page ID: ${pageData[0]?.pageId}, Last page ID: ${pageData[pageData.length - 1]?.pageId}`);
+            
+            // Generate page links using the actual page IDs from the dropdown
+            const pageLinks: string[] = pageData.map(page => 
+                `https://www.e-manuscripta.ch/${library}/download/webcache/0/${page.pageId}`
+            );
+            
+            console.log(`e-manuscripta: Generated ${pageLinks.length} image URLs using actual page IDs from dropdown`);
             
             const eManuscriptaManifest: ManuscriptManifest = {
                 pageLinks,
