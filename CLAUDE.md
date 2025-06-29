@@ -47,10 +47,14 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 
 **NOT for:** Documentation, telegram bot fixes (any telegram bot changes - commit and push silently without version bump), code refactoring without behavior changes
 
-**Process:** IMMEDIATELY when all problems are solved (no user approval needed):
+**Process:** IMMEDIATELY when all problems are solved:
 1. Bump patch version in package.json
 2. Commit all changes with descriptive message  
 3. Push to GitHub main (triggers auto-build & notifications)
+
+**APPROVAL KEYWORD SYSTEM:**
+- If user prompt contains "approval" keyword → ALWAYS ask for approval before version bump
+- If user prompt lacks "approval" keyword → Automatic version bump (no user approval needed)
 
 ### 2. Library Validation Protocol  
 When adding/fixing libraries, **MANDATORY validation:**
@@ -59,6 +63,8 @@ When adding/fixing libraries, **MANDATORY validation:**
 3. Confirm all pages show different manuscript content (not stuck on page 1)
 4. If validation fails, apply all skills to fix; if unfixable, implement other tasks and report to user
 5. Merge to PDF and test validity with poppler
+
+**VALIDATION SUCCESS REQUIREMENT:** Library validation must pass (≥80% success rate) before version bump, unless user prompt contains "approval" keyword (then ask for approval even with failed validation).
 
 ### 3. Testing Requirements
 - Write comprehensive test suite for every bug fix
