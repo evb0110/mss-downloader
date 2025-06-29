@@ -1648,9 +1648,16 @@ export class EnhancedManuscriptDownloaderService {
      */
     async downloadImageWithRetries(url: string, attempt = 0): Promise<ArrayBuffer> {
         try {
-            // Use proxy fallback for Unicatt, Orleans, and Graz images or when direct access fails
+            // Use proxy fallback for libraries with connection issues or when direct access fails
             // Note: Internet Culturale removed from proxy list to fix authentication issues
-            const response = url.includes('digitallibrary.unicatt.it') || url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr') || url.includes('unipub.uni-graz.at')
+            // BDL added due to IIIF server instability (60% connection failures)
+            const needsProxyFallback = url.includes('digitallibrary.unicatt.it') || 
+                                     url.includes('mediatheques.orleans.fr') || 
+                                     url.includes('aurelia.orleans.fr') || 
+                                     url.includes('unipub.uni-graz.at') ||
+                                     url.includes('bdl.servizirl.it');
+            
+            const response = needsProxyFallback
                 ? await this.fetchWithProxyFallback(url)
                 : await this.fetchDirect(url, {}, attempt + 1); // Pass attempt number for timeout calculation
             
@@ -1674,6 +1681,20 @@ export class EnhancedManuscriptDownloaderService {
         } catch (error: any) {
             const maxRetries = configService.get('maxRetries');
             if (attempt < maxRetries) {
+                // BDL Quality Fallback: Try lower quality before retrying same quality
+                if (url.includes('bdl.servizirl.it') && (url.includes('/full/max/') || url.includes('/full/full/'))) {
+                    const qualityFallbacks = ['/full/2048,/', '/full/1024,/', '/full/512,/'];
+                    const currentQuality = (url.includes('/full/max/') || url.includes('/full/full/')) ? 0 : 
+                                         url.includes('/full/2048,') ? 1 : 
+                                         url.includes('/full/1024,') ? 2 : 3;
+                    
+                    if (currentQuality < qualityFallbacks.length) {
+                        const fallbackUrl = url.replace(/\/full\/[^/]+\//, qualityFallbacks[currentQuality]);
+                        console.log(`BDL quality fallback: ${url} -> ${fallbackUrl}`);
+                        return this.downloadImageWithRetries(fallbackUrl, attempt);
+                    }
+                }
+                
                 // Check if library supports progressive backoff
                 const library = this.detectLibrary(url) as TLibrary;
                 const useProgressiveBackoff = library && 
@@ -4949,8 +4970,8 @@ export class EnhancedManuscriptDownloaderService {
                 
                 for (const page of pagesData) {
                     if (page.idMediaServer) {
-                        // Construct IIIF URL for full resolution image
-                        const imageUrl = `https://www.bdl.servizirl.it/cantaloupe/iiif/2/${page.idMediaServer}/full/full/0/default.jpg`;
+                        // Construct IIIF URL for full resolution image  
+                        const imageUrl = `https://www.bdl.servizirl.it/cantaloupe/iiif/2/${page.idMediaServer}/full/max/0/default.jpg`;
                         pageLinks.push(imageUrl);
                     } else {
                         console.warn(`Page ${page.id || 'unknown'} missing idMediaServer, skipping`);

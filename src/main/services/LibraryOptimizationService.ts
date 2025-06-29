@@ -98,9 +98,10 @@ export class LibraryOptimizationService {
             optimizationDescription: 'Modena Diocesan Archive optimizations: 3 concurrent downloads, Flash bypass via mobile interface'
         },
         'bdl': {
-            maxConcurrentDownloads: 4, // BDL IIIF service
-            timeoutMultiplier: 1.2, // Standard IIIF timeout
-            optimizationDescription: 'BDL optimizations: 4 concurrent downloads, IIIF image service'
+            maxConcurrentDownloads: 2, // Reduced due to IIIF server instability
+            timeoutMultiplier: 2.5, // Extended timeout for unstable IIIF server
+            enableProgressiveBackoff: true, // Critical for handling connection failures
+            optimizationDescription: 'BDL optimizations: 2 concurrent downloads, extended timeouts, progressive backoff for IIIF server instability'
         },
         'monte_cassino': {
             maxConcurrentDownloads: 3, // Monte Cassino IIIF service
