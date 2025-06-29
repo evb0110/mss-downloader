@@ -88,4 +88,5 @@ Use global Claude Code commands:
 - **Development Guide:** `.devkit/docs/development-guide.md`
 - **Architecture:** `ARCHITECTURE.md`
 - **Testing:** `TESTING.md`
+- **Telegram Bot Workflows:** `.devkit/docs/telegram-bot-workflow-documentation.md`
 - **Todos**: `.devkit/tasks/TODOS.md`
