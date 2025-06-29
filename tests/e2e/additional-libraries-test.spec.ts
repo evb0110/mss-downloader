@@ -7,10 +7,10 @@ test.describe('Additional Libraries Testing', () => {
     // Additional libraries from the full supported list
     const additionalLibraries = [
       { name: 'Unicatt (Ambrosiana)', url: 'https://digitallibrary.unicatt.it/veneranda/0b02da82800c3ea6' },
-      { name: 'UGent Library', url: 'https://lib.ugent.be/viewer/archive.ugent.be%3A02A70CB2-7C62-11E7-B6F0-A18A25F5A4CC#?c=&m=&s=&cv=' },
+      { name: 'UGent Library', url: 'https://lib.ugent.be/viewer/archive.ugent.be%3A644DCADE-4FE7-11E9-9AC5-81E62282636C' },
       { name: 'Florus (BM Lyon)', url: 'https://florus.bm-lyon.fr/visualisation.php?cote=MS0425&vue=128' },
       { name: 'Dublin MIRA', url: 'https://www.mira.ie/105' },
-      { name: 'IRHT (CNRS)', url: 'https://arca.irht.cnrs.fr/ark:/63955/md52b3kvksw' },
+      { name: 'IRHT (CNRS)', url: 'https://arca.irht.cnrs.fr/ark:/63955/md14nk323d72' },
     ];
     
     const results: any[] = [];
