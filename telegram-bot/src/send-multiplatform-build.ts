@@ -135,7 +135,7 @@ function getChangesSinceLastVersion(commits: string[], currentVersion: string): 
 
 function extractUserFacingChange(commitMessage: string): string {
   // Handle VERSION- prefixed commits
-  const versionMatch = commitMessage.match(/^VERSION-[^:]*(?::\s*(.+))?/i);
+  const versionMatch = commitMessage.match(/^VERSION-[^:]*:?\s*(.+)/i);
   if (versionMatch) {
     let description = versionMatch[1] ? versionMatch[1].trim() : '';
     
@@ -171,6 +171,28 @@ function extractUserFacingChange(commitMessage: string): string {
       // Implement comprehensive process management system
       if (description.match(/Implement.*comprehensive.*process.*management/i)) {
         return 'Internal improvements and stability fixes';
+      }
+      
+      // Specific library fixes for v1.3.55
+      if (description.match(/Fix.*University.*Graz.*timeouts.*Rome.*BNC.*libroantico.*Manuscripta.*hanging.*e-manuscripta.*complete/i)) {
+        return 'Fixed University of Graz timeouts, added Rome BNC libroantico support, resolved Manuscripta.at hanging downloads, and fixed e-manuscripta.ch complete manuscript detection (468x improvement)';
+      }
+      
+      // Individual library patterns
+      if (description.match(/Fix.*University.*Graz.*timeout/i)) {
+        return 'Fixed University of Graz manuscript loading timeouts';
+      }
+      
+      if (description.match(/add.*Rome.*BNC.*libroantico/i)) {
+        return 'Added support for Rome BNC libroantico collection manuscripts';
+      }
+      
+      if (description.match(/resolve.*Manuscripta.*hanging/i)) {
+        return 'Fixed Manuscripta.at hanging downloads on page-specific URLs';
+      }
+      
+      if (description.match(/fix.*e-manuscripta.*complete.*manuscript/i)) {
+        return 'Fixed e-manuscripta.ch to download complete manuscripts (468 pages) instead of single page';
       }
       
       // Generic library fixes
