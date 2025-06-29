@@ -5,6 +5,7 @@ import { PDFDocument, rgb } from 'pdf-lib';
 import { ManifestCache } from './ManifestCache.js';
 import { configService } from './ConfigService.js';
 import { LibraryOptimizationService } from './LibraryOptimizationService.js';
+import { createProgressMonitor } from './IntelligentProgressMonitor.js';
 import type { ManuscriptManifest, LibraryInfo } from '../../shared/types';
 import type { TLibrary } from '../../shared/queueTypes';
 
@@ -2872,9 +2873,23 @@ export class EnhancedManuscriptDownloaderService {
             const manuscriptId = manuscriptIdMatch[1];
             const manifestUrl = `https://mss-cat.trin.cam.ac.uk/Manuscript/${manuscriptId}/manifest.json`;
             
-            // Use extended timeout for Trinity Cambridge as their server can be slow
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+            // Use intelligent progress monitoring for Trinity Cambridge as their server can be slow
+            const progressMonitor = createProgressMonitor(
+                'Trinity Cambridge manifest loading',
+                'trinity',
+                {},
+                {
+                    onInitialTimeoutReached: (state) => {
+                        console.log(`[Trinity] ${state.statusMessage}`);
+                    },
+                    onStuckDetected: (state) => {
+                        console.warn(`[Trinity] ${state.statusMessage}`);
+                    }
+                }
+            );
+            
+            const controller = progressMonitor.start();
+            progressMonitor.updateProgress(0, 1, 'Loading Trinity Cambridge manifest...');
             
             try {
                 const manifestResponse = await fetch(manifestUrl, {
@@ -2887,7 +2902,7 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 });
                 
-                clearTimeout(timeoutId);
+                progressMonitor.updateProgress(1, 1, 'Trinity Cambridge manifest loaded successfully');
                 
                 if (!manifestResponse.ok) {
                     if (manifestResponse.status === 404) {
@@ -2938,11 +2953,12 @@ export class EnhancedManuscriptDownloaderService {
                 };
                 
             } catch (fetchError: any) {
-                clearTimeout(timeoutId);
                 if (fetchError.name === 'AbortError') {
-                    throw new Error('Trinity Cambridge server request timed out after 60 seconds. The server may be temporarily unavailable.');
+                    throw new Error('Trinity Cambridge server request timed out. The server may be temporarily unavailable.');
                 }
                 throw fetchError;
+            } finally {
+                progressMonitor.complete();
             }
             
         } catch (error: any) {
@@ -3461,13 +3477,21 @@ export class EnhancedManuscriptDownloaderService {
             const itemId = idMatch[1];
             console.log(`Extracted RBME item ID: ${itemId}`);
             
-            // Fetch the RBME page to extract the manifest URL with timeout
+            // Fetch the RBME page to extract the manifest URL with intelligent monitoring
             console.log('Fetching RBME page content...');
-            const pageController = new AbortController();
-            const pageTimeoutId = setTimeout(() => {
-                pageController.abort();
-                console.error(`RBME page request timed out after 30 seconds for item: ${itemId}`);
-            }, 30000); // 30 second timeout
+            const pageProgressMonitor = createProgressMonitor(
+                'RBME page loading',
+                'rbme',
+                { initialTimeout: 30000, maxTimeout: 120000 },
+                {
+                    onStuckDetected: (state) => {
+                        console.warn(`[RBME] ${state.statusMessage} - Item: ${itemId}`);
+                    }
+                }
+            );
+            
+            const pageController = pageProgressMonitor.start();
+            pageProgressMonitor.updateProgress(0, 1, 'Loading RBME page...');
             
             let pageContent: string;
             try {
@@ -3478,7 +3502,6 @@ export class EnhancedManuscriptDownloaderService {
                         'Cache-Control': 'no-cache'
                     }
                 });
-                clearTimeout(pageTimeoutId);
                 
                 if (!pageResponse.ok) {
                     throw new Error(`Failed to fetch RBME page: HTTP ${pageResponse.status} ${pageResponse.statusText}`);
@@ -3488,11 +3511,12 @@ export class EnhancedManuscriptDownloaderService {
                 console.log(`RBME page content loaded, length: ${pageContent.length}`);
                 
             } catch (pageError: any) {
-                clearTimeout(pageTimeoutId);
                 if (pageError.name === 'AbortError') {
                     throw new Error('RBME page request timed out. The server may be experiencing high load.');
                 }
                 throw pageError;
+            } finally {
+                pageProgressMonitor.complete();
             }
             
             // Extract manifest URL from the page content
@@ -3507,12 +3531,20 @@ export class EnhancedManuscriptDownloaderService {
             const manifestUrl = manifestMatch[1];
             console.log(`Found RBME manifest URL: ${manifestUrl}`);
             
-            // Fetch the IIIF manifest with timeout
-            const manifestController = new AbortController();
-            const manifestTimeoutId = setTimeout(() => {
-                manifestController.abort();
-                console.error(`RBME manifest request timed out after 30 seconds: ${manifestUrl}`);
-            }, 30000); // 30 second timeout
+            // Fetch the IIIF manifest with intelligent monitoring
+            const manifestProgressMonitor = createProgressMonitor(
+                'RBME manifest loading',
+                'rbme',
+                { initialTimeout: 30000, maxTimeout: 120000 },
+                {
+                    onStuckDetected: (state) => {
+                        console.warn(`[RBME] ${state.statusMessage} - URL: ${manifestUrl}`);
+                    }
+                }
+            );
+            
+            const manifestController = manifestProgressMonitor.start();
+            manifestProgressMonitor.updateProgress(0, 1, 'Loading RBME manifest...');
             
             let iiifManifest: any;
             try {
@@ -3523,21 +3555,22 @@ export class EnhancedManuscriptDownloaderService {
                         'Cache-Control': 'no-cache'
                     }
                 });
-                clearTimeout(manifestTimeoutId);
                 
                 if (!manifestResponse.ok) {
                     throw new Error(`Failed to fetch RBME manifest: HTTP ${manifestResponse.status} ${manifestResponse.statusText}`);
                 }
                 
                 iiifManifest = await manifestResponse.json();
+                manifestProgressMonitor.updateProgress(1, 1, 'RBME manifest loaded successfully');
                 console.log(`RBME manifest loaded successfully for item: ${itemId}`);
                 
             } catch (manifestError: any) {
-                clearTimeout(manifestTimeoutId);
                 if (manifestError.name === 'AbortError') {
                     throw new Error('RBME manifest request timed out. The server may be experiencing high load.');
                 }
                 throw manifestError;
+            } finally {
+                manifestProgressMonitor.complete();
             }
             
             if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
@@ -3694,12 +3727,26 @@ export class EnhancedManuscriptDownloaderService {
             
             console.log(`Loading Manuscripta.se manifest from: ${manifestUrl}`);
             
-            // Add timeout and enhanced error handling for Manuscripta.se
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => {
-                controller.abort();
-                console.error(`Manuscripta.se manifest request timed out after 30 seconds for ID: ${manuscriptId}`);
-            }, 30000); // 30 second timeout
+            // Use intelligent progress monitoring for Manuscripta.se with enhanced error handling
+            const progressMonitor = createProgressMonitor(
+                'Manuscripta.se manifest loading',
+                'manuscripta',
+                {},
+                {
+                    onInitialTimeoutReached: (state) => {
+                        console.log(`[Manuscripta.se] ${state.statusMessage}`);
+                    },
+                    onStuckDetected: (state) => {
+                        console.warn(`[Manuscripta.se] ${state.statusMessage} - ID: ${manuscriptId}`);
+                    },
+                    onTimeout: (state) => {
+                        console.error(`[Manuscripta.se] ${state.statusMessage} - ID: ${manuscriptId}`);
+                    }
+                }
+            );
+            
+            const controller = progressMonitor.start();
+            progressMonitor.updateProgress(0, 1, 'Loading Manuscripta.se manifest...');
             
             let iiifManifest: any;
             try {
@@ -3711,7 +3758,8 @@ export class EnhancedManuscriptDownloaderService {
                         'Cache-Control': 'no-cache'
                     }
                 });
-                clearTimeout(timeoutId);
+                
+                progressMonitor.updateProgress(1, 1, 'Manuscripta.se manifest loaded successfully');
                 
                 if (!manifestResponse.ok) {
                     throw new Error(`Failed to fetch Manuscripta.se manifest: HTTP ${manifestResponse.status} ${manifestResponse.statusText}`);
@@ -3727,11 +3775,12 @@ export class EnhancedManuscriptDownloaderService {
                 console.log(`Manuscripta.se manifest loaded successfully for ID: ${manuscriptId}`);
                 
             } catch (fetchError: any) {
-                clearTimeout(timeoutId);
                 if (fetchError.name === 'AbortError') {
                     throw new Error('Manuscripta.se manifest request timed out. The server may be experiencing high load.');
                 }
                 throw fetchError;
+            } finally {
+                progressMonitor.complete();
             }
             
             // Extract title from manifest
@@ -3953,16 +4002,35 @@ export class EnhancedManuscriptDownloaderService {
             const manifestUrl = `https://unipub.uni-graz.at/i3f/v20/${manuscriptId}/manifest`;
             console.log(`Fetching IIIF manifest from: ${manifestUrl}`);
             
-            // Fetch the IIIF manifest with extended timeout for large manifests
+            // Fetch the IIIF manifest with intelligent progress monitoring
             const headers = {
                 'Accept': 'application/json, application/ld+json',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             };
             
-            // Use extended timeout (2 minutes) for Graz's large IIIF manifests (289KB)
-            const controller = new AbortController();
-            const extendedTimeout = 120000; // 2 minutes for large manifests
-            const timeoutId = setTimeout(() => controller.abort(), extendedTimeout);
+            // Use intelligent progress monitoring for Graz's large IIIF manifests (289KB)
+            const progressMonitor = createProgressMonitor(
+                'manifest loading',
+                'graz',
+                {},
+                {
+                    onInitialTimeoutReached: (state) => {
+                        console.log(`[Graz] ${state.statusMessage}`);
+                    },
+                    onStuckDetected: (state) => {
+                        console.warn(`[Graz] ${state.statusMessage}`);
+                    },
+                    onProgressResumed: (state) => {
+                        console.log(`[Graz] ${state.statusMessage}`);
+                    },
+                    onTimeout: (state) => {
+                        console.error(`[Graz] ${state.statusMessage}`);
+                    }
+                }
+            );
+            
+            const controller = progressMonitor.start();
+            progressMonitor.updateProgress(0, 1, 'Loading University of Graz IIIF manifest...');
             
             let response: Response;
             try {
@@ -3970,17 +4038,19 @@ export class EnhancedManuscriptDownloaderService {
                     headers,
                     signal: controller.signal 
                 });
-                clearTimeout(timeoutId);
                 
                 if (!response.ok) {
                     throw new Error(`Failed to fetch IIIF manifest: ${response.status} ${response.statusText}`);
                 }
+                
+                progressMonitor.updateProgress(1, 1, 'IIIF manifest loaded successfully');
             } catch (error: any) {
-                clearTimeout(timeoutId);
                 if (error.name === 'AbortError') {
-                    throw new Error('University of Graz manifest loading timed out (2 minutes). The manifest may be very large or the server may be slow.');
+                    throw new Error('University of Graz manifest loading timed out. The manifest may be very large or the server may be experiencing issues.');
                 }
                 throw error;
+            } finally {
+                progressMonitor.complete();
             }
             
             const manifest = await response.json();
@@ -4836,12 +4906,20 @@ export class EnhancedManuscriptDownloaderService {
             const pagesApiUrl = `https://www.bdl.servizirl.it/bdl/${servicePath}/rest/json/item/${manuscriptId}/bookreader/pages`;
             console.log(`Fetching pages from: ${pagesApiUrl}`);
             
-            // Add timeout and retry logic for BDL API call
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => {
-                controller.abort();
-                console.error('BDL API request timed out after 30 seconds');
-            }, 30000); // 30 second timeout for manifest loading
+            // Use intelligent progress monitoring for BDL API call
+            const progressMonitor = createProgressMonitor(
+                'BDL manifest loading',
+                'bdl',
+                { initialTimeout: 30000, maxTimeout: 120000 },
+                {
+                    onStuckDetected: (state) => {
+                        console.warn(`[BDL] ${state.statusMessage}`);
+                    }
+                }
+            );
+            
+            const controller = progressMonitor.start();
+            progressMonitor.updateProgress(0, 1, 'Loading BDL pages data...');
             
             try {
                 const response = await this.fetchWithProxyFallback(pagesApiUrl, {
@@ -4851,7 +4929,8 @@ export class EnhancedManuscriptDownloaderService {
                         'Cache-Control': 'no-cache'
                     }
                 });
-                clearTimeout(timeoutId);
+                
+                progressMonitor.updateProgress(1, 1, 'BDL pages data loaded successfully');
                 
                 if (!response.ok) {
                     throw new Error(`Failed to fetch BDL pages: HTTP ${response.status} ${response.statusText}`);
@@ -4884,17 +4963,23 @@ export class EnhancedManuscriptDownloaderService {
                 
                 // Validate first image URL to ensure it's accessible
                 console.log('Validating first image URL...');
-                const firstImageController = new AbortController();
-                const firstImageTimeoutId = setTimeout(() => {
-                    firstImageController.abort();
-                }, 10000); // 10 second timeout for validation
+                const validationMonitor = createProgressMonitor(
+                    'BDL image validation',
+                    'bdl',
+                    { initialTimeout: 10000, maxTimeout: 30000 },
+                    {}
+                );
+                
+                const firstImageController = validationMonitor.start();
+                validationMonitor.updateProgress(0, 1, 'Validating BDL image access...');
                 
                 try {
                     const firstImageResponse = await fetch(pageLinks[0], {
                         method: 'HEAD',
                         signal: firstImageController.signal
                     });
-                    clearTimeout(firstImageTimeoutId);
+                    
+                    validationMonitor.updateProgress(1, 1, 'BDL image validation completed');
                     
                     if (!firstImageResponse.ok) {
                         console.warn(`First image validation failed: HTTP ${firstImageResponse.status}`);
@@ -4902,9 +4987,10 @@ export class EnhancedManuscriptDownloaderService {
                         console.log('First image URL validated successfully');
                     }
                 } catch (validationError) {
-                    clearTimeout(firstImageTimeoutId);
                     console.warn('First image validation failed:', validationError);
                     // Don't fail the entire process, just log the warning
+                } finally {
+                    validationMonitor.complete();
                 }
                 
                 const displayName = `BDL_${manuscriptId}`;
@@ -4919,11 +5005,12 @@ export class EnhancedManuscriptDownloaderService {
                 };
                 
             } catch (fetchError: any) {
-                clearTimeout(timeoutId);
                 if (fetchError.name === 'AbortError') {
                     throw new Error('BDL API request timed out. The server may be experiencing high load.');
                 }
                 throw fetchError;
+            } finally {
+                progressMonitor.complete();
             }
             
         } catch (error: any) {

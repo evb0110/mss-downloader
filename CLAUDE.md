@@ -1,147 +1,65 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF creation.
 
-## Project Summary
+**Technologies:** Electron, Vue 3, TypeScript, SCSS, Vite, `electron-store`
 
-Complete Electron application for downloading manuscripts and books from digital libraries with publicly available pages and merging them in pdfs for end users. 
-Features sophisticated queue management, Vue 3 + TypeScript UI, and Node.js backend handling downloads/PDF creation.
+## MANDATORY RULES
 
-**Key Technologies:** Electron, Vue 3, TypeScript, SCSS, Vite, `electron-store`
+### 0. Commit strategy
+- DO NOT USE `git add .` or similar!
+- User may start several jobs in parallel, so you should track all your changes and commit and push only them. User is smart enough not to start conflicting jobs
 
-**Status:** ✅ Fully functional, built for Windows, Mac OS, Linux
+### 1. Version Bump Automation
+**AUTOMATIC BUMP REQUIRED** after any functional change:
+- Bug fixes affecting app functionality
+- New features or improvements 
+- Library additions/fixes
+- Performance improvements, error message improvements
+- When user says "bump"
+- Telegram bot should send changelog message for every build. It should contain non-technical summary of all fixes and additions after last build: Libraries added, new url patterns for downloads etc. It should be concise, but user should understand from it all the new functionality.
 
-## Quick Start
+**NOT for:** Documentation, telegram bot fixes (any telegram bot changes - commit and push silently without version bump), code refactoring without behavior changes
 
-### Development Commands (PID-safe)
-```bash
-# Development with PID tracking (PREFERRED)
-npm run dev:start          # Start development with PID capture
-npm run dev:kill           # Kill development process by PID
-npm run dev:headless:start # Start headless development with PID capture
-npm run dev:headless:kill  # Kill headless development process by PID
+**Process:** IMMEDIATELY when all problems are solved (no user approval needed):
+1. Bump patch version in package.json
+2. Commit all changes with descriptive message  
+3. Push to GitHub main (triggers auto-build & notifications)
 
-# Testing with PID tracking (PREFERRED)
-npm run test:e2e:start     # Start E2E tests with PID capture
-npm run test:e2e:kill      # Kill E2E test process by PID
+### 2. Library Validation Protocol  
+When adding/fixing libraries, **MANDATORY validation:**
+1. Download up to 10 different manuscript pages from manifest URLs (or all available if fewer)
+2. Verify each contains real manuscript/book content (not "Preview non disponibile")
+3. Confirm all pages show different manuscript content (not stuck on page 1)
+4. If validation fails, apply all skills to fix; if unfixable, implement other tasks and report to user
+5. Merge to PDF and test validity with poppler
 
-# Process monitoring and cleanup
-npm run ps                # Monitor running processes
-npm run cleanup           # Clean up all project processes
-npm run cleanup:all       # Comprehensive cleanup
+### 3. Testing Requirements
+- Write comprehensive test suite for every bug fix
+- Include PDF download + poppler validation
+- Run tests repeatedly until consistently passing
+- Use PID-safe commands: `npm run test:e2e:start`/`npm run test:e2e:kill`
 
-# Other commands
-npm run build             # Production build
-npm run dist              # Distribution build
-npm run lint              # Linting and fixing
-```
+### 4. File Organization
+- Store all reports/analysis in `.devkit/reports/` (create if doesn't exist)
+- Use `.devkit/` subfolders for all development files
+- Organize reports for readability (by date/library/issue type)
+- Never leave temporary files in project root
 
-**CRITICAL:** Always use PID-based commands to avoid killing unrelated processes. Never use `killall npm` or `killall node`.
-
-### Process Management
-- **Enhanced PID tracking**: All processes tracked with robust cleanup
-- **Automatic cleanup**: Scripts register cleanup functions on exit
-- **Comprehensive monitoring**: `npm run ps` shows all running processes
-- **Emergency cleanup**: `npm run cleanup:all` for stuck processes
-- **Documentation**: See `.devkit/docs/process-management.md` for details
-
-## Developer Context
-
-- Frontend developer with 6 years Vue/TypeScript experience
-- Show minimal output, only current internal task and small summary
-
-## Development Principles
-
-- **Main process:** Heavy lifting (downloading, merging, file operations)
-- **Renderer process:** UI configuration and user interaction
-- **Building**: Only build when testing is required or preparing for distribution
-- **Testing updates**: Update Playwright suite when adding new features or fixing critical bugs
-
-## Test Suite Guidelines
-
-- All tests run in headless mode by default (`headless: true` in playwright.config.ts)
-- HTML reporter disabled to prevent automatic browser opening
-- Always use PID-safe commands (`npm run test:e2e:start`/`npm run test:e2e:kill`)
-- Debug modes (`test:e2e:headed`, `test:e2e:debug`) only when explicitly debugging
-
-## Architecture & Testing
-
-- **Detailed architecture:** See [ARCHITECTURE.md](./ARCHITECTURE.md)
-- **Testing framework:** See [TESTING.md](./TESTING.md)
-
-## Project Memory & Version History
-
-### Critical Development Notes
-- Image non-resizing and non-compression requirements
+### 5. Development Context
+- Main process: downloading, merging, file operations
+- Renderer process: UI configuration, user interaction  
+- Show minimal output - current task + small summary only
 - Dev server doesn't work correctly for Claude Code
-- On every change or fix, which affects ux (NB! this doesn't include fixing telegram bot), ensure build then bump commit and push to trigger new version
-- When fixing a bug, write a test suite for it, checking everything including downloading pdf and verifying it with poppler, and after fix run the suite as many times as needed to be sure everything works. Dev shouldn't have to test everything themselves
-- **Reports & Results**: Always store all reports, test results, and analysis outputs in the `.devkit/reports` folder to keep project root clean
-- **NEVER add version history to CLAUDE.md** - use git log or GitHub releases for version tracking
-- **CRITICAL!!! when adding a new library or fixing an existing one, you should manually download 10 different pages from urls you get from a manifest and ensure that they contain valuable info (not like "Preview non disponibile", but real ms or book) and that they are different.** After that merge and test validity with poppler
-
-### Key Bug Patterns and Fixes
-- **Queue State Management**: Always use `status: 'pending'` for items that should be processed. The resume logic only handles 'pending' and 'downloading' statuses. Split items using `status: 'queued'` get stuck in Resume queue.
-- **GitHub Actions Asset Paths**: electron-builder creates platform-specific filenames (e.g., `-arm64.dmg` for macOS), so GitHub Actions workflows must use correct asset path patterns.
-- **Library Issue Verification**: When users report library issues, always verify with comprehensive analysis - implementations may already be working correctly, and the issue could be UI confusion or specific edge cases.
-- **Telegram Bot Management**: (1) Ensure only one bot instance runs to avoid 409 Conflict errors, (2) Always refresh subscriber state (`this.subscribers = this.loadSubscribers()`) before subscription operations, (3) Remove duplicate menu calls from callback handlers to prevent button duplication, (4) Use TypeScript version with proper ES modules.
-- **Telegram Bot Changelog Generation**: Fixed in telegram-bot/src/send-multiplatform-build.ts to parse VERSION commits and extract meaningful user-facing changes instead of showing generic "Latest updates" or version numbers. Now shows specific fixes like "Fixed Vienna Manuscripta page downloads" instead of "VERSION-1.3.52". When fixing Telegram bot issues, commit only bot files without version bumping main app.
-
-### Version Bump Workflow - AUTOMATED PROCESS
-**MANDATORY:** Claude must AUTOMATICALLY bump version and push after completing all tasks in a run that affect app functionality.
-
-**When to auto-bump (at END of task completion run):**
-- ✅ After fixing any bugs or issues that affect app functionality
-- ✅ After implementing any new features
-- ✅ After making any functional improvements to the app
-- ✅ When user says "bump" explicitly
-- ❌ NOT for documentation-only changes or non-functional updates
-
-**Required workflow (Claude executes automatically at END of run):**
-1. 🔄 **AUTO-BUMP** patch version in `package.json` 
-2. 🔄 **AUTO-COMMIT** all changes with descriptive message
-3. 🔄 **AUTO-PUSH** to GitHub main branch immediately
-4. ✅ **GitHub Actions automatically builds all platforms and sends notifications**
-
-**TIMING:** Wait until ALL tasks in the run are completed, then bump once and push everything together.
 
 ## TODO Management
+Use global Claude Code commands:
+- `/user:todo [task]` - Add todo
+- `/user:handle-todos` - Handle first pending
+- `/user:list-todos` - Show all pending
 
-Use global Claude Code commands for TODO management:
-- `/user:todo [task]` - Add new todo to TODOS.md
-- `/user:handle-todos` or `/user:pick-todo` - Handle first pending todo
-- `/user:list-todos` - Show all pending todos
-
-**Project-specific workflow:** After completing todos that affect app functionality, Claude AUTOMATICALLY bumps patch version and commits/pushes changes to trigger automated GitHub Actions build and Telegram notifications.
-
-### Commit and Push Guidelines - AUTOMATED PROCESS
-- **🔄 AUTOMATIC:** Claude MUST automatically bump version, commit, and push at END of run after functional changes
-- **🔄 AUTOMATIC:** Claude MUST automatically bump version, commit, and push after completing functional todos
-- **🔄 AUTOMATIC:** No user permission required - this is a mandatory automated workflow
-- **⚠️ CRITICAL:** Only bump for functional changes, not documentation-only updates
-- **📦 BATCHING:** Complete all tasks first, then bump once and push everything together
-
-## Deployment & Development Memory
-
-### Development Process Memories
-- After push always wait to check that build was successful on github and everything was pushed to the bot
-- When I inform you that something isn't working, it can mean only that your previous fixes didn't fix anything, not that I gave same task twice
-
-## File Structure
-
-```
-src/
-├── main/                    # Electron main process (Node.js)
-│   ├── services/DownloadQueue.ts
-│   └── services/UnifiedManuscriptDownloader.ts
-├── renderer/                # Vue 3 + TypeScript UI
-│   └── components/DownloadQueueManager.vue
-├── preload/                 # IPC bridge
-└── shared/                  # Shared types/utilities
-```
-
-**Key Files:**
-- `src/main/main.ts` - Main process entry + IPC handlers
-- `src/preload/preload.ts` - Secure IPC bridge
-- `src/shared/queueTypes.ts` - Shared TypeScript interfaces
-```
+## References
+- **Development Guide:** `.devkit/docs/development-guide.md`
+- **Architecture:** `ARCHITECTURE.md`
+- **Testing:** `TESTING.md`
+- **Todos**: `.devkit/tasks/TODOS.md`

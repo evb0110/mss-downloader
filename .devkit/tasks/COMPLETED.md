@@ -2,6 +2,22 @@
 
 ## 2025-06-29
 
+✅ **Implement intelligent download progress monitoring with timeout detection (2025-06-29)**
+  - **Issue:** Current University of Graz timeout fix uses random 2-minute timeout instead of intelligent monitoring
+  - **Solution:** Implemented comprehensive intelligent progress monitoring system with interval checking
+  - **Features:** 
+    - Always waits initial period (2 minutes) before starting monitoring
+    - Uses 30-second interval checking to detect progress vs stuck downloads
+    - Distinguishes between slow but progressing vs truly stuck downloads
+    - Library-specific timeout optimizations (Graz: 10min, Manuscripta: 5min, Trinity: 6min)
+    - Enhanced user feedback with context-aware progress messages
+    - Robust error handling with graceful degradation
+  - **Files Created:** IntelligentProgressMonitor.ts, ProgressMonitoringService.ts, DownloadProgressIntegration.ts
+  - **Files Modified:** EnhancedManuscriptDownloaderService.ts (8 integration points across multiple libraries)
+  - **Impact:** Significantly improved user experience with intelligent timeout detection and progress monitoring
+  - **Testing:** Comprehensive test suite with 15 test cases, TypeScript compilation successful
+  - **Version:** v1.3.58
+
 ✅ **Fix University of Graz terminated connection error - Extended timeout for large IIIF manifests (2025-06-29)**
   - **Issue:** Downloads failing with "terminated" error due to timeout
   - **URL:** https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538
