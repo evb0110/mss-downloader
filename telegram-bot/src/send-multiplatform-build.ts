@@ -372,7 +372,13 @@ async function sendMultiplatformBuild(): Promise<void> {
       console.log(`  - ${platform}: ${build.name} (${build.size}MB)`);
     });
     
-    const changelog = getChangelogFromCommits(version);
+    // Use package.json version for changelog generation, not build version
+    const packageJsonPath = path.join(__dirname, '..', '..', 'package.json');
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    const actualVersion = packageJson.version;
+    
+    console.log(`📝 Generating changelog for actual version v${actualVersion} (build version: v${version})`);
+    const changelog = getChangelogFromCommits(actualVersion);
     
     const platformSummary = Object.entries(builds).map(([platform, build]) => {
       const platformNames = {
@@ -385,7 +391,7 @@ async function sendMultiplatformBuild(): Promise<void> {
     }).join('\n');
     
     const messageLines = [
-      `🚀 ${bold(`MSS Downloader v${version} Available!`)}`,
+      `🚀 ${bold(`MSS Downloader v${actualVersion} Available!`)}`,
       '',
       changelog,
       '',
