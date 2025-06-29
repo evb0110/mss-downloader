@@ -1311,7 +1311,7 @@ export class EnhancedManuscriptDownloaderService {
             const manuscriptId = decodeURIComponent(manuscriptMatch[1]);
             
             // Construct the IIIF v3 manifest URL based on the pattern from the reference implementation
-            const manifestUrl = `https://adore.ugent.be/IIIF/v3/manifests/${manuscriptId}`;
+            const manifestUrl = `https://adore.ugent.be/IIIF/manifests/${manuscriptId}`;
             
             return this.loadIIIFManifest(manifestUrl);
         } catch (error: any) {
