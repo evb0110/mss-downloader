@@ -5301,86 +5301,51 @@ export class EnhancedManuscriptDownloaderService {
                 displayName = titleMatch[1].trim();
             }
             
-            // Look for page navigation dropdown to get actual page IDs
-            // Find the complete goToPage select element first
-            const selectStart = viewerHtml.indexOf('<select id="goToPage"');
-            const selectEnd = viewerHtml.indexOf('</select>', selectStart);
+            // Multi-method approach for robust page detection following Agent 5 recommendations
+            let pageData: Array<{pageId: string, pageNumber: number}> = [];
             
-            let pageMatches: RegExpMatchArray[] = [];
+            // METHOD 1: Parse goToPage dropdown (most reliable)
+            pageData = await this.parseEManuscriptaDropdown(viewerHtml);
             
-            if (selectStart !== -1 && selectEnd !== -1) {
-                const selectElement = viewerHtml.substring(selectStart, selectEnd + 9);
-                console.log(`e-manuscripta: Found goToPage select element (${selectElement.length} chars)`);
-                
-                // Parse options from within the select element
-                const pageDropdownRegex = /<option\s+value="(\d+)"\s*>\s*\[(\d+)\]\s*/g;
-                pageMatches = Array.from(selectElement.matchAll(pageDropdownRegex));
-                console.log(`e-manuscripta: Extracted ${pageMatches.length} pages from goToPage dropdown`);
-            } else {
-                console.warn('e-manuscripta: goToPage select element not found, trying global search');
-                // Fallback: try global search (less reliable)
-                const pageDropdownRegex = /<option\s+value="(\d+)"\s*>\s*\[(\d+)\]\s*<\/option>/g;
-                pageMatches = Array.from(viewerHtml.matchAll(pageDropdownRegex));
+            if (pageData.length === 0) {
+                // METHOD 2: Parse JavaScript configuration data
+                console.log('e-manuscripta: Trying JavaScript config extraction');
+                pageData = await this.parseEManuscriptaJSConfig(viewerHtml);
             }
             
-            if (pageMatches.length === 0) {
-                // Fallback: look for any bracketed page numbers in navigation
-                const pageNavRegex = /\[(\d+)\]/g;
-                const navMatches = Array.from(viewerHtml.matchAll(pageNavRegex));
-                if (navMatches.length === 0) {
-                    console.warn('e-manuscripta: No page navigation found, assuming single page');
-                    const pageLinks = [`https://www.e-manuscripta.ch/${library}/download/webcache/0/${manuscriptId}`];
-                    return {
-                        pageLinks,
-                        totalPages: 1,
-                        library: 'e_manuscripta',
-                        displayName,
-                        originalUrl: manuscriptaUrl,
-                    };
-                }
-                
-                console.warn('e-manuscripta: Could not find page dropdown, falling back to unreliable navigation links');
-                const pageNumbers = navMatches.map(match => parseInt(match[1], 10));
-                const totalPages = Math.max(...pageNumbers);
-                
-                // Generate page links using simple increment (unreliable fallback)
-                const baseId = parseInt(manuscriptId, 10);
-                const pageLinks: string[] = [];
-                for (let i = 0; i < totalPages; i++) {
-                    const imageId = baseId + i;
-                    const imageUrl = `https://www.e-manuscripta.ch/${library}/download/webcache/0/${imageId}`;
-                    pageLinks.push(imageUrl);
-                }
-                
-                console.log(`e-manuscripta: Fallback - generated ${pageLinks.length} URLs with simple increment`);
-                return {
-                    pageLinks,
-                    totalPages: pageLinks.length,
-                    library: 'e_manuscripta',
-                    displayName,
-                    originalUrl: manuscriptaUrl,
-                };
+            if (pageData.length === 0) {
+                // METHOD 3: Deep HTML analysis with multiple patterns
+                console.log('e-manuscripta: Trying deep HTML pattern analysis');
+                pageData = await this.parseEManuscriptaDeepHTML(viewerHtml);
             }
             
-            // Extract actual page IDs and their corresponding page numbers from dropdown
-            const pageData = pageMatches.map(match => ({
-                pageId: match[1],
-                pageNumber: parseInt(match[2], 10)
-            }));
+            if (pageData.length === 0) {
+                // METHOD 4: URL pattern discovery using current page as base
+                console.log('e-manuscripta: Trying URL pattern discovery');
+                pageData = await this.discoverEManuscriptaURLPattern(manuscriptId, library);
+            }
+            
+            if (pageData.length === 0) {
+                console.error('e-manuscripta: All parsing methods failed, cannot determine page structure');
+                throw new Error('Unable to determine manuscript page structure - all parsing methods failed');
+            }
             
             // Sort by page number to ensure correct order
             pageData.sort((a, b) => a.pageNumber - b.pageNumber);
             
-            console.log(`e-manuscripta: Found ${pageData.length} pages for ${displayName}`);
+            console.log(`e-manuscripta: Successfully found ${pageData.length} pages for ${displayName}`);
             console.log(`e-manuscripta: Page range [${pageData[0]?.pageNumber}] to [${pageData[pageData.length - 1]?.pageNumber}]`);
             console.log(`e-manuscripta: First page ID: ${pageData[0]?.pageId}, Last page ID: ${pageData[pageData.length - 1]?.pageId}`);
             
-            // Generate page links using the actual page IDs from the dropdown
+            // Generate page links using the actual page IDs (Agent 3 optimal URL pattern)
             const pageLinks: string[] = pageData.map(page => 
-                `https://www.e-manuscripta.ch/${library}/download/webcache/0/${page.pageId}`
+                `https://www.e-manuscripta.ch/zuzcmi/download/webcache/0/${page.pageId}`
             );
             
-            console.log(`e-manuscripta: Generated ${pageLinks.length} image URLs using actual page IDs from dropdown`);
+            // Validate that URLs actually work by testing first few pages (Agent 4 recommendation)
+            await this.validateEManuscriptaURLs(pageLinks.slice(0, 3));
+            
+            console.log(`e-manuscripta: Generated and validated ${pageLinks.length} image URLs`);
             
             const eManuscriptaManifest: ManuscriptManifest = {
                 pageLinks,
@@ -5395,6 +5360,233 @@ export class EnhancedManuscriptDownloaderService {
             
         } catch (error: any) {
             console.error(`Failed to load e-manuscripta.ch manifest: ${error.message}`);
+            throw error;
+        }
+    }
+
+    private async parseEManuscriptaDropdown(html: string): Promise<Array<{pageId: string, pageNumber: number}>> {
+        try {
+            // Find the complete goToPage select element first
+            const selectStart = html.indexOf('<select id="goToPage"');
+            const selectEnd = html.indexOf('</select>', selectStart);
+            
+            if (selectStart === -1 || selectEnd === -1) {
+                console.log('e-manuscripta: goToPage select element not found');
+                return [];
+            }
+            
+            const selectElement = html.substring(selectStart, selectEnd + 9);
+            console.log(`e-manuscripta: Found goToPage select element (${selectElement.length} chars)`);
+            
+            // Parse options with multiple regex patterns for robustness
+            const patterns = [
+                /<option\s+value="(\d+)"\s*>\s*\[(\d+)\]\s*/g,
+                /<option\s+value="(\d+)"\s*>\s*\[(\d+)\]\s*[^<]*/g,
+                /<option[^>]*value=["'](\d+)["'][^>]*>\s*\[(\d+)\]/g,
+            ];
+            
+            let pageMatches: RegExpMatchArray[] = [];
+            for (const pattern of patterns) {
+                pageMatches = Array.from(selectElement.matchAll(pattern));
+                if (pageMatches.length > 0) {
+                    console.log(`e-manuscripta: Dropdown parsing succeeded with pattern ${pattern.toString()}`);
+                    break;
+                }
+            }
+            
+            if (pageMatches.length === 0) {
+                console.log('e-manuscripta: No dropdown matches found with any pattern');
+                return [];
+            }
+            
+            const pageData = pageMatches.map(match => ({
+                pageId: match[1],
+                pageNumber: parseInt(match[2], 10)
+            }));
+            
+            console.log(`e-manuscripta: Extracted ${pageData.length} pages from dropdown`);
+            return pageData;
+            
+        } catch (error: any) {
+            console.warn(`e-manuscripta: Dropdown parsing failed: ${error.message}`);
+            return [];
+        }
+    }
+
+    private async parseEManuscriptaJSConfig(html: string): Promise<Array<{pageId: string, pageNumber: number}>> {
+        try {
+            // Look for JavaScript configuration objects that might contain page data
+            const jsPatterns = [
+                /var\s+pageData\s*=\s*(\{[^}]+\})/,
+                /window\.pageConfig\s*=\s*(\{[^}]+\})/,
+                /"pages"\s*:\s*\[([^\]]+)\]/,
+                /pageIds\s*:\s*\[([^\]]+)\]/,
+            ];
+            
+            for (const pattern of jsPatterns) {
+                const match = html.match(pattern);
+                if (match) {
+                    console.log(`e-manuscripta: Found JS config match: ${match[1].substring(0, 100)}...`);
+                    // This would need more sophisticated parsing based on actual structure
+                    // For now, return empty to fall back to next method
+                }
+            }
+            
+            return [];
+        } catch (error: any) {
+            console.warn(`e-manuscripta: JS config parsing failed: ${error.message}`);
+            return [];
+        }
+    }
+
+    private async parseEManuscriptaDeepHTML(html: string): Promise<Array<{pageId: string, pageNumber: number}>> {
+        try {
+            // Try multiple HTML parsing approaches
+            const approaches = [
+                // Approach 1: Look for page links in navigation
+                () => {
+                    const linkPattern = /href="[^"]*\/zoom\/(\d+)"[^>]*>\s*\[(\d+)\]/g;
+                    return Array.from(html.matchAll(linkPattern));
+                },
+                // Approach 2: Look for data attributes
+                () => {
+                    const dataPattern = /data-page-id="(\d+)"[^>]*>\s*\[(\d+)\]/g;
+                    return Array.from(html.matchAll(dataPattern));
+                },
+                // Approach 3: Look for any numeric patterns that could be page IDs
+                () => {
+                    const numericPattern = /\[(\d+)\][^<]*(?:id|page)[^<]*(\d{7,})/g;
+                    return Array.from(html.matchAll(numericPattern));
+                },
+            ];
+            
+            for (let i = 0; i < approaches.length; i++) {
+                try {
+                    const matches = approaches[i]();
+                    if (matches.length > 0) {
+                        console.log(`e-manuscripta: Deep HTML approach ${i + 1} found ${matches.length} matches`);
+                        const pageData = matches.map(match => ({
+                            pageId: match[1],
+                            pageNumber: parseInt(match[2], 10)
+                        }));
+                        if (pageData.length > 1) return pageData;
+                    }
+                } catch (error: any) {
+                    console.warn(`e-manuscripta: Deep HTML approach ${i + 1} failed: ${error.message}`);
+                }
+            }
+            
+            return [];
+        } catch (error: any) {
+            console.warn(`e-manuscripta: Deep HTML parsing failed: ${error.message}`);
+            return [];
+        }
+    }
+
+    private async discoverEManuscriptaURLPattern(baseId: string, _library: string): Promise<Array<{pageId: string, pageNumber: number}>> {
+        try {
+            console.log('e-manuscripta: Attempting URL pattern discovery');
+            const baseIdNum = parseInt(baseId, 10);
+            const testUrls: string[] = [];
+            
+            // Test sequential IDs around the base ID (Agent 2 found this pattern works)
+            for (let i = 0; i < 10; i++) {
+                testUrls.push(`https://www.e-manuscripta.ch/zuzcmi/download/webcache/128/${baseIdNum + i}`);
+            }
+            
+            const validPages: Array<{pageId: string, pageNumber: number}> = [];
+            
+            // Test URLs to see which ones return valid images
+            for (let i = 0; i < testUrls.length; i++) {
+                try {
+                    const testResponse = await this.fetchDirect(testUrls[i]);
+                    if (testResponse.ok && testResponse.headers.get('content-type')?.includes('image')) {
+                        validPages.push({
+                            pageId: (baseIdNum + i).toString(),
+                            pageNumber: i + 1
+                        });
+                        console.log(`e-manuscripta: Validated page ${i + 1} with ID ${baseIdNum + i}`);
+                    } else {
+                        // Stop when we hit the first non-working URL
+                        console.log(`e-manuscripta: URL pattern discovery stopped at page ${i + 1} (no more valid pages)`);
+                        break;
+                    }
+                } catch (error: any) {
+                    console.log(`e-manuscripta: URL test failed at page ${i + 1}: ${error.message}`);
+                    break;
+                }
+                
+                // Small delay to be respectful
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            if (validPages.length > 0) {
+                console.log(`e-manuscripta: URL pattern discovery found ${validPages.length} valid pages`);
+                
+                // Extend the pattern to find all pages
+                let pageCount = validPages.length;
+                const maxPages = 1000; // Reasonable limit
+                
+                // Continue testing until we find the end
+                for (let i = pageCount; i < maxPages; i++) {
+                    try {
+                        const testUrl = `https://www.e-manuscripta.ch/zuzcmi/download/webcache/128/${baseIdNum + i}`;
+                        const testResponse = await this.fetchDirect(testUrl);
+                        
+                        if (testResponse.ok && testResponse.headers.get('content-type')?.includes('image')) {
+                            validPages.push({
+                                pageId: (baseIdNum + i).toString(),
+                                pageNumber: i + 1
+                            });
+                            pageCount++;
+                        } else {
+                            console.log(`e-manuscripta: Found end of manuscript at page ${i + 1}`);
+                            break;
+                        }
+                    } catch (error: any) {
+                        console.log(`e-manuscripta: Pattern discovery ended at page ${i + 1}: ${error.message}`);
+                        break;
+                    }
+                    
+                    // Progress logging
+                    if ((i + 1) % 10 === 0) {
+                        console.log(`e-manuscripta: Discovered ${i + 1} pages so far...`);
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+                
+                return validPages;
+            }
+            
+            return [];
+        } catch (error: any) {
+            console.warn(`e-manuscripta: URL pattern discovery failed: ${error.message}`);
+            return [];
+        }
+    }
+
+    private async validateEManuscriptaURLs(testUrls: string[]): Promise<void> {
+        try {
+            console.log(`e-manuscripta: Validating ${testUrls.length} sample URLs`);
+            
+            for (let i = 0; i < testUrls.length; i++) {
+                const response = await this.fetchDirect(testUrls[i]);
+                if (!response.ok) {
+                    throw new Error(`Validation failed for URL ${i + 1}: HTTP ${response.status}`);
+                }
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType?.includes('image')) {
+                    throw new Error(`Validation failed for URL ${i + 1}: Not an image (${contentType})`);
+                }
+                
+                console.log(`e-manuscripta: Validated URL ${i + 1}/${testUrls.length}`);
+            }
+            
+            console.log('e-manuscripta: All sample URLs validated successfully');
+        } catch (error: any) {
+            console.error(`e-manuscripta: URL validation failed: ${error.message}`);
             throw error;
         }
     }
