@@ -94,6 +94,9 @@ function getChangelogFromCommits(version) {
                 // Extract the most relevant part for users
                 cleaned = extractUserFacingChange(cleaned);
                 
+                // Skip if extractUserFacingChange returned null (e.g., internal bot fixes)
+                if (cleaned === null) return;
+                
                 // Avoid duplicates
                 if (!seenChanges.has(cleaned.toLowerCase())) {
                     seenChanges.add(cleaned.toLowerCase());
@@ -130,13 +133,56 @@ function extractUserFacingChange(commitMessage) {
             }
         }
         
-        // Extract the first sentence or main feature described
-        const firstSentence = description.split('.')[0].trim();
-        if (firstSentence.length > 20) {
-            description = firstSentence;
+        // Comprehensive semantic parsing - convert technical descriptions to user benefits
+        
+        // e-manuscripta.ch fixes
+        if (description.match(/fix.*e-manuscripta.*complete.*manuscript.*detection/i)) {
+            return 'Fixed e-manuscripta.ch complete manuscript downloads';
+        }
+        if (description.match(/e-manuscripta.*complete.*manuscript/i)) {
+            return 'Fixed e-manuscripta.ch complete manuscript downloads';
         }
         
-        // Clean up specific patterns
+        // Download progress and monitoring
+        if (description.match(/implement.*intelligent.*download.*progress.*monitoring/i)) {
+            return 'Improved download reliability with real-time progress tracking';
+        }
+        if (description.match(/timeout.*detection/i)) {
+            return 'Enhanced download timeout detection and recovery';
+        }
+        
+        // Internet Culturale fixes
+        if (description.match(/fix.*internet.*culturale.*infinite.*loop/i)) {
+            return 'Fixed Internet Culturale infinite download loops';
+        }
+        if (description.match(/eliminate.*authentication.*error.*pages/i)) {
+            return 'Improved authentication error handling';
+        }
+        if (description.match(/improve.*download.*performance/i)) {
+            return 'Enhanced download performance';
+        }
+        
+        // University of Graz
+        if (description.match(/fix.*university.*graz.*timeout/i)) {
+            return 'Fixed University of Graz loading timeouts for large manuscripts';
+        }
+        
+        // Rome BNC libroantico
+        if (description.match(/rome.*bnc.*libroantico.*support/i)) {
+            return 'Added Rome BNC libroantico collection manuscript downloads';
+        }
+        
+        // Manuscripta.at fixes
+        if (description.match(/manuscripta.*hanging.*download/i)) {
+            return 'Fixed Manuscripta.at hanging downloads for large manuscripts';
+        }
+        
+        // Telegram bot fixes (should be excluded from user-facing changelog)
+        if (description.match(/telegram.*bot.*changelog/i)) {
+            return null; // Skip telegram bot internal fixes
+        }
+        
+        // Legacy patterns
         if (description.match(/Add.*simultaneous.*download/i)) {
             return 'Added simultaneous download functionality';
         }
@@ -154,6 +200,23 @@ function extractUserFacingChange(commitMessage) {
         }
         if (description.match(/Complete.*Stanford.*Parker.*Graz/i)) {
             return 'Completed Stanford Parker and Graz library support verification';
+        }
+        
+        // Generic library patterns
+        const libraryFixMatch = description.match(/fix\s+([^.]+?)\s+(?:library|collection)/i);
+        if (libraryFixMatch) {
+            return `Fixed ${libraryFixMatch[1]} library downloads`;
+        }
+        
+        const libraryAddMatch = description.match(/add\s+([^.]+?)\s+(?:library|collection)\s+support/i);
+        if (libraryAddMatch) {
+            return `Added ${libraryAddMatch[1]} library manuscript downloads`;
+        }
+        
+        // Fallback - try to extract meaningful technical description
+        const firstSentence = description.split('.')[0].trim();
+        if (firstSentence.length > 20) {
+            return firstSentence;
         }
         
         return description;
