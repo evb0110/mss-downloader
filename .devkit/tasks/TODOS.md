@@ -2,9 +2,48 @@
 
 ## Pending Tasks
 
-None - all reported issues have been resolved.
+1. https://www.internetculturale.it/jmms/iccuviewer/iccu.jsp?id=oai%3Ateca.bmlonline.it%3A21%3AXXXX%3APlutei%3AIT%253AFI0100_Plutei_21.29&mode=all&teca=Laurenziana+-+FI
+
+зацикливание начинается, когда закачка доходит до конца. файл создаётся, но он целиком состоит из какой-то странички самой библиотеки, размноженной по количеству страниц рукописи. **Status: PARTIALLY INVESTIGATED** - Regex parsing and individual image downloads work correctly. Issue likely in PDF creation pipeline. Requires deeper investigation.
 
 ## Completed Tasks
+
+✅ **Fix University of Graz terminated connection error - Extended timeout for large IIIF manifests (2025-06-29)**
+   - **Issue:** Downloads failing with "terminated" error due to timeout
+   - **URL:** https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538
+   - **Root Cause:** Large IIIF manifest (289KB) exceeding default 60-second timeout
+   - **Solution:** Extended timeout to 2 minutes specifically for Graz manifest loading
+   - **Files Modified:** EnhancedManuscriptDownloaderService.ts (lines 3928-3950)
+   - **Impact:** University of Graz manuscripts now load correctly instead of timing out
+   - **Version:** v1.3.55
+
+✅ **Add Rome BNC libroantico URL pattern support - Doubled collection support (2025-06-29)**
+   - **Issue:** libroantico collection URLs not supported (only manoscrittoantico worked)
+   - **URL:** http://digitale.bnc.roma.sbn.it/tecadigitale/libroantico/BVEE112879/BVEE112879/1
+   - **Root Cause:** URL regex only matched manoscrittoantico pattern
+   - **Solution:** Updated regex and logic to support both patterns with appropriate resolutions
+   - **Files Modified:** EnhancedManuscriptDownloaderService.ts (lines 4358, 4400-4443)
+   - **Impact:** Added support for Rome National Library's libroantico collection
+   - **URLs Supported:** manoscrittoantico (uses "original"), libroantico (uses "full")
+   - **Version:** v1.3.55
+
+✅ **Fix Manuscripta.at hanging downloads - Resolved page-specific URL hanging (2025-06-29)**
+   - **Issue:** Downloads hang at page 437 of 782, page range selection not working
+   - **URL:** https://manuscripta.at/diglit/AT5000-963/0001
+   - **Root Cause:** Pre-filtering pageLinks array in manifest loading, creating mismatch between expected and available pages
+   - **Solution:** Removed pre-filtering logic, store page range info for later processing
+   - **Files Modified:** EnhancedManuscriptDownloaderService.ts (lines 4233-4249, 4314-4331), types.ts (line 34)
+   - **Impact:** Manuscripts no longer hang when page-specific URLs are used
+   - **Version:** v1.3.55
+
+✅ **Fix e-manuscripta.ch single page bug - 468x content improvement (2025-06-29)**
+   - **Issue:** Only downloads first page instead of complete manuscript (99.8% data loss)
+   - **URL:** https://www.e-manuscripta.ch/zuzcmi/content/zoom/3229497
+   - **Root Cause:** Incorrect page discovery using naive regex instead of parsing actual page dropdown
+   - **Solution:** Extract complete goToPage select element and parse actual page IDs
+   - **Files Modified:** EnhancedManuscriptDownloaderService.ts (lines 5182-5242)
+   - **Impact:** 468x improvement - now detects 468 pages instead of 1 (from 99.8% data loss to 100% accuracy)
+   - **Version:** v1.3.55
 
 ✅ **Fix download timeout issue for large manuscripts - InternetCulturale library (2025-06-27)**
    - **Issue:** 842-page manuscript exceeds 45-minute timeout limit
