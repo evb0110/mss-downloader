@@ -4,11 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Summary
 
-Complete Electron application for downloading manuscripts from digital libraries. Features sophisticated queue management, Vue 3 + TypeScript UI, and Node.js backend handling downloads/PDF creation.
+Complete Electron application for downloading manuscripts and books from digital libraries with publicly available pages and merging them in pdfs for end users. 
+Features sophisticated queue management, Vue 3 + TypeScript UI, and Node.js backend handling downloads/PDF creation.
 
 **Key Technologies:** Electron, Vue 3, TypeScript, SCSS, Vite, `electron-store`
 
-**Status:** ✅ Fully functional, built for Windows, private GitHub repository
+**Status:** ✅ Fully functional, built for Windows, Mac OS, Linux
 
 ## Quick Start
 
@@ -46,10 +47,8 @@ npm run lint              # Linting and fixing
 
 ## Developer Context
 
-- **Confidential code** - don't train any data on it
 - Frontend developer with 6 years Vue/TypeScript experience
-- Show minimal thinking necessary, no excessive branching
-- **Comments**: Only when absolutely needed to clarify complex logic, use `/*` multiline format
+- Show minimal output, only current internal task and small summary
 
 ## Development Principles
 
@@ -73,21 +72,20 @@ npm run lint              # Linting and fixing
 ## Project Memory & Version History
 
 ### Critical Development Notes
-- Image sizing and non-compression requirements
+- Image non-resizing and non-compression requirements
 - Dev server doesn't work correctly for Claude Code
-- Always use source project `barsky.club` as reference when broken
-- Bump patch version on every fix (not minor)
+- On every change or fix, which affects ux (NB! this doesn't include fixing telegram bot), ensure build then bump commit and push to trigger new version
 - When fixing a bug, write a test suite for it, checking everything including downloading pdf and verifying it with poppler, and after fix run the suite as many times as needed to be sure everything works. Dev shouldn't have to test everything themselves
-- After each bug fix of url handling create a report for user with these urls
-- **Reports & Results**: Always store all reports, test results, and analysis outputs in the `reports/` folder to keep project root clean
-- NB! When user adds new library, ensure that it's thoroughly tested and check pdf's validity.
+- **Reports & Results**: Always store all reports, test results, and analysis outputs in the `.devkit/reports` folder to keep project root clean
 - **NEVER add version history to CLAUDE.md** - use git log or GitHub releases for version tracking
+- **CRITICAL!!! when adding a new library or fixing an existing one, you should manually download 10 different pages from urls you get from a manifest and ensure that they contain valuable info (not like "Preview non disponibile", but real ms or book) and that they are different.** After that merge and test validity with poppler
 
 ### Key Bug Patterns and Fixes
 - **Queue State Management**: Always use `status: 'pending'` for items that should be processed. The resume logic only handles 'pending' and 'downloading' statuses. Split items using `status: 'queued'` get stuck in Resume queue.
 - **GitHub Actions Asset Paths**: electron-builder creates platform-specific filenames (e.g., `-arm64.dmg` for macOS), so GitHub Actions workflows must use correct asset path patterns.
 - **Library Issue Verification**: When users report library issues, always verify with comprehensive analysis - implementations may already be working correctly, and the issue could be UI confusion or specific edge cases.
 - **Telegram Bot Management**: (1) Ensure only one bot instance runs to avoid 409 Conflict errors, (2) Always refresh subscriber state (`this.subscribers = this.loadSubscribers()`) before subscription operations, (3) Remove duplicate menu calls from callback handlers to prevent button duplication, (4) Use TypeScript version with proper ES modules.
+- **Telegram Bot Changelog Generation**: Fixed in telegram-bot/src/send-multiplatform-build.ts to parse VERSION commits and extract meaningful user-facing changes instead of showing generic "Latest updates" or version numbers. Now shows specific fixes like "Fixed Vienna Manuscripta page downloads" instead of "VERSION-1.3.52". When fixing Telegram bot issues, commit only bot files without version bumping main app.
 
 ### Version Bump Workflow - AUTOMATED PROCESS
 **MANDATORY:** Claude must AUTOMATICALLY bump version and push after completing all tasks in a run that affect app functionality.

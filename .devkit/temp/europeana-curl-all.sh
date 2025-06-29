@@ -1,0 +1,1197 @@
+curl 'https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=0, i' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876?__cf_chl_tk=k5PCiBIKWr4Jck38KCeCva2no40ccL77FHOePWKkMOY-1751125358-1.0.1.1-saumRMFJyjkLH5M00hg30pKn6nKiHQ3vfPVBIsHsNNU' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: document' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css' \
+  -H 'accept: text/css,*/*;q=0.1' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=0' \
+  -H 'referer: https://www.europeana.eu/' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: style' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: cross-site' \
+  -H 'sec-fetch-storage-access: active' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://cdn.jsdelivr.net/npm/bootstrap-vue@2.22.0/dist/bootstrap-vue.min.css' \
+  -H 'accept: text/css,*/*;q=0.1' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=0' \
+  -H 'referer: https://www.europeana.eu/' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: style' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: cross-site' \
+  -H 'sec-fetch-storage-access: active' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'chrome-extension://iaajmlceplecbljialhhkmedjlpdblhp/build/hook-exec.js' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'Referer;' ;
+curl 'https://www.europeana.eu/_nuxt/ddef87f.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/647365b.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/1ac579d.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/2f8a465.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/72099fa.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/66a5abf.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/0d607f1.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/55333cd.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/fb2b0d0.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/6e9d12f.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/36462ea.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/img/logo.3ebdec7.svg' \
+  -H 'accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=2, i' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: image' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015' \
+  -H 'Origin: https://www.europeana.eu' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'Referer: https://www.europeana.eu/' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' ;
+curl 'https://www.europeana.eu/_nuxt/fonts/400-normal-latin.e43b535.woff2' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'origin: https://www.europeana.eu' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=0' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: font' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/fonts/icomoon.71cb268.woff' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'origin: https://www.europeana.eu' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=0' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: font' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/fonts/600-normal-latin.603c992.woff2' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'origin: https://www.europeana.eu' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=0' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: font' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/fonts/400-normal-latin.764c83e.woff2' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'origin: https://www.europeana.eu' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=0' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: font' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://api.europeana.eu/entity/retrieve?wskey=nLbaXYaiH' \
+  -X 'OPTIONS' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'access-control-request-headers: content-type' \
+  -H 'access-control-request-method: POST' \
+  -H 'cache-control: no-cache' \
+  -H 'origin: https://www.europeana.eu' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://www.europeana.eu/' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://api.europeana.eu/entity/retrieve?wskey=nLbaXYaiH' \
+  -X 'OPTIONS' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'access-control-request-headers: content-type' \
+  -H 'access-control-request-method: POST' \
+  -H 'cache-control: no-cache' \
+  -H 'origin: https://www.europeana.eu' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://www.europeana.eu/' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://stats.europeana.eu/matomo.js' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'Referer: https://www.europeana.eu/' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' ;
+curl 'https://www.europeana.eu/_nuxt/67da024.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/a8de760.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/d988d6e.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/619f9e9.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/7f7afdb.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://cdn.jsdelivr.net/npm/@europeana/feedback-widget@0.3.3/dist/europeana-feedback-widget.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -H 'origin: https://www.europeana.eu' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1' \
+  -H 'referer: https://www.europeana.eu/' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: cross-site' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://cdn.jsdelivr.net/npm/@europeana/feedback-widget@0.3.3/dist/europeana-feedback-widget.css' \
+  -H 'accept: text/css,*/*;q=0.1' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=0' \
+  -H 'referer: https://www.europeana.eu/' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: style' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: cross-site' \
+  -H 'sec-fetch-storage-access: active' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%221%22%20height%3D%221%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20%25%7Bw%7D%20%25%7Bh%7D%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20style%3D%22fill%3Atransparent%3B%22%3E%3C%2Frect%3E%3C%2Fsvg%3E' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'Referer;' ;
+curl 'https://www.europeana.eu/_nuxt/657e08c.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/img/logo.1392d25.svg' \
+  -H 'accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: i' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: image' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/img/en-Funded%20by%20the%20EU_NEG.121d503.svg' \
+  -H 'accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: i' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: image' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://api.europeana.eu/entity/retrieve?wskey=nLbaXYaiH' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json' \
+  -H 'origin: https://www.europeana.eu' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://www.europeana.eu/' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  --data-raw '["http://data.europeana.eu/concept/17","http://data.europeana.eu/concept/2927","http://data.europeana.eu/organization/1482250000000338951","http://data.europeana.eu/organization/1482250000046717126"]' ;
+curl 'https://api.europeana.eu/entity/retrieve?wskey=nLbaXYaiH' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json' \
+  -H 'origin: https://www.europeana.eu' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://www.europeana.eu/' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  --data-raw '["http://data.europeana.eu/concept/17","http://data.europeana.eu/concept/2927","http://data.europeana.eu/organization/1482250000000338951","http://data.europeana.eu/organization/1482250000046717126"]' ;
+curl 'https://api.europeana.eu/record/search.json?wskey=nLbaXYaiH&query=%28what%3A%28%22Salterio%22%20OR%20%22Roma%2C%20Biblioteca%20Vallicelliana%2C%20Manoscritti%2C%20ms.E%2024%22%29%5E0.8%20OR%20who%3A%28%22Chiesa%20cattolica%22%29%5E0.5%20OR%20DATA_PROVIDER%3A%28%22Vallicelliana%20Library%22%29%5E0.2%29%20NOT%20europeana_id%3A%22%2F446%2FCNMD_0000171876%22&qf=contentTier%3A%281%20OR%202%20OR%203%20OR%204%29&rows=4&profile=minimal&facet=&start=1' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -H 'origin: https://www.europeana.eu' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://www.europeana.eu/' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.internetculturale.it/iiif/2.1/Q05NRFxcMDAwMDE3MTg3Ng__/manifest.json' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'Accept-Language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Connection: keep-alive' \
+  -H 'Origin: https://www.europeana.eu' \
+  -H 'Pragma: no-cache' \
+  -H 'Referer: https://www.europeana.eu/' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: cross-site' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' ;
+curl 'chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/inline/injected.js' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'Origin: https://www.europeana.eu' \
+  -H 'Referer;' ;
+curl 'https://www.europeana.eu/_nuxt/fonts/700-normal-latin.e45478d.woff2' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'origin: https://www.europeana.eu' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=0' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: font' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/fonts/400-italic-latin.3d5107a.woff2' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'origin: https://www.europeana.eu' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=0' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: font' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://cdn.jsdelivr.net/npm/klaro@0.7.18/dist/klaro-no-css.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: cross-site' \
+  -H 'sec-fetch-storage-access: active' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/e3a9532.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/aafe281.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'chrome-extension://hcbgadmbdkiilgpifjgcakjehmafcjai/assets/content.js-rrE6ADCm.js' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'Origin: https://www.europeana.eu' \
+  -H 'Referer;' ;
+curl 'chrome-extension://iaajmlceplecbljialhhkmedjlpdblhp/build/detector-exec.js' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'Referer;' ;
+curl 'chrome-extension://njgehaondchbmjmajphnhlojfnbfokng/scripts/dom.build.min.js' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'Referer;' ;
+curl 'https://www.europeana.eu/_nuxt/0562370.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/e599b80.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/a5a4c47.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/ca3a71b.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/70c376e.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/2e97ca2.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/f8b8496.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/90cd67b.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/84604c3.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://www.europeana.eu/_nuxt/a012e84.modern.js' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22520%22%20height%3D%22338%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20%25%7Bw%7D%20%25%7Bh%7D%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20style%3D%22fill%3A%23fff%3B%22%3E%3C%2Frect%3E%3C%2Fsvg%3E' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'Referer;' ;
+curl 'https://api.europeana.eu/thumbnail/v3/200/cebb562faa56968114c371c11297d845' \
+  -H 'accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o' \
+  -H 'pragma: no-cache' \
+  -H 'priority: i' \
+  -H 'referer: https://www.europeana.eu/' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: image' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://api.europeana.eu/thumbnail/v3/200/70f15ce851edc31f0e3a9847d2771322' \
+  -H 'accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o' \
+  -H 'pragma: no-cache' \
+  -H 'priority: i' \
+  -H 'referer: https://www.europeana.eu/' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: image' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22200%22%20height%3D%22296%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20%25%7Bw%7D%20%25%7Bh%7D%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20style%3D%22fill%3Atransparent%3B%22%3E%3C%2Frect%3E%3C%2Fsvg%3E' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'Referer;' ;
+curl 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22200%22%20height%3D%22755%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20%25%7Bw%7D%20%25%7Bh%7D%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20style%3D%22fill%3Atransparent%3B%22%3E%3C%2Frect%3E%3C%2Fsvg%3E' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'Referer;' ;
+curl 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22200%22%20height%3D%22291%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20%25%7Bw%7D%20%25%7Bh%7D%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20style%3D%22fill%3Atransparent%3B%22%3E%3C%2Frect%3E%3C%2Fsvg%3E' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'Referer;' ;
+curl 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22200%22%20height%3D%22298%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20%25%7Bw%7D%20%25%7Bh%7D%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20style%3D%22fill%3Atransparent%3B%22%3E%3C%2Frect%3E%3C%2Fsvg%3E' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'Referer;' ;
+curl 'https://www.internetculturale.it/iiif/image/2.1/Q05NRFxcMDAwMDE3MTg3Ng__@rm_281_vall_e_024_0001_178d54f494d0cc038ab62ab6a86a567a_8d4036110c0a2ecf4e542a43842d7143/info.json' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'Accept-Language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Connection: keep-alive' \
+  -H 'Origin: https://www.europeana.eu' \
+  -H 'Pragma: no-cache' \
+  -H 'Referer: https://www.europeana.eu/' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: cross-site' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' ;
+curl 'https://www.internetculturale.it/iiif/image/2.1/Q05NRFxcMDAwMDE3MTg3Ng__@rm_281_vall_e_024_0002_178d54f494d0cc038ab62ab6a86a567a_58b299a7a40f89d669dab41c7946493b/full/200,/0/default.jpg' \
+  -H 'Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' \
+  -H 'Accept-Language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Connection: keep-alive' \
+  -H 'Pragma: no-cache' \
+  -H 'Referer: https://www.europeana.eu/' \
+  -H 'Sec-Fetch-Dest: image' \
+  -H 'Sec-Fetch-Mode: no-cors' \
+  -H 'Sec-Fetch-Site: cross-site' \
+  -H 'Sec-Fetch-Storage-Access: active' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' ;
+curl 'https://www.internetculturale.it/iiif/image/2.1/Q05NRFxcMDAwMDE3MTg3Ng__@rm_281_vall_e_024_0001_178d54f494d0cc038ab62ab6a86a567a_8d4036110c0a2ecf4e542a43842d7143/full/200,/0/default.jpg' \
+  -H 'Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' \
+  -H 'Accept-Language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Connection: keep-alive' \
+  -H 'Pragma: no-cache' \
+  -H 'Referer: https://www.europeana.eu/' \
+  -H 'Sec-Fetch-Dest: image' \
+  -H 'Sec-Fetch-Mode: no-cors' \
+  -H 'Sec-Fetch-Site: cross-site' \
+  -H 'Sec-Fetch-Storage-Access: active' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' ;
+curl 'https://www.internetculturale.it/iiif/image/2.1/Q05NRFxcMDAwMDE3MTg3Ng__@rm_281_vall_e_024_0001_178d54f494d0cc038ab62ab6a86a567a_8d4036110c0a2ecf4e542a43842d7143/full/894,/0/default.jpg' \
+  -H 'Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' \
+  -H 'Accept-Language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Connection: keep-alive' \
+  -H 'Origin: https://www.europeana.eu' \
+  -H 'Pragma: no-cache' \
+  -H 'Referer: https://www.europeana.eu/' \
+  -H 'Sec-Fetch-Dest: image' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: cross-site' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' ;
+curl 'https://www.europeana.eu/_nuxt/cf61259352b5abdaf73759aae8e8a819.ico' \
+  -H 'accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: image' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' ;
+curl 'https://apm.eanadev.org:8200/intake/v2/rum/events' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'Referer: https://www.europeana.eu/' \
+  -H 'Content-Encoding: gzip' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'Content-Type: application/x-ndjson' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  --data-raw $'\u001f\u008b\u0008\u0000\u0000\u0000\u0000\u0000\u0000\u0013í][oÛH\u0096~ß_\u0011\u0010P°»\u0090¥ªSw\r\u0082I:qº{r\u009dt¦g\u001b\u0018@¨«ÍX"Ý$e\'\u001bä¿/(ù&§HË\u0096\u0012W÷Î\u0093m\u0016Y<¬úêÜÏñçlî\u001bít£³Éç¬öÕIn}ûk¡ç>\u009bdÇeÕèÙÞ\u0087:\u001bf\'¾ªó²È&\u0019\u008c0\u001eA6Ìô\u0081/\u009a+·W\u008bùõ{Ù\u0008Ó\u0011Ê¾\u000c³\u0099.\u000e\u0016úàêô\u001fô\u0089®m\u0095\u001f7í\r¾8É«²\u0098/çÌ\u008e«Ò-lÓÎòåË\u0097ÿø\u009c5\u0095.j½º2ù\u009cå.\u009bd\u009cyI)ñFq)0¶Ù°½Íúér\u0014\u0094DÄjj%\'\\Qa\u009c0&\u0004\u008f\u0090Q\u008a0\u009d\rÏ\u0009\u0019Of¥Õ3?Î\u001b?\u001fÿw;Í§ãå\u0002è\u0003¿7+µË\u0086\u0099[Tzõvª$\u001bf¶,\u001aÿqùý\u008d>¨Û\u009f(\u009bd³l\u0098ál\u0092\u0095Ù0\u0083l\u0092µD\u0091l\u0092µ¯£gã,\u009bd¾ýæã³\u0005©|ð\u0095¯²IvØ4Çõd<>==\u001dùEU\u001e{]è\u0091_\u008c}±¢\u008eR>~úúÕ³)B\u0008a\u0081¥à\u007f\u009dNm\u0098ÚÃÙ´9ztÄÞ>Í\u007føùÅ?+ú7{Dä\u008b§þé\u0089\u0086¢¤ÈÚ\u0097B<ÿé\u008d\u007fûÏ\u0017G¯Þü¶\u0087\u0005Ã\u0018\u0018ar\u000f\u008fÐ\u0008\u008fð^­\u0017ów¯\u009eÿíÓ\u0087£\u0097?±W\u0008\u001d\u001e\u0010tü¢àÅ\u008bü§¿\u0093\u0093ðö×\u001f~®\u007fª_¿þG6Ì\u0016Õì\u008e4·__ùú¸,êå\n,·7øjZçÿë³\u0009PÁx\u008b\u0009[:ï¦¦t\u009f.Fh;âüW#\u0098\u0002åj\u0098\u001dzí|U\u009fCÚW{M>Ï\u008b\u0083v3ÂSm\u000fý/\u008dn\u0016õ_\u009c¯í£g¿½~òêç§Ã\u00076¼©ò\u0083¼ø\u008b[T\u008f\u0008\u0005Ù^Úw\u0007~y\u0001«\u0016\u0087Ãl®«£åÔ\u0017à\u009féêÀ×ÍÓ\u0016\u000eE\u0013\u0016³·:oG¨"|\u0098\u0085¼\u008a\u008c\u0011Îð0kò¹\u007f_>oïøáSã³\u0009a\u0018\u0086\u0099+ç?\u0017\u008d¯Z°\u009f´W9ÆË«OËùñÌ·7R%Ñ\u0097\u0016¾\'ùÁ\u0012\u0094ïÏ¾ðs\u0016|c\u000f\u007fitÕd\u0013´|LçÅË²<Z\u001cÇ¯î\u0017nyÍ\u0096EámsyÓÙ\u0085óñÊÿ¾ðõù8½Ü¾³++âÏ/.\u009f"\u008c­¾çe©Ý\u0092>Â\u0080ö~ár¡ÚÛ½Û?ñÅùë\u0088$¤ã\u008eÕ\u009b$¡\u00915\u001afíá½:Ñµ«Ë\u0087©\u0092¸ÝÛúX\u0017S[.VûZ·\u000fx\u0097M8nÇt;¯Ë&Mµðç\u007fN+Ý¾\u0009\u000f3ÿñØW¹/Vì³1M6Á\\\u000c3;«³\u0009\u001a\u0021D\u0098ÀH(ÆE{è\u0004¦-\u0011ÅA£ë£ö\u0089³·\u0092aV/æÙ\u0084`ÕBíc6ÁD}Y1À\u0096º\u000bÎ\'\u0091ÀXò\u0080\u0009\u0097Î\u0007ºâ|ç\u000crÚÅ\u001d\u008fuå\u008b¦søNÌóÝ\n\u0017yqð@\u0017îAå­ÏOÚ¿\u009aCÿÀ\u0095v±äè\u0017,õPWnï\u0012¸YûÅælÌTåi}y^\u0087«=X\u0082í\u0092û\u0012Få\u001a÷uË·ësÉpE\u008cU¾.\u0017Uû{v\u009d7M(%\u0097ßðzüä\u0092Âö\u008f/ÃL;Wùº\u008e<Û.d¹¤\u008b\u0092ØæX\u0087\u0015SFS\u0003\u0092b\u0014îqsÞêª¾¾\u0017Ã\u0007þ£·\u008bå\u008eÕ\u009f\n;z°\u0012Âõv\u009btv´/öI\u008a¯W\u0006\u0091\u0000D(\u0006\u001c[ãì}®Ì¹Ð²®\u0018}¨\u009d\u009få\'Õ¨ðÍ¸8\u009e\u008fMY6uSéãÇtÄG0vyÝ\u008cm]_\u000e\u008cæy1²õ\u00955»\u0000ÛÕÅ\u009aåÅÑÕ%"èê\u0012\u0009X\u0003rKRûs]ªnO`\u009f\u009ce\u000c:ä,\u0003è\u0090³\u001c\u0080Ó\u0096antò®Ó\u007f\u009b\u0093wýÙ\u009bN\u001eUT;\u008c\u0000\u0094¢\u0006¬M\u001e_{\'\u000bÿ\u0018F\u0000#´ÚÃµ\u0091T@¶1\u0095=HÃH*\u001aE\u001aF¬\u001d\u0089 Mp¤x\u0092@s\u0001Kp\u0096\n#\u0084àVÝ#Ð^\u009e©\u0011ÿYûYø¯Ëo¼P/®"C]E\u0006[G\u0086]ÔM9_ê¶MSåf±º+[\u0014GEyZ\\Î|\u009a\u0017®<Íbë\u0002\u0010´Ô\u0084I\u0087°#R$p\u0000¿²J¦Åâc3vÎ\u0007)Âh^:_µ\u009b\u007fËC¦ðÕ¥lÿºñ\u0090Ý\u0082\u0092>\u0096-\u0009tpìv r\u008c¨`jãSô=\u0015%AÁ± \u008d3\u0010\u0010\r8]´p*\u0008gfWh\u0021wGK\u008c\u0092\u001e´H\u0005<\u000e\u0017)\u0015\u008fã\u00058U·\u0010ðß\u00131\u0092\u0006m\u001dµ^\u0003CNÞ§ÝsÃ>am\u0099PnG\u0088Á\u0088Þ\u001d21Rú$5eT\u0088¸¨¦\u000c·C\u0011Ð0\u008c\u0010Û\\X\u007fOÐ\u0018a%\u0098 \u001ce \u008d\u0083tA#\u0000)\u0015ô\u008e@#·ÀL\u008c\u0092^\u007f\u009d\u0012]þ:.âv\u0084"T¢$\u0001#\rhî\u001d£\u0084\u0083\u0008â>µ»\u001b¶)\u00180È¡\u0004\u0000\u0013£¤O.QÌâb\u0009·\u00031©$RUc\u0088àÖro,bØr\u009e0\\ HM9Û\u0015\\ÄÝá\u0012£¤\u0007.\u008aq\u001a·\u001e\u0015#4n=R¢8¤É`\u009cæL\u0004ì\u000câÎ#çÒE\u000cc\u0084\u0010»+5Fª»#&FI\u000fb\u0004gq½W\u0010Ö¡ö2ÎY\u0092pÁ\u0018;Ê\u0083p\u001c\u00904\u0092§\u000b\u0017Î5ÓfgVõ\u0016\u000c&FI\u009fÒ+\u0010\u008eã\u0005s\u0081ã\u0080aH*H\u00120\u008a\u0008\u001e\u009c³Îq\u0082±fé\u0002\u00069\u008eDÀ)\u0098I1Rz\u0010Ã@Æ5^ªd\u0087ã\u009c\u0010\u0095¦<²\u0098\u0012\u0081°äÜJ©mÂf5÷ÊaØ\u0015\u0083\u0091[¸íb\u0094ô1\u0018Å:Üß\u009cuè/H¤©ï:.\u00100ÐL\u001a \u0004\u0091tÑB8åàwfOo¡½Ä(é³§\u0011\u0092q´\u0088v \u0086\u0016Fe\u0092haAiÊ¤\'V\u0005\u00084aïK>?\u0018ÏÊ\u0083rD¼qÞ\u008aQ}rp\u0003`òùZ\u0004¼UX®àe\u0093ÈÛíhé\u0081\u000cA4î´\u0003Aã.;Ah\u009aún@\u008cû \u0083\u0002Ê´Ð(]È\u0084²hê1Eh¯(«¹\u009eíÍt\u0093\u0017#O\u0089a\u0084\u008dNË\u0010à\u0006\u0008­"§ç\u0010â\u0088ï\nB\u001bÒÖ¯\u0014SÔ¥\u0014·#Ñì\u0000AÓTrÀ{á)×R:+\u0094LØM³Ú¹Ü\u0096ó²,F\u0002[\u0003\\.7l+,m\u0011uê¥¨\u008f)\u0011.ã\u0082\u008c\u0010"ã\u0092l9\u0092$\u0082\u0098\u0011Hà`¼f\u0012\u0019\u0095°([í\u0017¿~ö9"V)Ø\u0001_ÚÆS¼\u0019mý|©#;\u0018sÑ\u0095\u001dÜ\u008e$\u0089*\u0090\u008e\u0007ç¹ô\u008c³4\u0092ân\'Q\u0004§V\u0012¿\u0003Tm¡`oH[oÜ\u0093B\u0087\u0089F1Äm´åH\u0092¨\u0092Z)\u001746\u0088(¦\u0084ùcd(\u0009´îÏ\u0021ê\u001b¤(y\u0087\u0099\u0008Âcê¸\u0096÷¸0ïËFÏ\u001eü0+íQ\u009b\u008cû>\u009fû[­\u000e\u008f¤Ø\u0006\u0083\u0089 \u008a\u0019\u001f(\n)\u0007£¸p\u001a\u0001ÝØ8?+\u0015º²\u001cbÝ<G[8s"´ôÚZ"®\u0017\u0083\u0010qµXP\u0095&\u009fp\u008e"$\u0082µRr¦ aé£¥ó\u0082o\u001eë¾\u0011/üîx\u0089ÑÒ\u0083\u0017ÊAÅ}Å¤\u001d\u0088\u0009\u0016&H\u009a\u0080ñÆ\nj\rAÆ cå}\n\u0096\u009b\u0012+\u0095\u0094\u008eûÝ\u0001f\u000bc<FK\u001f\u0083á*\u001e\u008d"DÅ\u0083QJª4½ÅÆKF\u0002V\u00069*1¾Oy{\u0093\u0010À*(¯¶ÀKkbï(º\u0010¡¥\u0007/m¢|\u0014/L¨¸=\u0004mÈ\'MÀ8\u000bV1-Áh\u008b\u0021a\rF\u0004¡\u0083Û<+8\u0002\u0018º+\u000fM\u008c\u0096>\u0006\u0083QG\u0016¹Dq\u0006#1K3Øí°Rm]\u0019VZJ\u009fnÑÏã\u008b\u008f\u001a\u0007ï\u009dÑöhï4w\u0007¾y\u008cFdDV¥5\u00177í]»é\u000eð\u0092\u0000WáÅ7qÚ|;Òû²\u0001\u0005t8\u009a%W\u001d\u008ef\u0090\u009cÐ4ËÐ\u0082r\u00819ç\u0094W\u0092\u0001N\u0021_ç\u009blë­KÓ$¬\u0009H~çÒ´ÝPÞ\u0017\u0080]\u0005Zc\u000c\u0012Ó\u008e\u0010,Vm+\u0085$\u0011É\u0085j=\u008cÊbÜ¢ò>#jÏóÊ?øWöìÍ«µZþ\u007fe\u000füÉÖ\u0095âg}\u0002.]$\u0091\\\u0017ÎÀ[¢\u0014sÌ)\u009fpn\u0014gÂ#iï®^¬\u009a"ìF\u001f\u008dÐÒçK%]ù\u000b¨ãð\u0000Á8IõBk\u001c8\u000bÀ\u009c°\u0080QÂA\u009f\u008b\u009c\u0001L\u00148`·Î_\u0090\u0084í\n/\u001d´ôåÓ\u0091.\u0013\u0006u\u00980\u0098\u0092Dm^¡¹óÖp\u008b1\u0015\u0088&ìTk÷É\u0017{Ï\u0017\u0085ón\u0000È|\u001a\u0000j\u000eý\u0000Ðþ?¦¯÷\u007f\u001caÀ\u008e\u0021²-\u0098\u0084Ü\u000eL·\u0021²\u000fe\u0082Ç\u0015MFy\u0087\u009e\u0089\u0008N3\u001cM$\u000e$h\u000b\u0081{ÂÍ}\u0016[¿}óËû\u0007ç»¨\u008fóë} \u009a¼ù4®|SåþäJ\u008cÃ\u007fl|UèÙ\u001a\u008c\u0096Ð¸\u008a£µ\u0018\u0021\u0001\u0016\u0005ÒÜ7\u0087¥;#å«ÖT7\u0091ô×ÓúÈ\u007fzT¼4ú\u007f~ÓùO«÷7\u008bzÚâa\u0099\u008f·)\u0002®¿ê6\u0008¸þì:\u0002\u0086Y¹hl¹\u009c§^XëW±ÔµVD\u0011ùe¸\u0014D\nN\u0018\u0092\u0094ßg¶æ÷DI\\vý\u001b%\u001d(\u0021N\u0005"´0Æ(JÙ}zõ\u007fÜï\u0001IåmY¹qíue\u000fG\u001fê²¸-NÖR4\u0009º\u0001\'?îo\u0000\u0093¯\u0089º\u008e\u0094\u0087¿/|õéÑ\u0000äé¡n\u0006äÉ\u0000ä\u0000à\u0017=k|\u0095\u0097\u0003\u0080\u0001 7ï\u0006\u0080\u0006\u0000ïÊ¹\u001eÀÓ\u0001 \u001fr3ËËÆ[=\u0000ô«\u009eÍrëg³\\\u0017gã¯tQ¶Z\u007fÓä«\u000bóz´?\u0000\u0004t9£\u001a°}4\u0092çS\u009f\u001e\u0096\u0017o~z\u0098ûº\u009dÕê¦)gyû\u0086\u008b\'Øù\u0013Ï\u009e¼\u007f2}ûîÍ¯??Û\u007fwñì5BÐËÜTºúte\u0082å/\u0080^¿y?\u0000t±TÓÜ-ç\u0080\u0001<§\u0094\u000fàùµ¦\u0080\u0003\u0080\u0087¿\u0087Gve\u0017¾Ï}µz\'>§çb\u0095Èù/t\u0000êak\u000c>¢\u000f\u008f«2ä3ÿh\u009e\u0017ù\\Ï\u001e\u0006m}óèárë\u001fá?Ñaõ\n\u0098"\u0098\u0021j\u0088Sò>­ù«\u0087µÕ_ò¶¯_á\u001b»\u00985\u008bJÏü(oÆy\u009e\u00871\u008cðøï\u0088½~÷ü£}õìÉé«gûäÕû\u0003òú`:\u001dÏu\u0091\u0007_7Û\u009fhÊîp¢wHù]1ÖEÂm\u0015ÈØ\u001c»À\u001c\rL\u0008\u008a5²R0\u0082\u0012\u000eã­2ÁÄ×yÏ\u008c\néî\u0090¥&×Û&mc\u0016oH[\u009fg\u0085sÑU¨HD<t³\u001cIÒ\u00841\u0084)Ï\u0005r\u0010\u0008\u0018\u0095p¿¨ËüÂ¼Ñ³Ü\u009eí\u001cq\u000c#¡w\u0080ª-²\u00976¤­\u000fU\u0012CG¦¿\u0090Ð\u0091éß\u008e$\u0089*%5ÅÚz\n\u0006seS(P\u008bF1\u008efº*\u001f£\u0091\u0018a¹\u008aX,¯ì\u0015å\u009e­ë»8|Å\u009aÃ\u0097o\u0012O¾3e}^\u0016\u008cQ\u00973O¢\u000eo\u009ePø\u0016\u0019Úß3zb\u0003Ñ \u009dÕÄSÎuÂ}Ê<Ñ\u008a\u0011¸{È@\u0021Ø\u0095¬\u008bÑÒÛ\u008a\u0094wÔ¯\u0001ïh9E\u0013uÿ:¤,\u000b\u0094¨à\r¥<á\u00149­\u0083\u0007¹yùý·ÄK\u008c\u0096>\u0091\u0005\u0082Æ[\u0008á¶G|\u00141\u001c8O3é\u0009\u0021\u008e\u0080\u0019i¥ÒÎ\u0093û¬Àß<]\u009f"´Öj\u0016\u0083Üyº~ÐÄr\u0004\u009e[g\u0095Ç>Ý³\u0084\u0018\u0007"î\u009e\u009fL1]Oï\u0097[\u0084LbÄô%àðx¸\u0096ñx´VÑ49/\u0010©\u008dÂ(H\u000cÂÑ\u00144¿.éÈ\u00942r\u0097hÙ¢YN\u008c\u0098^\u001b\u0014\u00918ç%í@¬¦\u0093C\u009aÅw\u001esN-rÁ\nâ\u0014K\u0021y°K<2M-\u0015Û\u0000\u0086¯\u0003f\u008blÓ\u00181}Ù¦]\rEIW;Q\u0085D\u009aAWÝî\u009fÐÈa \u0082¨\u0084[åXM´ÀwÏN¦\u0098­y(°ØÂE\u0011#¦\u0097Ãt5\u001e ]é J¦éââ\u0088J­¤&Ú\u001b,\\Â"I KÄ\u0016õ2\u0014\u0094ÚU½L\u008c\u0096^\u0006#ã¥»\u0004Ë\u008eÊ]\u009cj>;Å\u00989`L\u0005a\u0094Q\u0009[\u008fà\u0095°úîÞ\u0086]\u0002&FK\u001f`¤\u008cWä\u0011&;*ò°\u0092i¶ËQJj£\u0011µ`\u0019¡X§\u000b\u0098 \u008d¤\u008aß\u001d0dÝàÜªa@\u0084\u0096>÷\u0094Rqo\u0003p\u0015w6H\u0009iâE\u0004ª\u008c¤\u0018\u001c\u0001.B\nå\u0009\u001d{¤\u0090u\\l¡Âì\u0010/1Zz#*²#LÇdG;Q\u008eÒ¬ø\u00956x£(\u0000X¤\u0098O8ô+)GÔ\u0092mð²³\u007fÔ\u0011£¥¯ÃµRm·ÁX\u0087kÅ\u0097}\u0008#V5\u0095$Q­\u0017C`2PÐ\\HAuÊv5ÂàåÝÛP\\ÇÌ6­\u0091b´ôµ\u0015 \u001dm\u0090(îê\u0082\u0004è\u0016\u0015Jßµç\u001fã\u0086\u0010é\u0091\u0014L°$Ê,¾Êók\u000e\u0017sSè|6>\u0021c@hl½1\u008cCÐ\u009aqÅ%ÆÔ\u0012\u0081-Æ \u0084\u0093\u0094Ý&a\u009e\u0012ºnno¤\rï\u0084Æ\u001e\u0088Å­ð¸\u0009¾y2À·K¨\u008b4m#Üjo4#m\u008aM\u0012mÿnÞ4\u0081\u0002fÖK\u0086½³\u0004\u0007Ô\u0006S%\u0015\u000e\u0084À\u0004nÊ4é\u0005\u0096Ú¤ïÉNHüSãÊrÏ(ÕLj\u000f\u0004éT2¦ûS\u0019ó¹>ð½\u0009\u008d\u008f«ù\u0014$\u009e\u009eèÙlê§\u0008h\u009b \u008b§XHÇh \u008a:d-jã,\u001c´áZrÍ¸ÐSé(jÿ\u00913²H\u0083·\u0081zFAS")8\u0081)\u0019çE(o\u009fßI\u0097ÿ(æ\n[dq/ä\u0016ù\u009d©,Ê\u009f5uÔx\u0089­T\u009crçÀ\u008aTtÁÝ\u0003\u0002n\u0006DÛ3])-4EA*Ç¹rÚPl\u0085¢\u009c*bÆa1\u009bµüu8Fcç\u0083^Ì\u009aÑ\u0087ã[\u0095ÞQ\u008a×S¢Å¦fÌ\u001fmI¾»\u0080ù~G-Ö©Í\u0082\u0014­WÉ[ä\\*E¥iòÕop\u008c\u0018\u008fW\u001eþQDÍ¿\u008fÑ*â\u008f\u0094æN\u0009\u008f\u001dg\n§`\u000f$\u008e\u0099ö\u001fwoq\u008cØz\u0093+Ø¸ïâ\u001fmIþ_\u001d#å1¡\u000c\u009c3Âp\u001cî3/ï¬£Ì¬Ô;ê"C\u0095D×»Èü\u001f^\u0021Ù\u0096,\u008b\u0000\u0000' ;
+curl 'https://apm.eanadev.org:8200/intake/v2/rum/events' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'Referer: https://www.europeana.eu/' \
+  -H 'Content-Encoding: gzip' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'Content-Type: application/x-ndjson' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  --data-raw $'\u001f\u008b\u0008\u0000\u0000\u0000\u0000\u0000\u0000\u0013í][oÛH\u0096~ß_\u0011\u0010P°»\u0090¥ªSw\r\u0082I:qº{r\u009dt¦g\u001b\u0018@¨«ÍX"Ý$e\'\u001bä¿/(ù&§HË\u0096\u0012W÷Î\u0093m\u0016Y<¬úêÜÏñçlî\u001bít£³Éç¬öÕIn}ûk¡ç>\u009bdÇeÕèÙÞ\u0087:\u001bf\'¾ªó²È&\u0019\u008c0\u001eA6Ìô\u0081/\u009a+·W\u008bùõ{Ù\u0008Ó\u0011Ê¾\u000c³\u0099.\u000e\u0016úàêô\u001fô\u0089®m\u0095\u001f7í\r¾8É«²\u0098/çÌ\u008e«Ò-lÓÎòåË\u0097ÿø\u009c5\u0095.j½º2ù\u009cå.\u009bd\u009cyI)ñFq)0¶Ù°½Íúér\u0014\u0094DÄjj%\'\\Qa\u009c0&\u0004\u008f\u0090Q\u008a0\u009d\rÏ\u0009\u0019Of¥Õ3?Î\u001b?\u001fÿw;Í§ãå\u0002è\u0003¿7+µË\u0086\u0099[Tzõvª$\u001bf¶,\u001aÿqùý\u008d>¨Û\u009f(\u009bd³l\u0098ál\u0092\u0095Ù0\u0083l\u0092µD\u0091l\u0092µ¯£gã,\u009bd¾ýæã³\u0005©|ð\u0095¯²IvØ4Çõd<>==\u001dùEU\u001e{]è\u0091_\u008c}±¢\u008eR>~úúÕ³)B\u0008a\u0081¥à\u007f\u009dNm\u0098ÚÃÙ´9ztÄÞ>Í\u007føùÅ?+ú7{Dä\u008b§þé\u0089\u0086¢¤ÈÚ\u0097B<ÿé\u008d\u007fûÏ\u0017G¯Þü¶\u0087\u0005Ã\u0018\u0018ar\u000f\u008fÐ\u0008\u008fð^­\u0017ów¯\u009eÿíÓ\u0087£\u0097?±W\u0008\u001d\u001e\u0010tü¢àÅ\u008bü§¿\u0093\u0093ðö×\u001f~®\u007fª_¿þG6Ì\u0016Õì\u008e4·__ùú¸,êå\n,·7øjZçÿë³\u0009PÁx\u008b\u0009[:ï¦¦t\u009f.Fh;âüW#\u0098\u0002åj\u0098\u001dzí|U\u009fCÚW{M>Ï\u008b\u0083v3ÂSm\u000fý/\u008dn\u0016õ_\u009c¯í£g¿½~òêç§Ã\u00076¼©ò\u0083¼ø\u008b[T\u008f\u0008\u0005Ù^Úw\u0007~y\u0001«\u0016\u0087Ãl®«£åÔ\u0017à\u009féêÀ×ÍÓ\u0016\u000eE\u0013\u0016³·:oG¨"|\u0098\u0085¼\u008a\u008c\u0011Îð0kò¹\u007f_>oïøáSã³\u0009a\u0018\u0086\u0099+ç?\u0017\u008d¯Z°\u009f´W9ÆË«OËùñÌ·7R%Ñ\u0097\u0016¾\'ùÁ\u0012\u0094ïÏ¾ðs\u0016|c\u000f\u007fitÕd\u0013´|LçÅË²<Z\u001cÇ¯î\u0017nyÍ\u0096EámsyÓÙ\u0085óñÊÿ¾ðõù8½Ü¾³++âÏ/.\u009f"\u008c­¾çe©Ý\u0092>Â\u0080ö~ár¡ÚÛ½Û?ñÅùë\u0088$¤ã\u008eÕ\u009b$¡\u00915\u001afíá½:Ñµ«Ë\u0087©\u0092¸ÝÛúX\u0017S[.VûZ·\u000fx\u0097M8nÇt;¯Ë&Mµðç\u007fN+Ý¾\u0009\u000f3ÿñØW¹/Vì³1M6Á\\\u000c3;«³\u0009\u001a\u0021D\u0098ÀH(ÆE{è\u0004¦-\u0011ÅA£ë£ö\u0089³·\u0092aV/æÙ\u0084`ÕBíc6ÁD}Y1À\u0096º\u000bÎ\'\u0091ÀXò\u0080\u0009\u0097Î\u0007ºâ|ç\u000crÚÅ\u001d\u008fuå\u008b¦søNÌóÝ\n\u0017yqð@\u0017îAå­ÏOÚ¿\u009aCÿÀ\u0095v±äè\u0017,õPWnï\u0012¸YûÅælÌTåi}y^\u0087«=X\u0082í\u0092û\u0012Få\u001a÷uË·ësÉpE\u008cU¾.\u0017Uû{v\u009d7M(%\u0097ßðzüä\u0092Âö\u008f/ÃL;Wùº\u008e<Û.d¹¤\u008b\u0092ØæX\u0087\u0015SFS\u0003\u0092b\u0014îqsÞêª¾¾\u0017Ã\u0007þ£·\u008bå\u008eÕ\u009f\n;z°\u0012Âõv\u009btv´/öI\u008a¯W\u0006\u0091\u0000D(\u0006\u001c[ãì}®Ì¹Ð²®\u0018}¨\u009d\u009få\'Õ¨ðÍ¸8\u009e\u008fMY6uSéãÇtÄG0vyÝ\u008cm]_\u000e\u008cæy1²õ\u00955»\u0000ÛÕÅ\u009aåÅÑÕ%"èê\u0012\u0009X\u0003rKRûs]ªnO`\u009f\u009ce\u000c:ä,\u0003è\u0090³\u001c\u0080Ó\u0096antò®Ó\u007f\u009b\u0093wýÙ\u009bN\u001eUT;\u008c\u0000\u0094¢\u0006¬M\u001e_{\'\u000bÿ\u0018F\u0000#´ÚÃµ\u0091T@¶1\u0095=HÃH*\u001aE\u001aF¬\u001d\u0089 Mp¤x\u0092@s\u0001Kp\u0096\n#\u0084àVÝ#Ð^\u009e©\u0011ÿYûYø¯Ëo¼P/®"C]E\u0006[G\u0086]ÔM9_ê¶MSåf±º+[\u0014GEyZ\\Î|\u009a\u0017®<Íbë\u0002\u0010´Ô\u0084I\u0087°#R$p\u0000¿²J¦Åâc3vÎ\u0007)Âh^:_µ\u009b\u007fËC¦ðÕ¥lÿºñ\u0090Ý\u0082\u0092>\u0096-\u0009tpìv r\u008c¨`jãSô=\u0015%AÁ± \u008d3\u0010\u0010\r8]´p*\u0008gfWh\u0021wGK\u008c\u0092\u001e´H\u0005<\u000e\u0017)\u0015\u008fã\u00058U·\u0010ðß\u00131\u0092\u0006m\u001dµ^\u0003CNÞ§ÝsÃ>am\u0099PnG\u0088Á\u0088Þ\u001d21Rú$5eT\u0088¸¨¦\u000c·C\u0011Ð0\u008c\u0010Û\\X\u007fOÐ\u0018a%\u0098 \u001ce \u008d\u0083tA#\u0000)\u0015ô\u008e@#·ÀL\u008c\u0092^\u007f\u009d\u0012]þ:.âv\u0084"T¢$\u0001#\rhî\u001d£\u0084\u0083\u0008â>µ»\u001b¶)\u00180È¡\u0004\u0000\u0013£¤O.QÌâb\u0009·\u00031©$RUc\u0088àÖro,bØr\u009e0\\ HM9Û\u0015\\ÄÝá\u0012£¤\u0007.\u008aq\u001a·\u001e\u0015#4n=R¢8¤É`\u009cæL\u0004ì\u000câÎ#çÒE\u000cc\u0084\u0010»+5Fª»#&FI\u000fb\u0004gq½W\u0010Ö¡ö2ÎY\u0092pÁ\u0018;Ê\u0083p\u001c\u00904\u0092§\u000b\u0017Î5ÓfgVõ\u0016\u000c&FI\u009fÒ+\u0010\u008eã\u0005s\u0081ã\u0080aH*H\u00120\u008a\u0008\u001e\u009c³Îq\u0082±fé\u0002\u00069\u008eDÀ)\u0098I1Rz\u0010Ã@Æ5^ªd\u0087ã\u009c\u0010\u0095¦<²\u0098\u0012\u0081°äÜJ©mÂf5÷ÊaØ\u0015\u0083\u0091[¸íb\u0094ô1\u0018Å:Üß\u009cuè/H¤©ï:.\u00100ÐL\u001a \u0004\u0091tÑB8åàwfOo¡½Ä(é³§\u0011\u0092q´\u0088v \u0086\u0016Fe\u0092haAiÊ¤\'V\u0005\u00084aïK>?\u0018ÏÊ\u0083rD¼qÞ\u008aQ}rp\u0003`òùZ\u0004¼UX®àe\u0093ÈÛíhé\u0081\u000cA4î´\u0003Aã.;Ah\u009aún@\u008cû \u0083\u0002Ê´Ð(]È\u0084²hê1Eh¯(«¹\u009eíÍt\u0093\u0017#O\u0089a\u0084\u008dNË\u0010à\u0006\u0008­"§ç\u0010â\u0088ï\nB\u001bÒÖ¯\u0014SÔ¥\u0014·#Ñì\u0000AÓTrÀ{á)×R:+\u0094LØM³Ú¹Ü\u0096ó²,F\u0002[\u0003\\.7l+,m\u0011uê¥¨\u008f)\u0011.ã\u0082\u008c\u0010"ã\u0092l9\u0092$\u0082\u0098\u0011Hà`¼f\u0012\u0019\u0095°([í\u0017¿~ö9"V)Ø\u0001_ÚÆS¼\u0019mý|©#;\u0018sÑ\u0095\u001dÜ\u008e$\u0089*\u0090\u008e\u0007ç¹ô\u008c³4\u0092ân\'Q\u0004§V\u0012¿\u0003Tm¡`oH[oÜ\u0093B\u0087\u0089F1Äm´åH\u0092¨\u0092Z)\u001746\u0088(¦\u0084ùcd(\u0009´îÏ\u0021ê\u001b¤(y\u0087\u0099\u0008Âcê¸\u0096÷¸0ïËFÏ\u001eü0+íQ\u009b\u008cû>\u009fû[­\u000e\u008f¤Ø\u0006\u0083\u0089 \u008a\u0019\u001f(\n)\u0007£¸p\u001a\u0001ÝØ8?+\u0015º²\u001cbÝ<G[8s"´ôÚZ"®\u0017\u0083\u0010qµXP\u0095&\u009fp\u008e"$\u0082µRr¦ aé£¥ó\u0082o\u001eë¾\u0011/üîx\u0089ÑÒ\u0083\u0017ÊAÅ}Å¤\u001d\u0088\u0009\u0016&H\u009a\u0080ñÆ\nj\rAÆ cå}\n\u0096\u009b\u0012+\u0095\u0094\u008eûÝ\u0001f\u000bc<FK\u001f\u0083á*\u001e\u008d"DÅ\u0083QJª4½ÅÆKF\u0002V\u00069*1¾Oy{\u0093\u0010À*(¯¶ÀKkbï(º\u0010¡¥\u0007/m¢|\u0014/L¨¸=\u0004mÈ\'MÀ8\u000bV1-Áh\u008b\u0021a\rF\u0004¡\u0083Û<+8\u0002\u0018º+\u000fM\u008c\u0096>\u0006\u0083QG\u0016¹Dq\u0006#1K3Øí°Rm]\u0019VZJ\u009fnÑÏã\u008b\u008f\u001a\u0007ï\u009dÑöhï4w\u0007¾y\u008cFdDV¥5\u00177í]»é\u000eð\u0092\u0000WáÅ7qÚ|;Òû²\u0001\u0005t8\u009a%W\u001d\u008ef\u0090\u009cÐ4ËÐ\u0082r\u00819ç\u0094W\u0092\u0001N\u0021_ç\u009blë­KÓ$¬\u0009H~çÒ´ÝPÞ\u0017\u0080]\u0005Zc\u000c\u0012Ó\u008e\u0010,Vm+\u0085$\u0011É\u0085j=\u008cÊbÜ¢ò>#jÏóÊ?øWöìÍ«µZþ\u007fe\u000füÉÖ\u0095âg}\u0002.]$\u0091\\\u0017ÎÀ[¢\u0014sÌ)\u009fpn\u0014gÂ#iï®^¬\u009a"ìF\u001f\u008dÐÒçK%]ù\u000b¨ãð\u0000Á8IõBk\u001c8\u000bÀ\u009c°\u0080QÂA\u009f\u008b\u009c\u0001L\u00148`·Î_\u0090\u0084í\n/\u001d´ôåÓ\u0091.\u0013\u0006u\u00980\u0098\u0092Dm^¡¹óÖp\u008b1\u0015\u0088&ìTk÷É\u0017{Ï\u0017\u0085ón\u0000È|\u001a\u0000j\u000eý\u0000Ðþ?¦¯÷\u007f\u001caÀ\u008e\u0021²-\u0098\u0084Ü\u000eL·\u0021²\u000fe\u0082Ç\u0015MFy\u0087\u009e\u0089\u0008N3\u001cM$\u000e$h\u000b\u0081{ÂÍ}\u0016[¿}óËû\u0007ç»¨\u008fóë} \u009a¼ù4®|SåþäJ\u008cÃ\u007fl|UèÙ\u001a\u008c\u0096Ð¸\u008a£µ\u0018\u0021\u0001\u0016\u0005ÒÜ7\u0087¥;#å«ÖT7\u0091ô×ÓúÈ\u007fzT¼4ú\u007f~ÓùO«÷7\u008bzÚâa\u0099\u008f·)\u0002®¿ê6\u0008¸þì:\u0002\u0086Y¹hl¹\u009c§^XëW±ÔµVD\u0011ùe¸\u0014D\nN\u0018\u0092\u0094ßg¶æ÷DI\\vý\u001b%\u001d(\u0021N\u0005"´0Æ(JÙ}zõ\u007fÜï\u0001IåmY¹qíue\u000fG\u001fê²¸-NÖR4\u0009º\u0001\'?îo\u0000\u0093¯\u0089º\u008e\u0094\u0087¿/|õéÑ\u0000äé¡n\u0006äÉ\u0000ä\u0000à\u0017=k|\u0095\u0097\u0003\u0080\u0001 7ï\u0006\u0080\u0006\u0000ïÊ¹\u001eÀÓ\u0001 \u001fr3ËËÆ[=\u0000ô«\u009eÍrëg³\\\u0017gã¯tQ¶Z\u007fÓä«\u000bóz´?\u0000\u0004t9£\u001a°}4\u0092çS\u009f\u001e\u0096\u0017o~z\u0098ûº\u009dÕê¦)gyû\u0086\u008b\'Øù\u0013Ï\u009e¼\u007f2}ûîÍ¯??Û\u007fwñì5BÐËÜTºúte\u0082å/\u0080^¿y?\u0000t±TÓÜ-ç\u0080\u0001<§\u0094\u000fàùµ¦\u0080\u0003\u0080\u0087¿\u0087Gve\u0017¾Ï}µz\'>§çb\u0095Èù/t\u0000êak\u000c>¢\u000f\u008f«2ä3ÿh\u009e\u0017ù\\Ï\u001e\u0006m}óèárë\u001fá?Ñaõ\n\u0098"\u0098\u0021j\u0088Sò>­ù«\u0087µÕ_ò¶¯_á\u001b»\u00985\u008bJÏü(oÆy\u009e\u00871\u008cðøï\u0088½~÷ü£}õìÉé«gûäÕû\u0003òú`:\u001dÏu\u0091\u0007_7Û\u009fhÊîp¢wHù]1ÖEÂm\u0015ÈØ\u001c»À\u001c\rL\u0008\u008a5²R0\u0082\u0012\u000eã­2ÁÄ×yÏ\u008c\néî\u0090¥&×Û&mc\u0016oH[\u009fg\u0085sÑU¨HD<t³\u001cIÒ\u00841\u0084)Ï\u0005r\u0010\u0008\u0018\u0095p¿¨ËüÂ¼Ñ³Ü\u009eí\u001cq\u000c#¡w\u0080ª-²\u00976¤­\u000fU\u0012CG¦¿\u0090Ð\u0091éß\u008e$\u0089*%5ÅÚz\n\u0006seS(P\u008bF1\u008efº*\u001f£\u0091\u0018a¹\u008aX,¯ì\u0015å\u009e­ë»8|Å\u009aÃ\u0097o\u0012O¾3e}^\u0016\u008cQ\u00973O¢\u000eo\u009ePø\u0016\u0019Úß3zb\u0003Ñ \u009dÕÄSÎuÂ}Ê<Ñ\u008a\u0011¸{È@\u0021Ø\u0095¬\u008bÑÒÛ\u008a\u0094wÔ¯\u0001ïh9E\u0013uÿ:¤,\u000b\u0094¨à\r¥<á\u00149­\u0083\u0007¹yùý·ÄK\u008c\u0096>\u0091\u0005\u0082Æ[\u0008á¶G|\u00141\u001c8O3é\u0009\u0021\u008e\u0080\u0019i¥ÒÎ\u0093û¬Àß<]\u009f"´Öj\u0016\u0083Üyº~ÐÄr\u0004\u009e[g\u0095Ç>Ý³\u0084\u0018\u0007"î\u009e\u009fL1]Oï\u0097[\u0084LbÄô%àðx¸\u0096ñx´VÑ49/\u0010©\u008dÂ(H\u000cÂÑ\u00144¿.éÈ\u00942r\u0097hÙ¢YN\u008c\u0098^\u001b\u0014\u00918ç%í@¬¦\u0093C\u009aÅw\u001esN-rÁ\nâ\u0014K\u0021y°K<2M-\u0015Û\u0000\u0086¯\u0003f\u008blÓ\u00181}Ù¦]\rEIW;Q\u0085D\u009aAWÝî\u009fÐÈa \u0082¨\u0084[åXM´ÀwÏN¦\u0098­y(°ØÂE\u0011#¦\u0097Ãt5\u001e ]é J¦éââ\u0088J­¤&Ú\u001b,\\Â"I KÄ\u0016õ2\u0014\u0094ÚU½L\u008c\u0096^\u0006#ã¥»\u0004Ë\u008eÊ]\u009cj>;Å\u00989`L\u0005a\u0094Q\u0009[\u008fà\u0095°úîÞ\u0086]\u0002&FK\u001f`¤\u008cWä\u0011&;*ò°\u0092i¶ËQJj£\u0011µ`\u0019¡X§\u000b\u0098 \u008d¤\u008aß\u001d0dÝàÜªa@\u0084\u0096>÷\u0094Rqo\u0003p\u0015w6H\u0009iâE\u0004ª\u008c¤\u0018\u001c\u0001.B\nå\u0009\u001d{¤\u0090u\\l¡Âì\u0010/1Zz#*²#LÇdG;Q\u008eÒ¬ø\u00956x£(\u0000X¤\u0098O8ô+)GÔ\u0092mð²³\u007fÔ\u0011£¥¯ÃµRm·ÁX\u0087kÅ\u0097}\u0008#V5\u0095$Q­\u0017C`2PÐ\\HAuÊv5ÂàåÝÛP\\ÇÌ6­\u0091b´ôµ\u0015 \u001dm\u0090(îê\u0082\u0004è\u0016\u0015Jßµç\u001fã\u0086\u0010é\u0091\u0014L°$Ê,¾Êók\u000e\u0017sSè|6>\u0021c@hl½1\u008cCÐ\u009aqÅ%ÆÔ\u0012\u0081-Æ \u0084\u0093\u0094Ý&a\u009e\u0012ºnno¤\rï\u0084Æ\u001e\u0088Å­ð¸\u0009¾y2À·K¨\u008b4m#Üjo4#m\u008aM\u0012mÿnÞ4\u0081\u0002fÖK\u0086½³\u0004\u0007Ô\u0006S%\u0015\u000e\u0084À\u0004nÊ4é\u0005\u0096Ú¤ïÉNHüSãÊrÏ(ÕLj\u000f\u0004éT2¦ûS\u0019ó¹>ð½\u0009\u008d\u008f«ù\u0014$\u009e\u009eèÙlê§\u0008h\u009b \u008b§XHÇh \u008a:d-jã,\u001c´áZrÍ¸ÐSé(jÿ\u00913²H\u0083·\u0081zFAS")8\u0081)\u0019çE(o\u009fßI\u0097ÿ(æ\n[dq/ä\u0016ù\u009d©,Ê\u009f5uÔx\u0089­T\u009crçÀ\u008aTtÁÝ\u0003\u0002n\u0006DÛ3])-4EA*Ç¹rÚPl\u0085¢\u009c*bÆa1\u009bµüu8Fcç\u0083^Ì\u009aÑ\u0087ã[\u0095ÞQ\u008a×S¢Å¦fÌ\u001fmI¾»\u0080ù~G-Ö©Í\u0082\u0014­WÉ[ä\\*E¥iòÕop\u008c\u0018\u008fW\u001eþQDÍ¿\u008fÑ*â\u008f\u0094æN\u0009\u008f\u001dg\n§`\u000f$\u008e\u0099ö\u001fwoq\u008cØz\u0093+Ø¸ïâ\u001fmIþ_\u001d#å1¡\u000c\u009c3Âp\u001cî3/ï¬£Ì¬Ô;ê"C\u0095D×»Èü\u001f^\u0021Ù\u0096,\u008b\u0000\u0000' ;
+curl 'https://www.europeana.eu/_api/events' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'accept-language: en-US,en;q=0.9,nl;q=0.8,ru;q=0.7' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json' \
+  -b 'cf_clearance=4cyCogHPQ1.mQbhIKjQKcAkPfhP9utF7_SK8KEndwNc-1751125362-1.2.1.1-gha7RHf9.Ti.X2tk9kQqNbqpNJ7K4BJThO_Jo5hNoFlW2nYkvapHTBuuYB_URAT9nou23gjFKYvSuMaj99RwurcYFYDxlLchc_KG3KA6VwvJuFOtjTQGnVWJ4Z10vJreH6H7v4h7oCSFPkwVJw4xXDR6QEbzTTssvMPustfOlStjeuycdyYcW8M7c83SAWu0W.h70DX8kdEtB3Zqiti8RHM5dq2eAd7YQvMmCHGjoJFZs48yrI1TSzXj7tcgHh7yfu8Un_1jdOY1Ah0JNqbnm6h5MSiAgFHjxd552qWScn6Db_8b8qJWMVHBdwMtDizN26EYWh5aHPVAwXSsG1amm4lGcdVlQGd6DdO43VD61abxrYTN68kSZJZBplEi_37o; auth.strategy=keycloak; i18n_locale_code=en' \
+  -H 'origin: https://www.europeana.eu' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://www.europeana.eu/en/item/446/CNMD_0000171876' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-full-version: "137.0.7151.120"' \
+  -H 'sec-ch-ua-full-version-list: "Google Chrome";v="137.0.7151.120", "Chromium";v="137.0.7151.120", "Not/A)Brand";v="24.0.0.0"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'traceparent: 00-66a08044cef85e8f9a123455f2aedeeb-8cc848d965e05c1e-01' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  --data-raw '{"actionType":"view","objectUri":"http://data.europeana.eu/item/446/CNMD_0000171876","sessionId":"1d470233-18ab-462a-8c25-f8aa91cf9993"}' ;
+curl 'https://apm.eanadev.org:8200/intake/v2/rum/events' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'Referer: https://www.europeana.eu/' \
+  -H 'Content-Encoding: gzip' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'Content-Type: application/x-ndjson' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  --data-raw $'\u001f\u008b\u0008\u0000\u0000\u0000\u0000\u0000\u0000\u0013½\u0094KoÚ@\u0010Çïù\u0014Õ\u009c\u008díµ×`,UUC\u0015\u0091\u0010\u0008}F=Y\u0093õ\u0000\u000exíîÃI\u0084üÝ«\u0085 Ð¤i¥\u001ezÛÙùÏx\u001e¿õ\u0016*2X AÈ¶ Iµ¥ w\u0094X\u0011dÐÔÊà¦w«Á\u0083\u0096\u0094.k\u0009\u0019D>c~\u0004\u001eà\u0092¤9\u0092+[=×&>ã~\u0008\u009d\u0007\u001b\u0094K\u008bËãô·Ø¢\u0016ªl\u008c\u0013\u0090lKUËj\u0097\u0013\u001aU\u0017V\u0018\u0097¥ëº\u0093-\u0018\u0085Rãþ&ÛBY@\u0006©\u0018¦4H\u008a\u0094¥|\u0018õ\u000bð\u009cLP¾óöû\u0018¦\u0021ç\u0082\u0016iBéb\u0088,\u008ay\u0092,"¤\u0082è\u0006¼C\u0021ó«Ï_Þ¬\u008cit\u0016\u0004www>YU7\u0084\u0012}²A\u008eM\u0019PKÒ¸ÞÌCãB\u009cº§è\u0087%mÀ\u0083Â*Ü\u0097ÆXì\u0081¨¥¡ûÝl\u009aÇ\u009e\u0015-H\u0091z\u000cýí\u0087H\u0006¥¡*à¼\u001f\u008cfÓ\u000fy\u0018\u0086\u0021\u001b°tÐ\u007f\u0097çb\u0091\u008bÕ&7ë·ëd>*OÏ\'×\u008a_\u0088u\u009cNF4j1\u00925\u000f\u0085¸\u001c\u000cÎÆW4¿\u009e¬§Wß{l\u00900\u0016%q\u0092ö\u0098\u001fúÌg=\u008d¶ú4=»x¸]_\u008e\u0093i\u0018®\u0096qØLd_NÊñÇ¸]Ì¿\u009d\u009eë±\u009eÍ¾\u0082\u0007Vmþ±fè:\u000f*Tkíú?Àâ.u\u00832\u0017µÝÓ£\r*C\u0005dÌ¹°j6Î0ÊÒÁÌ\u0015\u001a\u0082\u008cyP[#êÝÎ´\u0015\u0082´\u0086\u001d\u001c.á\u0011\u0015"åi1ì\'\u0014&\u0082Ñ\u009e\u008a\u0003<ùkä4¨H\u009aWÝÿ\u000b,º7¤$nÀ\u0003mo\u008ehs\u0017nR\u0090\u0085\u007fâm\'Í¶îe¯êâ±\u0086¿ïñ×Z´Acu.ê\u0082 \u008bBÞyP\u00906¥ÄÃû;úY(ÒµUî\u000cÏÓf\u009cÇOÓ\u0098\u0005ï\u009fútFç\u0001\u0016\u0085rk|\u0019ëVR»v9\u008f\u001d4/Wÿ\u001c\u008f®;ù\u0009¿\u0002ô·Ò\u0004\u0000\u0000' ;
+curl 'https://apm.eanadev.org:8200/intake/v2/rum/events' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'Referer: https://www.europeana.eu/' \
+  -H 'Content-Encoding: gzip' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'Content-Type: application/x-ndjson' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  --data-raw $'\u001f\u008b\u0008\u0000\u0000\u0000\u0000\u0000\u0000\u0013½\u0094KoÚ@\u0010Çïù\u0014Õ\u009c\u008díµ×`,UUC\u0015\u0091\u0010\u0008}F=Y\u0093õ\u0000\u000exíîÃI\u0084üÝ«\u0085 Ð¤i¥\u001ezÛÙùÏx\u001e¿õ\u0016*2X AÈ¶ Iµ¥ w\u0094X\u0011dÐÔÊà¦w«Á\u0083\u0096\u0094.k\u0009\u0019D>c~\u0004\u001eà\u0092¤9\u0092+[=×&>ã~\u0008\u009d\u0007\u001b\u0094K\u008bËãô·Ø¢\u0016ªl\u008c\u0013\u0090lKUËj\u0097\u0013\u001aU\u0017V\u0018\u0097¥ëº\u0093-\u0018\u0085Rãþ&ÛBY@\u0006©\u0018¦4H\u008a\u0094¥|\u0018õ\u000bð\u009cLP¾óöû\u0018¦\u0021ç\u0082\u0016iBéb\u0088,\u008ay\u0092,"¤\u0082è\u0006¼C\u0021ó«Ï_Þ¬\u008cit\u0016\u0004www>YU7\u0084\u0012}²A\u008eM\u0019PKÒ¸ÞÌCãB\u009cº§è\u0087%mÀ\u0083Â*Ü\u0097ÆXì\u0081¨¥¡ûÝl\u009aÇ\u009e\u0015-H\u0091z\u000cýí\u0087H\u0006¥¡*à¼\u001f\u008cfÓ\u000fy\u0018\u0086\u0021\u001b°tÐ\u007f\u0097çb\u0091\u008bÕ&7ë·ëd>*OÏ\'×\u008a_\u0088u\u009cNF4j1\u00925\u000f\u0085¸\u001c\u000cÎÆW4¿\u009e¬§Wß{l\u00900\u0016%q\u0092ö\u0098\u001fúÌg=\u008d¶ú4=»x¸]_\u008e\u0093i\u0018®\u0096qØLd_NÊñÇ¸]Ì¿\u009d\u009eë±\u009eÍ¾\u0082\u0007Vmþ±fè:\u000f*Tkíú?Àâ.u\u00832\u0017µÝÓ£\r*C\u0005dÌ¹°j6Î0ÊÒÁÌ\u0015\u001a\u0082\u008cyP[#êÝÎ´\u0015\u0082´\u0086\u001d\u001c.á\u0011\u0015"åi1ì\'\u0014&\u0082Ñ\u009e\u008a\u0003<ùkä4¨H\u009aWÝÿ\u000b,º7¤$nÀ\u0003mo\u008ehs\u0017nR\u0090\u0085\u007fâm\'Í¶îe¯êâ±\u0086¿ïñ×Z´Acu.ê\u0082 \u008bBÞyP\u00906¥ÄÃû;úY(ÒµUî\u000cÏÓf\u009cÇOÓ\u0098\u0005ï\u009fútFç\u0001\u0016\u0085rk|\u0019ëVR»v9\u008f\u001d4/Wÿ\u001c\u008f®;ù\u0009¿\u0002ô·Ò\u0004\u0000\u0000'

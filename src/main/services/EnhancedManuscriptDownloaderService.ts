@@ -235,6 +235,34 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     /**
+     * Validate Internet Culturale images to detect authentication error pages
+     */
+    private async validateInternetCulturaleImage(buffer: ArrayBuffer, url: string): Promise<void> {
+        // Check for the specific "Preview non disponibile" error page
+        // These error pages are valid JPEGs but have a distinctive size (~27KB) and content
+        const PREVIEW_ERROR_SIZE = 27287; // Exact size of "Preview non disponibile" error page
+        const PREVIEW_ERROR_TOLERANCE = 100; // Allow some tolerance for compression differences
+        
+        if (Math.abs(buffer.byteLength - PREVIEW_ERROR_SIZE) < PREVIEW_ERROR_TOLERANCE) {
+            // This is likely the error page - check if image is too small to be real manuscript
+            // Error pages will have very uniform content compared to real manuscript pages
+            if (buffer.byteLength < 30000) { // Error pages are typically much smaller than real manuscript images
+                throw new Error(
+                    `Internet Culturale authentication error: received "Preview non disponibile" error page instead of manuscript image. ` +
+                    `This indicates a session/authentication issue. Image size: ${buffer.byteLength} bytes. ` +
+                    `URL: ${url}`
+                );
+            }
+        }
+        
+        // Additional check: ensure the image is large enough to be a real manuscript page
+        // Real manuscript images are typically 50KB+ while error pages are ~27KB
+        if (buffer.byteLength < 40000) {
+            console.warn(`Internet Culturale image unusually small (${buffer.byteLength} bytes): ${url}`);
+        }
+    }
+
+    /**
      * Detect library type from URL
      */
     detectLibrary(url: string): string | null {
@@ -1619,8 +1647,9 @@ export class EnhancedManuscriptDownloaderService {
      */
     async downloadImageWithRetries(url: string, attempt = 0): Promise<ArrayBuffer> {
         try {
-            // Use proxy fallback for Unicatt, Orleans, Internet Culturale, and Graz images or when direct access fails
-            const response = url.includes('digitallibrary.unicatt.it') || url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr') || url.includes('internetculturale.it') || url.includes('unipub.uni-graz.at')
+            // Use proxy fallback for Unicatt, Orleans, and Graz images or when direct access fails
+            // Note: Internet Culturale removed from proxy list to fix authentication issues
+            const response = url.includes('digitallibrary.unicatt.it') || url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr') || url.includes('unipub.uni-graz.at')
                 ? await this.fetchWithProxyFallback(url)
                 : await this.fetchDirect(url, {}, attempt + 1); // Pass attempt number for timeout calculation
             
@@ -1632,6 +1661,11 @@ export class EnhancedManuscriptDownloaderService {
             
             if (buffer.byteLength < MIN_VALID_IMAGE_SIZE_BYTES) {
                 throw new Error(`Image too small: ${buffer.byteLength} bytes`);
+            }
+            
+            // Special validation for Internet Culturale to detect authentication error pages
+            if (url.includes('internetculturale.it')) {
+                await this.validateInternetCulturaleImage(buffer, url);
             }
             
             return buffer;
