@@ -4,6 +4,16 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 
 **Technologies:** Electron, Vue 3, TypeScript, SCSS, Vite, `electron-store`
 
+**Agents management**
+- User can specify how many additional agents you can spawn, if not specified by user, spawn default of 5 agents. 
+- By default they can work in parallel. 
+- You should split phases of you work into parts and assign these parts to different agents. 
+- You should orchestrate their work cleverly. 
+- If an agent's findings are large, they can write them into files in any subfolder of `./devkit`. 
+- You can spawn agents as many times as you want, just don't overcome the limit of parallel. 
+- Agents have same permissions as main process.
+- NB! Each agent should work silently, not bloating terminal with any output. 
+
 ## MANDATORY RULES
 
 ### 0. Commit strategy
@@ -18,6 +28,22 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 - Performance improvements, error message improvements
 - When user says "bump"
 - Telegram bot should send changelog message for every build. It should contain non-technical summary of all fixes and additions after last build: Libraries added, new url patterns for downloads etc. It should be concise, but user should understand from it all the new functionality.
+
+### CRITICAL TELEGRAM BOT CHANGELOG REQUIREMENTS:
+**MUST AVOID**: Generic descriptions like "Bug fixes and stability improvements", "New features and library support"
+**MUST PROVIDE**: Specific user-facing benefits:
+- "Added [Library Name] manuscript downloads"  
+- "Fixed [Library Name] hanging downloads for large manuscripts"
+- "Improved download progress monitoring shows real-time status"
+- "Enhanced authentication handling prevents error pages"
+
+**SEMANTIC PARSING REQUIRED**: Convert technical descriptions to user benefits:
+- "Implement intelligent download progress monitoring" → "Improved download reliability with real-time progress tracking"
+- "Fix University of Graz timeouts" → "Fixed University of Graz loading timeouts for large manuscripts"  
+- "Add Rome BNC libroantico support" → "Added Rome BNC libroantico collection manuscript downloads"
+
+**PATTERN ANALYSIS**: Parse commit descriptions semantically, not just pattern matching
+**LIBRARY FOCUS**: Emphasize which libraries were added/fixed and what functionality improved
 
 **NOT for:** Documentation, telegram bot fixes (any telegram bot changes - commit and push silently without version bump), code refactoring without behavior changes
 

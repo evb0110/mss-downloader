@@ -26,68 +26,228 @@ function formatText(text: string): string {
   return escapeHTML(text);
 }
 
+// Library name mappings with geographic context
+const LIBRARY_MAPPINGS: Record<string, string> = {
+  'internet culturale': 'Internet Culturale (Italian Cultural Heritage)',
+  'internet-culturale': 'Internet Culturale (Italian Cultural Heritage)',
+  'internetculturale': 'Internet Culturale (Italian Cultural Heritage)',
+  'university of graz': 'University of Graz (Austria)',
+  'graz': 'University of Graz (Austria)',
+  'rome bnc': 'Rome National Central Library (Italy)',
+  'rome-bnc': 'Rome National Central Library (Italy)',
+  'manuscripta.at': 'Manuscripta.at (Austria)',
+  'manuscripta at': 'Manuscripta.at (Austria)',
+  'e-manuscripta': 'e-manuscripta.ch (Switzerland)',
+  'e-manuscripta.ch': 'e-manuscripta.ch (Switzerland)',
+  'europeana': 'Europeana (European Digital Library)',
+  'vienna manuscripta': 'Vienna Manuscripta (Austria)',
+  'morgan library': 'Morgan Library & Museum (New York)',
+  'themorgan': 'Morgan Library & Museum (New York)',
+  'gallica': 'Gallica (French National Library)',
+  'vatican': 'Vatican Apostolic Library',
+  'british library': 'British Library (UK)',
+  'cambridge': 'Cambridge University Library (UK)',
+  'stanford': 'Stanford Libraries (USA)',
+  'parker': 'Parker Library (Cambridge, UK)',
+  'trinity': 'Trinity College Library (Dublin)',
+  'cudl': 'Cambridge Digital Library (UK)',
+  'orleans': 'Orléans Library (France)',
+  'florence': 'Florence Libraries (Italy)',
+  'heidelberg': 'Heidelberg University Library (Germany)',
+  'rbme': 'Real Biblioteca del Monasterio de El Escorial (Spain)',
+  'cologne': 'University of Cologne Library (Germany)',
+  'verona': 'Verona Biblioteca (Italy)',
+  'modena': 'Modena State Archive (Italy)',
+  'vallicelliana': 'Vallicelliana Library (Rome, Italy)',
+  'monte cassino': 'Monte Cassino Abbey (Italy)',
+  'czech digital': 'Czech Digital Library',
+  'sweden manuscripta': 'Manuscripta.se (Sweden)',
+  'bdl': 'Bavarian State Library (Germany)',
+  'florus': 'FLORUS (Lyon, France)',
+  'nypl': 'New York Public Library (USA)',
+  'mira': 'MIRA (Germany)',
+  'isos': 'ISOS (Irish Script on Screen)',
+  'bm lyon': 'Municipal Library of Lyon (France)'
+};
+
 function extractUserFacingChangesFromVersionCommit(commitMessage: string): string[] {
   // Extract the description after "VERSION-X.X.X: "
   const versionMatch = commitMessage.match(/^VERSION-[^:]*:\s*(.+)/i);
   if (!versionMatch) return [];
   
   const description = versionMatch[1].trim();
-  
-  // Parse the description to extract user-facing benefits
   const changes: string[] = [];
   
-  // Split by common separators and clean up
-  const parts = description.split(/[,;-]/).map(part => part.trim()).filter(Boolean);
+  // Semantic parsing approach: extract meaningful components
+  const semanticData = parseSemanticComponents(description);
+  
+  // Convert semantic components to user-facing benefits
+  for (const component of semanticData) {
+    const userBenefit = translateToUserBenefit(component);
+    if (userBenefit && !changes.includes(userBenefit)) {
+      changes.push(userBenefit);
+    }
+  }
+  
+  // If no semantic parsing succeeded, fallback to intelligent pattern matching
+  if (changes.length === 0) {
+    const fallbackChanges = extractWithIntelligentPatterns(description);
+    changes.push(...fallbackChanges);
+  }
+  
+  // Remove duplicates and limit to 3 most important changes
+  return [...new Set(changes)].slice(0, 3);
+}
+
+interface SemanticComponent {
+  action: 'fix' | 'add' | 'implement' | 'improve' | 'enhance' | 'eliminate' | 'resolve';
+  target: string;
+  library?: string;
+  issueType?: 'timeout' | 'infinite_loop' | 'hanging' | 'authentication' | 'performance' | 'quality' | 'pagination' | 'monitoring';
+  context?: string;
+}
+
+function parseSemanticComponents(description: string): SemanticComponent[] {
+  const components: SemanticComponent[] = [];
+  
+  // Split by common separators and analyze each part
+  const parts = description.split(/[,;-]|and\s+(?=\w)/i).map(part => part.trim()).filter(Boolean);
   
   for (const part of parts) {
-    // Convert technical descriptions to user-facing language
-    if (part.match(/fix.*internet.*culturale.*infinite.*loop/i)) {
-      changes.push('Fixed Internet Culturale infinite download loops');
-    } else if (part.match(/eliminate.*authentication.*error.*pages/i)) {
-      changes.push('Improved authentication error handling');
-    } else if (part.match(/improve.*download.*performance/i)) {
-      changes.push('Enhanced download performance');
-    } else if (part.match(/fix.*university.*graz.*timeout/i)) {
-      changes.push('Fixed University of Graz loading timeouts');
-    } else if (part.match(/rome.*bnc.*libroantico.*support/i)) {
-      changes.push('Added Rome BNC libroantico collection support');
-    } else if (part.match(/manuscripta.*hanging.*download/i)) {
-      changes.push('Fixed Manuscripta.at hanging downloads');
-    } else if (part.match(/e-manuscripta.*complete.*manuscript/i)) {
-      changes.push('Fixed e-manuscripta.ch complete manuscript downloads');
-    } else if (part.match(/fix.*europeana.*pagination/i)) {
-      changes.push('Fixed Europeana complete manuscript downloads');
-    } else if (part.match(/vienna.*manuscripta.*page.*range/i)) {
-      changes.push('Fixed Vienna Manuscripta page-specific downloads');
-    } else if (part.match(/morgan.*library.*quality/i)) {
-      changes.push('Enhanced Morgan Library image quality');
-    } else if (part.match(/add.*library.*support/i)) {
-      const libraryMatch = part.match(/add\s+([^.]+?)\s+(?:library\s+)?support/i);
-      if (libraryMatch) {
-        changes.push(`Added ${libraryMatch[1]} library support`);
-      }
-    } else if (part.match(/fix.*library/i)) {
-      const libraryMatch = part.match(/fix\s+([^.]+?)\s+library/i);
-      if (libraryMatch) {
-        changes.push(`Fixed ${libraryMatch[1]} library downloads`);
-      }
+    const component = parseIndividualComponent(part);
+    if (component) {
+      components.push(component);
     }
   }
   
-  // If no specific patterns matched, try to extract general improvements
+  return components;
+}
+
+function parseIndividualComponent(text: string): SemanticComponent | null {
+  const lowerText = text.toLowerCase();
+  
+  // Extract action
+  let action: SemanticComponent['action'] | null = null;
+  if (lowerText.match(/^(fix|fixed|fixing)/)) action = 'fix';
+  else if (lowerText.match(/^(add|added|adding)/)) action = 'add';
+  else if (lowerText.match(/^(implement|implementing|implemented)/)) action = 'implement';
+  else if (lowerText.match(/^(improve|improved|improving|enhance|enhanced|enhancing)/)) action = 'improve';
+  else if (lowerText.match(/^(eliminate|eliminated|eliminating)/)) action = 'eliminate';
+  else if (lowerText.match(/^(resolve|resolved|resolving)/)) action = 'resolve';
+  
+  if (!action) return null;
+  
+  // Extract library name
+  let library: string | undefined;
+  for (const [key, fullName] of Object.entries(LIBRARY_MAPPINGS)) {
+    if (lowerText.includes(key.toLowerCase())) {
+      library = fullName;
+      break;
+    }
+  }
+  
+  // Extract issue type
+  let issueType: SemanticComponent['issueType'] | undefined;
+  if (lowerText.includes('timeout')) issueType = 'timeout';
+  else if (lowerText.includes('infinite loop') || lowerText.includes('infinite-loop')) issueType = 'infinite_loop';
+  else if (lowerText.includes('hanging') || lowerText.includes('hung')) issueType = 'hanging';
+  else if (lowerText.includes('authentication') || lowerText.includes('auth')) issueType = 'authentication';
+  else if (lowerText.includes('performance') || lowerText.includes('speed')) issueType = 'performance';
+  else if (lowerText.includes('quality') || lowerText.includes('resolution')) issueType = 'quality';
+  else if (lowerText.includes('pagination') || lowerText.includes('page')) issueType = 'pagination';
+  else if (lowerText.includes('monitoring') || lowerText.includes('progress')) issueType = 'monitoring';
+  
+  return {
+    action,
+    target: text,
+    library,
+    issueType,
+    context: text
+  };
+}
+
+function translateToUserBenefit(component: SemanticComponent): string | null {
+  const { action, library, issueType } = component;
+  
+  // Library-specific fixes
+  if (library && (action === 'fix' || action === 'resolve')) {
+    if (issueType === 'timeout') {
+      return `Fixed ${library} loading timeouts for large manuscripts`;
+    } else if (issueType === 'infinite_loop') {
+      return `Fixed ${library} infinite download loops`;
+    } else if (issueType === 'hanging') {
+      return `Fixed ${library} hanging downloads`;
+    } else if (issueType === 'authentication') {
+      return `Improved ${library} authentication handling`;
+    } else if (issueType === 'pagination') {
+      return `Fixed ${library} complete manuscript downloads`;
+    } else {
+      return `Fixed ${library} download issues`;
+    }
+  }
+  
+  // Library additions
+  if (library && action === 'add') {
+    return `Added ${library} manuscript collection support`;
+  }
+  
+  // General improvements
+  if (action === 'implement') {
+    if (component.target.includes('intelligent') && component.target.includes('progress')) {
+      return 'Improved download reliability with real-time progress tracking';
+    } else if (component.target.includes('monitoring')) {
+      return 'Enhanced download progress monitoring';
+    } else if (component.target.includes('timeout')) {
+      return 'Improved timeout detection and handling';
+    }
+  }
+  
+  if (action === 'improve' || action === 'enhance') {
+    if (issueType === 'performance') {
+      return 'Enhanced download performance';
+    } else if (issueType === 'quality') {
+      return 'Improved image quality and resolution';
+    } else if (issueType === 'monitoring') {
+      return 'Better download progress tracking';
+    }
+  }
+  
+  if (action === 'eliminate') {
+    if (issueType === 'authentication') {
+      return 'Improved authentication error handling';
+    }
+  }
+  
+  return null;
+}
+
+function extractWithIntelligentPatterns(description: string): string[] {
+  const changes: string[] = [];
+  const lowerDesc = description.toLowerCase();
+  
+  // Specific technical implementations that benefit users
+  if (lowerDesc.includes('intelligent') && (lowerDesc.includes('progress') || lowerDesc.includes('monitoring'))) {
+    changes.push('Improved download reliability with real-time progress tracking');
+  } else if (lowerDesc.includes('timeout') && lowerDesc.includes('detection')) {
+    changes.push('Enhanced timeout detection and handling');
+  } else if (lowerDesc.includes('authentication') && lowerDesc.includes('error')) {
+    changes.push('Improved authentication error handling');
+  } else if (lowerDesc.includes('download') && lowerDesc.includes('performance')) {
+    changes.push('Enhanced download performance');
+  }
+  
+  // Fallback only if nothing else matched
   if (changes.length === 0) {
-    // Look for key action words and create generic improvements
-    if (description.match(/fix|resolve|correct/i)) {
-      changes.push('Bug fixes and stability improvements');
-    } else if (description.match(/add|implement|support/i)) {
-      changes.push('New features and library support');
-    } else if (description.match(/improve|enhance|optimize/i)) {
-      changes.push('Performance improvements');
+    if (lowerDesc.includes('fix') || lowerDesc.includes('resolve')) {
+      changes.push('Library download improvements');
+    } else if (lowerDesc.includes('add') || lowerDesc.includes('implement')) {
+      changes.push('New functionality and features');
+    } else if (lowerDesc.includes('improve') || lowerDesc.includes('enhance')) {
+      changes.push('Performance and reliability improvements');
     }
   }
   
-  // Limit to 3 changes and remove duplicates
-  return [...new Set(changes)].slice(0, 3);
+  return changes;
 }
 
 function getChangelogFromCommits(version: string): string {
