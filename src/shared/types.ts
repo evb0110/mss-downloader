@@ -31,6 +31,7 @@ export interface ManuscriptManifest {
   library: 'nypl' | 'morgan' | 'gallica' | 'unifr' | 'e_manuscripta' | 'vatlib' | 'cecilia' | 'irht' | 'dijon' | 'laon' | 'durham' | 'florus' | 'unicatt' | 'cudl' | 'trinity_cam' | 'isos' | 'mira' | 'orleans' | 'rbme' | 'parker' | 'manuscripta' | 'internet_culturale' | 'graz' | 'cologne' | 'vienna_manuscripta' | 'rome' | 'berlin' | 'czech' | 'modena' | 'bdl' | 'europeana';
   displayName: string;
   originalUrl: string;
+  startPageFromUrl?: number; // Optional: page number specified in URL for range starting
 }
 
 export interface LibraryInfo {
