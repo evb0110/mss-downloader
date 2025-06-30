@@ -56,10 +56,17 @@ const LIBRARY_MAPPINGS: Record<string, string> = {
   'heidelberg': 'Heidelberg University Library (Germany)',
   'rbme': 'Real Biblioteca del Monasterio de El Escorial (Spain)',
   'cologne': 'University of Cologne Library (Germany)',
-  'verona': 'Verona Biblioteca (Italy)',
+  'verona': 'Verona National Library (Italy)',
+  'verona nbm': 'Verona National Library (Italy)',
+  'verona library': 'Verona National Library (Italy)',
+  'nuova biblioteca manoscritta': 'Verona National Library (Italy)',
   'modena': 'Modena State Archive (Italy)',
   'vallicelliana': 'Vallicelliana Library (Rome, Italy)',
+  'vallicelliana library': 'Vallicelliana Library (Rome, Italy)',
   'monte cassino': 'Monte Cassino Abbey (Italy)',
+  'monte-cassino': 'Monte Cassino Abbey (Italy)',
+  'montecassino': 'Monte Cassino Abbey (Italy)',
+  'omnes': 'Monte Cassino Abbey (Italy)',
   'czech digital': 'Czech Digital Library',
   'sweden manuscripta': 'Manuscripta.se (Sweden)',
   'bdl': 'Bavarian State Library (Germany)',
@@ -110,8 +117,33 @@ interface SemanticComponent {
 function parseSemanticComponents(description: string): SemanticComponent[] {
   const components: SemanticComponent[] = [];
   
-  // Split by common separators and analyze each part
-  const parts = description.split(/[,;-]|and\s+(?=\w)/i).map(part => part.trim()).filter(Boolean);
+  // Enhanced splitting logic that preserves compound library names
+  // First, handle the main description intelligently
+  const mainDescription = description.toLowerCase();
+  
+  // Look for multiple library mentions in a comprehensive library implementation
+  if (mainDescription.includes('library support') || mainDescription.includes('manuscript') || mainDescription.includes('comprehensive')) {
+    // Extract specific library names from the full description
+    const librariesFound = extractLibrariesFromDescription(description);
+    
+    for (const library of librariesFound) {
+      components.push({
+        action: 'add',
+        target: `${library} library support`,
+        library: library,
+        context: description
+      });
+    }
+    
+    // If we found libraries, return early to avoid generic parsing
+    if (components.length > 0) {
+      return components;
+    }
+  }
+  
+  // Fallback to traditional parsing with improved separators
+  // Split by commas and 'and' but preserve compound names with hyphens
+  const parts = description.split(/[,;]|\s+and\s+(?=\w)/i).map(part => part.trim()).filter(Boolean);
   
   for (const part of parts) {
     const component = parseIndividualComponent(part);
@@ -123,24 +155,49 @@ function parseSemanticComponents(description: string): SemanticComponent[] {
   return components;
 }
 
+function extractLibrariesFromDescription(description: string): string[] {
+  const libraries: string[] = [];
+  const lowerDesc = description.toLowerCase();
+  
+  // Sort library mappings by key length (longest first) to prioritize more specific matches
+  const sortedMappings = Object.entries(LIBRARY_MAPPINGS).sort((a, b) => b[0].length - a[0].length);
+  
+  // Check for specific library mentions in the description
+  for (const [key, fullName] of sortedMappings) {
+    // Use word boundaries and flexible matching for better detection
+    const keyPattern = key.replace(/[\s-]/g, '[\\s\\-]*');
+    const regex = new RegExp(`\\b${keyPattern}\\b`, 'i');
+    
+    if (regex.test(lowerDesc) && !libraries.includes(fullName)) {
+      libraries.push(fullName);
+    }
+  }
+  
+  return libraries;
+}
+
 function parseIndividualComponent(text: string): SemanticComponent | null {
   const lowerText = text.toLowerCase();
   
-  // Extract action
+  // Extract action with more flexible matching
   let action: SemanticComponent['action'] | null = null;
-  if (lowerText.match(/^(fix|fixed|fixing)/)) action = 'fix';
-  else if (lowerText.match(/^(add|added|adding)/)) action = 'add';
-  else if (lowerText.match(/^(implement|implementing|implemented)/)) action = 'implement';
-  else if (lowerText.match(/^(improve|improved|improving|enhance|enhanced|enhancing)/)) action = 'improve';
-  else if (lowerText.match(/^(eliminate|eliminated|eliminating)/)) action = 'eliminate';
-  else if (lowerText.match(/^(resolve|resolved|resolving)/)) action = 'resolve';
+  if (lowerText.match(/\b(fix|fixed|fixing)\b/)) action = 'fix';
+  else if (lowerText.match(/\b(add|added|adding)\b/)) action = 'add';
+  else if (lowerText.match(/\b(implement|implementing|implemented)\b/)) action = 'implement';
+  else if (lowerText.match(/\b(improve|improved|improving|enhance|enhanced|enhancing)\b/)) action = 'improve';
+  else if (lowerText.match(/\b(eliminate|eliminated|eliminating)\b/)) action = 'eliminate';
+  else if (lowerText.match(/\b(resolve|resolved|resolving)\b/)) action = 'resolve';
   
   if (!action) return null;
   
-  // Extract library name
+  // Enhanced library name extraction with flexible matching
   let library: string | undefined;
   for (const [key, fullName] of Object.entries(LIBRARY_MAPPINGS)) {
-    if (lowerText.includes(key.toLowerCase())) {
+    // Create a flexible pattern that handles hyphens, spaces, and word boundaries
+    const keyPattern = key.replace(/[\s-]/g, '[\\s\\-]*');
+    const regex = new RegExp(`\\b${keyPattern}\\b`, 'i');
+    
+    if (regex.test(lowerText)) {
       library = fullName;
       break;
     }

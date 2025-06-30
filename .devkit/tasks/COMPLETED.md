@@ -18,6 +18,30 @@
   - **Testing:** Comprehensive test suite with 15 test cases, TypeScript compilation successful
   - **Version:** v1.3.58
 
+✅ **Fix persistent Telegram bot generic message issue - Comprehensive changelog generation fix (2025-06-30)**
+  - **Issue:** Despite multiple fixes, v1.3.62 sent generic "New functionality and features" instead of specific library details
+  - **Root Cause:** Library detection failures in semantic parsing logic - missing/incorrect library mappings
+  - **Problems Identified:**
+    - "Monte-Cassino" (hyphen) didn't match "monte cassino" (space) in mappings
+    - "Verona NBM" missing from library mappings entirely  
+    - Duplicate "Verona Biblioteca" vs "Verona National Library" entries
+    - Parsing logic split on hyphens, breaking compound library names
+  - **Solution:** Enhanced semantic parsing with comprehensive library mappings and improved matching
+  - **Files Modified:** telegram-bot/src/send-multiplatform-build.ts
+  - **Fixes Applied:**
+    - Added missing library variants: "monte-cassino", "verona nbm", "vallicelliana library"
+    - Unified Verona entries to "Verona National Library (Italy)"
+    - Enhanced extractLibrariesFromDescription with longest-first matching
+    - Improved regex patterns with flexible hyphen/space handling
+    - Enhanced parseSemanticComponents for multi-library commits
+  - **Testing:** 100% success - correctly generates 3 specific library additions instead of generic message
+  - **Expected Output:** 
+    - ✅ Added Monte Cassino Abbey (Italy) manuscript collection support
+    - ✅ Added Vallicelliana Library (Rome, Italy) manuscript collection support  
+    - ✅ Added Verona National Library (Italy) manuscript collection support
+  - **Impact:** Users now receive detailed, specific changelog information about new library additions
+  - **Version:** v1.3.63
+
 ✅ **Fix University of Graz terminated connection error - Extended timeout for large IIIF manifests (2025-06-29)**
   - **Issue:** Downloads failing with "terminated" error due to timeout
   - **URL:** https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538
