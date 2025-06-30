@@ -193,6 +193,21 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://www.europeana.eu/en/item/446/CNMD_00000171777',
             description: 'European cultural heritage manuscripts via IIIF manifest API',
         },
+        {
+            name: 'Monte-Cassino (OMNES)',
+            example: 'https://manus.iccu.sbn.it/cnmd/0000313047',
+            description: 'Monte-Cassino Abbey manuscripts via OMNES IIIF platform',
+        },
+        {
+            name: 'Vallicelliana Library',
+            example: 'https://dam.iccu.sbn.it/mol_46/containers/avQYjLe/manifest',
+            description: 'Biblioteca Vallicelliana manuscripts via DAM and JMMS platforms',
+        },
+        {
+            name: 'Verona Library (NBM)',
+            example: 'https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=15',
+            description: 'Nuova Biblioteca Manoscritta (Verona) manuscripts via IIIF',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -306,6 +321,9 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('archiviodiocesano.mo.it')) return 'modena';
         if (url.includes('bdl.servizirl.it')) return 'bdl';
         if (url.includes('europeana.eu')) return 'europeana';
+        if (url.includes('manus.iccu.sbn.it') || url.includes('omnes.dbseret.com/montecassino')) return 'monte_cassino';
+        if (url.includes('dam.iccu.sbn.it') || url.includes('jmms.iccu.sbn.it')) return 'vallicelliana';
+        if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) return 'verona';
         
         return null;
     }
@@ -592,6 +610,15 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'e_manuscripta':
                     manifest = await this.loadEManuscriptaManifest(originalUrl);
+                    break;
+                case 'monte_cassino':
+                    manifest = await this.loadMonteCassinoManifest(originalUrl);
+                    break;
+                case 'vallicelliana':
+                    manifest = await this.loadVallicellianManifest(originalUrl);
+                    break;
+                case 'verona':
+                    manifest = await this.loadVeronaManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -5661,6 +5688,274 @@ export class EnhancedManuscriptDownloaderService {
         } catch (error: any) {
             console.error(`e-manuscripta: URL validation failed: ${error.message}`);
             throw error;
+        }
+    }
+
+    /**
+     * Load Monte-Cassino manifest from OMNES platform
+     */
+    async loadMonteCassinoManifest(originalUrl: string): Promise<ManuscriptManifest> {
+        try {
+            let manuscriptId: string;
+            
+            // Handle different Monte-Cassino URL patterns
+            if (originalUrl.includes('manus.iccu.sbn.it')) {
+                // Extract catalog ID and find corresponding IIIF manifest
+                const catalogMatch = originalUrl.match(/cnmd\/([^/?]+)/);
+                if (!catalogMatch) {
+                    throw new Error('Cannot extract catalog ID from Manus URL');
+                }
+                
+                // For now, use the IIIF manifest URLs provided in research
+                // This mapping could be expanded based on more examples
+                const catalogId = catalogMatch[1];
+                if (catalogId === '0000313047') {
+                    manuscriptId = 'IT-FR0084_0339';
+                } else {
+                    throw new Error(`Unknown Monte-Cassino catalog ID: ${catalogId}. Please provide direct IIIF manifest URL.`);
+                }
+            } else if (originalUrl.includes('omnes.dbseret.com/montecassino/iiif/')) {
+                // Direct IIIF manifest URL
+                const iiifMatch = originalUrl.match(/montecassino\/iiif\/([^/]+)/);
+                if (!iiifMatch) {
+                    throw new Error('Cannot extract manuscript ID from OMNES URL');
+                }
+                manuscriptId = iiifMatch[1];
+            } else {
+                throw new Error('Unsupported Monte-Cassino URL format');
+            }
+            
+            // Construct IIIF manifest URL
+            const manifestUrl = `https://omnes.dbseret.com/montecassino/iiif/${manuscriptId}/manifest`;
+            
+            // Fetch and parse IIIF manifest
+            const response = await this.fetchDirect(manifestUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch manifest: HTTP ${response.status}`);
+            }
+            
+            const manifestData = await response.json();
+            
+            // Validate IIIF manifest structure
+            if (!manifestData.sequences || !manifestData.sequences[0] || !manifestData.sequences[0].canvases) {
+                throw new Error('Invalid IIIF manifest structure');
+            }
+            
+            // Extract page URLs
+            const pageLinks = manifestData.sequences[0].canvases.map((canvas: any) => {
+                const resource = canvas.images[0].resource;
+                if (resource.service && resource.service['@id']) {
+                    return `${resource.service['@id']}/full/full/0/default.jpg`;
+                } else if (resource['@id']) {
+                    return resource['@id'];
+                }
+                return null;
+            }).filter((link: string) => link);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No pages found in manifest');
+            }
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'monte_cassino',
+                displayName: `Monte_Cassino_${manuscriptId}`,
+                originalUrl: originalUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load Monte-Cassino manuscript: ${error.message}`);
+        }
+    }
+
+    /**
+     * Load Vallicelliana manifest from DAM or JMMS platforms
+     */
+    async loadVallicellianManifest(originalUrl: string): Promise<ManuscriptManifest> {
+        try {
+            let manifestUrl: string;
+            let displayName: string;
+            
+            if (originalUrl.includes('dam.iccu.sbn.it')) {
+                // DAM system - direct manifest access
+                if (originalUrl.includes('/manifest')) {
+                    manifestUrl = originalUrl;
+                } else {
+                    const containerMatch = originalUrl.match(/containers\/([^/?]+)/);
+                    if (!containerMatch) {
+                        throw new Error('Cannot extract container ID from DAM URL');
+                    }
+                    manifestUrl = `https://dam.iccu.sbn.it/mol_46/containers/${containerMatch[1]}/manifest`;
+                }
+                displayName = `Vallicelliana_DAM_${originalUrl.match(/containers\/([^/?]+)/)?.[1] || 'unknown'}`;
+                
+            } else if (originalUrl.includes('jmms.iccu.sbn.it')) {
+                // JMMS system - complex encoded URLs
+                if (originalUrl.includes('/manifest.json')) {
+                    manifestUrl = originalUrl;
+                } else {
+                    throw new Error('JMMS URLs must be direct manifest URLs');
+                }
+                displayName = `Vallicelliana_JMMS_${Date.now()}`;
+                
+            } else {
+                throw new Error('Unsupported Vallicelliana URL format - must be DAM or JMMS URL');
+            }
+            
+            // Fetch and parse IIIF manifest
+            const response = await this.fetchDirect(manifestUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch manifest: HTTP ${response.status}`);
+            }
+            
+            const manifestData = await response.json();
+            
+            // Handle both IIIF v2 and v3 structures
+            let canvases: any[] = [];
+            if (manifestData.sequences && manifestData.sequences[0] && manifestData.sequences[0].canvases) {
+                // IIIF v2
+                canvases = manifestData.sequences[0].canvases;
+            } else if (manifestData.items) {
+                // IIIF v3
+                canvases = manifestData.items;
+            } else {
+                throw new Error('Invalid IIIF manifest structure - no canvases found');
+            }
+            
+            // Extract page URLs
+            const pageLinks = canvases.map((canvas: any) => {
+                // IIIF v2 structure
+                if (canvas.images && canvas.images[0]) {
+                    const resource = canvas.images[0].resource;
+                    if (resource.service && resource.service['@id']) {
+                        return `${resource.service['@id']}/full/full/0/default.jpg`;
+                    } else if (resource['@id']) {
+                        return resource['@id'];
+                    }
+                }
+                
+                // IIIF v3 structure
+                if (canvas.items && canvas.items[0] && canvas.items[0].items && canvas.items[0].items[0]) {
+                    const annotation = canvas.items[0].items[0];
+                    if (annotation.body && annotation.body.service && annotation.body.service[0]) {
+                        const serviceId = annotation.body.service[0].id || annotation.body.service[0]['@id'];
+                        return `${serviceId}/full/full/0/default.jpg`;
+                    } else if (annotation.body && annotation.body.id) {
+                        return annotation.body.id;
+                    }
+                }
+                
+                return null;
+            }).filter((link: string) => link);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No pages found in manifest');
+            }
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'vallicelliana',
+                displayName: displayName,
+                originalUrl: originalUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load Vallicelliana manuscript: ${error.message}`);
+        }
+    }
+
+    /**
+     * Load Verona (NBM) manifest
+     */
+    async loadVeronaManifest(originalUrl: string): Promise<ManuscriptManifest> {
+        try {
+            let manifestUrl: string;
+            let displayName: string;
+            
+            if (originalUrl.includes('nbm.regione.veneto.it') && originalUrl.includes('/manifest/')) {
+                // Direct manifest URL
+                manifestUrl = originalUrl;
+                const manifestMatch = originalUrl.match(/manifest\/([^.]+)\.json/);
+                displayName = `Verona_NBM_${manifestMatch?.[1] || 'unknown'}`;
+                
+            } else if (originalUrl.includes('nuovabibliotecamanoscritta.it')) {
+                // Need to extract manifest URL from viewer page
+                let codiceDigital: string | undefined;
+                
+                if (originalUrl.includes('codice=')) {
+                    const codiceMatch = originalUrl.match(/codice=(\d+)/);
+                    codiceDigital = codiceMatch?.[1];
+                } else if (originalUrl.includes('codiceDigital=')) {
+                    const codiceDigitalMatch = originalUrl.match(/codiceDigital=(\d+)/);
+                    codiceDigital = codiceDigitalMatch?.[1];
+                }
+                
+                if (!codiceDigital) {
+                    throw new Error('Cannot extract codiceDigital from Verona URL');
+                }
+                
+                // Try known mapping patterns from research
+                const manifestMappings: { [key: string]: string } = {
+                    '14': 'CVII1001',
+                    '15': 'LXXXIX841',
+                    '12': 'CXLV1331',
+                    '17': 'msClasseIII81'
+                };
+                
+                const manifestId = manifestMappings[codiceDigital];
+                if (!manifestId) {
+                    throw new Error(`Unknown Verona codiceDigital: ${codiceDigital}. Manual manifest URL required.`);
+                }
+                
+                manifestUrl = `https://nbm.regione.veneto.it/documenti/mirador_json/manifest/${manifestId}.json`;
+                displayName = `Verona_NBM_${manifestId}`;
+                
+            } else {
+                throw new Error('Unsupported Verona URL format - must be NBM manifest or catalog URL');
+            }
+            
+            // Fetch and parse IIIF manifest
+            const response = await this.fetchDirect(manifestUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch manifest: HTTP ${response.status}`);
+            }
+            
+            const manifestData = await response.json();
+            
+            // Validate IIIF manifest structure
+            if (!manifestData.sequences || !manifestData.sequences[0] || !manifestData.sequences[0].canvases) {
+                throw new Error('Invalid IIIF manifest structure');
+            }
+            
+            // Extract page URLs - Verona provides direct resource URLs
+            const pageLinks = manifestData.sequences[0].canvases.map((canvas: any) => {
+                const resource = canvas.images[0].resource;
+                if (resource['@id']) {
+                    // Direct resource URL (preferred for Verona)
+                    return resource['@id'];
+                } else if (resource.service && resource.service['@id']) {
+                    // Fallback to IIIF Image API construction
+                    return `${resource.service['@id']}/full/full/0/default.jpg`;
+                }
+                return null;
+            }).filter((link: string) => link);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No pages found in manifest');
+            }
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'verona',
+                displayName: displayName,
+                originalUrl: originalUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load Verona manuscript: ${error.message}`);
         }
     }
 
