@@ -699,11 +699,31 @@ export class EnhancedManuscriptDownloaderService {
             } else {
                 // Main Morgan format - priority-based image quality selection
                 const imagesByPriority: { [key: number]: string[] } = {
+                    0: [], // Ultra priority: .zif tiled images (183.5 megapixels)
                     1: [], // Highest priority: direct full-size images
                     2: [], // Medium priority: converted styled images
                     3: [], // Low priority: facsimile images
                     4: []  // Lowest priority: other direct references
                 };
+                
+                // Priority 0: Generate .zif URLs from image references (ultra high quality - 183.5 megapixels)
+                const manuscriptMatch = morganUrl.match(/\/collection\/([^/]+)/);
+                if (manuscriptMatch) {
+                    const manuscriptId = manuscriptMatch[1];
+                    const imageIdRegex = /\/images\/collection\/([^"'?]+)\.jpg/g;
+                    const imageIdMatches = pageContent.match(imageIdRegex) || [];
+                    
+                    for (const match of imageIdMatches) {
+                        const imageIdMatch = match.match(/\/images\/collection\/([^"'?]+)\.jpg/);
+                        if (imageIdMatch) {
+                            const imageId = imageIdMatch[1];
+                            if (imageId.match(/\d+v?_\d+-\d+/)) {
+                                const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptId}/${imageId}.zif`;
+                                imagesByPriority[0].push(zifUrl);
+                            }
+                        }
+                    }
+                }
                 
                 // Priority 1: Look for direct full-size image references (highest quality)
                 const fullSizeImageRegex = /\/sites\/default\/files\/images\/collection\/[^"'?]+\.jpg/g;
@@ -749,12 +769,12 @@ export class EnhancedManuscriptDownloaderService {
                 // Select highest quality images based on priority
                 const uniqueImageUrls = new Set<string>();
                 const getFilenameFromUrl = (url: string) => {
-                    const match = url.match(/([^/]+)\.jpg$/);
+                    const match = url.match(/([^/]+)\.(jpg|zif)$/);
                     return match ? match[1] : url;
                 };
                 
                 // Add images by priority, avoiding duplicates based on filename
-                for (let priority = 1; priority <= 4; priority++) {
+                for (let priority = 0; priority <= 4; priority++) {
                     for (const imageUrl of imagesByPriority[priority]) {
                         const filename = getFilenameFromUrl(imageUrl);
                         const isDuplicate = Array.from(uniqueImageUrls).some(existingUrl => 
@@ -1727,6 +1747,10 @@ export class EnhancedManuscriptDownloaderService {
      */
     async downloadImageWithRetries(url: string, attempt = 0): Promise<ArrayBuffer> {
         try {
+            if (url.endsWith('.zif')) {
+                return this.downloadAndProcessZifFile(url, attempt);
+            }
+            
             // Use proxy fallback for libraries with connection issues or when direct access fails
             // Note: Internet Culturale removed from proxy list to fix authentication issues
             // BDL added due to IIIF server instability (60% connection failures)
@@ -1791,6 +1815,119 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             throw new Error(`Failed after ${maxRetries} attempts: ${error.message}`);
+        }
+    }
+
+    async downloadAndProcessZifFile(url: string, attempt = 0): Promise<ArrayBuffer> {
+        try {
+            const response = await this.fetchDirect(url, {}, attempt + 1);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const zifBuffer = await response.arrayBuffer();
+            
+            if (zifBuffer.byteLength < MIN_VALID_IMAGE_SIZE_BYTES) {
+                throw new Error(`ZIF file too small: ${zifBuffer.byteLength} bytes`);
+            }
+            
+            const tiles = this.extractJpegTilesFromZif(zifBuffer);
+            
+            if (tiles.length === 0) {
+                throw new Error('No JPEG tiles found in ZIF file');
+            }
+            
+            const stitchedImage = await this.stitchTilesToJpeg(tiles);
+            return stitchedImage;
+            
+        } catch (error: any) {
+            const maxRetries = configService.get('maxRetries');
+            if (attempt < maxRetries) {
+                const delay = this.calculateRetryDelay(attempt);
+                console.log(`Retrying ZIF download ${url} (attempt ${attempt + 1}/${maxRetries}) after ${delay}ms delay`);
+                await this.sleep(delay);
+                return this.downloadAndProcessZifFile(url, attempt + 1);
+            }
+            
+            throw new Error(`Failed to process ZIF file after ${maxRetries} attempts: ${error.message}`);
+        }
+    }
+
+    private extractJpegTilesFromZif(zifBuffer: ArrayBuffer): ArrayBuffer[] {
+        const data = new Uint8Array(zifBuffer);
+        const tiles: ArrayBuffer[] = [];
+        let i = 0;
+        
+        while (i < data.length - 1) {
+            if (data[i] === 0xFF && data[i + 1] === 0xD8) {
+                const startPos = i;
+                let j = i + 2;
+                
+                while (j < data.length - 1) {
+                    if (data[j] === 0xFF && data[j + 1] === 0xD9) {
+                        const endPos = j + 2;
+                        const tileData = data.slice(startPos, endPos);
+                        tiles.push(tileData.buffer.slice(tileData.byteOffset, tileData.byteOffset + tileData.byteLength));
+                        i = endPos;
+                        break;
+                    }
+                    j++;
+                }
+                
+                if (j >= data.length - 1) {
+                    i++;
+                }
+            } else {
+                i++;
+            }
+        }
+        
+        return tiles;
+    }
+
+    private async stitchTilesToJpeg(tiles: ArrayBuffer[]): Promise<ArrayBuffer> {
+        if (tiles.length === 0) {
+            throw new Error('No tiles to stitch');
+        }
+        
+        try {
+            const Canvas = (await import('canvas')).default;
+            const tileSize = 256;
+            const tilesPerRow = Math.ceil(Math.sqrt(tiles.length));
+            const canvasSize = tilesPerRow * tileSize;
+            
+            const canvas = Canvas.createCanvas(canvasSize, canvasSize);
+            const ctx = canvas.getContext('2d');
+            
+            let tileIndex = 0;
+            for (let row = 0; row < tilesPerRow && tileIndex < tiles.length; row++) {
+                for (let col = 0; col < tilesPerRow && tileIndex < tiles.length; col++) {
+                    try {
+                        const tileBuffer = Buffer.from(tiles[tileIndex]);
+                        const img = await Canvas.loadImage(tileBuffer);
+                        
+                        const x = col * tileSize;
+                        const y = row * tileSize;
+                        ctx.drawImage(img, x, y, tileSize, tileSize);
+                        
+                        tileIndex++;
+                    } catch (error) {
+                        console.warn(`Failed to load tile ${tileIndex}: ${error}`);
+                        tileIndex++;
+                    }
+                }
+            }
+            
+            const jpegBuffer = canvas.toBuffer('image/jpeg', { quality: 0.95 });
+            return jpegBuffer.buffer.slice(jpegBuffer.byteOffset, jpegBuffer.byteOffset + jpegBuffer.byteLength);
+            
+        } catch (error: any) {
+            if (error.message.includes('Cannot find module')) {
+                console.warn('Canvas module not available, falling back to first tile');
+                return tiles[0];
+            }
+            throw error;
         }
     }
 
@@ -5008,7 +5145,7 @@ export class EnhancedManuscriptDownloaderService {
                 for (const page of pagesData) {
                     if (page.idMediaServer) {
                         // Construct IIIF URL for full resolution image  
-                        const imageUrl = `https://www.bdl.servizirl.it/cantaloupe//iiif/2/${page.idMediaServer}/full/max/0/default.jpg`;
+                        const imageUrl = `https://www.bdl.servizirl.it/cantaloupe/iiif/2/${page.idMediaServer}/full/max/0/default.jpg`;
                         pageLinks.push(imageUrl);
                     } else {
                         console.warn(`Page ${page.id || 'unknown'} missing idMediaServer, skipping`);
