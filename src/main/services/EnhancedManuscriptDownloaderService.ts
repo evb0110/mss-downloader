@@ -6,6 +6,7 @@ import { ManifestCache } from './ManifestCache.js';
 import { configService } from './ConfigService.js';
 import { LibraryOptimizationService } from './LibraryOptimizationService.js';
 import { createProgressMonitor } from './IntelligentProgressMonitor.js';
+import { ZifImageProcessor } from './ZifImageProcessor.js';
 import type { ManuscriptManifest, LibraryInfo } from '../../shared/types';
 import type { TLibrary } from '../../shared/queueTypes';
 
@@ -13,9 +14,11 @@ const MIN_VALID_IMAGE_SIZE_BYTES = 1024; // 1KB heuristic
 
 export class EnhancedManuscriptDownloaderService {
     private manifestCache: ManifestCache;
+    private zifProcessor: ZifImageProcessor;
 
     constructor(manifestCache?: ManifestCache) {
         this.manifestCache = manifestCache || new ManifestCache();
+        this.zifProcessor = new ZifImageProcessor();
         // Clear potentially problematic cached manifests on startup
         this.manifestCache.clearProblematicUrls().catch(error => {
             console.warn('Failed to clear problematic cache entries:', error.message);
@@ -1820,32 +1823,25 @@ export class EnhancedManuscriptDownloaderService {
 
     async downloadAndProcessZifFile(url: string, attempt = 0): Promise<ArrayBuffer> {
         try {
-            const response = await this.fetchDirect(url, {}, attempt + 1);
+            console.log(`Processing ZIF file: ${url}`);
             
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
+            // Use the dedicated ZIF processor for proper BigTIFF handling
+            const representativeImageBuffer = await this.zifProcessor.processZifFile(url);
             
-            const zifBuffer = await response.arrayBuffer();
+            console.log(`ZIF processed successfully: ${(representativeImageBuffer.length / 1024).toFixed(2)} KB high-quality image`);
             
-            if (zifBuffer.byteLength < MIN_VALID_IMAGE_SIZE_BYTES) {
-                throw new Error(`ZIF file too small: ${zifBuffer.byteLength} bytes`);
-            }
+            // Convert Buffer to ArrayBuffer for compatibility
+            const arrayBuffer = new ArrayBuffer(representativeImageBuffer.length);
+            const view = new Uint8Array(arrayBuffer);
+            view.set(representativeImageBuffer);
             
-            const tiles = this.extractJpegTilesFromZif(zifBuffer);
-            
-            if (tiles.length === 0) {
-                throw new Error('No JPEG tiles found in ZIF file');
-            }
-            
-            const stitchedImage = await this.stitchTilesToJpeg(tiles);
-            return stitchedImage;
+            return arrayBuffer;
             
         } catch (error: any) {
             const maxRetries = configService.get('maxRetries');
             if (attempt < maxRetries) {
                 const delay = this.calculateRetryDelay(attempt);
-                console.log(`Retrying ZIF download ${url} (attempt ${attempt + 1}/${maxRetries}) after ${delay}ms delay`);
+                console.log(`Retrying ZIF download ${url} (attempt ${attempt + 1}/${maxRetries}) after ${delay}ms delay: ${error.message}`);
                 await this.sleep(delay);
                 return this.downloadAndProcessZifFile(url, attempt + 1);
             }
@@ -1854,82 +1850,6 @@ export class EnhancedManuscriptDownloaderService {
         }
     }
 
-    private extractJpegTilesFromZif(zifBuffer: ArrayBuffer): ArrayBuffer[] {
-        const data = new Uint8Array(zifBuffer);
-        const tiles: ArrayBuffer[] = [];
-        let i = 0;
-        
-        while (i < data.length - 1) {
-            if (data[i] === 0xFF && data[i + 1] === 0xD8) {
-                const startPos = i;
-                let j = i + 2;
-                
-                while (j < data.length - 1) {
-                    if (data[j] === 0xFF && data[j + 1] === 0xD9) {
-                        const endPos = j + 2;
-                        const tileData = data.slice(startPos, endPos);
-                        tiles.push(tileData.buffer.slice(tileData.byteOffset, tileData.byteOffset + tileData.byteLength));
-                        i = endPos;
-                        break;
-                    }
-                    j++;
-                }
-                
-                if (j >= data.length - 1) {
-                    i++;
-                }
-            } else {
-                i++;
-            }
-        }
-        
-        return tiles;
-    }
-
-    private async stitchTilesToJpeg(tiles: ArrayBuffer[]): Promise<ArrayBuffer> {
-        if (tiles.length === 0) {
-            throw new Error('No tiles to stitch');
-        }
-        
-        try {
-            const Canvas = (await import('canvas' as any)).default;
-            const tileSize = 256;
-            const tilesPerRow = Math.ceil(Math.sqrt(tiles.length));
-            const canvasSize = tilesPerRow * tileSize;
-            
-            const canvas = Canvas.createCanvas(canvasSize, canvasSize);
-            const ctx = canvas.getContext('2d');
-            
-            let tileIndex = 0;
-            for (let row = 0; row < tilesPerRow && tileIndex < tiles.length; row++) {
-                for (let col = 0; col < tilesPerRow && tileIndex < tiles.length; col++) {
-                    try {
-                        const tileBuffer = Buffer.from(tiles[tileIndex]);
-                        const img = await Canvas.loadImage(tileBuffer);
-                        
-                        const x = col * tileSize;
-                        const y = row * tileSize;
-                        ctx.drawImage(img, x, y, tileSize, tileSize);
-                        
-                        tileIndex++;
-                    } catch (error) {
-                        console.warn(`Failed to load tile ${tileIndex}: ${error}`);
-                        tileIndex++;
-                    }
-                }
-            }
-            
-            const jpegBuffer = canvas.toBuffer('image/jpeg', { quality: 0.95 });
-            return jpegBuffer.buffer.slice(jpegBuffer.byteOffset, jpegBuffer.byteOffset + jpegBuffer.byteLength);
-            
-        } catch (error: any) {
-            if (error.message.includes('Cannot find module')) {
-                console.warn('Canvas module not available, falling back to first tile');
-                return tiles[0];
-            }
-            throw error;
-        }
-    }
 
     /**
      * Download manuscript
@@ -5145,7 +5065,7 @@ export class EnhancedManuscriptDownloaderService {
                 for (const page of pagesData) {
                     if (page.idMediaServer) {
                         // Construct IIIF URL for full resolution image  
-                        const imageUrl = `https://www.bdl.servizirl.it/cantaloupe/iiif/2/${page.idMediaServer}/full/max/0/default.jpg`;
+                        const imageUrl = `https://www.bdl.servizirl.it/cantaloupe//iiif/2/${page.idMediaServer}/full/max/0/default.jpg`;
                         pageLinks.push(imageUrl);
                     } else {
                         console.warn(`Page ${page.id || 'unknown'} missing idMediaServer, skipping`);
