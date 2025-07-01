@@ -1730,10 +1730,10 @@ export class EnhancedManuscriptDownloaderService {
             // Use proxy fallback for libraries with connection issues or when direct access fails
             // Note: Internet Culturale removed from proxy list to fix authentication issues
             // BDL added due to IIIF server instability (60% connection failures)
+            // University of Graz removed from proxy list to use library-specific timeout multiplier (2.0x)
             const needsProxyFallback = url.includes('digitallibrary.unicatt.it') || 
                                      url.includes('mediatheques.orleans.fr') || 
                                      url.includes('aurelia.orleans.fr') || 
-                                     url.includes('unipub.uni-graz.at') ||
                                      url.includes('bdl.servizirl.it');
             
             const response = needsProxyFallback
