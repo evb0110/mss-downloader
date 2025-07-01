@@ -1,7 +1,6 @@
 import { promises as fs } from 'fs';
 import https from 'https';
 import path from 'path';
-import { createCanvas, loadImage } from 'canvas';
 
 /**
  * ZIF (Zoomable Image Format) Processor
@@ -293,8 +292,16 @@ export class ZifImageProcessor {
         try {
             console.log(`Stitching ${tiles.length} tiles into ${imageInfo.width}x${imageInfo.height} image...`);
             
+            // Try to import Canvas dynamically
+            let Canvas: any;
+            try {
+                Canvas = await import('canvas' as any);
+            } catch (error) {
+                throw new Error('Canvas dependency not available. Morgan Library .zif processing requires Canvas for tile stitching.');
+            }
+            
             // Create canvas with full image dimensions
-            const canvas = createCanvas(imageInfo.width, imageInfo.height);
+            const canvas = Canvas.createCanvas(imageInfo.width, imageInfo.height);
             const ctx = canvas.getContext('2d');
             
             // Calculate grid dimensions
@@ -314,7 +321,7 @@ export class ZifImageProcessor {
                 const batchPromises = batch.map(async (tile) => {
                     try {
                         // Load tile as image
-                        const image = await loadImage(tile.data);
+                        const image = await Canvas.loadImage(tile.data);
                         
                         // Calculate position on canvas
                         const x = tile.x * imageInfo.tileWidth;
