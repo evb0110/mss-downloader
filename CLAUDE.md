@@ -14,6 +14,14 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 - Agents have same permissions as main process.
 - NB! Each agent should work silently, not bloating terminal with any output. 
 
+## Code Quality
+- **Tool Output Suppression**: NEVER display raw tool outputs. Always summarize:
+  - Git diffs: "Found X changes in Y files" + specific action taken
+  - Search results: "Found N matches" + direct action without showing results  
+  - File contents: Only show specific lines being edited, never full files
+  - Command outputs: "Command completed successfully" or specific error summary
+  - Exception: Only show critical error details (max 3-5 lines) if needed for troubleshooting
+
 ## MANDATORY RULES
 
 ### 0. Commit strategy
@@ -47,10 +55,11 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 
 **NOT for:** Documentation, telegram bot fixes (any telegram bot changes - commit and push silently without version bump), code refactoring without behavior changes
 
-**Process:** IMMEDIATELY when all problems are solved:
-1. Bump patch version in package.json
-2. Commit all changes with descriptive message  
-3. Push to GitHub main (triggers auto-build & notifications)
+**Process:** After validation protocol completion:
+1. WAIT for mandatory user validation of PDF files
+2. Only after user approves validation: Bump patch version in package.json
+3. Commit all changes with descriptive message  
+4. Push to GitHub main (triggers auto-build & notifications)
 
 **APPROVAL KEYWORD SYSTEM:**
 - If user prompt contains "approval" keyword → ALWAYS ask for approval before version bump
@@ -58,13 +67,15 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 
 ### 2. Library Validation Protocol  
 When adding/fixing libraries, **MANDATORY validation:**
-1. Download up to 10 different manuscript pages from manifest URLs (or all available if fewer)
-2. Verify each contains real manuscript/book content (not "Preview non disponibile")
-3. Confirm all pages show different manuscript content (not stuck on page 1)
-4. If validation fails, apply all skills to fix; if unfixable, implement other tasks and report to user
-5. Merge to PDF and test validity with poppler
-
-**VALIDATION SUCCESS REQUIREMENT:** Library validation must pass (≥80% success rate) before version bump, unless user prompt contains "approval" keyword (then ask for approval even with failed validation).
+1. **MANDATORY MAXIMUM RESOLUTION TESTING:** Test multiple IIIF parameters (full/full, full/max, full/2000, full/4000, etc.) to find the largest possible image resolution. Compare file sizes, dimensions, and quality. This is ABSOLUTELY CRITICAL - users must get the highest quality available.
+2. Download up to 10 different manuscript pages from manifest URLs (or all available if fewer) using the HIGHEST RESOLUTION found
+3. Verify each contains real manuscript/book content (not "Preview non disponibile")
+4. Confirm all pages show different manuscript content (not stuck on page 1)
+5. If validation fails, apply all skills to fix; if unfixable, implement other tasks and report to user
+6. Merge to PDF and test validity with poppler
+7. Library validation must pass (100% success rate)
+8. **MANDATORY validation by user!!!:** Put all the pdf files with clear names in one folder and open it in finder for user to inspect
+9. **WAIT FOR USER APPROVAL:** Do not proceed with version bump until user confirms validation passed
 
 ### 3. Testing Requirements
 - Write comprehensive test suite for every bug fix
@@ -83,6 +94,7 @@ When adding/fixing libraries, **MANDATORY validation:**
 - Renderer process: UI configuration, user interaction  
 - Show minimal output - current task + small summary only
 - Dev server doesn't work correctly for Claude Code
+- **CRITICAL**: ALWAYS test for maximum possible image resolution when implementing any library - users must get the highest quality available
 
 ## TODO Management
 Use global Claude Code commands:

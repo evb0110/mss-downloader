@@ -5970,15 +5970,16 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('Invalid IIIF manifest structure');
             }
             
-            // Extract page URLs - Verona provides direct resource URLs
+            // Extract page URLs - Prioritize high-resolution service URLs over direct resource URLs
             const pageLinks = manifestData.sequences[0].canvases.map((canvas: any) => {
                 const resource = canvas.images[0].resource;
-                if (resource['@id']) {
-                    // Direct resource URL (preferred for Verona)
+                if (resource.service && resource.service['@id']) {
+                    // Use maximum resolution IIIF Image API construction (20000px width for archival quality)
+                    const serviceId = resource.service['@id'].replace(/\/$/, '');
+                    return `${serviceId}/full/20000,/0/default.jpg`;
+                } else if (resource['@id']) {
+                    // Fallback to direct resource URL
                     return resource['@id'];
-                } else if (resource.service && resource.service['@id']) {
-                    // Fallback to IIIF Image API construction
-                    return `${resource.service['@id']}/full/full/0/default.jpg`;
                 }
                 return null;
             }).filter((link: string) => link);
