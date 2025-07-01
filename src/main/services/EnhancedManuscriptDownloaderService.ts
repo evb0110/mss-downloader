@@ -1892,7 +1892,7 @@ export class EnhancedManuscriptDownloaderService {
         }
         
         try {
-            const Canvas = (await import('canvas')).default;
+            const Canvas = (await import('canvas' as any)).default;
             const tileSize = 256;
             const tilesPerRow = Math.ceil(Math.sqrt(tiles.length));
             const canvasSize = tilesPerRow * tileSize;
