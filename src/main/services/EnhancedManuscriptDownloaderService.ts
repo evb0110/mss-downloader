@@ -857,8 +857,8 @@ export class EnhancedManuscriptDownloaderService {
                                 if (!item.image_id) {
                                     throw new Error(`Missing image_id for capture ${item.id || 'unknown'}`);
                                 }
-                                // Use images.nypl.org format for full resolution images (&t=g parameter)
-                                return `https://images.nypl.org/index.php?id=${item.image_id}&t=g`;
+                                // Use iiif-prod.nypl.org format for full resolution images (&t=g parameter)
+                                return `https://iiif-prod.nypl.org/index.php?id=${item.image_id}&t=g`;
                             });
                             
                             // Extract display name from the first capture
@@ -905,8 +905,8 @@ export class EnhancedManuscriptDownloaderService {
                     if (!item.image_id) {
                         throw new Error(`Missing image_id for item ${item.id || 'unknown'}`);
                     }
-                    // Use images.nypl.org format for full resolution images (&t=g parameter)
-                    return `https://images.nypl.org/index.php?id=${item.image_id}&t=g`;
+                    // Use iiif-prod.nypl.org format for full resolution images (&t=g parameter)
+                    return `https://iiif-prod.nypl.org/index.php?id=${item.image_id}&t=g`;
                 });
                 
                 // Extract display name from the first item or fallback to title from item_data
@@ -4134,7 +4134,8 @@ export class EnhancedManuscriptDownloaderService {
             
             let response: Response;
             try {
-                response = await this.fetchWithProxyFallback(manifestUrl, { 
+                // Use fetchDirect instead of fetchWithProxyFallback to respect library-specific timeouts (2x multiplier for Graz)
+                response = await this.fetchDirect(manifestUrl, { 
                     headers,
                     signal: controller.signal 
                 });
@@ -4592,53 +4593,10 @@ export class EnhancedManuscriptDownloaderService {
             
             const totalPages = parseInt(pageCountMatch[1], 10);
             
-            // Look for actual image URLs in the page HTML to understand the correct format
-            // BNCR may use different resolution endpoints - check for existing img tags
-            const imagePatterns = [
-                new RegExp(`src="([^"]*\\/img\\/${collectionType}\\/[^"]*)"`, 'i'),
-                new RegExp(`href="([^"]*\\/img\\/${collectionType}\\/[^"]*)"`, 'i'),
-                new RegExp(`"([^"]*\\/img\\/${collectionType}\\/[^"]*\\/(?:full|max|high|large|original)[^"]*)"`, 'i')
-            ];
-            
-            let sampleImageUrl = '';
-            for (const pattern of imagePatterns) {
-                const match = html.match(pattern);
-                if (match) {
-                    sampleImageUrl = match[1];
-                    console.log(`Found sample image URL in page: ${sampleImageUrl}`);
-                    break;
-                }
-            }
-            
-            let imageUrlTemplate = '';
-            if (sampleImageUrl) {
-                // Extract the pattern and determine best resolution parameters
-                // Use appropriate resolution based on collection type and availability
-                if (sampleImageUrl.includes('/original/')) {
-                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/PAGENUM/original`;
-                } else if (sampleImageUrl.includes('/full/')) {
-                    // For libroantico, use /full; for manoscrittoantico, upgrade to /original
-                    const resolution = collectionType === 'libroantico' ? 'full' : 'original';
-                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/PAGENUM/${resolution}`;
-                } else if (sampleImageUrl.includes('/high/')) {
-                    const resolution = collectionType === 'libroantico' ? 'full' : 'original';
-                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/PAGENUM/${resolution}`;
-                } else if (sampleImageUrl.includes('/max/')) {
-                    // /max returns HTML, not images - use best available resolution
-                    const resolution = collectionType === 'libroantico' ? 'full' : 'original';
-                    imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/PAGENUM/${resolution}`;
-                } else {
-                    // If no resolution parameter found, try to extract the pattern and add highest quality
-                    const basePattern = sampleImageUrl.replace(/\/\d+\/[^/]*$/, '');
-                    const resolution = collectionType === 'libroantico' ? 'full' : 'original';
-                    imageUrlTemplate = `${basePattern}/PAGENUM/${resolution}`;
-                }
-            } else {
-                // Fallback based on collection type
-                const resolution = collectionType === 'libroantico' ? 'full' : 'original';
-                imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/PAGENUM/${resolution}`;
-                console.log(`No sample image URL found in page HTML, using ${resolution} resolution template for ${collectionType} collection`);
-            }
+            // Use the simple, directly accessible /full URL pattern
+            // This pattern is known to work: http://digitale.bnc.roma.sbn.it/tecadigitale/img/libroantico/BVEE112879/BVEE112879/2/full
+            const imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/PAGENUM/full`;
+            console.log(`Using direct /full URL template for ${collectionType} collection: ${imageUrlTemplate.replace('PAGENUM', '1')} (first page example)`);
             
             // Generate page links using the determined template
             const pageLinks: string[] = [];
@@ -5050,7 +5008,7 @@ export class EnhancedManuscriptDownloaderService {
                 for (const page of pagesData) {
                     if (page.idMediaServer) {
                         // Construct IIIF URL for full resolution image  
-                        const imageUrl = `https://www.bdl.servizirl.it/cantaloupe/iiif/2/${page.idMediaServer}/full/max/0/default.jpg`;
+                        const imageUrl = `https://www.bdl.servizirl.it/cantaloupe//iiif/2/${page.idMediaServer}/full/max/0/default.jpg`;
                         pageLinks.push(imageUrl);
                     } else {
                         console.warn(`Page ${page.id || 'unknown'} missing idMediaServer, skipping`);
