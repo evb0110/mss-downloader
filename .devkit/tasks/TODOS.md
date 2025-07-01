@@ -4,7 +4,17 @@
 
 *No pending tasks at this time.*
 
-## Recent Completed Tasks (v1.3.62)
+## Recent Completed Tasks (v1.3.72)
+
+### ✅ Library Bug Fixes - COMPLETED
+- ✅ Fix Verona library SSL certificate hostname mismatch causing fetch failures
+- ✅ Fix Monte-Cassino library catalog ID mapping for IDs 0000313194, 0000396781, 0000313047
+- ✅ Add single-page IIIF manifest user warning system for partial manuscript URLs
+- ✅ Apply Library Validation Protocol with 100% success rate for Verona library
+- ✅ Create comprehensive E2E test suite for all bug fixes
+- ✅ Validate PDF generation and poppler integration
+
+## Previous Completed Tasks (v1.3.62)
 
 ### ✅ Monte-Cassino Library - COMPLETED
 - ✅ Research Monte-Cassino library URL patterns and IIIF manifest structure

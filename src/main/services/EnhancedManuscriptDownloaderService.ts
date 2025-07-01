@@ -480,11 +480,25 @@ export class EnhancedManuscriptDownloaderService {
         }
         
         try {
-            const response = await fetch(url, {
+            // SSL-tolerant fetching for Verona domains with certificate hostname mismatch
+            const fetchOptions: any = {
                 ...options,
                 signal: controller.signal,
                 headers
-            });
+            };
+            
+            if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
+                // Add Node.js specific options for SSL bypass on Verona domains
+                // These domains have valid certificates but hostname mismatch issues
+                if (typeof process !== 'undefined' && process.versions?.node) {
+                    const { Agent } = await import('https');
+                    fetchOptions.agent = new Agent({
+                        rejectUnauthorized: false
+                    });
+                }
+            }
+            
+            const response = await fetch(url, fetchOptions);
             clearTimeout(timeoutId);
             return response;
         } catch (error) {
@@ -5721,13 +5735,18 @@ export class EnhancedManuscriptDownloaderService {
                     throw new Error('Cannot extract catalog ID from Manus URL');
                 }
                 
-                // For now, use the IIIF manifest URLs provided in research
-                // This mapping could be expanded based on more examples
+                // Catalog ID to IIIF manuscript mapping based on OMNES platform
                 const catalogId = catalogMatch[1];
-                if (catalogId === '0000313047') {
-                    manuscriptId = 'IT-FR0084_0339';
+                const catalogMappings: { [key: string]: string } = {
+                    '0000313047': 'IT-FR0084_0339',
+                    '0000313194': 'IT-FR0084_0271', 
+                    '0000396781': 'IT-FR0084_0023'
+                };
+                
+                if (catalogMappings[catalogId]) {
+                    manuscriptId = catalogMappings[catalogId];
                 } else {
-                    throw new Error(`Unknown Monte-Cassino catalog ID: ${catalogId}. Please provide direct IIIF manifest URL.`);
+                    throw new Error(`Unknown Monte-Cassino catalog ID: ${catalogId}. Available catalog IDs: ${Object.keys(catalogMappings).join(', ')}. Please provide direct IIIF manifest URL.`);
                 }
             } else if (originalUrl.includes('omnes.dbseret.com/montecassino/iiif/')) {
                 // Direct IIIF manifest URL
@@ -5866,6 +5885,13 @@ export class EnhancedManuscriptDownloaderService {
             
             if (pageLinks.length === 0) {
                 throw new Error('No pages found in manifest');
+            }
+            
+            // Warn user about single-page manifests that might be partial manuscript views
+            if (pageLinks.length === 1 && manifestData.label) {
+                const label = typeof manifestData.label === 'string' ? manifestData.label : 
+                    manifestData.label?.en || manifestData.label?.it || JSON.stringify(manifestData.label);
+                console.warn(`Single-page manuscript detected: "${label}". This may be a single folio URL rather than the complete manuscript.`);
             }
             
             return {
