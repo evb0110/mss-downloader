@@ -124,6 +124,14 @@ export class IntelligentProgressMonitor {
                 optimized.minProgressThreshold = 0.5;
                 break;
             
+            case 'morgan':
+                // Morgan Library .zif processing can be memory-intensive and slow
+                optimized.initialTimeout = 90000; // 1.5 minutes for .zif download
+                optimized.progressCheckInterval = 15000; // 15 seconds
+                optimized.maxTimeout = 480000; // 8 minutes for full tile stitching
+                optimized.minProgressThreshold = 0.1; // Any progress during stitching
+                break;
+            
             default:
                 // Default conservative settings
                 optimized.initialTimeout = Math.max(30000, config.initialTimeout); // At least 30 seconds

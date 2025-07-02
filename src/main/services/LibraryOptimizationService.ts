@@ -35,11 +35,11 @@ export class LibraryOptimizationService {
             optimizationDescription: 'Unicatt Ambrosiana optimizations: 2 concurrent downloads, extended timeouts'
         },
         'internet_culturale': {
-            maxConcurrentDownloads: 4, // Italian platform with moderate limits - increased for better performance
-            timeoutMultiplier: 1.5,
+            maxConcurrentDownloads: 3, // Reduced concurrent downloads due to very slow servers
+            timeoutMultiplier: 2.5, // Increased from 1.5 to 2.5 (30s * 2.5 = 75s) to handle 10+ second image responses
             enableProgressiveBackoff: true,
             autoSplitThresholdMB: 400, // Lower threshold for large manuscripts to prevent timeouts
-            optimizationDescription: 'Internet Culturale optimizations: 4 concurrent downloads, extended timeouts with progressive backoff, auto-split at 400MB'
+            optimizationDescription: 'Internet Culturale optimizations: 3 concurrent downloads, extended 75s timeouts with progressive backoff for slow image servers, auto-split at 400MB'
         },
         // Default libraries (no special optimizations)
         'nypl': {},

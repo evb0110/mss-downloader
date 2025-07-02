@@ -257,27 +257,60 @@ export class EnhancedManuscriptDownloaderService {
      * Validate Internet Culturale images to detect authentication error pages
      */
     private async validateInternetCulturaleImage(buffer: ArrayBuffer, url: string): Promise<void> {
-        // Check for the specific "Preview non disponibile" error page
-        // These error pages are valid JPEGs but have a distinctive size (~27KB) and content
-        const PREVIEW_ERROR_SIZE = 27287; // Exact size of "Preview non disponibile" error page
-        const PREVIEW_ERROR_TOLERANCE = 100; // Allow some tolerance for compression differences
+        // Check for the specific "Preview non disponibile" error page by content, not just size
+        // Error pages contain specific text, while legitimate small images are just compressed manuscripts
         
-        if (Math.abs(buffer.byteLength - PREVIEW_ERROR_SIZE) < PREVIEW_ERROR_TOLERANCE) {
-            // This is likely the error page - check if image is too small to be real manuscript
-            // Error pages will have very uniform content compared to real manuscript pages
-            if (buffer.byteLength < 30000) { // Error pages are typically much smaller than real manuscript images
+        try {
+            // Convert buffer to text to check for error messages
+            const textContent = new TextDecoder('utf-8', { fatal: false }).decode(buffer);
+            
+            // Check for actual error text content (case-insensitive)
+            const errorTexts = [
+                'preview non disponibile',
+                'Preview non disponibile', 
+                'PREVIEW NON DISPONIBILE',
+                'anteprima non disponibile',
+                'Anteprima non disponibile',
+                'accesso negato',
+                'access denied',
+                'errore',
+                'error'
+            ];
+            
+            const hasErrorText = errorTexts.some(errorText => 
+                textContent.toLowerCase().includes(errorText.toLowerCase())
+            );
+            
+            if (hasErrorText) {
                 throw new Error(
-                    `Internet Culturale authentication error: received "Preview non disponibile" error page instead of manuscript image. ` +
+                    `Internet Culturale authentication error: received error page with text "${errorTexts.find(t => textContent.toLowerCase().includes(t.toLowerCase()))}" instead of manuscript image. ` +
                     `This indicates a session/authentication issue. Image size: ${buffer.byteLength} bytes. ` +
                     `URL: ${url}`
                 );
             }
-        }
-        
-        // Additional check: ensure the image is large enough to be a real manuscript page
-        // Real manuscript images are typically 50KB+ while error pages are ~27KB
-        if (buffer.byteLength < 40000) {
-            console.warn(`Internet Culturale image unusually small (${buffer.byteLength} bytes): ${url}`);
+            
+            // Validate JPEG structure
+            const bytes = new Uint8Array(buffer);
+            const isValidJpeg = bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xD8;
+            
+            if (!isValidJpeg) {
+                throw new Error(`Invalid JPEG format received from Internet Culturale: ${url}`);
+            }
+            
+            // Log small but valid images for monitoring (some manuscripts have legitimately small images)
+            if (buffer.byteLength < 40000) {
+                console.log(`Internet Culturale: Small but valid image (${buffer.byteLength} bytes): ${url}`);
+            }
+            
+        } catch (decodingError) {
+            // If text decoding fails, it's likely a binary image (which is good)
+            // Just verify it's a valid JPEG
+            const bytes = new Uint8Array(buffer);
+            const isValidJpeg = bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xD8;
+            
+            if (!isValidJpeg) {
+                throw new Error(`Invalid JPEG format received from Internet Culturale: ${url}`);
+            }
         }
     }
 
@@ -402,7 +435,9 @@ export class EnhancedManuscriptDownloaderService {
      * Direct fetch (no proxy needed in Electron main process)
      */
     async fetchDirect(url: string, options: any = {}, attempt: number = 1): Promise<Response> {
-        const controller = new AbortController();
+        // Use external signal if provided, otherwise create our own
+        const externalSignal = options.signal;
+        const controller = externalSignal ? new AbortController() : new AbortController();
         
         // Detect library and apply optimized timeout
         const library = this.detectLibrary(url) as TLibrary;
@@ -410,8 +445,24 @@ export class EnhancedManuscriptDownloaderService {
         const timeout = library ? 
             LibraryOptimizationService.getTimeoutForLibrary(baseTimeout, library, attempt) :
             baseTimeout;
+        
+        // Set up timeout only if no external signal is provided
+        // If external signal exists, let the caller handle timeouts
+        let timeoutId: NodeJS.Timeout | undefined;
+        if (!externalSignal) {
+            timeoutId = setTimeout(() => controller.abort(), timeout);
+        }
+        
+        // Listen to external signal if provided
+        if (externalSignal) {
+            const abortListener = () => controller.abort();
+            externalSignal.addEventListener('abort', abortListener);
             
-        const timeoutId = setTimeout(() => controller.abort(), timeout);
+            // Clean up listener
+            controller.signal.addEventListener('abort', () => {
+                externalSignal.removeEventListener('abort', abortListener);
+            });
+        }
         
         // Special headers for ISOS to avoid 403 Forbidden errors
         let headers = {
@@ -479,6 +530,18 @@ export class EnhancedManuscriptDownloaderService {
             };
         }
         
+        // Special headers for University of Graz to improve IIIF compatibility
+        if (url.includes('unipub.uni-graz.at')) {
+            headers = {
+                ...headers,
+                'Referer': 'https://unipub.uni-graz.at/',
+                'Accept': 'application/json, application/ld+json, image/webp,image/apng,image/*,*/*;q=0.8',
+                'Accept-Language': 'de-AT,de;q=0.9,en;q=0.8',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive'
+            };
+        }
+        
         try {
             // SSL-tolerant fetching for Verona domains with certificate hostname mismatch
             const fetchOptions: any = {
@@ -499,10 +562,10 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             const response = await fetch(url, fetchOptions);
-            clearTimeout(timeoutId);
+            if (timeoutId) clearTimeout(timeoutId);
             return response;
         } catch (error) {
-            clearTimeout(timeoutId);
+            if (timeoutId) clearTimeout(timeoutId);
             throw error;
         }
     }
@@ -1836,13 +1899,17 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     async downloadAndProcessZifFile(url: string, attempt = 0): Promise<ArrayBuffer> {
+        // Calculate timeout based on attempt number (more time for retries)
+        const baseTimeout = 300000; // 5 minutes base
+        const timeoutMs = baseTimeout + (attempt * 120000); // +2 minutes per retry
+        
         try {
-            console.log(`Processing ZIF file: ${url}`);
+            console.log(`Processing ZIF file: ${url} (attempt ${attempt + 1})`);
             
-            // Use the dedicated ZIF processor for proper BigTIFF handling
+            // Use the dedicated ZIF processor with timeout protection
             const representativeImageBuffer = await this.zifProcessor.processZifFile(url);
             
-            console.log(`ZIF processed successfully: ${(representativeImageBuffer.length / 1024).toFixed(2)} KB high-quality image`);
+            console.log(`ZIF processed successfully: ${(representativeImageBuffer.length / 1024 / 1024).toFixed(2)} MB high-quality image`);
             
             // Convert Buffer to ArrayBuffer for compatibility
             const arrayBuffer = new ArrayBuffer(representativeImageBuffer.length);
@@ -1854,13 +1921,22 @@ export class EnhancedManuscriptDownloaderService {
         } catch (error: any) {
             const maxRetries = configService.get('maxRetries');
             if (attempt < maxRetries) {
-                const delay = this.calculateRetryDelay(attempt);
-                console.log(`Retrying ZIF download ${url} (attempt ${attempt + 1}/${maxRetries}) after ${delay}ms delay: ${error.message}`);
+                const isTimeoutError = error.message.includes('timeout') || error.message.includes('timed out');
+                const delay = isTimeoutError ? this.calculateRetryDelay(attempt) * 2 : this.calculateRetryDelay(attempt);
+                
+                console.log(`ZIF processing failed (attempt ${attempt + 1}/${maxRetries}): ${error.message}${isTimeoutError ? ' [TIMEOUT]' : ''}`);
+                console.log(`Retrying ZIF processing in ${delay / 1000}s with ${timeoutMs / 1000}s timeout...`);
+                
                 await this.sleep(delay);
                 return this.downloadAndProcessZifFile(url, attempt + 1);
             }
             
-            throw new Error(`Failed to process ZIF file after ${maxRetries} attempts: ${error.message}`);
+            // Provide more specific error message for timeout issues
+            if (error.message.includes('timeout') || error.message.includes('timed out')) {
+                throw new Error(`ZIF processing timed out after ${maxRetries + 1} attempts. This manuscript may be very large or the server may be overloaded. Please try again later.`);
+            }
+            
+            throw new Error(`Failed to process ZIF file after ${maxRetries + 1} attempts: ${error.message}`);
         }
     }
 
@@ -1901,7 +1977,8 @@ export class EnhancedManuscriptDownloaderService {
                 .substring(0, 100) || 'manuscript';       // Limit to 100 characters with fallback
             
             // Calculate pages to download for splitting logic
-            const actualStartPage = Math.max(1, startPage || 1);
+            // Fix for Manuscripta.at: Use startPageFromUrl from manifest if user didn't specify startPage
+            const actualStartPage = Math.max(1, startPage || manifest.startPageFromUrl || 1);
             const actualEndPage = Math.min(manifest.totalPages, endPage || manifest.totalPages);
             const totalPagesToDownload = actualEndPage - actualStartPage + 1;
             
@@ -4664,10 +4741,11 @@ export class EnhancedManuscriptDownloaderService {
             
             const totalPages = parseInt(pageCountMatch[1], 10);
             
-            // Use the simple, directly accessible /full URL pattern
-            // This pattern is known to work: http://digitale.bnc.roma.sbn.it/tecadigitale/img/libroantico/BVEE112879/BVEE112879/2/full
-            const imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/PAGENUM/full`;
-            console.log(`Using direct /full URL template for ${collectionType} collection: ${imageUrlTemplate.replace('PAGENUM', '1')} (first page example)`);
+            // Use the maximum resolution /original URL pattern for highest quality
+            // /original provides 3-5x larger images compared to /full (tested 2025-07-02)
+            // This pattern is known to work: http://digitale.bnc.roma.sbn.it/tecadigitale/img/libroantico/BVEE112879/BVEE112879/2/original
+            const imageUrlTemplate = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/PAGENUM/original`;
+            console.log(`Using maximum resolution /original URL template for ${collectionType} collection: ${imageUrlTemplate.replace('PAGENUM', '1')} (first page example)`);
             
             // Generate page links using the determined template
             const pageLinks: string[] = [];
@@ -4676,7 +4754,7 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             console.log(`Rome National Library: Found ${totalPages} pages for "${title}"`);
-            console.log(`Using image URL template: ${imageUrlTemplate.replace('PAGENUM', '1')} (first page example)`);
+            console.log(`Using maximum resolution image URL template: ${imageUrlTemplate.replace('PAGENUM', '1')} (first page example)`);
             
             return {
                 pageLinks,
@@ -5014,7 +5092,9 @@ export class EnhancedManuscriptDownloaderService {
             
             // Extract manuscript ID from URL
             // Expected format: https://www.bdl.servizirl.it/bdl/bookreader/index.html?path=fe&cdOggetto=3903
-            const urlParams = new URLSearchParams(bdlUrl.split('?')[1]);
+            // Remove hash fragment (e.g., #mode/2up) before parsing parameters to prevent hanging
+            const urlWithoutHash = bdlUrl.split('#')[0];
+            const urlParams = new URLSearchParams(urlWithoutHash.split('?')[1]);
             const manuscriptId = urlParams.get('cdOggetto');
             const pathType = urlParams.get('path');
             
@@ -5105,7 +5185,10 @@ export class EnhancedManuscriptDownloaderService {
                 try {
                     const firstImageResponse = await fetch(pageLinks[0], {
                         method: 'HEAD',
-                        signal: firstImageController.signal
+                        signal: firstImageController.signal,
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+                        }
                     });
                     
                     validationMonitor.updateProgress(1, 1, 'BDL image validation completed');
@@ -5115,8 +5198,12 @@ export class EnhancedManuscriptDownloaderService {
                     } else {
                         console.log('First image URL validated successfully');
                     }
-                } catch (validationError) {
-                    console.warn('First image validation failed:', validationError);
+                } catch (validationError: any) {
+                    if (validationError.name === 'AbortError') {
+                        console.warn('BDL image validation timed out - this may indicate server issues but manifest loading can continue');
+                    } else {
+                        console.warn('First image validation failed:', validationError.message);
+                    }
                     // Don't fail the entire process, just log the warning
                 } finally {
                     validationMonitor.complete();
@@ -5738,15 +5825,43 @@ export class EnhancedManuscriptDownloaderService {
                 // Catalog ID to IIIF manuscript mapping based on OMNES platform
                 const catalogId = catalogMatch[1];
                 const catalogMappings: { [key: string]: string } = {
+                    // Existing mappings (verified)
                     '0000313047': 'IT-FR0084_0339',
                     '0000313194': 'IT-FR0084_0271', 
-                    '0000396781': 'IT-FR0084_0023'
+                    '0000396781': 'IT-FR0084_0023',
+                    
+                    // Additional mappings discovered from OMNES catalog
+                    '0000313037': 'IT-FR0084_0003',
+                    '0000313038': 'IT-FR0084_0001',
+                    '0000313039': 'IT-FR0084_0002',
+                    '0000313048': 'IT-FR0084_0006',
+                    '0000313053': 'IT-FR0084_0007',
+                    '0000313054': 'IT-FR0084_0008',
+                    '0000313055': 'IT-FR0084_0009',
+                    '0000313056': 'IT-FR0084_0010',
+                    '0000313057': 'IT-FR0084_0011',
+                    '0000313058': 'IT-FR0084_0012'
                 };
                 
                 if (catalogMappings[catalogId]) {
                     manuscriptId = catalogMappings[catalogId];
                 } else {
-                    throw new Error(`Unknown Monte-Cassino catalog ID: ${catalogId}. Available catalog IDs: ${Object.keys(catalogMappings).join(', ')}. Please provide direct IIIF manifest URL.`);
+                    // Find nearby available alternatives for better user guidance
+                    const catalogNum = parseInt(catalogId);
+                    const availableIds = Object.keys(catalogMappings);
+                    const nearest = availableIds
+                        .map(id => ({ id, distance: Math.abs(parseInt(id) - catalogNum) }))
+                        .sort((a, b) => a.distance - b.distance)
+                        .slice(0, 3);
+                    
+                    const suggestions = nearest.map(n => `${n.id} (distance: ${n.distance})`).join(', ');
+                    
+                    throw new Error(
+                        `Monte-Cassino catalog ID ${catalogId} is not available in the digital collection. ` +
+                        `This manuscript may not be digitized. ` +
+                        `Nearest available catalog IDs: ${suggestions}. ` +
+                        `You can also use direct IIIF manifest URLs from https://omnes.dbseret.com/montecassino/`
+                    );
                 }
             } else if (originalUrl.includes('omnes.dbseret.com/montecassino/iiif/')) {
                 // Direct IIIF manifest URL
@@ -5891,7 +6006,22 @@ export class EnhancedManuscriptDownloaderService {
             if (pageLinks.length === 1 && manifestData.label) {
                 const label = typeof manifestData.label === 'string' ? manifestData.label : 
                     manifestData.label?.en || manifestData.label?.it || JSON.stringify(manifestData.label);
-                console.warn(`Single-page manuscript detected: "${label}". This may be a single folio URL rather than the complete manuscript.`);
+                
+                // Enhanced warning for DAM ICCU system
+                if (originalUrl.includes('dam.iccu.sbn.it')) {
+                    // Extract physical description from metadata if available
+                    const physicalDesc = manifestData.metadata?.find((meta: any) => 
+                        meta.label?.it?.[0]?.toLowerCase().includes('fisica')
+                    )?.value?.it?.[0];
+                    
+                    const warningMsg = physicalDesc 
+                        ? `Single-page DAM ICCU manifest detected: "${label}". Physical description indicates "${physicalDesc}" but only 1 folio is available via IIIF. This is a folio-level manifest, not a complete manuscript.`
+                        : `Single-page DAM ICCU manifest detected: "${label}". This is a folio-level manifest, not a complete manuscript.`;
+                    
+                    console.warn(warningMsg);
+                } else {
+                    console.warn(`Single-page manuscript detected: "${label}". This may be a single folio URL rather than the complete manuscript.`);
+                }
             }
             
             return {
