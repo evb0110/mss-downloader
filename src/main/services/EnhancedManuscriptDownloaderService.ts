@@ -777,16 +777,17 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
             } else {
-                // Main Morgan format - priority-based image quality selection
+                // Main Morgan format - MAXIMUM RESOLUTION priority system
+                // FIXED: Prioritize ZIF files for ultra-high resolution (6000x4000+ pixels, 25MP+)
                 const imagesByPriority: { [key: number]: string[] } = {
-                    0: [], // Ultra priority: .zif tiled images (183.5 megapixels)
-                    1: [], // Highest priority: direct full-size images
-                    2: [], // Medium priority: converted styled images
+                    0: [], // HIGHEST PRIORITY: .zif tiled images (ULTRA HIGH RESOLUTION 6000x4000+ pixels, 25MP+)
+                    1: [], // High priority: direct full-size images  
+                    2: [], // Medium priority: converted styled images (reliable multi-page)
                     3: [], // Low priority: facsimile images
                     4: []  // Lowest priority: other direct references
                 };
                 
-                // Priority 0: Generate .zif URLs from image references (ultra high quality - 183.5 megapixels)
+                // Priority 0: Generate .zif URLs from image references (MAXIMUM RESOLUTION - 25+ megapixels)
                 const manuscriptMatch = morganUrl.match(/\/collection\/([^/]+)/);
                 if (manuscriptMatch) {
                     const manuscriptId = manuscriptMatch[1];
@@ -797,7 +798,8 @@ export class EnhancedManuscriptDownloaderService {
                         const imageIdMatch = match.match(/\/images\/collection\/([^"'?]+)\.jpg/);
                         if (imageIdMatch) {
                             const imageId = imageIdMatch[1];
-                            if (imageId.match(/\d+v?_\d+-\d+/)) {
+                            // FIXED: Use correct pattern for Lindau Gospels (76874v_*) and similar manuscripts
+                            if (imageId.match(/\d+v?_\d+/) && !imageId.includes('front-cover')) {
                                 const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptId}/${imageId}.zif`;
                                 imagesByPriority[0].push(zifUrl);
                             }
@@ -805,7 +807,7 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
                 
-                // Priority 1: Look for direct full-size image references (highest quality)
+                // Priority 1: Look for direct full-size image references
                 const fullSizeImageRegex = /\/sites\/default\/files\/images\/collection\/[^"'?]+\.jpg/g;
                 const fullSizeMatches = pageContent.match(fullSizeImageRegex) || [];
                 
@@ -814,7 +816,7 @@ export class EnhancedManuscriptDownloaderService {
                     imagesByPriority[1].push(fullUrl);
                 }
                 
-                // Priority 2: Extract styled images and convert to originals
+                // Priority 2: Extract styled images converted to original (fallback for reliability)
                 const styledImageRegex = /\/sites\/default\/files\/styles\/[^"']*\/public\/images\/collection\/[^"'?]+\.jpg/g;
                 const styledMatches = pageContent.match(styledImageRegex) || [];
                 
@@ -4131,12 +4133,24 @@ export class EnhancedManuscriptDownloaderService {
             const tecaMatch = internetCulturaleUrl.match(/teca=([^&]+)/);
             const teca = tecaMatch ? decodeURIComponent(tecaMatch[1]) : 'Unknown';
             
+            // CRITICAL FIX: Establish session first by visiting main page
+            console.log('Establishing Internet Culturale session...');
+            const sessionHeaders = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
+                'Cache-Control': 'max-age=0'
+            };
+            
+            // Visit main page to establish session and get cookies
+            await this.fetchDirect(internetCulturaleUrl, { headers: sessionHeaders });
+            
             // Construct API URL for manifest data with all required parameters
             const apiUrl = `https://www.internetculturale.it/jmms/magparser?id=${encodeURIComponent(oaiId)}&teca=${encodeURIComponent(teca)}&mode=all&fulltext=0`;
             
             // Set headers similar to browser request
             const headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'text/xml, application/xml, */*; q=0.01',
                 'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
                 'Referer': internetCulturaleUrl,
@@ -4180,9 +4194,9 @@ export class EnhancedManuscriptDownloaderService {
             while ((match = pageRegex.exec(xmlText)) !== null) {
                 let relativePath = match[1];
                 
-                // Fix Florence URL issue: use 'web' instead of 'normal' for working images
-                if (relativePath.includes('cacheman/normal/')) {
-                    relativePath = relativePath.replace('cacheman/normal/', 'cacheman/web/');
+                // Optimize Internet Culturale resolution: use 'normal' for highest quality images
+                if (relativePath.includes('cacheman/web/')) {
+                    relativePath = relativePath.replace('cacheman/web/', 'cacheman/normal/');
                 }
                 
                 // Convert relative path to absolute URL

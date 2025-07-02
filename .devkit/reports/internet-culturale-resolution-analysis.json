@@ -1,0 +1,69 @@
+{
+  "timestamp": "2025-07-02T18:09:48.199Z",
+  "testUrl": "https://www.internetculturale.it/jmms/iccuviewer/iccu.jsp?id=oai%3Abncf.firenze.sbn.it%3A21%3AFI0098%3AManoscrittiInRete%3AB.R.231&mode=all&teca=Bncf",
+  "totalPatternsTested": 8,
+  "successfulPatterns": 2,
+  "results": [
+    {
+      "pattern": "Web (current)",
+      "url": "https://www.internetculturale.it/jmms/cacheman/web/Bncf/IT.BNCF/oai.bncf.firenze.sbn.it.21.FI0098.ManoscrittiInRete.B.R.231/1.jpg",
+      "size": 86467,
+      "success": true,
+      "contentType": "image/jpeg"
+    },
+    {
+      "pattern": "Normal",
+      "url": "https://www.internetculturale.it/jmms/cacheman/normal/Bncf/IT.BNCF/oai.bncf.firenze.sbn.it.21.FI0098.ManoscrittiInRete.B.R.231/1.jpg",
+      "size": 146441,
+      "success": true,
+      "contentType": "image/jpeg"
+    },
+    {
+      "pattern": "Zoom",
+      "url": "https://www.internetculturale.it/jmms/cacheman/zoom/Bncf/IT.BNCF/oai.bncf.firenze.sbn.it.21.FI0098.ManoscrittiInRete.B.R.231/1.jpg",
+      "size": 0,
+      "success": false,
+      "error": "HTTP 404"
+    },
+    {
+      "pattern": "Full",
+      "url": "https://www.internetculturale.it/jmms/cacheman/full/Bncf/IT.BNCF/oai.bncf.firenze.sbn.it.21.FI0098.ManoscrittiInRete.B.R.231/1.jpg",
+      "size": 0,
+      "success": false,
+      "error": "HTTP 404"
+    },
+    {
+      "pattern": "Max",
+      "url": "https://www.internetculturale.it/jmms/cacheman/max/Bncf/IT.BNCF/oai.bncf.firenze.sbn.it.21.FI0098.ManoscrittiInRete.B.R.231/1.jpg",
+      "size": 0,
+      "success": false,
+      "error": "HTTP 404"
+    },
+    {
+      "pattern": "High",
+      "url": "https://www.internetculturale.it/jmms/cacheman/high/Bncf/IT.BNCF/oai.bncf.firenze.sbn.it.21.FI0098.ManoscrittiInRete.B.R.231/1.jpg",
+      "size": 0,
+      "success": false,
+      "error": "HTTP 404"
+    },
+    {
+      "pattern": "Original",
+      "url": "https://www.internetculturale.it/jmms/cacheman/original/Bncf/IT.BNCF/oai.bncf.firenze.sbn.it.21.FI0098.ManoscrittiInRete.B.R.231/1.jpg",
+      "size": 0,
+      "success": false,
+      "error": "HTTP 404"
+    },
+    {
+      "pattern": "Large",
+      "url": "https://www.internetculturale.it/jmms/cacheman/large/Bncf/IT.BNCF/oai.bncf.firenze.sbn.it.21.FI0098.ManoscrittiInRete.B.R.231/1.jpg",
+      "size": 0,
+      "success": false,
+      "error": "HTTP 404"
+    }
+  ],
+  "recommendation": {
+    "bestPattern": "Normal",
+    "bestSize": 146441,
+    "bestUrl": "https://www.internetculturale.it/jmms/cacheman/normal/Bncf/IT.BNCF/oai.bncf.firenze.sbn.it.21.FI0098.ManoscrittiInRete.B.R.231/1.jpg"
+  }
+}
