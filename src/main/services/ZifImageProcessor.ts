@@ -223,66 +223,83 @@ export class ZifImageProcessor {
      * Process ZIF file and stitch all tiles into a full-resolution image
      * Returns complete stitched image at full resolution (e.g., 13,546 x 13,546 px)
      */
-    async processZifFile(zifUrl: string, outputDir?: string): Promise<Buffer> {
+    async processZifFile(zifUrl: string, outputDir?: string, timeoutMs = 300000): Promise<Buffer> {
+        const timeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(() => {
+                reject(new Error(`ZIF processing timed out after ${timeoutMs / 1000}s`));
+            }, timeoutMs);
+        });
+
         try {
-            console.log(`Processing ZIF file: ${zifUrl}`);
+            console.log(`Processing ZIF file: ${zifUrl} (timeout: ${timeoutMs / 1000}s)`);
             
-            // Download ZIF file
-            const zifBuffer = await this.downloadZifFile(zifUrl);
-            console.log(`Downloaded ZIF file: ${(zifBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+            const processingPromise = this.processZifFileInternal(zifUrl, outputDir);
             
-            // Parse header
-            const header = this.readTiffHeader(zifBuffer);
-            const isBigTiff = header.version === 'BigTIFF';
-            
-            // Read IFD
-            const entries = this.readIFD(zifBuffer, header.ifdOffset, isBigTiff);
-            
-            // Extract image info
-            const imageInfo = this.extractImageInfo(entries);
-            console.log(`Image dimensions: ${imageInfo.width}x${imageInfo.height}`);
-            console.log(`Tile size: ${imageInfo.tileWidth}x${imageInfo.tileHeight}`);
-            
-            // Extract tiles
-            const tiles = this.extractTiles(zifBuffer, entries, imageInfo, isBigTiff);
-            console.log(`Extracted ${tiles.length} tiles`);
-            
-            if (outputDir) {
-                // Save analysis data
-                await fs.mkdir(outputDir, { recursive: true });
-                
-                const analysisData = {
-                    sourceUrl: zifUrl,
-                    fileSize: zifBuffer.length,
-                    imageInfo,
-                    tileCount: tiles.length,
-                    compression: imageInfo.compression,
-                    megapixels: (imageInfo.width * imageInfo.height) / 1000000,
-                    timestamp: new Date().toISOString()
-                };
-                
-                await fs.writeFile(
-                    path.join(outputDir, 'zif-analysis.json'),
-                    JSON.stringify(analysisData, null, 2)
-                );
-                
-                // Save first few tiles as samples
-                for (let i = 0; i < Math.min(3, tiles.length); i++) {
-                    const tilePath = path.join(outputDir, `tile-${i}-${tiles[i].x}-${tiles[i].y}.jpg`);
-                    await fs.writeFile(tilePath, tiles[i].data);
-                }
-            }
-            
-            // Stitch tiles into full-resolution image
-            const stitchedImage = await this.stitchTiles(tiles, imageInfo);
-            console.log(`Stitched full-resolution image: ${(stitchedImage.length / 1024 / 1024).toFixed(2)} MB`);
-            
-            return stitchedImage;
+            // Race between processing and timeout
+            const result = await Promise.race([processingPromise, timeoutPromise]);
+            return result;
             
         } catch (error) {
             console.error('Error processing ZIF file:', error);
             throw error;
         }
+    }
+
+    /**
+     * Internal ZIF processing method without timeout wrapper
+     */
+    private async processZifFileInternal(zifUrl: string, outputDir?: string): Promise<Buffer> {
+        // Download ZIF file
+        const zifBuffer = await this.downloadZifFile(zifUrl);
+        console.log(`Downloaded ZIF file: ${(zifBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+        
+        // Parse header
+        const header = this.readTiffHeader(zifBuffer);
+        const isBigTiff = header.version === 'BigTIFF';
+        
+        // Read IFD
+        const entries = this.readIFD(zifBuffer, header.ifdOffset, isBigTiff);
+        
+        // Extract image info
+        const imageInfo = this.extractImageInfo(entries);
+        console.log(`Image dimensions: ${imageInfo.width}x${imageInfo.height}`);
+        console.log(`Tile size: ${imageInfo.tileWidth}x${imageInfo.tileHeight}`);
+        
+        // Extract tiles
+        const tiles = this.extractTiles(zifBuffer, entries, imageInfo, isBigTiff);
+        console.log(`Extracted ${tiles.length} tiles`);
+        
+        if (outputDir) {
+            // Save analysis data
+            await fs.mkdir(outputDir, { recursive: true });
+            
+            const analysisData = {
+                sourceUrl: zifUrl,
+                fileSize: zifBuffer.length,
+                imageInfo,
+                tileCount: tiles.length,
+                compression: imageInfo.compression,
+                megapixels: (imageInfo.width * imageInfo.height) / 1000000,
+                timestamp: new Date().toISOString()
+            };
+            
+            await fs.writeFile(
+                path.join(outputDir, 'zif-analysis.json'),
+                JSON.stringify(analysisData, null, 2)
+            );
+            
+            // Save first few tiles as samples
+            for (let i = 0; i < Math.min(3, tiles.length); i++) {
+                const tilePath = path.join(outputDir, `tile-${i}-${tiles[i].x}-${tiles[i].y}.jpg`);
+                await fs.writeFile(tilePath, tiles[i].data);
+            }
+        }
+        
+        // Stitch tiles into full-resolution image
+        const stitchedImage = await this.stitchTiles(tiles, imageInfo);
+        console.log(`Stitched full-resolution image: ${(stitchedImage.length / 1024 / 1024).toFixed(2)} MB`);
+        
+        return stitchedImage;
     }
     
     /**
@@ -310,47 +327,35 @@ export class ZifImageProcessor {
             
             console.log(`Tile grid: ${tilesX}x${tilesY}`);
             
-            // Process tiles in batches to manage memory
-            const batchSize = 20;
+            // Process tiles in batches to manage memory and prevent hanging
+            const batchSize = 10; // Reduced batch size for better timeout handling
             let processedTiles = 0;
             
             for (let batchStart = 0; batchStart < tiles.length; batchStart += batchSize) {
                 const batch = tiles.slice(batchStart, Math.min(batchStart + batchSize, tiles.length));
                 
-                // Process batch tiles in parallel
-                const batchPromises = batch.map(async (tile) => {
-                    try {
-                        // Load tile as image
-                        const image = await Canvas.loadImage(tile.data);
-                        
-                        // Calculate position on canvas
-                        const x = tile.x * imageInfo.tileWidth;
-                        const y = tile.y * imageInfo.tileHeight;
-                        
-                        // Calculate actual tile dimensions (edge tiles might be smaller)
-                        const tileWidth = Math.min(imageInfo.tileWidth, imageInfo.width - x);
-                        const tileHeight = Math.min(imageInfo.tileHeight, imageInfo.height - y);
-                        
-                        return { image, x, y, tileWidth, tileHeight, index: tile.index };
-                    } catch (error) {
-                        console.warn(`Failed to load tile ${tile.index}: ${error}`);
-                        return null;
-                    }
+                // Add timeout protection for batch processing
+                const batchTimeout = 30000; // 30 seconds per batch
+                const batchPromise = this.processTileBatch(batch, Canvas, ctx, imageInfo);
+                const timeoutPromise = new Promise<never>((_, reject) => {
+                    setTimeout(() => {
+                        reject(new Error(`Tile batch processing timed out after ${batchTimeout / 1000}s`));
+                    }, batchTimeout);
                 });
                 
-                const loadedTiles = await Promise.all(batchPromises);
-                
-                // Draw loaded tiles to canvas
-                for (const tileData of loadedTiles) {
-                    if (tileData) {
-                        ctx.drawImage(tileData.image, tileData.x, tileData.y, tileData.tileWidth, tileData.tileHeight);
-                        processedTiles++;
-                    }
+                try {
+                    const processedCount = await Promise.race([batchPromise, timeoutPromise]);
+                    processedTiles += processedCount;
+                    
+                    // Log progress
+                    const progress = Math.round((processedTiles / tiles.length) * 100);
+                    console.log(`Stitching progress: ${progress}% (${processedTiles}/${tiles.length} tiles)`);
+                    
+                    // Yield control to prevent hanging
+                    await new Promise(resolve => setTimeout(resolve, 1));
+                } catch (error) {
+                    console.warn(`Batch processing failed: ${error}. Skipping batch.`);
                 }
-                
-                // Log progress
-                const progress = Math.round((processedTiles / tiles.length) * 100);
-                console.log(`Stitching progress: ${progress}% (${processedTiles}/${tiles.length} tiles)`);
             }
             
             console.log(`Stitching complete: ${processedTiles}/${tiles.length} tiles successfully processed`);
@@ -366,6 +371,45 @@ export class ZifImageProcessor {
             console.error('Error stitching tiles:', error);
             throw new Error(`Failed to stitch tiles: ${error.message}`);
         }
+    }
+
+    /**
+     * Process a batch of tiles with timeout protection
+     */
+    private async processTileBatch(batch: ExtractedTile[], Canvas: any, ctx: any, imageInfo: ImageInfo): Promise<number> {
+        // Process batch tiles in parallel
+        const batchPromises = batch.map(async (tile) => {
+            try {
+                // Load tile as image
+                const image = await Canvas.loadImage(tile.data);
+                
+                // Calculate position on canvas
+                const x = tile.x * imageInfo.tileWidth;
+                const y = tile.y * imageInfo.tileHeight;
+                
+                // Calculate actual tile dimensions (edge tiles might be smaller)
+                const tileWidth = Math.min(imageInfo.tileWidth, imageInfo.width - x);
+                const tileHeight = Math.min(imageInfo.tileHeight, imageInfo.height - y);
+                
+                return { image, x, y, tileWidth, tileHeight, index: tile.index };
+            } catch (error) {
+                console.warn(`Failed to load tile ${tile.index}: ${error}`);
+                return null;
+            }
+        });
+        
+        const loadedTiles = await Promise.all(batchPromises);
+        
+        // Draw loaded tiles to canvas
+        let processedCount = 0;
+        for (const tileData of loadedTiles) {
+            if (tileData) {
+                ctx.drawImage(tileData.image, tileData.x, tileData.y, tileData.tileWidth, tileData.tileHeight);
+                processedCount++;
+            }
+        }
+        
+        return processedCount;
     }
     
     

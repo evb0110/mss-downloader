@@ -2,9 +2,17 @@
 
 ## Pending Tasks
 
-*No pending tasks at this time.*
+No pending tasks.
 
-## Recent Completed Tasks (v1.3.72)
+## Recent Completed Tasks (v1.3.77)
+
+### ✅ Critical Bug Fixes - COMPLETED
+- ✅ Fix Monte-Cassino catalog ID 0000313041 detection - Added 4 new manuscript mappings and improved error handling
+- ✅ Fix BNC Roma manuscript URL fetch failure - Enhanced error handling for server infrastructure failures
+- ✅ Fix Morgan Library hanging calculation - Replaced O(n²) deduplication with O(n) algorithm, added ZIF timeout protection
+- ✅ Fix University of Graz manuscript URL fetch failure - Confirmed implementation working correctly, completed validation protocol
+
+## Previous Completed Tasks (v1.3.72)
 
 ### ✅ Library Bug Fixes - COMPLETED
 - ✅ Fix Verona library SSL certificate hostname mismatch causing fetch failures

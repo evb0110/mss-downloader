@@ -77,9 +77,10 @@ export class LibraryOptimizationService {
             optimizationDescription: 'Vienna Manuscripta optimizations: 2 concurrent downloads, extended timeouts for page discovery'
         },
         'rome': {
-            maxConcurrentDownloads: 3, // Italian National Library server, moderate limits
-            timeoutMultiplier: 1.5, // Increased timeout for HTML parsing
-            optimizationDescription: 'Rome National Library optimizations: 3 concurrent downloads, extended timeouts for page discovery'
+            maxConcurrentDownloads: 2, // Reduced due to infrastructure instability (digitale.bnc.roma.sbn.it network issues)
+            timeoutMultiplier: 3.0, // Significantly increased timeout for infrastructure reliability issues
+            enableProgressiveBackoff: true, // Critical for handling server infrastructure failures
+            optimizationDescription: 'Rome National Library optimizations: 2 concurrent downloads, extended timeouts for infrastructure stability, progressive backoff for server failures'
         },
         'berlin': {
             maxConcurrentDownloads: 3, // German State Library server, moderate limits

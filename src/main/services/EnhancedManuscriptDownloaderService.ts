@@ -788,21 +788,20 @@ export class EnhancedManuscriptDownloaderService {
                 };
                 
                 // Priority 0: Generate .zif URLs from image references (MAXIMUM RESOLUTION - 25+ megapixels)
+                // OPTIMIZED: Single regex with capture groups to avoid redundant operations
                 const manuscriptMatch = morganUrl.match(/\/collection\/([^/]+)/);
                 if (manuscriptMatch) {
                     const manuscriptId = manuscriptMatch[1];
                     const imageIdRegex = /\/images\/collection\/([^"'?]+)\.jpg/g;
-                    const imageIdMatches = pageContent.match(imageIdRegex) || [];
+                    const validImagePattern = /\d+v?_\d+/;
                     
-                    for (const match of imageIdMatches) {
-                        const imageIdMatch = match.match(/\/images\/collection\/([^"'?]+)\.jpg/);
-                        if (imageIdMatch) {
-                            const imageId = imageIdMatch[1];
-                            // FIXED: Use correct pattern for Lindau Gospels (76874v_*) and similar manuscripts
-                            if (imageId.match(/\d+v?_\d+/) && !imageId.includes('front-cover')) {
-                                const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptId}/${imageId}.zif`;
-                                imagesByPriority[0].push(zifUrl);
-                            }
+                    let match;
+                    while ((match = imageIdRegex.exec(pageContent)) !== null) {
+                        const imageId = match[1];
+                        // FIXED: Use correct pattern for Lindau Gospels (76874v_*) and similar manuscripts
+                        if (validImagePattern.test(imageId) && !imageId.includes('front-cover')) {
+                            const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptId}/${imageId}.zif`;
+                            imagesByPriority[0].push(zifUrl);
                         }
                     }
                 }
@@ -848,23 +847,21 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
                 
-                // Select highest quality images based on priority
-                const uniqueImageUrls = new Set<string>();
+                // Select highest quality images based on priority - OPTIMIZED O(n) algorithm
                 const getFilenameFromUrl = (url: string) => {
                     const match = url.match(/([^/]+)\.(jpg|zif)$/);
                     return match ? match[1] : url;
                 };
                 
+                // Use Map for O(n) deduplication instead of O(n²) Set operations
+                const filenameMap = new Map<string, string>();
+                
                 // Add images by priority, avoiding duplicates based on filename
                 for (let priority = 0; priority <= 4; priority++) {
                     for (const imageUrl of imagesByPriority[priority]) {
                         const filename = getFilenameFromUrl(imageUrl);
-                        const isDuplicate = Array.from(uniqueImageUrls).some(existingUrl => 
-                            getFilenameFromUrl(existingUrl) === filename
-                        );
-                        
-                        if (!isDuplicate) {
-                            uniqueImageUrls.add(imageUrl);
+                        if (!filenameMap.has(filename)) {
+                            filenameMap.set(filename, imageUrl);
                             pageLinks.push(imageUrl);
                         }
                     }
@@ -1842,11 +1839,37 @@ export class EnhancedManuscriptDownloaderService {
                                      url.includes('aurelia.orleans.fr') || 
                                      url.includes('bdl.servizirl.it');
             
-            const response = needsProxyFallback
-                ? await this.fetchWithProxyFallback(url)
-                : await this.fetchDirect(url, {}, attempt + 1); // Pass attempt number for timeout calculation
+            let response: Response;
+            try {
+                response = needsProxyFallback
+                    ? await this.fetchWithProxyFallback(url)
+                    : await this.fetchDirect(url, {}, attempt + 1); // Pass attempt number for timeout calculation
+            } catch (fetchError: any) {
+                // Enhanced error handling for BNC Roma infrastructure failures
+                if (url.includes('digitale.bnc.roma.sbn.it')) {
+                    if (fetchError.name === 'AbortError' || fetchError.code === 'ECONNRESET' || 
+                        fetchError.code === 'ENOTFOUND' || fetchError.code === 'ECONNREFUSED' || 
+                        fetchError.code === 'ETIMEDOUT' || fetchError.code === 'ENETUNREACH' ||
+                        fetchError.message.includes('timeout') || fetchError.message.includes('ENETUNREACH')) {
+                        throw new Error(`BNC Roma infrastructure failure: Cannot reach digitale.bnc.roma.sbn.it server. This appears to be a network infrastructure issue. Check www.bncrm.beniculturali.it for announcements or try again later.`);
+                    }
+                }
+                throw fetchError;
+            }
             
             if (!response.ok) {
+                // Enhanced error messages for BNC Roma HTTP errors
+                if (url.includes('digitale.bnc.roma.sbn.it')) {
+                    if (response.status === 500) {
+                        throw new Error(`BNC Roma server error (HTTP 500): The image server is experiencing internal issues. This may be temporary - please try again.`);
+                    } else if (response.status === 503) {
+                        throw new Error(`BNC Roma service unavailable (HTTP 503): The image server is temporarily unavailable, possibly due to maintenance.`);
+                    } else if (response.status === 404) {
+                        throw new Error(`BNC Roma image not found (HTTP 404): The requested image may have been moved or the URL is incorrect.`);
+                    } else if (response.status >= 500) {
+                        throw new Error(`BNC Roma server error (HTTP ${response.status}): The image server is experiencing technical difficulties.`);
+                    }
+                }
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
@@ -1894,6 +1917,15 @@ export class EnhancedManuscriptDownloaderService {
                 
                 await this.sleep(delay);
                 return this.downloadImageWithRetries(url, attempt + 1);
+            }
+            
+            // Enhanced error message for BNC Roma failures
+            if (url.includes('digitale.bnc.roma.sbn.it')) {
+                if (error.message.includes('BNC Roma infrastructure failure')) {
+                    throw new Error(`BNC Roma complete failure: Server infrastructure is completely unreachable after ${maxRetries} attempts with progressive backoff. The digital library server appears to be offline. Check www.bncrm.beniculturali.it for service announcements or contact GARR support at cert@garr.it`);
+                } else if (error.message.includes('BNC Roma server error')) {
+                    throw new Error(`BNC Roma persistent server errors: Multiple server errors encountered after ${maxRetries} attempts. The digital library may be experiencing technical difficulties. Please try again later or contact BNC Roma support.`);
+                }
             }
             
             throw new Error(`Failed after ${maxRetries} attempts: ${error.message}`);
@@ -4731,9 +4763,35 @@ export class EnhancedManuscriptDownloaderService {
             console.log(`Processing Rome ${collectionType} manuscript: ${manuscriptId}`);
             
             // Fetch the first page to get metadata and examine image URLs
-            const pageResponse = await this.fetchDirect(romeUrl);
+            // Apply enhanced error handling for BNC Roma infrastructure issues
+            let pageResponse: Response;
+            try {
+                pageResponse = await this.fetchDirect(romeUrl);
+            } catch (fetchError: any) {
+                // Enhanced error handling for BNC Roma server infrastructure failures
+                if (fetchError.name === 'AbortError' || fetchError.code === 'ECONNRESET' || 
+                    fetchError.code === 'ENOTFOUND' || fetchError.code === 'ECONNREFUSED' || 
+                    fetchError.code === 'ETIMEDOUT' || fetchError.code === 'ENETUNREACH' ||
+                    fetchError.message.includes('timeout') || fetchError.message.includes('ENETUNREACH')) {
+                    throw new Error(`BNC Roma server infrastructure failure: The digital library server (digitale.bnc.roma.sbn.it) is currently unreachable. This appears to be a network infrastructure issue affecting the entire server. Please check the BNC Roma website (www.bncrm.beniculturali.it) for service announcements, or try again later. If the issue persists, contact GARR technical support at cert@garr.it or BNC Roma IT at bnc-rm.digitallibrary@beniculturali.it`);
+                }
+                throw new Error(`BNC Roma network connection failed: ${fetchError.message}`);
+            }
+            
             if (!pageResponse.ok) {
-                throw new Error(`Failed to load Rome page: HTTP ${pageResponse.status}`);
+                if (pageResponse.status === 500) {
+                    throw new Error(`BNC Roma server error (HTTP 500): The digital library server is experiencing internal issues. This may be a temporary server-side problem. Please try again in a few minutes, or check the BNC Roma website for service announcements.`);
+                } else if (pageResponse.status === 503) {
+                    throw new Error(`BNC Roma service unavailable (HTTP 503): The digital library is temporarily unavailable, possibly due to maintenance or high traffic. Please try again later.`);
+                } else if (pageResponse.status === 404) {
+                    throw new Error(`BNC Roma manuscript not found (HTTP 404): The requested manuscript may have been moved, removed, or the URL may be incorrect. Please verify the URL and try again.`);
+                } else if (pageResponse.status === 403) {
+                    throw new Error(`BNC Roma access denied (HTTP 403): Access to this manuscript may be restricted. Please check if authentication is required or if the manuscript is publicly available.`);
+                } else if (pageResponse.status >= 500) {
+                    throw new Error(`BNC Roma server error (HTTP ${pageResponse.status}): The digital library server is experiencing technical difficulties. Please try again later or contact BNC Roma support.`);
+                } else {
+                    throw new Error(`Failed to load Rome page: HTTP ${pageResponse.status} - ${pageResponse.statusText}`);
+                }
             }
             
             const html = await pageResponse.text();
@@ -4780,7 +4838,28 @@ export class EnhancedManuscriptDownloaderService {
             
         } catch (error: any) {
             console.error('Error loading Rome National Library manifest:', error);
-            throw new Error(`Failed to load Rome National Library manuscript: ${error.message}`);
+            
+            // Pass through enhanced error messages without modification
+            if (error.message.includes('BNC Roma server infrastructure failure') || 
+                error.message.includes('BNC Roma server error') || 
+                error.message.includes('BNC Roma service unavailable') || 
+                error.message.includes('BNC Roma manuscript not found') || 
+                error.message.includes('BNC Roma access denied') || 
+                error.message.includes('BNC Roma network connection failed')) {
+                throw error;
+            }
+            
+            // For other errors, provide general context
+            if (error.message.includes('Invalid Rome National Library URL format') || 
+                error.message.includes('Inconsistent manuscript ID')) {
+                throw new Error(`BNC Roma URL format error: ${error.message}. Please ensure you're using a valid BNC Roma manuscript URL from digitale.bnc.roma.sbn.it`);
+            }
+            
+            if (error.message.includes('Could not extract page count')) {
+                throw new Error(`BNC Roma page parsing error: ${error.message}. The manuscript page format may have changed or the page content is incomplete.`);
+            }
+            
+            throw new Error(`BNC Roma manuscript loading failed: ${error.message}. Please check the URL and try again, or contact support if the issue persists.`);
         }
     }
 
@@ -5849,17 +5928,31 @@ export class EnhancedManuscriptDownloaderService {
                     '0000313038': 'IT-FR0084_0001',
                     '0000313039': 'IT-FR0084_0002',
                     '0000313048': 'IT-FR0084_0006',
+                    '0000313049': 'IT-FR0084_0015',
                     '0000313053': 'IT-FR0084_0007',
                     '0000313054': 'IT-FR0084_0008',
                     '0000313055': 'IT-FR0084_0009',
                     '0000313056': 'IT-FR0084_0010',
                     '0000313057': 'IT-FR0084_0011',
-                    '0000313058': 'IT-FR0084_0012'
+                    '0000313058': 'IT-FR0084_0012',
+                    '0000396666': 'IT-FR0084_0016',
+                    '0000396667': 'IT-FR0084_0017',
+                    '0000401004': 'IT-FR0084_0018'
                 };
                 
                 if (catalogMappings[catalogId]) {
                     manuscriptId = catalogMappings[catalogId];
                 } else {
+                    // Special handling for catalog 0000313041 which is cataloged but not digitized
+                    if (catalogId === '0000313041') {
+                        throw new Error(
+                            `Monte-Cassino catalog ID 0000313041 exists but is not digitized. ` +
+                            `This manuscript is cataloged in ICCU but not available in the OMNES digital collection. ` +
+                            `Available nearby manuscripts: 0000313047, 0000313048, 0000313049. ` +
+                            `You can also browse all available manuscripts at https://omnes.dbseret.com/montecassino/`
+                        );
+                    }
+                    
                     // Find nearby available alternatives for better user guidance
                     const catalogNum = parseInt(catalogId);
                     const availableIds = Object.keys(catalogMappings);
