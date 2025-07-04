@@ -70,6 +70,11 @@ const LIBRARY_MAPPINGS: Record<string, string> = {
   'czech digital': 'Czech Digital Library',
   'sweden manuscripta': 'Manuscripta.se (Sweden)',
   'bdl': 'Bavarian State Library (Germany)',
+  'bdl servizirl': 'BDL Servizirl (Bavarian State Library)',
+  'servizirl': 'BDL Servizirl (Bavarian State Library)',
+  'bnc roma': 'BNC Roma (National Central Library)',
+  'trinity cambridge': 'Trinity Cambridge (UK)',
+  'manuscripta.se': 'Manuscripta.se (Sweden)',
   'florus': 'FLORUS (Lyon, France)',
   'nypl': 'New York Public Library (USA)',
   'mira': 'MIRA (Germany)',
@@ -79,31 +84,107 @@ const LIBRARY_MAPPINGS: Record<string, string> = {
 
 function extractUserFacingChangesFromVersionCommit(commitMessage: string): string[] {
   // Extract the description after "VERSION-X.X.X: "
-  const versionMatch = commitMessage.match(/^VERSION-[^:]*:\s*(.+)/i);
+  const versionMatch = commitMessage.match(/^VERSION-[^:]*:\s*(.+)/is);
   if (!versionMatch) return [];
   
-  const description = versionMatch[1].trim();
+  const fullDescription = versionMatch[1].trim();
   const changes: string[] = [];
   
-  // Semantic parsing approach: extract meaningful components
-  const semanticData = parseSemanticComponents(description);
+  // Handle multi-line commit messages with bullet points
+  if (fullDescription.includes('•') || fullDescription.includes('CRITICAL FIXES') || fullDescription.includes('LIBRARIES ENHANCED')) {
+    const bulletChanges = extractFromBulletPoints(fullDescription);
+    if (bulletChanges.length > 0) {
+      changes.push(...bulletChanges);
+    }
+  }
   
-  // Convert semantic components to user-facing benefits
-  for (const component of semanticData) {
-    const userBenefit = translateToUserBenefit(component);
-    if (userBenefit && !changes.includes(userBenefit)) {
-      changes.push(userBenefit);
+  // If no bullet points found, use semantic parsing
+  if (changes.length === 0) {
+    const semanticData = parseSemanticComponents(fullDescription);
+    
+    // Convert semantic components to user-facing benefits
+    for (const component of semanticData) {
+      const userBenefit = translateToUserBenefit(component);
+      if (userBenefit && !changes.includes(userBenefit)) {
+        changes.push(userBenefit);
+      }
     }
   }
   
   // If no semantic parsing succeeded, fallback to intelligent pattern matching
   if (changes.length === 0) {
-    const fallbackChanges = extractWithIntelligentPatterns(description);
+    const fallbackChanges = extractWithIntelligentPatterns(fullDescription);
     changes.push(...fallbackChanges);
   }
   
   // Remove duplicates and limit to 3 most important changes
   return [...new Set(changes)].slice(0, 3);
+}
+
+function extractFromBulletPoints(description: string): string[] {
+  const changes: string[] = [];
+  
+  // Extract bullet points with library fixes
+  const bulletRegex = /•\s*(.+?)(?=\n|$)/g;
+  let match;
+  
+  while ((match = bulletRegex.exec(description)) !== null) {
+    const bulletText = match[1].trim();
+    
+    // Convert bullet point to user-facing benefit
+    const userBenefit = convertBulletToUserBenefit(bulletText);
+    if (userBenefit && !changes.includes(userBenefit)) {
+      changes.push(userBenefit);
+    }
+  }
+  
+  return changes.slice(0, 3); // Limit to 3 most important
+}
+
+function convertBulletToUserBenefit(bulletText: string): string | null {
+  const lowerText = bulletText.toLowerCase();
+  
+  // BDL Servizirl hanging fix
+  if (lowerText.includes('bdl servizirl') && lowerText.includes('hanging')) {
+    return 'Fixed BDL Servizirl hanging downloads (now completes in under 1 second)';
+  }
+  
+  // University of Graz timeout fix
+  if (lowerText.includes('university of graz') && lowerText.includes('timeout')) {
+    return 'Fixed University of Graz loading timeouts for large manuscripts';
+  }
+  
+  // e-manuscripta incomplete pages fix
+  if (lowerText.includes('e-manuscripta') && (lowerText.includes('incomplete') || lowerText.includes('page detection'))) {
+    return 'Fixed e-manuscripta.ch complete manuscript downloads (was missing pages)';
+  }
+  
+  // Internet Culturale infinite loop fix
+  if (lowerText.includes('internet culturale') && lowerText.includes('infinite loop')) {
+    return 'Fixed Internet Culturale infinite loop crashes during downloads';
+  }
+  
+  // Trinity Cambridge timeout fix
+  if (lowerText.includes('trinity cambridge') && lowerText.includes('timeout')) {
+    return 'Improved Trinity Cambridge download reliability with proper timeouts';
+  }
+  
+  // Manuscripta.se timeout fix
+  if (lowerText.includes('manuscripta.se') && lowerText.includes('timeout')) {
+    return 'Improved Manuscripta.se download reliability with proper timeouts';
+  }
+  
+  // BNC Roma verification
+  if (lowerText.includes('bnc roma') && lowerText.includes('verified')) {
+    return 'Verified BNC Roma manuscript downloads working correctly';
+  }
+  
+  // Manuscripta.at verification
+  if (lowerText.includes('manuscripta.at') && lowerText.includes('verified')) {
+    return 'Verified Manuscripta.at manuscript downloads working correctly';
+  }
+  
+  return null;
 }
 
 interface SemanticComponent {
