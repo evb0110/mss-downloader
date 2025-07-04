@@ -5339,7 +5339,7 @@ export class EnhancedManuscriptDownloaderService {
             const progressMonitor = createProgressMonitor(
                 'BDL manifest loading',
                 'bdl',
-                { initialTimeout: 45000, maxTimeout: 120000 },
+                { initialTimeout: 30000, maxTimeout: 90000 },
                 {
                     onStuckDetected: (state) => {
                         console.warn(`[BDL] ${state.statusMessage}`);
@@ -5408,7 +5408,13 @@ export class EnhancedManuscriptDownloaderService {
                 
             } catch (fetchError: any) {
                 if (fetchError.name === 'AbortError') {
-                    throw new Error('BDL API request timed out. The server may be experiencing high load.');
+                    throw new Error('BDL API request timed out. The BDL server (bdl.servizirl.it) may be experiencing high load or temporary connectivity issues. Please try again later.');
+                }
+                if (fetchError.message?.includes('fetch failed')) {
+                    throw new Error('BDL server is currently unreachable. The BDL service (bdl.servizirl.it) may be temporarily down. Please check your internet connection and try again later.');
+                }
+                if (fetchError.message?.includes('HTTP 5')) {
+                    throw new Error('BDL server is experiencing internal errors. Please try again in a few minutes.');
                 }
                 throw fetchError;
             } finally {
