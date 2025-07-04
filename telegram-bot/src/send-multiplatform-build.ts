@@ -35,14 +35,14 @@ function getChangelogFromPackageJson(): string {
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
     
     if (packageJson.changelog && Array.isArray(packageJson.changelog) && packageJson.changelog.length > 0) {
-      return `${bold("📝 What's New:")}\\n${packageJson.changelog.map((change: string) => `✅ ${formatText(change)}`).join('\\n')}`;
+      return `${bold("📝 What's New:")}\n${packageJson.changelog.map((change: string) => `✅ ${formatText(change)}`).join('\n')}`;
     }
     
     // Fallback to generic message if no changelog found
-    return `${bold("📝 What's New:")}\\n✅ Library download improvements`;
+    return `${bold("📝 What's New:")}\n✅ Library download improvements`;
   } catch (error) {
     console.error('Error reading changelog from package.json:', error);
-    return `${bold("📝 What's New:")}\\n✅ Library download improvements`;
+    return `${bold("📝 What's New:")}\n✅ Library download improvements`;
   }
 }
 
