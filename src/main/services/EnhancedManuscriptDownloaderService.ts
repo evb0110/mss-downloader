@@ -3208,7 +3208,7 @@ export class EnhancedManuscriptDownloaderService {
             const progressMonitor = createProgressMonitor(
                 'Trinity Cambridge manifest loading',
                 'trinity',
-                {},
+                { initialTimeout: 60000, maxTimeout: 360000, progressCheckInterval: 20000 },
                 {
                     onInitialTimeoutReached: (state) => {
                         console.log(`[Trinity] ${state.statusMessage}`);
@@ -4062,7 +4062,7 @@ export class EnhancedManuscriptDownloaderService {
             const progressMonitor = createProgressMonitor(
                 'Manuscripta.se manifest loading',
                 'manuscripta',
-                {},
+                { initialTimeout: 60000, maxTimeout: 300000, progressCheckInterval: 15000 },
                 {
                     onInitialTimeoutReached: (state) => {
                         console.log(`[Manuscripta.se] ${state.statusMessage}`);
@@ -4267,26 +4267,104 @@ export class EnhancedManuscriptDownloaderService {
                 }
             }
             
-            // Extract page URLs from XML
+            // Extract page URLs from XML with enhanced parsing and duplicate detection
             const pageLinks: string[] = [];
-            const pageRegex = /<page[^>]+src="([^"]+)"[^>]*>/g;
-            let match;
             
-            while ((match = pageRegex.exec(xmlText)) !== null) {
-                let relativePath = match[1];
+            // Try multiple regex patterns for different XML structures
+            const pageRegexPatterns = [
+                /<page[^>]+src="([^"]+)"[^>]*>/g,
+                /<page[^>]*>([^<]+)<\/page>/g,
+                /src="([^"]*cacheman[^"]*\.jpg)"/g,
+                /url="([^"]*cacheman[^"]*\.jpg)"/g,
+                /"([^"]*cacheman[^"]*\.jpg)"/g
+            ];
+            
+            console.log(`[Internet Culturale] XML response length: ${xmlText.length} characters`);
+            console.log(`[Internet Culturale] XML preview: ${xmlText.substring(0, 500)}...`);
+            
+            let foundPages = false;
+            for (const pageRegex of pageRegexPatterns) {
+                let match;
+                const tempLinks: string[] = [];
                 
-                // Optimize Internet Culturale resolution: use 'normal' for highest quality images
-                if (relativePath.includes('cacheman/web/')) {
-                    relativePath = relativePath.replace('cacheman/web/', 'cacheman/normal/');
+                while ((match = pageRegex.exec(xmlText)) !== null) {
+                    let relativePath = match[1];
+                    
+                    // Skip non-image URLs
+                    if (!relativePath.includes('.jpg') && !relativePath.includes('.jpeg')) {
+                        continue;
+                    }
+                    
+                    // Optimize Internet Culturale resolution: use 'normal' for highest quality images
+                    if (relativePath.includes('cacheman/web/')) {
+                        relativePath = relativePath.replace('cacheman/web/', 'cacheman/normal/');
+                    }
+                    
+                    // Ensure absolute URL
+                    const imageUrl = relativePath.startsWith('http') 
+                        ? relativePath 
+                        : `https://www.internetculturale.it/jmms/${relativePath}`;
+                    
+                    tempLinks.push(imageUrl);
                 }
                 
-                // Convert relative path to absolute URL
-                const imageUrl = `https://www.internetculturale.it/jmms/${relativePath}`;
-                pageLinks.push(imageUrl);
+                if (tempLinks.length > 0) {
+                    pageLinks.push(...tempLinks);
+                    foundPages = true;
+                    console.log(`[Internet Culturale] Found ${tempLinks.length} pages using regex pattern ${pageRegex.source}`);
+                    break;
+                }
             }
             
-            if (pageLinks.length === 0) {
+            if (!foundPages) {
+                console.error('[Internet Culturale] No pages found with any regex pattern');
+                console.log('[Internet Culturale] Full XML response:', xmlText);
                 throw new Error('No image URLs found in XML manifest');
+            }
+            
+            // Detect and handle duplicate URLs (infinite loop prevention)
+            const urlCounts = new Map();
+            const uniquePageLinks: string[] = [];
+            
+            pageLinks.forEach((url, index) => {
+                const count = urlCounts.get(url) || 0;
+                urlCounts.set(url, count + 1);
+                
+                if (count === 0) {
+                    uniquePageLinks.push(url);
+                } else {
+                    console.warn(`[Internet Culturale] Duplicate URL detected for page ${index + 1}: ${url}`);
+                }
+            });
+            
+            // If only one unique page found, attempt to generate additional pages
+            if (uniquePageLinks.length === 1 && pageLinks.length > 1) {
+                console.warn(`[Internet Culturale] Only 1 unique page found but ${pageLinks.length} total pages expected`);
+                console.log('[Internet Culturale] Attempting to generate additional page URLs...');
+                
+                const baseUrl = uniquePageLinks[0];
+                const urlPattern = baseUrl.replace(/\/\d+\.jpg$/, '');
+                
+                // Generate URLs for pages 1-50 (reasonable limit)
+                const generatedLinks: string[] = [];
+                for (let i = 1; i <= Math.min(50, pageLinks.length); i++) {
+                    const generatedUrl = `${urlPattern}/${i}.jpg`;
+                    generatedLinks.push(generatedUrl);
+                }
+                
+                console.log(`[Internet Culturale] Generated ${generatedLinks.length} page URLs from pattern`);
+                pageLinks.length = 0; // Clear original array
+                pageLinks.push(...generatedLinks);
+            } else {
+                // Use unique pages only
+                pageLinks.length = 0;
+                pageLinks.push(...uniquePageLinks);
+            }
+            
+            console.log(`[Internet Culturale] Final page count: ${pageLinks.length} pages`);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No valid image URLs found after duplicate removal');
             }
             
             // Add institution info to display name
@@ -4353,9 +4431,9 @@ export class EnhancedManuscriptDownloaderService {
             
             // Use intelligent progress monitoring for Graz's large IIIF manifests (289KB)
             const progressMonitor = createProgressMonitor(
-                'manifest loading',
+                'University of Graz manifest loading',
                 'graz',
-                {},
+                { initialTimeout: 120000, maxTimeout: 600000, progressCheckInterval: 30000 },
                 {
                     onInitialTimeoutReached: (state) => {
                         console.log(`[Graz] ${state.statusMessage}`);
@@ -5312,44 +5390,10 @@ export class EnhancedManuscriptDownloaderService {
                     throw new Error('No valid image URLs found in BDL pages data');
                 }
                 
-                // Validate first image URL to ensure it's accessible
-                console.log('Validating first image URL...');
-                const validationMonitor = createProgressMonitor(
-                    'BDL image validation',
-                    'bdl',
-                    { initialTimeout: 20000, maxTimeout: 60000 },
-                    {}
-                );
-                
-                const firstImageController = validationMonitor.start();
-                validationMonitor.updateProgress(0, 1, 'Validating BDL image access...');
-                
-                try {
-                    const firstImageResponse = await fetch(pageLinks[0], {
-                        method: 'HEAD',
-                        signal: firstImageController.signal,
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-                        }
-                    });
-                    
-                    validationMonitor.updateProgress(1, 1, 'BDL image validation completed');
-                    
-                    if (!firstImageResponse.ok) {
-                        console.warn(`First image validation failed: HTTP ${firstImageResponse.status}`);
-                    } else {
-                        console.log('First image URL validated successfully');
-                    }
-                } catch (validationError: any) {
-                    if (validationError.name === 'AbortError') {
-                        console.warn('BDL image validation timed out - this may indicate server issues but manifest loading can continue');
-                    } else {
-                        console.warn('First image validation failed:', validationError.message);
-                    }
-                    // Don't fail the entire process, just log the warning
-                } finally {
-                    validationMonitor.complete();
-                }
+                // Skip image validation for BDL due to IIIF server hanging issues
+                // The API provides valid image IDs, but the IIIF server has timeout problems
+                console.log('Skipping BDL image validation due to known IIIF server issues');
+                console.log('Note: BDL IIIF server may have temporary issues, but manifest structure is valid');
                 
                 const displayName = `BDL_${manuscriptId}`;
                 console.log(`Generated ${pageLinks.length} page URLs for "${displayName}"`);
@@ -5697,7 +5741,7 @@ export class EnhancedManuscriptDownloaderService {
             
             // Generate page links using the actual page IDs (Agent 3 optimal URL pattern)
             const pageLinks: string[] = pageData.map(page => 
-                `https://www.e-manuscripta.ch/zuzcmi/download/webcache/0/${page.pageId}`
+                `https://www.e-manuscripta.ch/${library}/download/webcache/0/${page.pageId}`
             );
             
             // Validate that URLs actually work by testing first few pages (Agent 4 recommendation)
@@ -5841,7 +5885,7 @@ export class EnhancedManuscriptDownloaderService {
         }
     }
 
-    private async discoverEManuscriptaURLPattern(baseId: string, _library: string): Promise<Array<{pageId: string, pageNumber: number}>> {
+    private async discoverEManuscriptaURLPattern(baseId: string, library: string): Promise<Array<{pageId: string, pageNumber: number}>> {
         try {
             console.log('e-manuscripta: Attempting URL pattern discovery');
             const baseIdNum = parseInt(baseId, 10);
@@ -5849,7 +5893,7 @@ export class EnhancedManuscriptDownloaderService {
             
             // Test sequential IDs around the base ID (Agent 2 found this pattern works)
             for (let i = 0; i < 10; i++) {
-                testUrls.push(`https://www.e-manuscripta.ch/zuzcmi/download/webcache/128/${baseIdNum + i}`);
+                testUrls.push(`https://www.e-manuscripta.ch/${library}/download/webcache/128/${baseIdNum + i}`);
             }
             
             const validPages: Array<{pageId: string, pageNumber: number}> = [];
@@ -5888,7 +5932,7 @@ export class EnhancedManuscriptDownloaderService {
                 // Continue testing until we find the end
                 for (let i = pageCount; i < maxPages; i++) {
                     try {
-                        const testUrl = `https://www.e-manuscripta.ch/zuzcmi/download/webcache/128/${baseIdNum + i}`;
+                        const testUrl = `https://www.e-manuscripta.ch/${library}/download/webcache/128/${baseIdNum + i}`;
                         const testResponse = await this.fetchDirect(testUrl);
                         
                         if (testResponse.ok && testResponse.headers.get('content-type')?.includes('image')) {

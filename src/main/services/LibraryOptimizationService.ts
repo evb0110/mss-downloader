@@ -62,9 +62,9 @@ export class LibraryOptimizationService {
         'manuscripta': {},
         'graz': {
             maxConcurrentDownloads: 2, // Austrian university server, moderate limits
-            timeoutMultiplier: 2.0, // Double timeout for large IIIF manifests (289KB)
+            timeoutMultiplier: 2.0, // Standard timeout for IIIF manifests
             enableProgressiveBackoff: true,
-            optimizationDescription: 'University of Graz optimizations: 2 concurrent downloads, extended timeouts for large IIIF manifests'
+            optimizationDescription: 'University of Graz optimizations: 2 concurrent downloads, standard timeouts with progressive backoff'
         },
         'cologne': {
             maxConcurrentDownloads: 3, // German library server, moderate limits

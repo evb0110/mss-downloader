@@ -132,6 +132,14 @@ export class IntelligentProgressMonitor {
                 optimized.minProgressThreshold = 0.1; // Any progress during stitching
                 break;
             
+            case 'bdl':
+                // BDL has IIIF server issues causing image validation to hang
+                optimized.initialTimeout = 30000; // 30 seconds for API call
+                optimized.progressCheckInterval = 10000; // 10 seconds
+                optimized.maxTimeout = 120000; // 2 minutes max (skip hanging validation)
+                optimized.minProgressThreshold = 1; // Need clear progress
+                break;
+            
             default:
                 // Default conservative settings
                 optimized.initialTimeout = Math.max(30000, config.initialTimeout); // At least 30 seconds
