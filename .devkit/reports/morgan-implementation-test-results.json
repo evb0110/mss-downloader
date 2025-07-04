@@ -1,0 +1,81 @@
+{
+  "thumbsPageAccess": {
+    "success": true,
+    "manuscriptId": "lindau-gospels",
+    "totalPages": 231,
+    "samplePageIds": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10"
+    ],
+    "htmlLength": 110704
+  },
+  "individualPageParsing": {
+    "totalTested": 3,
+    "successful": 3,
+    "successRate": 100,
+    "pageResults": [
+      {
+        "pageId": "1",
+        "pageUrl": "https://www.themorgan.org/collection/lindau-gospels/1",
+        "downloadUrl": "https://www.themorgan.org/sites/default/files/images/collection/download/m1-front-cover.jpg",
+        "downloadFileName": "m1-front-cover.jpg",
+        "success": true
+      },
+      {
+        "pageId": "2",
+        "pageUrl": "https://www.themorgan.org/collection/lindau-gospels/2",
+        "downloadUrl": "https://www.themorgan.org/sites/default/files/images/collection/download/76874v_0487-0001.jpg",
+        "downloadFileName": "76874v_0487-0001.jpg",
+        "success": true
+      },
+      {
+        "pageId": "3",
+        "pageUrl": "https://www.themorgan.org/collection/lindau-gospels/3",
+        "downloadUrl": "https://www.themorgan.org/sites/default/files/images/collection/download/76874v_0002-0003.jpg",
+        "downloadFileName": "76874v_0002-0003.jpg",
+        "success": true
+      }
+    ]
+  },
+  "downloadUrlExtraction": {
+    "totalTested": 2,
+    "successful": 2,
+    "successRate": 100,
+    "averageFileSizeMB": "1.40",
+    "downloadResults": [
+      {
+        "pageId": "1",
+        "downloadUrl": "https://www.themorgan.org/sites/default/files/images/collection/download/m1-front-cover.jpg",
+        "fileName": "m1-front-cover.jpg",
+        "fileSize": 1863990,
+        "fileSizeMB": "1.78",
+        "contentType": "image/jpeg",
+        "success": true
+      },
+      {
+        "pageId": "2",
+        "downloadUrl": "https://www.themorgan.org/sites/default/files/images/collection/download/76874v_0487-0001.jpg",
+        "fileName": "76874v_0487-0001.jpg",
+        "fileSize": 1065623,
+        "fileSizeMB": "1.02",
+        "contentType": "image/jpeg",
+        "success": true
+      }
+    ]
+  },
+  "prioritySystemValidation": {
+    "prioritySystemImplemented": true,
+    "priority1Active": true,
+    "meetsHighResCriteria": true,
+    "averageFileSizeMB": 1.4,
+    "success": true
+  }
+}
