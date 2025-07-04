@@ -1,7 +1,12 @@
 Handle all pending todos from TODOS.md following the complete project workflow.
-Todos may be very stubborn and notoriously difficult, so you can use any resources to complete them: up to 5 parallel agents, ultrahard thinking, web searches, curl requests, gh on this machine, any zsh commands etc. Don't spare tokens, don't try to make fast, top priority is working app and user satisfaction. The worst thing to do is breaking existing functionality (CRUCIAL!!!)
+Todos may be very stubborn and notoriously difficult, so you can use any resources to complete them.
+The todos should be worked on consequently. ONLY AFTER FINISHING A TODO, CAN YOU START THE NEXT ONE!!
+Spawn up to 5 parallel agents for every todo to analyze it thoroughly. 
+Ultrahard thinking, web searches, curl requests, gh on this machine, any zsh commands etc. 
+Don't spare tokens, don't try to do it fast, top priority is working app and user satisfaction. 
+The worst thing to do is breaking existing functionality (CRUCIAL!!!)
 
-**Important consideration** Before starting analyze the whole todos list, since some of them may be related, so you should fix or implement them together
+**Important consideration** Before starting, analyze the whole todos list, since some of them may be related, so you should be aware of the whole context and keep it
 
 **Workflow:**
    take all todos consequently and do the following:

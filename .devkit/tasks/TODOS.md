@@ -2,7 +2,32 @@
 
 ## Pending Tasks
 
-No pending tasks.
+### 🔴 Critical Download Issues - HIGH PRIORITY
+
+1. **BDL Servizirl** - Fix hanging on calculation
+   - URL: https://www.bdl.servizirl.it/bdl/bookreader/index.html?path=fe&cdOggetto=3903#mode/2up
+   - Issue: Process hangs during calculation phase
+
+2. **Manuscripta.at** - Fix incomplete downloads
+   - URL: https://manuscripta.at/diglit/AT5000-963/0001
+   - Issue: Download stops at specific page instead of continuing
+
+3. **BNC Roma** - Fix file verification failure
+   - URL: http://digitale.bnc.roma.sbn.it/tecadigitale/libroantico/BVEE112879/BVEE112879/1
+   - Issue: Output file too small (505325 bytes vs expected 30412800)
+
+4. ~~**Morgan Library** - Fix hanging on calculation~~ ✅ **COMPLETED v1.3.79**
+   - URL: https://www.themorgan.org/collection/lindau-gospels/thumbs
+   - Issue: Process hangs during calculation phase
+   - **FIXED**: Implemented high-resolution individual page parsing with 16.6x quality improvement
+
+5. **University of Graz** - Fix fetch failure
+   - URL: https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538
+   - Issue: Error: Failed to load University of Graz manuscript: fetch failed
+
+6. **Internet Culturale** - Fix hanging and infinite loops
+   - URL: https://www.internetculturale.it/jmms/iccuviewer/iccu.jsp?id=oai%3Ateca.bmlonline.it%3A21%3AXXXX%3APlutei%3AIT%253AFI0100_Plutei_21.29&mode=all&teca=Laurenziana+-+FI
+   - Issue: Hangs on calculation and goes into infinite loops
 
 ## Recent Completed Tasks (v1.3.77)
 
