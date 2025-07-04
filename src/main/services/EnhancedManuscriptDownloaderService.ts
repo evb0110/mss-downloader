@@ -5208,11 +5208,11 @@ export class EnhancedManuscriptDownloaderService {
             const pagesApiUrl = `https://www.bdl.servizirl.it/bdl/${servicePath}/rest/json/item/${manuscriptId}/bookreader/pages`;
             console.log(`Fetching pages from: ${pagesApiUrl}`);
             
-            // Use intelligent progress monitoring for BDL API call
+            // Use intelligent progress monitoring for BDL API call with enhanced timeouts
             const progressMonitor = createProgressMonitor(
                 'BDL manifest loading',
                 'bdl',
-                { initialTimeout: 30000, maxTimeout: 120000 },
+                { initialTimeout: 45000, maxTimeout: 120000 },
                 {
                     onStuckDetected: (state) => {
                         console.warn(`[BDL] ${state.statusMessage}`);
@@ -5268,7 +5268,7 @@ export class EnhancedManuscriptDownloaderService {
                 const validationMonitor = createProgressMonitor(
                     'BDL image validation',
                     'bdl',
-                    { initialTimeout: 10000, maxTimeout: 30000 },
+                    { initialTimeout: 20000, maxTimeout: 60000 },
                     {}
                 );
                 

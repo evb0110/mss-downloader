@@ -57,25 +57,41 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 
 **Process:** After validation protocol completion:
 1. WAIT for mandatory user validation of PDF files
-2. Only after user approves validation: Bump patch version in package.json
-3. Commit all changes with descriptive message  
-4. Push to GitHub main (triggers auto-build & notifications)
+2. **CRITICAL: NEVER BUMP VERSION WITHOUT EXPLICIT USER APPROVAL**
+3. Only after user explicitly approves validation: Bump patch version in package.json
+4. Commit all changes with descriptive message  
+5. Push to GitHub main (triggers auto-build & notifications)
 
-**APPROVAL KEYWORD SYSTEM:**
-- If user prompt contains "approval" keyword → ALWAYS ask for approval before version bump
-- If user prompt lacks "approval" keyword → Automatic version bump (no user approval needed)
+**MANDATORY USER APPROVAL SYSTEM:**
+- **ALWAYS REQUIRED:** User must explicitly approve before ANY version bump
+- **NO AUTOMATIC BUMPS:** Never bump version automatically, regardless of keywords
+- **EXPLICIT APPROVAL ONLY:** User must say "approved", "proceed", "bump version", or similar explicit confirmation
+- **WAIT FOR CONFIRMATION:** Always present validation results and wait for user response before proceeding
 
 ### 2. Library Validation Protocol  
 When adding/fixing libraries, **MANDATORY validation:**
 1. **MANDATORY MAXIMUM RESOLUTION TESTING:** Test multiple IIIF parameters (full/full, full/max, full/2000, full/4000, etc.) to find the largest possible image resolution. Compare file sizes, dimensions, and quality. This is ABSOLUTELY CRITICAL - users must get the highest quality available.
 2. Download up to 10 different manuscript pages from manifest URLs (or all available if fewer) using the HIGHEST RESOLUTION found
-3. Verify each contains real manuscript/book content (not "Preview non disponibile")
+3. Verify each contains real manuscript/book content (not "Preview non disponibile" or likewise placeholders)
 4. Confirm all pages show different manuscript content (not stuck on page 1)
 5. If validation fails, apply all skills to fix; if unfixable, implement other tasks and report to user
 6. Merge to PDF and test validity with poppler
 7. Library validation must pass (100% success rate)
-8. **MANDATORY validation by user!!!:** Put all the pdf files with clear names in one folder and open it in finder for user to inspect
-9. **WAIT FOR USER APPROVAL:** Do not proceed with version bump until user confirms validation passed
+8. **MANDATORY PDF CONTENT INSPECTION BY CLAUDE:** Before presenting any PDFs to user, Claude MUST personally inspect every PDF using pdfimages + Read tools to verify:
+   - Correct manuscript content (not wrong manuscripts or error pages)
+   - Multiple pages when expected (not single page when multi-page required)
+   - **DIFFERENT PAGES:** Each page must show DIFFERENT manuscript content - NEVER duplicate the same page multiple times
+   - **CONTENT COMPARISON:** Extract and visually compare multiple pages to ensure they are genuinely different manuscripts pages
+   - High resolution images (verify actual pixel dimensions using pdfimages -list)
+   - No "Preview non disponibile" or authentication errors
+   - Real manuscript content matching the expected library/collection
+   - Claude should give rating to the result, which should be one of ["failed", "something not ok", "ok"]
+   - If it is "failed", claude should iterate the same fixing process until as many times as needed
+   - If it is "something not ok", it should iterate 3 more times to try and make it "ok"
+   - **NEVER CREATE FAKE MULTI-PAGE PDFs:** Do not duplicate single pages to create artificial multi-page PDFs
+   - Only after proper validation for every file, claude can present them to the user
+9. **MANDATORY validation by user!!!:** Put all the pdf files with clear names in one folder and open it in finder for user to inspect. All pdfs for current inspection should be in one folder and there should be nothing else in that folder, all the old validation folders shold be deleted. Files shoulde be put BEFORE you ask user for validation
+10. **WAIT FOR USER APPROVAL:** Do not proceed with version bump until user confirms validation passed
 
 ### 3. Testing Requirements
 - Write comprehensive test suite for every bug fix
