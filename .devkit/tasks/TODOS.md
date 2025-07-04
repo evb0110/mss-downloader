@@ -29,9 +29,14 @@
    - URL: https://www.internetculturale.it/jmms/iccuviewer/iccu.jsp?id=oai%3Ateca.bmlonline.it%3A21%3AXXXX%3APlutei%3AIT%253AFI0100_Plutei_21.29&mode=all&teca=Laurenziana+-+FI
    - Issue: Hangs on calculation and goes into infinite loops
 
+7. **e-manuscripta.ch** - Fix incomplete page detection
+   - URL: https://www.e-manuscripta.ch/bau/content/zoom/5157616
+   - Issue: Only downloads first 11 pages, doesn't detect remaining pages
+   - Type: Pagination bug - incomplete manuscript download
+
 ### 🆕 New Library Implementation - MEDIUM PRIORITY
 
-7. **DIAMM (Digital Image Archive of Medieval Music)** - Add new library support
+8. **DIAMM (Digital Image Archive of Medieval Music)** - Add new library support
    - URLs: 
      - https://musmed.eu/visualiseur-iiif?manifest=https%3A%2F%2Fiiif.diamm.net%2Fmanifests%2FI-Rc-Ms-1907%2Fmanifest.json
      - https://musmed.eu/visualiseur-iiif?manifest=https%3A%2F%2Fiiif.diamm.net%2Fmanifests%2FI-Ra-Ms1383%2Fmanifest.json
