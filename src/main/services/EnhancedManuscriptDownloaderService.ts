@@ -6288,53 +6288,6 @@ export class EnhancedManuscriptDownloaderService {
         return validThumbviewUrls;
     }
 
-    /**
-     * Extract thumbview URLs from titleinfo page HTML (LEGACY method - use extractAllThumbviewBlocksFromStructure for better coverage)
-     */
-    private async extractThumbviewUrls(html: string, library: string): Promise<string[]> {
-        const thumbviewUrls: string[] = [];
-        
-        // Pattern 1: Look for direct thumbview links
-        const thumbviewPattern = /href="([^"]*\/content\/thumbview\/\d+)"/g;
-        let match;
-        while ((match = thumbviewPattern.exec(html)) !== null) {
-            let url = match[1];
-            if (url.startsWith('/')) {
-                url = `https://www.e-manuscripta.ch${url}`;
-            } else if (!url.startsWith('http')) {
-                url = `https://www.e-manuscripta.ch/${url}`;
-            }
-            thumbviewUrls.push(url);
-        }
-        
-        // Pattern 2: Look for thumbview IDs in data attributes or JavaScript
-        const thumbviewIdPattern = /(?:thumbview|blockId)['":\s]*(\d+)/g;
-        const foundIds: string[] = [];
-        while ((match = thumbviewIdPattern.exec(html)) !== null) {
-            foundIds.push(match[1]);
-        }
-        
-        // Convert IDs to full URLs
-        for (const id of foundIds) {
-            const url = `https://www.e-manuscripta.ch/${library}/content/thumbview/${id}`;
-            if (!thumbviewUrls.includes(url)) {
-                thumbviewUrls.push(url);
-            }
-        }
-        
-        // Pattern 3: Look for any links containing numbers that might be block IDs
-        const blockLinkPattern = /href="[^"]*\/(\d+)"[^>]*>.*?\[(\d+)-(\d+)\]/g;
-        while ((match = blockLinkPattern.exec(html)) !== null) {
-            const blockId = match[1];
-            const url = `https://www.e-manuscripta.ch/${library}/content/thumbview/${blockId}`;
-            if (!thumbviewUrls.includes(url)) {
-                thumbviewUrls.push(url);
-            }
-        }
-        
-        console.log(`e-manuscripta: Extracted ${thumbviewUrls.length} thumbview URLs`);
-        return [...new Set(thumbviewUrls)]; // Remove duplicates
-    }
 
     /**
      * Load Monte-Cassino manifest from OMNES platform
@@ -7371,15 +7324,5 @@ export class EnhancedManuscriptDownloaderService {
         }
     }
 
-    /**
-     * Helper method to fetch page content
-     */
-    private async fetchPageContent(url: string): Promise<string> {
-        const response = await this.fetchDirect(url);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch page: ${response.status} ${response.statusText}`);
-        }
-        return response.text();
-    }
 
 }
