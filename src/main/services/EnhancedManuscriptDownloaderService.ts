@@ -37,6 +37,16 @@ export class EnhancedManuscriptDownloaderService {
             description: 'Staatsbibliothek zu Berlin digital manuscript collections via IIIF',
         },
         {
+            name: 'Belgica KBR (Royal Library of Belgium)',
+            example: 'https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994415',
+            description: 'Royal Library of Belgium digital manuscript and historical document collection',
+        },
+        {
+            name: 'BNE (Biblioteca Nacional de España)',
+            example: 'https://bdh-rd.bne.es/viewer.vm?id=0000007619&page=1',
+            description: 'Spanish National Library digital manuscript and historical document collection',
+        },
+        {
             name: 'British Library',
             example: 'https://bl.digirati.io/iiif/ark:/81055/vdc_100055984026.0x000001',
             description: 'British Library digital manuscript collections via IIIF',
@@ -216,6 +226,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://musmed.eu/visualiseur-iiif?manifest=https%3A%2F%2Fiiif.diamm.net%2Fmanifests%2FI-Rc-Ms-1907%2Fmanifest.json',
             description: 'Digital Image Archive of Medieval Music manuscripts (800-1650 AD) via IIIF',
         },
+        {
+            name: 'MDC Catalonia (Memòria Digital de Catalunya)',
+            example: 'https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1',
+            description: 'Catalan digital manuscript collection with historical incunables via IIIF',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -366,6 +381,9 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('dam.iccu.sbn.it') || url.includes('jmms.iccu.sbn.it')) return 'vallicelliana';
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) return 'verona';
         if (url.includes('diamm.ac.uk') || url.includes('iiif.diamm.net') || url.includes('musmed.eu/visualiseur-iiif')) return 'diamm';
+        if (url.includes('bdh-rd.bne.es')) return 'bne';
+        if (url.includes('belgica.kbr.be/BELGICA/doc/SYRACUSE')) return 'belgica_kbr';
+        if (url.includes('mdc.csuc.cat/digital/collection')) return 'mdc_catalonia';
         
         return null;
     }
@@ -556,9 +574,10 @@ export class EnhancedManuscriptDownloaderService {
                 headers
             };
             
-            if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
-                // Add Node.js specific options for SSL bypass on Verona domains
-                // These domains have valid certificates but hostname mismatch issues
+            if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') || url.includes('bdh-rd.bne.es')) {
+                // Add Node.js specific options for SSL bypass on domains with certificate issues
+                // Verona domains have valid certificates but hostname mismatch issues
+                // BNE domain requires SSL bypass for image endpoint access
                 if (typeof process !== 'undefined' && process.versions?.node) {
                     const { Agent } = await import('https');
                     fetchOptions.agent = new Agent({
@@ -708,6 +727,15 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'diamm':
                     manifest = await this.loadDiammManifest(originalUrl);
+                    break;
+                case 'bne':
+                    manifest = await this.loadBneManifest(originalUrl);
+                    break;
+                case 'belgica_kbr':
+                    manifest = await this.loadBelgicaKbrManifest(originalUrl);
+                    break;
+                case 'mdc_catalonia':
+                    manifest = await this.loadMdcCataloniaManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -6385,6 +6413,277 @@ export class EnhancedManuscriptDownloaderService {
         } catch (error: any) {
             throw new Error(`Failed to load DIAMM manuscript: ${(error as Error).message}`);
         }
+    }
+
+    /**
+     * Load BNE (Biblioteca Nacional de España) manifest
+     */
+    async loadBneManifest(originalUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // Extract manuscript ID from URL using regex
+            const idMatch = originalUrl.match(/[?&]id=(\d+)/);
+            if (!idMatch) {
+                throw new Error('Could not extract manuscript ID from BNE URL');
+            }
+            
+            const manuscriptId = idMatch[1];
+            console.log(`Extracting BNE manuscript ID: ${manuscriptId}`);
+            
+            // Discover pages by testing sequential page numbers
+            const pageLinks: string[] = [];
+            let consecutiveFailures = 0;
+            
+            console.log('Discovering BNE manuscript pages...');
+            
+            for (let page = 1; page <= 200; page++) {
+                const testUrl = `https://bdh-rd.bne.es/pdf.raw?query=id:${manuscriptId}&page=${page}&jpeg=true`;
+                
+                try {
+                    const response = await this.fetchDirect(testUrl, { method: 'HEAD' });
+                    
+                    if (response.ok && response.headers.get('content-type')?.includes('image')) {
+                        pageLinks.push(testUrl);
+                        consecutiveFailures = 0;
+                        console.log(`Found BNE page ${page}`);
+                    } else {
+                        consecutiveFailures++;
+                        if (consecutiveFailures >= 5) {
+                            console.log(`Stopping page discovery after ${consecutiveFailures} consecutive failures`);
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    consecutiveFailures++;
+                    if (consecutiveFailures >= 5) {
+                        console.log(`Stopping page discovery after ${consecutiveFailures} consecutive failures`);
+                        break;
+                    }
+                }
+                
+                // Small delay to avoid overwhelming the server
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No pages found for this BNE manuscript');
+            }
+            
+            console.log(`BNE manuscript discovery completed: ${pageLinks.length} pages found`);
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'bne',
+                displayName: `BNE Manuscript ${manuscriptId}`,
+                originalUrl: originalUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load BNE manuscript: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Load Belgica KBR (Royal Library of Belgium) manifest
+     */
+    async loadBelgicaKbrManifest(originalUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // Extract document ID from URL
+            const documentIdMatch = originalUrl.match(/\/BELGICA\/doc\/SYRACUSE\/(\d+)/);
+            if (!documentIdMatch) {
+                throw new Error('Could not extract document ID from Belgica URL');
+            }
+            
+            const documentId = documentIdMatch[1];
+            console.log(`Extracting Belgica KBR document ID: ${documentId}`);
+            
+            // Step 1: Fetch document page and extract UURL
+            console.log('Fetching document page to extract UURL...');
+            const documentPageHtml = await this.fetchPageContent(originalUrl);
+            const uurlMatch = documentPageHtml.match(/https:\/\/uurl\.kbr\.be\/(\d+)/);
+            
+            if (!uurlMatch) {
+                throw new Error('Could not find UURL in document page');
+            }
+            
+            const uurlId = uurlMatch[1];
+            console.log(`Found UURL ID: ${uurlId}`);
+            
+            // Step 2: Fetch UURL and extract map parameter
+            console.log('Fetching UURL to extract map parameter...');
+            const uurlUrl = `https://uurl.kbr.be/${uurlId}`;
+            const uurlPageHtml = await this.fetchPageContent(uurlUrl);
+            const mapMatch = uurlPageHtml.match(/map=([^"'&]+)/);
+            
+            if (!mapMatch) {
+                throw new Error('Could not find map parameter in UURL page');
+            }
+            
+            const mapPath = mapMatch[1];
+            console.log(`Found map path: ${mapPath}`);
+            
+            // Step 3: List images from directory
+            console.log('Listing images from directory...');
+            const directoryUrl = `https://viewerd.kbr.be/display/${mapPath}`;
+            const directoryHtml = await this.fetchPageContent(directoryUrl);
+            
+            // Extract image filenames using regex
+            const imageRegex = /BE-KBR00_[^"]*\.jpg/g;
+            const imageMatches = directoryHtml.match(imageRegex) || [];
+            
+            if (imageMatches.length === 0) {
+                throw new Error('No images found in directory listing');
+            }
+            
+            // Remove duplicates and sort
+            const uniqueImages = Array.from(new Set(imageMatches)).sort();
+            
+            // Build direct image URLs
+            const pageLinks = uniqueImages.map(filename => 
+                `https://viewerd.kbr.be/display/${mapPath}${filename}`
+            );
+            
+            console.log(`Belgica KBR manuscript discovery completed: ${pageLinks.length} images found`);
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'belgica_kbr',
+                displayName: `Belgica KBR Document ${documentId}`,
+                originalUrl: originalUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load Belgica KBR manuscript: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Load MDC Catalonia (Memòria Digital de Catalunya) manifest
+     */
+    async loadMdcCataloniaManifest(originalUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // Extract collection and item ID from URL
+            const urlMatch = originalUrl.match(/mdc\.csuc\.cat\/digital\/collection\/([^\/]+)\/id\/(\d+)(?:\/rec\/(\d+))?/);
+            if (!urlMatch) {
+                throw new Error('Could not extract collection and item ID from MDC Catalonia URL');
+            }
+            
+            const collection = urlMatch[1];
+            const itemId = urlMatch[2];
+            console.log(`Extracting MDC Catalonia: collection=${collection}, itemId=${itemId}`);
+            
+            // Step 1: Get compound object structure using CONTENTdm API
+            const compoundUrl = `https://mdc.csuc.cat/digital/bl/dmwebservices/index.php?q=dmGetCompoundObjectInfo/${collection}/${itemId}/json`;
+            console.log('Fetching compound object structure...');
+            
+            const compoundResponse = await this.fetchDirect(compoundUrl);
+            if (!compoundResponse.ok) {
+                throw new Error(`Failed to fetch compound object info: ${compoundResponse.status}`);
+            }
+            
+            const compoundData = await compoundResponse.json();
+            
+            // Check if this is a compound object with multiple pages
+            // Handle both direct page array and nested node.page structure
+            let pageArray = compoundData.page;
+            if (!pageArray && compoundData.node && compoundData.node.page) {
+                pageArray = compoundData.node.page;
+            }
+            
+            if (!pageArray || !Array.isArray(pageArray)) {
+                console.log('Not a compound object, treating as single page document');
+                
+                // Try to get IIIF info for single page
+                const iiifInfoUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${itemId}/info.json`;
+                const infoResponse = await this.fetchDirect(iiifInfoUrl);
+                if (!infoResponse.ok) {
+                    throw new Error(`Failed to fetch IIIF info for single page: ${infoResponse.status}`);
+                }
+                
+                const iiifInfo = await infoResponse.json();
+                const singleImageUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${itemId}/full/max/0/default.jpg`;
+                
+                console.log(`Single page manuscript: ${iiifInfo.width}x${iiifInfo.height} pixels`);
+                
+                return {
+                    pageLinks: [singleImageUrl],
+                    totalPages: 1,
+                    library: 'mdc_catalonia',
+                    displayName: `MDC Catalonia ${collection} ${itemId}`,
+                    originalUrl: originalUrl,
+                };
+            }
+            
+            // Step 2: Process compound object pages
+            console.log(`Found compound object with ${pageArray.length} pages`);
+            const pageLinks: string[] = [];
+            let validPages = 0;
+            
+            for (const page of pageArray) {
+                if (!page.pageptr) {
+                    console.log(`Skipping page without pageptr: ${JSON.stringify(page)}`);
+                    continue;
+                }
+                
+                const pageId = page.pageptr;
+                const iiifInfoUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${pageId}/info.json`;
+                
+                try {
+                    // Verify IIIF endpoint works
+                    const iiifResponse = await this.fetchDirect(iiifInfoUrl);
+                    if (!iiifResponse.ok) {
+                        console.warn(`IIIF endpoint failed for page ${pageId}: ${iiifResponse.status}`);
+                        continue;
+                    }
+                    
+                    const iiifData = await iiifResponse.json();
+                    
+                    // Use maximum resolution for best quality
+                    const imageUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${pageId}/full/max/0/default.jpg`;
+                    pageLinks.push(imageUrl);
+                    validPages++;
+                    
+                    const pageTitle = page.pagetitle || `Page ${validPages}`;
+                    console.log(`Found page ${validPages}: ${pageTitle} (${pageId}) - ${iiifData.width}x${iiifData.height}px`);
+                    
+                } catch (error) {
+                    console.warn(`Error processing page ${pageId}: ${(error as Error).message}`);
+                    continue;
+                }
+                
+                // Small delay to avoid overwhelming the server
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No valid pages found in this MDC Catalonia manuscript');
+            }
+            
+            console.log(`MDC Catalonia manuscript discovery completed: ${pageLinks.length} pages found`);
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'mdc_catalonia',
+                displayName: `MDC Catalonia ${collection} ${itemId}`,
+                originalUrl: originalUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load MDC Catalonia manuscript: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Helper method to fetch page content
+     */
+    private async fetchPageContent(url: string): Promise<string> {
+        const response = await this.fetchDirect(url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch page: ${response.status} ${response.statusText}`);
+        }
+        return response.text();
     }
 
 }

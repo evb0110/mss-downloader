@@ -134,6 +134,21 @@ export class LibraryOptimizationService {
             timeoutMultiplier: 1.5, // Extended timeout for large medieval music manuscript images
             optimizationDescription: 'DIAMM optimizations: 3 concurrent downloads, extended timeouts for high-resolution medieval music manuscripts'
         },
+        'bne': {
+            maxConcurrentDownloads: 3, // BNE Spanish National Library with good performance
+            timeoutMultiplier: 1.5, // Extended timeout for page discovery and image downloads
+            optimizationDescription: 'BNE optimizations: 3 concurrent downloads, extended timeouts for page discovery'
+        },
+        'belgica_kbr': {
+            maxConcurrentDownloads: 3, // Belgica KBR with good performance
+            timeoutMultiplier: 2.0, // Extended timeout for multi-step URL resolution and directory listing
+            optimizationDescription: 'Belgica KBR optimizations: 3 concurrent downloads, extended timeouts for URL resolution and directory listing'
+        },
+        'mdc_catalonia': {
+            maxConcurrentDownloads: 4, // MDC Catalonia IIIF service with excellent performance
+            timeoutMultiplier: 1.2, // Slightly extended timeout for IIIF API calls
+            optimizationDescription: 'MDC Catalonia optimizations: 4 concurrent downloads, IIIF-based access with excellent performance'
+        },
         'loading': {}
     };
 
