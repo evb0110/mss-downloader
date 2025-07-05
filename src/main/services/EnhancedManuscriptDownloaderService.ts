@@ -211,6 +211,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=15',
             description: 'Nuova Biblioteca Manoscritta (Verona) manuscripts via IIIF',
         },
+        {
+            name: 'DIAMM (Digital Image Archive of Medieval Music)',
+            example: 'https://musmed.eu/visualiseur-iiif?manifest=https%3A%2F%2Fiiif.diamm.net%2Fmanifests%2FI-Rc-Ms-1907%2Fmanifest.json',
+            description: 'Digital Image Archive of Medieval Music manuscripts (800-1650 AD) via IIIF',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -360,6 +365,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('manus.iccu.sbn.it') || url.includes('omnes.dbseret.com/montecassino')) return 'monte_cassino';
         if (url.includes('dam.iccu.sbn.it') || url.includes('jmms.iccu.sbn.it')) return 'vallicelliana';
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) return 'verona';
+        if (url.includes('diamm.ac.uk') || url.includes('iiif.diamm.net') || url.includes('musmed.eu/visualiseur-iiif')) return 'diamm';
         
         return null;
     }
@@ -699,6 +705,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'verona':
                     manifest = await this.loadVeronaManifest(originalUrl);
+                    break;
+                case 'diamm':
+                    manifest = await this.loadDiammManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -6334,6 +6343,47 @@ export class EnhancedManuscriptDownloaderService {
             
         } catch (error: any) {
             throw new Error(`Failed to load Verona manuscript: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Load DIAMM (Digital Image Archive of Medieval Music) manifest
+     */
+    async loadDiammManifest(originalUrl: string): Promise<ManuscriptManifest> {
+        try {
+            let manifestUrl: string;
+            
+            // Handle both musmed.eu viewer URLs and direct manifest URLs
+            if (originalUrl.includes('musmed.eu/visualiseur-iiif')) {
+                // Extract manifest URL from musmed.eu viewer parameters
+                const urlParams = new URLSearchParams(originalUrl.split('?')[1]);
+                const encodedManifest = urlParams.get('manifest');
+                if (!encodedManifest) {
+                    throw new Error('No manifest parameter found in DIAMM viewer URL');
+                }
+                manifestUrl = decodeURIComponent(encodedManifest);
+            } else if (originalUrl.includes('iiif.diamm.net/manifests/')) {
+                // Direct manifest URL
+                manifestUrl = originalUrl;
+            } else {
+                throw new Error('Unsupported DIAMM URL format');
+            }
+            
+            // Validate manifest URL format
+            if (!manifestUrl.includes('iiif.diamm.net/manifests/')) {
+                throw new Error('Invalid DIAMM manifest URL format');
+            }
+            
+            // Load the IIIF manifest using existing infrastructure
+            const manifest = await this.loadIIIFManifest(manifestUrl);
+            
+            // Override library type to ensure correct identification
+            manifest.library = 'diamm';
+            
+            return manifest;
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load DIAMM manuscript: ${(error as Error).message}`);
         }
     }
 

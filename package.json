@@ -1,9 +1,9 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.3.84",
+  "version": "1.3.85",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Fixed critical download issues across 6 libraries: enhanced error handling for BDL Servizirl, page range detection for Manuscripta.at, maximum resolution for BNC Roma, infinite loop prevention for Internet Culturale, multi-method page detection for e-manuscripta.ch, and verified University of Graz functionality"
+    "Added DIAMM (Digital Image Archive of Medieval Music) manuscript downloads - access to medieval music manuscripts from 800-1650 AD with high-resolution musical notation via IIIF protocol"
   ],
   "main": "dist/main/main.js",
   "type": "module",

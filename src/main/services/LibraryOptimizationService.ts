@@ -129,6 +129,11 @@ export class LibraryOptimizationService {
             timeoutMultiplier: 1.2, // Slightly increased timeout for webcache system
             optimizationDescription: 'e-manuscripta.ch optimizations: 3 concurrent downloads, webcache-based access'
         },
+        'diamm': {
+            maxConcurrentDownloads: 3, // DIAMM IIIF service with good performance
+            timeoutMultiplier: 1.5, // Extended timeout for large medieval music manuscript images
+            optimizationDescription: 'DIAMM optimizations: 3 concurrent downloads, extended timeouts for high-resolution medieval music manuscripts'
+        },
         'loading': {}
     };
 
