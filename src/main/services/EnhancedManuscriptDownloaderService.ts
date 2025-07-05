@@ -231,6 +231,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1',
             description: 'Catalan digital manuscript collection with historical incunables via IIIF',
         },
+        {
+            name: 'BVPB (Biblioteca Virtual del Patrimonio Bibliográfico)',
+            example: 'https://bvpb.mcu.es/es/catalogo_imagenes/grupo.do?path=11000651',
+            description: 'Spanish virtual library of bibliographic heritage manuscripts and historical documents',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -384,6 +389,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('bdh-rd.bne.es')) return 'bne';
         if (url.includes('belgica.kbr.be/BELGICA/doc/SYRACUSE')) return 'belgica_kbr';
         if (url.includes('mdc.csuc.cat/digital/collection')) return 'mdc_catalonia';
+        if (url.includes('bvpb.mcu.es')) return 'bvpb';
         
         return null;
     }
@@ -736,6 +742,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'mdc_catalonia':
                     manifest = await this.loadMdcCataloniaManifest(originalUrl);
+                    break;
+                case 'bvpb':
+                    manifest = await this.loadBvpbManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -1927,9 +1936,31 @@ export class EnhancedManuscriptDownloaderService {
             
             let response: Response;
             try {
-                response = needsProxyFallback
-                    ? await this.fetchWithProxyFallback(url)
-                    : await this.fetchDirect(url, {}, attempt + 1); // Pass attempt number for timeout calculation
+                // Special handling for MDC Catalonia with network fallback and resolution fallback
+                if (url.includes('mdc.csuc.cat')) {
+                    try {
+                        response = await this.fetchWithFallback(url, {});
+                        // If ,2000 resolution fails, try max resolution fallback
+                        if (!response.ok && url.includes('/full/,2000/')) {
+                            console.log(`MDC Catalonia: ,2000 resolution failed (${response.status}), trying max resolution fallback`);
+                            const fallbackUrl = url.replace('/full/,2000/', '/full/max/');
+                            response = await this.fetchWithFallback(fallbackUrl, {});
+                        }
+                    } catch (mdcError: any) {
+                        // If both resolutions fail, fall back to max resolution
+                        if (url.includes('/full/,2000/')) {
+                            console.log(`MDC Catalonia: ,2000 resolution failed (${mdcError.message}), trying max resolution fallback`);
+                            const fallbackUrl = url.replace('/full/,2000/', '/full/max/');
+                            response = await this.fetchWithFallback(fallbackUrl, {});
+                        } else {
+                            throw mdcError;
+                        }
+                    }
+                } else {
+                    response = needsProxyFallback
+                        ? await this.fetchWithProxyFallback(url)
+                        : await this.fetchDirect(url, {}, attempt + 1); // Pass attempt number for timeout calculation
+                }
             } catch (fetchError: any) {
                 // Enhanced error handling for BNC Roma infrastructure failures
                 if (url.includes('digitale.bnc.roma.sbn.it')) {
@@ -5721,16 +5752,31 @@ export class EnhancedManuscriptDownloaderService {
             console.log(`Loading e-manuscripta.ch manifest from: ${manuscriptaUrl}`);
             
             // Extract manuscript ID and library from URL
-            // URL format: https://www.e-manuscripta.ch/{library}/content/zoom/{id}
-            const urlPattern = /e-manuscripta\.ch\/([^/]+)\/content\/zoom\/(\d+)/;
+            // URL formats: 
+            // - https://www.e-manuscripta.ch/{library}/content/zoom/{id} (single page view)
+            // - https://www.e-manuscripta.ch/{library}/content/titleinfo/{id} (manuscript info page)
+            // - https://www.e-manuscripta.ch/{library}/content/thumbview/{id} (thumbnail view/block)
+            const urlPattern = /e-manuscripta\.ch\/([^/]+)\/content\/(zoom|titleinfo|thumbview)\/(\d+)/;
             const urlMatch = manuscriptaUrl.match(urlPattern);
             
             if (!urlMatch) {
-                throw new Error('Invalid e-manuscripta.ch URL format. Expected: https://www.e-manuscripta.ch/{library}/content/zoom/{id}');
+                throw new Error('Invalid e-manuscripta.ch URL format. Expected: https://www.e-manuscripta.ch/{library}/content/{zoom|titleinfo|thumbview}/{id}');
             }
             
-            const [, library, manuscriptId] = urlMatch;
+            const [, library, urlType, manuscriptId] = urlMatch;
             
+            console.log(`e-manuscripta: Detected URL type: ${urlType}, library: ${library}, ID: ${manuscriptId}`);
+            
+            // Handle different URL types
+            if (urlType === 'titleinfo') {
+                // For titleinfo URLs, extract all related thumbview blocks and aggregate them
+                return await this.handleEManuscriptaTitleInfo(manuscriptaUrl, library, manuscriptId);
+            } else if (urlType === 'thumbview') {
+                // For thumbview URLs, process as individual blocks
+                return await this.handleEManuscriptaThumbView(manuscriptaUrl, library, manuscriptId);
+            }
+            
+            // Continue with existing zoom URL handling
             // Fetch the viewer page to extract metadata and determine page count
             const viewerResponse = await this.fetchDirect(manuscriptaUrl);
             if (!viewerResponse.ok) {
@@ -6034,6 +6080,260 @@ export class EnhancedManuscriptDownloaderService {
             console.error(`e-manuscripta: URL validation failed: ${(error as Error).message}`);
             throw error;
         }
+    }
+
+    /**
+     * Handle E-Manuscripta titleinfo URLs by extracting all related thumbview blocks
+     */
+    private async handleEManuscriptaTitleInfo(titleinfoUrl: string, library: string, manuscriptId: string): Promise<ManuscriptManifest> {
+        try {
+            console.log(`e-manuscripta: Processing titleinfo URL for multi-block manuscript`);
+            
+            // Fetch the titleinfo page for title extraction
+            const titleinfoResponse = await this.fetchDirect(titleinfoUrl);
+            if (!titleinfoResponse.ok) {
+                throw new Error(`Failed to fetch titleinfo page: HTTP ${titleinfoResponse.status}`);
+            }
+            
+            const titleinfoHtml = await titleinfoResponse.text();
+            
+            // Extract title/manuscript name from the titleinfo page
+            let displayName = `e-manuscripta ${manuscriptId}`;
+            const titleMatch = titleinfoHtml.match(/<title[^>]*>([^<]+)<\/title>/i);
+            if (titleMatch && titleMatch[1] && !titleMatch[1].includes('e-manuscripta.ch')) {
+                displayName = titleMatch[1].trim();
+            }
+            
+            // ENHANCED: Fetch structure page to find ALL manuscript blocks
+            console.log(`e-manuscripta: Fetching structure page to discover all manuscript blocks`);
+            const structureUrl = `https://www.e-manuscripta.ch/${library}/content/structure/${manuscriptId}`;
+            const structureResponse = await this.fetchDirect(structureUrl);
+            if (!structureResponse.ok) {
+                throw new Error(`Failed to fetch structure page: HTTP ${structureResponse.status}`);
+            }
+            
+            const structureHtml = await structureResponse.text();
+            
+            // Extract all thumbview block URLs from the structure page (enhanced method)
+            const thumbviewUrls = await this.extractAllThumbviewBlocksFromStructure(structureHtml, library);
+            
+            if (thumbviewUrls.length === 0) {
+                throw new Error('No thumbview blocks found in structure page');
+            }
+            
+            console.log(`e-manuscripta: Found ${thumbviewUrls.length} thumbview blocks in structure page`);
+            
+            // Process each thumbview block and aggregate all pages
+            const allPageLinks: string[] = [];
+            let totalPagesCount = 0;
+            
+            for (let i = 0; i < thumbviewUrls.length; i++) {
+                const thumbviewUrl = thumbviewUrls[i];
+                console.log(`e-manuscripta: Processing block ${i + 1}/${thumbviewUrls.length}: ${thumbviewUrl}`);
+                
+                try {
+                    const blockManifest = await this.handleEManuscriptaThumbView(thumbviewUrl, library, thumbviewUrl.split('/').pop()!);
+                    allPageLinks.push(...blockManifest.pageLinks);
+                    totalPagesCount += blockManifest.totalPages;
+                    
+                    console.log(`e-manuscripta: Block ${i + 1} contributed ${blockManifest.totalPages} pages`);
+                } catch (error: any) {
+                    console.warn(`e-manuscripta: Failed to process block ${i + 1}: ${(error as Error).message}`);
+                }
+            }
+            
+            if (allPageLinks.length === 0) {
+                throw new Error('No pages found in any thumbview blocks');
+            }
+            
+            console.log(`e-manuscripta: Successfully aggregated ${allPageLinks.length} pages from ${thumbviewUrls.length} blocks`);
+            
+            return {
+                pageLinks: allPageLinks,
+                totalPages: allPageLinks.length,
+                library: 'e_manuscripta',
+                displayName: `${displayName} (${thumbviewUrls.length} blocks)`,
+                originalUrl: titleinfoUrl,
+            };
+            
+        } catch (error: any) {
+            console.error(`e-manuscripta: titleinfo processing failed: ${(error as Error).message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Handle E-Manuscripta thumbview URLs (individual blocks)
+     */
+    private async handleEManuscriptaThumbView(thumbviewUrl: string, library: string, blockId: string): Promise<ManuscriptManifest> {
+        try {
+            console.log(`e-manuscripta: Processing thumbview block: ${blockId}`);
+            
+            // Fetch the thumbview page
+            const response = await this.fetchDirect(thumbviewUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch thumbview page: HTTP ${response.status}`);
+            }
+            
+            const html = await response.text();
+            
+            // Extract title/manuscript name from the page
+            let displayName = `e-manuscripta ${blockId}`;
+            const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+            if (titleMatch && titleMatch[1] && !titleMatch[1].includes('e-manuscripta.ch')) {
+                displayName = titleMatch[1].trim();
+            }
+            
+            // Use existing parsing methods to extract page data
+            let pageData: Array<{pageId: string, pageNumber: number}> = [];
+            
+            // METHOD 1: Parse goToPage dropdown (most reliable)
+            pageData = await this.parseEManuscriptaDropdown(html);
+            
+            if (pageData.length === 0) {
+                // METHOD 2: Parse JavaScript configuration data
+                console.log(`e-manuscripta: Block ${blockId} - Trying JavaScript config extraction`);
+                pageData = await this.parseEManuscriptaJSConfig(html);
+            }
+            
+            if (pageData.length === 0) {
+                // METHOD 3: Deep HTML analysis with multiple patterns
+                console.log(`e-manuscripta: Block ${blockId} - Trying deep HTML pattern analysis`);
+                pageData = await this.parseEManuscriptaDeepHTML(html);
+            }
+            
+            if (pageData.length === 0) {
+                // METHOD 4: URL pattern discovery using current page as base
+                console.log(`e-manuscripta: Block ${blockId} - Trying URL pattern discovery`);
+                pageData = await this.discoverEManuscriptaURLPattern(blockId, library);
+            }
+            
+            if (pageData.length === 0) {
+                console.warn(`e-manuscripta: Block ${blockId} - No pages found, skipping`);
+                return {
+                    pageLinks: [],
+                    totalPages: 0,
+                    library: 'e_manuscripta',
+                    displayName: `${displayName} (empty block)`,
+                    originalUrl: thumbviewUrl,
+                };
+            }
+            
+            // Sort by page number to ensure correct order
+            pageData.sort((a, b) => a.pageNumber - b.pageNumber);
+            
+            console.log(`e-manuscripta: Block ${blockId} - Found ${pageData.length} pages`);
+            
+            // Generate page links using the optimal URL pattern
+            const pageLinks: string[] = pageData.map(page => 
+                `https://www.e-manuscripta.ch/${library}/download/webcache/0/${page.pageId}`
+            );
+            
+            // Validate that URLs actually work by testing first few pages
+            if (pageLinks.length > 0) {
+                await this.validateEManuscriptaURLs(pageLinks.slice(0, Math.min(3, pageLinks.length)));
+            }
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'e_manuscripta',
+                displayName,
+                originalUrl: thumbviewUrl,
+            };
+            
+        } catch (error: any) {
+            console.error(`e-manuscripta: thumbview processing failed: ${(error as Error).message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Extract ALL thumbview block URLs from structure page HTML (ENHANCED for multi-block manuscripts)
+     */
+    private async extractAllThumbviewBlocksFromStructure(structureHtml: string, library: string): Promise<string[]> {
+        console.log(`e-manuscripta: Extracting all thumbview blocks from structure page`);
+        
+        // Extract all zoom IDs from structure page links
+        const zoomPattern = /href="\/[^"]*\/content\/zoom\/(\d+)"/g;
+        const zoomIds: string[] = [];
+        let match;
+        while ((match = zoomPattern.exec(structureHtml)) !== null) {
+            zoomIds.push(match[1]);
+        }
+        
+        // Remove duplicates and sort by ID
+        const uniqueZoomIds = [...new Set(zoomIds)].sort((a, b) => parseInt(a) - parseInt(b));
+        console.log(`e-manuscripta: Found ${uniqueZoomIds.length} unique zoom IDs in structure`);
+        
+        // Test each zoom ID to see which ones have valid thumbview blocks
+        const validThumbviewUrls: string[] = [];
+        
+        for (const zoomId of uniqueZoomIds) {
+            const thumbviewUrl = `https://www.e-manuscripta.ch/${library}/content/thumbview/${zoomId}`;
+            try {
+                const response = await this.fetchDirect(thumbviewUrl, { method: 'HEAD' });
+                if (response.ok) {
+                    validThumbviewUrls.push(thumbviewUrl);
+                    console.log(`e-manuscripta: ✓ Block ${zoomId} - Valid thumbview`);
+                } else {
+                    console.log(`e-manuscripta: ✗ Block ${zoomId} - HTTP ${response.status} (skipping)`);
+                }
+            } catch (error: any) {
+                console.log(`e-manuscripta: ✗ Block ${zoomId} - Error: ${(error as Error).message} (skipping)`);
+            }
+        }
+        
+        console.log(`e-manuscripta: Validated ${validThumbviewUrls.length} out of ${uniqueZoomIds.length} potential blocks`);
+        return validThumbviewUrls;
+    }
+
+    /**
+     * Extract thumbview URLs from titleinfo page HTML (LEGACY method - use extractAllThumbviewBlocksFromStructure for better coverage)
+     */
+    private async extractThumbviewUrls(html: string, library: string): Promise<string[]> {
+        const thumbviewUrls: string[] = [];
+        
+        // Pattern 1: Look for direct thumbview links
+        const thumbviewPattern = /href="([^"]*\/content\/thumbview\/\d+)"/g;
+        let match;
+        while ((match = thumbviewPattern.exec(html)) !== null) {
+            let url = match[1];
+            if (url.startsWith('/')) {
+                url = `https://www.e-manuscripta.ch${url}`;
+            } else if (!url.startsWith('http')) {
+                url = `https://www.e-manuscripta.ch/${url}`;
+            }
+            thumbviewUrls.push(url);
+        }
+        
+        // Pattern 2: Look for thumbview IDs in data attributes or JavaScript
+        const thumbviewIdPattern = /(?:thumbview|blockId)['":\s]*(\d+)/g;
+        const foundIds: string[] = [];
+        while ((match = thumbviewIdPattern.exec(html)) !== null) {
+            foundIds.push(match[1]);
+        }
+        
+        // Convert IDs to full URLs
+        for (const id of foundIds) {
+            const url = `https://www.e-manuscripta.ch/${library}/content/thumbview/${id}`;
+            if (!thumbviewUrls.includes(url)) {
+                thumbviewUrls.push(url);
+            }
+        }
+        
+        // Pattern 3: Look for any links containing numbers that might be block IDs
+        const blockLinkPattern = /href="[^"]*\/(\d+)"[^>]*>.*?\[(\d+)-(\d+)\]/g;
+        while ((match = blockLinkPattern.exec(html)) !== null) {
+            const blockId = match[1];
+            const url = `https://www.e-manuscripta.ch/${library}/content/thumbview/${blockId}`;
+            if (!thumbviewUrls.includes(url)) {
+                thumbviewUrls.push(url);
+            }
+        }
+        
+        console.log(`e-manuscripta: Extracted ${thumbviewUrls.length} thumbview URLs`);
+        return [...new Set(thumbviewUrls)]; // Remove duplicates
     }
 
     /**
@@ -6402,8 +6702,8 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('Invalid DIAMM manifest URL format');
             }
             
-            // Load the IIIF manifest using existing infrastructure
-            const manifest = await this.loadIIIFManifest(manifestUrl);
+            // Load the IIIF manifest using DIAMM-specific processing for maximum resolution
+            const manifest = await this.loadDiammSpecificManifest(manifestUrl);
             
             // Override library type to ensure correct identification
             manifest.library = 'diamm';
@@ -6413,6 +6713,110 @@ export class EnhancedManuscriptDownloaderService {
         } catch (error: any) {
             throw new Error(`Failed to load DIAMM manuscript: ${(error as Error).message}`);
         }
+    }
+
+    /**
+     * Load DIAMM-specific IIIF manifest with maximum resolution optimization
+     */
+    async loadDiammSpecificManifest(manifestUrl: string): Promise<ManuscriptManifest> {
+        const response = await this.fetchDirect(manifestUrl);
+        if (!response.ok) {
+            throw new Error(`Failed to load DIAMM IIIF manifest: HTTP ${response.status}`);
+        }
+        
+        const responseText = await response.text();
+        let manifest;
+        try {
+            manifest = JSON.parse(responseText);
+        } catch {
+            throw new Error(`Invalid JSON response from DIAMM manifest URL: ${manifestUrl}. Response starts with: ${responseText.substring(0, 100)}`);
+        }
+        
+        const pageLinks: string[] = [];
+        
+        // Handle IIIF v3 format (items directly in manifest) and IIIF v2 format (sequences)
+        let canvases: any[] = [];
+        
+        if (manifest.items && Array.isArray(manifest.items)) {
+            // IIIF v3: canvases are directly in manifest.items
+            canvases = manifest.items;
+        } else if (manifest.sequences && Array.isArray(manifest.sequences)) {
+            // IIIF v2: canvases are in sequences
+            for (const sequence of manifest.sequences) {
+                const sequenceCanvases = sequence.canvases || [];
+                canvases.push(...sequenceCanvases);
+            }
+        }
+        
+        let foundImages = false;
+        
+        // Process each canvas to extract image URLs
+        for (const canvas of canvases) {
+            // Handle IIIF v2 format (images array)
+            if (canvas.images && Array.isArray(canvas.images)) {
+                for (const image of canvas.images) {
+                    let imageUrl = '';
+                    
+                    // Get image URL from resource
+                    if (image.resource) {
+                        if (image.resource.service && image.resource.service['@id']) {
+                            // Use IIIF Image API service URL for maximum resolution
+                            // For DIAMM, use /full/full/ instead of /full/max/ for highest quality
+                            imageUrl = `${image.resource.service['@id']}/full/full/0/default.jpg`;
+                        } else if (image.resource['@id']) {
+                            imageUrl = image.resource['@id'];
+                        } else if (image.resource.id) {
+                            imageUrl = image.resource.id;
+                        }
+                    } else if (image['@id']) {
+                        imageUrl = image['@id'];
+                    }
+                    
+                    if (imageUrl) {
+                        // For DIAMM, ensure we use full/full for maximum resolution
+                        if (imageUrl.includes('/full/')) {
+                            imageUrl = imageUrl.replace(/\/full\/[^/]+\//, '/full/full/');
+                        }
+                        pageLinks.push(imageUrl);
+                        foundImages = true;
+                    }
+                }
+            }
+            
+            // Handle IIIF v3 format (items with AnnotationPages)
+            if (canvas.items && Array.isArray(canvas.items)) {
+                for (const item of canvas.items) {
+                    if (item.type === 'AnnotationPage' && item.items && Array.isArray(item.items)) {
+                        for (const annotation of item.items) {
+                            if (annotation.body && annotation.body.id) {
+                                let imageUrl = annotation.body.id;
+                                
+                                // For DIAMM, ensure we use full/full for maximum resolution
+                                if (imageUrl.includes('/full/')) {
+                                    imageUrl = imageUrl.replace(/\/full\/[^/]+\//, '/full/full/');
+                                }
+                                pageLinks.push(imageUrl);
+                                foundImages = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (!foundImages) {
+            throw new Error(`No images found in DIAMM manifest. The manifest may be incomplete or corrupted. URL: ${manifestUrl}`);
+        }
+        
+        const displayName = manifest.label || manifest.title || 'DIAMM Manuscript';
+        
+        return {
+            pageLinks,
+            totalPages: pageLinks.length,
+            displayName,
+            library: 'diamm' as const,
+            originalUrl: manifestUrl
+        };
     }
 
     /**
@@ -6497,9 +6901,30 @@ export class EnhancedManuscriptDownloaderService {
             const documentId = documentIdMatch[1];
             console.log(`Extracting Belgica KBR document ID: ${documentId}`);
             
-            // Step 1: Fetch document page and extract UURL
+            // Step 1: Fetch document page and extract UURL with proper session handling
             console.log('Fetching document page to extract UURL...');
-            const documentPageHtml = await this.fetchPageContent(originalUrl);
+            const documentResponse = await this.fetchDirect(originalUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'DNT': '1',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Sec-Fetch-Dest': 'document',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'none',
+                    'Sec-Fetch-User': '?1'
+                }
+            });
+            
+            if (!documentResponse.ok) {
+                throw new Error(`Failed to fetch document page: ${documentResponse.status}`);
+            }
+            
+            const cookies = documentResponse.headers.get('set-cookie');
+            const documentPageHtml = await documentResponse.text();
             const uurlMatch = documentPageHtml.match(/https:\/\/uurl\.kbr\.be\/(\d+)/);
             
             if (!uurlMatch) {
@@ -6507,12 +6932,33 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             const uurlId = uurlMatch[1];
+            const uurlUrl = uurlMatch[0];
             console.log(`Found UURL ID: ${uurlId}`);
             
-            // Step 2: Fetch UURL and extract map parameter
+            // Step 2: Fetch UURL and extract map parameter with session cookies
             console.log('Fetching UURL to extract map parameter...');
-            const uurlUrl = `https://uurl.kbr.be/${uurlId}`;
-            const uurlPageHtml = await this.fetchPageContent(uurlUrl);
+            const uurlResponse = await this.fetchDirect(uurlUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'DNT': '1',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Sec-Fetch-Dest': 'document',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'cross-site',
+                    'Referer': originalUrl,
+                    'Cookie': cookies || ''
+                }
+            });
+            
+            if (!uurlResponse.ok) {
+                throw new Error(`Failed to fetch UURL page: ${uurlResponse.status}`);
+            }
+            
+            const uurlPageHtml = await uurlResponse.text();
             const mapMatch = uurlPageHtml.match(/map=([^"'&]+)/);
             
             if (!mapMatch) {
@@ -6522,26 +6968,149 @@ export class EnhancedManuscriptDownloaderService {
             const mapPath = mapMatch[1];
             console.log(`Found map path: ${mapPath}`);
             
-            // Step 3: List images from directory
-            console.log('Listing images from directory...');
-            const directoryUrl = `https://viewerd.kbr.be/display/${mapPath}`;
-            const directoryHtml = await this.fetchPageContent(directoryUrl);
+            // Step 3: Access gallery page to establish proper session context
+            console.log('Accessing gallery page to establish session context...');
+            const galleryUrl = `https://viewerd.kbr.be/gallery.php?map=${mapPath}`;
+            const galleryResponse = await this.fetchDirect(galleryUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'DNT': '1',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Sec-Fetch-Dest': 'iframe',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'cross-site',
+                    'Referer': uurlUrl,
+                    'Cookie': cookies || ''
+                }
+            });
             
-            // Extract image filenames using regex
-            const imageRegex = /BE-KBR00_[^"]*\.jpg/g;
-            const imageMatches = directoryHtml.match(imageRegex) || [];
-            
-            if (imageMatches.length === 0) {
-                throw new Error('No images found in directory listing');
+            if (!galleryResponse.ok) {
+                throw new Error(`Failed to fetch gallery page: ${galleryResponse.status}`);
             }
             
-            // Remove duplicates and sort
-            const uniqueImages = Array.from(new Set(imageMatches)).sort();
+            console.log('Gallery page loaded successfully');
             
-            // Build direct image URLs
-            const pageLinks = uniqueImages.map(filename => 
-                `https://viewerd.kbr.be/display/${mapPath}${filename}`
-            );
+            // Step 4: Discover images using intelligent enumeration
+            console.log('Discovering images using enumeration...');
+            const pageLinks: string[] = [];
+            
+            // Test common KBR image naming patterns
+            const imagePatterns = [
+                // Pattern: BE-KBR00_0001.jpg, BE-KBR00_0002.jpg, etc.
+                { base: 'BE-KBR00_', format: (n: number) => n.toString().padStart(4, '0') + '.jpg' },
+                // Pattern: BE-KBR00_001.jpg, BE-KBR00_002.jpg, etc.
+                { base: 'BE-KBR00_', format: (n: number) => n.toString().padStart(3, '0') + '.jpg' },
+                // Pattern: BE-KBR00_01.jpg, BE-KBR00_02.jpg, etc.
+                { base: 'BE-KBR00_', format: (n: number) => n.toString().padStart(2, '0') + '.jpg' },
+                // Pattern: BE-KBR00_1.jpg, BE-KBR00_2.jpg, etc.
+                { base: 'BE-KBR00_', format: (n: number) => n.toString() + '.jpg' },
+            ];
+            
+            let workingPattern: any = null;
+            let maxPagesToTest = 200; // Reasonable limit to prevent infinite loops
+            
+            // Find the working pattern by testing the first image
+            for (const pattern of imagePatterns) {
+                const firstImageName = pattern.base + pattern.format(1);
+                const testImageUrl = `https://viewerd.kbr.be/display/${mapPath}${firstImageName}`;
+                
+                console.log(`Testing pattern: ${firstImageName}`);
+                
+                try {
+                    const testResponse = await this.fetchDirect(testImageUrl, {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                            'Accept': 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+                            'Accept-Language': 'en-US,en;q=0.5',
+                            'Accept-Encoding': 'gzip, deflate, br',
+                            'DNT': '1',
+                            'Connection': 'keep-alive',
+                            'Sec-Fetch-Dest': 'image',
+                            'Sec-Fetch-Mode': 'no-cors',
+                            'Sec-Fetch-Site': 'same-origin',
+                            'Referer': galleryUrl,
+                            'Cookie': cookies || ''
+                        }
+                    });
+                    
+                    if (testResponse.ok) {
+                        const imageData = await testResponse.arrayBuffer();
+                        if (imageData.byteLength > 1000) { // Valid image
+                            console.log(`Found working pattern: ${pattern.base}${pattern.format(1)} (${imageData.byteLength} bytes)`);
+                            workingPattern = pattern;
+                            pageLinks.push(testImageUrl);
+                            break;
+                        }
+                    }
+                } catch (error: any) {
+                    console.log(`Pattern test failed for ${firstImageName}: ${(error as Error).message}`);
+                }
+                
+                // Small delay between pattern tests
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            if (!workingPattern) {
+                throw new Error('Could not find any working image patterns for this manuscript. This document may have access restrictions or copyright limitations that prevent image downloads.');
+            }
+            
+            // Step 5: Enumerate all images using the working pattern
+            console.log(`Enumerating images using working pattern: ${workingPattern.base}${workingPattern.format(1)}`);
+            
+            // Continue from image 2 since we already found image 1
+            for (let pageNum = 2; pageNum <= maxPagesToTest; pageNum++) {
+                const imageName = workingPattern.base + workingPattern.format(pageNum);
+                const imageUrl = `https://viewerd.kbr.be/display/${mapPath}${imageName}`;
+                
+                try {
+                    const imageResponse = await this.fetchDirect(imageUrl, {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                            'Accept': 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+                            'Accept-Language': 'en-US,en;q=0.5',
+                            'Accept-Encoding': 'gzip, deflate, br',
+                            'DNT': '1',
+                            'Connection': 'keep-alive',
+                            'Sec-Fetch-Dest': 'image',
+                            'Sec-Fetch-Mode': 'no-cors',
+                            'Sec-Fetch-Site': 'same-origin',
+                            'Referer': galleryUrl,
+                            'Cookie': cookies || ''
+                        }
+                    });
+                    
+                    if (imageResponse.ok) {
+                        const imageData = await imageResponse.arrayBuffer();
+                        if (imageData.byteLength > 1000) { // Valid image
+                            pageLinks.push(imageUrl);
+                            console.log(`Found page ${pageNum}: ${imageName} (${imageData.byteLength} bytes)`);
+                        } else {
+                            console.log(`Page ${pageNum}: Image too small, likely end of manuscript`);
+                            break;
+                        }
+                    } else if (imageResponse.status === 404) {
+                        console.log(`Page ${pageNum}: 404 Not Found, end of manuscript reached`);
+                        break;
+                    } else {
+                        console.log(`Page ${pageNum}: HTTP ${imageResponse.status}, treating as end of manuscript`);
+                        break;
+                    }
+                } catch (error: any) {
+                    console.log(`Error fetching page ${pageNum}: ${(error as Error).message}`);
+                    break;
+                }
+                
+                // Throttle requests to avoid overwhelming the server
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No valid images found for this manuscript. This document may be restricted or require special permissions for access.');
+            }
             
             console.log(`Belgica KBR manuscript discovery completed: ${pageLinks.length} images found`);
             
@@ -6577,7 +7146,7 @@ export class EnhancedManuscriptDownloaderService {
             const compoundUrl = `https://mdc.csuc.cat/digital/bl/dmwebservices/index.php?q=dmGetCompoundObjectInfo/${collection}/${itemId}/json`;
             console.log('Fetching compound object structure...');
             
-            const compoundResponse = await this.fetchDirect(compoundUrl);
+            const compoundResponse = await this.fetchWithFallback(compoundUrl);
             if (!compoundResponse.ok) {
                 throw new Error(`Failed to fetch compound object info: ${compoundResponse.status}`);
             }
@@ -6596,13 +7165,14 @@ export class EnhancedManuscriptDownloaderService {
                 
                 // Try to get IIIF info for single page
                 const iiifInfoUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${itemId}/info.json`;
-                const infoResponse = await this.fetchDirect(iiifInfoUrl);
+                const infoResponse = await this.fetchWithFallback(iiifInfoUrl);
                 if (!infoResponse.ok) {
                     throw new Error(`Failed to fetch IIIF info for single page: ${infoResponse.status}`);
                 }
                 
                 const iiifInfo = await infoResponse.json();
-                const singleImageUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${itemId}/full/max/0/default.jpg`;
+                // Use maximum resolution format: ,2000 provides highest quality (1415x2000px vs 948x1340px)
+                const singleImageUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${itemId}/full/,2000/0/default.jpg`;
                 
                 console.log(`Single page manuscript: ${iiifInfo.width}x${iiifInfo.height} pixels`);
                 
@@ -6631,7 +7201,7 @@ export class EnhancedManuscriptDownloaderService {
                 
                 try {
                     // Verify IIIF endpoint works
-                    const iiifResponse = await this.fetchDirect(iiifInfoUrl);
+                    const iiifResponse = await this.fetchWithFallback(iiifInfoUrl);
                     if (!iiifResponse.ok) {
                         console.warn(`IIIF endpoint failed for page ${pageId}: ${iiifResponse.status}`);
                         continue;
@@ -6639,8 +7209,8 @@ export class EnhancedManuscriptDownloaderService {
                     
                     const iiifData = await iiifResponse.json();
                     
-                    // Use maximum resolution for best quality
-                    const imageUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${pageId}/full/max/0/default.jpg`;
+                    // Use maximum resolution for best quality: ,2000 provides highest quality (1415x2000px vs 948x1340px)
+                    const imageUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${pageId}/full/,2000/0/default.jpg`;
                     pageLinks.push(imageUrl);
                     validPages++;
                     
@@ -6672,6 +7242,132 @@ export class EnhancedManuscriptDownloaderService {
             
         } catch (error: any) {
             throw new Error(`Failed to load MDC Catalonia manuscript: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Fallback fetch method for MDC Catalonia DNS/connection issues
+     */
+    private async fetchWithFallback(url: string, options: any = {}): Promise<Response> {
+        try {
+            // First try the standard fetchDirect method
+            return await this.fetchDirect(url, options);
+        } catch (error: any) {
+            // If we get connection errors, try with curl as a fallback
+            if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || 
+                error.code === 'ETIMEDOUT' || error.code === 'ENETUNREACH' ||
+                error.message.includes('timeout') || error.message.includes('ECONNREFUSED')) {
+                
+                console.log(`MDC Catalonia: Connection error, trying curl fallback: ${error.message}`);
+                
+                // Try using curl as a fallback for network issues
+                const { execSync } = require('child_process');
+                try {
+                    const headers = options.headers || {};
+                    const userAgent = headers['User-Agent'] || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
+                    
+                    // Use curl with explicit timeout and retry
+                    const curlCmd = `curl -s -m 30 --retry 2 --retry-delay 1 -H "User-Agent: ${userAgent}" "${url}"`;
+                    const result = execSync(curlCmd, { encoding: 'utf8', timeout: 35000 });
+                    
+                    if (result.trim() === '') {
+                        throw new Error('Empty response from curl fallback');
+                    }
+                    
+                    // Create a Response-like object
+                    return {
+                        ok: true,
+                        status: 200,
+                        statusText: 'OK',
+                        text: () => Promise.resolve(result),
+                        json: () => Promise.resolve(JSON.parse(result)),
+                        arrayBuffer: () => Promise.resolve(Buffer.from(result).buffer)
+                    } as Response;
+                    
+                } catch (curlError: any) {
+                    console.error(`MDC Catalonia: Both direct fetch and curl fallback failed: ${curlError.message}`);
+                    throw new Error(`MDC Catalonia network error: ${error.message}. Curl fallback also failed: ${curlError.message}`);
+                }
+            } else {
+                // For non-network errors, re-throw the original error
+                throw error;
+            }
+        }
+    }
+
+    /**
+     * Load BVPB (Biblioteca Virtual del Patrimonio Bibliográfico) manifest
+     */
+    async loadBvpbManifest(originalUrl: string): Promise<ManuscriptManifest> {
+        try {
+            const pathMatch = originalUrl.match(/path=([^&]+)/);
+            if (!pathMatch) {
+                throw new Error('Could not extract path from BVPB URL');
+            }
+            
+            const pathId = pathMatch[1];
+            console.log(`Extracting BVPB manuscript path: ${pathId}`);
+            
+            const catalogUrl = `https://bvpb.mcu.es/es/catalogo_imagenes/grupo.do?path=${pathId}`;
+            console.log('Discovering BVPB manuscript pages...');
+            
+            const response = await this.fetchWithFallback(catalogUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to load BVPB catalog page: ${response.status}`);
+            }
+            
+            const html = await response.text();
+            
+            const imageIds: string[] = [];
+            let pageTitle = 'BVPB Manuscript';
+            
+            try {
+                const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
+                if (titleMatch) {
+                    pageTitle = titleMatch[1]
+                        .replace(/Biblioteca Virtual del Patrimonio Bibliográfico[^>]*>\s*/gi, '')
+                        .replace(/^\s*Búsqueda[^>]*>\s*/gi, '')
+                        .replace(/\s*\(Objetos digitales\)\s*/gi, '')
+                        .replace(/&gt;/g, '>')
+                        .replace(/&rsaquo;/g, '›')
+                        .replace(/&[^;]+;/g, ' ')
+                        .replace(/\s+/g, ' ')
+                        .trim() || pageTitle;
+                }
+            } catch (titleError) {
+                console.warn('Could not extract BVPB title:', (titleError as Error).message);
+            }
+            
+            const imageIdPattern = /object-miniature\.do\?id=(\d+)/g;
+            let match;
+            while ((match = imageIdPattern.exec(html)) !== null) {
+                const imageId = match[1];
+                if (!imageIds.includes(imageId)) {
+                    imageIds.push(imageId);
+                    console.log(`Found BVPB image ID: ${imageId}`);
+                }
+            }
+            
+            if (imageIds.length === 0) {
+                throw new Error('No images found for this BVPB manuscript');
+            }
+            
+            console.log(`BVPB manuscript discovery completed: ${imageIds.length} pages found`);
+            
+            const pageLinks = imageIds.map(imageId => 
+                `https://bvpb.mcu.es/es/media/object.do?id=${imageId}`
+            );
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'bvpb',
+                displayName: pageTitle,
+                originalUrl: originalUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load BVPB manuscript: ${(error as Error).message}`);
         }
     }
 

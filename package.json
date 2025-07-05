@@ -1,11 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.3.86",
+  "version": "1.3.87",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Added BNE (Biblioteca Nacional de España) manuscript downloads - access to Spanish national library manuscripts with high-resolution JPEG format",
-    "Added MDC Catalonia (Memòria Digital de Catalunya) manuscript downloads - access to Catalan historical manuscripts with maximum IIIF resolution optimization (32x improvement)",
-    "Enhanced DIAMM library with IIIF 3.0 protocol support - ultra-high resolution downloads up to 3800x5000 pixels for medieval music manuscripts"
+    "Fixed Belgica KBR (Royal Library of Belgium) authentication errors - resolved 403 Forbidden issues for manuscript downloads",
+    "Enhanced DIAMM library maximum resolution - fixed file size validation with proper IIIF parameters for ultra-high quality downloads", 
+    "Improved E-Manuscripta Basel multi-block manuscript handling - enhanced discovery from 1 to 19 blocks for complete manuscript coverage",
+    "Added BVPB (Biblioteca Virtual del Patrimonio Bibliográfico) library support - access to Spanish heritage manuscripts with high-resolution downloads"
   ],
   "main": "dist/main/main.js",
   "type": "module",
