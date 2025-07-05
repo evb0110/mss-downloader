@@ -149,6 +149,11 @@ export class LibraryOptimizationService {
             timeoutMultiplier: 1.2, // Slightly extended timeout for IIIF API calls
             optimizationDescription: 'MDC Catalonia optimizations: 4 concurrent downloads, IIIF-based access with excellent performance'
         },
+        'bvpb': {
+            maxConcurrentDownloads: 3, // BVPB with pagination traversal needs moderate concurrency
+            timeoutMultiplier: 2.0, // Extended timeout for pagination discovery and image downloads
+            optimizationDescription: 'BVPB optimizations: 3 concurrent downloads, extended timeouts for pagination traversal and high-resolution manuscript downloads'
+        },
         'loading': {}
     };
 
