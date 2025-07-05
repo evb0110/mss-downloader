@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.3.87",
+  "version": "1.3.88",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Fixed Belgica KBR (Royal Library of Belgium) authentication errors - resolved 403 Forbidden issues for manuscript downloads",
-    "Enhanced DIAMM library maximum resolution - fixed file size validation with proper IIIF parameters for ultra-high quality downloads", 
-    "Improved E-Manuscripta Basel multi-block manuscript handling - enhanced discovery from 1 to 19 blocks for complete manuscript coverage",
-    "Added BVPB (Biblioteca Virtual del Patrimonio Bibliográfico) library support - access to Spanish heritage manuscripts with high-resolution downloads"
+    "Fixed Belgica KBR (Royal Library of Belgium) download errors - resolved authentication issues preventing manuscript access",
+    "Enhanced DIAMM library downloads with maximum resolution - users now get ultra-high quality medieval music manuscripts up to 3800x5000 pixels", 
+    "Improved E-Manuscripta Basel multi-part manuscript downloads - now captures complete manuscripts by discovering 19x more manuscript blocks",
+    "Added BVPB (Spanish Heritage Library) support - access to historical Spanish manuscripts and patrimony documents with high-resolution downloads"
   ],
   "main": "dist/main/main.js",
   "type": "module",
