@@ -1,0 +1,295 @@
+{
+  "summary": {
+    "totalUrls": 4,
+    "successfulFetches": 4,
+    "dropdownSuccess": 0,
+    "totalPagesDiscovered": 0,
+    "iiifReferences": 4,
+    "alternativeNavigationMethods": 4,
+    "jsConfigMethods": 0
+  },
+  "allAnalyses": [
+    {
+      "url": "https://www.e-manuscripta.ch/bau/content/titleinfo/5157222",
+      "type": "titleinfo",
+      "id": "5157222",
+      "htmlLength": 32288,
+      "foundElements": {
+        "goToPageDropdown": false,
+        "otherSelects": [
+          "<select class=\"sruIndex\" id=\"index1\" name=\"index1\" style=\"width: 100%\">",
+          "<select class=\"sruBool\" id=\"bool2\" name=\"bool2\">",
+          "<select class=\"sruIndex\" id=\"index2\" name=\"index2\" style=\"\">",
+          "<select class=\"sruBool\" id=\"bool3\" name=\"bool3\">",
+          "<select class=\"sruIndex\" id=\"index3\" name=\"index3\" style=\"\">",
+          "<select class=\"sruBool\" id=\"bool4\" name=\"bool4\">",
+          "<select class=\"sruIndex\" id=\"index4\" name=\"index4\" style=\"\">",
+          "<select class=\"sruBool\" id=\"bool5\" name=\"bool5\">",
+          "<select class=\"sruIndex\" id=\"index5\" name=\"index5\" style=\"\">"
+        ],
+        "potentialPageIds": [
+          "1029703",
+          "119072947",
+          "134137761",
+          "4781965",
+          "4827361",
+          "5138651664217614560",
+          "5157222",
+          "5157616",
+          "9972440063805504"
+        ],
+        "title": "Universit&#228;tsbibliothek Basel / Statuta et Consuetudines Cartusianorum",
+        "iiif_1": 9,
+        "iiif_2": 13,
+        "images_1": [
+          "/download/webcache/304/5157616",
+          "/download/webcache/304/5157616"
+        ],
+        "images_4": [
+          ".png",
+          ".png",
+          ".png"
+        ]
+      },
+      "potentialPageData": [],
+      "navigationElements": [
+        {
+          "pattern": "/href=\"[^\"]*\\/thumbview\\/(\\d+)\"[^>]*>/g",
+          "matches": [
+            "href=\"/bau/content/thumbview/5157616\">"
+          ]
+        }
+      ],
+      "scripts": [],
+      "pageDiscoveryMethods": {}
+    },
+    {
+      "url": "https://www.e-manuscripta.ch/bau/content/thumbview/5157616",
+      "type": "thumbview",
+      "id": "5157616",
+      "htmlLength": 37354,
+      "foundElements": {
+        "goToPageDropdown": false,
+        "otherSelects": [
+          "<select class=\"sruIndex\" id=\"index1\" name=\"index1\" style=\"width: 100%\">",
+          "<select class=\"sruBool\" id=\"bool2\" name=\"bool2\">",
+          "<select class=\"sruIndex\" id=\"index2\" name=\"index2\" style=\"\">",
+          "<select class=\"sruBool\" id=\"bool3\" name=\"bool3\">",
+          "<select class=\"sruIndex\" id=\"index3\" name=\"index3\" style=\"\">",
+          "<select class=\"sruBool\" id=\"bool4\" name=\"bool4\">",
+          "<select class=\"sruIndex\" id=\"index4\" name=\"index4\" style=\"\">",
+          "<select class=\"sruBool\" id=\"bool5\" name=\"bool5\">",
+          "<select class=\"sruIndex\" id=\"index5\" name=\"index5\" style=\"\">",
+          "<select id=\"goToPages\" name=\"id\" title=\"Gehe zu Seiten\" class=\"change offset\">"
+        ],
+        "potentialPageIds": [
+          "5138651664217614560",
+          "5157222",
+          "5157223",
+          "5157224",
+          "5157225",
+          "5157226",
+          "5157227",
+          "5157228",
+          "5157229",
+          "5157230",
+          "5157231",
+          "5157232",
+          "5157233",
+          "5157245",
+          "5157257",
+          "5157269",
+          "5157278",
+          "5157281",
+          "5157293",
+          "5157305"
+        ],
+        "title": "Universit&#228;tsbibliothek Basel / Statuta et Consuetudines... [1-20]",
+        "iiif_2": 2,
+        "images_1": [
+          "/download/webcache/304/5157616",
+          "/download/webcache/304/5157616"
+        ],
+        "images_4": [
+          ".png",
+          ".png",
+          ".png"
+        ]
+      },
+      "potentialPageData": [],
+      "navigationElements": [
+        {
+          "pattern": "/href=\"[^\"]*\\/zoom\\/(\\d+)\"[^>]*>.*?\\[(\\d+)\\]/g",
+          "matches": [
+            "href=\"/bau/content/zoom/5157616\"><i class=\"cap tab\">Seitenansicht</i><i class=\"cap abbrTab __tabPage",
+            "href=\"/bau/content/zoom/5157225\"><span class=\"paginationcaption\"><span class=\"log\">[5]",
+            "href=\"/bau/content/zoom/5157227\"><span class=\"caption\">[3r-141v] Statuta antiqua</span></a></li><ul ",
+            "href=\"/bau/content/zoom/5157229\"><span class=\"paginationcaption\"><span class=\"log\">[9]",
+            "href=\"/bau/content/zoom/5157278\"><span class=\"paginationcaption\"><span class=\"log\">[58]"
+          ]
+        },
+        {
+          "pattern": "/href=\"[^\"]*\\/thumbview\\/(\\d+)\"[^>]*>/g",
+          "matches": [
+            "href=\"/bau/content/thumbview/5157233\" rel=\"nofollow\" title=\"Eine Seite vorw&#228;rts\">",
+            "href=\"/bau/content/thumbview/5157615\" rel=\"nofollow\" title=\"Letzte Seite\">"
+          ]
+        }
+      ],
+      "scripts": [],
+      "pageDiscoveryMethods": {}
+    },
+    {
+      "url": "https://www.e-manuscripta.ch/bau/content/thumbview/5157228",
+      "type": "thumbview",
+      "id": "5157228",
+      "htmlLength": 37610,
+      "foundElements": {
+        "goToPageDropdown": false,
+        "otherSelects": [
+          "<select class=\"sruIndex\" id=\"index1\" name=\"index1\" style=\"width: 100%\">",
+          "<select class=\"sruBool\" id=\"bool2\" name=\"bool2\">",
+          "<select class=\"sruIndex\" id=\"index2\" name=\"index2\" style=\"\">",
+          "<select class=\"sruBool\" id=\"bool3\" name=\"bool3\">",
+          "<select class=\"sruIndex\" id=\"index3\" name=\"index3\" style=\"\">",
+          "<select class=\"sruBool\" id=\"bool4\" name=\"bool4\">",
+          "<select class=\"sruIndex\" id=\"index4\" name=\"index4\" style=\"\">",
+          "<select class=\"sruBool\" id=\"bool5\" name=\"bool5\">",
+          "<select class=\"sruIndex\" id=\"index5\" name=\"index5\" style=\"\">",
+          "<select id=\"goToPages\" name=\"id\" title=\"Gehe zu Seiten\" class=\"change offset\">"
+        ],
+        "potentialPageIds": [
+          "5138651664217614560",
+          "5157222",
+          "5157223",
+          "5157224",
+          "5157225",
+          "5157226",
+          "5157227",
+          "5157228",
+          "5157229",
+          "5157230",
+          "5157231",
+          "5157232",
+          "5157233",
+          "5157240",
+          "5157245",
+          "5157257",
+          "5157269",
+          "5157278",
+          "5157281",
+          "5157293"
+        ],
+        "title": "Universit&#228;tsbibliothek Basel / Statuta et Consuetudines... [8-27]",
+        "iiif_2": 2,
+        "images_1": [
+          "/download/webcache/304/5157616",
+          "/download/webcache/304/5157616"
+        ],
+        "images_4": [
+          ".png",
+          ".png",
+          ".png"
+        ]
+      },
+      "potentialPageData": [],
+      "navigationElements": [
+        {
+          "pattern": "/href=\"[^\"]*\\/zoom\\/(\\d+)\"[^>]*>.*?\\[(\\d+)\\]/g",
+          "matches": [
+            "href=\"/bau/content/zoom/5157228\"><i class=\"cap tab\">Seitenansicht</i><i class=\"cap abbrTab __tabPage",
+            "href=\"/bau/content/zoom/5157225\"><span class=\"paginationcaption\"><span class=\"log\">[5]",
+            "href=\"/bau/content/zoom/5157227\"><span class=\"caption\">[3r-141v] Statuta antiqua</span></a></li><ul ",
+            "href=\"/bau/content/zoom/5157229\"><span class=\"paginationcaption\"><span class=\"log\">[9]",
+            "href=\"/bau/content/zoom/5157278\"><span class=\"paginationcaption\"><span class=\"log\">[58]"
+          ]
+        },
+        {
+          "pattern": "/href=\"[^\"]*\\/thumbview\\/(\\d+)\"[^>]*>/g",
+          "matches": [
+            "href=\"/bau/content/thumbview/5157240\" rel=\"nofollow\" title=\"Eine Seite vorw&#228;rts\">",
+            "href=\"/bau/content/thumbview/5157615\" rel=\"nofollow\" title=\"Letzte Seite\">"
+          ]
+        }
+      ],
+      "scripts": [],
+      "pageDiscoveryMethods": {}
+    },
+    {
+      "url": "https://www.e-manuscripta.ch/bau/content/thumbview/5157615",
+      "type": "thumbview",
+      "id": "5157615",
+      "htmlLength": 36294,
+      "foundElements": {
+        "goToPageDropdown": false,
+        "otherSelects": [
+          "<select class=\"sruIndex\" id=\"index1\" name=\"index1\" style=\"width: 100%\">",
+          "<select class=\"sruBool\" id=\"bool2\" name=\"bool2\">",
+          "<select class=\"sruIndex\" id=\"index2\" name=\"index2\" style=\"\">",
+          "<select class=\"sruBool\" id=\"bool3\" name=\"bool3\">",
+          "<select class=\"sruIndex\" id=\"index3\" name=\"index3\" style=\"\">",
+          "<select class=\"sruBool\" id=\"bool4\" name=\"bool4\">",
+          "<select class=\"sruIndex\" id=\"index4\" name=\"index4\" style=\"\">",
+          "<select class=\"sruBool\" id=\"bool5\" name=\"bool5\">",
+          "<select class=\"sruIndex\" id=\"index5\" name=\"index5\" style=\"\">",
+          "<select id=\"goToPages\" name=\"id\" title=\"Gehe zu Seiten\" class=\"change offset\">"
+        ],
+        "potentialPageIds": [
+          "5138651664217614560",
+          "5157222",
+          "5157225",
+          "5157227",
+          "5157229",
+          "5157233",
+          "5157245",
+          "5157257",
+          "5157269",
+          "5157278",
+          "5157281",
+          "5157293",
+          "5157305",
+          "5157317",
+          "5157329",
+          "5157336",
+          "5157341",
+          "5157353",
+          "5157362",
+          "5157364"
+        ],
+        "title": "Universit&#228;tsbibliothek Basel / Statuta et Consuetudines... [404-423]",
+        "iiif_2": 2,
+        "images_1": [
+          "/download/webcache/304/5157616",
+          "/download/webcache/304/5157616"
+        ],
+        "images_4": [
+          ".png",
+          ".png",
+          ".png"
+        ]
+      },
+      "potentialPageData": [],
+      "navigationElements": [
+        {
+          "pattern": "/href=\"[^\"]*\\/zoom\\/(\\d+)\"[^>]*>.*?\\[(\\d+)\\]/g",
+          "matches": [
+            "href=\"/bau/content/zoom/5157615\"><i class=\"cap tab\">Seitenansicht</i><i class=\"cap abbrTab __tabPage",
+            "href=\"/bau/content/zoom/5157225\"><span class=\"paginationcaption\"><span class=\"log\">[5]",
+            "href=\"/bau/content/zoom/5157227\"><span class=\"caption\">[3r-141v] Statuta antiqua</span></a></li><ul ",
+            "href=\"/bau/content/zoom/5157229\"><span class=\"paginationcaption\"><span class=\"log\">[9]",
+            "href=\"/bau/content/zoom/5157278\"><span class=\"paginationcaption\"><span class=\"log\">[58]"
+          ]
+        },
+        {
+          "pattern": "/href=\"[^\"]*\\/thumbview\\/(\\d+)\"[^>]*>/g",
+          "matches": [
+            "href=\"/bau/content/thumbview/5157616\" rel=\"nofollow\" title=\"Erste Seite\">",
+            "href=\"/bau/content/thumbview/5157618\" rel=\"nofollow\" title=\"Eine Seite zur&#252;ck\">"
+          ]
+        }
+      ],
+      "scripts": [],
+      "pageDiscoveryMethods": {}
+    }
+  ]
+}

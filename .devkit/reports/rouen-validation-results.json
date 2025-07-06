@@ -1,0 +1,85 @@
+{
+  "testStartTime": "2025-07-06T07:26:24.379Z",
+  "testUrls": [
+    "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.item.zoom",
+    "https://www.rotomagus.fr/ark:/12148/btv1b10052441h/f1.item.zoom",
+    "https://www.rotomagus.fr/ark:/12148/btv1b100508259/f3.item.zoom"
+  ],
+  "results": [
+    {
+      "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.item.zoom",
+      "testNumber": 1,
+      "stages": {
+        "urlParsing": {
+          "success": true,
+          "manuscriptId": "btv1b10052442z",
+          "startPage": 1,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.item.zoom"
+        },
+        "pageCountDiscovery": {
+          "success": false,
+          "totalPages": 0,
+          "displayName": "Rouen Manuscript btv1b10052442z",
+          "discoveryMethod": "none",
+          "manuscriptId": "btv1b10052442z",
+          "error": "Could not determine page count"
+        }
+      },
+      "success": false,
+      "error": "Could not determine page count"
+    },
+    {
+      "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052441h/f1.item.zoom",
+      "testNumber": 2,
+      "stages": {
+        "urlParsing": {
+          "success": true,
+          "manuscriptId": "btv1b10052441h",
+          "startPage": 1,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052441h/f1.item.zoom"
+        },
+        "pageCountDiscovery": {
+          "success": false,
+          "totalPages": 0,
+          "displayName": "Rouen Manuscript btv1b10052441h",
+          "discoveryMethod": "none",
+          "manuscriptId": "btv1b10052441h",
+          "error": "Could not determine page count"
+        }
+      },
+      "success": false,
+      "error": "Could not determine page count"
+    },
+    {
+      "url": "https://www.rotomagus.fr/ark:/12148/btv1b100508259/f3.item.zoom",
+      "testNumber": 3,
+      "stages": {
+        "urlParsing": {
+          "success": true,
+          "manuscriptId": "btv1b100508259",
+          "startPage": 3,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b100508259/f3.item.zoom"
+        },
+        "pageCountDiscovery": {
+          "success": false,
+          "totalPages": 0,
+          "displayName": "Rouen Manuscript btv1b100508259",
+          "discoveryMethod": "none",
+          "manuscriptId": "btv1b100508259",
+          "error": "Could not determine page count"
+        }
+      },
+      "success": false,
+      "error": "Could not determine page count"
+    }
+  ],
+  "summary": {
+    "totalTests": 3,
+    "successful": 0,
+    "failed": 3,
+    "successRate": 0,
+    "allTestsPassed": false,
+    "totalPages": 0,
+    "discoveryMethods": []
+  }
+}

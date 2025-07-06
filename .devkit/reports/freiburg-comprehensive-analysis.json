@@ -1,0 +1,79 @@
+{
+  "library": "University of Freiburg",
+  "manuscript": "hs360a",
+  "totalPagesKnown": 434,
+  "maximumResolution": 4,
+  "avgFileSizeMB": 0.76,
+  "pageNamingPatterns": {
+    "frontMatter": [
+      "00000Vorderdeckel"
+    ],
+    "rectoVerso": [
+      "001r",
+      "001v",
+      "002r",
+      "002v",
+      "003r",
+      "003v"
+    ],
+    "numbered": [],
+    "backMatter": []
+  },
+  "workingPatterns": [
+    {
+      "pattern": "00000Vorderdeckel",
+      "size": 1100,
+      "url": "https://dl.ub.uni-freiburg.de/diglitData/image/hs360a/4/00000Vorderdeckel.jpg"
+    },
+    {
+      "pattern": "001r",
+      "size": 788,
+      "url": "https://dl.ub.uni-freiburg.de/diglitData/image/hs360a/4/001r.jpg"
+    },
+    {
+      "pattern": "001v",
+      "size": 706,
+      "url": "https://dl.ub.uni-freiburg.de/diglitData/image/hs360a/4/001v.jpg"
+    },
+    {
+      "pattern": "002r",
+      "size": 716,
+      "url": "https://dl.ub.uni-freiburg.de/diglitData/image/hs360a/4/002r.jpg"
+    },
+    {
+      "pattern": "002v",
+      "size": 709,
+      "url": "https://dl.ub.uni-freiburg.de/diglitData/image/hs360a/4/002v.jpg"
+    },
+    {
+      "pattern": "003r",
+      "size": 673,
+      "url": "https://dl.ub.uni-freiburg.de/diglitData/image/hs360a/4/003r.jpg"
+    },
+    {
+      "pattern": "003v",
+      "size": 730,
+      "url": "https://dl.ub.uni-freiburg.de/diglitData/image/hs360a/4/003v.jpg"
+    }
+  ],
+  "urlStructure": {
+    "viewer": "https://dl.ub.uni-freiburg.de/diglit/{manuscript}/{page}",
+    "image": "https://dl.ub.uni-freiburg.de/diglitData/image/{manuscript}/{resolution}/{pageId}.jpg",
+    "mets": "https://dl.ub.uni-freiburg.de/diglit/{manuscript}/mets",
+    "resolutionLevels": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "maxResolution": "4"
+  },
+  "implementationStrategy": {
+    "pageDiscovery": "METS XML parsing or systematic pattern testing",
+    "pageNumbering": "Variable format (recto/verso with descriptive names)",
+    "authenticationRequired": false,
+    "sessionHandling": "None required for images",
+    "metadataAccess": "METS XML available",
+    "qualityOptimization": "Use resolution level 4 for maximum quality"
+  }
+}

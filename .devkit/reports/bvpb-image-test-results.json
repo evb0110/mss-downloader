@@ -1,0 +1,4693 @@
+[
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:50 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=9EFE1144F1191C45266D1C5FE62FA20E; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=200",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&size=large",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:50 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=F019D6754C4EBD3D45DAF3ACDC55B96B; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=199",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&size=medium",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:50 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=DDB9B54CC131D68EF1EEA0F0CA9F5E32; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=198",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&size=small",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:50 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=3A0FB836303CA8269A6A95A4F33E7907; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=197",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&width=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:50 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=B4423F65AECC8131D4DC069967DEEC79; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=196",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&height=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:50 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=FF05DAC60BFA3C59E3C500FCF6622BDD; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=195",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&width=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:51 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=12DB623E0F94FF3B4AF9613384ACA1CA; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=194",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&height=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:51 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=DE3F2876BDDF131FDFC9E27E626186D4; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=193",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&width=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:51 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=FDE70B3B01ADE695D94B6C9A2F0A307B; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=192",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&height=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:51 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=D08CBEF21E59C99232567BFF477DCA7F; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=191",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&scale=1.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:51 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=15BA2CEEAD53EEBDE7603052BDD015C6; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=190",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&scale=2.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:52 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=47A581CDF9F11CF5F6A698279E01A170; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=189",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&quality=max",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:52 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=5DD064D39786EB7CE8982B2F2145CADB; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=188",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&quality=high",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:52 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=79C0EC565CF9C959B9B6B888FB1E7B40; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=187",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&format=jpg",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:52 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=28330C7E4A3E97BA46B2201878458F7B; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=186",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&format=png",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:52 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=1F7851211022AE8B53F127ED37864B62; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=185",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185401&format=tiff",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:53 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=696E1BAFE8E428593C73F0157855D961; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=184",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:53 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=1AA3A306D037627702ADEE6CBFF7553C; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=183",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&size=large",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:53 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=74E79BE0A3DF84FABF0E3AAF9CE55C4F; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=182",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&size=medium",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:54 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=8A38DE5E8007BF47EACE25A52E49BF41; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=181",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&size=small",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:54 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=198D3A9E33D5A7173DE040318781343D; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=180",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&width=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:54 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=CB17E752C77E6625761D34665335163F; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=179",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&height=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:54 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=FF18A21CF72FCDD77F290AF789755801; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=178",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&width=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:54 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=A22D595700179AACB66F94701C3ECE56; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=177",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&height=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:55 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=3A255386B9EEEBF00996B5AD7278ED4F; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=176",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&width=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:55 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=9FDCA90170C5A8B49B223327D1DB6C7D; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=175",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&height=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:55 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=C989BB9EDD0A39051C81B7A64F93B012; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=174",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&scale=1.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:55 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=E981F297FE0BA3530661F471FD55152A; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=173",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&scale=2.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:55 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=87D3490ABD9EC6184CD4E2E49885CD5C; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=172",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&quality=max",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:55 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=94DA7F85E48C00F906D17F9218D98FF3; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=171",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&quality=high",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:56 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=BDF4C4FFF9FCEE08B56400C88A94DF89; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=170",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&format=jpg",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:56 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=D4B11860FD3EE1E5B3E0C92F138967F0; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=169",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&format=png",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:56 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=EF999B701C48FCCD03D2171077038DC4; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=168",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185402&format=tiff",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:56 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=C9EF9736DE7845C807BCFD1E170D2731; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=167",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:57 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=895F04A6BE84968BD41CBF30D3B74E78; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=166",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&size=large",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:57 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=FE29AE8BC39D162FBF020C2A1FA6D16A; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=165",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&size=medium",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:57 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=C029672246A085A898D75BD9A658BC8B; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=164",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&size=small",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:58 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=2A2E08B25CCF8076DB2950EA4397FD77; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=163",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&width=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:58 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=0C9C96BAAF2F75AA1A1DBE9A287A403F; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=162",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&height=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:58 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=6C2FDFD47BB18EFE68401DD1C39FF17A; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=161",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&width=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:58 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=84718E16EB2AE89FB6C187056222F8B2; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=160",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&height=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:58 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=6BFC0024356E1608998C8BC03F701703; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=159",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&width=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:59 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=1BE8085348D894B374852CAFC715F937; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=158",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&height=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:59 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=84F30E76ADFDC651F173FC757BEA8734; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=157",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&scale=1.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:59 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=C75D9B555C5DB2747220C6F4C85390FF; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=156",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&scale=2.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:59 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=B6A39E05D401878362CC04619BE605E4; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=155",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&quality=max",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:59 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=FB34049098DD81CB962A81DAE6245E0B; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=154",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&quality=high",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:16:59 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=1AD94950E07889AAC973D23E625299EE; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=153",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&format=jpg",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:00 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=FA940990F26051B8A4B29D2B62C3C9C3; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=152",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&format=png",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:00 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=ED9C50C05353C5B17E31ACC7E93F1783; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=151",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object-miniature.do?id=101185403&format=tiff",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:00 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=AFA59FB8CD12EABFB44AD998A24802A0; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=150",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:01 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=102E7A5DC9C8476BE37ABDD2678B533B; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=149",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&size=large",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:01 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=BC67C00185C49E55C643DF23C58088CB; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=148",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&size=medium",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:01 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=8AD3E510302CD82E906A88074580595E; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=147",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&size=small",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:01 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=12930CDCACDB2B92A13913B1CE3335FA; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=146",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&width=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:01 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=D1DF7EC52623F2FF0C7E8406342DF8F0; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=145",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&height=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:02 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=9D087C9C4CAA5132984D0CE31CEA685A; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=144",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&width=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:02 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=75B1D1DB8B71ECB969948E36C8118767; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=143",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&height=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:02 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=729C5102CEE01FE96FBAD78C99506618; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=142",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&width=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:02 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=5346C24221066EE4FF924B218CBCA7F9; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=141",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&height=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:02 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=06A60B233F6C7179AD55665CEE465AB9; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=140",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&scale=1.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:02 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=7A6263C7BB8FC177CF33736C3055038F; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=139",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&scale=2.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:03 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=DE35DEC7F9C05D10B262BEB962839F50; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=138",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&quality=max",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:03 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=C60D7D981F295C45867C62AED06D5C08; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=137",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&quality=high",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:03 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=9248DB366DD1D72E9C51E9749C475D74; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=136",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&format=jpg",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:03 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=0132226418CE7C9831515F78183277DF; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=135",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&format=png",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:03 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=A028B2F7CC20AE718E5D37B80C66803F; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=134",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185401&format=tiff",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 4061,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:03 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "4061",
+      "set-cookie": [
+        "JSESSIONID=6707A6319E75B33246A7B5113E18369B; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=133",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:05 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=DE770E7ECD0167EE9B3CA121E2D0974E; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=132",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&size=large",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:05 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=0D82830BAE36560D3762EC6004AB567A; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=131",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&size=medium",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:05 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=909157B624584DE7B47FEC49F26C0AA8; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=130",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&size=small",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:05 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=35B74554E3B0874C783AE04B0DBEA6F4; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=129",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&width=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:05 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=D4FA85D844D986972358C60930FE833D; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=128",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&height=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:06 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=4CA3D876221A60003AE429776F4A669A; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=127",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&width=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:06 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=965A6CD904ADC206C7C542E19414B36D; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=126",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&height=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:06 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=CF687857CCEC546F97B5467CF755C4FE; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=125",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&width=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:06 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=FF9260C81FE9AB06B9492D4371A30E54; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=124",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&height=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:06 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=BE1094AB89E13C1EF2032006145F650F; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=123",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&scale=1.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:06 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=ACCF0670668A2231137F56CD81229B17; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=122",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&scale=2.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:07 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=FFD092473FB701B60403C38BB93C4A22; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=121",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&quality=max",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:07 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=494C138D792E52C81EB59685AC607D55; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=120",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&quality=high",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:07 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=3A8B4FE9635DD95F10AA5F544B5F9677; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=119",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&format=jpg",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:07 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=01A2BE5D45399D3639C6E0F31340D552; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=118",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&format=png",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:07 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=57AE4775E136EDF018614C2F589A5DE3; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=117",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185402&format=tiff",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 2682,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:07 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "2682",
+      "set-cookie": [
+        "JSESSIONID=95B841569481892BA7275384B27FA3F9; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=116",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:08 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=DB2D4F2B227D21DA18FD97A7B5BCCAEB; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=115",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&size=large",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:08 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=E5E81EFA5EE1D09A625B7DB163EF6B6F; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=114",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&size=medium",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:08 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=D6FFC1F5028376E7EF8C3FF5EECC0C25; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=113",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&size=small",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:08 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=759C93416284A2919F9109193188DA5F; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=112",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&width=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:08 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=91B18F3F4B76753D52722EFE463EEF5B; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=111",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&height=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:09 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=305586837745BAAA693B477C6E31F74E; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=110",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&width=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:09 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=9E6D26665C15079DD9A89A0B65E716B0; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=109",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&height=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:09 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=4C8EFCDD6093F92E6CA0088EB91C6DAE; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=108",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&width=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:09 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=7E41A2CACA2430B3CA3E5CA64D2D6547; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=107",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&height=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:09 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=D42A768E118C80F470B9E1FE057E9D22; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=106",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&scale=1.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:09 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=9CC66814ED12AAE4D14A749159C3FDC7; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=105",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&scale=2.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:10 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=8E567BCBA8461AD3CB9F91D60DF8193D; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=104",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&quality=max",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:10 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=8165E598F39225654329545F936DF1FE; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=103",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&quality=high",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:10 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=9E177F9322F744AFB6017F7EDAE46846; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=102",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&format=jpg",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:10 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=E93F02E28013266CBBE26A0049C5747C; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=101",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&format=png",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:10 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=E8033DAEF3EC3CB87898D8732554CD55; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=100",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object-miniature.do?id=101185403&format=tiff",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 6120,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:11 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=86400",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "6120",
+      "set-cookie": [
+        "JSESSIONID=2405DCD379BF2663A97F5B51434C6574; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=99",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:11 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=0CA53B88CE9D624717988B4253624CD7; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=98",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&size=large",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:13 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=D51FECAD4EB37A00E3646EE3533CFCD2; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=97",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&size=medium",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:15 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=B9EA659EE311721335AFDA38A61A87D4; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=96",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&size=small",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:16 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=4B1E9C9C8B2C25777CF522BCD892D67A; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=95",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&width=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:17 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=41BC8DE5416C31305CAF7C58282E4B98; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=94",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&height=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:18 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=8EFEB3AA225E9B1D175D873A864CC68C; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=93",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&width=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:20 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=174102C99AA1B178076476DF0D7E67FB; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=92",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&height=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:20 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=B2F9301B15C025CEFDA8B3CF4C75A8E3; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=91",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&width=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:21 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=942FF2C40B182368EBBF003AC5864CD8; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=90",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&height=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:21 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=ECD5A94ABDF5B35A02D4F633D9B36C2B; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=89",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&scale=1.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:22 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=5A0CFDC1FDCC8715510F1FD29B6C3D0E; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=88",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&scale=2.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:22 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=DEB9F7C246CBEA87A54B68B3C82C7E53; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=87",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&quality=max",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:23 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=E3DF9BC9832DC06489C3C72D59F71344; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=86",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&quality=high",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:23 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=986614B25B774E0171B228C6FF3B38C7; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=85",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&format=jpg",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:24 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=218031C4E688ACC015C53868469F303A; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=84",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&format=png",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:24 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=7FDBB79118EFC664542788CE834110F0; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=83",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185401&format=tiff",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:25 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=87251AB9E811D7BC35A94DB97819C9E3; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=82",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:26 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=553995E85798E6FCFA15A14F20346048; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=81",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&size=large",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:26 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=AD15F19A3FA15CA931C192E700AFEB44; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=80",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&size=medium",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:27 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=5496DD0DBB97C2BC2821EC57CD141754; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=79",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&size=small",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:27 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=7119EF0448C7DEB91E1BD9F02F2E5945; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=78",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&width=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:27 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=B7BE44BEBE96ED44B8C6AF630FB85E65; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=77",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&height=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:28 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=2C407BBD1FA263D1804535BD5C9B9071; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=76",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&width=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:28 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=4CB1D48429F4CF6DA9512663CC78FF13; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=75",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&height=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:28 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=4AEE67BD165035D2B8612D9801AA613A; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=74",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&width=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:29 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=2BD351AC8562F67BC9828A8B90124AFA; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=73",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&height=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:29 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=894ACE2354AE3DA2685AE8236BB30468; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=72",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&scale=1.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:31 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=A75CEFDB015532FAEE2CAF50F19EB187; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=71",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&scale=2.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:31 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=FECD6986B8B777E82F9E4578256571B4; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=70",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&quality=max",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:32 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=E7A0C12B2BEF46E5B27980A4F53D2612; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=69",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&quality=high",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:32 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=8871B6448D61BEE03F41DA7B41BF0558; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=68",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&format=jpg",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:33 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=F1ED562561BEB6CAA01A482ACFB7EBBF; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=67",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&format=png",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:33 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=7818360D7A78EBBBADA68988FAE275B4; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=66",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185402&format=tiff",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:34 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=80E26C14FF59E5B9E8B176A953F585F9; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=65",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:35 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=58B062AB494F38474F4C8CCEEFA5039A; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=64",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&size=large",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:36 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=AF53D2D1BCC8A4A15E3111F83D6AA2E2; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=63",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&size=medium",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:36 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=BC0AA79E119E84F4565A9029B44B7892; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=62",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&size=small",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:38 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=8FF748812959A479CDD89A10890EF4C5; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=61",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&width=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:38 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=5F07FBE09B9DB99BB2DE7777F7DC5045; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=60",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&height=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:39 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=71C2F65FCE19E5A28896245A6916A5FC; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=59",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&width=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:39 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=C964A6DB3C057619BB1703EDCBDDCF00; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=58",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&height=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:40 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=ED90E6CA34BB671C744BD86E04BAF959; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=57",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&width=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:40 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=0E6476318DA85B3023B74EFC62C1E973; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=56",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&height=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:41 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=9E707D95CBF70B8E0248AD8A1601A17D; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=55",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&scale=1.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:41 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=42BAEB38DE2EA2762BCF3040A3DD45BF; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=54",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&scale=2.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:43 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=A1D5FFD381FC8C5C8061150704A402DF; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=53",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&quality=max",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:43 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=5DFF7A951A9C32D625BC395A62276E37; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=52",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&quality=high",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:44 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=668AEC45CBEDC4A9CFFB34148108DB2C; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=51",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&format=jpg",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:44 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=433FFCC71B7E474FF42EADDB79B961AE; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=50",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&format=png",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:45 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=8A4E8BECCB44B8EA583126EEE771BADD; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=49",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/es/media/object.do?id=101185403&format=tiff",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:45 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=DC41D762A746BA3E775EA771A5A10FA7; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=48",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:46 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=505325B62B5BC2FC4B384E473BCD3758; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=47",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&size=large",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:46 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=1BAFB09A7F9883298AC17351909C096C; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=46",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&size=medium",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:47 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=8AC4166EAA6A4148FA59DF2FBB986378; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=45",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&size=small",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:47 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=1AC69906262FF4E9F2DF45C7F2F3EC1E; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=44",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&width=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:47 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=E9E6EBCB609174642D3AF61B55B8EA46; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=43",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&height=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:48 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=2F8EF2212C7F110AF256226292BB1284; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=42",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&width=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:48 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=E9F7BD99CD2C31026D83A2ED6F1854F6; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=41",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&height=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:48 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=482247A1DC684E851770A66FC5B0F466; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=40",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&width=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:49 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=180C619994FAB0B706236C15F933A8EC; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=39",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&height=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:49 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=2B4945F598FF031BFD508EFAB1EB5316; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=38",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&scale=1.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:49 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=74F37A282ADD1C13B2426C1BAA19F63C; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=37",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&scale=2.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:51 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=D066676A6FCB296A567282B321CCE459; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=36",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&quality=max",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:51 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=E4556346198604D57D356E583B299133; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=35",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&quality=high",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:51 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=1A4594C947AE21ACD208B50DB5836F9B; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=34",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&format=jpg",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:52 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=FD6551BFE211A9394069EDF434FBA91A; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=33",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&format=png",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:52 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=7CFB02DC6C9B02738A79CBF4CF9E0ED7; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=32",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185401&format=tiff",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 163913,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:52 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0001.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "163913",
+      "set-cookie": [
+        "JSESSIONID=F59B29D9C013841190DC04419AEDCECA; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=31",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:53 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=49CFF1C2958671A6C89DB58EEA74F609; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=30",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&size=large",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:53 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=6992A28F67020F35AE78814F72F2E2F6; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=29",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&size=medium",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:54 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=C98A648A20D9AF365B4E5522A4C33FB9; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=28",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&size=small",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:54 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=9D919117303E76A3CAD2EDEBF1AD44F9; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=27",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&width=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:55 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=90433AF16050ACB4E9C3535D99563843; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=26",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&height=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:55 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=9845AE23A184AC44E4C643074CE90024; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=25",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&width=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:55 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=4D17D3D3EA50287441FC4BE21030C45A; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=24",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&height=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:57 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=1325B1D003E2A9EA4B698B0312A66AF5; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=23",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&width=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:57 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=5614FA95B8C0DC9BE8F0F374A474B902; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=22",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&height=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:57 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=8AF2D33511CEBB30CBE57651A7EADB24; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=21",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&scale=1.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:58 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=E1ECD35A6B11AB32602816F3FEF72DE9; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=20",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&scale=2.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:58 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=8175E986E6BDB8A929D72F478DE0D0C7; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=19",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&quality=max",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:58 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=B6225A1D1071925F852D1173568EE514; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=18",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&quality=high",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:58 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=ACDEFD7BC3ADA33CDB2F2A790F68D1A0; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=17",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&format=jpg",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:59 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=569FC53F030239E910929FC3DA17687F; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=16",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&format=png",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:59 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=6DBE244E47D4ED2B84585A17F8A01706; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=15",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185402&format=tiff",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 128903,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:17:59 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0002.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "128903",
+      "set-cookie": [
+        "JSESSIONID=E12A754DDBED80DE7F1FD5A846363B64; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=14",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:00 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=5BA70C94D43DCB06972BC8DC08259CA7; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=13",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&size=large",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:00 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=799FFAF788DB69CCF981304B60BF68FD; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=12",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&size=medium",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:01 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=F8891802C17A61D6E8F7CB2CC45DB12A; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=11",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&size=small",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:01 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=95CF06D43121658FAB5C65DAFE6B68AC; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=10",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&width=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:02 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=9B94E6EBABF4C5F0A549ECFDBFE2FB7C; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=9",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&height=1000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:03 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=CD4A11EF7B68F518C314755244F29972; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=8",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&width=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:05 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=C4B44597864C87555ECAA655FFE5DAA7; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=7",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&height=2000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:05 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=233288F7BF0B61AE4BE39A1B678B133B; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=6",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&width=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:06 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=2C450B26D49B801D30A042F7AC675BCF; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=5",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&height=4000",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:08 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=123848CA83122EE4E13CC9B72983E38C; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=4",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&scale=1.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:09 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=6A5A73B3BC1E99AC12E0C29A0C4C063F; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=3",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&scale=2.0",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:10 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=DE9681BC9C0D822083FAD9D6FC7F58A9; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=2",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&quality=max",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:16 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=238574050D9E63CC4CD74E7351AEA147; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=1",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&quality=high",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:18 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=1C2A1D62467A9DFC531B87E7C6B81C3F; Path=/; HttpOnly"
+      ],
+      "connection": "close"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&format=jpg",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:20 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=3CF8B4D0B6F467BB46D491CF64D50B1F; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=200",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&format=png",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:21 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=8E4EFDF1C5CFFB2982152374771C1B18; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=199",
+      "connection": "Keep-Alive"
+    }
+  },
+  {
+    "url": "https://bvpb.mcu.es/media/object.do?id=101185403&format=tiff",
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "contentLength": 232040,
+    "isImage": true,
+    "headers": {
+      "date": "Sat, 05 Jul 2025 15:18:21 GMT",
+      "server": "Apache",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000",
+      "vary": "Accept-Encoding",
+      "cache-control": "max-age=3600",
+      "content-disposition": "inline; filename=\"tgn_0003.jpg\"",
+      "content-type": "image/jpeg",
+      "content-length": "232040",
+      "set-cookie": [
+        "JSESSIONID=0548C6CFBDCD8581608278F97597CAF4; Path=/; HttpOnly"
+      ],
+      "keep-alive": "timeout=15, max=198",
+      "connection": "Keep-Alive"
+    }
+  }
+]

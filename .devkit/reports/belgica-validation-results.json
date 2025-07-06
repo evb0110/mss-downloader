@@ -1,0 +1,62 @@
+{
+  "timestamp": "2025-07-05T08:21:19.298Z",
+  "summary": {
+    "totalDocuments": 3,
+    "totalImages": 825,
+    "errors": 2
+  },
+  "documents": [
+    {
+      "belgicaUrl": "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/10745220",
+      "documentId": "10745220",
+      "uurlId": "1750523",
+      "mapPath": "B/0/7/4/5/2/2/0/0000-00-00_00/",
+      "imageCount": 234,
+      "sampleImages": [
+        "https://viewerd.kbr.be/display/B/0/7/4/5/2/2/0/0000-00-00_00/BE-KBR00_B-10745220_0000-00-00_00_0001.jpg",
+        "https://viewerd.kbr.be/display/B/0/7/4/5/2/2/0/0000-00-00_00/BE-KBR00_B-10745220_0000-00-00_00_0002.jpg",
+        "https://viewerd.kbr.be/display/B/0/7/4/5/2/2/0/0000-00-00_00/BE-KBR00_B-10745220_0000-00-00_00_0003.jpg",
+        "https://viewerd.kbr.be/display/B/0/7/4/5/2/2/0/0000-00-00_00/BE-KBR00_B-10745220_0000-00-00_00_0004.jpg",
+        "https://viewerd.kbr.be/display/B/0/7/4/5/2/2/0/0000-00-00_00/BE-KBR00_B-10745220_0000-00-00_00_0005.jpg"
+      ]
+    },
+    {
+      "belgicaUrl": "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/10734174",
+      "documentId": "10734174",
+      "uurlId": "1760248",
+      "mapPath": "B/0/7/3/4/1/7/4/0000-00-00_00/",
+      "imageCount": 310,
+      "sampleImages": [
+        "https://viewerd.kbr.be/display/B/0/7/3/4/1/7/4/0000-00-00_00/BE-KBR00_B-10734174_0000-00-00_00_0001.jpg",
+        "https://viewerd.kbr.be/display/B/0/7/3/4/1/7/4/0000-00-00_00/BE-KBR00_B-10734174_0000-00-00_00_0002.jpg",
+        "https://viewerd.kbr.be/display/B/0/7/3/4/1/7/4/0000-00-00_00/BE-KBR00_B-10734174_0000-00-00_00_0003.jpg",
+        "https://viewerd.kbr.be/display/B/0/7/3/4/1/7/4/0000-00-00_00/BE-KBR00_B-10734174_0000-00-00_00_0004.jpg",
+        "https://viewerd.kbr.be/display/B/0/7/3/4/1/7/4/0000-00-00_00/BE-KBR00_B-10734174_0000-00-00_00_0005.jpg"
+      ]
+    },
+    {
+      "belgicaUrl": "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/10731386",
+      "documentId": "10731386",
+      "uurlId": "2195401",
+      "mapPath": "B/0/7/3/1/3/8/6/0000-00-00_00/",
+      "imageCount": 281,
+      "sampleImages": [
+        "https://viewerd.kbr.be/display/B/0/7/3/1/3/8/6/0000-00-00_00/BE-KBR00_B-10731386_0000-00-00_00_0001.jpg",
+        "https://viewerd.kbr.be/display/B/0/7/3/1/3/8/6/0000-00-00_00/BE-KBR00_B-10731386_0000-00-00_00_0002.jpg",
+        "https://viewerd.kbr.be/display/B/0/7/3/1/3/8/6/0000-00-00_00/BE-KBR00_B-10731386_0000-00-00_00_0003.jpg",
+        "https://viewerd.kbr.be/display/B/0/7/3/1/3/8/6/0000-00-00_00/BE-KBR00_B-10731386_0000-00-00_00_0004.jpg",
+        "https://viewerd.kbr.be/display/B/0/7/3/1/3/8/6/0000-00-00_00/BE-KBR00_B-10731386_0000-00-00_00_0005.jpg"
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "url": "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994415",
+      "error": "HTTP 403: Forbidden"
+    },
+    {
+      "url": "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/10736870",
+      "error": "Request timeout"
+    }
+  ]
+}

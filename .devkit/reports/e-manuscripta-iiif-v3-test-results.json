@@ -1,0 +1,50 @@
+{
+  "manuscriptId": "5157222",
+  "manifestUrl": "https://www.e-manuscripta.ch/i3f/v20/5157222/manifest",
+  "totalCanvases": 404,
+  "testResults": [
+    {
+      "canvas": 1,
+      "resolution": "Maximum",
+      "url": "https://www.e-manuscripta.ch/i3f/v20/5157616/full/max/0/default.jpg",
+      "success": true,
+      "statusCode": 200,
+      "contentType": "image/jpeg",
+      "size": 746825
+    },
+    {
+      "canvas": 2,
+      "resolution": "Maximum",
+      "url": "https://www.e-manuscripta.ch/i3f/v20/5157620/full/max/0/default.jpg",
+      "success": true,
+      "statusCode": 200,
+      "contentType": "image/jpeg",
+      "size": 778026
+    },
+    {
+      "canvas": 3,
+      "resolution": "Maximum",
+      "url": "https://www.e-manuscripta.ch/i3f/v20/5157223/full/max/0/default.jpg",
+      "success": true,
+      "statusCode": 200,
+      "contentType": "image/jpeg",
+      "size": 1763994
+    }
+  ],
+  "manifest": {
+    "context": "http://iiif.io/api/presentation/2/context.json",
+    "label": "Statuta et Consuetudines Cartusianorum",
+    "hasStructures": true,
+    "structureCount": 24
+  },
+  "recommendations": {
+    "approach": "IIIF v3 Manifest",
+    "complexity": "LOW",
+    "advantages": [
+      "Standard IIIF protocol",
+      "Clear page count: 404 pages",
+      "Multiple resolution options",
+      "No URL guessing required"
+    ]
+  }
+}

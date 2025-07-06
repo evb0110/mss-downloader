@@ -159,6 +159,16 @@ export class LibraryOptimizationService {
             timeoutMultiplier: 1.0, // Standard timeout - reliable infrastructure
             optimizationDescription: 'ONB optimizations: 4 concurrent downloads, standard IIIF v3 performance with maximum resolution support'
         },
+        'rouen': {
+            maxConcurrentDownloads: 3, // French municipal library with good performance
+            timeoutMultiplier: 1.5, // Extended timeout for session management and page discovery
+            optimizationDescription: 'Rouen Municipal Library optimizations: 3 concurrent downloads, extended timeouts for session management and high-resolution downloads'
+        },
+        'freiburg': {
+            maxConcurrentDownloads: 4, // University of Freiburg with excellent IIIF infrastructure
+            timeoutMultiplier: 1.2, // Slightly extended timeout for METS XML parsing and IIIF API calls
+            optimizationDescription: 'University of Freiburg optimizations: 4 concurrent downloads, METS/MODS metadata parsing with maximum resolution IIIF support'
+        },
         'loading': {}
     };
 

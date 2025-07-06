@@ -1,0 +1,237 @@
+{
+  "manuscripts": [
+    {
+      "id": "btv1b10052442z",
+      "expectedPages": 93,
+      "imageTests": [
+        {
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.highres",
+          "success": false,
+          "statusCode": 500,
+          "contentType": "text/html;charset=utf-8"
+        },
+        {
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.medres",
+          "success": false,
+          "statusCode": 500,
+          "contentType": "text/html;charset=utf-8"
+        },
+        {
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.lowres",
+          "success": false,
+          "statusCode": 500,
+          "contentType": "text/html;charset=utf-8"
+        }
+      ],
+      "manifestTest": {
+        "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/manifest.json",
+        "success": false,
+        "statusCode": 500
+      },
+      "pageValidation": [
+        {
+          "pageNumber": 1,
+          "success": false,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.highres"
+        },
+        {
+          "pageNumber": 46,
+          "success": false,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f46.highres"
+        },
+        {
+          "pageNumber": 93,
+          "success": false,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f93.highres"
+        }
+      ]
+    },
+    {
+      "id": "btv1b10052441h",
+      "expectedPages": 13,
+      "imageTests": [
+        {
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052441h/f1.highres",
+          "success": false,
+          "error": "read ECONNRESET"
+        },
+        {
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052441h/f1.medres",
+          "success": false,
+          "error": "read ECONNRESET"
+        },
+        {
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052441h/f1.lowres",
+          "success": false,
+          "error": "read ECONNRESET"
+        }
+      ],
+      "manifestTest": {
+        "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052441h/manifest.json",
+        "success": false,
+        "error": "read ECONNRESET"
+      },
+      "pageValidation": [
+        {
+          "pageNumber": 1,
+          "success": false,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052441h/f1.highres"
+        },
+        {
+          "pageNumber": 6,
+          "success": false,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052441h/f6.highres"
+        },
+        {
+          "pageNumber": 13,
+          "success": false,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052441h/f13.highres"
+        }
+      ]
+    },
+    {
+      "id": "btv1b100508259",
+      "expectedPages": 395,
+      "imageTests": [
+        {
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b100508259/f1.highres",
+          "success": false,
+          "error": "read ECONNRESET"
+        },
+        {
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b100508259/f1.medres",
+          "success": false,
+          "error": "read ECONNRESET"
+        },
+        {
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b100508259/f1.lowres",
+          "success": false,
+          "error": "read ECONNRESET"
+        }
+      ],
+      "manifestTest": {
+        "url": "https://www.rotomagus.fr/ark:/12148/btv1b100508259/manifest.json",
+        "success": false,
+        "error": "read ECONNRESET"
+      },
+      "pageValidation": [
+        {
+          "pageNumber": 1,
+          "success": false,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b100508259/f1.highres"
+        },
+        {
+          "pageNumber": 197,
+          "success": false,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b100508259/f197.highres"
+        },
+        {
+          "pageNumber": 395,
+          "success": false,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b100508259/f395.highres"
+        }
+      ]
+    },
+    {
+      "id": "btv1b101040278",
+      "expectedPages": 313,
+      "imageTests": [
+        {
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b101040278/f1.highres",
+          "success": false,
+          "error": "read ECONNRESET"
+        },
+        {
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b101040278/f1.medres",
+          "success": false,
+          "error": "read ECONNRESET"
+        },
+        {
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b101040278/f1.lowres",
+          "success": false,
+          "error": "read ECONNRESET"
+        }
+      ],
+      "manifestTest": {
+        "url": "https://www.rotomagus.fr/ark:/12148/btv1b101040278/manifest.json",
+        "success": false,
+        "error": "read ECONNRESET"
+      },
+      "pageValidation": [
+        {
+          "pageNumber": 1,
+          "success": false,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b101040278/f1.highres"
+        },
+        {
+          "pageNumber": 156,
+          "success": false,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b101040278/f156.highres"
+        },
+        {
+          "pageNumber": 313,
+          "success": false,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b101040278/f313.highres"
+        }
+      ]
+    },
+    {
+      "id": "btv1b10050014d",
+      "expectedPages": 91,
+      "imageTests": [
+        {
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10050014d/f1.highres",
+          "success": false,
+          "error": "read ECONNRESET"
+        },
+        {
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10050014d/f1.medres",
+          "success": false,
+          "error": "read ECONNRESET"
+        },
+        {
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10050014d/f1.lowres",
+          "success": false,
+          "error": "read ECONNRESET"
+        }
+      ],
+      "manifestTest": {
+        "url": "https://www.rotomagus.fr/ark:/12148/btv1b10050014d/manifest.json",
+        "success": false,
+        "error": "read ECONNRESET"
+      },
+      "pageValidation": [
+        {
+          "pageNumber": 1,
+          "success": false,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10050014d/f1.highres"
+        },
+        {
+          "pageNumber": 45,
+          "success": false,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10050014d/f45.highres"
+        },
+        {
+          "pageNumber": 91,
+          "success": false,
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10050014d/f91.highres"
+        }
+      ]
+    }
+  ],
+  "patterns": {
+    "imageUrlPattern": "https://www.rotomagus.fr/ark:/12148/{manuscriptId}/f{pageNumber}.{resolution}",
+    "viewerUrlPattern": "https://www.rotomagus.fr/ark:/12148/{manuscriptId}/f{pageNumber}.item.zoom",
+    "manifestUrlPattern": "https://www.rotomagus.fr/ark:/12148/{manuscriptId}/manifest.json"
+  },
+  "resolutionOptions": [],
+  "manifestSupport": false,
+  "overallAssessment": {
+    "totalTested": 5,
+    "successfulManuscripts": 0,
+    "manifestSupport": false,
+    "availableResolutions": [],
+    "implementationApproach": "Direct URL construction",
+    "authenticationRequired": false
+  }
+}

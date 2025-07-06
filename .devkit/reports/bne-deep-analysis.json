@@ -1,0 +1,453 @@
+{
+  "pageAnalysis": [
+    {
+      "url": "https://bdh-rd.bne.es/viewer.vm?id=0000007619&page=1",
+      "manuscriptId": "0000007619",
+      "imageUrls": [
+        "bdh-rd.bne.es/viewer.vm?id=0000007619&amp;page=1",
+        "bdh-rd.bne.es/pdf.raw?query=id:0000007619&amp;page=1&amp;jpeg=true"
+      ],
+      "pdfEndpoints": [
+        "pdf.raw?query=id:0000007619&amp;page=1&amp;jpeg=true",
+        "pdf.raw?query=id:0000007619&amp;page=1&amp;jpeg=true"
+      ],
+      "apiEndpoints": [],
+      "hasJavaScript": true,
+      "hasAjax": false,
+      "totalLength": 15925
+    },
+    {
+      "url": "https://bdh-rd.bne.es/viewer.vm?id=0000060229&page=1",
+      "manuscriptId": "0000060229",
+      "imageUrls": [
+        "bdh-rd.bne.es/viewer.vm?id=0000060229&amp;page=1",
+        "bdh-rd.bne.es/pdf.raw?query=id:0000060229&amp;page=1&amp;jpeg=true"
+      ],
+      "pdfEndpoints": [
+        "pdf.raw?query=id:0000060229&amp;page=1&amp;jpeg=true",
+        "pdf.raw?query=id:0000060229&amp;page=1&amp;jpeg=true"
+      ],
+      "apiEndpoints": [],
+      "hasJavaScript": true,
+      "hasAjax": false,
+      "totalLength": 12314
+    },
+    {
+      "url": "https://bdh-rd.bne.es/viewer.vm?id=0000015300&page=1",
+      "manuscriptId": "0000015300",
+      "imageUrls": [
+        "bdh-rd.bne.es/viewer.vm?id=0000015300&amp;page=1",
+        "bdh-rd.bne.es/pdf.raw?query=id:0000015300&amp;page=1&amp;jpeg=true"
+      ],
+      "pdfEndpoints": [
+        "pdf.raw?query=id:0000015300&amp;page=1&amp;jpeg=true",
+        "pdf.raw?query=id:0000015300&amp;page=1&amp;jpeg=true"
+      ],
+      "apiEndpoints": [],
+      "hasJavaScript": true,
+      "hasAjax": false,
+      "totalLength": 13842
+    }
+  ],
+  "imageEndpoints": [
+    {
+      "manuscriptId": "0000007619",
+      "tests": [
+        {
+          "url": "https://bdh-rd.bne.es/imagen.do?id=0000007619&page=1",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1374,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/image.do?id=0000007619&page=1",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1373,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/viewer/image?id=0000007619&page=1",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1377,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/images/0000007619/page1.jpg",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1424,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/images/0000007619_001.jpg",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1390,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&jpeg=true",
+          "status": 200,
+          "contentType": "image/jpeg",
+          "size": 201908,
+          "isImage": true,
+          "isPdf": false,
+          "success": true
+        },
+        {
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1",
+          "status": 200,
+          "contentType": "application/pdf",
+          "size": 211995,
+          "isImage": false,
+          "isPdf": true,
+          "success": true
+        },
+        {
+          "url": "https://bdh-rd.bne.es/fulltext/0000007619.pdf",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1388,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/viewer.vm?id=0000007619&page=1&format=image",
+          "status": 200,
+          "contentType": "text/html;charset=UTF-8",
+          "size": 15950,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/viewer.vm?id=0000007619&page=1&type=jpeg",
+          "status": 200,
+          "contentType": "text/html;charset=UTF-8",
+          "size": 15950,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        }
+      ]
+    },
+    {
+      "manuscriptId": "0000060229",
+      "tests": [
+        {
+          "url": "https://bdh-rd.bne.es/imagen.do?id=0000060229&page=1",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1374,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/image.do?id=0000060229&page=1",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1373,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/viewer/image?id=0000060229&page=1",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1377,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/images/0000060229/page1.jpg",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1424,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/images/0000060229_001.jpg",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1390,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000060229&page=1&jpeg=true",
+          "status": 200,
+          "contentType": "image/jpeg",
+          "size": 260996,
+          "isImage": true,
+          "isPdf": false,
+          "success": true
+        },
+        {
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000060229&page=1",
+          "status": 200,
+          "contentType": "application/pdf",
+          "size": 282581,
+          "isImage": false,
+          "isPdf": true,
+          "success": true
+        },
+        {
+          "url": "https://bdh-rd.bne.es/fulltext/0000060229.pdf",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1388,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/viewer.vm?id=0000060229&page=1&format=image",
+          "status": 200,
+          "contentType": "text/html;charset=UTF-8",
+          "size": 12338,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/viewer.vm?id=0000060229&page=1&type=jpeg",
+          "status": 200,
+          "contentType": "text/html;charset=UTF-8",
+          "size": 12338,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        }
+      ]
+    },
+    {
+      "manuscriptId": "0000015300",
+      "tests": [
+        {
+          "url": "https://bdh-rd.bne.es/imagen.do?id=0000015300&page=1",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1374,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/image.do?id=0000015300&page=1",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1373,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/viewer/image?id=0000015300&page=1",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1377,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/images/0000015300/page1.jpg",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1424,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/images/0000015300_001.jpg",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1390,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000015300&page=1&jpeg=true",
+          "status": 200,
+          "contentType": "image/jpeg",
+          "size": 493621,
+          "isImage": true,
+          "isPdf": false,
+          "success": true
+        },
+        {
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000015300&page=1",
+          "status": 200,
+          "contentType": "application/pdf",
+          "size": 887366,
+          "isImage": false,
+          "isPdf": true,
+          "success": true
+        },
+        {
+          "url": "https://bdh-rd.bne.es/fulltext/0000015300.pdf",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1388,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/viewer.vm?id=0000015300&page=1&format=image",
+          "status": 200,
+          "contentType": "text/html;charset=UTF-8",
+          "size": 13866,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/viewer.vm?id=0000015300&page=1&type=jpeg",
+          "status": 200,
+          "contentType": "text/html;charset=UTF-8",
+          "size": 13866,
+          "isImage": false,
+          "isPdf": false,
+          "success": false
+        }
+      ]
+    }
+  ],
+  "apiEndpoints": [],
+  "downloadTests": [
+    {
+      "manuscriptId": "0000007619",
+      "pdfTests": [
+        {
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619",
+          "status": 200,
+          "contentType": "application/pdf",
+          "size": 211995,
+          "isPdf": true,
+          "success": true
+        },
+        {
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&jpeg=true",
+          "status": 200,
+          "contentType": "image/jpeg",
+          "size": 201908,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/fulltext/0000007619.pdf",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1388,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/viewer.vm?id=0000007619&format=pdf",
+          "status": 200,
+          "contentType": "text/html;charset=UTF-8",
+          "size": 15950,
+          "isPdf": false,
+          "success": false
+        }
+      ]
+    },
+    {
+      "manuscriptId": "0000060229",
+      "pdfTests": [
+        {
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000060229",
+          "status": 200,
+          "contentType": "application/pdf",
+          "size": 282581,
+          "isPdf": true,
+          "success": true
+        },
+        {
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000060229&page=1&jpeg=true",
+          "status": 200,
+          "contentType": "image/jpeg",
+          "size": 260996,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/fulltext/0000060229.pdf",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1388,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/viewer.vm?id=0000060229&format=pdf",
+          "status": 200,
+          "contentType": "text/html;charset=UTF-8",
+          "size": 12338,
+          "isPdf": false,
+          "success": false
+        }
+      ]
+    },
+    {
+      "manuscriptId": "0000015300",
+      "pdfTests": [
+        {
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000015300",
+          "status": 200,
+          "contentType": "application/pdf",
+          "size": 887366,
+          "isPdf": true,
+          "success": true
+        },
+        {
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000015300&page=1&jpeg=true",
+          "status": 200,
+          "contentType": "image/jpeg",
+          "size": 493621,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/fulltext/0000015300.pdf",
+          "status": 404,
+          "contentType": "text/html;charset=ISO-8859-1",
+          "size": 1388,
+          "isPdf": false,
+          "success": false
+        },
+        {
+          "url": "https://bdh-rd.bne.es/viewer.vm?id=0000015300&format=pdf",
+          "status": 200,
+          "contentType": "text/html;charset=UTF-8",
+          "size": 13866,
+          "isPdf": false,
+          "success": false
+        }
+      ]
+    }
+  ]
+}

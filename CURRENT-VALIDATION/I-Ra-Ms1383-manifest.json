@@ -1,0 +1,478 @@
+{
+    "@context": "http://iiif.io/api/presentation/2/context.json",
+    "@id": "https://iiif.diamm.net/manifests/I-Ra-Ms1383/manifest.json",
+    "@type": "sc:Manifest",
+    "label": "I-Ra-Ms1383",
+    "description": "I-Ra-Ms1383",
+    "attribution": "<span>IIIF Hosting provided by the Digital Image Archive of Medieval Music.</span>",
+    "viewingHint": "paged",
+    "viewingDirection": "left-to-right",
+    "sequences": [
+        {
+            "@id": "https://iiif.diamm.net/sequences/I-Ra-Ms1383_default",
+            "@type": "sc:Sequence",
+            "label": "Default",
+            "canvases": [
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_000-Regle",
+                    "@type": "sc:Canvas",
+                    "label": "000-Regle",
+                    "width": 8742,
+                    "height": 11656,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_000-Regle",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_000-Regle",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_000-Regle.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_000-Regle.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_69v",
+                    "@type": "sc:Canvas",
+                    "label": "69v",
+                    "width": 5627,
+                    "height": 7404,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_69v",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_69v",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_69v.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_69v.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_74r",
+                    "@type": "sc:Canvas",
+                    "label": "74r",
+                    "width": 5565,
+                    "height": 7292,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_74r",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_74r",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_74r.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_74r.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_76r",
+                    "@type": "sc:Canvas",
+                    "label": "76r",
+                    "width": 5565,
+                    "height": 7292,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_76r",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_76r",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_76r.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_76r.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_76v",
+                    "@type": "sc:Canvas",
+                    "label": "76v",
+                    "width": 5565,
+                    "height": 7292,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_76v",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_76v",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_76v.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_76v.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_77v",
+                    "@type": "sc:Canvas",
+                    "label": "77v",
+                    "width": 5565,
+                    "height": 7292,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_77v",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_77v",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_77v.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_77v.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_78v",
+                    "@type": "sc:Canvas",
+                    "label": "78v",
+                    "width": 5565,
+                    "height": 7292,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_78v",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_78v",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_78v.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_78v.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_79r",
+                    "@type": "sc:Canvas",
+                    "label": "79r",
+                    "width": 5565,
+                    "height": 7292,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_79r",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_79r",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_79r.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_79r.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_79v",
+                    "@type": "sc:Canvas",
+                    "label": "79v",
+                    "width": 5565,
+                    "height": 7292,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_79v",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_79v",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_79v.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_79v.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_82r",
+                    "@type": "sc:Canvas",
+                    "label": "82r",
+                    "width": 5565,
+                    "height": 7292,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_82r",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_82r",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_82r.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_82r.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_82v",
+                    "@type": "sc:Canvas",
+                    "label": "82v",
+                    "width": 5565,
+                    "height": 7292,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_82v",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_82v",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_82v.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_82v.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_83r",
+                    "@type": "sc:Canvas",
+                    "label": "83r",
+                    "width": 5565,
+                    "height": 7292,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_83r",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_83r",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_83r.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_83r.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_83v",
+                    "@type": "sc:Canvas",
+                    "label": "83v",
+                    "width": 5565,
+                    "height": 7292,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_83v",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_83v",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_83v.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_83v.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_84r",
+                    "@type": "sc:Canvas",
+                    "label": "84r",
+                    "width": 5565,
+                    "height": 7292,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_84r",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_84r",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_84r.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_84r.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_84v",
+                    "@type": "sc:Canvas",
+                    "label": "84v",
+                    "width": 5565,
+                    "height": 7292,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_84v",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_84v",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_84v.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_84v.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_85r",
+                    "@type": "sc:Canvas",
+                    "label": "85r",
+                    "width": 5565,
+                    "height": 7292,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_85r",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_85r",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_85r.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_85r.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "@id": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_86r",
+                    "@type": "sc:Canvas",
+                    "label": "86r",
+                    "width": 5673,
+                    "height": 7376,
+                    "images": [
+                        {
+                            "@id": "https://iiif.diamm.net/annotations/I-Ra-Ms1383/I-Ra-Ms1383_86r",
+                            "@type": "oa:Annotation",
+                            "motivation": "sc:painting",
+                            "on": "https://iiif.diamm.net/canvases/I-Ra-Ms1383/I-Ra-Ms1383_86r",
+                            "resource": {
+                                "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_86r.tif",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "width": 2628,
+                                "height": 4056,
+                                "service": {
+                                    "@id": "https://iiif.diamm.net/images/I-Ra-Ms1383/I-Ra-Ms1383_86r.tif",
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "profile": "http://iiif.io/api/image/2/level1.json"
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

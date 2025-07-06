@@ -27,6 +27,8 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 ### 0. Commit strategy
 - DO NOT USE `git add .` or similar!
 - User may start several jobs in parallel, so you should track all your changes and commit and push only them. User is smart enough not to start conflicting jobs
+- **CRITICAL BUG**: Bash tool may fail in certain contexts. If Bash commands return errors, create a Node.js script (.cjs file) to execute git commands using `child_process.execSync()` and run it via Bash tool as fallback
+- **TELEGRAM BOT DELIVERY VERIFICATION**: After every version bump, verify that GitHub Actions build succeeded and telegram bot notifications were sent to users. If build failed, immediately fix and ensure users receive the changelog.
 
 ### 1. Version Bump Automation
 **AUTOMATIC BUMP REQUIRED** after any functional change:
@@ -53,14 +55,27 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 **PATTERN ANALYSIS**: Parse commit descriptions semantically, not just pattern matching
 **LIBRARY FOCUS**: Emphasize which libraries were added/fixed and what functionality improved
 
+**VERSION BUMP BUILD FAILURE PROTOCOL**:
+- If version bump commit fails due to TypeScript/lint errors, the telegram bot will NOT send notifications
+- GitHub Actions only triggers builds when version changes AND build succeeds
+- **CRITICAL FIX PROCESS:**
+  1. Fix all TypeScript/lint errors immediately
+  2. Do NOT increment version again - fix errors in same version
+  3. After build succeeds, verify telegram bot sent notifications
+  4. If bot still didn't send (due to no version change detected), create new version with same user-facing changelog messages
+  5. **MANDATORY:** Always ensure end users receive the changelog via telegram bot
+
 **NOT for:** Documentation, telegram bot fixes (any telegram bot changes - commit and push silently without version bump), code refactoring without behavior changes
 
 **Process:** After validation protocol completion:
 1. WAIT for mandatory user validation of PDF files
 2. **CRITICAL: NEVER BUMP VERSION WITHOUT EXPLICIT USER APPROVAL**
 3. Only after user explicitly approves validation: Bump patch version in package.json
-4. Commit all changes with descriptive message  
-5. Push to GitHub main (triggers auto-build & notifications)
+4. **MANDATORY TODO CLEANUP:** Move all completed todos to `.devkit/tasks/COMPLETED.md` file
+5. **MANDATORY PRE-PUSH CHECKS:** Run lint, typecheck, and build commands to ensure code quality
+6. Commit all changes with descriptive message  
+7. Push to GitHub main (triggers auto-build & notifications)
+8. **MANDATORY POST-PUSH VERIFICATION:** Wait and verify that GitHub Actions build completed successfully
 
 **MANDATORY USER APPROVAL SYSTEM:**
 - **ALWAYS REQUIRED:** User must explicitly approve before ANY version bump
@@ -90,7 +105,7 @@ When adding/fixing libraries, **MANDATORY validation:**
    - If it is "something not ok", it should iterate 3 more times to try and make it "ok"
    - **NEVER CREATE FAKE MULTI-PAGE PDFs:** Do not duplicate single pages to create artificial multi-page PDFs
    - Only after proper validation for every file, claude can present them to the user
-9. **MANDATORY validation by user!!!:** Put all the pdf files with clear names in one folder and open it in finder for user to inspect. All pdfs for current inspection should be in one folder and there should be nothing else in that folder, all the old validation folders shold be deleted. Files shoulde be put BEFORE you ask user for validation
+9. **MANDATORY validation by user!!!:** Create a single clean folder containing ONLY the final PDF files with clear names (no subfolders, no individual image files, no test files, no logs). Delete all previous validation folders and temporary files. The validation folder should contain exclusively the final PDF files ready for user inspection. **ONLY OPEN FINDER WHEN READY FOR FINAL USER VALIDATION** - do not open finder during development, testing, or intermediate validation steps.
 10. **WAIT FOR USER APPROVAL:** Do not proceed with version bump until user confirms validation passed
 
 ### 3. Testing Requirements
@@ -99,13 +114,26 @@ When adding/fixing libraries, **MANDATORY validation:**
 - Run tests repeatedly until consistently passing
 - Use PID-safe commands: `npm run test:e2e:start`/`npm run test:e2e:kill`
 
-### 4. File Organization
+### 4. Pre-Push Quality Gates
+**MANDATORY before every push:**
+- Run `npm run lint` - must pass with no errors
+- Run `npm run typecheck` - must pass with no errors  
+- Run `npm run build` - must complete successfully
+- **CRITICAL:** If any command fails, fix issues before proceeding with commit/push
+- **POST-PUSH VERIFICATION:** Monitor GitHub Actions and verify build success
+- **BUILD FAILURE PROTOCOL:** If build fails due to TypeScript/lint errors:
+  1. Fix all errors immediately
+  2. Commit fixes with descriptive message
+  3. Push fixes to trigger new build
+  4. **CRITICAL:** Ensure changelog reaches users - if version was bumped but build failed, the telegram bot won't send notifications until build succeeds
+
+### 5. File Organization
 - Store all reports/analysis in `.devkit/reports/` (create if doesn't exist)
 - Use `.devkit/` subfolders for all development files
 - Organize reports for readability (by date/library/issue type)
 - Never leave temporary files in project root
 
-### 5. Development Context
+### 6. Development Context
 - Main process: downloading, merging, file operations
 - Renderer process: UI configuration, user interaction  
 - Show minimal output - current task + small summary only

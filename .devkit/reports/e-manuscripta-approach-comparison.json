@@ -1,0 +1,39 @@
+{
+  "manuscriptId": "5157222",
+  "timestamp": "2025-07-06T06:37:24.812Z",
+  "blockResult": {
+    "approach": "Block-based",
+    "totalBlocks": 0,
+    "testResults": [],
+    "success": true
+  },
+  "iiifResult": {
+    "approach": "IIIF Manifest",
+    "totalCanvases": 404,
+    "testResults": [
+      {
+        "canvasId": "https://www.e-manuscripta.ch/i3f/v20/5157222/canvas/5157616",
+        "serviceUrl": "https://www.e-manuscripta.ch/i3f/v20/5157616",
+        "imageUrl": "https://www.e-manuscripta.ch/i3f/v20/5157616/full/max/0/default.jpg",
+        "size": 707367,
+        "success": true
+      },
+      {
+        "canvasId": "https://www.e-manuscripta.ch/i3f/v20/5157222/canvas/5157620",
+        "serviceUrl": "https://www.e-manuscripta.ch/i3f/v20/5157620",
+        "imageUrl": "https://www.e-manuscripta.ch/i3f/v20/5157620/full/max/0/default.jpg",
+        "size": 737701,
+        "success": true
+      },
+      {
+        "canvasId": "https://www.e-manuscripta.ch/i3f/v20/5157222/canvas/5157223",
+        "serviceUrl": "https://www.e-manuscripta.ch/i3f/v20/5157223",
+        "imageUrl": "https://www.e-manuscripta.ch/i3f/v20/5157223/full/max/0/default.jpg",
+        "size": 1672461,
+        "success": true
+      }
+    ],
+    "success": true
+  },
+  "recommendation": "IIIF Manifest"
+}

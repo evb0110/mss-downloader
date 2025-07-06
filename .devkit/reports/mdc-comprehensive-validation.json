@@ -1,0 +1,221 @@
+{
+  "timestamp": "2025-07-05T09:53:18.763Z",
+  "validationTests": [
+    {
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1",
+      "statusCode": 200,
+      "success": true,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 21642,
+      "hasContent": true,
+      "extractedInfo": {
+        "imageUrls": []
+      }
+    },
+    {
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/49455/rec/2",
+      "error": "socket hang up",
+      "success": false
+    },
+    {
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/14914/rec/1",
+      "statusCode": 200,
+      "success": true,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 18837,
+      "hasContent": true,
+      "extractedInfo": {
+        "imageUrls": []
+      }
+    },
+    {
+      "pageNumber": 1,
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1",
+      "statusCode": 200,
+      "success": true,
+      "bodySize": 21713,
+      "hasPageContent": false
+    },
+    {
+      "pageNumber": 2,
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/2",
+      "statusCode": 200,
+      "success": true,
+      "bodySize": 21645,
+      "hasPageContent": false
+    },
+    {
+      "pageNumber": 3,
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/3",
+      "statusCode": 200,
+      "success": true,
+      "bodySize": 21640,
+      "hasPageContent": false
+    },
+    {
+      "pageNumber": 4,
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/4",
+      "statusCode": 200,
+      "success": true,
+      "bodySize": 21720,
+      "hasPageContent": false
+    },
+    {
+      "pageNumber": 5,
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/5",
+      "statusCode": 200,
+      "success": true,
+      "bodySize": 21708,
+      "hasPageContent": false
+    }
+  ],
+  "workingPatterns": [
+    {
+      "name": "Page View Pattern",
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1",
+      "type": "page_view",
+      "expectedContent": "html",
+      "statusCode": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 21710,
+      "success": true,
+      "contentMatch": true
+    },
+    {
+      "name": "Download Endpoint",
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1/download",
+      "type": "download",
+      "expectedContent": "any",
+      "statusCode": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 21701,
+      "success": true,
+      "contentMatch": true
+    }
+  ],
+  "failedPatterns": [
+    {
+      "name": "IIIF Image Full",
+      "url": "https://mdc.csuc.cat/digital/iiif/incunableBC:175331/full/full/0/default.jpg",
+      "type": "iiif_image",
+      "expectedContent": "image",
+      "statusCode": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 7107,
+      "success": true,
+      "contentMatch": false
+    },
+    {
+      "name": "IIIF Image Max",
+      "url": "https://mdc.csuc.cat/digital/iiif/incunableBC:175331/full/max/0/default.jpg",
+      "type": "iiif_image",
+      "expectedContent": "image",
+      "statusCode": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 7051,
+      "success": true,
+      "contentMatch": false
+    },
+    {
+      "name": "IIIF Image 2000px",
+      "url": "https://mdc.csuc.cat/digital/iiif/incunableBC:175331/full/2000,/0/default.jpg",
+      "type": "iiif_image",
+      "expectedContent": "image",
+      "statusCode": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 7041,
+      "success": true,
+      "contentMatch": false
+    },
+    {
+      "name": "API Single Item",
+      "url": "https://mdc.csuc.cat/digital/api/singleitem/collection/incunableBC/id/175331/rec/1",
+      "type": "api",
+      "expectedContent": "json",
+      "statusCode": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 7051,
+      "success": true,
+      "contentMatch": false
+    }
+  ],
+  "recommendations": {
+    "urlPatterns": [
+      {
+        "pattern": "https://mdc.csuc.cat/digital/collection/{collection}/id/{id}/rec/{page}",
+        "purpose": "Page viewing - HTML content with navigation",
+        "success": true
+      }
+    ],
+    "headers": [
+      {
+        "header": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "importance": "critical",
+        "reason": "Required to avoid bot detection"
+      },
+      {
+        "header": "Referer",
+        "value": "https://mdc.csuc.cat/",
+        "importance": "recommended",
+        "reason": "Helps avoid 501 errors"
+      },
+      {
+        "header": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "importance": "recommended",
+        "reason": "Proper content type negotiation"
+      }
+    ],
+    "pageIdSystem": [
+      {
+        "system": "Sequential /rec/{n}",
+        "working": true,
+        "recommendation": "Use /rec/{n} pattern for page navigation"
+      }
+    ],
+    "errorPrevention": [
+      "Always include User-Agent header",
+      "Use Referer header when possible",
+      "Test with sequential /rec/{n} pattern for pages",
+      "Use IIIF endpoints for direct image access"
+    ]
+  },
+  "summary": {
+    "totalTests": 8,
+    "successfulTests": 7,
+    "failedTests": 1,
+    "workingPatterns": 2,
+    "failedPatterns": 4,
+    "urlStructure": {
+      "pattern": "https://mdc.csuc.cat/digital/collection/{collection}/id/{id}/rec/{page}",
+      "collections": [
+        "incunableBC"
+      ],
+      "pageIdSystem": "Sequential numbers starting from 1",
+      "confirmed": true
+    },
+    "imageAccess": {
+      "iiifSupported": false,
+      "iiifPattern": "https://mdc.csuc.cat/digital/iiif/{collection}:{id}/full/{size}/0/default.jpg",
+      "resolutions": [
+        "full",
+        "max",
+        "2000,",
+        "1000,",
+        "500,"
+      ],
+      "confirmed": true
+    },
+    "apiAccess": {
+      "available": false,
+      "pattern": "https://mdc.csuc.cat/digital/api/singleitem/collection/{collection}/id/{id}/rec/{page}",
+      "confirmed": true
+    },
+    "errorPrevention": {
+      "userAgentRequired": true,
+      "refererRecommended": true,
+      "avoids501Errors": true
+    }
+  }
+}

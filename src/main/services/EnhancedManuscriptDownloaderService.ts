@@ -10,6 +10,7 @@ import { ZifImageProcessor } from './ZifImageProcessor.js';
 import type { ManuscriptManifest, LibraryInfo } from '../../shared/types';
 import type { TLibrary } from '../../shared/queueTypes';
 import * as https from 'https';
+import { JSDOM } from 'jsdom';
 
 const MIN_VALID_IMAGE_SIZE_BYTES = 1024; // 1KB heuristic
 
@@ -242,6 +243,16 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://viewer.onb.ac.at/1000B160',
             description: 'Austrian National Library digital collections with IIIF v3 support for high-resolution manuscript access',
         },
+        {
+            name: 'Rouen Municipal Library',
+            example: 'https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.item.zoom',
+            description: 'Bibliothèque municipale de Rouen digital manuscript collections with high-resolution access',
+        },
+        {
+            name: 'University of Freiburg',
+            example: 'https://dl.ub.uni-freiburg.de/diglit/codal_25',
+            description: 'University of Freiburg digital manuscript collection with METS/MODS metadata and maximum resolution IIIF support',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -397,6 +408,8 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('mdc.csuc.cat/digital/collection')) return 'mdc_catalonia';
         if (url.includes('bvpb.mcu.es')) return 'bvpb';
         if (url.includes('viewer.onb.ac.at')) return 'onb';
+        if (url.includes('rotomagus.fr')) return 'rouen';
+        if (url.includes('dl.ub.uni-freiburg.de')) return 'freiburg';
         
         return null;
     }
@@ -577,6 +590,36 @@ export class EnhancedManuscriptDownloaderService {
                 'Cache-Control': 'no-cache',
                 'Connection': 'keep-alive'
             };
+        }
+        
+        // Special headers for Rouen Municipal Library to ensure session management
+        if (url.includes('rotomagus.fr')) {
+            // Extract manuscript ID and page number for proper referer
+            const arkMatch = url.match(/ark:\/12148\/([^/?\s]+)/);
+            const pageMatch = url.match(/f(\d+)\./);
+            
+            if (arkMatch && pageMatch) {
+                const manuscriptId = arkMatch[1];
+                const pageNumber = pageMatch[1];
+                const refererUrl = `https://www.rotomagus.fr/ark:/12148/${manuscriptId}/f${pageNumber}.item.zoom`;
+                
+                headers = {
+                    ...headers,
+                    'Referer': refererUrl,
+                    'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                    'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive'
+                };
+            } else {
+                // Fallback for non-image URLs (manifest, etc.)
+                headers = {
+                    ...headers,
+                    'Referer': 'https://www.rotomagus.fr/',
+                    'Accept': 'application/json, text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8'
+                };
+            }
         }
         
         try {
@@ -814,6 +857,12 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'onb':
                     manifest = await this.loadOnbManifest(originalUrl);
+                    break;
+                case 'rouen':
+                    manifest = await this.loadRouenManifest(originalUrl);
+                    break;
+                case 'freiburg':
+                    manifest = await this.loadFreiburgManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -4780,7 +4829,7 @@ export class EnhancedManuscriptDownloaderService {
             
             // Method 2: Try select dropdown options (for Schnütgen and DDBKHD collections)
             if (pageIds.length === 0) {
-                const selectMatch = html.match(/<select[^>]*id="goToPage"[^>]*>.*?<\/select>/s);
+                const selectMatch = html.match(/<select[^>]*id="goToPages"[^>]*>.*?<\/select>/s);
                 if (selectMatch) {
                     const selectHtml = selectMatch[0];
                     const optionRegex = /option value="(\d+)"/g;
@@ -5927,16 +5976,16 @@ export class EnhancedManuscriptDownloaderService {
     private async parseEManuscriptaDropdown(html: string): Promise<Array<{pageId: string, pageNumber: number}>> {
         try {
             // Find the complete goToPage select element first
-            const selectStart = html.indexOf('<select id="goToPage"');
+            const selectStart = html.indexOf('<select id="goToPages"');
             const selectEnd = html.indexOf('</select>', selectStart);
             
             if (selectStart === -1 || selectEnd === -1) {
-                console.log('e-manuscripta: goToPage select element not found');
+                console.log('e-manuscripta: goToPages select element not found');
                 return [];
             }
             
             const selectElement = html.substring(selectStart, selectEnd + 9);
-            console.log(`e-manuscripta: Found goToPage select element (${selectElement.length} chars)`);
+            console.log(`e-manuscripta: Found goToPages select element (${selectElement.length} chars)`);
             
             // Parse options with multiple regex patterns for robustness
             const patterns = [
@@ -7564,6 +7613,275 @@ export class EnhancedManuscriptDownloaderService {
             
         } catch (error: any) {
             throw new Error(`Failed to load ONB manuscript: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Load Rouen Municipal Library manifest
+     */
+    async loadRouenManifest(originalUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // Extract manuscript ID from URL pattern: 
+            // https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.item.zoom
+            const arkMatch = originalUrl.match(/ark:\/12148\/([^/?\s]+)/);
+            if (!arkMatch) {
+                throw new Error('Invalid Rouen URL format. Expected format: https://www.rotomagus.fr/ark:/12148/MANUSCRIPT_ID/f{page}.item.zoom');
+            }
+            
+            const manuscriptId = arkMatch[1];
+            console.log(`Extracting Rouen manuscript ID: ${manuscriptId}`);
+            
+            // Try to get page count from manifest JSON first
+            const manifestUrl = `https://www.rotomagus.fr/ark:/12148/${manuscriptId}/manifest.json`;
+            console.log(`Fetching Rouen manifest: ${manifestUrl}`);
+            
+            let totalPages = 0;
+            let displayName = `Rouen Manuscript ${manuscriptId}`;
+            
+            try {
+                const manifestResponse = await this.fetchDirect(manifestUrl, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                        'Referer': originalUrl
+                    }
+                });
+                
+                if (manifestResponse.ok) {
+                    const manifestData = await manifestResponse.json();
+                    if (manifestData.totalNumberPage && typeof manifestData.totalNumberPage === 'number') {
+                        totalPages = manifestData.totalNumberPage;
+                        console.log(`Found page count in manifest: ${totalPages}`);
+                        
+                        // Extract title if available
+                        if (manifestData.title) {
+                            displayName = manifestData.title;
+                        } else if (manifestData.label) {
+                            displayName = manifestData.label;
+                        }
+                    }
+                }
+            } catch (manifestError) {
+                console.warn(`Failed to fetch Rouen manifest, will attempt page discovery: ${(manifestError as Error).message}`);
+            }
+            
+            // Fallback: Try to get page count from viewer page
+            if (totalPages === 0) {
+                try {
+                    const viewerUrl = `https://www.rotomagus.fr/ark:/12148/${manuscriptId}/f1.item.zoom`;
+                    console.log(`Fallback: fetching viewer page for page discovery: ${viewerUrl}`);
+                    
+                    const viewerResponse = await this.fetchDirect(viewerUrl, {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                        }
+                    });
+                    
+                    if (viewerResponse.ok) {
+                        const viewerHtml = await viewerResponse.text();
+                        
+                        // Look for page count patterns in the HTML/JavaScript
+                        const patterns = [
+                            /"totalNumberPage"\s*:\s*(\d+)/,
+                            /"totalVues"\s*:\s*(\d+)/,
+                            /"nbTotalVues"\s*:\s*(\d+)/,
+                            /totalNumberPage["']?\s*:\s*(\d+)/
+                        ];
+                        
+                        for (const pattern of patterns) {
+                            const match = viewerHtml.match(pattern);
+                            if (match && match[1]) {
+                                totalPages = parseInt(match[1], 10);
+                                console.log(`Found page count via viewer page pattern: ${totalPages}`);
+                                break;
+                            }
+                        }
+                    }
+                } catch (viewerError) {
+                    console.warn(`Failed to fetch viewer page: ${(viewerError as Error).message}`);
+                }
+            }
+            
+            if (totalPages === 0) {
+                throw new Error('Could not determine page count for Rouen manuscript');
+            }
+            
+            // Generate page URLs using the highres resolution for maximum quality
+            const pageLinks: string[] = [];
+            
+            for (let i = 1; i <= totalPages; i++) {
+                const imageUrl = `https://www.rotomagus.fr/ark:/12148/${manuscriptId}/f${i}.highres`;
+                pageLinks.push(imageUrl);
+            }
+            
+            console.log(`Generated ${pageLinks.length} page URLs for Rouen manuscript`);
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'rouen' as const,
+                displayName,
+                originalUrl: originalUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load Rouen manuscript: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Load University of Freiburg manuscript manifest using METS XML parsing
+     */
+    async loadFreiburgManifest(originalUrl: string): Promise<ManuscriptManifest> {
+        try {
+            console.log(`Loading Freiburg manuscript from: ${originalUrl}`);
+            
+            // Extract manuscript ID from URL - matches patterns like:
+            // https://dl.ub.uni-freiburg.de/diglit/codal_25
+            // https://dl.ub.uni-freiburg.de/diglit/codal_25/0001
+            const manuscriptMatch = originalUrl.match(/\/diglit\/([^/?]+)/);
+            if (!manuscriptMatch) {
+                throw new Error('Invalid Freiburg URL format - cannot extract manuscript ID');
+            }
+            
+            const manuscriptId = manuscriptMatch[1];
+            console.log(`Extracted manuscript ID: ${manuscriptId}`);
+            
+            // Get manuscript metadata from the main page
+            const metadataUrl = `https://dl.ub.uni-freiburg.de/diglit/${manuscriptId}`;
+            console.log(`Fetching metadata from: ${metadataUrl}`);
+            
+            const metadataResponse = await this.fetchDirect(metadataUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9,de;q=0.8',
+                    'Cache-Control': 'no-cache'
+                }
+            });
+            
+            if (!metadataResponse.ok) {
+                throw new Error(`HTTP ${metadataResponse.status}: ${metadataResponse.statusText}`);
+            }
+            
+            const metadataHtml = await metadataResponse.text();
+            
+            // Extract display name from metadata page
+            let displayName = `Freiburg Manuscript ${manuscriptId}`;
+            const dom = new JSDOM(metadataHtml);
+            const document = dom.window.document;
+            
+            // Try multiple selectors for title extraction
+            const titleSelectors = [
+                'h1.page-header',
+                '.metadata-title',
+                'h1',
+                'title'
+            ];
+            
+            for (const selector of titleSelectors) {
+                const titleElement = document.querySelector(selector);
+                if (titleElement && titleElement.textContent?.trim()) {
+                    displayName = titleElement.textContent.trim();
+                    break;
+                }
+            }
+            
+            console.log(`Extracted display name: ${displayName}`);
+            
+            // Fetch METS XML metadata for page information
+            const metsUrl = `https://dl.ub.uni-freiburg.de/diglit/${manuscriptId}/mets`;
+            console.log(`Fetching METS XML from: ${metsUrl}`);
+            
+            const metsResponse = await this.fetchDirect(metsUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'application/xml,text/xml,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9,de;q=0.8',
+                    'Cache-Control': 'no-cache'
+                }
+            });
+            
+            if (!metsResponse.ok) {
+                throw new Error(`Failed to fetch METS XML: HTTP ${metsResponse.status}`);
+            }
+            
+            const metsXml = await metsResponse.text();
+            console.log(`METS XML length: ${metsXml.length} characters`);
+            
+            // Parse METS XML to extract page information
+            const xmlDom = new JSDOM(metsXml, { contentType: 'text/xml' });
+            const xmlDocument = xmlDom.window.document;
+            
+            // First try to get display name from MODS metadata in METS
+            const titleElement = xmlDocument.querySelector('mods\\:title, title');
+            if (titleElement && titleElement.textContent && titleElement.textContent.trim()) {
+                displayName = titleElement.textContent.trim();
+                console.log(`Updated display name from MODS: ${displayName}`);
+            }
+            
+            // Extract page files from METS structure
+            // Look for maximum resolution images in fileGrp USE="MAX"
+            let imageFiles = xmlDocument.querySelectorAll('mets\\:fileGrp[USE="MAX"] mets\\:file[MIMETYPE="image/jpg"], fileGrp[USE="MAX"] file[MIMETYPE="image/jpg"]');
+            
+            if (imageFiles.length === 0) {
+                // Fallback to DEFAULT or PRINT groups
+                imageFiles = xmlDocument.querySelectorAll('mets\\:fileGrp[USE="DEFAULT"] mets\\:file[MIMETYPE="image/jpg"], mets\\:fileGrp[USE="PRINT"] mets\\:file[MIMETYPE="image/jpg"], fileGrp[USE="DEFAULT"] file[MIMETYPE="image/jpg"], fileGrp[USE="PRINT"] file[MIMETYPE="image/jpg"]');
+            }
+            
+            if (imageFiles.length === 0) {
+                // Final fallback: look for any image files
+                imageFiles = xmlDocument.querySelectorAll('mets\\:file[MIMETYPE="image/jpg"], file[MIMETYPE="image/jpg"]');
+                if (imageFiles.length === 0) {
+                    throw new Error('No image files found in METS XML');
+                }
+                console.log(`Found ${imageFiles.length} image files using fallback selector`);
+            } else {
+                console.log(`Found ${imageFiles.length} maximum resolution image files`);
+            }
+            
+            // Extract page information and use direct URLs from METS
+            const pageLinks: string[] = [];
+            
+            imageFiles.forEach((fileElement: Element, index: number) => {
+                const fLocatElement = fileElement.querySelector('mets\\:FLocat, FLocat');
+                if (fLocatElement) {
+                    const href = fLocatElement.getAttribute('xlink:href') || fLocatElement.getAttribute('href');
+                    if (href && href.includes('.jpg')) {
+                        // Use the direct URL from METS XML for maximum resolution
+                        pageLinks.push(href);
+                        
+                        if (index < 5) { // Log first 5 for debugging
+                            console.log(`Added page ${index + 1}: ${href}`);
+                        }
+                    }
+                }
+            });
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No valid pages found in METS XML structure');
+            }
+            
+            if (pageLinks.length > 5) {
+                console.log(`... and ${pageLinks.length - 5} more pages`);
+            }
+            
+            console.log(`Successfully extracted ${pageLinks.length} page links`);
+            
+            // Create manifest structure
+            const manifest: ManuscriptManifest = {
+                pageLinks: pageLinks,
+                totalPages: pageLinks.length,
+                library: 'freiburg' as any,
+                displayName: displayName,
+                originalUrl: originalUrl
+            };
+            
+            console.log(`Freiburg manifest created successfully with ${pageLinks.length} pages`);
+            return manifest;
+            
+        } catch (error: any) {
+            console.error('Freiburg manifest loading error:', error);
+            throw new Error(`Failed to load Freiburg manuscript: ${(error as Error).message}`);
         }
     }
 

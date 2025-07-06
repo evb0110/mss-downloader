@@ -1,79 +1,45 @@
-const https = require('https');
+#!/usr/bin/env node
 
-const testUrl = 'https://www.e-manuscripta.ch/zuzcmi/content/zoom/3229497';
-
-console.log('Testing e-manuscripta.ch page discovery fix...');
-console.log(`Test URL: ${testUrl}`);
-
-// Test the regex pattern
-const urlPattern = /e-manuscripta\.ch\/([^/]+)\/content\/zoom\/(\d+)/;
-const urlMatch = testUrl.match(urlPattern);
-
-if (urlMatch) {
-    const [, library, manuscriptId] = urlMatch;
-    console.log(`✅ URL parsing successful:`);
-    console.log(`  Library: ${library}`);
-    console.log(`  Manuscript ID: ${manuscriptId}`);
+async function testEManuscriptaFix() {
+    console.log('=== TESTING E-MANUSCRIPTA FIX ===');
     
-    // Fetch the page to test dropdown parsing
-    console.log('\\nFetching page to test dropdown parsing...');
+    const testUrls = [
+        'https://www.e-manuscripta.ch/bau/content/titleinfo/5157222',
+        'https://www.e-manuscripta.ch/bau/content/thumbview/5157616',
+        'https://www.e-manuscripta.ch/bau/content/thumbview/5157228',
+        'https://www.e-manuscripta.ch/bau/content/thumbview/5157615'
+    ];
     
-    https.get(testUrl, (response) => {
-        console.log(`Status: ${response.statusCode}`);
+    for (const url of testUrls) {
+        console.log(`\nTesting: ${url}`);
         
-        let data = '';
-        response.on('data', (chunk) => {
-            data += chunk;
-        });
-        
-        response.on('end', () => {
-            console.log(`Page size: ${data.length} bytes`);
+        try {
+            const response = await fetch(url);
+            const html = await response.text();
             
-            // Test the new dropdown regex
-            const pageDropdownRegex = /<option\\s+value="(\\d+)"\\s*>\\s*\\[(\\d+)\\]/g;
-            const pageMatches = Array.from(data.matchAll(pageDropdownRegex));
-            
-            console.log(`\\n📋 Dropdown parsing results:`);
-            console.log(`Found ${pageMatches.length} option elements`);
-            
-            if (pageMatches.length > 0) {
-                console.log('✅ SUCCESS: Page dropdown found and parsed');
-                console.log(`First 5 pages:`);
-                pageMatches.slice(0, 5).forEach((match, i) => {
-                    console.log(`  [${match[2]}] → ID ${match[1]}`);
-                });
-                
-                if (pageMatches.length > 5) {
-                    console.log(`Last 3 pages:`);
-                    pageMatches.slice(-3).forEach((match, i) => {
-                        console.log(`  [${match[2]}] → ID ${match[1]}`);
-                    });
+            // Test the fixed dropdown detection
+            const selectMatch = html.match(/<select[^>]*id="goToPages"[^>]*>.*?<\/select>/s);
+            if (selectMatch) {
+                const selectHtml = selectMatch[0];
+                const optionRegex = /option value="(\d+)"/g;
+                const pageIds = [];
+                let match;
+                while ((match = optionRegex.exec(selectHtml)) !== null) {
+                    pageIds.push(match[1]);
                 }
-                
-                const totalPages = pageMatches.length;
-                console.log(`\\n📊 Total pages: ${totalPages} (vs previous implementation: 1)`);
-                console.log(`Improvement: ${totalPages}x more content detected`);
-                
-                // Test image URL generation
-                const firstPageId = pageMatches[0][1];
-                const lastPageId = pageMatches[pageMatches.length - 1][1];
-                console.log(`\\n🔗 Sample image URLs:`);
-                console.log(`  Page 1: https://www.e-manuscripta.ch/${library}/download/webcache/0/${firstPageId}`);
-                console.log(`  Last page: https://www.e-manuscripta.ch/${library}/download/webcache/0/${lastPageId}`);
-                
+                console.log(`✓ Found ${pageIds.length} pages in dropdown`);
+                if (pageIds.length > 0) {
+                    console.log(`  First 5 page IDs: ${pageIds.slice(0, 5).join(', ')}`);
+                    console.log(`  Last 5 page IDs: ${pageIds.slice(-5).join(', ')}`);
+                }
             } else {
-                console.log('❌ FAILED: No page dropdown found');
-                
-                // Test fallback regex
-                const pageNavRegex = /\\[(\\d+)\\]/g;
-                const navMatches = Array.from(data.matchAll(pageNavRegex));
-                console.log(`Fallback navigation links found: ${navMatches.length}`);
+                console.log('✗ No goToPages dropdown found');
             }
-        });
-    }).on('error', (err) => {
-        console.log(`❌ Request failed: ${err.message}`);
-    });
-    
-} else {
-    console.log('❌ URL parsing failed');
+            
+        } catch (error) {
+            console.error(`Error testing ${url}:`, error.message);
+        }
+    }
 }
+
+testEManuscriptaFix();

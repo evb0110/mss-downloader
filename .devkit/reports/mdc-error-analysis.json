@@ -1,0 +1,537 @@
+{
+  "timestamp": "2025-07-05T09:53:14.659Z",
+  "errorTests": [
+    {
+      "testName": "Missing User-Agent",
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1",
+      "options": {
+        "headers": {}
+      },
+      "statusCode": 200,
+      "headers": {
+        "date": "Sat, 05 Jul 2025 09:53:15 GMT",
+        "server": "Apache",
+        "x-oclc-iiif-provider": "cantaloupe",
+        "vary": "Origin,Accept-Encoding,Access-Control-Request-Method,Access-Control-Request-Headers,User-Agent",
+        "content-language": "en-US",
+        "content-type": "text/html;charset=utf-8",
+        "etag": "\"0cd36ae7d9f22887f9b7b2de58ced1999\"",
+        "content-length": "153677",
+        "cache-control": "max-age=0",
+        "expires": "Sat, 05 Jul 2025 09:53:15 GMT",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive"
+      },
+      "bodySize": 153677,
+      "isError": false,
+      "errorType": "success",
+      "bodyPreview": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charSet=\"UTF-8\" http-equiv=\"Content-Type\" content=\"text/javascript\"/>\n    \n    <!--{this.props.head.title.toComponent()}-->\n    <title>CONTENTdm</title>\n    <meta name=\"description\" content=\"\" data-react-helmet=\"true\"/>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"/>\n\n    <!-- socialLinks != null and socialLinks.shareEnabled and -->\n    <meta property=\"og:title\" content=\"Coberta\" />\n    \n    <meta property=\"og:image\" c",
+      "has501Error": true
+    },
+    {
+      "testName": "Wrong User-Agent",
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1",
+      "options": {
+        "headers": {
+          "User-Agent": "Bot/1.0"
+        }
+      },
+      "statusCode": 200,
+      "headers": {
+        "date": "Sat, 05 Jul 2025 09:53:16 GMT",
+        "server": "Apache",
+        "x-oclc-iiif-provider": "cantaloupe",
+        "vary": "Origin,Accept-Encoding,Access-Control-Request-Method,Access-Control-Request-Headers,User-Agent",
+        "content-language": "en-US",
+        "content-type": "text/html;charset=utf-8",
+        "etag": "\"092886ddcbc8454bd6bdb165f31d3dea6\"",
+        "content-length": "153677",
+        "cache-control": "max-age=0",
+        "expires": "Sat, 05 Jul 2025 09:53:16 GMT",
+        "keep-alive": "timeout=5, max=99",
+        "connection": "Keep-Alive"
+      },
+      "bodySize": 153677,
+      "isError": false,
+      "errorType": "success",
+      "bodyPreview": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charSet=\"UTF-8\" http-equiv=\"Content-Type\" content=\"text/javascript\"/>\n    \n    <!--{this.props.head.title.toComponent()}-->\n    <title>CONTENTdm</title>\n    <meta name=\"description\" content=\"\" data-react-helmet=\"true\"/>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"/>\n\n    <!-- socialLinks != null and socialLinks.shareEnabled and -->\n    <meta property=\"og:title\" content=\"Coberta\" />\n    \n    <meta property=\"og:image\" c",
+      "has501Error": true
+    },
+    {
+      "testName": "Missing Referer",
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1",
+      "options": {
+        "headers": {
+          "User-Agent": "Mozilla/5.0"
+        }
+      },
+      "statusCode": 200,
+      "headers": {
+        "date": "Sat, 05 Jul 2025 09:53:17 GMT",
+        "server": "Apache",
+        "x-oclc-iiif-provider": "cantaloupe",
+        "vary": "Origin,Accept-Encoding,Access-Control-Request-Method,Access-Control-Request-Headers,User-Agent",
+        "content-language": "en-US",
+        "content-type": "text/html;charset=utf-8",
+        "etag": "\"0099233685fba2a340fa2f55e10a58e0b\"",
+        "content-length": "153677",
+        "cache-control": "max-age=0",
+        "expires": "Sat, 05 Jul 2025 09:53:17 GMT",
+        "keep-alive": "timeout=5, max=98",
+        "connection": "Keep-Alive"
+      },
+      "bodySize": 153677,
+      "isError": false,
+      "errorType": "success",
+      "bodyPreview": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charSet=\"UTF-8\" http-equiv=\"Content-Type\" content=\"text/javascript\"/>\n    \n    <!--{this.props.head.title.toComponent()}-->\n    <title>CONTENTdm</title>\n    <meta name=\"description\" content=\"\" data-react-helmet=\"true\"/>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"/>\n\n    <!-- socialLinks != null and socialLinks.shareEnabled and -->\n    <meta property=\"og:title\" content=\"Coberta\" />\n    \n    <meta property=\"og:image\" c",
+      "has501Error": true
+    },
+    {
+      "testName": "Invalid Collection",
+      "url": "https://mdc.csuc.cat/digital/collection/invalid/id/175331/rec/1",
+      "options": {},
+      "statusCode": 200,
+      "headers": {
+        "date": "Sat, 05 Jul 2025 09:53:17 GMT",
+        "server": "Apache",
+        "x-oclc-iiif-provider": "cantaloupe",
+        "x-content-type-options": "nosniff",
+        "x-xss-protection": "1; mode=block",
+        "x-frame-options": "SAMEORIGIN",
+        "cache-control": "must-revalidate,no-cache,no-store, max-age=0",
+        "content-language": "en-US",
+        "content-type": "text/html;charset=utf-8",
+        "vary": "Accept-Encoding,User-Agent",
+        "content-encoding": "gzip",
+        "set-cookie": [
+          "JSESSIONID=ODAwNWMzNzItZTMwNC00OTQyLTk3ZmEtMTJjNGRmZWQ5MmFk; Path=/; HttpOnly; SameSite=Lax"
+        ],
+        "expires": "Sat, 05 Jul 2025 09:53:17 GMT",
+        "keep-alive": "timeout=5, max=97",
+        "connection": "Keep-Alive",
+        "transfer-encoding": "chunked"
+      },
+      "bodySize": 7051,
+      "isError": false,
+      "errorType": "success",
+      "bodyPreview": "\u001f�\b\u0000\u0000\u0000\u0000\u0000\u0000\u0000�=iW�F���+j�\u000f�\u000b�\r؎\u0017�_0�C\u0006�\u001f��䙜>�Ru�lI�Hj������R%���$>sތO\u0002��{om��V\u000b/�vp�?��ݡ��Q�ꛗ�K�2�x\u00053��_}#���H�Rx3�^�|w����l\u0005��~�\u0007W�+�:�U����D�\b��vWru�\u000f>�+�yi��+\u0003��D����� �'�N�>V�σ<T�\\��(�1�X[���L+��������ۡ\u001f�\u001cp���XFjw�W\\]�c�-+��Jzyo��\b���se[咸\n�u�����\u000e�|�뫫�S=��\u0010A\u001c�\f{�'C����DZE�D�=(=\t�ϙ�ۮ��a(d���\fFU\u001d�r\u001c*�\nmw[8?_��/R\u0015�d�\"T�L)h�,U��\u0015����`\u0010�\u001bϏ�c��,Oe�\u001f��\u0006E��Q�Q���˲2�\u001f\u0005\u0000�eň\u0001�`\u001a�\u0014�֎�C*��>e}/�s\u0012B/�f�I�\f�`�\r&0�=y�2\u001d������&5��.[\u0012�,L� _@�3�dk�w1\u0019\u0006����>��� ���p��$\u0018�?S?~\b���xq\u0010?ߖ[\u0007�}8�~~����鑖�l3����\u000f���'��"
+    },
+    {
+      "testName": "Invalid ID",
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/999999/rec/1",
+      "options": {},
+      "statusCode": 200,
+      "headers": {
+        "date": "Sat, 05 Jul 2025 09:53:17 GMT",
+        "server": "Apache",
+        "x-oclc-iiif-provider": "cantaloupe",
+        "vary": "Origin,Access-Control-Request-Method,Access-Control-Request-Headers,Accept-Encoding,User-Agent",
+        "content-language": "en-US",
+        "content-type": "text/html;charset=utf-8",
+        "etag": "\"0ae6ad46e741edc3590d746dbf58a3d2a--gzip\"",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=0",
+        "expires": "Sat, 05 Jul 2025 09:53:17 GMT",
+        "keep-alive": "timeout=5, max=96",
+        "connection": "Keep-Alive",
+        "transfer-encoding": "chunked"
+      },
+      "bodySize": 7816,
+      "isError": false,
+      "errorType": "success",
+      "bodyPreview": "\u001f�\b\u0000\u0000\u0000\u0000\u0000\u0000\u0000�=kW�H���+z�\u001f�;�\u0006�L\u001e��!@2�B�\u0005g2s�\u001c��Զ�ȒF�\u0001O���[�n��2$��w��83 uWU���խʳ�\u001c��\u000f}s(f��~�\u0019�\u0011�\f���\n:X�������gs�J��d|��A���e�q\u0007�Ҩ�~_x���~\u0018�*H��e�:��A'U�i�����\u0013{Q��3=&��n�S:�^\u0014�Q���z��������<\n\u0003���q���^P��������Cw���\u0005V\u0017\u00039W����9/\f��t�+Sٍ�t��L�s\u001cJ\u001a/��M��SWQ\u0018�\u0016��禳��.=Gu�eSx��z��&���`�����щ$t���\u000b>&�/\u0003\u0011,|_����{\t̪:\f��W.U��~q�p�T�.\u0007�p�t\u0011�V�p9�����uzN��_2����K��wB�W\u000e�H�\u000b�\u00055�b���'�ӏ�����T\u0014\u001aK�+{�Ɖ�*�`\u0014\u001f�#b�\u000f:�\f���)\u0001\u001e��d���NeK\u00064�i\u0010���%��W�L��4�ͅ�vܠ7\u000e�4Ic\u0019�\u0013��YA�~�~�Q�I���7�\u0000*I\u001aZ�s��؇�������Բ� ���7N�\u0013�ʮ�R"
+    },
+    {
+      "testName": "Invalid Page",
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/999",
+      "options": {},
+      "statusCode": 200,
+      "headers": {
+        "date": "Sat, 05 Jul 2025 09:53:18 GMT",
+        "server": "Apache",
+        "x-oclc-iiif-provider": "cantaloupe",
+        "vary": "Origin,Access-Control-Request-Method,Access-Control-Request-Headers,Accept-Encoding,User-Agent",
+        "content-language": "en-US",
+        "content-type": "text/html;charset=utf-8",
+        "etag": "\"0c8f5ce1eef71333250d2756fd85b0c00--gzip\"",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=0",
+        "expires": "Sat, 05 Jul 2025 09:53:18 GMT",
+        "keep-alive": "timeout=5, max=95",
+        "connection": "Keep-Alive",
+        "transfer-encoding": "chunked"
+      },
+      "bodySize": 21697,
+      "isError": false,
+      "errorType": "success",
+      "bodyPreview": "\u001f�\b\u0000\u0000\u0000\u0000\u0000\u0000\u0000�}mw�6����\u0015\\͇�w�F��$�83�$'��,_Kq<���a7�-�l�C��2\u001e�o�U\u0000�\nt�N����s�;V\u0013(T� �\u0000�a}�oG燗s��T��?}��4��/6�l\u0003\u0013�0��O\u000e���\"�Bgz\u0013\u0016\u0017q�b���W[�\u0006���[�o�����a�UqVm]>,�\rg��^lT�}��1�\r�i�,��\u001d�O)������MRn/�|Yn���*��x��\u000f��2�@Ǔ�_��t-d�\u000f��/�__F��wTB��Y��_lD�2��Y�.\u001bN\u0014V�V\u0011��j�&N\u0017x+U���ZuU�&��2/�N��$�n^D�m2���Ŧ�dI���V9\r���������s�|\n��I��t�텓���\t����]B���Y8I�Hf6�+��m\u0013\u0017�Ë�|�L�o�J��\u0004��\r�׮f�d\u0011λ��ɕ�vv\u0016�t{Z�����I�d�#v�l���yy������`g\u0006���F��;�;Q<\u000bWi��q9o�Z,���1{Q2O�0ݙ�i\u001aO�aum�$ю��F�N\u0011Ow� ��U�nw\u0017Oʤ�e\tU$��v�8}�1\r�<K�yA\u0007.�ً"
+    },
+    {
+      "testName": "Direct Image Access",
+      "url": "https://mdc.csuc.cat/digital/iiif/incunableBC:175331/full/full/0/default.jpg",
+      "options": {
+        "headers": {}
+      },
+      "statusCode": 200,
+      "headers": {
+        "date": "Sat, 05 Jul 2025 09:53:19 GMT",
+        "server": "Apache",
+        "x-oclc-iiif-provider": "cantaloupe",
+        "x-content-type-options": "nosniff",
+        "x-xss-protection": "1; mode=block",
+        "x-frame-options": "SAMEORIGIN",
+        "cache-control": "must-revalidate,no-cache,no-store, max-age=0",
+        "content-language": "en-US",
+        "content-type": "text/html;charset=utf-8",
+        "set-cookie": [
+          "JSESSIONID=MjgzZDE2ZmYtZDk0Ni00MmE0LWFhYTQtMDQzZWU4ZGUyNjgz; Path=/; HttpOnly; SameSite=Lax"
+        ],
+        "expires": "Sat, 05 Jul 2025 09:53:19 GMT",
+        "vary": "Accept-Encoding",
+        "keep-alive": "timeout=5, max=94",
+        "connection": "Keep-Alive",
+        "transfer-encoding": "chunked"
+      },
+      "bodySize": 26164,
+      "isError": false,
+      "errorType": "success",
+      "bodyPreview": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charSet=\"UTF-8\" http-equiv=\"Content-Type\" content=\"text/javascript\"/>\n    \n    <!--{this.props.head.title.toComponent()}-->\n    <title>CONTENTdm</title>\n    <meta name=\"description\" content=\"\" data-react-helmet=\"true\"/>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"/>\n\n    <!-- socialLinks != null and socialLinks.shareEnabled and -->\n    \n    \n    \n    \n    \n\n    \n\n    <link rel=\"stylesheet\" href=\"https://maxcdn.bootstr"
+    },
+    {
+      "testName": "API Without Headers",
+      "url": "https://mdc.csuc.cat/digital/api/singleitem/collection/incunableBC/id/175331/rec/1",
+      "options": {
+        "headers": {}
+      },
+      "statusCode": 200,
+      "headers": {
+        "date": "Sat, 05 Jul 2025 09:53:19 GMT",
+        "server": "Apache",
+        "x-oclc-iiif-provider": "cantaloupe",
+        "x-content-type-options": "nosniff",
+        "x-xss-protection": "1; mode=block",
+        "x-frame-options": "SAMEORIGIN",
+        "cache-control": "must-revalidate,no-cache,no-store, max-age=0",
+        "content-language": "en-US",
+        "content-type": "text/html;charset=utf-8",
+        "vary": "Accept-Encoding,User-Agent",
+        "set-cookie": [
+          "JSESSIONID=YjQ3Y2NlZWUtMmU1Ny00OWY1LTllZTAtOTM2MWFkNDQ2Njk2; Path=/; HttpOnly; SameSite=Lax"
+        ],
+        "expires": "Sat, 05 Jul 2025 09:53:19 GMT",
+        "keep-alive": "timeout=5, max=93",
+        "connection": "Keep-Alive",
+        "transfer-encoding": "chunked"
+      },
+      "bodySize": 26164,
+      "isError": false,
+      "errorType": "success",
+      "bodyPreview": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charSet=\"UTF-8\" http-equiv=\"Content-Type\" content=\"text/javascript\"/>\n    \n    <!--{this.props.head.title.toComponent()}-->\n    <title>CONTENTdm</title>\n    <meta name=\"description\" content=\"\" data-react-helmet=\"true\"/>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"/>\n\n    <!-- socialLinks != null and socialLinks.shareEnabled and -->\n    \n    \n    \n    \n    \n\n    \n\n    <link rel=\"stylesheet\" href=\"https://maxcdn.bootstr"
+    }
+  ],
+  "headerAnalysis": [
+    {
+      "testName": "Minimal Headers",
+      "requestHeaders": {},
+      "statusCode": 200,
+      "responseHeaders": {
+        "date": "Sat, 05 Jul 2025 09:53:19 GMT",
+        "server": "Apache",
+        "x-oclc-iiif-provider": "cantaloupe",
+        "vary": "Origin,Accept-Encoding,Access-Control-Request-Method,Access-Control-Request-Headers,User-Agent",
+        "content-language": "en-US",
+        "content-type": "text/html;charset=utf-8",
+        "etag": "\"072aa504323172df06343f81b32c0a706\"",
+        "content-length": "153677",
+        "cache-control": "max-age=0",
+        "expires": "Sat, 05 Jul 2025 09:53:19 GMT",
+        "keep-alive": "timeout=5, max=92",
+        "connection": "Keep-Alive"
+      },
+      "success": true,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 153677
+    },
+    {
+      "testName": "Browser Headers",
+      "requestHeaders": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate",
+        "Connection": "keep-alive"
+      },
+      "statusCode": 200,
+      "responseHeaders": {
+        "date": "Sat, 05 Jul 2025 09:53:21 GMT",
+        "server": "Apache",
+        "x-oclc-iiif-provider": "cantaloupe",
+        "vary": "Origin,Access-Control-Request-Method,Access-Control-Request-Headers,Accept-Encoding,User-Agent",
+        "content-language": "en-US",
+        "content-type": "text/html;charset=utf-8",
+        "etag": "\"04fb7c5451b6d7e9580a4176f3244527f--gzip\"",
+        "content-encoding": "gzip",
+        "cache-control": "max-age=0",
+        "expires": "Sat, 05 Jul 2025 09:53:21 GMT",
+        "keep-alive": "timeout=5, max=91",
+        "connection": "Keep-Alive",
+        "transfer-encoding": "chunked"
+      },
+      "success": true,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 21658
+    },
+    {
+      "testName": "With Referer",
+      "requestHeaders": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Referer": "https://mdc.csuc.cat/"
+      },
+      "statusCode": 200,
+      "responseHeaders": {
+        "date": "Sat, 05 Jul 2025 09:53:21 GMT",
+        "server": "Apache",
+        "x-oclc-iiif-provider": "cantaloupe",
+        "vary": "Origin,Accept-Encoding,Access-Control-Request-Method,Access-Control-Request-Headers,User-Agent",
+        "content-language": "en-US",
+        "content-type": "text/html;charset=utf-8",
+        "etag": "\"0c1d56b9ecccec36bfb3d240a10d31928\"",
+        "content-length": "153677",
+        "cache-control": "max-age=0",
+        "expires": "Sat, 05 Jul 2025 09:53:21 GMT",
+        "keep-alive": "timeout=5, max=90",
+        "connection": "Keep-Alive"
+      },
+      "success": true,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 153677
+    },
+    {
+      "testName": "With Authorization",
+      "requestHeaders": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Authorization": "Bearer token"
+      },
+      "statusCode": 200,
+      "responseHeaders": {
+        "date": "Sat, 05 Jul 2025 09:53:23 GMT",
+        "server": "Apache",
+        "x-oclc-iiif-provider": "cantaloupe",
+        "vary": "Origin,Accept-Encoding,Access-Control-Request-Method,Access-Control-Request-Headers,User-Agent",
+        "content-language": "en-US",
+        "content-type": "text/html;charset=utf-8",
+        "etag": "\"0411d7eeb36cc31d6b4ebb64aab07d787\"",
+        "content-length": "153677",
+        "cache-control": "max-age=0",
+        "expires": "Sat, 05 Jul 2025 09:53:23 GMT",
+        "keep-alive": "timeout=5, max=89",
+        "connection": "Keep-Alive"
+      },
+      "success": true,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 153677
+    },
+    {
+      "testName": "Image Accept",
+      "requestHeaders": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
+      },
+      "statusCode": 200,
+      "responseHeaders": {
+        "date": "Sat, 05 Jul 2025 09:53:24 GMT",
+        "server": "Apache",
+        "x-oclc-iiif-provider": "cantaloupe",
+        "vary": "Origin,Accept-Encoding,Access-Control-Request-Method,Access-Control-Request-Headers,User-Agent",
+        "content-language": "en-US",
+        "content-type": "text/html;charset=utf-8",
+        "etag": "\"006d714f80987c39f49166866da5a09e6\"",
+        "content-length": "153677",
+        "cache-control": "max-age=0",
+        "expires": "Sat, 05 Jul 2025 09:53:24 GMT",
+        "keep-alive": "timeout=5, max=88",
+        "connection": "Keep-Alive"
+      },
+      "success": true,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 153677
+    },
+    {
+      "testName": "JSON Accept",
+      "requestHeaders": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "application/json,text/plain,*/*"
+      },
+      "statusCode": 200,
+      "responseHeaders": {
+        "date": "Sat, 05 Jul 2025 09:53:25 GMT",
+        "server": "Apache",
+        "x-oclc-iiif-provider": "cantaloupe",
+        "vary": "Origin,Accept-Encoding,Access-Control-Request-Method,Access-Control-Request-Headers,User-Agent",
+        "content-language": "en-US",
+        "content-type": "text/html;charset=utf-8",
+        "etag": "\"004340db69a1f0bf5f5d9f34933aac8aa\"",
+        "content-length": "153677",
+        "cache-control": "max-age=0",
+        "expires": "Sat, 05 Jul 2025 09:53:25 GMT",
+        "keep-alive": "timeout=5, max=87",
+        "connection": "Keep-Alive"
+      },
+      "success": true,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 153677
+    }
+  ],
+  "statusCodeAnalysis": [
+    {
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1",
+      "statusCode": 200,
+      "errorType": "success",
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 21712,
+      "hasErrorContent": false,
+      "has501Content": false
+    },
+    {
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/2",
+      "statusCode": 200,
+      "errorType": "success",
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 21634,
+      "hasErrorContent": false,
+      "has501Content": false
+    },
+    {
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/3",
+      "statusCode": 200,
+      "errorType": "success",
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 21690,
+      "hasErrorContent": false,
+      "has501Content": false
+    },
+    {
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/49455/rec/1",
+      "statusCode": 200,
+      "errorType": "success",
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 20018,
+      "hasErrorContent": false,
+      "has501Content": false
+    },
+    {
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/49455/rec/2",
+      "statusCode": 200,
+      "errorType": "success",
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 20014,
+      "hasErrorContent": false,
+      "has501Content": false
+    },
+    {
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/14914/rec/1",
+      "statusCode": 200,
+      "errorType": "success",
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 18846,
+      "hasErrorContent": false,
+      "has501Content": false
+    },
+    {
+      "url": "https://mdc.csuc.cat/digital/collection/invalidcollection/id/175331/rec/1",
+      "statusCode": 200,
+      "errorType": "success",
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 7046,
+      "hasErrorContent": false,
+      "has501Content": false
+    },
+    {
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/999999/rec/1",
+      "statusCode": 200,
+      "errorType": "success",
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 7820,
+      "hasErrorContent": false,
+      "has501Content": false
+    },
+    {
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/999",
+      "statusCode": 200,
+      "errorType": "success",
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 21696,
+      "hasErrorContent": false,
+      "has501Content": false
+    }
+  ],
+  "preventionMethods": [
+    {
+      "name": "Standard Browser Request",
+      "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate",
+        "Connection": "keep-alive",
+        "Referer": "https://mdc.csuc.cat/"
+      },
+      "statusCode": 200,
+      "success": true,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 21666,
+      "prevents501": true
+    },
+    {
+      "name": "Image Request with Referer",
+      "url": "https://mdc.csuc.cat/digital/iiif/incunableBC:175331/full/full/0/default.jpg",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        "Referer": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1"
+      },
+      "statusCode": 200,
+      "success": true,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 26164,
+      "prevents501": true
+    },
+    {
+      "name": "API Request with JSON Accept",
+      "url": "https://mdc.csuc.cat/digital/api/singleitem/collection/incunableBC/id/175331/rec/1",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "application/json,text/plain,*/*",
+        "Referer": "https://mdc.csuc.cat/"
+      },
+      "statusCode": 200,
+      "success": true,
+      "contentType": "text/html;charset=utf-8",
+      "bodySize": 26164,
+      "prevents501": true
+    }
+  ],
+  "findings": [
+    {
+      "type": "error_summary",
+      "totalTests": 8,
+      "errorTests": 0,
+      "successfulTests": 8,
+      "most_common_error": {}
+    },
+    {
+      "type": "prevention_summary",
+      "totalPreventionMethods": 3,
+      "successful501Prevention": 3,
+      "recommendedHeaders": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate",
+        "Connection": "keep-alive",
+        "Referer": "https://mdc.csuc.cat/"
+      }
+    }
+  ]
+}

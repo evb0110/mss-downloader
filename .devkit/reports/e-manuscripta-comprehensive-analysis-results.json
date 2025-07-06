@@ -1,0 +1,107 @@
+{
+  "currentImplementation": {
+    "5157222": {
+      "url": "https://www.e-manuscripta.ch/bau/content/titleinfo/5157222",
+      "type": "titleinfo",
+      "description": "Main issue URL - multi-block manuscript",
+      "success": true,
+      "pages": 1,
+      "method": "url_pattern",
+      "pageIds": [
+        "5157222"
+      ]
+    },
+    "5157228": {
+      "url": "https://www.e-manuscripta.ch/bau/content/thumbview/5157228",
+      "type": "thumbview",
+      "description": "Block 2",
+      "success": true,
+      "pages": 1,
+      "method": "url_pattern",
+      "pageIds": [
+        "5157228"
+      ]
+    },
+    "5157615": {
+      "url": "https://www.e-manuscripta.ch/bau/content/thumbview/5157615",
+      "type": "thumbview",
+      "description": "Block 3",
+      "success": true,
+      "pages": 1,
+      "method": "url_pattern",
+      "pageIds": [
+        "5157615"
+      ]
+    },
+    "5157616": {
+      "url": "https://www.e-manuscripta.ch/bau/content/thumbview/5157616",
+      "type": "thumbview",
+      "description": "Block 1",
+      "success": true,
+      "pages": 1,
+      "method": "url_pattern",
+      "pageIds": [
+        "5157616"
+      ]
+    }
+  },
+  "iiifApproach": {
+    "5157222": {
+      "url": "https://www.e-manuscripta.ch/bau/content/titleinfo/5157222",
+      "type": "titleinfo",
+      "description": "Main issue URL - multi-block manuscript",
+      "success": false,
+      "error": "No IIIF endpoints available",
+      "pages": 0
+    },
+    "5157228": {
+      "url": "https://www.e-manuscripta.ch/bau/content/thumbview/5157228",
+      "type": "thumbview",
+      "description": "Block 2",
+      "success": false,
+      "error": "No IIIF endpoints available",
+      "pages": 0
+    },
+    "5157615": {
+      "url": "https://www.e-manuscripta.ch/bau/content/thumbview/5157615",
+      "type": "thumbview",
+      "description": "Block 3",
+      "success": false,
+      "error": "No IIIF endpoints available",
+      "pages": 0
+    },
+    "5157616": {
+      "url": "https://www.e-manuscripta.ch/bau/content/thumbview/5157616",
+      "type": "thumbview",
+      "description": "Block 1",
+      "success": false,
+      "error": "No IIIF endpoints available",
+      "pages": 0
+    }
+  },
+  "multiBlockHandling": {
+    "success": true,
+    "structurePageBlocks": 1,
+    "totalPagesFromStructure": 1,
+    "totalPagesFromIndividualTests": 3,
+    "providedThumbviewUrls": 3,
+    "discoveredVsProvided": "partial"
+  },
+  "comparison": {
+    "currentTotalPages": 4,
+    "iiifTotalPages": 0,
+    "currentSuccessRate": 100,
+    "iiifSuccessRate": 0,
+    "improvementPercentage": 0,
+    "pageDiscoveryImprovement": -4,
+    "methodComparison": {
+      "current": "HTML parsing + URL pattern discovery",
+      "iiif": "IIIF manifest + collection API",
+      "reliability": "Current method more reliable"
+    }
+  },
+  "recommendations": [
+    "❌ Multi-block handling needs improvement",
+    "➡️  Both approaches perform similarly"
+  ]
+}

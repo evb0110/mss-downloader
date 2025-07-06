@@ -1,0 +1,180 @@
+{
+  "library": "Rouen Municipal Library (rotomagus.fr)",
+  "urlPatterns": {
+    "viewer": "https://www.rotomagus.fr/ark:/12148/{manuscriptId}/f{pageNumber}.item.zoom",
+    "image": "https://www.rotomagus.fr/ark:/12148/{manuscriptId}/f{pageNumber}.{resolution}",
+    "imageAlt": "https://www.rotomagus.fr/ark:/12148/{manuscriptId}/f{pageNumber}",
+    "manifest": "https://www.rotomagus.fr/ark:/12148/{manuscriptId}/manifest.json"
+  },
+  "availableResolutions": [
+    "highres",
+    "medres",
+    "lowres"
+  ],
+  "manuscripts": [
+    {
+      "id": "btv1b10052442z",
+      "title": "Biblia sacra [Illustrations de]",
+      "declaredPages": 93,
+      "discoveredPages": null,
+      "resolutionTests": {
+        "highres": {
+          "success": true,
+          "httpCode": 200,
+          "size": 516294,
+          "contentType": "image/jpeg;charset=UTF-8",
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.highres"
+        },
+        "medres": {
+          "success": true,
+          "httpCode": 200,
+          "size": 131346,
+          "contentType": "image/jpeg;charset=UTF-8",
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.medres"
+        },
+        "lowres": {
+          "success": true,
+          "httpCode": 200,
+          "size": 29118,
+          "contentType": "image/jpeg;charset=UTF-8",
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.lowres"
+        }
+      },
+      "pageTests": [
+        {
+          "pageNumber": 1,
+          "success": true,
+          "size": 516294
+        },
+        {
+          "pageNumber": 46,
+          "success": true,
+          "size": 409347
+        },
+        {
+          "pageNumber": 93,
+          "success": true,
+          "size": 462707
+        }
+      ],
+      "maxResolution": "highres",
+      "recommendedApproach": "base_url"
+    },
+    {
+      "id": "btv1b10052441h",
+      "title": "Second manuscript",
+      "declaredPages": 13,
+      "discoveredPages": null,
+      "resolutionTests": {
+        "highres": {
+          "success": true,
+          "httpCode": 200,
+          "size": 481554,
+          "contentType": "image/jpeg;charset=UTF-8",
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052441h/f1.highres"
+        },
+        "medres": {
+          "success": true,
+          "httpCode": 200,
+          "size": 130086,
+          "contentType": "image/jpeg;charset=UTF-8",
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052441h/f1.medres"
+        },
+        "lowres": {
+          "success": true,
+          "httpCode": 200,
+          "size": 28674,
+          "contentType": "image/jpeg;charset=UTF-8",
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052441h/f1.lowres"
+        }
+      },
+      "pageTests": [
+        {
+          "pageNumber": 1,
+          "success": true,
+          "size": 481554
+        },
+        {
+          "pageNumber": 6,
+          "success": true,
+          "size": 486521
+        },
+        {
+          "pageNumber": 13,
+          "success": true,
+          "size": 505611
+        }
+      ],
+      "maxResolution": "highres",
+      "recommendedApproach": "base_url"
+    },
+    {
+      "id": "btv1b100508259",
+      "title": "Benedictionarium anglo-saxonicum",
+      "declaredPages": 395,
+      "discoveredPages": null,
+      "resolutionTests": {
+        "highres": {
+          "success": true,
+          "httpCode": 200,
+          "size": 336399,
+          "contentType": "image/jpeg;charset=UTF-8",
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b100508259/f1.highres"
+        },
+        "medres": {
+          "success": true,
+          "httpCode": 200,
+          "size": 83862,
+          "contentType": "image/jpeg;charset=UTF-8",
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b100508259/f1.medres"
+        },
+        "lowres": {
+          "success": true,
+          "httpCode": 200,
+          "size": 20482,
+          "contentType": "image/jpeg;charset=UTF-8",
+          "url": "https://www.rotomagus.fr/ark:/12148/btv1b100508259/f1.lowres"
+        }
+      },
+      "pageTests": [
+        {
+          "pageNumber": 1,
+          "success": true,
+          "size": 336399
+        },
+        {
+          "pageNumber": 197,
+          "success": true,
+          "size": 415707
+        },
+        {
+          "pageNumber": 395,
+          "success": true,
+          "size": 617956
+        }
+      ],
+      "maxResolution": "highres",
+      "recommendedApproach": "base_url"
+    }
+  ],
+  "implementationSpecs": {
+    "authenticationRequired": false,
+    "sessionRequired": true,
+    "requiredHeaders": {
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      "Referer": "https://www.rotomagus.fr/ark:/12148/{manuscriptId}/f{pageNumber}.item.zoom"
+    },
+    "urlConstruction": {
+      "pattern": "https://www.rotomagus.fr/ark:/12148/{manuscriptId}/f{pageNumber}.{resolution}",
+      "pageDiscovery": "Parse viewer page for totalNumberPage JSON property",
+      "recommendedResolution": "highres"
+    },
+    "pageNumbering": {
+      "format": "f{number}",
+      "startPage": 1,
+      "sequential": true
+    },
+    "successRate": "3/3",
+    "implementationComplexity": "Low - Direct URL construction with session cookies"
+  }
+}

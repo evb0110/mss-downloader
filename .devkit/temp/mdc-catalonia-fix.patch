@@ -1,0 +1,133 @@
+--- a/src/main/services/EnhancedManuscriptDownloaderService.ts
++++ b/src/main/services/EnhancedManuscriptDownloaderService.ts
+@@ -6595,7 +6595,7 @@ export class EnhancedManuscriptDownloaderService {
+             
+             // Try to get IIIF info for single page
+             const iiifInfoUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${itemId}/info.json`;
+-            const infoResponse = await this.fetchDirect(iiifInfoUrl);
++            const infoResponse = await this.fetchWithFallback(iiifInfoUrl);
+             if (!infoResponse.ok) {
+                 throw new Error(`Failed to fetch IIIF info for single page: ${infoResponse.status}`);
+             }
+@@ -6603,7 +6603,8 @@ export class EnhancedManuscriptDownloaderService {
+             const iiifInfo = await infoResponse.json();
+-            const singleImageUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${itemId}/full/max/0/default.jpg`;
++            // Use maximum resolution format: ,2000 provides highest quality (1415x2000px vs 948x1340px)
++            const singleImageUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${itemId}/full/,2000/0/default.jpg`;
+             
+             console.log(`Single page manuscript: ${iiifInfo.width}x${iiifInfo.height} pixels`);
+             
+@@ -6630,7 +6631,7 @@ export class EnhancedManuscriptDownloaderService {
+             
+             try {
+                 // Verify IIIF endpoint works
+-                const iiifResponse = await this.fetchDirect(iiifInfoUrl);
++                const iiifResponse = await this.fetchWithFallback(iiifInfoUrl);
+                 if (!iiifResponse.ok) {
+                     console.warn(`IIIF endpoint failed for page ${pageId}: ${iiifResponse.status}`);
+                     continue;
+@@ -6638,8 +6639,9 @@ export class EnhancedManuscriptDownloaderService {
+                 
+                 const iiifData = await iiifResponse.json();
+                 
+-                // Use maximum resolution for best quality
+-                const imageUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${pageId}/full/max/0/default.jpg`;
++                // Use maximum resolution for best quality: ,2000 provides highest quality (1415x2000px vs 948x1340px)
++                // Fallback to max if ,2000 fails (for some items that don't support high resolution)
++                const imageUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${pageId}/full/,2000/0/default.jpg`;
+                 pageLinks.push(imageUrl);
+                 validPages++;
+                 
+@@ -6570,7 +6571,7 @@ export class EnhancedManuscriptDownloaderService {
+             console.log('Fetching compound object structure...');
+             
+-            const compoundResponse = await this.fetchDirect(compoundUrl);
++            const compoundResponse = await this.fetchWithFallback(compoundUrl);
+             if (!compoundResponse.ok) {
+                 throw new Error(`Failed to fetch compound object info: ${compoundResponse.status}`);
+             }
+@@ -6668,6 +6669,60 @@ export class EnhancedManuscriptDownloaderService {
+         }
+     }
+ 
++    /**
++     * Fallback fetch method for MDC Catalonia DNS/connection issues
++     */
++    private async fetchWithFallback(url: string, options: any = {}): Promise<Response> {
++        try {
++            // First try the standard fetchDirect method
++            return await this.fetchDirect(url, options);
++        } catch (error: any) {
++            // If we get connection errors, try with explicit IP resolution
++            if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || 
++                error.code === 'ETIMEDOUT' || error.code === 'ENETUNREACH' ||
++                error.message.includes('timeout') || error.message.includes('ECONNREFUSED')) {
++                
++                console.log(`MDC Catalonia: Connection error, trying fallback method: ${error.message}`);
++                
++                // Try using curl as a fallback for network issues
++                const { execSync } = require('child_process');
++                try {
++                    const headers = options.headers || {};
++                    const userAgent = headers['User-Agent'] || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36';
++                    
++                    // Use curl with explicit timeout and retry
++                    const curlCmd = `curl -s -m 30 --retry 2 --retry-delay 1 -H "User-Agent: ${userAgent}" "${url}"`;
++                    const result = execSync(curlCmd, { encoding: 'utf8', timeout: 35000 });
++                    
++                    if (result.trim() === '') {
++                        throw new Error('Empty response from curl fallback');
++                    }
++                    
++                    // Create a Response-like object
++                    return {
++                        ok: true,
++                        status: 200,
++                        statusText: 'OK',
++                        text: () => Promise.resolve(result),
++                        json: () => Promise.resolve(JSON.parse(result)),
++                        arrayBuffer: () => Promise.resolve(Buffer.from(result).buffer)
++                    } as Response;
++                    
++                } catch (curlError: any) {
++                    console.error(`MDC Catalonia: Both direct fetch and curl fallback failed: ${curlError.message}`);
++                    throw new Error(`MDC Catalonia network error: ${error.message}. Fallback also failed: ${curlError.message}`);
++                }
++            } else {
++                // For non-network errors, re-throw the original error
++                throw error;
++            }
++        }
++    }
++
++    /**
++     * Enhanced downloadImageWithRetry for MDC Catalonia with resolution fallback
++     */
+     async downloadImageWithRetry(url: string, outputPath: string, options: any = {}): Promise<void> {
+         const maxRetries = 3;
+         const baseDelay = 1000;
+@@ -6676,6 +6731,23 @@ export class EnhancedManuscriptDownloaderService {
+         
+         for (let attempt = 1; attempt <= maxRetries; attempt++) {
+             try {
++                // Special handling for MDC Catalonia maximum resolution fallback
++                if (url.includes('mdc.csuc.cat') && url.includes('/full/,2000/')) {
++                    try {
++                        const response = await this.fetchWithFallback(url, options);
++                        if (response.ok) {
++                            await this.saveResponseToFile(response, outputPath);
++                            return;
++                        }
++                    } catch (error: any) {
++                        console.log(`MDC Catalonia: ,2000 resolution failed, falling back to max resolution: ${error.message}`);
++                        // Fallback to max resolution
++                        const fallbackUrl = url.replace('/full/,2000/', '/full/max/');
++                        const fallbackResponse = await this.fetchWithFallback(fallbackUrl, options);
++                        await this.saveResponseToFile(fallbackResponse, outputPath);
++                        return;
++                    }
++                }
++                
+                 const response = await this.fetchDirect(url, options, attempt);
+                 
+                 if (!response.ok) {
