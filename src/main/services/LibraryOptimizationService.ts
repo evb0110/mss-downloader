@@ -154,6 +154,11 @@ export class LibraryOptimizationService {
             timeoutMultiplier: 2.0, // Extended timeout for pagination discovery and image downloads
             optimizationDescription: 'BVPB optimizations: 3 concurrent downloads, extended timeouts for pagination traversal and high-resolution manuscript downloads'
         },
+        'onb': {
+            maxConcurrentDownloads: 4, // ONB IIIF v3 with excellent infrastructure
+            timeoutMultiplier: 1.0, // Standard timeout - reliable infrastructure
+            optimizationDescription: 'ONB optimizations: 4 concurrent downloads, standard IIIF v3 performance with maximum resolution support'
+        },
         'loading': {}
     };
 

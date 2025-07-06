@@ -9,6 +9,7 @@ import { createProgressMonitor } from './IntelligentProgressMonitor.js';
 import { ZifImageProcessor } from './ZifImageProcessor.js';
 import type { ManuscriptManifest, LibraryInfo } from '../../shared/types';
 import type { TLibrary } from '../../shared/queueTypes';
+import * as https from 'https';
 
 const MIN_VALID_IMAGE_SIZE_BYTES = 1024; // 1KB heuristic
 
@@ -236,6 +237,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://bvpb.mcu.es/es/catalogo_imagenes/grupo.do?path=11000651',
             description: 'Spanish virtual library of bibliographic heritage manuscripts and historical documents',
         },
+        {
+            name: 'ONB (Austrian National Library)',
+            example: 'https://viewer.onb.ac.at/1000B160',
+            description: 'Austrian National Library digital collections with IIIF v3 support for high-resolution manuscript access',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -390,6 +396,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('belgica.kbr.be/BELGICA/doc/SYRACUSE')) return 'belgica_kbr';
         if (url.includes('mdc.csuc.cat/digital/collection')) return 'mdc_catalonia';
         if (url.includes('bvpb.mcu.es')) return 'bvpb';
+        if (url.includes('viewer.onb.ac.at')) return 'onb';
         
         return null;
     }
@@ -602,6 +609,65 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     /**
+     * Specialized fetch for BNE domains using native HTTPS module
+     * This fixes Node.js v22.16.0 compatibility issues with fetch API and SSL bypass
+     */
+    private async fetchBneWithHttps(url: string, options: { method?: string } = {}): Promise<Response> {
+        return new Promise((resolve, reject) => {
+            const urlObj = new URL(url);
+            const requestOptions = {
+                hostname: urlObj.hostname,
+                port: urlObj.port || 443,
+                path: urlObj.pathname + urlObj.search,
+                method: options.method || 'GET',
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                    'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive'
+                },
+                rejectUnauthorized: false
+            };
+
+            const req = https.request(requestOptions, (res) => {
+                const chunks: Buffer[] = [];
+                
+                res.on('data', (chunk) => {
+                    chunks.push(chunk);
+                });
+                
+                res.on('end', () => {
+                    const body = Buffer.concat(chunks);
+                    const response = new Response(body, {
+                        status: res.statusCode || 200,
+                        statusText: res.statusMessage || 'OK',
+                        headers: Object.fromEntries(
+                            Object.entries(res.headers).map(([key, value]) => [
+                                key,
+                                Array.isArray(value) ? value.join(', ') : value || ''
+                            ])
+                        )
+                    });
+                    
+                    resolve(response);
+                });
+            });
+            
+            req.on('error', (error) => {
+                reject(error);
+            });
+            
+            req.setTimeout(30000, () => {
+                req.destroy();
+                reject(new Error('Request timeout'));
+            });
+            
+            req.end();
+        });
+    }
+
+    /**
      * Load manifest for different library types
      */
     async loadManifest(originalUrl: string, progressCallback?: (current: number, total: number, message?: string) => void): Promise<ManuscriptManifest> {
@@ -745,6 +811,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'bvpb':
                     manifest = await this.loadBvpbManifest(originalUrl);
+                    break;
+                case 'onb':
+                    manifest = await this.loadOnbManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -6796,7 +6865,7 @@ export class EnhancedManuscriptDownloaderService {
                 const testUrl = `https://bdh-rd.bne.es/pdf.raw?query=id:${manuscriptId}&page=${page}&jpeg=true`;
                 
                 try {
-                    const response = await this.fetchDirect(testUrl, { method: 'HEAD' });
+                    const response = await this.fetchBneWithHttps(testUrl, { method: 'HEAD' });
                     
                     if (response.ok && response.headers.get('content-type')?.includes('image')) {
                         pageLinks.push(testUrl);
@@ -7101,10 +7170,15 @@ export class EnhancedManuscriptDownloaderService {
             
             const compoundResponse = await this.fetchWithFallback(compoundUrl);
             if (!compoundResponse.ok) {
-                throw new Error(`Failed to fetch compound object info: ${compoundResponse.status}`);
+                throw new Error(`Failed to fetch compound object info: ${compoundResponse.status} ${compoundResponse.statusText}`);
             }
             
-            const compoundData = await compoundResponse.json();
+            let compoundData;
+            try {
+                compoundData = await compoundResponse.json();
+            } catch (parseError) {
+                throw new Error(`Failed to parse compound object JSON: ${(parseError as Error).message}`);
+            }
             
             // Check if this is a compound object with multiple pages
             // Handle both direct page array and nested node.page structure
@@ -7138,14 +7212,18 @@ export class EnhancedManuscriptDownloaderService {
                 };
             }
             
-            // Step 2: Process compound object pages
+            // Step 2: Process compound object pages with enhanced error handling
             console.log(`Found compound object with ${pageArray.length} pages`);
             const pageLinks: string[] = [];
             let validPages = 0;
+            let consecutiveErrors = 0;
+            const maxConsecutiveErrors = 5;
             
-            for (const page of pageArray) {
+            for (let i = 0; i < pageArray.length; i++) {
+                const page = pageArray[i];
+                
                 if (!page.pageptr) {
-                    console.log(`Skipping page without pageptr: ${JSON.stringify(page)}`);
+                    console.log(`Skipping page ${i + 1} without pageptr: ${JSON.stringify(page)}`);
                     continue;
                 }
                 
@@ -7153,25 +7231,50 @@ export class EnhancedManuscriptDownloaderService {
                 const iiifInfoUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${pageId}/info.json`;
                 
                 try {
-                    // Verify IIIF endpoint works
-                    const iiifResponse = await this.fetchWithFallback(iiifInfoUrl);
+                    // Verify IIIF endpoint works with explicit timeout
+                    const iiifResponse = await Promise.race([
+                        this.fetchWithFallback(iiifInfoUrl),
+                        new Promise<never>((_, reject) => 
+                            setTimeout(() => reject(new Error('IIIF request timeout')), 10000)
+                        )
+                    ]);
+                    
                     if (!iiifResponse.ok) {
                         console.warn(`IIIF endpoint failed for page ${pageId}: ${iiifResponse.status}`);
+                        consecutiveErrors++;
+                        if (consecutiveErrors >= maxConsecutiveErrors) {
+                            throw new Error(`Too many consecutive IIIF failures (${consecutiveErrors})`);
+                        }
                         continue;
                     }
                     
-                    const iiifData = await iiifResponse.json();
+                    let iiifData;
+                    try {
+                        iiifData = await iiifResponse.json();
+                    } catch (parseError) {
+                        console.warn(`Failed to parse IIIF JSON for page ${pageId}: ${(parseError as Error).message}`);
+                        consecutiveErrors++;
+                        if (consecutiveErrors >= maxConsecutiveErrors) {
+                            throw new Error(`Too many consecutive JSON parse failures (${consecutiveErrors})`);
+                        }
+                        continue;
+                    }
                     
                     // Use maximum resolution for best quality: ,2000 provides highest quality (1415x2000px vs 948x1340px)
                     const imageUrl = `https://mdc.csuc.cat/iiif/2/${collection}:${pageId}/full/,2000/0/default.jpg`;
                     pageLinks.push(imageUrl);
                     validPages++;
+                    consecutiveErrors = 0; // Reset error counter on success
                     
                     const pageTitle = page.pagetitle || `Page ${validPages}`;
-                    console.log(`Found page ${validPages}: ${pageTitle} (${pageId}) - ${iiifData.width}x${iiifData.height}px`);
+                    console.log(`Found page ${validPages}/${pageArray.length}: ${pageTitle} (${pageId}) - ${iiifData.width}x${iiifData.height}px`);
                     
                 } catch (error) {
                     console.warn(`Error processing page ${pageId}: ${(error as Error).message}`);
+                    consecutiveErrors++;
+                    if (consecutiveErrors >= maxConsecutiveErrors) {
+                        throw new Error(`MDC Catalonia processing failed after ${consecutiveErrors} consecutive errors at page ${i + 1}/${pageArray.length}: ${(error as Error).message}`);
+                    }
                     continue;
                 }
                 
@@ -7362,6 +7465,105 @@ export class EnhancedManuscriptDownloaderService {
             
         } catch (error: any) {
             throw new Error(`Failed to load BVPB manuscript: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Load ONB (Austrian National Library) manifest
+     */
+    async loadOnbManifest(originalUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // Extract manuscript ID from URL pattern: https://viewer.onb.ac.at/1000B160
+            const manuscriptMatch = originalUrl.match(/viewer\.onb\.ac\.at\/([^/?&]+)/);
+            if (!manuscriptMatch) {
+                throw new Error('Invalid ONB URL format. Expected format: https://viewer.onb.ac.at/MANUSCRIPT_ID');
+            }
+            
+            const manuscriptId = manuscriptMatch[1];
+            console.log(`Extracting ONB manuscript ID: ${manuscriptId}`);
+            
+            // Construct the IIIF v3 manifest URL based on the API pattern
+            const manifestUrl = `https://api.onb.ac.at/iiif/presentation/v3/manifest/${manuscriptId}`;
+            console.log(`Fetching ONB IIIF v3 manifest: ${manifestUrl}`);
+            
+            const response = await this.fetchDirect(manifestUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch ONB manifest: ${response.status} ${response.statusText}`);
+            }
+            
+            let manifestData;
+            try {
+                manifestData = await response.json();
+            } catch (parseError) {
+                throw new Error(`Failed to parse ONB manifest JSON: ${(parseError as Error).message}`);
+            }
+            
+            // Extract pages from IIIF v3 manifest
+            const pageLinks: string[] = [];
+            
+            if (!manifestData.items || !Array.isArray(manifestData.items)) {
+                throw new Error('Invalid ONB manifest: no items array found');
+            }
+            
+            console.log(`Processing ONB manifest with ${manifestData.items.length} canvases`);
+            
+            for (const canvas of manifestData.items) {
+                if (!canvas.items || !Array.isArray(canvas.items)) {
+                    console.warn(`Skipping canvas without items: ${canvas.id}`);
+                    continue;
+                }
+                
+                for (const annotationPage of canvas.items) {
+                    if (!annotationPage.items || !Array.isArray(annotationPage.items)) {
+                        continue;
+                    }
+                    
+                    for (const annotation of annotationPage.items) {
+                        if (annotation.body && annotation.body.service && Array.isArray(annotation.body.service)) {
+                            // Find IIIF Image API service
+                            const imageService = annotation.body.service.find((service: any) => 
+                                service.type === 'ImageService3' || service['@type'] === 'ImageService'
+                            );
+                            
+                            if (imageService && imageService.id) {
+                                // Use maximum resolution: /full/max/0/default.jpg
+                                const imageUrl = `${imageService.id}/full/max/0/default.jpg`;
+                                pageLinks.push(imageUrl);
+                                break; // Take the first valid image from this canvas
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No valid images found in ONB manifest');
+            }
+            
+            // Extract title from manifest metadata
+            let displayName = `ONB Manuscript ${manuscriptId}`;
+            if (manifestData.label) {
+                if (typeof manifestData.label === 'string') {
+                    displayName = manifestData.label;
+                } else if (manifestData.label.en && Array.isArray(manifestData.label.en)) {
+                    displayName = manifestData.label.en[0];
+                } else if (manifestData.label.de && Array.isArray(manifestData.label.de)) {
+                    displayName = manifestData.label.de[0];
+                }
+            }
+            
+            console.log(`ONB manifest loaded successfully: ${pageLinks.length} pages found - "${displayName}"`);
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'onb' as any,
+                displayName,
+                originalUrl: originalUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load ONB manuscript: ${(error as Error).message}`);
         }
     }
 
