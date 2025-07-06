@@ -87,11 +87,18 @@ playwright-report/
 .playwright/
 
 # Test screenshots and artifacts
-*.png
-*.jpg
-*.jpeg
 *.webm
 *.mp4
+
+# Development artifacts and validation files
+.devkit/validation-artifacts/
+.devkit/temp/
+.devkit/**/*.pdf
+.devkit/**/*.png
+.devkit/**/*.jpg
+.devkit/**/*.jpeg
+FINAL-VALIDATION/
+CURRENT-VALIDATION/
 
 # Development certificates
 dev-cert.p12
