@@ -92,7 +92,9 @@ playwright-report/
 
 # Development artifacts and validation files
 .devkit/validation-artifacts/
+.devkit/validation-current/
 .devkit/temp/
+.devkit/cache/
 .devkit/**/*.pdf
 .devkit/**/*.png
 .devkit/**/*.jpg
