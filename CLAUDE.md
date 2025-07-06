@@ -93,6 +93,9 @@ When adding/fixing libraries, **MANDATORY validation:**
 6. Merge to PDF and test validity with poppler
 7. Library validation must pass (100% success rate)
 8. **MANDATORY PDF CONTENT INSPECTION BY CLAUDE:** Before presenting any PDFs to user, Claude MUST personally inspect every PDF using pdfimages + Read tools to verify:
+   - **FILE SIZE CHECK:** First check file size with `ls -la` - any 0-byte files indicate complete failure
+   - **PDF STRUCTURE:** Use `pdfimages -list` to verify PDF contains actual images
+   - **VISUAL CONTENT:** Extract and visually inspect actual images using `pdfimages -png` + Read tool
    - Correct manuscript content (not wrong manuscripts or error pages)
    - Multiple pages when expected (not single page when multi-page required)
    - **DIFFERENT PAGES:** Each page must show DIFFERENT manuscript content - NEVER duplicate the same page multiple times
@@ -104,6 +107,7 @@ When adding/fixing libraries, **MANDATORY validation:**
    - If it is "failed", claude should iterate the same fixing process until as many times as needed
    - If it is "something not ok", it should iterate 3 more times to try and make it "ok"
    - **NEVER CREATE FAKE MULTI-PAGE PDFs:** Do not duplicate single pages to create artificial multi-page PDFs
+   - **CRITICAL:** If ANY PDF is 0 bytes or fails inspection, FIX the issue before presenting to user
    - Only after proper validation for every file, claude can present them to the user
 9. **MANDATORY validation by user!!!:** Create a single clean folder containing ONLY the final PDF files with clear names (no subfolders, no individual image files, no test files, no logs). Delete all previous validation folders and temporary files. The validation folder should contain exclusively the final PDF files ready for user inspection. **ONLY OPEN FINDER WHEN READY FOR FINAL USER VALIDATION** - do not open finder during development, testing, or intermediate validation steps.
 10. **WAIT FOR USER APPROVAL:** Do not proceed with version bump until user confirms validation passed

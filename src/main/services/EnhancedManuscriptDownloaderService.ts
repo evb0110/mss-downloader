@@ -399,8 +399,9 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('archiviodiocesano.mo.it')) return 'modena';
         if (url.includes('bdl.servizirl.it')) return 'bdl';
         if (url.includes('europeana.eu')) return 'europeana';
-        if (url.includes('manus.iccu.sbn.it') || url.includes('omnes.dbseret.com/montecassino')) return 'monte_cassino';
+        if (url.includes('omnes.dbseret.com/montecassino')) return 'monte_cassino';
         if (url.includes('dam.iccu.sbn.it') || url.includes('jmms.iccu.sbn.it')) return 'vallicelliana';
+        if (url.includes('manus.iccu.sbn.it')) return 'iccu_api';
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) return 'verona';
         if (url.includes('diamm.ac.uk') || url.includes('iiif.diamm.net') || url.includes('musmed.eu/visualiseur-iiif')) return 'diamm';
         if (url.includes('bdh-rd.bne.es')) return 'bne';
@@ -630,10 +631,15 @@ export class EnhancedManuscriptDownloaderService {
                 headers
             };
             
-            if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') || url.includes('bdh-rd.bne.es')) {
-                // Add Node.js specific options for SSL bypass on domains with certificate issues
-                // Verona domains have valid certificates but hostname mismatch issues
-                // BNE domain requires SSL bypass for image endpoint access
+            // Verona domains require full HTTPS module bypass due to SSL certificate validation issues
+            if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
+                const response = await this.fetchWithHTTPS(url, fetchOptions);
+                if (timeoutId) clearTimeout(timeoutId);
+                return response;
+            }
+            
+            // BNE domain uses different SSL bypass approach
+            if (url.includes('bdh-rd.bne.es')) {
                 if (typeof process !== 'undefined' && process.versions?.node) {
                     const { Agent } = await import('https');
                     fetchOptions.agent = new Agent({
@@ -706,6 +712,67 @@ export class EnhancedManuscriptDownloaderService {
                 reject(new Error('Request timeout'));
             });
             
+            req.end();
+        });
+    }
+
+    /**
+     * Specialized fetch for Verona domains using native HTTPS module
+     * This fixes SSL certificate validation issues with Node.js fetch API
+     */
+    private async fetchWithHTTPS(url: string, options: any = {}): Promise<Response> {
+        const https = await import('https');
+        const { URL } = await import('url');
+        
+        const urlObj = new URL(url);
+        const requestOptions = {
+            hostname: urlObj.hostname,
+            port: urlObj.port || 443,
+            path: urlObj.pathname + urlObj.search,
+            method: options.method || 'GET',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
+                'Cache-Control': 'no-cache',
+                ...options.headers
+            },
+            rejectUnauthorized: false
+        };
+        
+        return new Promise((resolve, reject) => {
+            const req = https.request(requestOptions, (res) => {
+                const chunks: Buffer[] = [];
+                
+                res.on('data', (chunk) => {
+                    chunks.push(chunk);
+                });
+                
+                res.on('end', () => {
+                    const body = Buffer.concat(chunks);
+                    const responseHeaders = new Headers();
+                    
+                    Object.entries(res.headers).forEach(([key, value]) => {
+                        responseHeaders.set(key, Array.isArray(value) ? value.join(', ') : value || '');
+                    });
+                    
+                    const response = new Response(body, {
+                        status: res.statusCode || 200,
+                        statusText: res.statusMessage || 'OK',
+                        headers: responseHeaders
+                    });
+                    
+                    resolve(response);
+                });
+            });
+            
+            req.on('error', reject);
+            req.setTimeout(options.timeout || 30000, () => {
+                req.destroy();
+                reject(new Error('Request timeout'));
+            });
             req.end();
         });
     }
@@ -836,6 +903,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'vallicelliana':
                     manifest = await this.loadVallicellianManifest(originalUrl);
+                    break;
+                case 'iccu_api':
+                    manifest = await this.loadIccuApiManifest(originalUrl);
                     break;
                 case 'verona':
                     manifest = await this.loadVeronaManifest(originalUrl);
@@ -6652,6 +6722,75 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     /**
+     * Load ICCU API manifest for manus.iccu.sbn.it URLs
+     */
+    async loadIccuApiManifest(originalUrl: string): Promise<ManuscriptManifest> {
+        try {
+            console.log(`Loading ICCU API manuscript from: ${originalUrl}`);
+            
+            // Extract manuscript ID from URL
+            const idMatch = originalUrl.match(/[?&]id=(\d+)/);
+            if (!idMatch) {
+                throw new Error('Invalid ICCU URL format - cannot extract manuscript ID');
+            }
+            
+            const manuscriptId = idMatch[1];
+            console.log(`Extracted manuscript ID: ${manuscriptId}`);
+            
+            // Use the ICCU API to get manifest URLs
+            const apiUrl = `/o/manus-api/title?_method=get&_path=%2Fo%2Fmanus-api%2Ftitle&id=${manuscriptId}`;
+            const fullApiUrl = `https://manus.iccu.sbn.it${apiUrl}`;
+            
+            console.log(`Fetching ICCU API data from: ${fullApiUrl}`);
+            
+            const apiResponse = await this.fetchDirect(fullApiUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'application/json,text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'it-IT,it;q=0.9,en;q=0.8',
+                    'Cache-Control': 'no-cache',
+                    'Referer': originalUrl
+                }
+            });
+            
+            if (!apiResponse.ok) {
+                throw new Error(`Failed to fetch ICCU API data: HTTP ${apiResponse.status}`);
+            }
+            
+            const apiData = await apiResponse.json();
+            console.log(`ICCU API response status:`, apiData.status);
+            
+            if (!apiData.data || !apiData.data.img || !apiData.data.img.src) {
+                throw new Error('No thumbnail URL found in ICCU API response');
+            }
+            
+            // Extract thumbnail URL and derive manifest URL
+            const thumbnailUrl = apiData.data.img.src;
+            console.log(`Found thumbnail URL: ${thumbnailUrl}`);
+            
+            // Convert thumbnail URL to manifest URL
+            const manifestUrl = thumbnailUrl.replace('/thumbnail', '/manifest');
+            console.log(`Derived manifest URL: ${manifestUrl}`);
+            
+            // Get the manuscript title for display
+            const displayName = apiData.data.title || `ICCU Manuscript ${manuscriptId}`;
+            console.log(`Display name: ${displayName}`);
+            
+            // Load the manifest using the vallicelliana handler (since it's a DAM URL)
+            const manifest = await this.loadVallicellianManifest(manifestUrl);
+            
+            // Update the display name with the API-provided title
+            manifest.displayName = displayName;
+            
+            return manifest;
+            
+        } catch (error: any) {
+            console.error('ICCU API manifest loading error:', error);
+            throw new Error(`Failed to load ICCU manuscript: ${(error as Error).message}`);
+        }
+    }
+
+    /**
      * Load Verona (NBM) manifest
      */
     async loadVeronaManifest(originalUrl: string): Promise<ManuscriptManifest> {
@@ -7788,81 +7927,100 @@ export class EnhancedManuscriptDownloaderService {
             
             console.log(`Extracted display name: ${displayName}`);
             
-            // Fetch METS XML metadata for page information
-            const metsUrl = `https://dl.ub.uni-freiburg.de/diglit/${manuscriptId}/mets`;
-            console.log(`Fetching METS XML from: ${metsUrl}`);
+            // Use thumbs page for complete page discovery (METS XML returns 302 redirects)
+            const thumbsUrl = `https://dl.ub.uni-freiburg.de/diglit/${manuscriptId}/0001/thumbs`;
+            console.log(`Fetching thumbs page: ${thumbsUrl}`);
             
-            const metsResponse = await this.fetchDirect(metsUrl, {
+            const thumbsResponse = await this.fetchDirect(thumbsUrl, {
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                    'Accept': 'application/xml,text/xml,*/*;q=0.8',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                     'Accept-Language': 'en-US,en;q=0.9,de;q=0.8',
                     'Cache-Control': 'no-cache'
                 }
             });
             
-            if (!metsResponse.ok) {
-                throw new Error(`Failed to fetch METS XML: HTTP ${metsResponse.status}`);
+            if (!thumbsResponse.ok) {
+                throw new Error(`Failed to fetch thumbs page: HTTP ${thumbsResponse.status}`);
             }
             
-            const metsXml = await metsResponse.text();
-            console.log(`METS XML length: ${metsXml.length} characters`);
+            const thumbsHtml = await thumbsResponse.text();
+            console.log(`Thumbs HTML length: ${thumbsHtml.length} characters`);
             
-            // Parse METS XML to extract page information
-            const xmlDom = new JSDOM(metsXml, { contentType: 'text/xml' });
-            const xmlDocument = xmlDom.window.document;
+            // Extract all unique page numbers from thumbs page
+            const thumbsDom = new JSDOM(thumbsHtml);
+            const allLinks = thumbsDom.window.document.querySelectorAll('a[href*="/diglit/"]');
             
-            // First try to get display name from MODS metadata in METS
-            const titleElement = xmlDocument.querySelector('mods\\:title, title');
-            if (titleElement && titleElement.textContent && titleElement.textContent.trim()) {
-                displayName = titleElement.textContent.trim();
-                console.log(`Updated display name from MODS: ${displayName}`);
-            }
-            
-            // Extract page files from METS structure
-            // Look for maximum resolution images in fileGrp USE="MAX"
-            let imageFiles = xmlDocument.querySelectorAll('mets\\:fileGrp[USE="MAX"] mets\\:file[MIMETYPE="image/jpg"], fileGrp[USE="MAX"] file[MIMETYPE="image/jpg"]');
-            
-            if (imageFiles.length === 0) {
-                // Fallback to DEFAULT or PRINT groups
-                imageFiles = xmlDocument.querySelectorAll('mets\\:fileGrp[USE="DEFAULT"] mets\\:file[MIMETYPE="image/jpg"], mets\\:fileGrp[USE="PRINT"] mets\\:file[MIMETYPE="image/jpg"], fileGrp[USE="DEFAULT"] file[MIMETYPE="image/jpg"], fileGrp[USE="PRINT"] file[MIMETYPE="image/jpg"]');
-            }
-            
-            if (imageFiles.length === 0) {
-                // Final fallback: look for any image files
-                imageFiles = xmlDocument.querySelectorAll('mets\\:file[MIMETYPE="image/jpg"], file[MIMETYPE="image/jpg"]');
-                if (imageFiles.length === 0) {
-                    throw new Error('No image files found in METS XML');
-                }
-                console.log(`Found ${imageFiles.length} image files using fallback selector`);
-            } else {
-                console.log(`Found ${imageFiles.length} maximum resolution image files`);
-            }
-            
-            // Extract page information and use direct URLs from METS
-            const pageLinks: string[] = [];
-            
-            imageFiles.forEach((fileElement: Element, index: number) => {
-                const fLocatElement = fileElement.querySelector('mets\\:FLocat, FLocat');
-                if (fLocatElement) {
-                    const href = fLocatElement.getAttribute('xlink:href') || fLocatElement.getAttribute('href');
-                    if (href && href.includes('.jpg')) {
-                        // Use the direct URL from METS XML for maximum resolution
-                        pageLinks.push(href);
-                        
-                        if (index < 5) { // Log first 5 for debugging
-                            console.log(`Added page ${index + 1}: ${href}`);
-                        }
+            const uniquePages = new Set<string>();
+            allLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href) {
+                    const pageMatch = href.match(/\/diglit\/[^/]+\/(\d{4})/);
+                    if (pageMatch) {
+                        uniquePages.add(pageMatch[1]);
                     }
                 }
             });
             
-            if (pageLinks.length === 0) {
-                throw new Error('No valid pages found in METS XML structure');
+            const sortedPages = Array.from(uniquePages).sort((a, b) => parseInt(a) - parseInt(b));
+            console.log(`Found ${sortedPages.length} unique pages`);
+            
+            if (sortedPages.length === 0) {
+                throw new Error('No pages found in thumbs page');
             }
             
-            if (pageLinks.length > 5) {
-                console.log(`... and ${pageLinks.length - 5} more pages`);
+            // Extract image URLs from pages in batches
+            const pageLinks: string[] = [];
+            const batchSize = 10;
+            
+            for (let i = 0; i < sortedPages.length; i += batchSize) {
+                const batch = sortedPages.slice(i, i + batchSize);
+                const batchPromises = batch.map(async (pageNumber) => {
+                    const pageUrl = `https://dl.ub.uni-freiburg.de/diglit/${manuscriptId}/${pageNumber}`;
+                    
+                    try {
+                        const pageResponse = await this.fetchDirect(pageUrl, {
+                            headers: {
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                                'Accept-Language': 'en-US,en;q=0.9,de;q=0.8',
+                                'Cache-Control': 'no-cache'
+                            }
+                        });
+                        
+                        if (pageResponse.ok) {
+                            const pageHtml = await pageResponse.text();
+                            const pageDom = new JSDOM(pageHtml);
+                            
+                            const imageElements = pageDom.window.document.querySelectorAll('img[src*="diglitData"]');
+                            
+                            if (imageElements.length > 0) {
+                                const imageUrl = imageElements[0].getAttribute('src');
+                                if (imageUrl) {
+                                    const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : `https://dl.ub.uni-freiburg.de${imageUrl}`;
+                                    return fullImageUrl;
+                                }
+                            }
+                        }
+                        
+                        return null;
+                    } catch (error) {
+                        console.warn(`Failed to fetch page ${pageNumber}: ${(error as Error).message}`);
+                        return null;
+                    }
+                });
+                
+                const batchResults = await Promise.all(batchPromises);
+                pageLinks.push(...batchResults.filter((url): url is string => url !== null));
+                
+                // Progress logging
+                if (i % 50 === 0) {
+                    console.log(`Processed ${Math.min(i + batchSize, sortedPages.length)} of ${sortedPages.length} pages`);
+                }
+            }
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No valid page images found');
             }
             
             console.log(`Successfully extracted ${pageLinks.length} page links`);
