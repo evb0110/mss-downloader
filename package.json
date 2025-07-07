@@ -1,12 +1,11 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.3.94",
+  "version": "1.3.95",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Completed comprehensive validation protocol with maximum quality PDFs for BNE, MDC Catalonia, and Freiburg libraries",
-    "Enhanced MDC Catalonia with robust IIIF implementation replacing unreliable ContentDM API",
-    "Optimized BNE downloads with intelligent duplicate detection preventing infinite loops",
-    "Verified Freiburg image quality matches official PDF standards at maximum resolution"
+    "Added Karlsruhe BLB (Badische Landesbibliothek) manuscript collection with maximum resolution IIIF v2.0 support",
+    "Added Saint-Omer Municipal Library with ultra-high resolution medieval manuscripts (5000x3753 pixels)",
+    "Added Grenoble Municipal Library with Gallica infrastructure and SSL bypass for French manuscripts"
   ],
   "main": "dist/main/main.js",
   "type": "module",

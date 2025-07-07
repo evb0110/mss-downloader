@@ -23,6 +23,12 @@ export class LibraryOptimizationService {
             timeoutMultiplier: 4.0, // 4x timeout for extremely slow server
             optimizationDescription: 'Trinity Cambridge optimizations: single-threaded downloads, 4x timeout for slow servers'
         },
+        'toronto': {
+            maxConcurrentDownloads: 4, // University of Toronto has good IIIF v2.0 infrastructure
+            timeoutMultiplier: 1.3, // Slightly extended timeout for IIIF manifest processing
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'University of Toronto optimizations: 4 concurrent downloads, IIIF v2.0 compliant, Thomas Fisher Rare Book Library'
+        },
         'orleans': {
             maxConcurrentDownloads: 2, // Moderate rate limiting
             timeoutMultiplier: 2.0, // Double timeout
@@ -45,6 +51,30 @@ export class LibraryOptimizationService {
         'nypl': {},
         'morgan': {},
         'gallica': {},
+        'grenoble': {
+            maxConcurrentDownloads: 3, // Moderate concurrent downloads for Gallica-based infrastructure
+            timeoutMultiplier: 1.5, // Extended timeout for SSL bypass and resolution testing
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'Grenoble Municipal Library optimizations: 3 concurrent downloads, SSL bypass support, maximum resolution detection'
+        },
+        'karlsruhe': {
+            maxConcurrentDownloads: 4, // Good performance with IIIF v2.0 infrastructure
+            timeoutMultiplier: 1.2, // Standard timeout for reliable German infrastructure
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'Karlsruhe BLB optimizations: 4 concurrent downloads, IIIF v2.0 compliance, 2000px maximum resolution'
+        },
+        'manchester': {
+            maxConcurrentDownloads: 4, // Excellent IIIF v2.0 infrastructure
+            timeoutMultiplier: 1.3, // Slightly extended timeout for large high-resolution images
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'Manchester Digital Collections optimizations: 4 concurrent downloads, ultra-high resolution (4000-6500px), John Rylands Library'
+        },
+        'saint_omer': {
+            maxConcurrentDownloads: 3, // Moderate concurrent downloads for municipal library infrastructure
+            timeoutMultiplier: 1.4, // Extended timeout for high-resolution medieval manuscripts
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'Saint-Omer Municipal Library optimizations: 3 concurrent downloads, IIIF v2.0, medieval manuscripts (5000-7000px resolution)'
+        },
         'unifr': {},
         'vatlib': {},
         'cecilia': {},
