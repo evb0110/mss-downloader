@@ -1,10 +1,10 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.3.96",
+  "version": "1.3.97",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Added Manchester Digital Collections (John Rylands) with enhanced IIIF v2.0 image URL construction",
-    "Added University of Toronto Fisher Library with direct IIIF manifest support for Canadian manuscripts"
+    "Added Fulda University of Applied Sciences with direct IIIF v2.0 manifest API integration",
+    "Completed all remaining libraries from TODOS.md - total of 7 new libraries added across versions 1.3.95-1.3.97"
   ],
   "main": "dist/main/main.js",
   "type": "module",

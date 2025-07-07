@@ -199,6 +199,12 @@ export class LibraryOptimizationService {
             timeoutMultiplier: 1.2, // Slightly extended timeout for METS XML parsing and IIIF API calls
             optimizationDescription: 'University of Freiburg optimizations: 4 concurrent downloads, METS/MODS metadata parsing with maximum resolution IIIF support'
         },
+        'fulda': {
+            maxConcurrentDownloads: 4, // Fulda University of Applied Sciences with IIIF v2.0 API
+            timeoutMultiplier: 1.3, // Extended timeout for IIIF manifest processing and maximum quality downloads
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'Fulda University optimizations: 4 concurrent downloads, IIIF v2.0 with direct manifest API, maximum resolution support'
+        },
         'loading': {}
     };
 
