@@ -1,0 +1,269 @@
+{
+  "originalUrl": "https://bdh-rd.bne.es/viewer.vm?id=0000007619&page=1",
+  "manuscriptId": "0000007619",
+  "timestamp": "2025-07-07T10:41:05.413Z",
+  "phases": {
+    "viewerPageAccess": {
+      "success": true,
+      "status": 200,
+      "duration": 1031,
+      "contentType": "text/html;charset=UTF-8",
+      "hasContent": true
+    },
+    "pdfInfoAccess": {
+      "success": true,
+      "status": 200,
+      "duration": 648,
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&info=true",
+      "hasContent": true,
+      "validPDF": false,
+      "pdfError": "Expected instance of PDFDict, but got instance of undefined"
+    },
+    "pageAccessPatterns": [
+      {
+        "page": 1,
+        "pdfFormat": {
+          "success": true,
+          "status": 200,
+          "duration": 128,
+          "contentLength": "211995",
+          "contentType": "application/pdf",
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&pdf=true"
+        },
+        "imageFormat": {
+          "success": true,
+          "status": 200,
+          "duration": 133,
+          "contentLength": "211995",
+          "contentType": "application/pdf",
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1"
+        }
+      },
+      {
+        "page": 2,
+        "pdfFormat": {
+          "success": true,
+          "status": 200,
+          "duration": 132,
+          "contentLength": "487073",
+          "contentType": "application/pdf",
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=2&pdf=true"
+        },
+        "imageFormat": {
+          "success": true,
+          "status": 200,
+          "duration": 126,
+          "contentLength": "487073",
+          "contentType": "application/pdf",
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=2"
+        }
+      },
+      {
+        "page": 3,
+        "pdfFormat": {
+          "success": true,
+          "status": 200,
+          "duration": 137,
+          "contentLength": "494150",
+          "contentType": "application/pdf",
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=3&pdf=true"
+        },
+        "imageFormat": {
+          "success": true,
+          "status": 200,
+          "duration": 140,
+          "contentLength": "494150",
+          "contentType": "application/pdf",
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=3"
+        }
+      },
+      {
+        "page": 4,
+        "pdfFormat": {
+          "success": true,
+          "status": 200,
+          "duration": 137,
+          "contentLength": "171324",
+          "contentType": "application/pdf",
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=4&pdf=true"
+        },
+        "imageFormat": {
+          "success": true,
+          "status": 200,
+          "duration": 132,
+          "contentLength": "171324",
+          "contentType": "application/pdf",
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=4"
+        }
+      },
+      {
+        "page": 5,
+        "pdfFormat": {
+          "success": true,
+          "status": 200,
+          "duration": 128,
+          "contentLength": "149172",
+          "contentType": "application/pdf",
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=5&pdf=true"
+        },
+        "imageFormat": {
+          "success": true,
+          "status": 200,
+          "duration": 134,
+          "contentLength": "149172",
+          "contentType": "application/pdf",
+          "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=5"
+        }
+      }
+    ],
+    "fallbackDiscovery": {
+      "success": true,
+      "duration": 1417,
+      "totalPagesDiscovered": 10,
+      "pages": [
+        {
+          "page": 1,
+          "status": 200,
+          "contentLength": "211995",
+          "contentType": "application/pdf",
+          "contentHash": "application/pdf-211995",
+          "isDuplicate": false
+        },
+        {
+          "page": 2,
+          "status": 200,
+          "contentLength": "487073",
+          "contentType": "application/pdf",
+          "contentHash": "application/pdf-487073",
+          "isDuplicate": false
+        },
+        {
+          "page": 3,
+          "status": 200,
+          "contentLength": "494150",
+          "contentType": "application/pdf",
+          "contentHash": "application/pdf-494150",
+          "isDuplicate": false
+        },
+        {
+          "page": 4,
+          "status": 200,
+          "contentLength": "171324",
+          "contentType": "application/pdf",
+          "contentHash": "application/pdf-171324",
+          "isDuplicate": false
+        },
+        {
+          "page": 5,
+          "status": 200,
+          "contentLength": "149172",
+          "contentType": "application/pdf",
+          "contentHash": "application/pdf-149172",
+          "isDuplicate": false
+        },
+        {
+          "page": 6,
+          "status": 200,
+          "contentLength": "137320",
+          "contentType": "application/pdf",
+          "contentHash": "application/pdf-137320",
+          "isDuplicate": false
+        },
+        {
+          "page": 7,
+          "status": 200,
+          "contentLength": "391957",
+          "contentType": "application/pdf",
+          "contentHash": "application/pdf-391957",
+          "isDuplicate": false
+        },
+        {
+          "page": 8,
+          "status": 200,
+          "contentLength": "388004",
+          "contentType": "application/pdf",
+          "contentHash": "application/pdf-388004",
+          "isDuplicate": false
+        },
+        {
+          "page": 9,
+          "status": 200,
+          "contentLength": "326281",
+          "contentType": "application/pdf",
+          "contentHash": "application/pdf-326281",
+          "isDuplicate": false
+        },
+        {
+          "page": 10,
+          "status": 200,
+          "contentLength": "295552",
+          "contentType": "application/pdf",
+          "contentHash": "application/pdf-295552",
+          "isDuplicate": false
+        }
+      ],
+      "finalConsecutiveDuplicates": 0
+    },
+    "resolutionTests": [
+      {
+        "name": "PDF Format",
+        "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&pdf=true",
+        "success": true,
+        "status": 200,
+        "duration": 128,
+        "contentLength": "211995",
+        "contentType": "application/pdf"
+      },
+      {
+        "name": "Image Format",
+        "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1",
+        "success": true,
+        "status": 200,
+        "duration": 129,
+        "contentLength": "211995",
+        "contentType": "application/pdf"
+      },
+      {
+        "name": "High Quality",
+        "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&quality=high",
+        "success": true,
+        "status": 200,
+        "duration": 130,
+        "contentLength": "211995",
+        "contentType": "application/pdf"
+      },
+      {
+        "name": "Maximum",
+        "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&quality=max",
+        "success": true,
+        "status": 200,
+        "duration": 127,
+        "contentLength": "211995",
+        "contentType": "application/pdf"
+      },
+      {
+        "name": "Full Size",
+        "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&size=full",
+        "success": true,
+        "status": 200,
+        "duration": 129,
+        "contentLength": "211995",
+        "contentType": "application/pdf"
+      }
+    ]
+  },
+  "conclusion": {
+    "hangingPoint": "PDF parsing",
+    "recommendedFix": "Use alternative page counting method",
+    "maxResolutionFormat": {
+      "name": "PDF Format",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&pdf=true",
+      "success": true,
+      "status": 200,
+      "duration": 128,
+      "contentLength": "211995",
+      "contentType": "application/pdf"
+    }
+  }
+}

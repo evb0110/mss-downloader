@@ -1,0 +1,1921 @@
+{
+  "manuscriptId": "0000007619",
+  "timestamp": "2025-07-07T10:46:24.940Z",
+  "duration": 45873,
+  "maxResolution": {
+    "actualSize": 0
+  },
+  "resolutionTests": [
+    {
+      "name": "Standard PDF",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&pdf=true",
+      "success": true,
+      "status": 200,
+      "duration": 1105,
+      "contentLength": 0,
+      "contentType": "application/pdf",
+      "sizeInMB": "0.00"
+    },
+    {
+      "name": "Standard Image",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1",
+      "success": true,
+      "status": 200,
+      "duration": 398,
+      "contentLength": 0,
+      "contentType": "application/pdf",
+      "sizeInMB": "0.00"
+    },
+    {
+      "name": "High Quality",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&quality=high",
+      "success": true,
+      "status": 200,
+      "duration": 574,
+      "contentLength": 0,
+      "contentType": "application/pdf",
+      "sizeInMB": "0.00"
+    },
+    {
+      "name": "Maximum Quality",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&quality=max",
+      "success": true,
+      "status": 200,
+      "duration": 492,
+      "contentLength": 0,
+      "contentType": "application/pdf",
+      "sizeInMB": "0.00"
+    },
+    {
+      "name": "Full Size",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&size=full",
+      "success": true,
+      "status": 200,
+      "duration": 403,
+      "contentLength": 0,
+      "contentType": "application/pdf",
+      "sizeInMB": "0.00"
+    },
+    {
+      "name": "Large Size",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&size=large",
+      "success": true,
+      "status": 200,
+      "duration": 383,
+      "contentLength": 0,
+      "contentType": "application/pdf",
+      "sizeInMB": "0.00"
+    },
+    {
+      "name": "Resolution 300",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&resolution=300",
+      "success": true,
+      "status": 200,
+      "duration": 469,
+      "contentLength": 0,
+      "contentType": "application/pdf",
+      "sizeInMB": "0.00"
+    },
+    {
+      "name": "Resolution 600",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&resolution=600",
+      "success": true,
+      "status": 200,
+      "duration": 480,
+      "contentLength": 0,
+      "contentType": "application/pdf",
+      "sizeInMB": "0.00"
+    },
+    {
+      "name": "DPI 300",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&dpi=300",
+      "success": true,
+      "status": 200,
+      "duration": 482,
+      "contentLength": 0,
+      "contentType": "application/pdf",
+      "sizeInMB": "0.00"
+    },
+    {
+      "name": "DPI 600",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&dpi=600",
+      "success": true,
+      "status": 200,
+      "duration": 388,
+      "contentLength": 0,
+      "contentType": "application/pdf",
+      "sizeInMB": "0.00"
+    }
+  ],
+  "totalPages": 300,
+  "discoveredPages": [
+    {
+      "page": 1,
+      "contentLength": "211995",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&pdf=true"
+    },
+    {
+      "page": 2,
+      "contentLength": "487073",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=2&pdf=true"
+    },
+    {
+      "page": 3,
+      "contentLength": "494150",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=3&pdf=true"
+    },
+    {
+      "page": 4,
+      "contentLength": "171324",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=4&pdf=true"
+    },
+    {
+      "page": 5,
+      "contentLength": "149172",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=5&pdf=true"
+    },
+    {
+      "page": 6,
+      "contentLength": "137320",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=6&pdf=true"
+    },
+    {
+      "page": 7,
+      "contentLength": "391957",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=7&pdf=true"
+    },
+    {
+      "page": 8,
+      "contentLength": "388004",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=8&pdf=true"
+    },
+    {
+      "page": 9,
+      "contentLength": "326281",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=9&pdf=true"
+    },
+    {
+      "page": 10,
+      "contentLength": "295552",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=10&pdf=true"
+    },
+    {
+      "page": 11,
+      "contentLength": "256139",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=11&pdf=true"
+    },
+    {
+      "page": 12,
+      "contentLength": "260780",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=12&pdf=true"
+    },
+    {
+      "page": 13,
+      "contentLength": "256356",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=13&pdf=true"
+    },
+    {
+      "page": 14,
+      "contentLength": "256201",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=14&pdf=true"
+    },
+    {
+      "page": 15,
+      "contentLength": "255162",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=15&pdf=true"
+    },
+    {
+      "page": 16,
+      "contentLength": "269833",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=16&pdf=true"
+    },
+    {
+      "page": 17,
+      "contentLength": "264605",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=17&pdf=true"
+    },
+    {
+      "page": 18,
+      "contentLength": "293245",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=18&pdf=true"
+    },
+    {
+      "page": 19,
+      "contentLength": "291704",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=19&pdf=true"
+    },
+    {
+      "page": 20,
+      "contentLength": "281522",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=20&pdf=true"
+    },
+    {
+      "page": 21,
+      "contentLength": "279958",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=21&pdf=true"
+    },
+    {
+      "page": 22,
+      "contentLength": "329409",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=22&pdf=true"
+    },
+    {
+      "page": 23,
+      "contentLength": "347423",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=23&pdf=true"
+    },
+    {
+      "page": 24,
+      "contentLength": "334584",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=24&pdf=true"
+    },
+    {
+      "page": 25,
+      "contentLength": "325267",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=25&pdf=true"
+    },
+    {
+      "page": 26,
+      "contentLength": "302912",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=26&pdf=true"
+    },
+    {
+      "page": 27,
+      "contentLength": "317845",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=27&pdf=true"
+    },
+    {
+      "page": 28,
+      "contentLength": "300124",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=28&pdf=true"
+    },
+    {
+      "page": 29,
+      "contentLength": "290318",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=29&pdf=true"
+    },
+    {
+      "page": 30,
+      "contentLength": "321444",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=30&pdf=true"
+    },
+    {
+      "page": 31,
+      "contentLength": "298219",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=31&pdf=true"
+    },
+    {
+      "page": 32,
+      "contentLength": "288341",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=32&pdf=true"
+    },
+    {
+      "page": 33,
+      "contentLength": "282361",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=33&pdf=true"
+    },
+    {
+      "page": 34,
+      "contentLength": "260953",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=34&pdf=true"
+    },
+    {
+      "page": 35,
+      "contentLength": "245020",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=35&pdf=true"
+    },
+    {
+      "page": 36,
+      "contentLength": "319291",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=36&pdf=true"
+    },
+    {
+      "page": 37,
+      "contentLength": "298957",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=37&pdf=true"
+    },
+    {
+      "page": 38,
+      "contentLength": "310259",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=38&pdf=true"
+    },
+    {
+      "page": 39,
+      "contentLength": "324148",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=39&pdf=true"
+    },
+    {
+      "page": 40,
+      "contentLength": "330462",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=40&pdf=true"
+    },
+    {
+      "page": 41,
+      "contentLength": "318674",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=41&pdf=true"
+    },
+    {
+      "page": 42,
+      "contentLength": "354640",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=42&pdf=true"
+    },
+    {
+      "page": 43,
+      "contentLength": "296949",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=43&pdf=true"
+    },
+    {
+      "page": 44,
+      "contentLength": "294909",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=44&pdf=true"
+    },
+    {
+      "page": 45,
+      "contentLength": "296510",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=45&pdf=true"
+    },
+    {
+      "page": 46,
+      "contentLength": "370469",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=46&pdf=true"
+    },
+    {
+      "page": 47,
+      "contentLength": "314733",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=47&pdf=true"
+    },
+    {
+      "page": 48,
+      "contentLength": "332073",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=48&pdf=true"
+    },
+    {
+      "page": 49,
+      "contentLength": "319907",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=49&pdf=true"
+    },
+    {
+      "page": 50,
+      "contentLength": "319128",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=50&pdf=true"
+    },
+    {
+      "page": 51,
+      "contentLength": "312805",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=51&pdf=true"
+    },
+    {
+      "page": 52,
+      "contentLength": "335971",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=52&pdf=true"
+    },
+    {
+      "page": 53,
+      "contentLength": "316169",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=53&pdf=true"
+    },
+    {
+      "page": 54,
+      "contentLength": "304962",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=54&pdf=true"
+    },
+    {
+      "page": 55,
+      "contentLength": "387434",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=55&pdf=true"
+    },
+    {
+      "page": 56,
+      "contentLength": "459483",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=56&pdf=true"
+    },
+    {
+      "page": 57,
+      "contentLength": "299710",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=57&pdf=true"
+    },
+    {
+      "page": 58,
+      "contentLength": "334274",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=58&pdf=true"
+    },
+    {
+      "page": 59,
+      "contentLength": "308056",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=59&pdf=true"
+    },
+    {
+      "page": 60,
+      "contentLength": "327636",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=60&pdf=true"
+    },
+    {
+      "page": 61,
+      "contentLength": "300087",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=61&pdf=true"
+    },
+    {
+      "page": 62,
+      "contentLength": "307914",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=62&pdf=true"
+    },
+    {
+      "page": 63,
+      "contentLength": "279215",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=63&pdf=true"
+    },
+    {
+      "page": 64,
+      "contentLength": "269781",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=64&pdf=true"
+    },
+    {
+      "page": 65,
+      "contentLength": "393823",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=65&pdf=true"
+    },
+    {
+      "page": 66,
+      "contentLength": "372286",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=66&pdf=true"
+    },
+    {
+      "page": 67,
+      "contentLength": "289209",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=67&pdf=true"
+    },
+    {
+      "page": 68,
+      "contentLength": "286025",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=68&pdf=true"
+    },
+    {
+      "page": 69,
+      "contentLength": "274815",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=69&pdf=true"
+    },
+    {
+      "page": 70,
+      "contentLength": "295912",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=70&pdf=true"
+    },
+    {
+      "page": 71,
+      "contentLength": "274176",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=71&pdf=true"
+    },
+    {
+      "page": 72,
+      "contentLength": "280662",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=72&pdf=true"
+    },
+    {
+      "page": 73,
+      "contentLength": "272231",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=73&pdf=true"
+    },
+    {
+      "page": 74,
+      "contentLength": "266267",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=74&pdf=true"
+    },
+    {
+      "page": 75,
+      "contentLength": "250690",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=75&pdf=true"
+    },
+    {
+      "page": 76,
+      "contentLength": "267917",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=76&pdf=true"
+    },
+    {
+      "page": 77,
+      "contentLength": "261438",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=77&pdf=true"
+    },
+    {
+      "page": 78,
+      "contentLength": "270691",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=78&pdf=true"
+    },
+    {
+      "page": 79,
+      "contentLength": "266426",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=79&pdf=true"
+    },
+    {
+      "page": 80,
+      "contentLength": "296891",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=80&pdf=true"
+    },
+    {
+      "page": 81,
+      "contentLength": "291219",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=81&pdf=true"
+    },
+    {
+      "page": 82,
+      "contentLength": "341007",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=82&pdf=true"
+    },
+    {
+      "page": 83,
+      "contentLength": "306889",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=83&pdf=true"
+    },
+    {
+      "page": 84,
+      "contentLength": "306167",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=84&pdf=true"
+    },
+    {
+      "page": 85,
+      "contentLength": "316717",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=85&pdf=true"
+    },
+    {
+      "page": 86,
+      "contentLength": "307866",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=86&pdf=true"
+    },
+    {
+      "page": 87,
+      "contentLength": "265989",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=87&pdf=true"
+    },
+    {
+      "page": 88,
+      "contentLength": "235637",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=88&pdf=true"
+    },
+    {
+      "page": 89,
+      "contentLength": "244677",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=89&pdf=true"
+    },
+    {
+      "page": 90,
+      "contentLength": "295798",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=90&pdf=true"
+    },
+    {
+      "page": 91,
+      "contentLength": "297480",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=91&pdf=true"
+    },
+    {
+      "page": 92,
+      "contentLength": "331823",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=92&pdf=true"
+    },
+    {
+      "page": 93,
+      "contentLength": "321839",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=93&pdf=true"
+    },
+    {
+      "page": 94,
+      "contentLength": "322173",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=94&pdf=true"
+    },
+    {
+      "page": 95,
+      "contentLength": "323033",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=95&pdf=true"
+    },
+    {
+      "page": 96,
+      "contentLength": "305188",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=96&pdf=true"
+    },
+    {
+      "page": 97,
+      "contentLength": "263222",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=97&pdf=true"
+    },
+    {
+      "page": 98,
+      "contentLength": "285641",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=98&pdf=true"
+    },
+    {
+      "page": 99,
+      "contentLength": "258872",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=99&pdf=true"
+    },
+    {
+      "page": 100,
+      "contentLength": "356558",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=100&pdf=true"
+    },
+    {
+      "page": 101,
+      "contentLength": "328910",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=101&pdf=true"
+    },
+    {
+      "page": 102,
+      "contentLength": "329005",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=102&pdf=true"
+    },
+    {
+      "page": 103,
+      "contentLength": "314814",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=103&pdf=true"
+    },
+    {
+      "page": 104,
+      "contentLength": "295570",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=104&pdf=true"
+    },
+    {
+      "page": 105,
+      "contentLength": "280837",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=105&pdf=true"
+    },
+    {
+      "page": 106,
+      "contentLength": "278660",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=106&pdf=true"
+    },
+    {
+      "page": 107,
+      "contentLength": "258797",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=107&pdf=true"
+    },
+    {
+      "page": 108,
+      "contentLength": "282382",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=108&pdf=true"
+    },
+    {
+      "page": 109,
+      "contentLength": "282835",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=109&pdf=true"
+    },
+    {
+      "page": 110,
+      "contentLength": "326245",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=110&pdf=true"
+    },
+    {
+      "page": 111,
+      "contentLength": "372821",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=111&pdf=true"
+    },
+    {
+      "page": 112,
+      "contentLength": "397206",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=112&pdf=true"
+    },
+    {
+      "page": 113,
+      "contentLength": "325148",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=113&pdf=true"
+    },
+    {
+      "page": 114,
+      "contentLength": "320042",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=114&pdf=true"
+    },
+    {
+      "page": 115,
+      "contentLength": "313696",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=115&pdf=true"
+    },
+    {
+      "page": 116,
+      "contentLength": "339112",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=116&pdf=true"
+    },
+    {
+      "page": 117,
+      "contentLength": "334756",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=117&pdf=true"
+    },
+    {
+      "page": 118,
+      "contentLength": "333707",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=118&pdf=true"
+    },
+    {
+      "page": 119,
+      "contentLength": "292614",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=119&pdf=true"
+    },
+    {
+      "page": 120,
+      "contentLength": "400946",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=120&pdf=true"
+    },
+    {
+      "page": 121,
+      "contentLength": "379069",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=121&pdf=true"
+    },
+    {
+      "page": 122,
+      "contentLength": "361022",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=122&pdf=true"
+    },
+    {
+      "page": 123,
+      "contentLength": "348311",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=123&pdf=true"
+    },
+    {
+      "page": 124,
+      "contentLength": "389554",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=124&pdf=true"
+    },
+    {
+      "page": 125,
+      "contentLength": "378902",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=125&pdf=true"
+    },
+    {
+      "page": 126,
+      "contentLength": "367099",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=126&pdf=true"
+    },
+    {
+      "page": 127,
+      "contentLength": "361469",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=127&pdf=true"
+    },
+    {
+      "page": 128,
+      "contentLength": "408360",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=128&pdf=true"
+    },
+    {
+      "page": 129,
+      "contentLength": "384964",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=129&pdf=true"
+    },
+    {
+      "page": 130,
+      "contentLength": "369326",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=130&pdf=true"
+    },
+    {
+      "page": 131,
+      "contentLength": "350987",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=131&pdf=true"
+    },
+    {
+      "page": 132,
+      "contentLength": "394335",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=132&pdf=true"
+    },
+    {
+      "page": 133,
+      "contentLength": "355136",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=133&pdf=true"
+    },
+    {
+      "page": 134,
+      "contentLength": "381857",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=134&pdf=true"
+    },
+    {
+      "page": 135,
+      "contentLength": "339297",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=135&pdf=true"
+    },
+    {
+      "page": 136,
+      "contentLength": "369945",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=136&pdf=true"
+    },
+    {
+      "page": 137,
+      "contentLength": "336630",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=137&pdf=true"
+    },
+    {
+      "page": 138,
+      "contentLength": "369000",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=138&pdf=true"
+    },
+    {
+      "page": 139,
+      "contentLength": "343070",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=139&pdf=true"
+    },
+    {
+      "page": 140,
+      "contentLength": "376067",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=140&pdf=true"
+    },
+    {
+      "page": 141,
+      "contentLength": "337348",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=141&pdf=true"
+    },
+    {
+      "page": 142,
+      "contentLength": "355594",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=142&pdf=true"
+    },
+    {
+      "page": 143,
+      "contentLength": "334262",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=143&pdf=true"
+    },
+    {
+      "page": 144,
+      "contentLength": "390140",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=144&pdf=true"
+    },
+    {
+      "page": 145,
+      "contentLength": "349191",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=145&pdf=true"
+    },
+    {
+      "page": 146,
+      "contentLength": "368671",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=146&pdf=true"
+    },
+    {
+      "page": 147,
+      "contentLength": "364423",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=147&pdf=true"
+    },
+    {
+      "page": 148,
+      "contentLength": "392523",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=148&pdf=true"
+    },
+    {
+      "page": 149,
+      "contentLength": "342850",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=149&pdf=true"
+    },
+    {
+      "page": 150,
+      "contentLength": "360920",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=150&pdf=true"
+    },
+    {
+      "page": 151,
+      "contentLength": "345719",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=151&pdf=true"
+    },
+    {
+      "page": 152,
+      "contentLength": "376934",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=152&pdf=true"
+    },
+    {
+      "page": 153,
+      "contentLength": "334527",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=153&pdf=true"
+    },
+    {
+      "page": 154,
+      "contentLength": "317248",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=154&pdf=true"
+    },
+    {
+      "page": 155,
+      "contentLength": "271965",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=155&pdf=true"
+    },
+    {
+      "page": 156,
+      "contentLength": "334460",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=156&pdf=true"
+    },
+    {
+      "page": 157,
+      "contentLength": "345827",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=157&pdf=true"
+    },
+    {
+      "page": 158,
+      "contentLength": "266344",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=158&pdf=true"
+    },
+    {
+      "page": 159,
+      "contentLength": "236879",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=159&pdf=true"
+    },
+    {
+      "page": 160,
+      "contentLength": "239738",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=160&pdf=true"
+    },
+    {
+      "page": 161,
+      "contentLength": "244992",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=161&pdf=true"
+    },
+    {
+      "page": 162,
+      "contentLength": "295460",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=162&pdf=true"
+    },
+    {
+      "page": 163,
+      "contentLength": "297840",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=163&pdf=true"
+    },
+    {
+      "page": 164,
+      "contentLength": "330957",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=164&pdf=true"
+    },
+    {
+      "page": 165,
+      "contentLength": "337121",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=165&pdf=true"
+    },
+    {
+      "page": 166,
+      "contentLength": "343486",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=166&pdf=true"
+    },
+    {
+      "page": 167,
+      "contentLength": "354674",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=167&pdf=true"
+    },
+    {
+      "page": 168,
+      "contentLength": "322695",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=168&pdf=true"
+    },
+    {
+      "page": 169,
+      "contentLength": "289120",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=169&pdf=true"
+    },
+    {
+      "page": 170,
+      "contentLength": "213978",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=170&pdf=true"
+    },
+    {
+      "page": 171,
+      "contentLength": "201150",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=171&pdf=true"
+    },
+    {
+      "page": 172,
+      "contentLength": "267101",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=172&pdf=true"
+    },
+    {
+      "page": 173,
+      "contentLength": "294691",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=173&pdf=true"
+    },
+    {
+      "page": 174,
+      "contentLength": "355508",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=174&pdf=true"
+    },
+    {
+      "page": 175,
+      "contentLength": "339207",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=175&pdf=true"
+    },
+    {
+      "page": 176,
+      "contentLength": "325581",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=176&pdf=true"
+    },
+    {
+      "page": 177,
+      "contentLength": "313116",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=177&pdf=true"
+    },
+    {
+      "page": 178,
+      "contentLength": "301601",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=178&pdf=true"
+    },
+    {
+      "page": 179,
+      "contentLength": "285462",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=179&pdf=true"
+    },
+    {
+      "page": 180,
+      "contentLength": "189077",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=180&pdf=true"
+    },
+    {
+      "page": 181,
+      "contentLength": "197104",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=181&pdf=true"
+    },
+    {
+      "page": 182,
+      "contentLength": "245608",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=182&pdf=true"
+    },
+    {
+      "page": 183,
+      "contentLength": "285694",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=183&pdf=true"
+    },
+    {
+      "page": 184,
+      "contentLength": "334406",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=184&pdf=true"
+    },
+    {
+      "page": 185,
+      "contentLength": "337295",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=185&pdf=true"
+    },
+    {
+      "page": 186,
+      "contentLength": "327343",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=186&pdf=true"
+    },
+    {
+      "page": 187,
+      "contentLength": "298644",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=187&pdf=true"
+    },
+    {
+      "page": 188,
+      "contentLength": "299505",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=188&pdf=true"
+    },
+    {
+      "page": 189,
+      "contentLength": "270780",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=189&pdf=true"
+    },
+    {
+      "page": 190,
+      "contentLength": "350644",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=190&pdf=true"
+    },
+    {
+      "page": 191,
+      "contentLength": "364991",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=191&pdf=true"
+    },
+    {
+      "page": 192,
+      "contentLength": "316783",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=192&pdf=true"
+    },
+    {
+      "page": 193,
+      "contentLength": "335321",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=193&pdf=true"
+    },
+    {
+      "page": 194,
+      "contentLength": "363433",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=194&pdf=true"
+    },
+    {
+      "page": 195,
+      "contentLength": "328392",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=195&pdf=true"
+    },
+    {
+      "page": 196,
+      "contentLength": "429042",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=196&pdf=true"
+    },
+    {
+      "page": 197,
+      "contentLength": "395502",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=197&pdf=true"
+    },
+    {
+      "page": 198,
+      "contentLength": "406768",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=198&pdf=true"
+    },
+    {
+      "page": 199,
+      "contentLength": "427476",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=199&pdf=true"
+    },
+    {
+      "page": 200,
+      "contentLength": "425433",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=200&pdf=true"
+    },
+    {
+      "page": 201,
+      "contentLength": "407511",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=201&pdf=true"
+    },
+    {
+      "page": 202,
+      "contentLength": "435876",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=202&pdf=true"
+    },
+    {
+      "page": 203,
+      "contentLength": "383414",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=203&pdf=true"
+    },
+    {
+      "page": 204,
+      "contentLength": "386847",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=204&pdf=true"
+    },
+    {
+      "page": 205,
+      "contentLength": "364216",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=205&pdf=true"
+    },
+    {
+      "page": 206,
+      "contentLength": "400690",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=206&pdf=true"
+    },
+    {
+      "page": 207,
+      "contentLength": "387035",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=207&pdf=true"
+    },
+    {
+      "page": 208,
+      "contentLength": "416145",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=208&pdf=true"
+    },
+    {
+      "page": 209,
+      "contentLength": "389273",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=209&pdf=true"
+    },
+    {
+      "page": 210,
+      "contentLength": "408008",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=210&pdf=true"
+    },
+    {
+      "page": 211,
+      "contentLength": "386558",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=211&pdf=true"
+    },
+    {
+      "page": 212,
+      "contentLength": "394659",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=212&pdf=true"
+    },
+    {
+      "page": 213,
+      "contentLength": "385262",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=213&pdf=true"
+    },
+    {
+      "page": 214,
+      "contentLength": "370979",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=214&pdf=true"
+    },
+    {
+      "page": 215,
+      "contentLength": "408578",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=215&pdf=true"
+    },
+    {
+      "page": 216,
+      "contentLength": "465878",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=216&pdf=true"
+    },
+    {
+      "page": 217,
+      "contentLength": "372596",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=217&pdf=true"
+    },
+    {
+      "page": 218,
+      "contentLength": "406736",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=218&pdf=true"
+    },
+    {
+      "page": 219,
+      "contentLength": "389901",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=219&pdf=true"
+    },
+    {
+      "page": 220,
+      "contentLength": "419008",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=220&pdf=true"
+    },
+    {
+      "page": 221,
+      "contentLength": "271512",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=221&pdf=true"
+    },
+    {
+      "page": 222,
+      "contentLength": "333167",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=222&pdf=true"
+    },
+    {
+      "page": 223,
+      "contentLength": "343317",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=223&pdf=true"
+    },
+    {
+      "page": 224,
+      "contentLength": "335120",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=224&pdf=true"
+    },
+    {
+      "page": 225,
+      "contentLength": "339853",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=225&pdf=true"
+    },
+    {
+      "page": 226,
+      "contentLength": "373760",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=226&pdf=true"
+    },
+    {
+      "page": 227,
+      "contentLength": "412687",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=227&pdf=true"
+    },
+    {
+      "page": 228,
+      "contentLength": "454175",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=228&pdf=true"
+    },
+    {
+      "page": 229,
+      "contentLength": "362154",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=229&pdf=true"
+    },
+    {
+      "page": 230,
+      "contentLength": "364013",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=230&pdf=true"
+    },
+    {
+      "page": 231,
+      "contentLength": "381189",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=231&pdf=true"
+    },
+    {
+      "page": 232,
+      "contentLength": "381809",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=232&pdf=true"
+    },
+    {
+      "page": 233,
+      "contentLength": "365841",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=233&pdf=true"
+    },
+    {
+      "page": 234,
+      "contentLength": "371952",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=234&pdf=true"
+    },
+    {
+      "page": 235,
+      "contentLength": "350744",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=235&pdf=true"
+    },
+    {
+      "page": 236,
+      "contentLength": "384010",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=236&pdf=true"
+    },
+    {
+      "page": 237,
+      "contentLength": "366077",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=237&pdf=true"
+    },
+    {
+      "page": 238,
+      "contentLength": "409498",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=238&pdf=true"
+    },
+    {
+      "page": 239,
+      "contentLength": "391297",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=239&pdf=true"
+    },
+    {
+      "page": 240,
+      "contentLength": "392702",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=240&pdf=true"
+    },
+    {
+      "page": 241,
+      "contentLength": "379078",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=241&pdf=true"
+    },
+    {
+      "page": 242,
+      "contentLength": "445421",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=242&pdf=true"
+    },
+    {
+      "page": 243,
+      "contentLength": "410707",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=243&pdf=true"
+    },
+    {
+      "page": 244,
+      "contentLength": "361120",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=244&pdf=true"
+    },
+    {
+      "page": 245,
+      "contentLength": "340998",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=245&pdf=true"
+    },
+    {
+      "page": 246,
+      "contentLength": "396338",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=246&pdf=true"
+    },
+    {
+      "page": 247,
+      "contentLength": "368959",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=247&pdf=true"
+    },
+    {
+      "page": 248,
+      "contentLength": "367484",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=248&pdf=true"
+    },
+    {
+      "page": 249,
+      "contentLength": "389060",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=249&pdf=true"
+    },
+    {
+      "page": 250,
+      "contentLength": "366484",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=250&pdf=true"
+    },
+    {
+      "page": 251,
+      "contentLength": "378524",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=251&pdf=true"
+    },
+    {
+      "page": 252,
+      "contentLength": "371930",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=252&pdf=true"
+    },
+    {
+      "page": 253,
+      "contentLength": "383976",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=253&pdf=true"
+    },
+    {
+      "page": 254,
+      "contentLength": "353652",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=254&pdf=true"
+    },
+    {
+      "page": 255,
+      "contentLength": "406253",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=255&pdf=true"
+    },
+    {
+      "page": 256,
+      "contentLength": "359665",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=256&pdf=true"
+    },
+    {
+      "page": 257,
+      "contentLength": "391968",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=257&pdf=true"
+    },
+    {
+      "page": 258,
+      "contentLength": "378843",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=258&pdf=true"
+    },
+    {
+      "page": 259,
+      "contentLength": "408541",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=259&pdf=true"
+    },
+    {
+      "page": 260,
+      "contentLength": "358128",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=260&pdf=true"
+    },
+    {
+      "page": 261,
+      "contentLength": "377878",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=261&pdf=true"
+    },
+    {
+      "page": 262,
+      "contentLength": "369598",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=262&pdf=true"
+    },
+    {
+      "page": 263,
+      "contentLength": "350193",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=263&pdf=true"
+    },
+    {
+      "page": 264,
+      "contentLength": "381799",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=264&pdf=true"
+    },
+    {
+      "page": 265,
+      "contentLength": "366450",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=265&pdf=true"
+    },
+    {
+      "page": 266,
+      "contentLength": "353045",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=266&pdf=true"
+    },
+    {
+      "page": 267,
+      "contentLength": "364157",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=267&pdf=true"
+    },
+    {
+      "page": 268,
+      "contentLength": "370070",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=268&pdf=true"
+    },
+    {
+      "page": 269,
+      "contentLength": "377028",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=269&pdf=true"
+    },
+    {
+      "page": 270,
+      "contentLength": "362707",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=270&pdf=true"
+    },
+    {
+      "page": 271,
+      "contentLength": "365296",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=271&pdf=true"
+    },
+    {
+      "page": 272,
+      "contentLength": "337562",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=272&pdf=true"
+    },
+    {
+      "page": 273,
+      "contentLength": "327557",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=273&pdf=true"
+    },
+    {
+      "page": 274,
+      "contentLength": "333211",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=274&pdf=true"
+    },
+    {
+      "page": 275,
+      "contentLength": "392532",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=275&pdf=true"
+    },
+    {
+      "page": 276,
+      "contentLength": "358953",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=276&pdf=true"
+    },
+    {
+      "page": 277,
+      "contentLength": "395640",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=277&pdf=true"
+    },
+    {
+      "page": 278,
+      "contentLength": "416073",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=278&pdf=true"
+    },
+    {
+      "page": 279,
+      "contentLength": "397210",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=279&pdf=true"
+    },
+    {
+      "page": 280,
+      "contentLength": "388714",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=280&pdf=true"
+    },
+    {
+      "page": 281,
+      "contentLength": "388545",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=281&pdf=true"
+    },
+    {
+      "page": 282,
+      "contentLength": "387922",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=282&pdf=true"
+    },
+    {
+      "page": 283,
+      "contentLength": "362662",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=283&pdf=true"
+    },
+    {
+      "page": 284,
+      "contentLength": "368007",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=284&pdf=true"
+    },
+    {
+      "page": 285,
+      "contentLength": "393938",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=285&pdf=true"
+    },
+    {
+      "page": 286,
+      "contentLength": "315600",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=286&pdf=true"
+    },
+    {
+      "page": 287,
+      "contentLength": "322311",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=287&pdf=true"
+    },
+    {
+      "page": 288,
+      "contentLength": "280781",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=288&pdf=true"
+    },
+    {
+      "page": 289,
+      "contentLength": "283072",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=289&pdf=true"
+    },
+    {
+      "page": 290,
+      "contentLength": "232595",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=290&pdf=true"
+    },
+    {
+      "page": 291,
+      "contentLength": "217843",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=291&pdf=true"
+    },
+    {
+      "page": 292,
+      "contentLength": "230241",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=292&pdf=true"
+    },
+    {
+      "page": 293,
+      "contentLength": "257970",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=293&pdf=true"
+    },
+    {
+      "page": 294,
+      "contentLength": "300411",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=294&pdf=true"
+    },
+    {
+      "page": 295,
+      "contentLength": "304796",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=295&pdf=true"
+    },
+    {
+      "page": 296,
+      "contentLength": "291280",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=296&pdf=true"
+    },
+    {
+      "page": 297,
+      "contentLength": "304125",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=297&pdf=true"
+    },
+    {
+      "page": 298,
+      "contentLength": "263925",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=298&pdf=true"
+    },
+    {
+      "page": 299,
+      "contentLength": "242149",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=299&pdf=true"
+    },
+    {
+      "page": 300,
+      "contentLength": "213400",
+      "contentType": "application/pdf",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=300&pdf=true"
+    }
+  ],
+  "implementation": {
+    "hangingFixed": true,
+    "maxResolutionDetected": true,
+    "robustDiscovery": true,
+    "timeoutHandling": true,
+    "duplicateDetection": true,
+    "errorHandling": true
+  }
+}

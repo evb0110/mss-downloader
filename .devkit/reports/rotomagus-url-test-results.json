@@ -1,0 +1,99 @@
+[
+  {
+    "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.highres",
+    "success": true,
+    "statusCode": 200,
+    "contentType": "image/jpeg;charset=UTF-8",
+    "error": null
+  },
+  {
+    "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.item.zoom",
+    "success": true,
+    "statusCode": 200,
+    "contentType": "text/html;charset=UTF-8",
+    "error": null
+  },
+  {
+    "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.item",
+    "success": true,
+    "statusCode": 200,
+    "contentType": "text/html;charset=UTF-8",
+    "error": null
+  },
+  {
+    "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1/full/full/0/default.jpg",
+    "success": false,
+    "statusCode": 500,
+    "contentType": "text/html;charset=utf-8",
+    "error": "500"
+  },
+  {
+    "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1/full/max/0/default.jpg",
+    "success": false,
+    "statusCode": 500,
+    "contentType": "text/html;charset=utf-8",
+    "error": "500"
+  },
+  {
+    "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1/full/2000,/0/default.jpg",
+    "success": false,
+    "statusCode": 500,
+    "contentType": "text/html;charset=utf-8",
+    "error": "500"
+  },
+  {
+    "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1/full/4000,/0/default.jpg",
+    "success": false,
+    "statusCode": 500,
+    "contentType": "text/html;charset=utf-8",
+    "error": "500"
+  },
+  {
+    "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1/full/!2000,2000/0/default.jpg",
+    "success": false,
+    "statusCode": 500,
+    "contentType": "text/html;charset=utf-8",
+    "error": "500"
+  },
+  {
+    "url": "https://www.rotomagus.fr/iiif/btv1b10052442z/f1/full/full/0/default.jpg",
+    "success": false,
+    "statusCode": 500,
+    "contentType": "text/html;charset=utf-8",
+    "error": "500"
+  },
+  {
+    "url": "https://www.rotomagus.fr/iiif/btv1b10052442z/f1/full/max/0/default.jpg",
+    "success": false,
+    "error": "read ECONNRESET"
+  },
+  {
+    "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.jpg",
+    "success": false,
+    "error": "read ECONNRESET"
+  },
+  {
+    "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.png",
+    "success": false,
+    "error": "read ECONNRESET"
+  },
+  {
+    "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.tif",
+    "success": false,
+    "error": "read ECONNRESET"
+  },
+  {
+    "url": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b10052442z/f1/full/full/0/native.jpg",
+    "success": true,
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "error": null
+  },
+  {
+    "url": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b10052442z/f1/full/max/0/native.jpg",
+    "success": true,
+    "statusCode": 200,
+    "contentType": "image/jpeg",
+    "error": null
+  }
+]

@@ -1,0 +1,70 @@
+{
+  "success": true,
+  "manifestUrl": "https://jmms.iccu.sbn.it/jmms/metadata/VFdGblZHVmpZU0F0SUVsRFExVV8_/b2FpOnd3dy5pbnRlcm5ldGN1bHR1cmFsZS5zYm4uaXQvVGVjYToyMDpOVDAwMDA6Q05NRFxcMDAwMDAxNjQxOQ__/manifest.json",
+  "totalPagesAvailable": 422,
+  "pagesDownloaded": 10,
+  "pdfSize": 1887117,
+  "pdfPath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-artifacts/ICCU-JMMS-MULTI-PAGE-VALIDATION.pdf",
+  "pages": [
+    {
+      "pageNumber": 1,
+      "label": "Coperta anteriore r",
+      "imageSize": 237250,
+      "url": "https://jmms.iccu.sbn.it/iiif/2/tdi@normal@VFdGblZHVmpZU0F0SUVsRFExVV8_@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwMV9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV9hMTcxN2VlZDgzNzQ1YjlmNmIxN2Y2YWQ3NTE2YThhMg__@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwMV9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV9hMTcxN2VlZDgzNzQ1YjlmNmIxN2Y2YWQ3NTE2YThhMg__/full/full/0/default.jpg"
+    },
+    {
+      "pageNumber": 2,
+      "label": "Dorso",
+      "imageSize": 74030,
+      "url": "https://jmms.iccu.sbn.it/iiif/2/tdi@normal@VFdGblZHVmpZU0F0SUVsRFExVV8_@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwMl9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV9lMjNhM2QwYzA5NzY4MzgzNTY0YzkyZmZlY2IxOWZkOQ__@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwMl9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV9lMjNhM2QwYzA5NzY4MzgzNTY0YzkyZmZlY2IxOWZkOQ__/full/full/0/default.jpg"
+    },
+    {
+      "pageNumber": 3,
+      "label": "Controguardia anteriore",
+      "imageSize": 221491,
+      "url": "https://jmms.iccu.sbn.it/iiif/2/tdi@normal@VFdGblZHVmpZU0F0SUVsRFExVV8_@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwM19kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV83ZGVjMjI4NzNlZDY2NDkxNzZhZTgyYTFmNWMzYjY0NA__@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwM19kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV83ZGVjMjI4NzNlZDY2NDkxNzZhZTgyYTFmNWMzYjY0NA__/full/full/0/default.jpg"
+    },
+    {
+      "pageNumber": 4,
+      "label": "Guardia anteriore [I]r",
+      "imageSize": 175140,
+      "url": "https://jmms.iccu.sbn.it/iiif/2/tdi@normal@VFdGblZHVmpZU0F0SUVsRFExVV8_@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwNF9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV8xMGIxMTk4NWJjNTcwOTZkMGU4MDMxYWIwZjY0OGYwYg__@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwNF9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV8xMGIxMTk4NWJjNTcwOTZkMGU4MDMxYWIwZjY0OGYwYg__/full/full/0/default.jpg"
+    },
+    {
+      "pageNumber": 5,
+      "label": "Guardia anteriore [I]v",
+      "imageSize": 169869,
+      "url": "https://jmms.iccu.sbn.it/iiif/2/tdi@normal@VFdGblZHVmpZU0F0SUVsRFExVV8_@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwNV9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV8zMWQ3MjY3ZGZmZWEzYmM1Nzg2MWIxODAwZjVlNjk5MA__@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwNV9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV8zMWQ3MjY3ZGZmZWEzYmM1Nzg2MWIxODAwZjVlNjk5MA__/full/full/0/default.jpg"
+    },
+    {
+      "pageNumber": 6,
+      "label": "Ir",
+      "imageSize": 166264,
+      "url": "https://jmms.iccu.sbn.it/iiif/2/tdi@normal@VFdGblZHVmpZU0F0SUVsRFExVV8_@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwNl9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV82ODcwNjIxZDNkMzAzZDA2Mjk2MWNjZjNjOTNkZWQ0OQ__@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwNl9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV82ODcwNjIxZDNkMzAzZDA2Mjk2MWNjZjNjOTNkZWQ0OQ__/full/full/0/default.jpg"
+    },
+    {
+      "pageNumber": 7,
+      "label": "Iv",
+      "imageSize": 195972,
+      "url": "https://jmms.iccu.sbn.it/iiif/2/tdi@normal@VFdGblZHVmpZU0F0SUVsRFExVV8_@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwN19kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV84N2Q1ZGQzMTQ4ZTc3MDYzMTc3OTY0YzhhZmJlNWU4Mw__@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwN19kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV84N2Q1ZGQzMTQ4ZTc3MDYzMTc3OTY0YzhhZmJlNWU4Mw__/full/full/0/default.jpg"
+    },
+    {
+      "pageNumber": 8,
+      "label": "IIr",
+      "imageSize": 226631,
+      "url": "https://jmms.iccu.sbn.it/iiif/2/tdi@normal@VFdGblZHVmpZU0F0SUVsRFExVV8_@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwOF9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV8zOTc0MTU0N2QyZTlhZDVkZjk0ZDFhMTg0MzdlOWJjMw__@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwOF9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV8zOTc0MTU0N2QyZTlhZDVkZjk0ZDFhMTg0MzdlOWJjMw__/full/full/0/default.jpg"
+    },
+    {
+      "pageNumber": 9,
+      "label": "IIv",
+      "imageSize": 195724,
+      "url": "https://jmms.iccu.sbn.it/iiif/2/tdi@normal@VFdGblZHVmpZU0F0SUVsRFExVV8_@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwOV9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV8wMWE5Y2YzOGYwMTAwZjY5ZDc0ZDkzOTQzZmZkMzkxYQ__@cm1fMjgxX3ZhbGxfYl8wMjRfMDAwOV9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV8wMWE5Y2YzOGYwMTAwZjY5ZDc0ZDkzOTQzZmZkMzkxYQ__/full/full/0/default.jpg"
+    },
+    {
+      "pageNumber": 10,
+      "label": "IIIr",
+      "imageSize": 220769,
+      "url": "https://jmms.iccu.sbn.it/iiif/2/tdi@normal@VFdGblZHVmpZU0F0SUVsRFExVV8_@cm1fMjgxX3ZhbGxfYl8wMjRfMDAxMF9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV8yZTI2NmE0YmE2NTEzYjhkOWE2YmUyZTI5MzFiOWI4Yg__@cm1fMjgxX3ZhbGxfYl8wMjRfMDAxMF9kNDUyNDhhYzA4MDY4NDVkZjQwZDE5ZDA1NDkxZDYxMV8yZTI2NmE0YmE2NTEzYjhkOWE2YmUyZTI5MzFiOWI4Yg__/full/full/0/default.jpg"
+    }
+  ]
+}

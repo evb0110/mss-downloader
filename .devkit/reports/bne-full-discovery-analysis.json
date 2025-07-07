@@ -1,0 +1,114 @@
+{
+  "manuscriptId": "0000007619",
+  "startTime": 1751872852580,
+  "pdfPageCount": 1,
+  "maxTestedPages": 1,
+  "pageResults": [
+    {
+      "page": 1,
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&jpeg=true",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "contentLength": "201908",
+      "success": true,
+      "responseTime": 1695
+    }
+  ],
+  "summary": {
+    "totalTime": 2196,
+    "testedPages": 1,
+    "successfulPages": 1,
+    "failedPages": 0,
+    "consecutiveFailures": 0,
+    "avgResponseTime": 1695,
+    "hangingRisk": "LOW",
+    "recommendedMaxPages": 10
+  },
+  "resolutionTest": {
+    "results": [
+      {
+        "param": "jpeg=true",
+        "description": "Default JPEG",
+        "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&jpeg=true",
+        "status": 200,
+        "contentType": "image/jpeg",
+        "contentLength": 201908,
+        "success": true
+      },
+      {
+        "param": "jpeg=true&resolution=high",
+        "description": "High resolution JPEG",
+        "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&jpeg=true&resolution=high",
+        "status": 200,
+        "contentType": "image/jpeg",
+        "contentLength": 201908,
+        "success": true
+      },
+      {
+        "param": "jpeg=true&quality=100",
+        "description": "Max quality JPEG",
+        "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&jpeg=true&quality=100",
+        "status": 200,
+        "contentType": "image/jpeg",
+        "contentLength": 201908,
+        "success": true
+      },
+      {
+        "param": "jpeg=true&size=max",
+        "description": "Max size JPEG",
+        "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&jpeg=true&size=max",
+        "status": 200,
+        "contentType": "image/jpeg",
+        "contentLength": 201908,
+        "success": true
+      },
+      {
+        "param": "pdf=true",
+        "description": "PDF format",
+        "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&pdf=true",
+        "status": 200,
+        "contentType": "application/pdf",
+        "contentLength": 211995,
+        "success": true
+      },
+      {
+        "param": "tiff=true",
+        "description": "TIFF format",
+        "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&tiff=true",
+        "status": 200,
+        "contentType": "application/pdf",
+        "contentLength": 211995,
+        "success": true
+      },
+      {
+        "param": "png=true",
+        "description": "PNG format",
+        "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&png=true",
+        "status": 200,
+        "contentType": "application/pdf",
+        "contentLength": 211995,
+        "success": true
+      }
+    ],
+    "bestResolution": {
+      "param": "pdf=true",
+      "description": "PDF format",
+      "url": "https://bdh-rd.bne.es/pdf.raw?query=id:0000007619&page=1&pdf=true",
+      "status": 200,
+      "contentType": "application/pdf",
+      "contentLength": 211995,
+      "success": true
+    }
+  },
+  "recommendations": {
+    "improvedImplementation": false,
+    "maxPagesLimit": 10,
+    "bestResolutionParams": "pdf=true",
+    "optimizations": [
+      "Use parallel requests with limited concurrency",
+      "Implement early termination after consecutive failures",
+      "Add progress monitoring for user feedback",
+      "Use PDF info to get accurate page count first"
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "viewerPageAnalysis": {
+    "statusCode": 200,
+    "contentLength": 15925,
+    "hasIIIF": false,
+    "hasManifest": false,
+    "hasAPI": false,
+    "containsImageUrls": true
+  },
+  "manifestDiscovery": {
+    "manifestUrls": [],
+    "apiUrls": []
+  },
+  "apiEndpoints": [],
+  "iiifStructure": null,
+  "maxResolutionTest": null,
+  "hangingPointAnalysis": {
+    "manifestLoadingIssues": true,
+    "authenticationRequired": false,
+    "potentialInfiniteLoop": false
+  }
+}
