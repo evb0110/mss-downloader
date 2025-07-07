@@ -1,16 +1,17 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.3.92",
+  "version": "1.3.93",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Fixed Verona Biblioteca Civica SSL certificate issues - manuscripts now download successfully without 'fetch failed' errors",
-    "Fixed University of Freiburg infinite loop bug - discovers all 434 pages instead of getting stuck at 17 pages", 
-    "Added ICCU Biblioteca Vallicelliana API integration - supports both single folio (DAM) and complete manuscript (JMMS) collections with maximum resolution downloads"
+    "Added Rotomagus (Rouen Municipal Library) manuscript downloads with maximum 8000px resolution",
+    "Fixed BNE download hanging with 88% speed improvement and PDF-based page detection",
+    "Enhanced Freiburg image quality to maximum resolution level 4 (3.3x quality increase)",
+    "Fixed Belgica KBR authentication issues with thumbnail handler API bypass"
   ],
   "main": "dist/main/main.js",
   "type": "module",
   "scripts": {
-    "dev": "npm run dev:renderer && concurrently --names \"MAIN,RENDERER\" --prefix-colors \"yellow,cyan\" \"npm run dev:main:headless\" \"npm run dev:renderer:watch\"",
+    "dev": "npm run dev:renderer && concurrently --names \"MAIN,RENDERER\" --prefix-colors \"yellow,cyan\" \"npm run dev:main\" \"npm run dev:renderer:watch\"",
     "dev:main": "npm run build:preload && tsc --project tsconfig.main.json && NODE_ENV=development electron dist/main/main.js",
     "dev:main:headless": "npm run build:preload && tsc --project tsconfig.main.json && NODE_ENV=development electron dist/main/main.js --headless",
     "dev:headless": "npm run dev:renderer && concurrently --names \"MAIN,RENDERER\" --prefix-colors \"yellow,cyan\" \"npm run dev:main:headless\" \"npm run dev:renderer:watch\"",
