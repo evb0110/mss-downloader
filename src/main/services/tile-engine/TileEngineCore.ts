@@ -12,7 +12,7 @@ import {
   TileGridConfig,
   TileAuthConfig,
   TileDownloadProgress
-} from './interfaces';
+} from './interfaces.js';
 
 const writeFile = promisify(fs.writeFile);
 const mkdir = promisify(fs.mkdir);

@@ -1,14 +1,14 @@
 import * as path from 'path';
 import { app } from 'electron';
-import { TileEngineCore } from './TileEngineCore';
-import { BelgicaKbrAdapter } from './adapters/BelgicaKbrAdapter';
+import { TileEngineCore } from './TileEngineCore.js';
+import { BelgicaKbrAdapter } from './adapters/BelgicaKbrAdapter.js';
 import {
   TileEngineConfig,
   TileEngineResult,
   TileDownloadCallbacks,
   ITileAdapter,
   TileDownloadProgress
-} from './interfaces';
+} from './interfaces.js';
 
 export class TileEngineService {
   private engine: TileEngineCore;

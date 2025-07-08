@@ -1,10 +1,10 @@
-import { AbstractTileAdapter } from '../AbstractTileAdapter';
+import { AbstractTileAdapter } from '../AbstractTileAdapter.js';
 import {
   TileGridConfig,
   TileAuthConfig,
   TileCoordinate,
   TileValidationResult
-} from '../interfaces';
+} from '../interfaces.js';
 
 export class BelgicaKbrAdapter extends AbstractTileAdapter {
   readonly name = 'belgica-kbr-ajaxzoom';
