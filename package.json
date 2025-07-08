@@ -1,15 +1,9 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.3.98",
+  "version": "1.3.99",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Fixed Internet Culturale incomplete manuscript detection with enhanced validation",
-    "Fixed Verona library timeout issues with optimized timeout configuration", 
-    "Fixed MDC Catalonia fetch failures with enhanced retry mechanisms",
-    "Fixed Rouen library page count determination with recursive JSON search",
-    "Fixed Grenoble library IIIF manifest loading with corrected URL paths",
-    "Added University of Toronto Fisher Library support with IIIF v2/v3",
-    "Enhanced Karlsruhe library resolution (+305% quality improvement)"
+    "Fixed BNE library validation producing proper 10-page high-quality manuscripts instead of blank pages"
   ],
   "main": "dist/main/main.js",
   "type": "module",
