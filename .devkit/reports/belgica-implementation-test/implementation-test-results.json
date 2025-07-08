@@ -1,0 +1,776 @@
+{
+  "timestamp": "2025-07-08T16:38:13.732Z",
+  "config": {
+    "maxZoom": 3,
+    "maxResolution": {
+      "width": 6144,
+      "height": 7680
+    },
+    "tileSize": {
+      "width": 768,
+      "height": 768
+    },
+    "gridSize": {
+      "width": 8,
+      "height": 10
+    },
+    "totalTiles": 80,
+    "baseUrl": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/",
+    "referrer": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/",
+    "testDir": ".devkit/reports/belgica-implementation-test/"
+  },
+  "phases": {
+    "download": {
+      "success": true,
+      "totalTiles": 80,
+      "successfulTiles": 80,
+      "failedTiles": 0,
+      "results": [
+        {
+          "success": true,
+          "x": 0,
+          "y": 0,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-0-0.jpg",
+          "size": 73284,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-0.jpg"
+        },
+        {
+          "success": true,
+          "x": 1,
+          "y": 0,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-1-0.jpg",
+          "size": 70255,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-0.jpg"
+        },
+        {
+          "success": true,
+          "x": 2,
+          "y": 0,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-2-0.jpg",
+          "size": 63268,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-0.jpg"
+        },
+        {
+          "success": true,
+          "x": 3,
+          "y": 0,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-3-0.jpg",
+          "size": 59489,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-0.jpg"
+        },
+        {
+          "success": true,
+          "x": 4,
+          "y": 0,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-4-0.jpg",
+          "size": 57045,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-0.jpg"
+        },
+        {
+          "success": true,
+          "x": 5,
+          "y": 0,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-5-0.jpg",
+          "size": 57660,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-0.jpg"
+        },
+        {
+          "success": true,
+          "x": 6,
+          "y": 0,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-6-0.jpg",
+          "size": 63380,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-0.jpg"
+        },
+        {
+          "success": true,
+          "x": 7,
+          "y": 0,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-7-0.jpg",
+          "size": 61806,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-0.jpg"
+        },
+        {
+          "success": true,
+          "x": 0,
+          "y": 1,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-0-1.jpg",
+          "size": 72309,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-1.jpg"
+        },
+        {
+          "success": true,
+          "x": 1,
+          "y": 1,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-1-1.jpg",
+          "size": 61153,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-1.jpg"
+        },
+        {
+          "success": true,
+          "x": 2,
+          "y": 1,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-2-1.jpg",
+          "size": 55766,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-1.jpg"
+        },
+        {
+          "success": true,
+          "x": 3,
+          "y": 1,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-3-1.jpg",
+          "size": 54347,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-1.jpg"
+        },
+        {
+          "success": true,
+          "x": 4,
+          "y": 1,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-4-1.jpg",
+          "size": 52690,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-1.jpg"
+        },
+        {
+          "success": true,
+          "x": 5,
+          "y": 1,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-5-1.jpg",
+          "size": 52385,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-1.jpg"
+        },
+        {
+          "success": true,
+          "x": 6,
+          "y": 1,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-6-1.jpg",
+          "size": 55660,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-1.jpg"
+        },
+        {
+          "success": true,
+          "x": 7,
+          "y": 1,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-7-1.jpg",
+          "size": 55942,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-1.jpg"
+        },
+        {
+          "success": true,
+          "x": 0,
+          "y": 2,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-0-2.jpg",
+          "size": 72448,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-2.jpg"
+        },
+        {
+          "success": true,
+          "x": 1,
+          "y": 2,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-1-2.jpg",
+          "size": 60300,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-2.jpg"
+        },
+        {
+          "success": true,
+          "x": 2,
+          "y": 2,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-2-2.jpg",
+          "size": 51661,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-2.jpg"
+        },
+        {
+          "success": true,
+          "x": 3,
+          "y": 2,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-3-2.jpg",
+          "size": 54955,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-2.jpg"
+        },
+        {
+          "success": true,
+          "x": 4,
+          "y": 2,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-4-2.jpg",
+          "size": 51529,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-2.jpg"
+        },
+        {
+          "success": true,
+          "x": 5,
+          "y": 2,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-5-2.jpg",
+          "size": 47479,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-2.jpg"
+        },
+        {
+          "success": true,
+          "x": 6,
+          "y": 2,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-6-2.jpg",
+          "size": 53241,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-2.jpg"
+        },
+        {
+          "success": true,
+          "x": 7,
+          "y": 2,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-7-2.jpg",
+          "size": 49333,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-2.jpg"
+        },
+        {
+          "success": true,
+          "x": 0,
+          "y": 3,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-0-3.jpg",
+          "size": 72077,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-3.jpg"
+        },
+        {
+          "success": true,
+          "x": 1,
+          "y": 3,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-1-3.jpg",
+          "size": 61260,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-3.jpg"
+        },
+        {
+          "success": true,
+          "x": 2,
+          "y": 3,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-2-3.jpg",
+          "size": 51777,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-3.jpg"
+        },
+        {
+          "success": true,
+          "x": 3,
+          "y": 3,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-3-3.jpg",
+          "size": 53669,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-3.jpg"
+        },
+        {
+          "success": true,
+          "x": 4,
+          "y": 3,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-4-3.jpg",
+          "size": 52970,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-3.jpg"
+        },
+        {
+          "success": true,
+          "x": 5,
+          "y": 3,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-5-3.jpg",
+          "size": 48214,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-3.jpg"
+        },
+        {
+          "success": true,
+          "x": 6,
+          "y": 3,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-6-3.jpg",
+          "size": 51752,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-3.jpg"
+        },
+        {
+          "success": true,
+          "x": 7,
+          "y": 3,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-7-3.jpg",
+          "size": 53622,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-3.jpg"
+        },
+        {
+          "success": true,
+          "x": 0,
+          "y": 4,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-0-4.jpg",
+          "size": 77647,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-4.jpg"
+        },
+        {
+          "success": true,
+          "x": 1,
+          "y": 4,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-1-4.jpg",
+          "size": 61331,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-4.jpg"
+        },
+        {
+          "success": true,
+          "x": 2,
+          "y": 4,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-2-4.jpg",
+          "size": 51371,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-4.jpg"
+        },
+        {
+          "success": true,
+          "x": 3,
+          "y": 4,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-3-4.jpg",
+          "size": 51072,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-4.jpg"
+        },
+        {
+          "success": true,
+          "x": 4,
+          "y": 4,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-4-4.jpg",
+          "size": 50615,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-4.jpg"
+        },
+        {
+          "success": true,
+          "x": 5,
+          "y": 4,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-5-4.jpg",
+          "size": 47223,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-4.jpg"
+        },
+        {
+          "success": true,
+          "x": 6,
+          "y": 4,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-6-4.jpg",
+          "size": 50144,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-4.jpg"
+        },
+        {
+          "success": true,
+          "x": 7,
+          "y": 4,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-7-4.jpg",
+          "size": 52304,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-4.jpg"
+        },
+        {
+          "success": true,
+          "x": 0,
+          "y": 5,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-0-5.jpg",
+          "size": 72870,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-5.jpg"
+        },
+        {
+          "success": true,
+          "x": 1,
+          "y": 5,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-1-5.jpg",
+          "size": 63023,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-5.jpg"
+        },
+        {
+          "success": true,
+          "x": 2,
+          "y": 5,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-2-5.jpg",
+          "size": 50137,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-5.jpg"
+        },
+        {
+          "success": true,
+          "x": 3,
+          "y": 5,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-3-5.jpg",
+          "size": 50071,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-5.jpg"
+        },
+        {
+          "success": true,
+          "x": 4,
+          "y": 5,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-4-5.jpg",
+          "size": 49707,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-5.jpg"
+        },
+        {
+          "success": true,
+          "x": 5,
+          "y": 5,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-5-5.jpg",
+          "size": 47119,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-5.jpg"
+        },
+        {
+          "success": true,
+          "x": 6,
+          "y": 5,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-6-5.jpg",
+          "size": 50469,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-5.jpg"
+        },
+        {
+          "success": true,
+          "x": 7,
+          "y": 5,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-7-5.jpg",
+          "size": 52847,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-5.jpg"
+        },
+        {
+          "success": true,
+          "x": 0,
+          "y": 6,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-0-6.jpg",
+          "size": 76664,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-6.jpg"
+        },
+        {
+          "success": true,
+          "x": 1,
+          "y": 6,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-1-6.jpg",
+          "size": 62268,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-6.jpg"
+        },
+        {
+          "success": true,
+          "x": 2,
+          "y": 6,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-2-6.jpg",
+          "size": 55312,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-6.jpg"
+        },
+        {
+          "success": true,
+          "x": 3,
+          "y": 6,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-3-6.jpg",
+          "size": 55435,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-6.jpg"
+        },
+        {
+          "success": true,
+          "x": 4,
+          "y": 6,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-4-6.jpg",
+          "size": 54094,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-6.jpg"
+        },
+        {
+          "success": true,
+          "x": 5,
+          "y": 6,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-5-6.jpg",
+          "size": 51023,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-6.jpg"
+        },
+        {
+          "success": true,
+          "x": 6,
+          "y": 6,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-6-6.jpg",
+          "size": 53129,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-6.jpg"
+        },
+        {
+          "success": true,
+          "x": 7,
+          "y": 6,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-7-6.jpg",
+          "size": 50761,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-6.jpg"
+        },
+        {
+          "success": true,
+          "x": 0,
+          "y": 7,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-0-7.jpg",
+          "size": 81054,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-7.jpg"
+        },
+        {
+          "success": true,
+          "x": 1,
+          "y": 7,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-1-7.jpg",
+          "size": 62538,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-7.jpg"
+        },
+        {
+          "success": true,
+          "x": 2,
+          "y": 7,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-2-7.jpg",
+          "size": 53157,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-7.jpg"
+        },
+        {
+          "success": true,
+          "x": 3,
+          "y": 7,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-3-7.jpg",
+          "size": 51371,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-7.jpg"
+        },
+        {
+          "success": true,
+          "x": 4,
+          "y": 7,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-4-7.jpg",
+          "size": 52218,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-7.jpg"
+        },
+        {
+          "success": true,
+          "x": 5,
+          "y": 7,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-5-7.jpg",
+          "size": 51780,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-7.jpg"
+        },
+        {
+          "success": true,
+          "x": 6,
+          "y": 7,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-6-7.jpg",
+          "size": 51673,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-7.jpg"
+        },
+        {
+          "success": true,
+          "x": 7,
+          "y": 7,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-7-7.jpg",
+          "size": 53950,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-7.jpg"
+        },
+        {
+          "success": true,
+          "x": 0,
+          "y": 8,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-0-8.jpg",
+          "size": 83704,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-8.jpg"
+        },
+        {
+          "success": true,
+          "x": 1,
+          "y": 8,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-1-8.jpg",
+          "size": 68129,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-8.jpg"
+        },
+        {
+          "success": true,
+          "x": 2,
+          "y": 8,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-2-8.jpg",
+          "size": 56234,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-8.jpg"
+        },
+        {
+          "success": true,
+          "x": 3,
+          "y": 8,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-3-8.jpg",
+          "size": 55666,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-8.jpg"
+        },
+        {
+          "success": true,
+          "x": 4,
+          "y": 8,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-4-8.jpg",
+          "size": 55293,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-8.jpg"
+        },
+        {
+          "success": true,
+          "x": 5,
+          "y": 8,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-5-8.jpg",
+          "size": 54218,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-8.jpg"
+        },
+        {
+          "success": true,
+          "x": 6,
+          "y": 8,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-6-8.jpg",
+          "size": 58699,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-8.jpg"
+        },
+        {
+          "success": true,
+          "x": 7,
+          "y": 8,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-7-8.jpg",
+          "size": 58470,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-8.jpg"
+        },
+        {
+          "success": true,
+          "x": 0,
+          "y": 9,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-0-9.jpg",
+          "size": 12286,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-9.jpg"
+        },
+        {
+          "success": true,
+          "x": 1,
+          "y": 9,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-1-9.jpg",
+          "size": 13691,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-9.jpg"
+        },
+        {
+          "success": true,
+          "x": 2,
+          "y": 9,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-2-9.jpg",
+          "size": 15740,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-9.jpg"
+        },
+        {
+          "success": true,
+          "x": 3,
+          "y": 9,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-3-9.jpg",
+          "size": 17896,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-9.jpg"
+        },
+        {
+          "success": true,
+          "x": 4,
+          "y": 9,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-4-9.jpg",
+          "size": 13601,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-9.jpg"
+        },
+        {
+          "success": true,
+          "x": 5,
+          "y": 9,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-5-9.jpg",
+          "size": 14827,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-9.jpg"
+        },
+        {
+          "success": true,
+          "x": 6,
+          "y": 9,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-6-9.jpg",
+          "size": 18896,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-9.jpg"
+        },
+        {
+          "success": true,
+          "x": 7,
+          "y": 9,
+          "zoom": 3,
+          "filename": ".devkit/reports/belgica-implementation-test/tile-3-7-9.jpg",
+          "size": 14107,
+          "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-9.jpg"
+        }
+      ]
+    },
+    "stitch": {
+      "success": true,
+      "outputFile": ".devkit/reports/belgica-implementation-test/belgica-complete-page.jpg",
+      "size": 6973953,
+      "resolution": {
+        "width": 6144,
+        "height": 7680
+      }
+    },
+    "validation": {
+      "width": 6144,
+      "height": 7680,
+      "format": "JPEG",
+      "colorspace": "sRGB",
+      "bitDepth": 1,
+      "expectedWidth": 6144,
+      "expectedHeight": 7680,
+      "dimensionsMatch": true
+    },
+    "pdf": {
+      "success": true,
+      "pdfFile": ".devkit/reports/belgica-implementation-test/belgica-manuscript-page.pdf",
+      "size": 8436491
+    }
+  }
+}

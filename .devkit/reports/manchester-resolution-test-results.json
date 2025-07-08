@@ -1,0 +1,83 @@
+{
+  "timestamp": "2025-07-07T16:00:43.205Z",
+  "testResults": [
+    {
+      "pattern": "/full/max/0/default.jpg",
+      "url": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00074-000-00001.jp2/full/max/0/default.jpg",
+      "status": 200,
+      "size": 451296,
+      "isJPEG": true,
+      "success": true,
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/manchester-resolution-_full_max_0_default_jpg.jpg"
+    },
+    {
+      "pattern": "/full/full/0/default.jpg",
+      "url": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00074-000-00001.jp2/full/full/0/default.jpg",
+      "status": 200,
+      "size": 451296,
+      "isJPEG": true,
+      "success": true,
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/manchester-resolution-_full_full_0_default_jpg.jpg"
+    },
+    {
+      "pattern": "/full/2000,/0/default.jpg",
+      "url": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00074-000-00001.jp2/full/2000,/0/default.jpg",
+      "status": 200,
+      "size": 451296,
+      "isJPEG": true,
+      "success": true,
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/manchester-resolution-_full_2000__0_default_jpg.jpg"
+    },
+    {
+      "pattern": "/full/!2000,2000/0/default.jpg",
+      "url": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00074-000-00001.jp2/full/!2000,2000/0/default.jpg",
+      "status": 200,
+      "size": 451296,
+      "isJPEG": true,
+      "success": true,
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/manchester-resolution-_full__2000_2000_0_default_jpg.jpg"
+    },
+    {
+      "pattern": "/full/1994,2800/0/default.jpg",
+      "url": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00074-000-00001.jp2/full/1994,2800/0/default.jpg",
+      "status": 200,
+      "size": 611194,
+      "isJPEG": true,
+      "success": true,
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/manchester-resolution-_full_1994_2800_0_default_jpg.jpg"
+    },
+    {
+      "pattern": "/full/3978,5600/0/default.jpg",
+      "url": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00074-000-00001.jp2/full/3978,5600/0/default.jpg",
+      "status": 200,
+      "size": 611194,
+      "isJPEG": true,
+      "success": true,
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/manchester-resolution-_full_3978_5600_0_default_jpg.jpg"
+    },
+    {
+      "pattern": "/full/1000,/0/default.jpg",
+      "url": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00074-000-00001.jp2/full/1000,/0/default.jpg",
+      "status": 200,
+      "size": 235995,
+      "isJPEG": true,
+      "success": true,
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/manchester-resolution-_full_1000__0_default_jpg.jpg"
+    },
+    {
+      "pattern": "/full/1500,/0/default.jpg",
+      "url": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00074-000-00001.jp2/full/1500,/0/default.jpg",
+      "status": 200,
+      "size": 451296,
+      "isJPEG": true,
+      "success": true,
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/manchester-resolution-_full_1500__0_default_jpg.jpg"
+    }
+  ],
+  "bestPattern": "/full/1994,2800/0/default.jpg",
+  "recommendation": {
+    "pattern": "/full/1994,2800/0/default.jpg",
+    "size": 611194,
+    "url": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00074-000-00001.jp2/full/1994,2800/0/default.jpg"
+  }
+}

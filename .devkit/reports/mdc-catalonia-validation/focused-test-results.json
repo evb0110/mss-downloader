@@ -1,0 +1,105 @@
+{
+  "testUrl": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1",
+  "timestamp": "2025-07-08T08:48:18.108Z",
+  "steps": [
+    {
+      "step": 1,
+      "description": "Extract URL components",
+      "success": true,
+      "collection": "incunableBC",
+      "parentId": "175331"
+    },
+    {
+      "step": 2,
+      "description": "Fetch compound XML",
+      "success": true,
+      "url": "https://mdc.csuc.cat/utils/getfile/collection/incunableBC/id/175331",
+      "statusCode": 200,
+      "dataSize": 101343
+    },
+    {
+      "step": 3,
+      "description": "Parse pages from XML",
+      "success": true,
+      "totalPagesFound": 812,
+      "testPagesSelected": 5
+    },
+    {
+      "step": 4,
+      "description": "Find maximum resolution",
+      "success": true,
+      "bestResolution": "full/full",
+      "bestSize": 0
+    },
+    {
+      "step": 5,
+      "description": "Download pages",
+      "success": true,
+      "successfulDownloads": 5,
+      "totalAttempted": 5
+    },
+    {
+      "step": 6,
+      "description": "Create validation PDF",
+      "success": true,
+      "pdfFile": ".devkit/reports/mdc-catalonia-validation/mdc-catalonia-validation.pdf",
+      "pdfSize": 638188,
+      "pdfPages": 0
+    }
+  ],
+  "downloads": [
+    {
+      "page": 1,
+      "title": "Coberta",
+      "success": true,
+      "filename": ".devkit/reports/mdc-catalonia-validation/page-001.jpg",
+      "fileSize": 116811,
+      "dimensions": "948x1340",
+      "url": "https://mdc.csuc.cat/digital/iiif/incunableBC/174519/full/full/0/default.jpg"
+    },
+    {
+      "page": 2,
+      "title": "Vers Coberta",
+      "success": true,
+      "filename": ".devkit/reports/mdc-catalonia-validation/page-002.jpg",
+      "fileSize": 158478,
+      "dimensions": "887x1276",
+      "url": "https://mdc.csuc.cat/digital/iiif/incunableBC/174520/full/full/0/default.jpg"
+    },
+    {
+      "page": 3,
+      "title": "[1]",
+      "success": true,
+      "filename": ".devkit/reports/mdc-catalonia-validation/page-003.jpg",
+      "fileSize": 142995,
+      "dimensions": "886x1269",
+      "url": "https://mdc.csuc.cat/digital/iiif/incunableBC/174521/full/full/0/default.jpg"
+    },
+    {
+      "page": 4,
+      "title": "[2]",
+      "success": true,
+      "filename": ".devkit/reports/mdc-catalonia-validation/page-004.jpg",
+      "fileSize": 140919,
+      "dimensions": "881x1264",
+      "url": "https://mdc.csuc.cat/digital/iiif/incunableBC/174522/full/full/0/default.jpg"
+    },
+    {
+      "page": 5,
+      "title": "f. 1r",
+      "success": true,
+      "filename": ".devkit/reports/mdc-catalonia-validation/page-005.jpg",
+      "fileSize": 152011,
+      "dimensions": "874x1276",
+      "url": "https://mdc.csuc.cat/digital/iiif/incunableBC/174523/full/full/0/default.jpg"
+    }
+  ],
+  "success": true,
+  "summary": {
+    "overallSuccess": true,
+    "pagesDownloaded": 5,
+    "totalPagesAvailable": 812,
+    "downloadSuccessRate": 100,
+    "fixEffectiveness": "EXCELLENT"
+  }
+}

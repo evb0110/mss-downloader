@@ -1,0 +1,50 @@
+[
+  {
+    "manuscript": {
+      "id": "22581",
+      "title": "Collectaire et antiphonaire",
+      "expectedImages": 133,
+      "serverPath": "/medias/fd/ac/1b/1c/fdac1b1c-06e0-4d41-84ac-0bedf0d2e4d3",
+      "imagePrefix": "627656201_MS0101_"
+    },
+    "imageAccess": {
+      "url": "https://bibliotheque-numerique.bibliotheque-agglo-stomer.fr/medias/fd/ac/1b/1c/fdac1b1c-06e0-4d41-84ac-0bedf0d2e4d3/627656201_MS0101_0001.jpg",
+      "success": true,
+      "headers": {
+        "server": "nginx",
+        "date": "Mon, 07 Jul 2025 16:08:03 GMT",
+        "content-type": "text/html; charset=UTF-8",
+        "connection": "keep-alive",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-xss-protection": "1; mode=block",
+        "referrer-policy": "origin",
+        "content-encoding": "br"
+      }
+    }
+  },
+  {
+    "manuscript": {
+      "id": "18367",
+      "title": "Antiphonaire Saint-Bertin",
+      "expectedImages": 226,
+      "serverPath": "/medias/9c/0d/07/f8/9c0d07f8-bd0d-4894-99bc-3dedd27f6ac4",
+      "imagePrefix": "627656201_MS0204_vol_1_"
+    },
+    "imageAccess": {
+      "url": "https://bibliotheque-numerique.bibliotheque-agglo-stomer.fr/medias/9c/0d/07/f8/9c0d07f8-bd0d-4894-99bc-3dedd27f6ac4/627656201_MS0204_vol_1_0001.jpg",
+      "success": true,
+      "headers": {
+        "server": "nginx",
+        "date": "Mon, 07 Jul 2025 16:08:04 GMT",
+        "content-type": "text/html; charset=UTF-8",
+        "connection": "keep-alive",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-xss-protection": "1; mode=block",
+        "referrer-policy": "origin",
+        "content-encoding": "br"
+      }
+    }
+  }
+]

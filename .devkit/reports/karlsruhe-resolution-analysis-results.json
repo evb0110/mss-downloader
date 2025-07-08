@@ -1,0 +1,394 @@
+{
+  "manifestAnalysis": {
+    "type": "sc:Manifest",
+    "label": "Psalterium diuitis Augie feriatum - Cod. Aug. perg. 161",
+    "sequences": 1,
+    "canvases": 351,
+    "sampleImageUrls": [
+      {
+        "canvasIndex": 0,
+        "originalUrl": "https://digital.blb-karlsruhe.de/download/webcache/1000/221191",
+        "canvasLabel": "[1]"
+      },
+      {
+        "canvasIndex": 1,
+        "originalUrl": "https://digital.blb-karlsruhe.de/download/webcache/1000/221192",
+        "canvasLabel": "[2]"
+      },
+      {
+        "canvasIndex": 2,
+        "originalUrl": "https://digital.blb-karlsruhe.de/download/webcache/1000/221193",
+        "canvasLabel": "[3]"
+      }
+    ]
+  },
+  "resolutionTests": [
+    {
+      "canvasIndex": 0,
+      "canvasLabel": "[1]",
+      "originalUrl": "https://digital.blb-karlsruhe.de/download/webcache/1000/221191",
+      "testResults": [
+        {
+          "parameter": "full/full/0/default.jpg",
+          "description": "Original manifest resolution",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221191",
+          "success": true,
+          "status": 200,
+          "responseTime": 437,
+          "contentLength": 275058,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/max/0/default.jpg",
+          "description": "Maximum available resolution",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221191",
+          "success": true,
+          "status": 200,
+          "responseTime": 124,
+          "contentLength": 275058,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/1000,/0/default.jpg",
+          "description": "1000px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221191",
+          "success": true,
+          "status": 200,
+          "responseTime": 128,
+          "contentLength": 275058,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/1500,/0/default.jpg",
+          "description": "1500px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221191",
+          "success": true,
+          "status": 200,
+          "responseTime": 127,
+          "contentLength": 275058,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/2000,/0/default.jpg",
+          "description": "2000px width (current)",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221191",
+          "success": true,
+          "status": 200,
+          "responseTime": 118,
+          "contentLength": 275058,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/2500,/0/default.jpg",
+          "description": "2500px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221191",
+          "success": true,
+          "status": 200,
+          "responseTime": 124,
+          "contentLength": 275058,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/3000,/0/default.jpg",
+          "description": "3000px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221191",
+          "success": true,
+          "status": 200,
+          "responseTime": 129,
+          "contentLength": 275058,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/4000,/0/default.jpg",
+          "description": "4000px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221191",
+          "success": true,
+          "status": 200,
+          "responseTime": 148,
+          "contentLength": 275058,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/5000,/0/default.jpg",
+          "description": "5000px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221191",
+          "success": true,
+          "status": 200,
+          "responseTime": 131,
+          "contentLength": 275058,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/6000,/0/default.jpg",
+          "description": "6000px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221191",
+          "success": true,
+          "status": 200,
+          "responseTime": 126,
+          "contentLength": 275058,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        }
+      ]
+    },
+    {
+      "canvasIndex": 1,
+      "canvasLabel": "[2]",
+      "originalUrl": "https://digital.blb-karlsruhe.de/download/webcache/1000/221192",
+      "testResults": [
+        {
+          "parameter": "full/full/0/default.jpg",
+          "description": "Original manifest resolution",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221192",
+          "success": true,
+          "status": 200,
+          "responseTime": 171,
+          "contentLength": 237298,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/max/0/default.jpg",
+          "description": "Maximum available resolution",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221192",
+          "success": true,
+          "status": 200,
+          "responseTime": 120,
+          "contentLength": 237298,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/1000,/0/default.jpg",
+          "description": "1000px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221192",
+          "success": true,
+          "status": 200,
+          "responseTime": 130,
+          "contentLength": 237298,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/1500,/0/default.jpg",
+          "description": "1500px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221192",
+          "success": true,
+          "status": 200,
+          "responseTime": 139,
+          "contentLength": 237298,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/2000,/0/default.jpg",
+          "description": "2000px width (current)",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221192",
+          "success": true,
+          "status": 200,
+          "responseTime": 123,
+          "contentLength": 237298,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/2500,/0/default.jpg",
+          "description": "2500px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221192",
+          "success": true,
+          "status": 200,
+          "responseTime": 133,
+          "contentLength": 237298,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/3000,/0/default.jpg",
+          "description": "3000px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221192",
+          "success": true,
+          "status": 200,
+          "responseTime": 233,
+          "contentLength": 237298,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/4000,/0/default.jpg",
+          "description": "4000px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221192",
+          "success": true,
+          "status": 200,
+          "responseTime": 163,
+          "contentLength": 237298,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/5000,/0/default.jpg",
+          "description": "5000px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221192",
+          "success": true,
+          "status": 200,
+          "responseTime": 122,
+          "contentLength": 237298,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/6000,/0/default.jpg",
+          "description": "6000px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221192",
+          "success": true,
+          "status": 200,
+          "responseTime": 136,
+          "contentLength": 237298,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        }
+      ]
+    },
+    {
+      "canvasIndex": 2,
+      "canvasLabel": "[3]",
+      "originalUrl": "https://digital.blb-karlsruhe.de/download/webcache/1000/221193",
+      "testResults": [
+        {
+          "parameter": "full/full/0/default.jpg",
+          "description": "Original manifest resolution",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221193",
+          "success": true,
+          "status": 200,
+          "responseTime": 133,
+          "contentLength": 224306,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/max/0/default.jpg",
+          "description": "Maximum available resolution",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221193",
+          "success": true,
+          "status": 200,
+          "responseTime": 133,
+          "contentLength": 224306,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/1000,/0/default.jpg",
+          "description": "1000px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221193",
+          "success": true,
+          "status": 200,
+          "responseTime": 118,
+          "contentLength": 224306,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/1500,/0/default.jpg",
+          "description": "1500px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221193",
+          "success": true,
+          "status": 200,
+          "responseTime": 127,
+          "contentLength": 224306,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/2000,/0/default.jpg",
+          "description": "2000px width (current)",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221193",
+          "success": true,
+          "status": 200,
+          "responseTime": 119,
+          "contentLength": 224306,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/2500,/0/default.jpg",
+          "description": "2500px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221193",
+          "success": true,
+          "status": 200,
+          "responseTime": 270,
+          "contentLength": 224306,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/3000,/0/default.jpg",
+          "description": "3000px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221193",
+          "success": true,
+          "status": 200,
+          "responseTime": 118,
+          "contentLength": 224306,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/4000,/0/default.jpg",
+          "description": "4000px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221193",
+          "success": true,
+          "status": 200,
+          "responseTime": 130,
+          "contentLength": 224306,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/5000,/0/default.jpg",
+          "description": "5000px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221193",
+          "success": true,
+          "status": 200,
+          "responseTime": 126,
+          "contentLength": 224306,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        },
+        {
+          "parameter": "full/6000,/0/default.jpg",
+          "description": "6000px width",
+          "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221193",
+          "success": true,
+          "status": 200,
+          "responseTime": 125,
+          "contentLength": 224306,
+          "contentType": "image/jpeg",
+          "errorMessage": null
+        }
+      ]
+    }
+  ],
+  "recommendations": [
+    {
+      "type": "improvement",
+      "message": "Higher resolution available: Original manifest resolution",
+      "currentParam": "full/2000,/0/default.jpg",
+      "recommendedParam": "full/full/0/default.jpg",
+      "improvementPercent": 0,
+      "avgSizeIncrease": "0KB",
+      "action": "Update line 1665 in EnhancedManuscriptDownloaderService.ts"
+    },
+    {
+      "type": "alternative",
+      "message": "Consider testing /full/max/ parameter for future optimizations",
+      "details": "Max resolution: 240KB avg"
+    }
+  ]
+}

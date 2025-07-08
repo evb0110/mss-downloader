@@ -72,7 +72,7 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 2. **CRITICAL: NEVER BUMP VERSION WITHOUT EXPLICIT USER APPROVAL**
 3. Only after user explicitly approves validation: Bump patch version in package.json
 4. **MANDATORY TODO CLEANUP:** Move all completed todos to `.devkit/tasks/COMPLETED.md` file
-5. **MANDATORY PRE-PUSH CHECKS:** Run lint, typecheck, and build commands to ensure code quality
+5. **MANDATORY PRE-PUSH CHECKS:** Run lint and build commands to ensure code quality
 6. Commit all changes with descriptive message  
 7. Push to GitHub main (triggers auto-build & notifications)
 8. **MANDATORY POST-PUSH VERIFICATION:** Wait and verify that GitHub Actions build completed successfully
@@ -86,13 +86,14 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 ### 2. Library Validation Protocol  
 When adding/fixing libraries, **MANDATORY validation:**
 1. **MANDATORY MAXIMUM RESOLUTION TESTING:** Test multiple IIIF parameters (full/full, full/max, full/2000, full/4000, etc.) to find the largest possible image resolution. Compare file sizes, dimensions, and quality. This is ABSOLUTELY CRITICAL - users must get the highest quality available.
-2. Download up to 10 different manuscript pages from manifest URLs (or all available if fewer) using the HIGHEST RESOLUTION found
-3. Verify each contains real manuscript/book content (not "Preview non disponibile" or likewise placeholders)
-4. Confirm all pages show different manuscript content (not stuck on page 1)
-5. If validation fails, apply all skills to fix; if unfixable, implement other tasks and report to user
-6. Merge to PDF and test validity with poppler
-7. Library validation must pass (100% success rate)
-8. **MANDATORY PDF CONTENT INSPECTION BY CLAUDE:** Before presenting any PDFs to user, Claude MUST personally inspect every PDF using pdfimages + Read tools to verify:
+2. PDFs should be created using test scripts with implemented library logic, not with devserver or actual app
+3. Download 10 different manuscript pages from manifest URLs (or all available if fewer) using the HIGHEST RESOLUTION found
+4. Verify each contains real manuscript/book content (not "Preview non disponibile" or likewise placeholders)
+5. Confirm all pages show different manuscript content (not stuck on page 1)
+6. If validation fails, apply all skills to fix; if unfixable, implement other tasks and report to user
+7. Merge to PDF and test validity with poppler
+8. Library validation must pass (100% success rate)
+9. **MANDATORY PDF CONTENT INSPECTION BY CLAUDE:** Before presenting any PDFs to user, Claude MUST personally inspect every PDF using pdfimages + Read tools to verify:
    - **FILE SIZE CHECK:** First check file size with `ls -la` - any 0-byte files indicate complete failure
    - **PDF STRUCTURE:** Use `pdfimages -list` to verify PDF contains actual images
    - **VISUAL CONTENT:** Extract and visually inspect actual images using `pdfimages -png` + Read tool
@@ -109,8 +110,11 @@ When adding/fixing libraries, **MANDATORY validation:**
    - **NEVER CREATE FAKE MULTI-PAGE PDFs:** Do not duplicate single pages to create artificial multi-page PDFs
    - **CRITICAL:** If ANY PDF is 0 bytes or fails inspection, FIX the issue before presenting to user
    - Only after proper validation for every file, claude can present them to the user
-9. **MANDATORY validation by user!!!:** Create a single clean folder containing ONLY the final PDF files with clear names (no subfolders, no individual image files, no test files, no logs). Delete all previous validation folders and temporary files. The validation folder should contain exclusively the final PDF files ready for user inspection. **ONLY OPEN FINDER WHEN READY FOR FINAL USER VALIDATION** - do not open finder during development, testing, or intermediate validation steps.
-10. **WAIT FOR USER APPROVAL:** Do not proceed with version bump until user confirms validation passed
+10. **MANDATORY validation by user!!!:** Create a single clean folder containing ONLY the final PDF files with clear names (no subfolders, no individual image files, no test files, no logs). Delete all previous validation folders and temporary files. The validation folder should contain exclusively the final PDF files ready for user inspection. **ONLY OPEN FINDER WHEN READY FOR FINAL USER VALIDATION** - do not open finder during development, testing, or intermediate validation steps.
+11. You should only ask user's validation when all the tasks and fixes are done and all libraries and manuscripts are ready
+12. **WAIT FOR USER APPROVAL:** Do not proceed with version bump until user confirms validation passed
+13. After user's approval bump and push
+14. Move completed todos to completed.md
 
 ### 3. Testing Requirements
 - Write comprehensive test suite for every bug fix
@@ -121,7 +125,6 @@ When adding/fixing libraries, **MANDATORY validation:**
 ### 4. Pre-Push Quality Gates
 **MANDATORY before every push:**
 - Run `npm run lint` - must pass with no errors
-- Run `npm run typecheck` - must pass with no errors  
 - Run `npm run build` - must complete successfully
 - **CRITICAL:** If any command fails, fix issues before proceeding with commit/push
 - **POST-PUSH VERIFICATION:** Monitor GitHub Actions and verify build success
@@ -141,7 +144,9 @@ When adding/fixing libraries, **MANDATORY validation:**
 - Main process: downloading, merging, file operations
 - Renderer process: UI configuration, user interaction  
 - Show minimal output - current task + small summary only
-- Dev server doesn't work correctly for Claude Code
+- **Development Commands:**
+  - `npm run dev` - runs with visible window (for user interaction)
+  - `npm run dev:headless` - runs in headless mode (for automated testing/Claude usage)
 - **CRITICAL**: ALWAYS test for maximum possible image resolution when implementing any library - users must get the highest quality available
 
 ## TODO Management

@@ -1,0 +1,152 @@
+{
+  "timestamp": "2025-07-08T16:32:23.222Z",
+  "testDirectory": ".devkit/reports/belgica-tiles-samples/",
+  "referrerTests": [
+    {
+      "referrer": "Heritage Visualisation",
+      "referrerUrl": "https://www.heritage-visualisation.org/",
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:32:23 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "283",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    },
+    {
+      "referrer": "Belgica Document",
+      "referrerUrl": "https://www.heritage-visualisation.org/belgica/document/10745220",
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:32:24 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "283",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    },
+    {
+      "referrer": "KBR Display",
+      "referrerUrl": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/",
+      "success": true,
+      "statusCode": 200,
+      "contentType": "image/jpeg",
+      "size": 86859,
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:32:24 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "last-modified": "Wed, 03 Aug 2016 13:23:21 GMT",
+        "etag": "\"12f8055f3-1534b-5392abcbfac6e\"",
+        "accept-ranges": "bytes",
+        "content-length": "86859",
+        "access-control-allow-credentials": "true",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "image/jpeg"
+      }
+    },
+    {
+      "referrer": "KBR Base",
+      "referrerUrl": "https://viewerd.kbr.be/",
+      "success": true,
+      "statusCode": 200,
+      "contentType": "image/jpeg",
+      "size": 86859,
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:32:25 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "last-modified": "Wed, 03 Aug 2016 13:23:21 GMT",
+        "etag": "\"12f8055f3-1534b-5392abcbfac6e\"",
+        "accept-ranges": "bytes",
+        "content-length": "86859",
+        "access-control-allow-credentials": "true",
+        "keep-alive": "timeout=5, max=99",
+        "connection": "Keep-Alive",
+        "content-type": "image/jpeg"
+      }
+    },
+    {
+      "referrer": "Heritage Belgica",
+      "referrerUrl": "https://www.heritage-visualisation.org/belgica/",
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:32:26 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "283",
+        "keep-alive": "timeout=5, max=98",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    },
+    {
+      "referrer": "Heritage Belgica Document",
+      "referrerUrl": "https://www.heritage-visualisation.org/belgica/document/",
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:32:27 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "283",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    },
+    {
+      "referrer": "Direct KBR",
+      "referrerUrl": "https://viewerd.kbr.be/display/",
+      "success": true,
+      "statusCode": 200,
+      "contentType": "image/jpeg",
+      "size": 86859,
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:32:27 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "last-modified": "Wed, 03 Aug 2016 13:23:21 GMT",
+        "etag": "\"12f8055f3-1534b-5392abcbfac6e\"",
+        "accept-ranges": "bytes",
+        "content-length": "86859",
+        "access-control-allow-credentials": "true",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "image/jpeg"
+      }
+    }
+  ],
+  "viewerAnalysis": {
+    "hasAxZoom": false,
+    "hasOpenSeadragon": false,
+    "hasLeaflet": false,
+    "hasZoomify": false,
+    "hasIIIF": false,
+    "tileUrls": [],
+    "configPatterns": [],
+    "scripts": []
+  },
+  "cookieTest": null
+}

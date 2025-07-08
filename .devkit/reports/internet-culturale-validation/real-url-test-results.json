@@ -1,0 +1,441 @@
+{
+  "timestamp": "2025-07-08T07:56:29.584Z",
+  "testUrl": "https://dam.iccu.sbn.it/mol_46/containers/avQYk0e/manifest",
+  "results": {
+    "manifestFetched": true,
+    "analysisCompleted": true,
+    "validationExecuted": true,
+    "manifest": {
+      "@context": "http://iiif.io/api/presentation/3/context.json",
+      "id": "https://dam.iccu.sbn.it/mol_46/containers/avQYk0e/manifest",
+      "type": "Manifest",
+      "items": [
+        {
+          "id": "https://dam.iccu.sbn.it/mol_46/containers/avQYk0e/manifest/canvas/dw0El1e",
+          "type": "Canvas",
+          "label": {
+            "none": [
+              "c. 84r: presenza di notazione musicale"
+            ]
+          },
+          "width": 1420,
+          "height": 1816,
+          "items": [
+            {
+              "id": "https://dam.iccu.sbn.it/mol_46/containers/avQYk0e/manifest/page/dw0El1e",
+              "type": "AnnotationPage",
+              "items": [
+                {
+                  "id": "https://dam.iccu.sbn.it/mol_46/containers/avQYk0e/manifest/annotation/dw0El1e",
+                  "type": "Annotation",
+                  "motivation": "painting",
+                  "body": {
+                    "id": "https://iiif-dam.iccu.sbn.it/iiif/2/dw0El1e/full/max/0/default.jpg",
+                    "type": "Image",
+                    "format": "image/jpeg",
+                    "service": [
+                      {
+                        "id": "https://iiif-dam.iccu.sbn.it/iiif/2/dw0El1e",
+                        "type": "ImageService3"
+                      }
+                    ]
+                  },
+                  "target": "https://dam.iccu.sbn.it/mol_46/containers/avQYk0e/manifest/canvas/dw0El1e"
+                }
+              ]
+            }
+          ],
+          "thumbnail": [
+            {
+              "id": "https://dam.iccu.sbn.it/mol_46/media/dw0El1e/thumbnail",
+              "type": "Image"
+            }
+          ]
+        },
+        {
+          "id": "https://dam.iccu.sbn.it/mol_46/containers/avQYk0e/manifest/canvas/elRvPrb",
+          "type": "Canvas",
+          "label": {
+            "none": [
+              "c. 8r: pagina ornata"
+            ]
+          },
+          "width": 1336,
+          "height": 1920,
+          "items": [
+            {
+              "id": "https://dam.iccu.sbn.it/mol_46/containers/avQYk0e/manifest/page/elRvPrb",
+              "type": "AnnotationPage",
+              "items": [
+                {
+                  "id": "https://dam.iccu.sbn.it/mol_46/containers/avQYk0e/manifest/annotation/elRvPrb",
+                  "type": "Annotation",
+                  "motivation": "painting",
+                  "body": {
+                    "id": "https://iiif-dam.iccu.sbn.it/iiif/2/elRvPrb/full/max/0/default.jpg",
+                    "type": "Image",
+                    "format": "image/jpeg",
+                    "service": [
+                      {
+                        "id": "https://iiif-dam.iccu.sbn.it/iiif/2/elRvPrb",
+                        "type": "ImageService3"
+                      }
+                    ]
+                  },
+                  "target": "https://dam.iccu.sbn.it/mol_46/containers/avQYk0e/manifest/canvas/elRvPrb"
+                }
+              ]
+            }
+          ],
+          "thumbnail": [
+            {
+              "id": "https://dam.iccu.sbn.it/mol_46/media/elRvPrb/thumbnail",
+              "type": "Image"
+            }
+          ]
+        }
+      ],
+      "metadata": [
+        {
+          "label": {
+            "it": [
+              "Titolo"
+            ]
+          },
+          "value": {
+            "it": [
+              "Roma, Biblioteca Vallicelliana, Manoscritti, ms. B 50"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Responsabilità"
+            ]
+          },
+          "value": {
+            "it": [
+              ""
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Data"
+            ]
+          },
+          "value": {
+            "it": [
+              "0901-1000"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Tipo di risorsa"
+            ]
+          },
+          "value": {
+            "it": [
+              "Testo manoscritto"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Localizzazione"
+            ]
+          },
+          "value": {
+            "it": [
+              "46"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Identificativo"
+            ]
+          },
+          "value": {
+            "it": [
+              "CNMD\\0000016463"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Copyright"
+            ]
+          },
+          "value": {
+            "it": [
+              "IT-RM0281; Biblioteca Vallicelliana"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Caratteristiche"
+            ]
+          },
+          "value": {
+            "it": [
+              "Manoscritto composito"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Dati di produzione"
+            ]
+          },
+          "value": {
+            "it": [
+              ""
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Descrizione fisica"
+            ]
+          },
+          "value": {
+            "it": [
+              "Membranaceo; cc. IV + 148 + I"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Descrizione"
+            ]
+          },
+          "value": {
+            "it": [
+              "Presenza di notazione musicale, presenza di decorazione"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Segnatura"
+            ]
+          },
+          "value": {
+            "it": [
+              "ms. B 50"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "ID gestionale"
+            ]
+          },
+          "value": {
+            "it": [
+              "CNMS\\0000015597"
+            ]
+          }
+        }
+      ],
+      "label": {
+        "it": [
+          "Roma, Biblioteca Vallicelliana, Manoscritti, ms. B 50"
+        ]
+      },
+      "structures": []
+    },
+    "analysis": {
+      "title": "{\"it\":[\"Roma, Biblioteca Vallicelliana, Manoscritti, ms. B 50\"]}",
+      "pageCount": 2,
+      "metadata": [
+        {
+          "label": {
+            "it": [
+              "Titolo"
+            ]
+          },
+          "value": {
+            "it": [
+              "Roma, Biblioteca Vallicelliana, Manoscritti, ms. B 50"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Responsabilità"
+            ]
+          },
+          "value": {
+            "it": [
+              ""
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Data"
+            ]
+          },
+          "value": {
+            "it": [
+              "0901-1000"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Tipo di risorsa"
+            ]
+          },
+          "value": {
+            "it": [
+              "Testo manoscritto"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Localizzazione"
+            ]
+          },
+          "value": {
+            "it": [
+              "46"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Identificativo"
+            ]
+          },
+          "value": {
+            "it": [
+              "CNMD\\0000016463"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Copyright"
+            ]
+          },
+          "value": {
+            "it": [
+              "IT-RM0281; Biblioteca Vallicelliana"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Caratteristiche"
+            ]
+          },
+          "value": {
+            "it": [
+              "Manoscritto composito"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Dati di produzione"
+            ]
+          },
+          "value": {
+            "it": [
+              ""
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Descrizione fisica"
+            ]
+          },
+          "value": {
+            "it": [
+              "Membranaceo; cc. IV + 148 + I"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Descrizione"
+            ]
+          },
+          "value": {
+            "it": [
+              "Presenza di notazione musicale, presenza di decorazione"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "Segnatura"
+            ]
+          },
+          "value": {
+            "it": [
+              "ms. B 50"
+            ]
+          }
+        },
+        {
+          "label": {
+            "it": [
+              "ID gestionale"
+            ]
+          },
+          "value": {
+            "it": [
+              "CNMS\\0000015597"
+            ]
+          }
+        }
+      ],
+      "physicalDescription": "Membranaceo; cc. IV + 148 + I",
+      "cnmdId": "0000016463",
+      "expectedFolios": 148
+    },
+    "validation": {
+      "isComplete": false,
+      "errorType": "critical",
+      "errorMessage": "INCOMPLETE MANUSCRIPT DETECTED\n\nThis manifest contains only 2 pages, but the metadata indicates \nthe complete manuscript should have approximately 148 folios.\n\nManuscript: {\"it\":[\"Roma, Biblioteca Vallicelliana, Manoscritti, ms. B 50\"]}\nCNMD ID: 0000016463\nPhysical Description: Membranaceo; cc. IV + 148 + I\nCurrent URL: https://dam.iccu.sbn.it/mol_46/containers/avQYk0e/manifest\n\nSOLUTIONS:\n1. This may be a partial/folio-level manifest. Look for a collection-level manifest.\n2. Try searching for the complete manuscript using the CNMD ID: 0000016463\n3. Visit the library's main catalog: https://manus.iccu.sbn.it/cnmd/0000016463\n4. Contact the library directly for the complete digital manuscript.\n\nThis error prevents downloading an incomplete manuscript that would mislead users.",
+      "recommendation": "Search for complete manuscript or contact library"
+    }
+  },
+  "summary": {
+    "fixWorking": true,
+    "errorHandling": "working",
+    "userGuidanceProvided": true,
+    "preventsMisleadingDownload": true
+  }
+}

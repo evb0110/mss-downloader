@@ -1,0 +1,212 @@
+{
+  "timestamp": "2025-07-08T10:36:13.013Z",
+  "totalPDFs": 9,
+  "ratings": {
+    "excellent": 0,
+    "good": 6,
+    "acceptable": 0,
+    "needs_review": 2,
+    "failed": 1
+  },
+  "qualityRate": "66.7%",
+  "results": [
+    {
+      "library": "BNE-Spanish-National-Library",
+      "fileName": "BNE-Spanish-National-Library-VALIDATION.pdf",
+      "fileSize": 583,
+      "fileSizeKB": "0.57",
+      "timestamp": "2025-07-08T10:34:26.283Z",
+      "pdfStructure": {
+        "pdfimagesOutput": "page   num  type   width height color comp bpc  enc interp  object ID x-ppi y-ppi size ratio\n--------------------------------------------------------------------------------------------\n",
+        "totalImages": 0
+      },
+      "imageAnalysis": {},
+      "contentVerification": {},
+      "rating": "failed",
+      "issues": [
+        "PDF is very small (< 10KB) - may contain only error message",
+        "No images found in PDF - may be text-only or corrupted"
+      ],
+      "recommendations": [
+        "This PDF must be regenerated - it contains no valid content"
+      ]
+    },
+    {
+      "library": "Belgica-KBR-Belgium",
+      "fileName": "Belgica-KBR-Belgium-VALIDATION.pdf",
+      "fileSize": 44808,
+      "fileSizeKB": "43.76",
+      "timestamp": "2025-07-08T10:34:26.332Z",
+      "pdfStructure": {
+        "pdfimagesOutput": "page   num  type   width height color comp bpc  enc interp  object ID x-ppi y-ppi size ratio\n--------------------------------------------------------------------------------------------\n   1     0 image     215   256  rgb     3   8  jpeg   no         8  0   600   600 7403B 4.5%\n   2     1 image     215   256  rgb     3   8  jpeg   no        22  0   600   600 7403B 4.5%\n   3     2 image     215   256  rgb     3   8  jpeg   no        36  0   600   600 7403B 4.5%\n   4     3 image     215   256  rgb     3   8  jpeg   no        50  0   600   600 7403B 4.5%\n   5     4 image     215   256  rgb     3   8  jpeg   no        64  0   600   600 7403B 4.5%\n",
+        "totalImages": 5
+      },
+      "imageAnalysis": {},
+      "contentVerification": {
+        "extractedImages": 3,
+        "firstImageSize": 67896,
+        "firstImagePath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/VISUAL-INSPECTION-RESULTS/Belgica-KBR-Belgium/page-000.png"
+      },
+      "rating": "good",
+      "issues": [],
+      "recommendations": [
+        "PDF appears to contain valid manuscript content and is ready for user validation"
+      ]
+    },
+    {
+      "library": "Freiburg-University",
+      "fileName": "Freiburg-University-VALIDATION.pdf",
+      "fileSize": 7263108,
+      "fileSizeKB": "7092.88",
+      "timestamp": "2025-07-08T10:34:26.505Z",
+      "pdfStructure": {
+        "pdfimagesOutput": "page   num  type   width height color comp bpc  enc interp  object ID x-ppi y-ppi size ratio\n--------------------------------------------------------------------------------------------\n   1     0 image    1815  2523  rgb     3   8  jpeg   no         4  0   220   220 1100K 8.2%\n   2     1 image    1818  2524  rgb     3   8  jpeg   no         7  0   220   220  740K 5.5%\n   3     2 image    1793  2394  rgb     3   8  jpeg   no        10  0   217   217  488K 3.9%\n   4     3 image    1793  2394  rgb     3   8  jpeg   no        13  0   217   217  440K 3.5%\n   5     4 image    1793  2394  rgb     3   8  jpeg   no        16  0   217   217  788K 6.3%\n   6     5 image    1793  2394  rgb     3   8  jpeg   no        19  0   217   217  706K 5.6%\n   7     6 image    1793  2394  rgb     3   8  jpeg   no        22  0   217   217  716K 5.7%\n   8     7 image    1793  2394  rgb     3   8  jpeg   no        25  0   217   217  709K 5.6%\n   9     8 image    1793  2394  rgb     3   8  jpeg   no        28  0   217   217  673K 5.3%\n  10     9 image    1793  2394  rgb     3   8  jpeg   no        31  0   217   217  730K 5.8%\n",
+        "totalImages": 10
+      },
+      "imageAnalysis": {},
+      "contentVerification": {
+        "extractedImages": 3,
+        "firstImageSize": 8964224,
+        "firstImagePath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/VISUAL-INSPECTION-RESULTS/Freiburg-University/page-000.png"
+      },
+      "rating": "good",
+      "issues": [],
+      "recommendations": [
+        "PDF appears to contain valid manuscript content and is ready for user validation"
+      ]
+    },
+    {
+      "library": "Grenoble-Municipal-Library",
+      "fileName": "Grenoble-Municipal-Library-VALIDATION.pdf",
+      "fileSize": 9759594,
+      "fileSizeKB": "9530.85",
+      "timestamp": "2025-07-08T10:34:32.022Z",
+      "pdfStructure": {
+        "pdfimagesOutput": "page   num  type   width height color comp bpc  enc interp  object ID x-ppi y-ppi size ratio\n--------------------------------------------------------------------------------------------\n   1     0 image    3164  3971  rgb     3   8  jpeg   no         4  0    72    72 1221K 3.3%\n   2     1 image    3143  3976  rgb     3   8  jpeg   no         7  0    72    72 1338K 3.7%\n   3     2 image    3207  4004  rgb     3   8  jpeg   no        10  0    72    72 1211K 3.2%\n   4     3 image    3197  4063  rgb     3   8  jpeg   no        13  0    72    72 1397K 3.7%\n   5     4 image    2240  3686  rgb     3   8  jpeg   no        16  0    72    72  963K 4.0%\n   6     5 image    2253  3710  rgb     3   8  jpeg   no        19  0    72    72  973K 4.0%\n   7     6 image    2856  3741  rgb     3   8  jpeg   no        22  0    72    72 1197K 3.8%\n   8     7 image    2820  3688  rgb     3   8  jpeg   no        25  0    72    72 1228K 4.0%\n",
+        "totalImages": 8
+      },
+      "imageAnalysis": {},
+      "contentVerification": {},
+      "rating": "needs_review",
+      "issues": [
+        "Failed to extract images for visual inspection"
+      ],
+      "recommendations": [
+        "Review manually for content quality and fix any identified issues"
+      ]
+    },
+    {
+      "library": "Karlsruhe-BLB",
+      "fileName": "Karlsruhe-BLB-VALIDATION.pdf",
+      "fileSize": 30930725,
+      "fileSizeKB": "30205.79",
+      "timestamp": "2025-07-08T10:35:02.059Z",
+      "pdfStructure": {
+        "pdfimagesOutput": "page   num  type   width height color comp bpc  enc interp  object ID x-ppi y-ppi size ratio\n--------------------------------------------------------------------------------------------\n   1     0 image    4323  4677  rgb     3   8  jpeg   no         4  0    72    72 3969K 6.7%\n   2     1 image    4323  4677  rgb     3   8  jpeg   no         7  0    72    72 3516K 5.9%\n   3     2 image    4323  4677  rgb     3   8  jpeg   no        10  0    72    72 3255K 5.5%\n   4     3 image    4323  4677  rgb     3   8  jpeg   no        13  0    72    72 3025K 5.1%\n   5     4 image    4323  4677  rgb     3   8  jpeg   no        16  0    72    72 2905K 4.9%\n   6     5 image    4323  4677  rgb     3   8  jpeg   no        19  0    72    72 2809K 4.7%\n   7     6 image    4323  4677  rgb     3   8  jpeg   no        22  0    72    72 2762K 4.7%\n   8     7 image    4323  4677  rgb     3   8  jpeg   no        25  0    72    72 2761K 4.7%\n   9     8 image    4323  4677  rgb     3   8  jpeg   no        28  0    72    72 2774K 4.7%\n  10     9 image    4323  4677  rgb     3   8  jpeg   no        31  0    72    72 2426K 4.1%\n",
+        "totalImages": 10
+      },
+      "imageAnalysis": {},
+      "contentVerification": {
+        "extractedImages": 3,
+        "firstImageSize": 33702076,
+        "firstImagePath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/VISUAL-INSPECTION-RESULTS/Karlsruhe-BLB/page-000.png"
+      },
+      "rating": "good",
+      "issues": [],
+      "recommendations": [
+        "PDF appears to contain valid manuscript content and is ready for user validation"
+      ]
+    },
+    {
+      "library": "MDC-Catalonia",
+      "fileName": "MDC-Catalonia-VALIDATION.pdf",
+      "fileSize": 1520045,
+      "fileSizeKB": "1484.42",
+      "timestamp": "2025-07-08T10:35:22.231Z",
+      "pdfStructure": {
+        "pdfimagesOutput": "page   num  type   width height color comp bpc  enc interp  object ID x-ppi y-ppi size ratio\n--------------------------------------------------------------------------------------------\n   1     0 image    1000  1414  rgb     3   8  jpeg   no         8  0    72    72  113K 2.7%\n   2     1 image    1000  1439  rgb     3   8  jpeg   no        22  0    72    72  175K 4.2%\n   3     2 image    1000  1432  rgb     3   8  jpeg   no        36  0    72    72  154K 3.7%\n   4     3 image    1000  1435  rgb     3   8  jpeg   no        50  0    72    72  151K 3.6%\n   5     4 image    1000  1460  rgb     3   8  jpeg   no        64  0    72    72  171K 4.0%\n   6     5 image    1000  1489  rgb     3   8  jpeg   no        78  0    72    72  137K 3.2%\n   7     6 image    1000  1460  rgb     3   8  jpeg   no        92  0    72    72  138K 3.2%\n   8     7 image    1000  1475  rgb     3   8  jpeg   no       106  0    72    72  145K 3.4%\n   9     8 image    1000  1464  rgb     3   8  jpeg   no       120  0    72    72  145K 3.4%\n  10     9 image    1000  1505  rgb     3   8  jpeg   no       134  0    72    72  140K 3.2%\n",
+        "totalImages": 10
+      },
+      "imageAnalysis": {},
+      "contentVerification": {
+        "extractedImages": 3,
+        "firstImageSize": 898617,
+        "firstImagePath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/VISUAL-INSPECTION-RESULTS/MDC-Catalonia/page-000.png"
+      },
+      "rating": "good",
+      "issues": [],
+      "recommendations": [
+        "PDF appears to contain valid manuscript content and is ready for user validation"
+      ]
+    },
+    {
+      "library": "Manchester-John-Rylands",
+      "fileName": "Manchester-John-Rylands-VALIDATION.pdf",
+      "fileSize": 1941875,
+      "fileSizeKB": "1896.36",
+      "timestamp": "2025-07-08T10:35:27.197Z",
+      "pdfStructure": {
+        "pdfimagesOutput": "page   num  type   width height color comp bpc  enc interp  object ID x-ppi y-ppi size ratio\n--------------------------------------------------------------------------------------------\n   1     0 image    2000  2000  rgb     3   8  jpeg   no         8  0    72    72  580K 4.9%\n   2     1 image    2000  2000  rgb     3   8  jpeg   no        22  0    72    72  237K 2.0%\n   3     2 image    2000  2000  rgb     3   8  jpeg   no        36  0    72    72  146K 1.2%\n   4     3 image    2000  2000  rgb     3   8  jpeg   no        50  0    72    72  187K 1.6%\n   5     4 image    2000  2000  rgb     3   8  jpeg   no        64  0    72    72  181K 1.5%\n   6     5 image    2000  2000  rgb     3   8  jpeg   no        78  0    72    72  141K 1.2%\n   7     6 image    2000  2000  rgb     3   8  jpeg   no        92  0    72    72  180K 1.5%\n   8     7 image    2000  2000  rgb     3   8  jpeg   no       106  0    72    72  233K 2.0%\n",
+        "totalImages": 8
+      },
+      "imageAnalysis": {},
+      "contentVerification": {
+        "extractedImages": 3,
+        "firstImageSize": 4895902,
+        "firstImagePath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/VISUAL-INSPECTION-RESULTS/Manchester-John-Rylands/page-000.png"
+      },
+      "rating": "good",
+      "issues": [],
+      "recommendations": [
+        "PDF appears to contain valid manuscript content and is ready for user validation"
+      ]
+    },
+    {
+      "library": "Rouen-Library",
+      "fileName": "Rouen-Library-VALIDATION.pdf",
+      "fileSize": 2345350,
+      "fileSizeKB": "2290.38",
+      "timestamp": "2025-07-08T10:35:39.481Z",
+      "pdfStructure": {
+        "pdfimagesOutput": "page   num  type   width height color comp bpc  enc interp  object ID x-ppi y-ppi size ratio\n--------------------------------------------------------------------------------------------\n   1     0 image     978  1566  rgb     3   8  jpeg   no        19  0    96    96  504K  11%\n   2     1 image     963  1566  rgb     3   8  jpeg   no         2  0    96    96  411K 9.3%\n   3     2 image     982  1566  rgb     3   8  jpeg   no         5  0    96    96  470K  10%\n   4     3 image     967  1566  rgb     3   8  jpeg   no         8  0    96    96  431K 9.7%\n   5     4 image     959  1566  rgb     3   8  jpeg   no        11  0    96    96  471K  11%\n",
+        "totalImages": 5
+      },
+      "imageAnalysis": {},
+      "contentVerification": {
+        "extractedImages": 3,
+        "firstImageSize": 2548212,
+        "firstImagePath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/VISUAL-INSPECTION-RESULTS/Rouen-Library/page-000.png"
+      },
+      "rating": "good",
+      "issues": [],
+      "recommendations": [
+        "PDF appears to contain valid manuscript content and is ready for user validation"
+      ]
+    },
+    {
+      "library": "Saint-Omer-Medieval",
+      "fileName": "Saint-Omer-Medieval-VALIDATION.pdf",
+      "fileSize": 110046667,
+      "fileSizeKB": "107467.45",
+      "timestamp": "2025-07-08T10:35:42.961Z",
+      "pdfStructure": {
+        "pdfimagesOutput": "page   num  type   width height color comp bpc  enc interp  object ID x-ppi y-ppi size ratio\n--------------------------------------------------------------------------------------------\n   1     0 image    5000  3753  rgb     3   8  jpeg   no         4  0    72    72 11.0M  21%\n   2     1 image    5000  3753  rgb     3   8  jpeg   no         7  0    72    72 10.8M  20%\n   3     2 image    5000  3753  rgb     3   8  jpeg   no        10  0    72    72 7999K  15%\n   4     3 image    5000  3753  rgb     3   8  jpeg   no        13  0    72    72 9479K  17%\n   5     4 image    5000  3753  rgb     3   8  jpeg   no        16  0    72    72 10.3M  19%\n   6     5 image    5000  3753  rgb     3   8  jpeg   no        19  0    72    72 10.3M  19%\n   7     6 image    5000  3753  rgb     3   8  jpeg   no        22  0    72    72 11.4M  21%\n   8     7 image    5000  3753  rgb     3   8  jpeg   no        25  0    72    72 10.8M  20%\n   9     8 image    5000  3753  rgb     3   8  jpeg   no        28  0    72    72 11.7M  22%\n  10     9 image    5000  3753  rgb     3   8  jpeg   no        31  0    72    72 11.6M  22%\n",
+        "totalImages": 10
+      },
+      "imageAnalysis": {},
+      "contentVerification": {},
+      "rating": "needs_review",
+      "issues": [
+        "Failed to extract images for visual inspection"
+      ],
+      "recommendations": [
+        "Review manually for content quality and fix any identified issues"
+      ]
+    }
+  ],
+  "summary": {
+    "readyForUser": 6,
+    "needsAttention": 3,
+    "recommendation": "3 PDFs need attention before user validation"
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "timestamp": "2025-07-08T17:21:01.707Z",
+  "thumbnailSizes": [
+    {
+      "size": "SMALL",
+      "filename": "thumbnail_small.jpg",
+      "dimensions": "108x128",
+      "fileSize": 2740,
+      "format": "JPEG"
+    },
+    {
+      "size": "MEDIUM",
+      "filename": "thumbnail_medium.jpg",
+      "dimensions": "215x256",
+      "fileSize": 7987,
+      "format": "JPEG"
+    },
+    {
+      "size": "LARGE",
+      "filename": "thumbnail_large.jpg",
+      "dimensions": "215x256",
+      "fileSize": 7987,
+      "format": "JPEG"
+    },
+    {
+      "size": "XLARGE",
+      "filename": "thumbnail_xlarge.jpg",
+      "dimensions": "215x256",
+      "fileSize": 7987,
+      "format": "JPEG"
+    }
+  ],
+  "comparisons": [
+    {
+      "pageNum": 1,
+      "highRes": {
+        "path": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-comprehensive-tiles/page_0001/complete_page_0001.jpg",
+        "dimensions": "6144x7680",
+        "fileSize": 6973953,
+        "format": "JPEG"
+      },
+      "lowRes": {
+        "path": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-quality-comparison/thumbnail_large.jpg",
+        "dimensions": "215x256",
+        "fileSize": 7987,
+        "format": "JPEG"
+      },
+      "comparison": {
+        "path": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-quality-comparison/comparison_page_0001.jpg",
+        "fileSize": 8371181
+      }
+    },
+    {
+      "pageNum": 2,
+      "highRes": {
+        "path": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-comprehensive-tiles/page_0002/complete_page_0002.jpg",
+        "dimensions": "6144x7680",
+        "fileSize": 5175005,
+        "format": "JPEG"
+      },
+      "lowRes": {
+        "path": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-quality-comparison/thumbnail_large.jpg",
+        "dimensions": "215x256",
+        "fileSize": 7987,
+        "format": "JPEG"
+      },
+      "comparison": {
+        "path": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-quality-comparison/comparison_page_0002.jpg",
+        "fileSize": 6490026
+      }
+    },
+    {
+      "pageNum": 3,
+      "highRes": {
+        "path": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-comprehensive-tiles/page_0003/complete_page_0003.jpg",
+        "dimensions": "6144x7680",
+        "fileSize": 5504917,
+        "format": "JPEG"
+      },
+      "lowRes": {
+        "path": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-quality-comparison/thumbnail_large.jpg",
+        "dimensions": "215x256",
+        "fileSize": 7987,
+        "format": "JPEG"
+      },
+      "comparison": {
+        "path": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-quality-comparison/comparison_page_0003.jpg",
+        "fileSize": 6847517
+      }
+    },
+    {
+      "pageNum": 5,
+      "highRes": {
+        "path": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-comprehensive-tiles/page_0005/complete_page_0005.jpg",
+        "dimensions": "6144x7680",
+        "fileSize": 7494908,
+        "format": "JPEG"
+      },
+      "lowRes": {
+        "path": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-quality-comparison/thumbnail_large.jpg",
+        "dimensions": "215x256",
+        "fileSize": 7987,
+        "format": "JPEG"
+      },
+      "comparison": {
+        "path": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-quality-comparison/comparison_page_0005.jpg",
+        "fileSize": 8934307
+      }
+    },
+    {
+      "pageNum": 10,
+      "highRes": {
+        "path": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-comprehensive-tiles/page_0010/complete_page_0010.jpg",
+        "dimensions": "6144x7680",
+        "fileSize": 4993730,
+        "format": "JPEG"
+      },
+      "lowRes": {
+        "path": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-quality-comparison/thumbnail_large.jpg",
+        "dimensions": "215x256",
+        "fileSize": 7987,
+        "format": "JPEG"
+      },
+      "comparison": {
+        "path": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-quality-comparison/comparison_page_0010.jpg",
+        "fileSize": 6331379
+      }
+    }
+  ],
+  "summary": {
+    "totalComparisons": 5,
+    "averageHighResSize": 6028502.6,
+    "averageLowResSize": 7987,
+    "qualityImprovement": "75478.9% larger files",
+    "resolutionImprovement": "6144x7680px vs thumbnail resolution"
+  },
+  "pdfPath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-final/belgica-quality-comparison/belgica_quality_comparison.pdf",
+  "pdfSize": 45757238
+}

@@ -1,0 +1,60 @@
+{
+  "timestamp": "2025-07-08T10:08:04.571Z",
+  "testUrl": "https://digital.blb-karlsruhe.de/i3f/v20/192435/006_r-2",
+  "results": [
+    {
+      "parameter": "full/full/0/default.jpg",
+      "description": "Original (full/full)",
+      "url": "https://digital.blb-karlsruhe.de/i3f/v20/192435/006_r-2/full/full/0/default.jpg",
+      "success": false,
+      "error": "HTTP 404"
+    },
+    {
+      "parameter": "full/max/0/default.jpg",
+      "description": "Maximum (full/max)",
+      "url": "https://digital.blb-karlsruhe.de/i3f/v20/192435/006_r-2/full/max/0/default.jpg",
+      "success": false,
+      "error": "HTTP 404"
+    },
+    {
+      "parameter": "full/1000,/0/default.jpg",
+      "description": "1000px width",
+      "url": "https://digital.blb-karlsruhe.de/i3f/v20/192435/006_r-2/full/1000,/0/default.jpg",
+      "success": false,
+      "error": "HTTP 404"
+    },
+    {
+      "parameter": "full/2000,/0/default.jpg",
+      "description": "2000px width (current)",
+      "url": "https://digital.blb-karlsruhe.de/i3f/v20/192435/006_r-2/full/2000,/0/default.jpg",
+      "success": false,
+      "error": "HTTP 404"
+    },
+    {
+      "parameter": "full/3000,/0/default.jpg",
+      "description": "3000px width",
+      "url": "https://digital.blb-karlsruhe.de/i3f/v20/192435/006_r-2/full/3000,/0/default.jpg",
+      "success": false,
+      "error": "HTTP 404"
+    },
+    {
+      "parameter": "full/4000,/0/default.jpg",
+      "description": "4000px width",
+      "url": "https://digital.blb-karlsruhe.de/i3f/v20/192435/006_r-2/full/4000,/0/default.jpg",
+      "success": false,
+      "error": "HTTP 404"
+    },
+    {
+      "parameter": "full/5000,/0/default.jpg",
+      "description": "5000px width",
+      "url": "https://digital.blb-karlsruhe.de/i3f/v20/192435/006_r-2/full/5000,/0/default.jpg",
+      "success": false,
+      "error": "HTTP 404"
+    }
+  ],
+  "summary": {
+    "totalTests": 7,
+    "successfulTests": 0,
+    "uniqueResolutions": 0
+  }
+}

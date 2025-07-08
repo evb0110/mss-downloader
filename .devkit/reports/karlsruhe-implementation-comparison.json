@@ -1,0 +1,112 @@
+{
+  "timestamp": "2025-07-08T10:11:27.447Z",
+  "testType": "Karlsruhe Implementation Comparison",
+  "manifestUrl": "https://digital.blb-karlsruhe.de/i3f/v20/192435/manifest",
+  "currentImplementation": {
+    "description": "IIIF API with 2000px parameter",
+    "results": [
+      {
+        "page": 1,
+        "pageLabel": "[1]",
+        "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221191",
+        "filename": "current-page-1.jpg",
+        "size": 275058,
+        "downloadTime": 196,
+        "success": true
+      },
+      {
+        "page": 2,
+        "pageLabel": "[2]",
+        "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221192",
+        "filename": "current-page-2.jpg",
+        "size": 237298,
+        "downloadTime": 167,
+        "success": true
+      },
+      {
+        "page": 3,
+        "pageLabel": "[3]",
+        "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221193",
+        "filename": "current-page-3.jpg",
+        "size": 224306,
+        "downloadTime": 143,
+        "success": true
+      },
+      {
+        "page": 4,
+        "pageLabel": "[4]",
+        "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221194",
+        "filename": "current-page-4.jpg",
+        "size": 256080,
+        "downloadTime": 159,
+        "success": true
+      },
+      {
+        "page": 5,
+        "pageLabel": "1r",
+        "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/221195",
+        "filename": "current-page-5.jpg",
+        "size": 289443,
+        "downloadTime": 172,
+        "success": true
+      }
+    ]
+  },
+  "upgradedImplementation": {
+    "description": "Direct webcache/2000/ access",
+    "results": [
+      {
+        "page": 1,
+        "pageLabel": "[1]",
+        "url": "https://digital.blb-karlsruhe.de/download/webcache/2000/221191",
+        "filename": "upgraded-page-1.jpg",
+        "size": 1031671,
+        "downloadTime": 326,
+        "success": true
+      },
+      {
+        "page": 2,
+        "pageLabel": "[2]",
+        "url": "https://digital.blb-karlsruhe.de/download/webcache/2000/221192",
+        "filename": "upgraded-page-2.jpg",
+        "size": 962935,
+        "downloadTime": 231,
+        "success": true
+      },
+      {
+        "page": 3,
+        "pageLabel": "[3]",
+        "url": "https://digital.blb-karlsruhe.de/download/webcache/2000/221193",
+        "filename": "upgraded-page-3.jpg",
+        "size": 946751,
+        "downloadTime": 240,
+        "success": true
+      },
+      {
+        "page": 4,
+        "pageLabel": "[4]",
+        "url": "https://digital.blb-karlsruhe.de/download/webcache/2000/221194",
+        "filename": "upgraded-page-4.jpg",
+        "size": 1166606,
+        "downloadTime": 248,
+        "success": true
+      },
+      {
+        "page": 5,
+        "pageLabel": "1r",
+        "url": "https://digital.blb-karlsruhe.de/download/webcache/2000/221195",
+        "filename": "upgraded-page-5.jpg",
+        "size": 1081793,
+        "downloadTime": 226,
+        "success": true
+      }
+    ]
+  },
+  "recommendation": {
+    "upgradeRecommended": true,
+    "improvement": 305,
+    "timeDifference": 87,
+    "currentAvgSize": 250,
+    "upgradedAvgSize": 1014
+  }
+}

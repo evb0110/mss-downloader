@@ -1,245 +1,236 @@
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const { PDFDocument } = require('pdf-lib');
 
-// Create BNE validation PDF using the working implementation
-function createCustomFetch() {
-    const httpsAgent = new https.Agent({
-        rejectUnauthorized: false
+const agent = new https.Agent({
+  rejectUnauthorized: false
+});
+
+console.log('📄 Creating BNE validation PDF with fixed implementation...');
+
+async function fetchBneWithHttps(url, options = {}) {
+  return new Promise((resolve, reject) => {
+    const urlObj = new URL(url);
+    const requestOptions = {
+      hostname: urlObj.hostname,
+      port: urlObj.port || 443,
+      path: urlObj.pathname + urlObj.search,
+      method: options.method || 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+      },
+      rejectUnauthorized: false
+    };
+
+    const req = https.request(requestOptions, (res) => {
+      const chunks = [];
+      
+      res.on('data', (chunk) => {
+        chunks.push(chunk);
+      });
+      
+      res.on('end', () => {
+        const body = Buffer.concat(chunks);
+        const response = {
+          ok: res.statusCode >= 200 && res.statusCode < 300,
+          status: res.statusCode || 200,
+          statusText: res.statusMessage || 'OK',
+          headers: res.headers,
+          body: body,
+          arrayBuffer: () => Promise.resolve(body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength))
+        };
+        
+        resolve(response);
+      });
     });
     
-    return async function customFetch(url, options = {}) {
-        return new Promise((resolve, reject) => {
-            const urlObj = new URL(url);
-            
-            const requestOptions = {
-                hostname: urlObj.hostname,
-                port: urlObj.port,
-                path: urlObj.pathname + urlObj.search,
-                method: options.method || 'GET',
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                    'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-                    'Accept-Language': 'en-US,en;q=0.9',
-                    'Cache-Control': 'no-cache',
-                    'Connection': 'keep-alive',
-                    ...options.headers
-                },
-                agent: httpsAgent
-            };
-            
-            const req = https.request(requestOptions, (res) => {
-                if (options.method === 'HEAD') {
-                    resolve({
-                        ok: res.statusCode >= 200 && res.statusCode < 300,
-                        status: res.statusCode,
-                        statusText: res.statusMessage,
-                        headers: new Map(Object.entries(res.headers))
-                    });
-                } else {
-                    const chunks = [];
-                    res.on('data', (chunk) => {
-                        chunks.push(chunk);
-                    });
-                    res.on('end', () => {
-                        const data = Buffer.concat(chunks);
-                        resolve({
-                            ok: res.statusCode >= 200 && res.statusCode < 300,
-                            status: res.statusCode,
-                            statusText: res.statusMessage,
-                            headers: new Map(Object.entries(res.headers)),
-                            buffer: () => Promise.resolve(data)
-                        });
-                    });
-                }
-            });
-            
-            req.on('error', (err) => {
-                reject(err);
-            });
-            
-            req.end();
-        });
-    };
+    req.on('error', (error) => {
+      reject(error);
+    });
+    
+    req.setTimeout(30000, () => {
+      req.destroy();
+      reject(new Error('Request timeout'));
+    });
+    
+    req.end();
+  });
 }
 
-async function createBneValidationPdf() {
-    console.log('Creating BNE validation PDF...');
+async function getBnePageCountFromPDF(manuscriptId) {
+  try {
+    const pdfInfoUrl = `https://bdh-rd.bne.es/pdf.raw?query=id:${manuscriptId}&info=true`;
+    console.log(`🔍 Getting page count from: ${pdfInfoUrl}`);
+    const response = await fetchBneWithHttps(pdfInfoUrl);
     
-    const customFetch = createCustomFetch();
-    const originalUrl = 'https://bdh-rd.bne.es/viewer.vm?id=0000007619&page=1';
+    if (response.ok) {
+      const pdfBuffer = await response.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(pdfBuffer);
+      const pageCount = pdfDoc.getPageCount();
+      console.log(`✅ Found ${pageCount} pages in PDF info`);
+      return pageCount;
+    }
+    return null;
+  } catch (error) {
+    console.warn(`Failed to get BNE page count from PDF info: ${error.message}`);
+    return null;
+  }
+}
+
+async function downloadBneManuscript(manuscriptId) {
+  const startTime = Date.now();
+  
+  console.log(`📋 Downloading BNE manuscript ${manuscriptId}...`);
+  
+  // Get page count using new method
+  const pdfPageCount = await getBnePageCountFromPDF(manuscriptId);
+  
+  if (!pdfPageCount) {
+    throw new Error('Could not determine page count');
+  }
+  
+  // Download pages using PDF format for maximum resolution
+  const images = [];
+  for (let page = 1; page <= pdfPageCount; page++) {
+    const pageUrl = `https://bdh-rd.bne.es/pdf.raw?query=id:${manuscriptId}&page=${page}&pdf=true`;
+    console.log(`📄 Downloading page ${page}/${pdfPageCount}...`);
     
-    // Extract manuscript ID
-    const idMatch = originalUrl.match(/[?&]id=(\d+)/);
-    const manuscriptId = idMatch[1];
-    console.log(`Manuscript ID: ${manuscriptId}`);
+    const response = await fetchBneWithHttps(pageUrl);
     
-    // Create validation directory
-    const validationDir = '/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/CURRENT-VALIDATION/BNE-VALIDATION-FINAL';
-    if (!fs.existsSync(validationDir)) {
-        fs.mkdirSync(validationDir, { recursive: true });
+    if (response.ok) {
+      const imageBuffer = Buffer.from(await response.arrayBuffer());
+      images.push({
+        page,
+        buffer: imageBuffer,
+        size: imageBuffer.length,
+        contentType: response.headers['content-type']
+      });
+      console.log(`   ✅ Page ${page}: ${imageBuffer.length} bytes (${response.headers['content-type']})`);
+    } else {
+      console.log(`   ❌ Page ${page}: Failed (${response.status})`);
+    }
+  }
+  
+  const downloadTime = Date.now() - startTime;
+  
+  // Create PDF
+  const pdfDoc = await PDFDocument.create();
+  
+  for (const image of images) {
+    try {
+      let embeddedImage;
+      
+      if (image.contentType?.includes('jpeg') || image.contentType?.includes('jpg')) {
+        embeddedImage = await pdfDoc.embedJpg(image.buffer);
+      } else if (image.contentType?.includes('png')) {
+        embeddedImage = await pdfDoc.embedPng(image.buffer);
+      } else {
+        console.log(`   ⚠️  Unsupported image type for page ${image.page}: ${image.contentType}`);
+        continue;
+      }
+      
+      const page = pdfDoc.addPage([embeddedImage.width, embeddedImage.height]);
+      page.drawImage(embeddedImage, {
+        x: 0,
+        y: 0,
+        width: embeddedImage.width,
+        height: embeddedImage.height,
+      });
+      
+      console.log(`   📄 Added page ${image.page} to PDF (${embeddedImage.width}x${embeddedImage.height})`);
+      
+    } catch (error) {
+      console.error(`   ❌ Failed to add page ${image.page} to PDF: ${error.message}`);
+    }
+  }
+  
+  const pdfBytes = await pdfDoc.save();
+  
+  return {
+    manuscriptId,
+    pageCount: pdfPageCount,
+    downloadedPages: images.length,
+    downloadTime,
+    pdfSize: pdfBytes.length,
+    pdfBytes
+  };
+}
+
+async function main() {
+  try {
+    const manuscriptId = '0000007619';
+    
+    console.log('🔍 BNE VALIDATION PDF CREATION');
+    console.log('==============================');
+    
+    // Download manuscript
+    const result = await downloadBneManuscript(manuscriptId);
+    
+    // Save PDF
+    const outputDir = path.join(__dirname, '..', 'validation-current');
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
     }
     
-    // Discover pages
-    console.log('Discovering pages for validation...');
-    const pageUrls = [];
-    let consecutiveFailures = 0;
+    const pdfPath = path.join(outputDir, 'BNE-HANGING-FIX-VALIDATION.pdf');
+    fs.writeFileSync(pdfPath, result.pdfBytes);
     
-    for (let page = 1; page <= 100; page++) {
-        const testUrl = `https://bdh-rd.bne.es/pdf.raw?query=id:${manuscriptId}&page=${page}&jpeg=true`;
-        
-        try {
-            const response = await customFetch(testUrl, { method: 'HEAD' });
-            
-            if (response.ok && response.headers.get('content-type')?.includes('image')) {
-                const responseSize = parseInt(response.headers.get('content-length') || '0', 10);
-                
-                if (responseSize > 1024) {
-                    pageUrls.push(testUrl);
-                    consecutiveFailures = 0;
-                    console.log(`✓ Found page ${page} (${responseSize} bytes)`);
-                } else {
-                    consecutiveFailures++;
-                }
-            } else {
-                consecutiveFailures++;
-            }
-            
-            if (consecutiveFailures >= 5) {
-                console.log(`Stopping after ${consecutiveFailures} consecutive failures`);
-                break;
-            }
-            
-        } catch (error) {
-            consecutiveFailures++;
-            if (consecutiveFailures >= 5) break;
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 100));
-    }
+    console.log('\n📊 VALIDATION RESULTS:');
+    console.log('======================');
+    console.log(`Manuscript ID: ${result.manuscriptId}`);
+    console.log(`Page count: ${result.pageCount}`);
+    console.log(`Downloaded pages: ${result.downloadedPages}`);
+    console.log(`Download time: ${result.downloadTime}ms (${(result.downloadTime/1000).toFixed(1)}s)`);
+    console.log(`PDF size: ${result.pdfSize} bytes (${(result.pdfSize/1024/1024).toFixed(2)} MB)`);
+    console.log(`Output file: ${pdfPath}`);
     
-    console.log(`Found ${pageUrls.length} pages for validation`);
-    
-    // Download validation pages (max 10)
-    const validationPages = pageUrls.slice(0, 10);
-    console.log(`Downloading ${validationPages.length} validation pages...`);
-    
-    for (let i = 0; i < validationPages.length; i++) {
-        const pageUrl = validationPages[i];
-        const pageNum = i + 1;
-        
-        try {
-            console.log(`Downloading page ${pageNum}/${validationPages.length}...`);
-            const response = await customFetch(pageUrl);
-            
-            if (response.ok) {
-                const imageBuffer = await response.buffer();
-                const filename = `bne-${manuscriptId}-page-${pageNum.toString().padStart(3, '0')}.jpg`;
-                const filepath = path.join(validationDir, filename);
-                
-                fs.writeFileSync(filepath, imageBuffer);
-                console.log(`✓ Saved page ${pageNum}: ${filename} (${imageBuffer.length} bytes)`);
-            } else {
-                console.log(`✗ Failed to download page ${pageNum}: HTTP ${response.status}`);
-            }
-        } catch (error) {
-            console.log(`✗ Error downloading page ${pageNum}: ${error.message}`);
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 200));
-    }
-    
-    // Create PDF using existing script
-    console.log('\nCreating PDF from downloaded images...');
-    
-    // Use the PDFDocument approach to create a simple PDF
-    const PDFDocument = require('pdfkit');
-    const pdf = new PDFDocument();
-    const pdfPath = path.join(validationDir, `BNE-${manuscriptId}-VALIDATION.pdf`);
-    const stream = fs.createWriteStream(pdfPath);
-    pdf.pipe(stream);
-    
-    const imageFiles = fs.readdirSync(validationDir)
-        .filter(file => file.endsWith('.jpg'))
-        .sort();
-    
-    for (const imageFile of imageFiles) {
-        const imagePath = path.join(validationDir, imageFile);
-        const imageBuffer = fs.readFileSync(imagePath);
-        
-        pdf.addPage();
-        pdf.image(imageBuffer, 50, 50, { 
-            fit: [500, 700],
-            align: 'center',
-            valign: 'center'
-        });
-    }
-    
-    pdf.end();
+    // Validate PDF using pdfimages
+    console.log('\n🔍 Validating PDF content...');
+    const { spawn } = require('child_process');
     
     return new Promise((resolve) => {
-        stream.on('finish', () => {
-            console.log(`✓ PDF created: ${pdfPath}`);
-            console.log(`✓ Total pages in PDF: ${imageFiles.length}`);
-            console.log(`✓ Total pages found: ${pageUrls.length}`);
-            
-            resolve({
-                pdfPath,
-                totalPagesInPdf: imageFiles.length,
-                totalPagesFound: pageUrls.length,
-                manuscriptId,
-                validationDir
-            });
-        });
+      const pdfimages = spawn('pdfimages', ['-list', pdfPath], { stdio: 'pipe' });
+      
+      let output = '';
+      pdfimages.stdout.on('data', (data) => {
+        output += data.toString();
+      });
+      
+      pdfimages.on('close', (code) => {
+        if (code === 0 && output.includes('image')) {
+          console.log('✅ PDF validation successful - contains images');
+          console.log('📄 PDF image info:');
+          console.log(output);
+        } else {
+          console.log('⚠️  PDF validation warning - check content manually');
+        }
+        
+        console.log('\n🎉 BNE validation PDF created successfully!');
+        console.log(`📁 Location: ${pdfPath}`);
+        console.log('📋 Next steps:');
+        console.log('   1. Open the PDF and verify manuscript content');
+        console.log('   2. Check image quality and resolution');
+        console.log('   3. Confirm no hanging or performance issues');
+        
+        resolve();
+      });
+      
+      pdfimages.on('error', () => {
+        console.log('⚠️  pdfimages not available - manual validation required');
+        console.log('\n🎉 BNE validation PDF created successfully!');
+        console.log(`📁 Location: ${pdfPath}`);
+        resolve();
+      });
     });
+    
+  } catch (error) {
+    console.error('💥 PDF creation failed:', error);
+  }
 }
 
-// Check if PDFKit is available, if not, create a simple validation report
-createBneValidationPdf().then(result => {
-    console.log('\n=== BNE VALIDATION COMPLETED ===');
-    console.log(JSON.stringify(result, null, 2));
-}).catch(error => {
-    console.error('Error creating BNE validation:', error.message);
-    
-    // Create validation report as backup
-    const validationDir = '/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/CURRENT-VALIDATION/BNE-VALIDATION-FINAL';
-    if (!fs.existsSync(validationDir)) {
-        fs.mkdirSync(validationDir, { recursive: true });
-    }
-    
-    const reportPath = path.join(validationDir, 'BNE-VALIDATION-REPORT.md');
-    const report = `# BNE Validation Report
-
-## Test Results
-- Manuscript ID: 0000007619
-- Test URL: https://bdh-rd.bne.es/viewer.vm?id=0000007619&page=1
-- Status: SUCCESS
-- Pages Found: 56+ pages
-- Implementation: WORKING CORRECTLY
-
-## Image Endpoint
-- Pattern: https://bdh-rd.bne.es/pdf.raw?query=id:MANUSCRIPT_ID&page=PAGE&jpeg=true
-- Method: HEAD requests for page discovery
-- SSL: Requires rejectUnauthorized: false
-- Content-Type: image/jpeg
-- File sizes: 150KB - 500KB per page
-
-## Validation Status
-✓ BNE implementation is working correctly
-✓ Page discovery functional
-✓ Image downloads successful
-✓ Maximum resolution support confirmed
-
-## Error Analysis
-The "No pages found" error is not due to implementation issues but likely:
-1. Network connectivity issues
-2. SSL configuration problems
-3. Temporary server unavailability
-
-## Recommendation
-The current BNE implementation is correct and functional.
-`;
-    
-    fs.writeFileSync(reportPath, report);
-    console.log(`Validation report created: ${reportPath}`);
-});
+main();

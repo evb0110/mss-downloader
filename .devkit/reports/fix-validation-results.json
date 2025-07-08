@@ -1,0 +1,36 @@
+{
+  "timestamp": "2025-07-08T07:48:40.279Z",
+  "summary": {
+    "total": 2,
+    "passed": 1,
+    "failed": 1
+  },
+  "results": [
+    {
+      "testCase": {
+        "name": "Incomplete Vallicelliana Manuscript (2 pages vs 153 expected)",
+        "url": "https://dam.iccu.sbn.it/mol_46/containers/avQYk0e/manifest",
+        "expectedBehavior": "Should throw error with guidance about incomplete manuscript",
+        "shouldFail": true
+      },
+      "result": "EXPECTED_FAILURE",
+      "details": {
+        "success": false,
+        "error": "INCOMPLETE MANUSCRIPT: 2 pages found but 148 folios expected. CNMD: 0000016463"
+      }
+    },
+    {
+      "testCase": {
+        "name": "Alternative Vallicelliana URL pattern",
+        "url": "https://dam.iccu.sbn.it/mol_46/containers/avQYjLe/manifest",
+        "expectedBehavior": "Should validate and either pass or fail with helpful message",
+        "shouldFail": false
+      },
+      "result": "UNEXPECTED_FAILURE",
+      "details": {
+        "success": false,
+        "error": "INCOMPLETE MANUSCRIPT: 1 pages found but 346 folios expected. CNMD: 0000016379"
+      }
+    }
+  ]
+}

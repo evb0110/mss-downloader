@@ -1,0 +1,46 @@
+{
+  "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.item.zoom",
+  "timestamp": "2025-07-08T09:16:03.893Z",
+  "steps": [
+    {
+      "step": 1,
+      "action": "Extract manuscript ID",
+      "success": true,
+      "manuscriptId": "btv1b10052442z",
+      "pattern": "ark:/12148/([^/?s]+)"
+    },
+    {
+      "step": 2,
+      "action": "Fetch manifest.json",
+      "success": true,
+      "status": 200,
+      "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/manifest.json"
+    },
+    {
+      "step": "2a",
+      "action": "Parse manifest JSON",
+      "success": false,
+      "error": "Unexpected token '\u001f', \"\u001f�\b\u0000\u0000\u0000\u0000\u0000\u0000\u0003\"... is not valid JSON",
+      "responsePreview": "\u001f�\b\u0000\u0000\u0000\u0000\u0000\u0000\u0003�Ys#Ir �W��V]=6�\u0000ޜf�@���,/\u0011����.�\u00052\u0003`V\u0001��<X��m3=J?Ao�}�)��\u001e�m���_�{DdF^@\u0002H��\u0011ջS`\u001e�\u0011�\u001e~�\u001f�]�>o���'�x�?�NP;�KͲ�р}�\u001d\u0004^�Wj�\f�{��\u001a1�\ry�=\u001f\u001f\r�A�{�����\u001d���˭�A�.\bF�����O��<7p��\u001f�k=oݗO����:��י��`�ިo"
+    },
+    {
+      "step": 3,
+      "action": "Fetch viewer page",
+      "success": true,
+      "status": 200,
+      "url": "https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.item.zoom"
+    },
+    {
+      "step": "3a",
+      "action": "Search page count patterns",
+      "success": false,
+      "foundPattern": null,
+      "htmlLength": 40579
+    }
+  ],
+  "summary": {
+    "success": false,
+    "method": "none",
+    "totalPages": 0
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "timestamp": "2025-07-07T16:03:57.347Z",
+  "overallSuccessRate": 66.66666666666666,
+  "totalTests": 3,
+  "passedTests": 2,
+  "results": [
+    {
+      "manuscriptId": "MS-LATIN-00074",
+      "displayName": "Antiphoner (Latin MS 74)",
+      "testUrl": "https://www.digitalcollections.manchester.ac.uk/view/MS-LATIN-00074/1",
+      "totalPages": 556,
+      "testedPages": 3,
+      "downloadResults": [
+        {
+          "pageNum": 1,
+          "url": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00074-000-00001.jp2/full/1994,2800/0/default.jpg",
+          "success": true,
+          "size": 611194
+        },
+        {
+          "pageNum": 2,
+          "url": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00074-000-00002.jp2/full/1994,2800/0/default.jpg",
+          "success": true,
+          "size": 271340
+        },
+        {
+          "pageNum": 3,
+          "url": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00074-000-00003.jp2/full/1994,2800/0/default.jpg",
+          "success": true,
+          "size": 187467
+        }
+      ],
+      "successRate": 100,
+      "success": true
+    },
+    {
+      "manuscriptId": "MS-LATIN-00088",
+      "displayName": "Evangelia (Walbeke) (Latin MS 88)",
+      "testUrl": "https://www.digitalcollections.manchester.ac.uk/view/MS-LATIN-00088/1",
+      "totalPages": 332,
+      "testedPages": 3,
+      "downloadResults": [
+        {
+          "pageNum": 1,
+          "url": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00088-000-00001.jp2/full/1994,2800/0/default.jpg",
+          "success": true,
+          "size": 765588
+        },
+        {
+          "pageNum": 2,
+          "url": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00088-000-00002.jp2/full/1994,2800/0/default.jpg",
+          "success": true,
+          "size": 757975
+        },
+        {
+          "pageNum": 3,
+          "url": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00088-000-00003.jp2/full/1994,2800/0/default.jpg",
+          "success": true,
+          "size": 377778
+        }
+      ],
+      "successRate": 100,
+      "success": true
+    },
+    {
+      "manuscriptId": "MS-FRENCH-00001",
+      "testUrl": "https://www.digitalcollections.manchester.ac.uk/view/MS-FRENCH-00001/1",
+      "success": false,
+      "error": "Manifest HTTP 404"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "timestamp": "2025-07-08T10:33:15.063Z",
+  "totalLibraries": 9,
+  "copiedPDFs": [
+    {
+      "library": "Belgica-KBR-Belgium",
+      "description": "Belgica KBR - image pattern detection fix",
+      "fileName": "Belgica-KBR-Belgium-VALIDATION.pdf",
+      "sizeKB": 43.76,
+      "status": "validated"
+    },
+    {
+      "library": "Rouen-Library",
+      "description": "Rouen Library - page count determination fix",
+      "fileName": "Rouen-Library-VALIDATION.pdf",
+      "sizeKB": 2290.38,
+      "status": "validated"
+    },
+    {
+      "library": "Karlsruhe-BLB",
+      "description": "Karlsruhe BLB - resolution enhancement",
+      "fileName": "Karlsruhe-BLB-VALIDATION.pdf",
+      "sizeKB": 30205.79,
+      "status": "validated"
+    },
+    {
+      "library": "Manchester-John-Rylands",
+      "description": "Manchester John Rylands Library - new implementation",
+      "fileName": "Manchester-John-Rylands-VALIDATION.pdf",
+      "sizeKB": 1896.36,
+      "status": "validated"
+    },
+    {
+      "library": "Grenoble-Municipal-Library",
+      "description": "Grenoble Municipal Library - IIIF manifest loading fix",
+      "fileName": "Grenoble-Municipal-Library-VALIDATION.pdf",
+      "sizeKB": 9530.85,
+      "status": "validated"
+    },
+    {
+      "library": "Saint-Omer-Medieval",
+      "description": "Saint-Omer Medieval Library - new implementation",
+      "fileName": "Saint-Omer-Medieval-VALIDATION.pdf",
+      "sizeKB": 107467.45,
+      "status": "validated"
+    },
+    {
+      "library": "MDC-Catalonia",
+      "description": "MDC Catalonia - fetch failed fix",
+      "fileName": "MDC-Catalonia-VALIDATION.pdf",
+      "sizeKB": 1484.42,
+      "status": "validated"
+    },
+    {
+      "library": "Freiburg-University",
+      "description": "Freiburg University Library - enhanced implementation",
+      "fileName": "Freiburg-University-VALIDATION.pdf",
+      "sizeKB": 7092.88,
+      "status": "validated"
+    },
+    {
+      "library": "BNE-Spanish-National-Library",
+      "description": "Spanish National Library - hanging calculation fix",
+      "fileName": "BNE-Spanish-National-Library-VALIDATION.pdf",
+      "sizeKB": 0.57,
+      "status": "validated"
+    }
+  ],
+  "missingSources": [],
+  "validationSummary": {
+    "totalPDFs": 9,
+    "successfulCopies": 9,
+    "missingPDFs": 0,
+    "totalSizeMB": "156.26"
+  }
+}

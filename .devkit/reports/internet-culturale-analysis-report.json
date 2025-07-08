@@ -1,0 +1,29 @@
+{
+  "timestamp": "2025-07-08T07:42:25.000Z",
+  "testUrl": "https://dam.iccu.sbn.it/mol_46/containers/avQYk0e/manifest",
+  "manifestType": "Manifest",
+  "label": [
+    "Roma, Biblioteca Vallicelliana, Manoscritti, ms. B 50"
+  ],
+  "totalPages": 2,
+  "sequenceCount": 1,
+  "totalCanvases": 2,
+  "imageUrls": [
+    "https://iiif-dam.iccu.sbn.it/iiif/2/dw0El1e/full/full/0/default.jpg",
+    "https://iiif-dam.iccu.sbn.it/iiif/2/elRvPrb/full/full/0/default.jpg"
+  ],
+  "downloadTests": [
+    {
+      "success": true,
+      "size": 795789
+    },
+    {
+      "success": true,
+      "size": 848548
+    }
+  ],
+  "recommendations": [
+    "Only 2 pages found - verify this is the correct manifest URL for the complete manuscript",
+    "Check if there are multiple volumes or if this is a partial manifest"
+  ]
+}

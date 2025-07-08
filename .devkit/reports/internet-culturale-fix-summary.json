@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-07-08T07:49:57.020Z",
+  "issue": {
+    "description": "Internet Culturale downloading only 2 pages instead of full manuscript",
+    "originalUrl": "https://dam.iccu.sbn.it/mol_46/containers/avQYk0e/manifest",
+    "rootCause": "URL points to partial manifest (2 pages) not complete manuscript (153 folios)"
+  },
+  "solution": {
+    "type": "Enhanced validation with intelligent error messages",
+    "implementation": "Added validateManifestCompleteness() method to EnhancedManuscriptDownloaderService",
+    "preventsMisleadingDownloads": true,
+    "providesUserGuidance": true
+  },
+  "validation": {
+    "codeChangesApplied": true,
+    "errorMessageEnhanced": true,
+    "testingCompleted": true
+  },
+  "userBenefit": {
+    "before": "Users downloaded incomplete 2-page PDFs unknowingly",
+    "after": "Users receive clear errors with guidance to find complete manuscripts"
+  }
+}

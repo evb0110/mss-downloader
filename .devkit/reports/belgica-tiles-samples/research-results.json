@@ -1,0 +1,239 @@
+{
+  "timestamp": "2025-07-08T16:30:51.546Z",
+  "baseUrl": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/",
+  "testDirectory": ".devkit/reports/belgica-tiles-samples/",
+  "zoomLevels": [
+    {
+      "zoom": 0,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/0-0-0.jpg",
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:30:52 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "283",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    },
+    {
+      "zoom": 1,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-0-0.jpg",
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:30:52 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "283",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    },
+    {
+      "zoom": 2,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-0-0.jpg",
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:30:53 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "283",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    },
+    {
+      "zoom": 3,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-0.jpg",
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:30:53 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "283",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    },
+    {
+      "zoom": 4,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/4-0-0.jpg",
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:30:54 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "283",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    },
+    {
+      "zoom": 5,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/5-0-0.jpg",
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:30:54 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "283",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    },
+    {
+      "zoom": 6,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/6-0-0.jpg",
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:30:55 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "284",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    },
+    {
+      "zoom": 7,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/7-0-0.jpg",
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:30:55 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "284",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    },
+    {
+      "zoom": 8,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/8-0-0.jpg",
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:30:56 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "283",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    },
+    {
+      "zoom": 9,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/9-0-0.jpg",
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:30:56 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "283",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    },
+    {
+      "zoom": 10,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/10-0-0.jpg",
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:30:57 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "284",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    }
+  ],
+  "authTests": {
+    "noHeaders": {
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:30:57 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "283",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    },
+    "minimal": {
+      "success": false,
+      "statusCode": 403,
+      "error": "HTTP 403",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:30:58 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "283",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    }
+  }
+}

@@ -1,0 +1,4723 @@
+{
+  "timestamp": "2025-07-08T16:34:02.052Z",
+  "baseUrl": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/",
+  "referrer": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/",
+  "testDirectory": ".devkit/reports/belgica-tiles-samples/",
+  "zoomLevels": [
+    {
+      "zoom": 0,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/0-0-0.jpg",
+      "success": true,
+      "statusCode": 200,
+      "contentType": "image/jpeg",
+      "size": 86859,
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:34:02 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "last-modified": "Wed, 03 Aug 2016 13:23:21 GMT",
+        "etag": "\"12f8055f3-1534b-5392abcbfac6e\"",
+        "accept-ranges": "bytes",
+        "content-length": "86859",
+        "access-control-allow-credentials": "true",
+        "keep-alive": "timeout=5, max=100",
+        "connection": "Keep-Alive",
+        "content-type": "image/jpeg"
+      }
+    },
+    {
+      "zoom": 1,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-0-0.jpg",
+      "success": true,
+      "statusCode": 200,
+      "contentType": "image/jpeg",
+      "size": 82570,
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:34:03 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "last-modified": "Wed, 03 Aug 2016 13:23:21 GMT",
+        "etag": "\"12f8866c5-1428a-5392abcc3f2cf\"",
+        "accept-ranges": "bytes",
+        "content-length": "82570",
+        "access-control-allow-credentials": "true",
+        "keep-alive": "timeout=5, max=99",
+        "connection": "Keep-Alive",
+        "content-type": "image/jpeg"
+      }
+    },
+    {
+      "zoom": 2,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-0-0.jpg",
+      "success": true,
+      "statusCode": 200,
+      "contentType": "image/jpeg",
+      "size": 73704,
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:34:03 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+        "etag": "\"12f8541b1-11fe8-5392abcd6010a\"",
+        "accept-ranges": "bytes",
+        "content-length": "73704",
+        "access-control-allow-credentials": "true",
+        "keep-alive": "timeout=5, max=98",
+        "connection": "Keep-Alive",
+        "content-type": "image/jpeg"
+      }
+    },
+    {
+      "zoom": 3,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-0.jpg",
+      "success": true,
+      "statusCode": 200,
+      "contentType": "image/jpeg",
+      "size": 73284,
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:34:03 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+        "etag": "\"12f7c7719-11e44-5392abce69505\"",
+        "accept-ranges": "bytes",
+        "content-length": "73284",
+        "access-control-allow-credentials": "true",
+        "keep-alive": "timeout=5, max=97",
+        "connection": "Keep-Alive",
+        "content-type": "image/jpeg"
+      }
+    },
+    {
+      "zoom": 4,
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/4-0-0.jpg",
+      "success": false,
+      "statusCode": 404,
+      "error": "HTTP 404",
+      "headers": {
+        "date": "Tue, 08 Jul 2025 16:34:04 GMT",
+        "server": "Apache",
+        "access-control-allow-origin": "https://www.heritage-visualisation.org",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip",
+        "content-length": "279",
+        "keep-alive": "timeout=5, max=96",
+        "connection": "Keep-Alive",
+        "content-type": "text/html; charset=iso-8859-1"
+      }
+    }
+  ],
+  "gridStructure": {
+    "0": [
+      {
+        "zoom": 0,
+        "x": 0,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/0-0-0.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 86859,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:04 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:21 GMT",
+          "etag": "\"12f8055f3-1534b-5392abcbfac6e\"",
+          "accept-ranges": "bytes",
+          "content-length": "86859",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 0,
+        "x": 1,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/0-1-0.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:04 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=99",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 0,
+        "x": 1,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/0-1-1.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:05 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 0,
+        "x": 0,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/0-0-1.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 16870,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:05 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:21 GMT",
+          "etag": "\"12f7dea91-41e6-5392abcc0d590\"",
+          "accept-ranges": "bytes",
+          "content-length": "16870",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 0,
+        "x": 2,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/0-2-0.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:05 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=99",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 0,
+        "x": 2,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/0-2-1.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:06 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 0,
+        "x": 2,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/0-2-2.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:06 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 0,
+        "x": 0,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/0-0-2.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:07 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "279",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 0,
+        "x": 1,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/0-1-2.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:07 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      }
+    ],
+    "1": [
+      {
+        "zoom": 1,
+        "x": 0,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-0-0.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 82570,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:07 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:21 GMT",
+          "etag": "\"12f8866c5-1428a-5392abcc3f2cf\"",
+          "accept-ranges": "bytes",
+          "content-length": "82570",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 1,
+        "x": 1,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-1-0.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 71445,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:08 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:21 GMT",
+          "etag": "\"12f74a827-11715-5392abcc4a1ae\"",
+          "accept-ranges": "bytes",
+          "content-length": "71445",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=99",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 1,
+        "x": 1,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-1-1.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 70148,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:08 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:22 GMT",
+          "etag": "\"12f8485d3-11204-5392abcc824eb\"",
+          "accept-ranges": "bytes",
+          "content-length": "70148",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=98",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 1,
+        "x": 0,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-0-1.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 84541,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:08 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:21 GMT",
+          "etag": "\"12f8c0f5a-14a3d-5392abcc519ae\"",
+          "accept-ranges": "bytes",
+          "content-length": "84541",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=97",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 1,
+        "x": 2,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-2-0.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:09 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=96",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 1,
+        "x": 2,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-2-1.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:09 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 1,
+        "x": 2,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-2-2.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:09 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 1,
+        "x": 0,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-0-2.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 29662,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:10 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:22 GMT",
+          "etag": "\"12f8962e9-73de-5392abccb623a\"",
+          "accept-ranges": "bytes",
+          "content-length": "29662",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 1,
+        "x": 1,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-1-2.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 26252,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:10 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:22 GMT",
+          "etag": "\"12f8485d9-668c-5392abcc6c994\"",
+          "accept-ranges": "bytes",
+          "content-length": "26252",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=99",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 1,
+        "x": 3,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-3-0.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:10 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=98",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 1,
+        "x": 3,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-3-1.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:11 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 1,
+        "x": 3,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-3-2.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:11 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 1,
+        "x": 3,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-3-3.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:12 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 1,
+        "x": 0,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-0-3.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:12 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 1,
+        "x": 1,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-1-3.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:12 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 1,
+        "x": 2,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/1-2-3.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:13 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      }
+    ],
+    "2": [
+      {
+        "zoom": 2,
+        "x": 0,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-0-0.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 73704,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:13 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f8541b1-11fe8-5392abcd6010a\"",
+          "accept-ranges": "bytes",
+          "content-length": "73704",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 1,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-1-0.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 67435,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:14 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f7e7036-1076b-5392abcd852ed\"",
+          "accept-ranges": "bytes",
+          "content-length": "67435",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=99",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 1,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-1-1.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 61516,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:14 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f75a8a0-f04c-5392abcd6be98\"",
+          "accept-ranges": "bytes",
+          "content-length": "61516",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=98",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 0,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-0-1.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 69708,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:14 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f8485d4-1104c-5392abcd630e8\"",
+          "accept-ranges": "bytes",
+          "content-length": "69708",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=97",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 2,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-2-0.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 65878,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:14 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f69d51e-10156-5392abcdc072e\"",
+          "accept-ranges": "bytes",
+          "content-length": "65878",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=96",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 2,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-2-1.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 58089,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:15 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f7dea8c-e2e9-5392abcd6f61b\"",
+          "accept-ranges": "bytes",
+          "content-length": "58089",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=95",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 2,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-2-2.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 56733,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:15 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f8485d7-dd9d-5392abcd7eeda\"",
+          "accept-ranges": "bytes",
+          "content-length": "56733",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=94",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 0,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-0-2.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 75497,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:15 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f66ec35-126e9-5392abcd77eab\"",
+          "accept-ranges": "bytes",
+          "content-length": "75497",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=93",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 1,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-1-2.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 58256,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:15 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f8866c3-e390-5392abcd7b4c8\"",
+          "accept-ranges": "bytes",
+          "content-length": "58256",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=92",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 3,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-3-0.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 64255,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:16 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f8866c6-faff-5392abce0cc43\"",
+          "accept-ranges": "bytes",
+          "content-length": "64255",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=91",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 3,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-3-1.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 54614,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:16 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f82a5ce-d556-5392abcd74490\"",
+          "accept-ranges": "bytes",
+          "content-length": "54614",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=90",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 3,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-3-2.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 53203,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:16 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f797e2f-cfd3-5392abcd87dcd\"",
+          "accept-ranges": "bytes",
+          "content-length": "53203",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=89",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 3,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-3-3.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 57948,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:16 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f8055ef-e25c-5392abcd9bdc6\"",
+          "accept-ranges": "bytes",
+          "content-length": "57948",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=88",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 0,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-0-3.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 77156,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:17 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f8866c9-12d64-5392abcd8b99e\"",
+          "accept-ranges": "bytes",
+          "content-length": "77156",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=87",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 1,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-1-3.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 63326,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:17 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f7e7035-f75e-5392abcd8f260\"",
+          "accept-ranges": "bytes",
+          "content-length": "63326",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=86",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 2,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-2-3.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 62063,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:17 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f86840e-f26f-5392abcd967b1\"",
+          "accept-ranges": "bytes",
+          "content-length": "62063",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=85",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 4,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-4-0.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:18 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=84",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 4,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-4-1.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:18 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 4,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-4-2.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:18 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 4,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-4-3.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:19 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 4,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-4-4.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:19 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 0,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-0-4.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 49416,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:19 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f7dea8f-c108-5392abcda03fb\"",
+          "accept-ranges": "bytes",
+          "content-length": "49416",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 1,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-1-4.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 44135,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:20 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f8a16f7-ac67-5392abcda643e\"",
+          "accept-ranges": "bytes",
+          "content-length": "44135",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=99",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 2,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-2-4.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 41566,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:20 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f8866c7-a25e-5392abcdb0070\"",
+          "accept-ranges": "bytes",
+          "content-length": "41566",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=98",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 3,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-3-4.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 42128,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:20 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:23 GMT",
+          "etag": "\"12f8541b0-a490-5392abcdb58c1\"",
+          "accept-ranges": "bytes",
+          "content-length": "42128",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=97",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 5,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-5-0.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:21 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=96",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 5,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-5-1.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:21 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 5,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-5-2.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:21 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 5,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-5-3.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:22 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 5,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-5-4.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:22 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 5,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-5-5.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:23 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 0,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-0-5.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:23 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 1,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-1-5.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:23 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 2,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-2-5.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:24 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 3,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-3-5.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:24 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 2,
+        "x": 4,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/2-4-5.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:24 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      }
+    ],
+    "3": [
+      {
+        "zoom": 3,
+        "x": 0,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-0.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 73284,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:25 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f7c7719-11e44-5392abce69505\"",
+          "accept-ranges": "bytes",
+          "content-length": "73284",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 1,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-0.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 70255,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:25 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f7799ae-1126f-5392abce71484\"",
+          "accept-ranges": "bytes",
+          "content-length": "70255",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=99",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 1,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-1.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 61153,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:26 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f7799af-eee1-5392abce954e2\"",
+          "accept-ranges": "bytes",
+          "content-length": "61153",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=98",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 0,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-1.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 72309,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:26 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f8866c0-11a75-5392abce8e601\"",
+          "accept-ranges": "bytes",
+          "content-length": "72309",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=97",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 2,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-0.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 63268,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:26 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f839a63-f724-5392abce750b4\"",
+          "accept-ranges": "bytes",
+          "content-length": "63268",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=96",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 2,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-1.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 55766,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:27 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f8c0f5d-d9d6-5392abce99ac6\"",
+          "accept-ranges": "bytes",
+          "content-length": "55766",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=95",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 2,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-2.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 51661,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:27 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f8866c4-c9cd-5392abced847c\"",
+          "accept-ranges": "bytes",
+          "content-length": "51661",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=94",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 0,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-2.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 72448,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:27 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f8055f1-11b00-5392abced1333\"",
+          "accept-ranges": "bytes",
+          "content-length": "72448",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=93",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 1,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-2.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 60300,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:27 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f81aa6e-eb8c-5392abced4c45\"",
+          "accept-ranges": "bytes",
+          "content-length": "60300",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=92",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 3,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-0.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 59489,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:28 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f7bebc4-e861-5392abce789ec\"",
+          "accept-ranges": "bytes",
+          "content-length": "59489",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=91",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 3,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-1.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 54347,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:28 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f7dea8d-d44b-5392abcea38d1\"",
+          "accept-ranges": "bytes",
+          "content-length": "54347",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=90",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 3,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-2.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 54955,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:28 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f7c771a-d6ab-5392abcedbc0f\"",
+          "accept-ranges": "bytes",
+          "content-length": "54955",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=89",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 3,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-3.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 53669,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:28 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f7f6327-d1a5-5392abcf04f57\"",
+          "accept-ranges": "bytes",
+          "content-length": "53669",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=88",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 0,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-3.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 72077,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:29 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f8055f2-1198d-5392abcef4dd4\"",
+          "accept-ranges": "bytes",
+          "content-length": "72077",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=87",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 1,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-3.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 61260,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:29 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f7bebc1-ef4c-5392abcefc633\"",
+          "accept-ranges": "bytes",
+          "content-length": "61260",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=86",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 2,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-3.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 51777,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:29 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f7bebc2-ca41-5392abceffe6e\"",
+          "accept-ranges": "bytes",
+          "content-length": "51777",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=85",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 4,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-0.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 57045,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:29 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f839a61-ded5-5392abce801e6\"",
+          "accept-ranges": "bytes",
+          "content-length": "57045",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=84",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 4,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-1.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 52690,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:30 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f8a16f8-cdd2-5392abcea71e7\"",
+          "accept-ranges": "bytes",
+          "content-length": "52690",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=83",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 4,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-2.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 51529,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:30 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f7f6326-c949-5392abcedf4d1\"",
+          "accept-ranges": "bytes",
+          "content-length": "51529",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=82",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 4,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-3.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 52970,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:30 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f82a5cb-ceea-5392abcf0873c\"",
+          "accept-ranges": "bytes",
+          "content-length": "52970",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=81",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 4,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-4.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 50615,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:30 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8485da-c5b7-5392abcf79ee0\"",
+          "accept-ranges": "bytes",
+          "content-length": "50615",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=80",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 0,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-4.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 77647,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:31 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f82a5cc-12f4f-5392abcf1fbdf\"",
+          "accept-ranges": "bytes",
+          "content-length": "77647",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=79",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 1,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-4.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 61331,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:31 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f8541b2-ef93-5392abcf24fa6\"",
+          "accept-ranges": "bytes",
+          "content-length": "61331",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=78",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 2,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-4.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 51371,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:31 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f877e51-c8ab-5392abcf287db\"",
+          "accept-ranges": "bytes",
+          "content-length": "51371",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=77",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 3,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-4.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 51072,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:31 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8866c2-c780-5392abcf56c02\"",
+          "accept-ranges": "bytes",
+          "content-length": "51072",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=76",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 5,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-0.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 57660,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:32 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f8c0f5e-e13c-5392abce839dc\"",
+          "accept-ranges": "bytes",
+          "content-length": "57660",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=75",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 5,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-1.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 52385,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:32 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f7bebc3-cca1-5392abcebe946\"",
+          "accept-ranges": "bytes",
+          "content-length": "52385",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=74",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 5,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-2.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 47479,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:32 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f7dea95-b977-5392abcee2d05\"",
+          "accept-ranges": "bytes",
+          "content-length": "47479",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=73",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 5,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-3.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 48214,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:32 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f81aa6d-bc56-5392abcf0f4c9\"",
+          "accept-ranges": "bytes",
+          "content-length": "48214",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=72",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 5,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-4.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 47223,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:33 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f6ec1b9-b877-5392abcf9ca52\"",
+          "accept-ranges": "bytes",
+          "content-length": "47223",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=71",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 5,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-5.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 47119,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:33 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f75a8a1-b80f-5392abcf6a6ab\"",
+          "accept-ranges": "bytes",
+          "content-length": "47119",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=70",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 0,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-5.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 72870,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:33 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f797e2e-11ca6-5392abd00e246\"",
+          "accept-ranges": "bytes",
+          "content-length": "72870",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=69",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 1,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-5.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 63023,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:34 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f7dea8e-f62f-5392abcf4d8a0\"",
+          "accept-ranges": "bytes",
+          "content-length": "63023",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=68",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 2,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-5.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 50137,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:34 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8485d8-c3d9-5392abcf51d86\"",
+          "accept-ranges": "bytes",
+          "content-length": "50137",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=67",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 3,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-5.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 50071,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:34 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8485d6-c397-5392abcf587b8\"",
+          "accept-ranges": "bytes",
+          "content-length": "50071",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=66",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 4,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-5.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 49707,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:34 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8485dc-c22b-5392abcf664b1\"",
+          "accept-ranges": "bytes",
+          "content-length": "49707",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=65",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 6,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-0.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 63380,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:34 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f8541ad-f794-5392abce87626\"",
+          "accept-ranges": "bytes",
+          "content-length": "63380",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=64",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 6,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-1.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 55660,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:35 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f8962e5-d96c-5392abcec63a6\"",
+          "accept-ranges": "bytes",
+          "content-length": "55660",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=63",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 6,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-2.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 53241,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:35 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f877e52-cff9-5392abcee86f1\"",
+          "accept-ranges": "bytes",
+          "content-length": "53241",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=62",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 6,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-3.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 51752,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:35 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f74a828-ca28-5392abcf14f4c\"",
+          "accept-ranges": "bytes",
+          "content-length": "51752",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=61",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 6,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-4.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 50144,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:35 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f868410-c3e0-5392abcfc0d0f\"",
+          "accept-ranges": "bytes",
+          "content-length": "50144",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=60",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 6,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-5.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 50469,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:36 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f81aa6f-c525-5392abcf6e4e5\"",
+          "accept-ranges": "bytes",
+          "content-length": "50469",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=59",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 6,
+        "y": 6,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-6.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 53129,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:36 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8485db-cf89-5392abcf908b4\"",
+          "accept-ranges": "bytes",
+          "content-length": "53129",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=58",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 0,
+        "y": 6,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-6.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 76664,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:36 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8866ca-12b78-5392abcf7693d\"",
+          "accept-ranges": "bytes",
+          "content-length": "76664",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=57",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 1,
+        "y": 6,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-6.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 62268,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:37 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f839a62-f33c-5392abcf7a6a9\"",
+          "accept-ranges": "bytes",
+          "content-length": "62268",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=56",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 2,
+        "y": 6,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-6.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 55312,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:37 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f868411-d810-5392abcf808d9\"",
+          "accept-ranges": "bytes",
+          "content-length": "55312",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=55",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 3,
+        "y": 6,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-6.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 55435,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:37 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8541b3-d88b-5392abcf849ab\"",
+          "accept-ranges": "bytes",
+          "content-length": "55435",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=54",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 4,
+        "y": 6,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-6.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 54094,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:38 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8962e2-d34e-5392abcf88a4c\"",
+          "accept-ranges": "bytes",
+          "content-length": "54094",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=53",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 5,
+        "y": 6,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-6.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 51023,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:38 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f67e4de-c74f-5392abcf8c5b8\"",
+          "accept-ranges": "bytes",
+          "content-length": "51023",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=52",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 7,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-0.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 61806,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:38 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f81aa70-f16e-5392abce8a8ba\"",
+          "accept-ranges": "bytes",
+          "content-length": "61806",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=51",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 7,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-1.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 55942,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:38 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f8866c8-da86-5392abcecd63e\"",
+          "accept-ranges": "bytes",
+          "content-length": "55942",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=50",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 7,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-2.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 49333,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:38 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f66ec37-c0b5-5392abceeb7ec\"",
+          "accept-ranges": "bytes",
+          "content-length": "49333",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=49",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 7,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-3.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 53622,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:39 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:24 GMT",
+          "etag": "\"12f8055f0-d176-5392abcf1bd9a\"",
+          "accept-ranges": "bytes",
+          "content-length": "53622",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=48",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 7,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-4.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 52304,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:39 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f6ec1ba-cc50-5392abcfe2c26\"",
+          "accept-ranges": "bytes",
+          "content-length": "52304",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=47",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 7,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-5.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 52847,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:39 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8485d5-ce6f-5392abcf722fd\"",
+          "accept-ranges": "bytes",
+          "content-length": "52847",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=46",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 7,
+        "y": 6,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-6.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 50761,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:39 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f7bebc5-c649-5392abcf9471c\"",
+          "accept-ranges": "bytes",
+          "content-length": "50761",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=45",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 7,
+        "y": 7,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-7.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 53950,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:40 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f769f88-d2be-5392abcfbbe0d\"",
+          "accept-ranges": "bytes",
+          "content-length": "53950",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=44",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 0,
+        "y": 7,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-7.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 81054,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:40 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8c0f5b-13c9e-5392abcf98da6\"",
+          "accept-ranges": "bytes",
+          "content-length": "81054",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=43",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 1,
+        "y": 7,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-7.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 62538,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:40 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8055f4-f44a-5392abcf9d109\"",
+          "accept-ranges": "bytes",
+          "content-length": "62538",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=42",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 2,
+        "y": 7,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-7.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 53157,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:40 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8b1609-cfa5-5392abcfa11ab\"",
+          "accept-ranges": "bytes",
+          "content-length": "53157",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=41",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 3,
+        "y": 7,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-7.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 51371,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:41 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8541ae-c8ab-5392abcfa820d\"",
+          "accept-ranges": "bytes",
+          "content-length": "51371",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=40",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 4,
+        "y": 7,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-7.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 52218,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:41 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f7dea90-cbfa-5392abcfac502\"",
+          "accept-ranges": "bytes",
+          "content-length": "52218",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=39",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 5,
+        "y": 7,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-7.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 51780,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:41 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f66ec34-ca44-5392abcfb3fc7\"",
+          "accept-ranges": "bytes",
+          "content-length": "51780",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=38",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 6,
+        "y": 7,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-7.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 51673,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:41 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f82a5cd-c9d9-5392abcfb7d20\"",
+          "accept-ranges": "bytes",
+          "content-length": "51673",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=37",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 8,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-8-0.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:42 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=36",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 8,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-8-1.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:42 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 8,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-8-2.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:42 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 8,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-8-3.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:43 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 8,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-8-4.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:43 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 8,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-8-5.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:43 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 8,
+        "y": 6,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-8-6.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:44 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 8,
+        "y": 7,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-8-7.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:44 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 8,
+        "y": 8,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-8-8.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:45 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 0,
+        "y": 8,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-8.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 83704,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:45 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8b160a-146f8-5392abcfc0e66\"",
+          "accept-ranges": "bytes",
+          "content-length": "83704",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 1,
+        "y": 8,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-8.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 68129,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:45 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8962e6-10a21-5392abcfc4cd1\"",
+          "accept-ranges": "bytes",
+          "content-length": "68129",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=99",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 2,
+        "y": 8,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-8.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 56234,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:46 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8541af-dbaa-5392abcfc8f5f\"",
+          "accept-ranges": "bytes",
+          "content-length": "56234",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=98",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 3,
+        "y": 8,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-8.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 55666,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:46 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f86840f-d972-5392abcfcd277\"",
+          "accept-ranges": "bytes",
+          "content-length": "55666",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=97",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 4,
+        "y": 8,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-8.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 55293,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:46 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8962e8-d7fd-5392abcfd1649\"",
+          "accept-ranges": "bytes",
+          "content-length": "55293",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=96",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 5,
+        "y": 8,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-8.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 54218,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:47 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f66ec36-d3ca-5392abcfd6f67\"",
+          "accept-ranges": "bytes",
+          "content-length": "54218",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=95",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 6,
+        "y": 8,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-8.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 58699,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:47 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f71bcd1-e54b-5392abcfdc745\"",
+          "accept-ranges": "bytes",
+          "content-length": "58699",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=94",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 7,
+        "y": 8,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-8.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 58470,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:47 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f71bcd0-e466-5392abcfdff4a\"",
+          "accept-ranges": "bytes",
+          "content-length": "58470",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=93",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 9,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-9-0.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:47 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=92",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 9,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-9-1.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:48 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 9,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-9-2.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:48 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 9,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-9-3.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:48 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "281",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 9,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-9-4.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:49 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 9,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-9-5.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:49 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 9,
+        "y": 6,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-9-6.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:50 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 9,
+        "y": 7,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-9-7.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:50 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 9,
+        "y": 8,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-9-8.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:50 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 9,
+        "y": 9,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-9-9.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:51 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 0,
+        "y": 9,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-9.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 12286,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:51 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f839a66-2ffe-5392abcfe214c\"",
+          "accept-ranges": "bytes",
+          "content-length": "12286",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 1,
+        "y": 9,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-9.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 13691,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:51 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f67e4dd-357b-5392abcfe6ae9\"",
+          "accept-ranges": "bytes",
+          "content-length": "13691",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=99",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 2,
+        "y": 9,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-9.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 15740,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:52 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8c0f5c-3d7c-5392abcfe8bc1\"",
+          "accept-ranges": "bytes",
+          "content-length": "15740",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=98",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 3,
+        "y": 9,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-9.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 17896,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:52 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f69d51d-45e8-5392abcfeac44\"",
+          "accept-ranges": "bytes",
+          "content-length": "17896",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=97",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 4,
+        "y": 9,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-9.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 13601,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:52 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f769f8a-3521-5392abcfec9de\"",
+          "accept-ranges": "bytes",
+          "content-length": "13601",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=96",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 5,
+        "y": 9,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-9.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 14827,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:52 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8962e3-39eb-5392abcff050b\"",
+          "accept-ranges": "bytes",
+          "content-length": "14827",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=95",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 6,
+        "y": 9,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-9.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 18896,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:53 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f769f89-49d0-5392abcff24ef\"",
+          "accept-ranges": "bytes",
+          "content-length": "18896",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=94",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 7,
+        "y": 9,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-9.jpg",
+        "success": true,
+        "statusCode": 200,
+        "contentType": "image/jpeg",
+        "size": 14107,
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:53 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "last-modified": "Wed, 03 Aug 2016 13:23:25 GMT",
+          "etag": "\"12f8962e7-371b-5392abcff42ca\"",
+          "accept-ranges": "bytes",
+          "content-length": "14107",
+          "access-control-allow-credentials": "true",
+          "keep-alive": "timeout=5, max=93",
+          "connection": "Keep-Alive",
+          "content-type": "image/jpeg"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 8,
+        "y": 9,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-8-9.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:53 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=92",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 10,
+        "y": 0,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-10-0.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:54 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "279",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 10,
+        "y": 1,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-10-1.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:54 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 10,
+        "y": 2,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-10-2.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:54 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "281",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 10,
+        "y": 3,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-10-3.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:55 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "281",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 10,
+        "y": 4,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-10-4.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:55 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "281",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 10,
+        "y": 5,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-10-5.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:55 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 10,
+        "y": 6,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-10-6.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:56 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "281",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 10,
+        "y": 7,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-10-7.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:56 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "281",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 10,
+        "y": 8,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-10-8.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:57 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 10,
+        "y": 9,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-10-9.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:57 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "281",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 10,
+        "y": 10,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-10-10.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:57 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 0,
+        "y": 10,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-0-10.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:58 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "281",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 1,
+        "y": 10,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-1-10.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:58 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 2,
+        "y": 10,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-2-10.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:58 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "281",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 3,
+        "y": 10,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-3-10.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:59 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "281",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 4,
+        "y": 10,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-4-10.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:34:59 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "281",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 5,
+        "y": 10,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-5-10.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:35:00 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 6,
+        "y": 10,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-6-10.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:35:00 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "281",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 7,
+        "y": 10,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-7-10.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:35:00 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "281",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 8,
+        "y": 10,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-8-10.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:35:01 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "280",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      },
+      {
+        "zoom": 3,
+        "x": 9,
+        "y": 10,
+        "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/3-9-10.jpg",
+        "success": false,
+        "statusCode": 404,
+        "error": "HTTP 404",
+        "headers": {
+          "date": "Tue, 08 Jul 2025 16:35:01 GMT",
+          "server": "Apache",
+          "access-control-allow-origin": "https://www.heritage-visualisation.org",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "content-length": "281",
+          "keep-alive": "timeout=5, max=100",
+          "connection": "Keep-Alive",
+          "content-type": "text/html; charset=iso-8859-1"
+        }
+      }
+    ]
+  },
+  "analysis": {
+    "maxZoom": 3,
+    "zoomLevels": {
+      "0": {
+        "gridWidth": 1,
+        "gridHeight": 2,
+        "totalTiles": 2,
+        "tileWidth": 743,
+        "tileHeight": 768,
+        "estimatedFullWidth": 743,
+        "estimatedFullHeight": 1536,
+        "avgTileSize": 51865,
+        "tiles": [
+          {
+            "x": 0,
+            "y": 0,
+            "size": 86859
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "size": 16870
+          }
+        ]
+      },
+      "1": {
+        "gridWidth": 2,
+        "gridHeight": 3,
+        "totalTiles": 6,
+        "tileWidth": 768,
+        "tileHeight": 768,
+        "estimatedFullWidth": 1536,
+        "estimatedFullHeight": 2304,
+        "avgTileSize": 60770,
+        "tiles": [
+          {
+            "x": 0,
+            "y": 0,
+            "size": 82570
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "size": 71445
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "size": 70148
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "size": 84541
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "size": 29662
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "size": 26252
+          }
+        ]
+      },
+      "2": {
+        "gridWidth": 4,
+        "gridHeight": 5,
+        "totalTiles": 20,
+        "tileWidth": 768,
+        "tileHeight": 768,
+        "estimatedFullWidth": 3072,
+        "estimatedFullHeight": 3840,
+        "avgTileSize": 59831,
+        "tiles": [
+          {
+            "x": 0,
+            "y": 0,
+            "size": 73704
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "size": 67435
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "size": 61516
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "size": 69708
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "size": 65878
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "size": 58089
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "size": 56733
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "size": 75497
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "size": 58256
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "size": 64255
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "size": 54614
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "size": 53203
+          },
+          {
+            "x": 3,
+            "y": 3,
+            "size": 57948
+          },
+          {
+            "x": 0,
+            "y": 3,
+            "size": 77156
+          },
+          {
+            "x": 1,
+            "y": 3,
+            "size": 63326
+          },
+          {
+            "x": 2,
+            "y": 3,
+            "size": 62063
+          },
+          {
+            "x": 0,
+            "y": 4,
+            "size": 49416
+          },
+          {
+            "x": 1,
+            "y": 4,
+            "size": 44135
+          },
+          {
+            "x": 2,
+            "y": 4,
+            "size": 41566
+          },
+          {
+            "x": 3,
+            "y": 4,
+            "size": 42128
+          }
+        ]
+      },
+      "3": {
+        "gridWidth": 8,
+        "gridHeight": 10,
+        "totalTiles": 80,
+        "tileWidth": 768,
+        "tileHeight": 768,
+        "estimatedFullWidth": 6144,
+        "estimatedFullHeight": 7680,
+        "avgTileSize": 53232,
+        "tiles": [
+          {
+            "x": 0,
+            "y": 0,
+            "size": 73284
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "size": 70255
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "size": 61153
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "size": 72309
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "size": 63268
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "size": 55766
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "size": 51661
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "size": 72448
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "size": 60300
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "size": 59489
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "size": 54347
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "size": 54955
+          },
+          {
+            "x": 3,
+            "y": 3,
+            "size": 53669
+          },
+          {
+            "x": 0,
+            "y": 3,
+            "size": 72077
+          },
+          {
+            "x": 1,
+            "y": 3,
+            "size": 61260
+          },
+          {
+            "x": 2,
+            "y": 3,
+            "size": 51777
+          },
+          {
+            "x": 4,
+            "y": 0,
+            "size": 57045
+          },
+          {
+            "x": 4,
+            "y": 1,
+            "size": 52690
+          },
+          {
+            "x": 4,
+            "y": 2,
+            "size": 51529
+          },
+          {
+            "x": 4,
+            "y": 3,
+            "size": 52970
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "size": 50615
+          },
+          {
+            "x": 0,
+            "y": 4,
+            "size": 77647
+          },
+          {
+            "x": 1,
+            "y": 4,
+            "size": 61331
+          },
+          {
+            "x": 2,
+            "y": 4,
+            "size": 51371
+          },
+          {
+            "x": 3,
+            "y": 4,
+            "size": 51072
+          },
+          {
+            "x": 5,
+            "y": 0,
+            "size": 57660
+          },
+          {
+            "x": 5,
+            "y": 1,
+            "size": 52385
+          },
+          {
+            "x": 5,
+            "y": 2,
+            "size": 47479
+          },
+          {
+            "x": 5,
+            "y": 3,
+            "size": 48214
+          },
+          {
+            "x": 5,
+            "y": 4,
+            "size": 47223
+          },
+          {
+            "x": 5,
+            "y": 5,
+            "size": 47119
+          },
+          {
+            "x": 0,
+            "y": 5,
+            "size": 72870
+          },
+          {
+            "x": 1,
+            "y": 5,
+            "size": 63023
+          },
+          {
+            "x": 2,
+            "y": 5,
+            "size": 50137
+          },
+          {
+            "x": 3,
+            "y": 5,
+            "size": 50071
+          },
+          {
+            "x": 4,
+            "y": 5,
+            "size": 49707
+          },
+          {
+            "x": 6,
+            "y": 0,
+            "size": 63380
+          },
+          {
+            "x": 6,
+            "y": 1,
+            "size": 55660
+          },
+          {
+            "x": 6,
+            "y": 2,
+            "size": 53241
+          },
+          {
+            "x": 6,
+            "y": 3,
+            "size": 51752
+          },
+          {
+            "x": 6,
+            "y": 4,
+            "size": 50144
+          },
+          {
+            "x": 6,
+            "y": 5,
+            "size": 50469
+          },
+          {
+            "x": 6,
+            "y": 6,
+            "size": 53129
+          },
+          {
+            "x": 0,
+            "y": 6,
+            "size": 76664
+          },
+          {
+            "x": 1,
+            "y": 6,
+            "size": 62268
+          },
+          {
+            "x": 2,
+            "y": 6,
+            "size": 55312
+          },
+          {
+            "x": 3,
+            "y": 6,
+            "size": 55435
+          },
+          {
+            "x": 4,
+            "y": 6,
+            "size": 54094
+          },
+          {
+            "x": 5,
+            "y": 6,
+            "size": 51023
+          },
+          {
+            "x": 7,
+            "y": 0,
+            "size": 61806
+          },
+          {
+            "x": 7,
+            "y": 1,
+            "size": 55942
+          },
+          {
+            "x": 7,
+            "y": 2,
+            "size": 49333
+          },
+          {
+            "x": 7,
+            "y": 3,
+            "size": 53622
+          },
+          {
+            "x": 7,
+            "y": 4,
+            "size": 52304
+          },
+          {
+            "x": 7,
+            "y": 5,
+            "size": 52847
+          },
+          {
+            "x": 7,
+            "y": 6,
+            "size": 50761
+          },
+          {
+            "x": 7,
+            "y": 7,
+            "size": 53950
+          },
+          {
+            "x": 0,
+            "y": 7,
+            "size": 81054
+          },
+          {
+            "x": 1,
+            "y": 7,
+            "size": 62538
+          },
+          {
+            "x": 2,
+            "y": 7,
+            "size": 53157
+          },
+          {
+            "x": 3,
+            "y": 7,
+            "size": 51371
+          },
+          {
+            "x": 4,
+            "y": 7,
+            "size": 52218
+          },
+          {
+            "x": 5,
+            "y": 7,
+            "size": 51780
+          },
+          {
+            "x": 6,
+            "y": 7,
+            "size": 51673
+          },
+          {
+            "x": 0,
+            "y": 8,
+            "size": 83704
+          },
+          {
+            "x": 1,
+            "y": 8,
+            "size": 68129
+          },
+          {
+            "x": 2,
+            "y": 8,
+            "size": 56234
+          },
+          {
+            "x": 3,
+            "y": 8,
+            "size": 55666
+          },
+          {
+            "x": 4,
+            "y": 8,
+            "size": 55293
+          },
+          {
+            "x": 5,
+            "y": 8,
+            "size": 54218
+          },
+          {
+            "x": 6,
+            "y": 8,
+            "size": 58699
+          },
+          {
+            "x": 7,
+            "y": 8,
+            "size": 58470
+          },
+          {
+            "x": 0,
+            "y": 9,
+            "size": 12286
+          },
+          {
+            "x": 1,
+            "y": 9,
+            "size": 13691
+          },
+          {
+            "x": 2,
+            "y": 9,
+            "size": 15740
+          },
+          {
+            "x": 3,
+            "y": 9,
+            "size": 17896
+          },
+          {
+            "x": 4,
+            "y": 9,
+            "size": 13601
+          },
+          {
+            "x": 5,
+            "y": 9,
+            "size": 14827
+          },
+          {
+            "x": 6,
+            "y": 9,
+            "size": 18896
+          },
+          {
+            "x": 7,
+            "y": 9,
+            "size": 14107
+          }
+        ]
+      }
+    }
+  },
+  "methodology": {
+    "maxZoom": 3,
+    "maxResolution": {
+      "width": 6144,
+      "height": 7680
+    },
+    "tileSize": {
+      "width": 768,
+      "height": 768
+    },
+    "gridSize": {
+      "width": 8,
+      "height": 10
+    },
+    "totalTiles": 80,
+    "downloadPattern": {
+      "baseUrl": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/",
+      "referrer": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/",
+      "tileUrlPattern": "{baseUrl}{zoom}-{x}-{y}.jpg",
+      "coordinateSystem": "TMS (Tile Map Service) - origin top-left",
+      "downloadOrder": "row-by-row, left-to-right, top-to-bottom"
+    },
+    "stitchingMethod": {
+      "approach": "Grid-based stitching",
+      "description": "Stitch tiles in grid pattern with x,y coordinates",
+      "tilePositionX": "x * tileWidth",
+      "tilePositionY": "y * tileHeight"
+    },
+    "authentication": {
+      "required": true,
+      "method": "Referrer-based",
+      "workingReferrers": [
+        "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/",
+        "https://viewerd.kbr.be/",
+        "https://viewerd.kbr.be/display/"
+      ],
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        "Referer": "{working_referrer}",
+        "Sec-Fetch-Dest": "image",
+        "Sec-Fetch-Mode": "no-cors",
+        "Sec-Fetch-Site": "cross-site"
+      }
+    }
+  }
+}

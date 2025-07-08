@@ -1,0 +1,8 @@
+{
+  "library": "toronto",
+  "url": "https://iiif.library.utoronto.ca/presentation/v2/mscodex0002/manifest",
+  "testNumber": 2,
+  "timestamp": "2025-07-07T16:22:44.795Z",
+  "expectedResolution": "Maximum available via IIIF v2.0",
+  "expectedSource": "Thomas Fisher Rare Book Library"
+}

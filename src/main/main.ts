@@ -164,6 +164,7 @@ const createWindow = () => {
     // This prevents browser windows from opening during Playwright tests
     if (!isHeadless && process.env.NODE_ENV !== 'test') {
       mainWindow?.show();
+      mainWindow?.maximize();
     }
   });
 

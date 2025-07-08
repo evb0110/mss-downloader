@@ -1,0 +1,64 @@
+{
+  "@context": "http://iiif.io/api/image/2/context.json",
+  "@id": "https://image.digitalcollections.manchester.ac.uk/iiif/MS-LATIN-00074-000-00001.jp2",
+  "protocol": "http://iiif.io/api/image",
+  "width": 3978,
+  "height": 5600,
+  "sizes": [
+    {
+      "width": 124,
+      "height": 175
+    },
+    {
+      "width": 248,
+      "height": 350
+    },
+    {
+      "width": 497,
+      "height": 700
+    },
+    {
+      "width": 994,
+      "height": 1400
+    }
+  ],
+  "tiles": [
+    {
+      "width": 256,
+      "height": 256,
+      "scaleFactors": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32
+      ]
+    }
+  ],
+  "profile": [
+    "http://iiif.io/api/image/2/level1.json",
+    {
+      "formats": [
+        "jpg"
+      ],
+      "qualities": [
+        "native",
+        "color",
+        "gray",
+        "bitonal"
+      ],
+      "supports": [
+        "regionByPct",
+        "regionSquare",
+        "sizeByForcedWh",
+        "sizeByWh",
+        "sizeAboveFull",
+        "rotationBy90s",
+        "mirroring"
+      ],
+      "maxWidth": 2000,
+      "maxHeight": 2000
+    }
+  ]
+}

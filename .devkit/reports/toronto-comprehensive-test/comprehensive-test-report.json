@@ -1,0 +1,183 @@
+{
+  "testDate": "2025-07-08T09:56:58.993Z",
+  "testUrl": "https://collections.library.utoronto.ca/view/fisher2:F6521",
+  "testItemId": "fisher2:F6521",
+  "summary": {
+    "totalTests": 21,
+    "passedTests": 9,
+    "failedTests": 12,
+    "successRate": "42.9",
+    "overallSuccess": false
+  },
+  "testResults": [
+    {
+      "testName": "URL Pattern Recognition",
+      "passed": 5,
+      "total": 5,
+      "success": true,
+      "details": [
+        {
+          "url": "https://collections.library.utoronto.ca/view/fisher2:F6521",
+          "detected": "toronto",
+          "expected": "toronto",
+          "passed": true
+        },
+        {
+          "url": "https://collections.library.utoronto.ca/view/fisher2:F4089",
+          "detected": "toronto",
+          "expected": "toronto",
+          "passed": true
+        },
+        {
+          "url": "https://collections.library.utoronto.ca/view/fisher2:165",
+          "detected": "toronto",
+          "expected": "toronto",
+          "passed": true
+        },
+        {
+          "url": "https://iiif.library.utoronto.ca/presentation/fisher2:F6521/manifest",
+          "detected": "toronto",
+          "expected": "toronto",
+          "passed": true
+        },
+        {
+          "url": "https://iiif.library.utoronto.ca/presentation/v2/fisher2:F6521/manifest",
+          "detected": "toronto",
+          "expected": "toronto",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "testName": "Item ID Extraction",
+      "passed": 3,
+      "total": 3,
+      "success": true,
+      "details": [
+        {
+          "url": "https://collections.library.utoronto.ca/view/fisher2:F6521",
+          "extracted": "fisher2:F6521",
+          "expected": "fisher2:F6521",
+          "passed": true
+        },
+        {
+          "url": "https://collections.library.utoronto.ca/view/fisher2:F4089",
+          "extracted": "fisher2:F4089",
+          "expected": "fisher2:F4089",
+          "passed": true
+        },
+        {
+          "url": "https://collections.library.utoronto.ca/view/fisher2:165",
+          "extracted": "fisher2:165",
+          "expected": "fisher2:165",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "testName": "Manifest URL Pattern Testing",
+      "passed": 0,
+      "total": 8,
+      "success": false,
+      "details": [
+        {
+          "url": "https://iiif.library.utoronto.ca/presentation/v2/fisher2:F6521/manifest",
+          "status": "ERROR",
+          "error": "Request timeout",
+          "success": false
+        },
+        {
+          "url": "https://iiif.library.utoronto.ca/presentation/v2/fisher2%3AF6521/manifest",
+          "status": "ERROR",
+          "error": "Request timeout",
+          "success": false
+        },
+        {
+          "url": "https://iiif.library.utoronto.ca/presentation/v3/fisher2:F6521/manifest",
+          "status": "ERROR",
+          "error": "Request timeout",
+          "success": false
+        },
+        {
+          "url": "https://iiif.library.utoronto.ca/presentation/v3/fisher2%3AF6521/manifest",
+          "status": "ERROR",
+          "error": "Request timeout",
+          "success": false
+        },
+        {
+          "url": "https://collections.library.utoronto.ca/iiif/fisher2:F6521/manifest",
+          "status": "ERROR",
+          "error": "Request timeout",
+          "success": false
+        },
+        {
+          "url": "https://collections.library.utoronto.ca/iiif/fisher2%3AF6521/manifest",
+          "status": "ERROR",
+          "error": "Request timeout",
+          "success": false
+        },
+        {
+          "url": "https://collections.library.utoronto.ca/api/iiif/fisher2:F6521/manifest",
+          "status": "ERROR",
+          "error": "Request timeout",
+          "success": false
+        },
+        {
+          "url": "https://collections.library.utoronto.ca/api/iiif/fisher2%3AF6521/manifest",
+          "status": "ERROR",
+          "error": "Request timeout",
+          "success": false
+        }
+      ],
+      "workingManifestUrl": null
+    },
+    {
+      "testName": "IIIF Manifest Loading and Parsing",
+      "passed": 0,
+      "total": 1,
+      "success": false,
+      "error": "No working manifest URL available"
+    },
+    {
+      "testName": "Maximum Resolution Image Testing",
+      "passed": 0,
+      "total": 1,
+      "success": false,
+      "error": "No canvases available"
+    },
+    {
+      "testName": "Page Count Detection",
+      "passed": 0,
+      "total": 1,
+      "success": false,
+      "error": "No manifest available"
+    },
+    {
+      "testName": "Create Validation PDFs",
+      "passed": 0,
+      "total": 1,
+      "success": false,
+      "error": "Insufficient data"
+    },
+    {
+      "testName": "Verify Unsupported Library Error Resolution",
+      "passed": 1,
+      "total": 1,
+      "success": true,
+      "details": {
+        "testUrl": "https://collections.library.utoronto.ca/view/fisher2:F6521",
+        "detectedLibrary": "toronto",
+        "isRecognized": true,
+        "hasImplementation": true,
+        "errorResolved": true
+      }
+    }
+  ],
+  "conclusion": "Some tests failed. Manual investigation may be required to fully resolve the \"Unsupported library\" error.",
+  "recommendations": [
+    "Review failed tests and implement fixes",
+    "Check network connectivity to University of Toronto servers",
+    "Verify IIIF manifest URL patterns are still valid",
+    "Consider implementing fallback mechanisms"
+  ]
+}

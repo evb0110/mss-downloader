@@ -470,8 +470,8 @@ const formatBytes = (bytes: number): string => {
 }
 
 .libraries-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 1.5rem;
   max-height: 70vh;
   overflow-y: auto;
@@ -547,9 +547,19 @@ const formatBytes = (bytes: number): string => {
   color: var(--secondary-color);
 }
 
+@media (min-width: 1600px) {
+  .libraries-list {
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  }
+}
+
 @media (max-width: 1200px) {
   .content-wrapper {
     grid-template-columns: 1fr;
+  }
+  
+  .libraries-list {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   }
 }
 
@@ -566,6 +576,10 @@ const formatBytes = (bytes: number): string => {
   
   .cache-controls {
     justify-content: center;
+  }
+  
+  .libraries-list {
+    grid-template-columns: 1fr;
   }
 }
 </style>

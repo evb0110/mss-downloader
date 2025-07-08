@@ -1,0 +1,140 @@
+{
+  "timestamp": "2025-07-08T09:12:13.216Z",
+  "testUrl": "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994415",
+  "digitalDocumentId": "18776579",
+  "sizeResults": {
+    "SMALL": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 2740,
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=1&size=SMALL"
+    },
+    "MEDIUM": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 7987,
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=1&size=MEDIUM"
+    },
+    "LARGE": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 7987,
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=1&size=LARGE"
+    },
+    "XLARGE": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 7987,
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=1&size=XLARGE"
+    },
+    "FULL": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 7987,
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=1&size=FULL"
+    },
+    "ORIGINAL": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 7987,
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=1&size=ORIGINAL"
+    },
+    "MAX": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 7987,
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=1&size=MAX"
+    },
+    "HIGHEST": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 7987,
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=1&size=HIGHEST"
+    }
+  },
+  "bestSize": "MEDIUM",
+  "bestResolution": {
+    "status": "success",
+    "contentType": "image/jpeg",
+    "contentLength": 7987,
+    "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=1&size=MEDIUM"
+  },
+  "pageResults": {
+    "1": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 7987,
+      "filePath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/belgica-advanced-validation/page-001.jpg",
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=1&size=MEDIUM"
+    },
+    "2": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 7987,
+      "filePath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/belgica-advanced-validation/page-002.jpg",
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=2&size=MEDIUM"
+    },
+    "3": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 7987,
+      "filePath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/belgica-advanced-validation/page-003.jpg",
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=3&size=MEDIUM"
+    },
+    "4": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 7987,
+      "filePath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/belgica-advanced-validation/page-004.jpg",
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=4&size=MEDIUM"
+    },
+    "5": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 7987,
+      "filePath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/belgica-advanced-validation/page-005.jpg",
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=5&size=MEDIUM"
+    },
+    "10": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 7987,
+      "filePath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/belgica-advanced-validation/page-010.jpg",
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=10&size=MEDIUM"
+    },
+    "20": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 7987,
+      "filePath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/belgica-advanced-validation/page-020.jpg",
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=20&size=MEDIUM"
+    },
+    "50": {
+      "status": "success",
+      "contentType": "image/jpeg",
+      "contentLength": 7987,
+      "filePath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/belgica-advanced-validation/page-050.jpg",
+      "url": "https://belgica.kbr.be/Ils/digitalCollection/DigitalCollectionThumbnailHandler.ashx?documentId=18776579&page=50&size=MEDIUM"
+    }
+  },
+  "validPages": 8,
+  "totalPagesTested": 8,
+  "downloadedFiles": 8,
+  "fileSizeAnalysis": {
+    "7987": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "10",
+      "20",
+      "50"
+    ]
+  },
+  "potentialDuplicates": 1,
+  "recommendations": [
+    "DUPLICATE_CONTENT: Multiple pages return identical images - likely cover/binding only",
+    "LOW_QUALITY: Images are very small - investigate higher resolution options"
+  ]
+}

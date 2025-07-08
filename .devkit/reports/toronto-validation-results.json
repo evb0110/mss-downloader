@@ -1,0 +1,82 @@
+{
+  "timestamp": "2025-07-08T09:48:21.338Z",
+  "implementation": "University of Toronto Library Support",
+  "testResults": [
+    {
+      "url": "https://collections.library.utoronto.ca/view/fisher2:F6521",
+      "success": true,
+      "libraryType": "toronto",
+      "manifestInfo": {
+        "itemId": "fisher2:F6521",
+        "patterns": [
+          "https://iiif.library.utoronto.ca/presentation/v2/fisher2:F6521/manifest",
+          "https://iiif.library.utoronto.ca/presentation/v2/fisher2%3AF6521/manifest",
+          "https://iiif.library.utoronto.ca/presentation/v3/fisher2:F6521/manifest",
+          "https://iiif.library.utoronto.ca/presentation/v3/fisher2%3AF6521/manifest",
+          "https://collections.library.utoronto.ca/iiif/fisher2:F6521/manifest",
+          "https://collections.library.utoronto.ca/iiif/fisher2%3AF6521/manifest",
+          "https://collections.library.utoronto.ca/api/iiif/fisher2:F6521/manifest",
+          "https://collections.library.utoronto.ca/api/iiif/fisher2%3AF6521/manifest"
+        ],
+        "urlType": "collections"
+      },
+      "iiifInfo": {
+        "parameters": [
+          "full/max/0/default.jpg",
+          "full/full/0/default.jpg",
+          "full/2000,/0/default.jpg",
+          "full/4000,/0/default.jpg",
+          "full/!2000,2000/0/default.jpg"
+        ],
+        "maxResolutionParameter": "full/max/0/default.jpg",
+        "supportedFormats": [
+          "jpg",
+          "png",
+          "webp"
+        ]
+      }
+    },
+    {
+      "url": "https://iiif.library.utoronto.ca/presentation/v2/mscodex0001/manifest",
+      "success": true,
+      "libraryType": "toronto",
+      "manifestInfo": {
+        "itemId": null,
+        "patterns": [
+          "https://iiif.library.utoronto.ca/presentation/v2/mscodex0001/manifest"
+        ],
+        "urlType": "direct-iiif"
+      },
+      "iiifInfo": {
+        "parameters": [
+          "full/max/0/default.jpg",
+          "full/full/0/default.jpg",
+          "full/2000,/0/default.jpg",
+          "full/4000,/0/default.jpg",
+          "full/!2000,2000/0/default.jpg"
+        ],
+        "maxResolutionParameter": "full/max/0/default.jpg",
+        "supportedFormats": [
+          "jpg",
+          "png",
+          "webp"
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "totalTests": 2,
+    "passed": 2,
+    "failed": 0,
+    "passRate": 100
+  },
+  "features": [
+    "URL pattern recognition for collections.library.utoronto.ca",
+    "URL pattern recognition for iiif.library.utoronto.ca",
+    "Item ID extraction from collections URLs",
+    "Multiple manifest URL pattern testing",
+    "IIIF v2.0 and v3.0 support",
+    "Maximum resolution optimization",
+    "Comprehensive error handling"
+  ]
+}

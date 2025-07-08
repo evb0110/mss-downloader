@@ -1,0 +1,20 @@
+University of Toronto Library Implementation Test Results
+
+Test Date: 2025-07-08T09:48:21.340Z
+
+URL Detection Tests:
+✅ collections.library.utoronto.ca URLs → toronto
+✅ iiif.library.utoronto.ca URLs → toronto
+
+Manifest Construction Tests:
+✅ Item ID extraction from collections URLs
+✅ Multiple manifest URL pattern generation
+✅ URL encoding handling for colons
+
+IIIF Resolution Tests:
+✅ Maximum resolution parameter construction
+✅ Service URL handling
+✅ Fallback URL construction
+
+Implementation Status: COMPLETE ✅
+Ready for real-world testing: YES ✅

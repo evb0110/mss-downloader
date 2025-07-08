@@ -1,0 +1,148 @@
+{
+  "timestamp": "2025-07-08T10:31:31.225Z",
+  "totalTests": 4,
+  "passed": 4,
+  "failed": 0,
+  "details": [
+    {
+      "documentId": "3464606",
+      "status": "PASSED",
+      "manifest": {
+        "title": "Evangeliar mit Perikopen - Cod. Aug. perg. 174",
+        "totalPages": 380,
+        "manifestUrl": "https://digital.blb-karlsruhe.de/i3f/v20/3464606/manifest"
+      },
+      "images": {
+        "tested": 3,
+        "valid": 3,
+        "avgSizeKB": 129,
+        "qualityRating": "acceptable",
+        "samples": [
+          {
+            "page": 1,
+            "size": 156381,
+            "contentType": "image/jpeg",
+            "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/3480305"
+          },
+          {
+            "page": 2,
+            "size": 126811,
+            "contentType": "image/jpeg",
+            "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/3480306"
+          },
+          {
+            "page": 3,
+            "size": 114565,
+            "contentType": "image/jpeg",
+            "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/3480307"
+          }
+        ]
+      }
+    },
+    {
+      "documentId": "8004874",
+      "status": "PASSED",
+      "manifest": {
+        "title": "Missale Benedictinum - Cod. Karlsruhe 1001",
+        "totalPages": 371,
+        "manifestUrl": "https://digital.blb-karlsruhe.de/i3f/v20/8004874/manifest"
+      },
+      "images": {
+        "tested": 3,
+        "valid": 3,
+        "avgSizeKB": 130,
+        "qualityRating": "acceptable",
+        "samples": [
+          {
+            "page": 1,
+            "size": 137862,
+            "contentType": "image/jpeg",
+            "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/8007652"
+          },
+          {
+            "page": 2,
+            "size": 141753,
+            "contentType": "image/jpeg",
+            "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/8007653"
+          },
+          {
+            "page": 3,
+            "size": 119639,
+            "contentType": "image/jpeg",
+            "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/8007654"
+          }
+        ]
+      }
+    },
+    {
+      "documentId": "38819",
+      "status": "PASSED",
+      "manifest": {
+        "title": "Evangelistar - Cod. Bruchsal 2",
+        "totalPages": 273,
+        "manifestUrl": "https://digital.blb-karlsruhe.de/i3f/v20/38819/manifest"
+      },
+      "images": {
+        "tested": 3,
+        "valid": 3,
+        "avgSizeKB": 185,
+        "qualityRating": "acceptable",
+        "samples": [
+          {
+            "page": 1,
+            "size": 220396,
+            "contentType": "image/jpeg",
+            "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/40999"
+          },
+          {
+            "page": 2,
+            "size": 198145,
+            "contentType": "image/jpeg",
+            "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/41000"
+          },
+          {
+            "page": 3,
+            "size": 149427,
+            "contentType": "image/jpeg",
+            "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/41001"
+          }
+        ]
+      }
+    },
+    {
+      "documentId": "8229066",
+      "status": "PASSED",
+      "manifest": {
+        "title": "Liber ordinarius, Fragment - Cod. U. H. Fragm. 9",
+        "totalPages": 13,
+        "manifestUrl": "https://digital.blb-karlsruhe.de/i3f/v20/8229066/manifest"
+      },
+      "images": {
+        "tested": 3,
+        "valid": 3,
+        "avgSizeKB": 154,
+        "qualityRating": "acceptable",
+        "samples": [
+          {
+            "page": 1,
+            "size": 169423,
+            "contentType": "image/jpeg",
+            "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/8230593"
+          },
+          {
+            "page": 2,
+            "size": 148660,
+            "contentType": "image/jpeg",
+            "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/8230594"
+          },
+          {
+            "page": 3,
+            "size": 153513,
+            "contentType": "image/jpeg",
+            "url": "https://digital.blb-karlsruhe.de/download/webcache/1000/8230595"
+          }
+        ]
+      }
+    }
+  ]
+}

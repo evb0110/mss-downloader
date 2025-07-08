@@ -1,0 +1,358 @@
+{
+  "timestamp": "2025-07-08T18:29:48.139Z",
+  "suiteResults": {
+    "integrationTest": {
+      "passed": false,
+      "summary": {
+        "totalTests": 7,
+        "passedTests": 0,
+        "failedTests": 7,
+        "warnings": []
+      },
+      "details": {
+        "timestamp": "2025-07-08T18:29:48.140Z",
+        "testUrl": "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994415",
+        "tests": {
+          "urlDetection": {
+            "passed": false,
+            "error": "Unexpected identifier 'engine'"
+          },
+          "pageAnalysis": {
+            "passed": false,
+            "error": "Unexpected identifier 'engine'"
+          },
+          "tileUrlGeneration": {
+            "passed": false,
+            "error": "Unexpected identifier 'name'"
+          },
+          "authConfig": {
+            "passed": false,
+            "error": "Unexpected identifier 'name'"
+          },
+          "tileSystemValidation": {
+            "passed": false,
+            "error": "Unexpected identifier 'engine'"
+          },
+          "singleTileDownload": {
+            "passed": false,
+            "details": {
+              "httpStatus": 404,
+              "contentLength": 313,
+              "contentType": "text/html; charset=iso-8859-1",
+              "isValidJpeg": false,
+              "sizeKB": 0
+            }
+          },
+          "statisticsAndConfig": {
+            "passed": false,
+            "error": "Unexpected identifier 'engine'"
+          }
+        },
+        "summary": {
+          "totalTests": 7,
+          "passedTests": 0,
+          "failedTests": 7,
+          "warnings": []
+        }
+      }
+    },
+    "performanceTest": {
+      "passed": false,
+      "summary": {
+        "successRate": 0,
+        "totalPages": 5,
+        "successfulPages": 0,
+        "totalTime": 3,
+        "averageSpeed": 0
+      },
+      "details": {
+        "timestamp": "2025-07-08T18:29:48.730Z",
+        "testUrls": [
+          "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994415",
+          "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994416",
+          "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994417",
+          "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994418",
+          "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994419"
+        ],
+        "performance": {
+          "totalTime": 3,
+          "averageTimePerPage": 0.6,
+          "totalTilesDownloaded": 0,
+          "averageDownloadSpeed": 0,
+          "totalBytesDownloaded": 0,
+          "memoryUsage": {
+            "peak": 0,
+            "average": 0,
+            "samples": []
+          }
+        },
+        "pageResults": [
+          {
+            "url": "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994415",
+            "index": 1,
+            "startTime": 1751999388730,
+            "endTime": 1751999388731,
+            "duration": 1,
+            "success": false,
+            "error": "Unexpected identifier 'engine'",
+            "metrics": {
+              "tilesDownloaded": 0,
+              "bytesDownloaded": 0,
+              "downloadSpeed": 0,
+              "gridConfig": null,
+              "finalDimensions": null
+            }
+          },
+          {
+            "url": "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994416",
+            "index": 2,
+            "startTime": 1751999388731,
+            "endTime": 1751999388732,
+            "duration": 1,
+            "success": false,
+            "error": "Unexpected identifier 'engine'",
+            "metrics": {
+              "tilesDownloaded": 0,
+              "bytesDownloaded": 0,
+              "downloadSpeed": 0,
+              "gridConfig": null,
+              "finalDimensions": null
+            }
+          },
+          {
+            "url": "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994417",
+            "index": 3,
+            "startTime": 1751999388732,
+            "endTime": 1751999388732,
+            "duration": 0,
+            "success": false,
+            "error": "Unexpected identifier 'engine'",
+            "metrics": {
+              "tilesDownloaded": 0,
+              "bytesDownloaded": 0,
+              "downloadSpeed": 0,
+              "gridConfig": null,
+              "finalDimensions": null
+            }
+          },
+          {
+            "url": "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994418",
+            "index": 4,
+            "startTime": 1751999388732,
+            "endTime": 1751999388733,
+            "duration": 1,
+            "success": false,
+            "error": "Unexpected identifier 'engine'",
+            "metrics": {
+              "tilesDownloaded": 0,
+              "bytesDownloaded": 0,
+              "downloadSpeed": 0,
+              "gridConfig": null,
+              "finalDimensions": null
+            }
+          },
+          {
+            "url": "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994419",
+            "index": 5,
+            "startTime": 1751999388733,
+            "endTime": 1751999388733,
+            "duration": 0,
+            "success": false,
+            "error": "Unexpected identifier 'engine'",
+            "metrics": {
+              "tilesDownloaded": 0,
+              "bytesDownloaded": 0,
+              "downloadSpeed": 0,
+              "gridConfig": null,
+              "finalDimensions": null
+            }
+          }
+        ],
+        "errors": [
+          "Page 1: Unexpected identifier 'engine'",
+          "Page 2: Unexpected identifier 'engine'",
+          "Page 3: Unexpected identifier 'engine'",
+          "Page 4: Unexpected identifier 'engine'",
+          "Page 5: Unexpected identifier 'engine'"
+        ],
+        "warnings": []
+      }
+    },
+    "adapterValidation": {
+      "passed": false,
+      "error": "Unexpected identifier 'name'"
+    },
+    "qualityComparison": {
+      "passed": false,
+      "summary": {
+        "resolutionImprovement": 36,
+        "qualityImprovement": "dramatic",
+        "errors": 1
+      },
+      "details": {
+        "timestamp": "2025-07-08T18:29:48.736Z",
+        "testUrl": "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994415",
+        "comparison": {
+          "previousApproach": {
+            "method": "Thumbnail extraction",
+            "maxResolution": "1024x1280",
+            "megapixels": 1.31,
+            "fileSize": 0,
+            "quality": "low",
+            "limitations": [
+              "Limited to thumbnail resolution",
+              "Compressed JPEG quality",
+              "No access to full-resolution images",
+              "Single image only"
+            ]
+          },
+          "tileEngineApproach": {
+            "method": "Tile stitching",
+            "maxResolution": "6144x7680",
+            "megapixels": 47.18,
+            "fileSize": 0,
+            "quality": "high",
+            "advantages": [
+              "Full resolution manuscript images",
+              "High-quality JPEG tiles",
+              "Scalable to any resolution",
+              "36x improvement in pixel count"
+            ]
+          }
+        },
+        "actualResults": {
+          "tileEngineTest": {
+            "success": false,
+            "error": "Unexpected identifier 'engine'"
+          },
+          "previousApproachSimulation": {
+            "success": true,
+            "method": "Thumbnail extraction",
+            "typicalResolution": "1024x1280",
+            "typicalMegapixels": 1.31,
+            "typicalFileSize": 153600,
+            "foundThumbnails": 0,
+            "limitations": [
+              "Resolution capped at thumbnail size",
+              "Compressed for web display",
+              "No access to source resolution",
+              "Limited detail for scholarly use"
+            ]
+          }
+        },
+        "qualityMetrics": {
+          "resolutionImprovement": 36,
+          "qualityImprovement": "dramatic",
+          "usabilityImprovement": "significant",
+          "scholarlyBenefits": [
+            "Scholarly research: High-resolution images enable detailed manuscript analysis",
+            "Digital preservation: Full-resolution archival quality",
+            "Printing capability: Suitable for high-quality prints and publications",
+            "Zoom functionality: Users can examine fine details in the manuscript",
+            "Future-proofing: Resolution scales with display technology improvements"
+          ],
+          "technicalAdvantages": [
+            "Scalable architecture: Can adapt to different tile systems",
+            "Efficient downloading: Parallel tile retrieval with rate limiting",
+            "Memory management: Streaming stitching prevents memory overflow",
+            "Error handling: Robust retry and recovery mechanisms",
+            "Authentication: Proper referrer and header handling"
+          ]
+        },
+        "errors": [
+          "Tile engine test: Unexpected identifier 'engine'"
+        ],
+        "warnings": []
+      }
+    },
+    "productionReadiness": {
+      "passed": false,
+      "summary": {
+        "totalTests": 7,
+        "passedTests": 3,
+        "failedTests": 4,
+        "readyForProduction": false
+      },
+      "details": {
+        "timestamp": "2025-07-08T18:29:49.987Z",
+        "tests": {
+          "typeScriptCompilation": {
+            "passed": true,
+            "details": {
+              "output": "No compilation errors",
+              "command": "npx tsc --noEmit"
+            },
+            "error": null
+          },
+          "lintingCheck": {
+            "passed": true,
+            "details": {
+              "output": "\n> abba-ababus-mss-downloader@1.3.99 lint\n> eslint src --ext .vue,.js,.ts\n\n",
+              "command": "npm run lint"
+            },
+            "error": null
+          },
+          "buildProcess": {
+            "passed": true,
+            "details": {
+              "output": "\n> abba-ababus-mss-downloader@1.3.99 build\n> npm run build:preload && npm run build:main && npm run build:renderer && npm run build:workers\n\n\n> abba-ababus-mss-downloader@1.3.99 build:preload\n> npx tsc --project tsconfig.preload.json\n\n\n> abba-ababus-mss-downloader@1.3.99 build:main\n> npx tsc --project tsconfig.main.json\n\n\n> abba-ababus-mss-downloader@1.3.99 build:renderer\n> vite build\n\nvite v6.3.5 building for production...\ntransforming...\n✓ 42 modules transformed.\nrendering chunks...\ncomputing gzip size...\n../../dist/renderer/index.html                         0.46 kB │ gzip:  0.30 kB\n../../dist/renderer/assets/abba-ababus-DUte-vob.jpg  196.07 kB\n../../dist/renderer/assets/main-COBnqIu_.css          32.14 kB │ gzip:  6.04 kB\n../../dist/renderer/assets/main-Cnu3MmFl.js           51.45 kB │ gzip: 15.15 kB\n../../dist/renderer/assets/vue-vendor-BtUFxyvz.js    115.30 kB │ gzip: 41.94 kB\n✓ built in 621ms\n\n> abba-ababus-mss-downloader@1.3.99 build:workers\n> vite build --config vite.worker.config.ts\n\nvite v6.3.5 building for production...\ntransforming...\n✓ 227 modules transformed.\nrendering chunks...\ncomputing gzip size...\nworkers-dist/pdf-worker.js  1,337.65 kB │ gzip: 289.82 kB\n✓ built in 1.02s\n",
+              "distExists": true,
+              "command": "npm run build"
+            },
+            "error": null
+          },
+          "runtimeIntegration": {
+            "passed": false,
+            "details": null,
+            "error": "Unexpected identifier 'engine'"
+          },
+          "memoryLeakTest": {
+            "passed": false,
+            "details": null,
+            "error": "Unexpected identifier 'engine'"
+          },
+          "errorHandling": {
+            "passed": false,
+            "details": null,
+            "error": "Unexpected identifier 'engine'"
+          },
+          "configurationValidation": {
+            "passed": false,
+            "details": null,
+            "error": "Unexpected identifier 'engine'"
+          }
+        },
+        "summary": {
+          "totalTests": 7,
+          "passedTests": 3,
+          "failedTests": 4,
+          "readyForProduction": false
+        },
+        "buildOutput": null,
+        "errors": [
+          "Runtime integration: Unexpected identifier 'engine'",
+          "Memory leak test: Unexpected identifier 'engine'",
+          "Error handling test: Unexpected identifier 'engine'",
+          "Configuration validation: Unexpected identifier 'engine'"
+        ],
+        "warnings": []
+      }
+    }
+  },
+  "overallSummary": {
+    "totalSuites": 5,
+    "passedSuites": 0,
+    "failedSuites": 5,
+    "readyForProduction": false
+  },
+  "pdfGeneration": {
+    "attempted": true,
+    "successful": false,
+    "outputPath": null,
+    "error": "Unexpected identifier 'engine'"
+  },
+  "errors": [
+    "Adapter validation: Unexpected identifier 'name'"
+  ],
+  "warnings": []
+}

@@ -1,0 +1,80 @@
+{
+  "startTime": "2025-07-08T07:37:25.613Z",
+  "pages": [
+    {
+      "page": 1,
+      "filename": "bne-page-001.pdf",
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/BNE-VALIDATION/bne-page-001.pdf",
+      "size": 211995,
+      "originalSize": "211995"
+    },
+    {
+      "page": 2,
+      "filename": "bne-page-002.pdf",
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/BNE-VALIDATION/bne-page-002.pdf",
+      "size": 487073,
+      "originalSize": "487073"
+    },
+    {
+      "page": 3,
+      "filename": "bne-page-003.pdf",
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/BNE-VALIDATION/bne-page-003.pdf",
+      "size": 494150,
+      "originalSize": "494150"
+    },
+    {
+      "page": 4,
+      "filename": "bne-page-004.pdf",
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/BNE-VALIDATION/bne-page-004.pdf",
+      "size": 171324,
+      "originalSize": "171324"
+    },
+    {
+      "page": 5,
+      "filename": "bne-page-005.pdf",
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/BNE-VALIDATION/bne-page-005.pdf",
+      "size": 149172,
+      "originalSize": "149172"
+    },
+    {
+      "page": 6,
+      "filename": "bne-page-006.pdf",
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/BNE-VALIDATION/bne-page-006.pdf",
+      "size": 137320,
+      "originalSize": "137320"
+    },
+    {
+      "page": 7,
+      "filename": "bne-page-007.pdf",
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/BNE-VALIDATION/bne-page-007.pdf",
+      "size": 391957,
+      "originalSize": "391957"
+    },
+    {
+      "page": 8,
+      "filename": "bne-page-008.pdf",
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/BNE-VALIDATION/bne-page-008.pdf",
+      "size": 388004,
+      "originalSize": "388004"
+    },
+    {
+      "page": 9,
+      "filename": "bne-page-009.pdf",
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/BNE-VALIDATION/bne-page-009.pdf",
+      "size": 326281,
+      "originalSize": "326281"
+    },
+    {
+      "page": 10,
+      "filename": "bne-page-010.pdf",
+      "filepath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/BNE-VALIDATION/bne-page-010.pdf",
+      "size": 295552,
+      "originalSize": "295552"
+    }
+  ],
+  "pdfCreated": true,
+  "errors": [],
+  "pdfValid": true,
+  "endTime": "2025-07-08T07:37:50.725Z",
+  "success": true
+}

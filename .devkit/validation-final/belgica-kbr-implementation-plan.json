@@ -1,0 +1,25 @@
+{
+  "approach": "AjaxZoom Integration",
+  "steps": [
+    "Parse document page for UURL",
+    "Follow UURL redirect to gallery",
+    "Extract map parameter from gallery URL",
+    "Parse AjaxZoom configuration",
+    "Use browser automation to interact with AjaxZoom",
+    "Intercept and download tiles",
+    "Stitch tiles into final image"
+  ],
+  "technologies": [
+    "Puppeteer for browser automation",
+    "AjaxZoom API reverse engineering",
+    "Image stitching with Sharp/Canvas",
+    "Session management for authentication"
+  ],
+  "expectedQuality": {
+    "resolution": "6144×7680 pixels",
+    "megapixels": 47.18,
+    "tileCount": 80,
+    "tileSize": "768×768 pixels",
+    "improvementFactor": "36x over thumbnails"
+  }
+}

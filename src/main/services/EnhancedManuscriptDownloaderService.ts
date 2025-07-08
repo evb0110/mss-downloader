@@ -7,6 +7,7 @@ import { configService } from './ConfigService.js';
 import { LibraryOptimizationService } from './LibraryOptimizationService.js';
 import { createProgressMonitor } from './IntelligentProgressMonitor.js';
 import { ZifImageProcessor } from './ZifImageProcessor.js';
+import { TileEngineService } from './tile-engine/TileEngineService';
 import type { ManuscriptManifest, LibraryInfo } from '../../shared/types';
 import type { TLibrary } from '../../shared/queueTypes';
 import * as https from 'https';
@@ -17,10 +18,12 @@ const MIN_VALID_IMAGE_SIZE_BYTES = 1024; // 1KB heuristic
 export class EnhancedManuscriptDownloaderService {
     private manifestCache: ManifestCache;
     private zifProcessor: ZifImageProcessor;
+    private tileEngineService: TileEngineService;
 
     constructor(manifestCache?: ManifestCache) {
         this.manifestCache = manifestCache || new ManifestCache();
         this.zifProcessor = new ZifImageProcessor();
+        this.tileEngineService = new TileEngineService();
         // Clear potentially problematic cached manifests on startup
         this.manifestCache.clearProblematicUrls().catch(error => {
             console.warn('Failed to clear problematic cache entries:', (error as Error).message);
@@ -34,14 +37,14 @@ export class EnhancedManuscriptDownloaderService {
             description: 'Biblioteca Digitale Lombarda digital manuscripts via IIIF',
         },
         {
+            name: 'Belgica KBR (Royal Library of Belgium)',
+            example: 'https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/',
+            description: 'Royal Library of Belgium digital manuscript collections via custom tile system',
+        },
+        {
             name: 'Berlin State Library',
             example: 'https://digital.staatsbibliothek-berlin.de/werkansicht?PPN=PPN782404456&view=picture-download&PHYSID=PHYS_0005&DMDID=DMDLOG_0001',
             description: 'Staatsbibliothek zu Berlin digital manuscript collections via IIIF',
-        },
-        {
-            name: 'Belgica KBR (Royal Library of Belgium)',
-            example: 'https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994415',
-            description: 'Royal Library of Belgium digital manuscript and historical document collection',
         },
         {
             name: 'BNE (Biblioteca Nacional de España)',
@@ -200,8 +203,8 @@ export class EnhancedManuscriptDownloaderService {
         },
         {
             name: 'University of Toronto (Fisher)',
-            example: 'https://iiif.library.utoronto.ca/presentation/v2/mscodex0001/manifest',
-            description: 'University of Toronto Thomas Fisher Rare Book Library manuscripts via IIIF v2.0',
+            example: 'https://collections.library.utoronto.ca/view/fisher2:F6521',
+            description: 'University of Toronto Thomas Fisher Rare Book Library manuscripts via IIIF v2.0/v3.0',
         },
         {
             name: 'Fulda University of Applied Sciences',
@@ -398,6 +401,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('digitalcollections.nypl.org')) return 'nypl';
         if (url.includes('themorgan.org')) return 'morgan';
         if (url.includes('gallica.bnf.fr')) return 'gallica';
+        if (url.includes('viewerd.kbr.be') && url.includes('zoomtiles')) return 'belgica_kbr';
         if (url.includes('pagella.bm-grenoble.fr')) return 'grenoble';
         if (url.includes('i3f.vls.io') && url.includes('blb-karlsruhe.de')) return 'karlsruhe';
         if (url.includes('digitalcollections.manchester.ac.uk')) return 'manchester';
@@ -418,7 +422,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('internetculturale.it')) return 'internet_culturale';
         if (url.includes('cudl.lib.cam.ac.uk')) return 'cudl';
         if (url.includes('mss-cat.trin.cam.ac.uk')) return 'trinity_cam';
-        if (url.includes('iiif.library.utoronto.ca')) return 'toronto';
+        if (url.includes('iiif.library.utoronto.ca') || url.includes('collections.library.utoronto.ca')) return 'toronto';
         if (url.includes('isos.dias.ie')) return 'isos';
         if (url.includes('mira.ie')) return 'mira';
         if (url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr')) return 'orleans';
@@ -440,7 +444,6 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) return 'verona';
         if (url.includes('diamm.ac.uk') || url.includes('iiif.diamm.net') || url.includes('musmed.eu/visualiseur-iiif')) return 'diamm';
         if (url.includes('bdh-rd.bne.es')) return 'bne';
-        if (url.includes('belgica.kbr.be/BELGICA/doc/SYRACUSE')) return 'belgica_kbr';
         if (url.includes('mdc.csuc.cat/digital/collection')) return 'mdc_catalonia';
         if (url.includes('bvpb.mcu.es')) return 'bvpb';
         if (url.includes('viewer.onb.ac.at')) return 'onb';
@@ -669,7 +672,7 @@ export class EnhancedManuscriptDownloaderService {
             
             // Verona domains require full HTTPS module bypass due to SSL certificate validation issues
             if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
-                const response = await this.fetchWithHTTPS(url, fetchOptions);
+                const response = await this.fetchWithHTTPS(url, { ...fetchOptions, timeout });
                 if (timeoutId) clearTimeout(timeoutId);
                 return response;
             }
@@ -967,9 +970,6 @@ export class EnhancedManuscriptDownloaderService {
                 case 'bne':
                     manifest = await this.loadBneManifest(originalUrl);
                     break;
-                case 'belgica_kbr':
-                    manifest = await this.loadBelgicaKbrManifest(originalUrl);
-                    break;
                 case 'mdc_catalonia':
                     manifest = await this.loadMdcCataloniaManifest(originalUrl);
                     break;
@@ -987,6 +987,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'fulda':
                     manifest = await this.loadFuldaManifest(originalUrl);
+                    break;
+                case 'belgica_kbr':
+                    manifest = await this.loadBelgicaKbrManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -1544,8 +1547,8 @@ export class EnhancedManuscriptDownloaderService {
             const documentId = idMatch[1];
             let displayName = `Grenoble Manuscript ${documentId}`;
             
-            // Use IIIF manifest endpoint
-            const manifestUrl = `https://pagella.bm-grenoble.fr/iiif/${documentId}/manifest.json`;
+            // Use IIIF manifest endpoint with correct ARK path
+            const manifestUrl = `https://pagella.bm-grenoble.fr/iiif/ark:/12148/${documentId}/manifest.json`;
             
             try {
                 const response = await this.fetchDirect(manifestUrl, {
@@ -1581,8 +1584,8 @@ export class EnhancedManuscriptDownloaderService {
                 // Generate IIIF image URLs with maximum resolution
                 const pageLinks: string[] = [];
                 for (let i = 1; i <= totalPages; i++) {
-                    // Use IIIF Image API v1.1 format: /full/full/0/default.jpg for maximum resolution
-                    const imageUrl = `https://pagella.bm-grenoble.fr/iiif/${documentId}/${i}/full/full/0/default.jpg`;
+                    // Use IIIF Image API v1.1 format with correct ARK path: /full/full/0/default.jpg for maximum resolution
+                    const imageUrl = `https://pagella.bm-grenoble.fr/iiif/ark:/12148/${documentId}/f${i}/full/full/0/default.jpg`;
                     pageLinks.push(imageUrl);
                 }
                 
@@ -1661,8 +1664,12 @@ export class EnhancedManuscriptDownloaderService {
                                 // Extract base image ID and construct maximum resolution URL
                                 const imageId = image.resource['@id'];
                                 
-                                // For Karlsruhe, use 2000px width for maximum quality
-                                const maxResUrl = imageId.replace('/full/full/0/default.jpg', '/full/2000,/0/default.jpg');
+                                // For Karlsruhe, use direct webcache/2000/ access for 4x higher resolution (2000x2801 vs 1000x1425)
+                                // Extract webcache ID from URL like: https://digital.blb-karlsruhe.de/download/webcache/1000/221191
+                                const webcacheMatch = imageId.match(/webcache\/\d+\/(\d+)/);
+                                const maxResUrl = webcacheMatch ? 
+                                    `https://digital.blb-karlsruhe.de/download/webcache/2000/${webcacheMatch[1]}` :
+                                    imageId.replace('/full/full/0/default.jpg', '/full/2000,/0/default.jpg');
                                 pageLinks.push(maxResUrl);
                             }
                         }
@@ -2501,20 +2508,64 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     /**
-     * Load University of Toronto manuscript manifest (IIIF v2.0)
+     * Load University of Toronto manuscript manifest (IIIF v2.0/v3.0)
+     * Supports both direct IIIF URLs and collections.library.utoronto.ca URLs
      */
     async loadTorontoManifest(torontoUrl: string): Promise<ManuscriptManifest> {
         try {
-            // URL format: https://iiif.library.utoronto.ca/presentation/v2/{MANUSCRIPT_ID}/manifest
-            // Extract manifest URL directly since Toronto uses direct IIIF URLs
             let manifestUrl = torontoUrl;
             let displayName = 'University of Toronto Manuscript';
             
-            // If this is a viewer URL, construct the manifest URL
-            if (!torontoUrl.includes('/manifest')) {
-                // For viewer URLs, construct the manifest URL
-                // Assume format: https://iiif.library.utoronto.ca/presentation/v2/{ID}/manifest
-                manifestUrl = torontoUrl.endsWith('/') ? `${torontoUrl}manifest` : `${torontoUrl}/manifest`;
+            // Handle collections.library.utoronto.ca URLs
+            if (torontoUrl.includes('collections.library.utoronto.ca')) {
+                // Extract item ID from URL: https://collections.library.utoronto.ca/view/fisher2:F6521
+                const viewMatch = torontoUrl.match(/\/view\/([^/]+)/);
+                if (viewMatch) {
+                    const itemId = viewMatch[1];
+                    displayName = `University of Toronto - ${itemId}`;
+                    
+                    // Try different manifest URL patterns
+                    const manifestPatterns = [
+                        `https://iiif.library.utoronto.ca/presentation/v2/${itemId}/manifest`,
+                        `https://iiif.library.utoronto.ca/presentation/v2/${itemId.replace(':', '%3A')}/manifest`,
+                        `https://iiif.library.utoronto.ca/presentation/v3/${itemId}/manifest`,
+                        `https://iiif.library.utoronto.ca/presentation/v3/${itemId.replace(':', '%3A')}/manifest`,
+                        `https://collections.library.utoronto.ca/iiif/${itemId}/manifest`,
+                        `https://collections.library.utoronto.ca/iiif/${itemId.replace(':', '%3A')}/manifest`,
+                        `https://collections.library.utoronto.ca/api/iiif/${itemId}/manifest`,
+                        `https://collections.library.utoronto.ca/api/iiif/${itemId.replace(':', '%3A')}/manifest`
+                    ];
+                    
+                    let manifestFound = false;
+                    for (const testUrl of manifestPatterns) {
+                        try {
+                            const response = await this.fetchDirect(testUrl);
+                            if (response.ok) {
+                                const content = await response.text();
+                                if (content.includes('"@context"') && (content.includes('manifest') || content.includes('Manifest'))) {
+                                    manifestUrl = testUrl;
+                                    manifestFound = true;
+                                    break;
+                                }
+                            }
+                        } catch (error) {
+                            // Continue trying other patterns
+                        }
+                    }
+                    
+                    if (!manifestFound) {
+                        throw new Error(`No working manifest URL found for item ${itemId}`);
+                    }
+                } else {
+                    throw new Error('Could not extract item ID from collections URL');
+                }
+            }
+            
+            // Handle direct IIIF URLs
+            else if (torontoUrl.includes('iiif.library.utoronto.ca')) {
+                if (!torontoUrl.includes('/manifest')) {
+                    manifestUrl = torontoUrl.endsWith('/') ? `${torontoUrl}manifest` : `${torontoUrl}/manifest`;
+                }
             }
             
             // Load IIIF manifest
@@ -2525,7 +2576,7 @@ export class EnhancedManuscriptDownloaderService {
             
             const manifest = await response.json();
             
-            // Extract metadata from IIIF v2.0 manifest
+            // Extract metadata from IIIF manifest
             if (manifest.label) {
                 if (typeof manifest.label === 'string') {
                     displayName = manifest.label;
@@ -2536,26 +2587,22 @@ export class EnhancedManuscriptDownloaderService {
                 }
             }
             
-            // Get page count from sequences/canvases (IIIF v2.0)
-            let totalPages = 0;
             const pageLinks: string[] = [];
             
+            // Handle IIIF v2 structure
             if (manifest.sequences && manifest.sequences.length > 0) {
                 const sequence = manifest.sequences[0];
                 if (sequence.canvases && Array.isArray(sequence.canvases)) {
-                    totalPages = sequence.canvases.length;
-                    
                     // Extract image URLs with maximum resolution
                     for (const canvas of sequence.canvases) {
                         if (canvas.images && canvas.images.length > 0) {
                             const image = canvas.images[0];
                             if (image.resource && image.resource['@id']) {
-                                // Get the IIIF service URL and construct maximum resolution URL
                                 let maxResUrl = image.resource['@id'];
                                 
                                 if (image.resource.service && image.resource.service['@id']) {
                                     const serviceId = image.resource.service['@id'];
-                                    // Use maximum quality parameters for Toronto IIIF v2.0
+                                    // Test different resolution parameters for maximum quality
                                     maxResUrl = `${serviceId}/full/max/0/default.jpg`;
                                 } else {
                                     // Fallback: construct from resource URL if service not available
@@ -2570,7 +2617,31 @@ export class EnhancedManuscriptDownloaderService {
                 }
             }
             
-            if (totalPages === 0 || pageLinks.length === 0) {
+            // Handle IIIF v3 structure
+            else if (manifest.items && manifest.items.length > 0) {
+                for (const item of manifest.items) {
+                    if (item.items && item.items.length > 0) {
+                        const annotationPage = item.items[0];
+                        if (annotationPage.items && annotationPage.items.length > 0) {
+                            const annotation = annotationPage.items[0];
+                            if (annotation.body) {
+                                let maxResUrl = annotation.body.id;
+                                
+                                if (annotation.body.service) {
+                                    const service = Array.isArray(annotation.body.service) ? annotation.body.service[0] : annotation.body.service;
+                                    if (service && service.id) {
+                                        maxResUrl = `${service.id}/full/max/0/default.jpg`;
+                                    }
+                                }
+                                
+                                pageLinks.push(maxResUrl);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (pageLinks.length === 0) {
                 throw new Error('No pages found in IIIF manifest');
             }
             
@@ -2647,6 +2718,24 @@ export class EnhancedManuscriptDownloaderService {
                         throw new Error(`BNC Roma infrastructure failure: Cannot reach digitale.bnc.roma.sbn.it server. This appears to be a network infrastructure issue. Check www.bncrm.beniculturali.it for announcements or try again later.`);
                     }
                 }
+                
+                // Enhanced error handling for MDC Catalonia network issues
+                if (url.includes('mdc.csuc.cat')) {
+                    const isNetworkError = fetchError.name === 'AbortError' || 
+                                         fetchError.code === 'ECONNRESET' || 
+                                         fetchError.code === 'ENOTFOUND' || 
+                                         fetchError.code === 'ECONNREFUSED' || 
+                                         fetchError.code === 'ETIMEDOUT' || 
+                                         fetchError.code === 'ENETUNREACH' ||
+                                         fetchError.message.includes('timeout') || 
+                                         fetchError.message.includes('ECONNREFUSED') ||
+                                         fetchError.message.includes('ENETUNREACH');
+                    
+                    if (isNetworkError) {
+                        throw new Error(`MDC Catalonia network issue (attempt ${attempt}): Cannot reach mdc.csuc.cat servers. This appears to be a temporary connectivity issue. The server may be experiencing high load or network problems. Please try again later.`);
+                    }
+                }
+                
                 throw fetchError;
             }
             
@@ -2663,6 +2752,24 @@ export class EnhancedManuscriptDownloaderService {
                         throw new Error(`BNC Roma server error (HTTP ${response.status}): The image server is experiencing technical difficulties.`);
                     }
                 }
+                
+                // Enhanced error messages for MDC Catalonia HTTP errors
+                if (url.includes('mdc.csuc.cat')) {
+                    if (response.status === 500) {
+                        throw new Error(`MDC Catalonia server error (HTTP 500): The mdc.csuc.cat image server is experiencing internal issues. This may be temporary - please try again.`);
+                    } else if (response.status === 503) {
+                        throw new Error(`MDC Catalonia service unavailable (HTTP 503): The image server is temporarily unavailable, possibly due to maintenance.`);
+                    } else if (response.status === 404) {
+                        throw new Error(`MDC Catalonia image not found (HTTP 404): The requested image may have been moved or the URL structure has changed. Please verify the manuscript ID and page number.`);
+                    } else if (response.status === 403) {
+                        throw new Error(`MDC Catalonia access denied (HTTP 403): The image server is blocking this request. This may require authentication or the manuscript may have access restrictions.`);
+                    } else if (response.status === 501) {
+                        throw new Error(`MDC Catalonia resolution not supported (HTTP 501): The requested image resolution is not supported. Try a different resolution (full/full, full/max, full/800,).`);
+                    } else if (response.status >= 500) {
+                        throw new Error(`MDC Catalonia server error (HTTP ${response.status}): The mdc.csuc.cat server is experiencing technical difficulties.`);
+                    }
+                }
+                
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
@@ -2892,6 +2999,68 @@ export class EnhancedManuscriptDownloaderService {
                 if (!imageUrl || imageUrl === '') {
                     console.warn(`Skipping missing page ${pageIndex + 1}`);
                     completedPages++;
+                    updateProgress();
+                    return;
+                }
+                
+                // Check if this is a tile-based system
+                const isTileBased = await this.tileEngineService.isTileBasedUrl(imageUrl);
+                if (isTileBased) {
+                    const imgFile = `${sanitizedName}_page_${pageIndex + 1}.jpg`;
+                    const imgPath = path.join(tempImagesDir, imgFile);
+                    
+                    try {
+                        // Skip if already downloaded
+                        await fs.access(imgPath);
+                        imagePaths[pageIndex] = imgPath;
+                        completedPages++;
+                        updateProgress();
+                        return;
+                    } catch {
+                        // Not present: download using tile engine
+                        try {
+                            console.log(`Downloading tile-based page ${pageIndex + 1} from ${imageUrl}`);
+                            
+                            const tileCallbacks = this.tileEngineService.createProgressCallback(
+                                (progress) => {
+                                    // Update progress with tile download info
+                                    const tileProgress = completedPages + (progress.percentage / 100);
+                                    const elapsed = (Date.now() - startTime) / 1000;
+                                    const rate = tileProgress / elapsed;
+                                    const eta = rate > 0 ? (totalPagesToDownload - tileProgress) / rate : 0;
+                                    
+                                    onProgress({ 
+                                        progress: tileProgress / totalPagesToDownload, 
+                                        completedPages: Math.floor(tileProgress), 
+                                        totalPages: totalPagesToDownload, 
+                                        eta: this.formatETA(eta) 
+                                    });
+                                },
+                                (status) => {
+                                    console.log(`Tile download status: ${status.phase} - ${status.message}`);
+                                }
+                            );
+                            
+                            const result = await this.tileEngineService.downloadTilesAndStitch(
+                                imageUrl,
+                                imgPath,
+                                tileCallbacks
+                            );
+                            
+                            if (result.success) {
+                                imagePaths[pageIndex] = imgPath;
+                                completedPages++;
+                                console.log(`Successfully downloaded ${result.downloadedTiles} tiles for page ${pageIndex + 1}`);
+                            } else {
+                                console.error(`Failed to download tiles for page ${pageIndex + 1}: ${result.errors.join(', ')}`);
+                                failedPages.push(pageIndex + 1);
+                            }
+                        } catch (error: any) {
+                            console.error(`Tile download error for page ${pageIndex + 1}: ${error.message}`);
+                            failedPages.push(pageIndex + 1);
+                        }
+                    }
+                    
                     updateProgress();
                     return;
                 }
@@ -7174,27 +7343,8 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('No pages found in manifest');
             }
             
-            // Warn user about single-page manifests that might be partial manuscript views
-            if (pageLinks.length === 1 && manifestData.label) {
-                const label = typeof manifestData.label === 'string' ? manifestData.label : 
-                    manifestData.label?.en || manifestData.label?.it || JSON.stringify(manifestData.label);
-                
-                // Enhanced warning for DAM ICCU system
-                if (originalUrl.includes('dam.iccu.sbn.it')) {
-                    // Extract physical description from metadata if available
-                    const physicalDesc = manifestData.metadata?.find((meta: any) => 
-                        meta.label?.it?.[0]?.toLowerCase().includes('fisica')
-                    )?.value?.it?.[0];
-                    
-                    const warningMsg = physicalDesc 
-                        ? `Single-page DAM ICCU manifest detected: "${label}". Physical description indicates "${physicalDesc}" but only 1 folio is available via IIIF. This is a folio-level manifest, not a complete manuscript.`
-                        : `Single-page DAM ICCU manifest detected: "${label}". This is a folio-level manifest, not a complete manuscript.`;
-                    
-                    console.warn(warningMsg);
-                } else {
-                    console.warn(`Single-page manuscript detected: "${label}". This may be a single folio URL rather than the complete manuscript.`);
-                }
-            }
+            // ENHANCED FIX: Comprehensive validation for incomplete manuscripts
+            await this.validateManifestCompleteness(manifestData, pageLinks, originalUrl);
             
             return {
                 pageLinks,
@@ -7207,6 +7357,173 @@ export class EnhancedManuscriptDownloaderService {
         } catch (error: any) {
             throw new Error(`Failed to load Vallicelliana manuscript: ${(error as Error).message}`);
         }
+    }
+
+    /**
+     * Enhanced validation for manuscript completeness
+     * Detects incomplete manifests and provides helpful error messages
+     */
+    private async validateManifestCompleteness(
+        manifestData: any, 
+        pageLinks: string[], 
+        originalUrl: string
+    ): Promise<void> {
+        // Extract manuscript metadata
+        const physicalDesc = this.extractPhysicalDescription(manifestData);
+        const cnmdId = this.extractCNMDIdentifier(manifestData);
+        const manuscriptTitle = this.extractManuscriptTitle(manifestData);
+        
+        // Parse expected folio count from physical description
+        const expectedFolios = this.parseExpectedFolioCount(physicalDesc);
+        
+        console.log(`Manifest validation: Found ${pageLinks.length} pages, expected ~${expectedFolios} folios`);
+        console.log(`Physical description: ${physicalDesc}`);
+        console.log(`CNMD ID: ${cnmdId}`);
+        
+        // CRITICAL: Detect severely incomplete manuscripts (less than 10% of expected)
+        if (expectedFolios > 0 && pageLinks.length < expectedFolios * 0.1) {
+            const incompleteError = `INCOMPLETE MANUSCRIPT DETECTED\n\nThis manifest contains only ${pageLinks.length} pages, but the metadata indicates the complete manuscript should have approximately ${expectedFolios} folios.\n\nManuscript: ${manuscriptTitle}\nCNMD ID: ${cnmdId}\nPhysical Description: ${physicalDesc}\nCurrent URL: ${originalUrl}\n\nSOLUTIONS:\n1. This may be a partial/folio-level manifest. Look for a collection-level manifest.\n2. Try searching for the complete manuscript using the CNMD ID: ${cnmdId}\n3. Visit the library's main catalog: https://manus.iccu.sbn.it/cnmd/${cnmdId}\n4. Contact the library directly for the complete digital manuscript.\n\nThis error prevents downloading an incomplete manuscript that would mislead users.`;
+            
+            throw new Error(incompleteError);
+        }
+        
+        // Warn for moderately incomplete manuscripts (less than 50% of expected)
+        if (expectedFolios > 0 && pageLinks.length < expectedFolios * 0.5) {
+            console.warn(`WARNING: This manifest may be incomplete. Found ${pageLinks.length} pages but expected ~${expectedFolios} folios based on metadata. Proceeding with download, but the manuscript may be partial.`);
+        }
+        
+        // Standard single-page warning for when no metadata is available
+        if (pageLinks.length === 1 && expectedFolios === 0) {
+            const label = this.extractManuscriptTitle(manifestData);
+            if (originalUrl.includes('dam.iccu.sbn.it')) {
+                console.warn(`Single-page DAM ICCU manifest detected: "${label}". This is likely a folio-level manifest, not a complete manuscript.`);
+            } else {
+                console.warn(`Single-page manuscript detected: "${label}". This may be a single folio URL rather than the complete manuscript.`);
+            }
+        }
+    }
+
+    /**
+     * Extract physical description from manifest metadata
+     */
+    private extractPhysicalDescription(manifestData: any): string {
+        if (!manifestData.metadata || !Array.isArray(manifestData.metadata)) {
+            return '';
+        }
+        
+        for (const meta of manifestData.metadata) {
+            if (meta.label && meta.value) {
+                const labelText = this.getMetadataText(meta.label);
+                const valueText = this.getMetadataText(meta.value);
+                
+                if (labelText.toLowerCase().includes('fisica') || 
+                    labelText.toLowerCase().includes('physical')) {
+                    return valueText;
+                }
+            }
+        }
+        
+        return '';
+    }
+
+    /**
+     * Extract CNMD identifier from manifest metadata
+     */
+    private extractCNMDIdentifier(manifestData: any): string {
+        if (!manifestData.metadata || !Array.isArray(manifestData.metadata)) {
+            return '';
+        }
+        
+        for (const meta of manifestData.metadata) {
+            if (meta.label && meta.value) {
+                const labelText = this.getMetadataText(meta.label);
+                const valueText = this.getMetadataText(meta.value);
+                
+                if (labelText.toLowerCase().includes('identificativo') ||
+                    labelText.toLowerCase().includes('identifier')) {
+                    if (valueText.includes('CNMD')) {
+                        return valueText.replace(/CNMD\\\\?/g, '').replace(/CNMD\\/g, '');
+                    }
+                }
+            }
+        }
+        
+        return '';
+    }
+
+    /**
+     * Extract manuscript title from manifest
+     */
+    private extractManuscriptTitle(manifestData: any): string {
+        if (manifestData.label) {
+            return this.getMetadataText(manifestData.label);
+        }
+        
+        if (manifestData.metadata) {
+            for (const meta of manifestData.metadata) {
+                if (meta.label && meta.value) {
+                    const labelText = this.getMetadataText(meta.label);
+                    if (labelText.toLowerCase().includes('titolo') || 
+                        labelText.toLowerCase().includes('title')) {
+                        return this.getMetadataText(meta.value);
+                    }
+                }
+            }
+        }
+        
+        return 'Unknown Manuscript';
+    }
+
+    /**
+     * Parse expected folio count from physical description
+     */
+    private parseExpectedFolioCount(physicalDesc: string): number {
+        if (!physicalDesc) return 0;
+        
+        // Look for patterns like "cc. IV + 148 + I" or "ff. 123" or "carte 156"
+        const patterns = [
+            /cc\.\s*(?:[IVX]+\s*\+\s*)?(\d+)(?:\s*\+\s*[IVX]+)?/i,  // cc. IV + 148 + I
+            /ff\.\s*(\d+)/i,                                          // ff. 123
+            /carte\s*(\d+)/i,                                         // carte 156
+            /folios?\s*(\d+)/i,                                       // folio 123
+            /(\d+)\s*(?:cc|ff|carte|folios?)/i                       // 123 cc
+        ];
+        
+        for (const pattern of patterns) {
+            const match = physicalDesc.match(pattern);
+            if (match) {
+                const count = parseInt(match[1], 10);
+                if (!isNaN(count) && count > 0) {
+                    return count;
+                }
+            }
+        }
+        
+        return 0;
+    }
+
+    /**
+     * Extract text from IIIF metadata value (handle various formats)
+     */
+    private getMetadataText(value: any): string {
+        if (typeof value === 'string') {
+            return value;
+        }
+        
+        if (Array.isArray(value)) {
+            return value.map(v => this.getMetadataText(v)).join(', ');
+        }
+        
+        if (value && typeof value === 'object') {
+            // Handle language maps
+            if (value.it) return this.getMetadataText(value.it);
+            if (value.en) return this.getMetadataText(value.en);
+            if (value['@value']) return value['@value'];
+            
+            return JSON.stringify(value);
+        }
+        
+        return String(value || '');
     }
 
     /**
@@ -7634,247 +7951,6 @@ export class EnhancedManuscriptDownloaderService {
         };
     }
 
-    /**
-     * Load Belgica KBR (Royal Library of Belgium) manifest using ROBUST AJAX-Zoom approach
-     * FIXED: Previous implementation only returned cover thumbnails - now gets actual manuscript pages
-     */
-    async loadBelgicaKbrManifest(originalUrl: string): Promise<ManuscriptManifest> {
-        try {
-            // Extract SYRACUSE document ID from URL
-            const syracuseMatch = originalUrl.match(/\/BELGICA\/doc\/SYRACUSE\/(\d+)/);
-            if (!syracuseMatch) {
-                throw new Error('Could not extract SYRACUSE document ID from Belgica URL');
-            }
-            const syracuseDocumentId = syracuseMatch[1];
-            console.log(`Belgica KBR: Processing SYRACUSE document ${syracuseDocumentId}`);
-            
-            // Step 1: Get authenticated session from Belgica document page
-            console.log('Belgica KBR: Fetching document page for authentication...');
-            const belgicaResponse = await this.fetchWithEnhancedHeaders(originalUrl);
-            if (!belgicaResponse.ok) {
-                throw new Error(`Failed to fetch Belgica document page: ${belgicaResponse.status}`);
-            }
-            const belgicaHtml = await belgicaResponse.text();
-            
-            // Step 2: Extract UURL from document page
-            console.log('Belgica KBR: Extracting UURL from document page...');
-            const uurlMatch = belgicaHtml.match(/https:\/\/uurl\.kbr\.be\/(\d+)/);
-            if (!uurlMatch) {
-                throw new Error('Could not find UURL link in Belgica document page - manuscript may not be digitized');
-            }
-            const uurlId = uurlMatch[1];
-            console.log(`Belgica KBR: Found UURL ID ${uurlId}`);
-            
-            // Step 3: Follow UURL redirect to ViewerD
-            console.log('Belgica KBR: Following UURL redirect to ViewerD...');
-            const uurlResponse = await this.fetchWithEnhancedHeaders(`https://uurl.kbr.be/${uurlId}`);
-            if (!uurlResponse.ok) {
-                throw new Error(`Failed to access UURL: ${uurlResponse.status}`);
-            }
-            const uurlHtml = await uurlResponse.text();
-            
-            // Step 4: Extract ViewerD gallery URL and map path
-            console.log('Belgica KBR: Extracting ViewerD gallery configuration...');
-            const viewerdMatch = uurlHtml.match(/https:\/\/viewerd\.kbr\.be\/gallery\.php\?map=([^"'&]+)/);
-            if (!viewerdMatch) {
-                throw new Error('Could not find ViewerD gallery URL in UURL response');
-            }
-            const mapPath = decodeURIComponent(viewerdMatch[1]);
-            console.log(`Belgica KBR: Found map path: ${mapPath}`);
-            
-            // Step 5: Extract page count from original metadata
-            let totalPages = 22; // Default based on analysis
-            const pageCountMatch = belgicaHtml.match(/maxpages['"]?\s*:\s*['"]?(\d+)['"]?/);
-            if (pageCountMatch) {
-                totalPages = parseInt(pageCountMatch[1], 10);
-                console.log(`Belgica KBR: Found page count in metadata: ${totalPages}`);
-            } else {
-                console.log(`Belgica KBR: Using default page count: ${totalPages}`);
-            }
-            
-            // Step 6: Access ViewerD gallery to get AJAX-Zoom configuration
-            const galleryUrl = `https://viewerd.kbr.be/gallery.php?map=${encodeURIComponent(mapPath)}`;
-            console.log('Belgica KBR: Accessing ViewerD gallery for AJAX-Zoom configuration...');
-            const galleryResponse = await this.fetchWithEnhancedHeaders(galleryUrl);
-            if (!galleryResponse.ok) {
-                throw new Error(`Failed to access ViewerD gallery: ${galleryResponse.status}`);
-            }
-            const galleryHtml = await galleryResponse.text();
-            
-            // Step 7: Extract authentication token from gallery
-            const tokenMatch = galleryHtml.match(/jQuery\.axZm\.ift\s*=\s*['"]([^'"]+)['"]/);
-            let authToken = '';
-            if (tokenMatch) {
-                authToken = tokenMatch[1];
-                console.log(`Belgica KBR: Extracted authentication token: ${authToken.substring(0, 8)}...`);
-            } else {
-                console.log('Belgica KBR: No authentication token found, proceeding without token');
-            }
-            
-            // Step 8: Generate image URLs using enhanced AJAX-Zoom approach
-            console.log('Belgica KBR: Generating image URLs using AJAX-Zoom system...');
-            const pageLinks: string[] = [];
-            const zoomDir = `display/${mapPath}`;
-            
-            // Test different AJAX-Zoom image access patterns
-            const imagePatterns = [
-                // Pattern 1: Direct display directory access with different naming conventions
-                (pageNum: number) => `https://viewerd.kbr.be/display/${mapPath}${pageNum.toString().padStart(3, '0')}.jpg`,
-                (pageNum: number) => `https://viewerd.kbr.be/display/${mapPath}${pageNum.toString().padStart(4, '0')}.jpg`,
-                (pageNum: number) => `https://viewerd.kbr.be/display/${mapPath}page_${pageNum.toString().padStart(3, '0')}.jpg`,
-                (pageNum: number) => `https://viewerd.kbr.be/display/${mapPath}img_${pageNum.toString().padStart(3, '0')}.jpg`,
-                (pageNum: number) => `https://viewerd.kbr.be/display/${mapPath}f${pageNum.toString().padStart(3, '0')}.jpg`,
-                // Pattern 2: Alternative directory structures
-                (pageNum: number) => `https://viewerd.kbr.be/pics/${mapPath}${pageNum.toString().padStart(3, '0')}.jpg`,
-                (pageNum: number) => `https://viewerd.kbr.be/images/${mapPath}${pageNum.toString().padStart(3, '0')}.jpg`,
-                // Pattern 3: AJAX-Zoom tiles with different sizes
-                (pageNum: number) => `https://viewerd.kbr.be/display/${mapPath}${pageNum.toString().padStart(3, '0')}_full.jpg`,
-                (pageNum: number) => `https://viewerd.kbr.be/display/${mapPath}${pageNum.toString().padStart(3, '0')}_max.jpg`,
-                (pageNum: number) => `https://viewerd.kbr.be/display/${mapPath}${pageNum.toString().padStart(3, '0')}_big.jpg`,
-            ];
-            
-            // Try to find working pattern by testing first page
-            let workingPattern: ((pageNum: number) => string) | null = null;
-            console.log('Belgica KBR: Testing image access patterns...');
-            
-            for (const pattern of imagePatterns) {
-                try {
-                    const testUrl = pattern(1);
-                    const testResponse = await this.fetchWithEnhancedHeaders(testUrl, {
-                        headers: {
-                            'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-                            'Referer': galleryUrl
-                        }
-                    });
-                    
-                    const contentType = testResponse.headers.get('content-type');
-                    if (testResponse.ok && contentType && contentType.startsWith('image/')) {
-                        const contentLength = testResponse.headers.get('content-length');
-                        console.log(`✓ Found working pattern: ${testUrl} (${contentType}, ${contentLength} bytes)`);
-                        workingPattern = pattern;
-                        break;
-                    }
-                } catch (error) {
-                    // Continue testing other patterns
-                }
-            }
-            
-            if (!workingPattern) {
-                // Fallback: Use AJAX-Zoom API with authentication if direct access fails
-                console.log('Belgica KBR: Direct image access failed, attempting AJAX-Zoom API approach...');
-                
-                for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-                    try {
-                        const imageUrl = await this.getAjaxZoomImageUrl(zoomDir, pageNum, authToken, galleryUrl);
-                        if (imageUrl) {
-                            pageLinks.push(imageUrl);
-                            console.log(`✓ Page ${pageNum} via AJAX-Zoom API`);
-                        } else {
-                            console.log(`⚠ Could not get page ${pageNum} via AJAX-Zoom API`);
-                        }
-                    } catch (error) {
-                        console.log(`⚠ Failed to get page ${pageNum}: ${(error as Error).message}`);
-                    }
-                }
-            } else {
-                // Use working pattern to generate all page URLs
-                console.log(`Belgica KBR: Using working pattern to generate ${totalPages} page URLs...`);
-                for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-                    const imageUrl = workingPattern(pageNum);
-                    pageLinks.push(imageUrl);
-                }
-            }
-            
-            if (pageLinks.length === 0) {
-                throw new Error('Could not find any working image patterns for this manuscript. The document may have access restrictions or use an unsupported viewer system.');
-            }
-            
-            console.log(`Belgica KBR: Successfully extracted ${pageLinks.length} manuscript pages using enhanced AJAX-Zoom approach`);
-            
-            return {
-                pageLinks,
-                totalPages: pageLinks.length,
-                library: 'belgica_kbr',
-                displayName: `Belgica KBR SYRACUSE ${syracuseDocumentId}`,
-                originalUrl: originalUrl,
-            };
-            
-        } catch (error: any) {
-            throw new Error(`Failed to load Belgica KBR manuscript: ${(error as Error).message}`);
-        }
-    }
-
-    /**
-     * Helper method to get authenticated image URLs from AJAX-Zoom system
-     */
-    private async getAjaxZoomImageUrl(zoomDir: string, pageNum: number, authToken: string, referer: string): Promise<string | null> {
-        try {
-            // Attempt to use AJAX-Zoom API with proper authentication
-            const endpoint = 'https://viewerd.kbr.be/AJAX/axZm/zoomLoad.php';
-            const params = new URLSearchParams({
-                zoomDir: zoomDir,
-                example: 'full',
-                page: pageNum.toString()
-            });
-            
-            if (authToken) {
-                params.append('auth', authToken);
-            }
-            
-            const response = await this.fetchWithEnhancedHeaders(`${endpoint}?${params}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json,text/plain,*/*',
-                    'Referer': referer
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.text();
-                
-                // Try to extract image URL from response
-                const imageUrlMatch = data.match(/https:\/\/[^"'\s]+\.jpg/);
-                if (imageUrlMatch) {
-                    return imageUrlMatch[0];
-                }
-                
-                // Alternative: look for relative paths that can be converted to absolute URLs
-                const relativeMatch = data.match(/\/[^"'\s]+\.jpg/);
-                if (relativeMatch) {
-                    return `https://viewerd.kbr.be${relativeMatch[0]}`;
-                }
-            }
-            
-            return null;
-        } catch (error) {
-            console.warn(`AJAX-Zoom request failed for page ${pageNum}: ${(error as Error).message}`);
-            return null;
-        }
-    }
-
-    /**
-     * Enhanced header management for Belgica KBR authentication flow
-     */
-    private async fetchWithEnhancedHeaders(url: string, options: any = {}): Promise<Response> {
-        const defaultHeaders = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-        };
-        
-        return this.fetchDirect(url, {
-            ...options,
-            headers: {
-                ...defaultHeaders,
-                ...options.headers
-            }
-        });
-    }
 
     /**
      * Load MDC Catalonia (Memòria Digital de Catalunya) manifest using robust ContentDM + IIIF approach
@@ -8054,50 +8130,150 @@ export class EnhancedManuscriptDownloaderService {
      * Fallback fetch method for MDC Catalonia DNS/connection issues
      */
     private async fetchWithFallback(url: string, options: any = {}): Promise<Response> {
-        try {
-            // First try the standard fetchDirect method
-            return await this.fetchDirect(url, options);
-        } catch (error: any) {
-            // If we get connection errors, try with curl as a fallback
-            if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || 
-                error.code === 'ETIMEDOUT' || error.code === 'ENETUNREACH' ||
-                error.message.includes('timeout') || error.message.includes('ECONNREFUSED')) {
+        const maxRetries = 3;
+        const baseTimeout = 45000; // Increased timeout for MDC Catalonia
+        
+        let lastError: any;
+        
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                console.log(`MDC Catalonia fetch attempt ${attempt}/${maxRetries}: ${url}`);
                 
-                console.log(`MDC Catalonia: Connection error, trying curl fallback: ${error.message}`);
+                // Progressive timeout increase
+                const timeout = baseTimeout * attempt;
                 
-                // Try using curl as a fallback for network issues
-                const { execSync } = await import('child_process');
-                try {
-                    const headers = options.headers || {};
-                    const userAgent = headers['User-Agent'] || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
-                    
-                    // Use curl with explicit timeout and retry
-                    const curlCmd = `curl -s -m 30 --retry 2 --retry-delay 1 -H "User-Agent: ${userAgent}" "${url}"`;
-                    const result = execSync(curlCmd, { encoding: 'utf8', timeout: 35000 });
-                    
-                    if (result.trim() === '') {
-                        throw new Error('Empty response from curl fallback');
-                    }
-                    
-                    // Create a Response-like object
-                    return {
-                        ok: true,
-                        status: 200,
-                        statusText: 'OK',
-                        text: () => Promise.resolve(result),
-                        json: () => Promise.resolve(JSON.parse(result)),
-                        arrayBuffer: () => Promise.resolve(Buffer.from(result).buffer)
-                    } as Response;
-                    
-                } catch (curlError: any) {
-                    console.error(`MDC Catalonia: Both direct fetch and curl fallback failed: ${curlError.message}`);
-                    throw new Error(`MDC Catalonia network error: ${error.message}. Curl fallback also failed: ${curlError.message}`);
+                // Try fetchDirect with extended timeout first
+                const response = await this.fetchDirect(url, {
+                    ...options,
+                    timeout: timeout
+                });
+                
+                if (response.ok || response.status < 500) {
+                    return response;
                 }
-            } else {
-                // For non-network errors, re-throw the original error
-                throw error;
+                
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                
+            } catch (error: any) {
+                lastError = error;
+                
+                // Check if this is a connection-related error that might benefit from curl fallback
+                const isNetworkError = error.name === 'AbortError' || 
+                                     error.code === 'ECONNRESET' || 
+                                     error.code === 'ENOTFOUND' || 
+                                     error.code === 'ECONNREFUSED' || 
+                                     error.code === 'ETIMEDOUT' || 
+                                     error.code === 'ENETUNREACH' ||
+                                     error.message.includes('timeout') || 
+                                     error.message.includes('ECONNREFUSED') ||
+                                     error.message.includes('ENETUNREACH');
+                
+                if (isNetworkError) {
+                    console.log(`MDC Catalonia: Network error on attempt ${attempt}, trying curl fallback: ${error.message}`);
+                    
+                    try {
+                        const { execSync } = await import('child_process');
+                        const headers = options.headers || {};
+                        const userAgent = headers['User-Agent'] || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
+                        const accept = headers['Accept'] || '*/*';
+                        
+                        // Use curl with explicit timeout and retry
+                        const curlTimeout = Math.floor((baseTimeout * attempt) / 1000);
+                        const curlCmd = options.method === 'HEAD' 
+                            ? `curl -s -I -m ${curlTimeout} --retry 2 --retry-delay 2 -H "User-Agent: ${userAgent}" -H "Accept: ${accept}" "${url}"`
+                            : `curl -s -m ${curlTimeout} --retry 2 --retry-delay 2 -H "User-Agent: ${userAgent}" -H "Accept: ${accept}" "${url}"`;
+                        
+                        const result = execSync(curlCmd, { encoding: 'utf8', timeout: (baseTimeout * attempt) + 5000 });
+                        
+                        if (options.method === 'HEAD') {
+                            // Parse HTTP status from curl HEAD response
+                            const statusMatch = result.match(/HTTP\/[\d.]+\s+(\d+)/);
+                            const status = statusMatch ? parseInt(statusMatch[1]) : 200;
+                            
+                            // Parse headers
+                            const responseHeaders: Record<string, string> = {};
+                            const headerLines = result.split('\n').filter(line => line.includes(':'));
+                            headerLines.forEach(line => {
+                                const [key, ...valueParts] = line.split(':');
+                                if (key && valueParts.length > 0) {
+                                    responseHeaders[key.trim().toLowerCase()] = valueParts.join(':').trim();
+                                }
+                            });
+                            
+                            // Create Response-like object for HEAD requests
+                            return {
+                                ok: status >= 200 && status < 300,
+                                status: status,
+                                statusText: status < 300 ? 'OK' : 'Error',
+                                headers: {
+                                    get: (name: string) => responseHeaders[name.toLowerCase()],
+                                    'content-type': responseHeaders['content-type'],
+                                    'content-length': responseHeaders['content-length']
+                                },
+                                text: () => Promise.resolve(''),
+                                json: () => Promise.resolve({}),
+                                // Add missing Response properties for TypeScript
+                                redirected: false,
+                                type: 'basic' as ResponseType,
+                                url: url,
+                                clone: () => { throw new Error('Clone not supported'); },
+                                body: null,
+                                bodyUsed: false,
+                                arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+                                blob: () => Promise.resolve(new Blob()),
+                                formData: () => Promise.resolve(new FormData()),
+                                bytes: () => Promise.resolve(new Uint8Array(0))
+                            } as unknown as Response;
+                        } else {
+                            if (result.trim() === '') {
+                                throw new Error('Empty response from curl fallback');
+                            }
+                            
+                            // Create Response-like object
+                            return {
+                                ok: true,
+                                status: 200,
+                                statusText: 'OK',
+                                headers: {
+                                    get: () => undefined,
+                                    'content-type': 'application/xml'
+                                },
+                                text: () => Promise.resolve(result),
+                                json: () => Promise.resolve(JSON.parse(result)),
+                                arrayBuffer: () => Promise.resolve(Buffer.from(result).buffer),
+                                // Add missing Response properties for TypeScript
+                                redirected: false,
+                                type: 'basic' as ResponseType,
+                                url: url,
+                                clone: () => { throw new Error('Clone not supported'); },
+                                body: null,
+                                bodyUsed: false,
+                                blob: () => Promise.resolve(new Blob()),
+                                formData: () => Promise.resolve(new FormData()),
+                                bytes: () => Promise.resolve(new Uint8Array(Buffer.from(result)))
+                            } as unknown as Response;
+                        }
+                        
+                    } catch (curlError: any) {
+                        console.log(`MDC Catalonia: Curl fallback failed on attempt ${attempt}: ${curlError.message}`);
+                        // Continue to retry logic below
+                    }
+                }
+                
+                console.log(`MDC Catalonia: Attempt ${attempt} failed: ${error.message}`);
+                
+                if (attempt < maxRetries) {
+                    // Exponential backoff with jitter
+                    const baseDelay = 2000;
+                    const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000;
+                    console.log(`MDC Catalonia: Waiting ${Math.round(delay)}ms before retry...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
             }
         }
+        
+        // Enhanced error message for MDC Catalonia
+        throw new Error(`MDC Catalonia: All ${maxRetries} attempts failed. Last error: ${lastError?.message || 'Unknown error'}. This may be a temporary network issue with mdc.csuc.cat servers. Please try again later.`);
     }
 
     /**
@@ -8342,21 +8518,93 @@ export class EnhancedManuscriptDownloaderService {
                 const manifestResponse = await this.fetchDirect(manifestUrl, {
                     headers: {
                         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                        'Accept': 'application/json, text/plain, */*',
+                        'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
+                        'Accept-Encoding': 'gzip, deflate, br',
                         'Referer': originalUrl
                     }
                 });
                 
                 if (manifestResponse.ok) {
                     const manifestData = await manifestResponse.json();
-                    if (manifestData.totalNumberPage && typeof manifestData.totalNumberPage === 'number') {
-                        totalPages = manifestData.totalNumberPage;
-                        console.log(`Found page count in manifest: ${totalPages}`);
+                    console.log('Rouen manifest loaded successfully, searching for page count...');
+                    
+                    // The manifest has a complex nested structure with multiple repetitions
+                    // Try multiple approaches to find the page count
+                    let foundPageCount = null;
+                    
+                    // Method 1: Search for totalNumberPage in nested PageAViewerFragment structures
+                    if (manifestData.PageAViewerFragment?.parameters?.fragmentDownload?.contenu?.totalNumberPage) {
+                        foundPageCount = manifestData.PageAViewerFragment.parameters.fragmentDownload.contenu.totalNumberPage;
+                        console.log(`Found totalNumberPage in PageAViewerFragment: ${foundPageCount}`);
+                    }
+                    
+                    // Method 2: Search for totalVues in ViewerFragment
+                    if (!foundPageCount && manifestData.ViewerFragment?.parameters?.totalVues) {
+                        foundPageCount = manifestData.ViewerFragment.parameters.totalVues;
+                        console.log(`Found totalVues in ViewerFragment: ${foundPageCount}`);
+                    }
+                    
+                    // Method 3: Recursive search through the entire manifest for totalNumberPage or totalVues
+                    if (!foundPageCount) {
+                        const findPageCount = (obj: any): number | null => {
+                            if (typeof obj !== 'object' || obj === null) return null;
+                            
+                            // Check current level for page count fields
+                            if (typeof obj.totalNumberPage === 'number' && obj.totalNumberPage > 0) {
+                                return obj.totalNumberPage;
+                            }
+                            if (typeof obj.totalVues === 'number' && obj.totalVues > 0) {
+                                return obj.totalVues;
+                            }
+                            
+                            // Recursively search nested objects and arrays
+                            for (const key in obj) {
+                                if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                                    const result = findPageCount(obj[key]);
+                                    if (result !== null) return result;
+                                }
+                            }
+                            
+                            return null;
+                        };
                         
-                        // Extract title if available
-                        if (manifestData.title) {
-                            displayName = manifestData.title;
-                        } else if (manifestData.label) {
-                            displayName = manifestData.label;
+                        foundPageCount = findPageCount(manifestData);
+                        if (foundPageCount) {
+                            console.log(`Found page count via recursive search: ${foundPageCount}`);
+                        }
+                    }
+                    
+                    if (foundPageCount && typeof foundPageCount === 'number' && foundPageCount > 0) {
+                        totalPages = foundPageCount;
+                        console.log(`Successfully determined page count: ${totalPages}`);
+                        
+                        // Try to extract title from manifest - also search recursively
+                        const findTitle = (obj: any, keys: string[]): string | null => {
+                            if (typeof obj !== 'object' || obj === null) return null;
+                            
+                            for (const key of keys) {
+                                if (typeof obj[key] === 'string' && obj[key].trim()) {
+                                    return obj[key].trim();
+                                }
+                            }
+                            
+                            // Recursively search
+                            for (const key in obj) {
+                                if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                                    const result = findTitle(obj[key], keys);
+                                    if (result) return result;
+                                }
+                            }
+                            
+                            return null;
+                        };
+                        
+                        const titleKeys = ['title', 'label', 'nom', 'libelle', 'intitule'];
+                        const foundTitle = findTitle(manifestData, titleKeys);
+                        if (foundTitle) {
+                            displayName = foundTitle;
+                            console.log(`Found title: ${displayName}`);
                         }
                     }
                 }
@@ -8691,6 +8939,49 @@ export class EnhancedManuscriptDownloaderService {
 
         } catch (error) {
             throw new Error(`Failed to load Fulda manuscript: ${(error as Error).message}`);
+        }
+    }
+
+    async loadBelgicaKbrManifest(belgicaUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // URL format: https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/
+            const urlMatch = belgicaUrl.match(/\/display\/([^/]+(?:\/[^/]+)*)\/zoomtiles\/([^/]+)/);
+            if (!urlMatch) {
+                throw new Error('Could not extract document path and manuscript ID from Belgica KBR URL');
+            }
+
+            const documentPath = urlMatch[1];
+            const manuscriptId = urlMatch[2];
+            
+            // Parse manuscript ID to extract basic information
+            const idParts = manuscriptId.split('_');
+            const collectionId = idParts[1]?.substring(2) || 'Unknown'; // Remove BE- prefix
+            const manuscriptNumber = idParts[2] || 'Unknown';
+            
+            const displayName = `Belgica KBR - ${collectionId} ${manuscriptNumber}`;
+
+            // For tile-based systems, we create a single page manifest
+            // The tile system will handle the high-resolution image assembly
+            const pageLinks = [belgicaUrl];
+
+            console.log(`Processing Belgica KBR tile manifest: ${displayName}`);
+            console.log(`Document path: ${documentPath}`);
+            console.log(`Manuscript ID: ${manuscriptId}`);
+
+            const belgicaManifest = {
+                displayName,
+                pageLinks,
+                library: 'belgica_kbr' as const,
+                originalUrl: belgicaUrl,
+                totalPages: 1
+            };
+
+            this.manifestCache.set(belgicaUrl, belgicaManifest).catch(console.warn);
+
+            return belgicaManifest;
+
+        } catch (error) {
+            throw new Error(`Failed to load Belgica KBR manuscript: ${(error as Error).message}`);
         }
     }
 

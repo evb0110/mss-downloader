@@ -838,7 +838,7 @@ https://digi.vatlib.it/..."
     :show="showSupportedLibrariesModal"
     title="Supported Manuscript Libraries"
     type="alert"
-    width="min(1200px, 95vw)"
+    width="min(1600px, 95vw)"
     @close="showSupportedLibrariesModal = false"
   >
     <template #headerContent>
@@ -3256,9 +3256,17 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 }
 
 /* Three columns on large screens */
-@media (min-width: 1200px) {
+@media (min-width: 1200px) and (max-width: 1599px) {
     .libraries-list {
         grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
+    }
+}
+
+/* Four columns on extra large screens */
+@media (min-width: 1600px) {
+    .libraries-list {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
         gap: 1rem;
     }
 }

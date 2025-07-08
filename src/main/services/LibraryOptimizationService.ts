@@ -51,6 +51,12 @@ export class LibraryOptimizationService {
         'nypl': {},
         'morgan': {},
         'gallica': {},
+        'belgica_kbr': {
+            maxConcurrentDownloads: 2, // Respectful rate limiting for tile downloads
+            timeoutMultiplier: 3.0, // Extended timeout for tile assembly process
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'Belgica KBR optimizations: 2 concurrent downloads, tile-based system with 8×10 grid, maximum resolution (6144×7680px)'
+        },
         'grenoble': {
             maxConcurrentDownloads: 3, // Moderate concurrent downloads for Gallica-based infrastructure
             timeoutMultiplier: 1.5, // Extended timeout for SSL bypass and resolution testing
@@ -58,10 +64,10 @@ export class LibraryOptimizationService {
             optimizationDescription: 'Grenoble Municipal Library optimizations: 3 concurrent downloads, SSL bypass support, maximum resolution detection'
         },
         'karlsruhe': {
-            maxConcurrentDownloads: 4, // Good performance with IIIF v2.0 infrastructure
+            maxConcurrentDownloads: 4, // Good performance with webcache infrastructure
             timeoutMultiplier: 1.2, // Standard timeout for reliable German infrastructure
             enableProgressiveBackoff: true,
-            optimizationDescription: 'Karlsruhe BLB optimizations: 4 concurrent downloads, IIIF v2.0 compliance, 2000px maximum resolution'
+            optimizationDescription: 'Karlsruhe BLB optimizations: 4 concurrent downloads, direct webcache/2000/ access, ultra-high resolution (2000x2801px, 5.6MP)'
         },
         'manchester': {
             maxConcurrentDownloads: 4, // Excellent IIIF v2.0 infrastructure
@@ -169,15 +175,11 @@ export class LibraryOptimizationService {
             timeoutMultiplier: 1.5, // Extended timeout for page discovery and image downloads
             optimizationDescription: 'BNE optimizations: 3 concurrent downloads, extended timeouts for page discovery'
         },
-        'belgica_kbr': {
-            maxConcurrentDownloads: 3, // Belgica KBR with good performance
-            timeoutMultiplier: 2.0, // Extended timeout for multi-step URL resolution and directory listing
-            optimizationDescription: 'Belgica KBR optimizations: 3 concurrent downloads, extended timeouts for URL resolution and directory listing'
-        },
         'mdc_catalonia': {
-            maxConcurrentDownloads: 4, // MDC Catalonia IIIF service with excellent performance
-            timeoutMultiplier: 1.2, // Slightly extended timeout for IIIF API calls
-            optimizationDescription: 'MDC Catalonia optimizations: 4 concurrent downloads, IIIF-based access with excellent performance'
+            maxConcurrentDownloads: 2, // Reduced due to recent network stability issues
+            timeoutMultiplier: 3.0, // Significantly increased timeout for network connectivity issues
+            enableProgressiveBackoff: true, // Critical for handling intermittent connection failures
+            optimizationDescription: 'MDC Catalonia optimizations: 2 concurrent downloads, extended timeouts for network stability, progressive backoff for connection issues'
         },
         'bvpb': {
             maxConcurrentDownloads: 3, // BVPB with pagination traversal needs moderate concurrency
