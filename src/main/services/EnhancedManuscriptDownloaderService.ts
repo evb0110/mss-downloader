@@ -7,7 +7,7 @@ import { configService } from './ConfigService.js';
 import { LibraryOptimizationService } from './LibraryOptimizationService.js';
 import { createProgressMonitor } from './IntelligentProgressMonitor.js';
 import { ZifImageProcessor } from './ZifImageProcessor.js';
-import { TileEngineService } from './tile-engine/TileEngineService';
+import { TileEngineService } from './tile-engine/TileEngineService.js';
 import type { ManuscriptManifest, LibraryInfo } from '../../shared/types';
 import type { TLibrary } from '../../shared/queueTypes';
 import * as https from 'https';
