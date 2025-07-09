@@ -1,6 +1,6 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
     "Dramatically improved negative-to-positive PDF conversion performance (4x faster with Sharp library)",
@@ -53,7 +53,6 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
-    "canvas": "^3.1.2",
     "electron-store": "^10.0.0",
     "jsdom": "^26.1.0",
     "jspdf": "^3.0.1",

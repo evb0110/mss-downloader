@@ -314,7 +314,7 @@ export class ZifImageProcessor {
             try {
                 Canvas = await import('canvas' as any);
             } catch (error) {
-                throw new Error('Canvas dependency not available. Morgan Library .zif processing requires Canvas for tile stitching.');
+                throw new Error('Canvas dependency not available. Morgan Library .zif processing requires Canvas for tile stitching. Run: npm install canvas');
             }
             
             // Create canvas with full image dimensions
