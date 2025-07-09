@@ -1,6 +1,6 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
     "Dramatically improved negative-to-positive PDF conversion performance (4x faster with Sharp library)",
