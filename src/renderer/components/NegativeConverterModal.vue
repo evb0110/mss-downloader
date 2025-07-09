@@ -57,15 +57,6 @@
           >
             📁 Open in Finder
           </button>
-          
-          
-          <button 
-            v-if="conversionComplete" 
-            class="reconvert-btn" 
-            @click="reconvertWithNewSettings"
-          >
-            ⚙️ Reconvert with Different Settings
-          </button>
         </div>
       </div>
     </div>
@@ -196,13 +187,6 @@ const resetConverter = () => {
   resultFilePath.value = null
 }
 
-const reconvertWithNewSettings = () => {
-  isConverting.value = false
-  conversionComplete.value = false
-  conversionStatus.value = null
-  resultFilePath.value = null
-  // Keep the file selected for reconversion
-}
 
 const handleClose = async () => {
   // Stop any ongoing conversion and cleanup
@@ -353,7 +337,7 @@ window.electronAPI?.onNegativeConversionProgress?.((progress) => {
   justify-content: center;
 }
 
-.convert-btn, .download-btn, .new-conversion-btn, .reconvert-btn {
+.convert-btn, .download-btn {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 4px;
@@ -378,23 +362,5 @@ window.electronAPI?.onNegativeConversionProgress?.((progress) => {
 
 .download-btn:hover {
   background: #1e7e34;
-}
-
-.new-conversion-btn {
-  background: #6c757d;
-  color: white;
-}
-
-.new-conversion-btn:hover {
-  background: #545b62;
-}
-
-.reconvert-btn {
-  background: #17a2b8;
-  color: white;
-}
-
-.reconvert-btn:hover {
-  background: #138496;
 }
 </style>
