@@ -12,6 +12,13 @@
         Supported Libraries
       </button>
       <button
+        class="negative-converter-btn"
+        @click="showNegativeConverterModal = true"
+      >
+        <span class="btn-icon">📸</span>
+        Negative Converter
+      </button>
+      <button
         v-if="queueItems.length > 0"
         class="add-more-btn"
         @click="openAddMoreDocumentsModal"
@@ -930,6 +937,12 @@ https://digi.vatlib.it/..."
       {{ isProcessingUrls ? 'Adding to Queue...' : 'Add to Queue' }}
     </button>
   </Modal>
+
+  <!-- Negative Converter Modal -->
+  <NegativeConverterModal
+    :is-visible="showNegativeConverterModal"
+    @close="showNegativeConverterModal = false"
+  />
 </template>
 
 <script setup lang="ts">
@@ -938,6 +951,7 @@ import type { QueuedManuscript, QueueState, TStatus, TLibrary, TSimultaneousMode
 import type { LibraryInfo, ManuscriptManifest } from '../../shared/types';
 import Modal from './Modal.vue';
 import Spoiler from './Spoiler.vue';
+import NegativeConverterModal from './NegativeConverterModal.vue';
 import abbaAbabusImage from '../../../assets/abba-ababus.jpg';
 
 // Declare window.electronAPI type
@@ -1019,6 +1033,7 @@ const buttonLoadingStates = ref<{ [key: string]: 'idle' | 'loading' | 'success' 
 const showConfirmModal = ref(false);
 const showAlertModal = ref(false);
 const showSupportedLibrariesModal = ref(false);
+const showNegativeConverterModal = ref(false);
 const showAddMoreDocumentsModal = ref(false);
 const confirmModal = ref({
     title: '',
@@ -3428,7 +3443,8 @@ label {
 }
 
 .info-btn,
-.add-more-btn {
+.add-more-btn,
+.negative-converter-btn {
     background-color: #007bff;
     color: white;
     padding: 0.75rem 1.5rem;
@@ -3461,20 +3477,31 @@ label {
 }
 
 .info-btn:hover,
-.add-more-btn:hover {
+.add-more-btn:hover,
+.negative-converter-btn:hover {
     background-color: #0056b3;
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
 }
 
 .info-btn:hover .btn-icon,
-.add-more-btn:hover .btn-icon {
+.add-more-btn:hover .btn-icon,
+.negative-converter-btn:hover .btn-icon {
     background-color: rgba(255, 255, 255, 0.3);
 }
 
 .info-btn:active,
-.add-more-btn:active {
+.add-more-btn:active,
+.negative-converter-btn:active {
     transform: translateY(0);
+}
+
+.negative-converter-btn {
+    background-color: #6c757d !important;
+}
+
+.negative-converter-btn:hover {
+    background-color: #545b62 !important;
 }
 
 .error-message {
@@ -3644,7 +3671,8 @@ label {
     }
     
     .info-btn,
-    .add-more-btn {
+    .add-more-btn,
+    .negative-converter-btn {
         width: 100%;
         font-size: min(1rem, 3.2vw);
     }

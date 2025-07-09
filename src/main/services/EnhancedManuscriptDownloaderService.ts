@@ -37,11 +37,6 @@ export class EnhancedManuscriptDownloaderService {
             description: 'Biblioteca Digitale Lombarda digital manuscripts via IIIF',
         },
         {
-            name: 'Belgica KBR (Royal Library of Belgium)',
-            example: 'https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/',
-            description: 'Royal Library of Belgium digital manuscript collections via custom tile system',
-        },
-        {
             name: 'Berlin State Library',
             example: 'https://digital.staatsbibliothek-berlin.de/werkansicht?PPN=PPN782404456&view=picture-download&PHYSID=PHYS_0005&DMDID=DMDLOG_0001',
             description: 'Staatsbibliothek zu Berlin digital manuscript collections via IIIF',
@@ -401,7 +396,6 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('digitalcollections.nypl.org')) return 'nypl';
         if (url.includes('themorgan.org')) return 'morgan';
         if (url.includes('gallica.bnf.fr')) return 'gallica';
-        if (url.includes('viewerd.kbr.be') && url.includes('zoomtiles')) return 'belgica_kbr';
         if (url.includes('pagella.bm-grenoble.fr')) return 'grenoble';
         if (url.includes('i3f.vls.io') && url.includes('blb-karlsruhe.de')) return 'karlsruhe';
         if (url.includes('digitalcollections.manchester.ac.uk')) return 'manchester';
@@ -987,9 +981,6 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'fulda':
                     manifest = await this.loadFuldaManifest(originalUrl);
-                    break;
-                case 'belgica_kbr':
-                    manifest = await this.loadBelgicaKbrManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -8942,48 +8933,6 @@ export class EnhancedManuscriptDownloaderService {
         }
     }
 
-    async loadBelgicaKbrManifest(belgicaUrl: string): Promise<ManuscriptManifest> {
-        try {
-            // URL format: https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomtiles/BE-KBR00_A-1589485_0000-00-00_00_0001/
-            const urlMatch = belgicaUrl.match(/\/display\/([^/]+(?:\/[^/]+)*)\/zoomtiles\/([^/]+)/);
-            if (!urlMatch) {
-                throw new Error('Could not extract document path and manuscript ID from Belgica KBR URL');
-            }
-
-            const documentPath = urlMatch[1];
-            const manuscriptId = urlMatch[2];
-            
-            // Parse manuscript ID to extract basic information
-            const idParts = manuscriptId.split('_');
-            const collectionId = idParts[1]?.substring(2) || 'Unknown'; // Remove BE- prefix
-            const manuscriptNumber = idParts[2] || 'Unknown';
-            
-            const displayName = `Belgica KBR - ${collectionId} ${manuscriptNumber}`;
-
-            // For tile-based systems, we create a single page manifest
-            // The tile system will handle the high-resolution image assembly
-            const pageLinks = [belgicaUrl];
-
-            console.log(`Processing Belgica KBR tile manifest: ${displayName}`);
-            console.log(`Document path: ${documentPath}`);
-            console.log(`Manuscript ID: ${manuscriptId}`);
-
-            const belgicaManifest = {
-                displayName,
-                pageLinks,
-                library: 'belgica_kbr' as const,
-                originalUrl: belgicaUrl,
-                totalPages: 1
-            };
-
-            this.manifestCache.set(belgicaUrl, belgicaManifest).catch(console.warn);
-
-            return belgicaManifest;
-
-        } catch (error) {
-            throw new Error(`Failed to load Belgica KBR manuscript: ${(error as Error).message}`);
-        }
-    }
 
 
 }

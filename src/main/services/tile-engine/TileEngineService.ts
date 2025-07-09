@@ -1,7 +1,6 @@
 import * as path from 'path';
 import { app } from 'electron';
 import { TileEngineCore } from './TileEngineCore.js';
-import { BelgicaKbrAdapter } from './adapters/BelgicaKbrAdapter.js';
 import {
   TileEngineConfig,
   TileEngineResult,
@@ -45,7 +44,7 @@ export class TileEngineService {
   }
 
   private registerDefaultAdapters(): void {
-    this.engine.registerAdapter(new BelgicaKbrAdapter());
+    // No default adapters currently registered
   }
 
   async downloadTilesAndStitch(

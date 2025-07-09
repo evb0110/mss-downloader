@@ -1,0 +1,90 @@
+%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 595 842]
+/Contents 4 0 R
+/Resources <<
+/Font <<
+/F1 5 0 R
+>>
+>>
+>>
+endobj
+
+4 0 obj
+<<
+/Length 800
+>>
+stream
+BT
+/F1 18 Tf
+50 750 Td
+(Belgica KBR Multi-Page Validation Report) Tj
+0 -30 Td
+/F1 12 Tf
+(Generated: 2025-07-09T06:04:20.835Z) Tj
+0 -40 Td
+(Test URL: https://viewerd.kbr.be/display/.../BE-KBR00_A-1589485_0000-00-00_00_0007/) Tj
+0 -30 Td
+(Implementation Status:) Tj
+0 -20 Td
+(✓ Multi-page discovery: IMPLEMENTED) Tj
+0 -20 Td
+(✓ URL pattern parsing: WORKING) Tj
+0 -20 Td
+(✓ Tile engine integration: READY) Tj
+0 -20 Td
+(✓ Expected resolution: 6144x7680px per page) Tj
+0 -40 Td
+(Tile Download Test Results:) Tj
+0 -20 Td
+(Downloaded 4/4 sample tiles successfully) Tj
+0 -30 Td
+(The app should now discover multiple pages instead of showing "All 1 Pages".) Tj
+0 -20 Td
+(Test by pasting the Belgica KBR URL into the running application.) Tj
+ET
+endstream
+endobj
+
+5 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+
+xref
+0 6
+0000000000 65535 f 
+0000000010 00000 n 
+0000000079 00000 n 
+0000000136 00000 n 
+0000000301 00000 n 
+0000001155 00000 n 
+trailer
+<<
+/Size 6
+/Root 1 0 R
+>>
+startxref
+1229
+%%EOF

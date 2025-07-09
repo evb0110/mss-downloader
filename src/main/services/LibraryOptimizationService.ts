@@ -51,12 +51,6 @@ export class LibraryOptimizationService {
         'nypl': {},
         'morgan': {},
         'gallica': {},
-        'belgica_kbr': {
-            maxConcurrentDownloads: 2, // Respectful rate limiting for tile downloads
-            timeoutMultiplier: 3.0, // Extended timeout for tile assembly process
-            enableProgressiveBackoff: true,
-            optimizationDescription: 'Belgica KBR optimizations: 2 concurrent downloads, tile-based system with 8×10 grid, maximum resolution (6144×7680px)'
-        },
         'grenoble': {
             maxConcurrentDownloads: 3, // Moderate concurrent downloads for Gallica-based infrastructure
             timeoutMultiplier: 1.5, // Extended timeout for SSL bypass and resolution testing

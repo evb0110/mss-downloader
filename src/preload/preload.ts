@@ -140,6 +140,21 @@ const api = {
 
   // Captcha solving
   solveCaptcha: (url: string) => ipcRenderer.invoke('solve-captcha', url),
+  
+  // Negative converter methods
+  convertNegativeToPositive: (data: { fileData: ArrayBuffer | Uint8Array | number[]; fileName: string; settings: any }) => 
+    ipcRenderer.invoke('convert-negative-to-positive', data),
+  
+  openInFolder: (filePath: string) => 
+    ipcRenderer.invoke('open-in-folder', filePath),
+  
+  onNegativeConversionProgress: (callback: (progress: any) => void) => {
+    ipcRenderer.on('negative-conversion-progress', (_, progress) => callback(progress));
+    return () => ipcRenderer.removeAllListeners('negative-conversion-progress');
+  },
+  
+  stopNegativeConversion: () => 
+    ipcRenderer.invoke('stop-negative-conversion'),
 };
 
 try {

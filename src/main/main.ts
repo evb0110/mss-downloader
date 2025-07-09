@@ -9,7 +9,9 @@ import { ElectronPdfMerger } from './services/ElectronPdfMerger.js';
 import { EnhancedManuscriptDownloaderService } from './services/EnhancedManuscriptDownloaderService.js';
 import { EnhancedDownloadQueue } from './services/EnhancedDownloadQueue.js';
 import { configService } from './services/ConfigService.js';
+import { NegativeConverterService } from './services/NegativeConverterService.js';
 import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
+import type { ConversionSettings } from './services/NegativeConverterService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -34,6 +36,7 @@ let enhancedManuscriptDownloader: EnhancedManuscriptDownloaderService | null = n
 let imageCache: ElectronImageCache | null = null;
 let pdfMerger: ElectronPdfMerger | null = null;
 let enhancedDownloadQueue: EnhancedDownloadQueue | null = null;
+let negativeConverter: NegativeConverterService | null = null;
 
 // Global headless detection - available to all functions
 const isHeadless = process.argv.includes('--headless') || 
@@ -328,6 +331,7 @@ app.whenReady().then(async () => {
   manuscriptDownloader = new ManuscriptDownloaderService(pdfMerger);
   enhancedManuscriptDownloader = new EnhancedManuscriptDownloaderService();
   enhancedDownloadQueue = EnhancedDownloadQueue.getInstance();
+  negativeConverter = new NegativeConverterService();
   
   // Clean up any temporary image files from previous sessions
   try {
@@ -755,3 +759,51 @@ ipcMain.handle('solve-captcha', async (_event, url: string) => {
     }, 5 * 60 * 1000);
   });
 });
+
+// Negative converter handlers
+ipcMain.handle('convert-negative-to-positive', async (_event, { fileData, fileName, settings }: {
+  fileData: number[] | Uint8Array | ArrayBuffer;
+  fileName: string;
+  settings: ConversionSettings;
+}) => {
+  if (!negativeConverter) {
+    throw new Error('Negative converter not initialized');
+  }
+  
+  // Convert to Uint8Array properly
+  let uint8Data: Uint8Array;
+  if (fileData instanceof ArrayBuffer) {
+    uint8Data = new Uint8Array(fileData);
+  } else if (Array.isArray(fileData)) {
+    uint8Data = new Uint8Array(fileData);
+  } else if (fileData instanceof Uint8Array) {
+    uint8Data = fileData;
+  } else {
+    throw new Error('Invalid file data format');
+  }
+  
+  return negativeConverter.convertPdf(
+    uint8Data,
+    fileName,
+    settings,
+    (progress) => {
+      mainWindow?.webContents.send('negative-conversion-progress', progress);
+    }
+  );
+});
+
+ipcMain.handle('open-in-folder', async (_event, filePath: string) => {
+  if (!filePath) {
+    throw new Error('No file path provided');
+  }
+  
+  try {
+    await fs.access(filePath);
+    shell.showItemInFolder(filePath);
+    return true;
+  } catch (error) {
+    console.error('Failed to open file in folder:', error);
+    throw new Error(`File not found: ${filePath}`);
+  }
+});
+
