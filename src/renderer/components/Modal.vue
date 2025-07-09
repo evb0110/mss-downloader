@@ -6,7 +6,11 @@
   >
     <div
       class="modal-content"
-      :style="{ width: width || 'auto', maxWidth: width ? 'none' : '500px' }"
+      :style="{ 
+        width: width || 'auto', 
+        maxWidth: width === 'auto' ? '90vw' : (width ? 'none' : '500px'),
+        minWidth: width === 'auto' ? '600px' : 'auto'
+      }"
       @click.stop
     >
       <div class="modal-header">

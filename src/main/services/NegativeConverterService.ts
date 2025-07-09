@@ -160,7 +160,7 @@ export class NegativeConverterService {
           progress
         });
       } catch (error) {
-        console.warn(`Failed to invert image ${imagePath}:`, error);
+        // Skip failed images silently
       }
     }
 
@@ -219,7 +219,7 @@ export class NegativeConverterService {
     try {
       await fs.rm(dir, { recursive: true, force: true });
     } catch (error) {
-      console.warn('Warning: Could not cleanup temp files:', error);
+      // Ignore cleanup errors
     }
   }
 
@@ -260,10 +260,14 @@ export class NegativeConverterService {
 
       const invertedImages = await this.invertImages(extractedImages, onProgress);
       
+      // Get the original filename without extension
       const originalBaseName = basename(fileName, '.pdf');
-      const safeBaseName = originalBaseName.replace(/[^\w\s-]/g, '_');
-      const outputFileName = `${safeBaseName}_positive.pdf`;
-      const outputPath = join(this.outputDir, outputFileName);
+      
+      // Keep the original name exactly as provided, no sanitization
+      const outputFileName = `${originalBaseName}_positive.pdf`;
+      
+      // Place in Downloads folder for easy access
+      const outputPath = join(app.getPath('downloads'), outputFileName);
 
       await this.createPdfFromImages(invertedImages, outputPath, settings, onProgress);
 

@@ -4,6 +4,7 @@
     title="📸 Negative to Positive Converter"
     :show="isVisible"
     :closeOnOverlay="false"
+    width="auto"
     @close="handleClose"
   >
     <div class="negative-converter">
@@ -226,7 +227,6 @@ window.electronAPI?.onNegativeConversionProgress?.((progress) => {
 <style scoped>
 .negative-converter {
   padding: 1rem;
-  max-width: 600px;
 }
 
 .upload-zone {
@@ -286,6 +286,9 @@ window.electronAPI?.onNegativeConversionProgress?.((progress) => {
 .file-details h4 {
   margin: 0 0 0.25rem 0;
   color: #333;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .file-details p {
