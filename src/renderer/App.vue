@@ -6,6 +6,68 @@
 
 <script setup lang="ts">
 import DownloadQueueManager from './components/DownloadQueueManager.vue'
+import { PdfRendererService } from './services/PdfRendererService'
+import { onMounted, onUnmounted } from 'vue'
+
+const pdfRenderer = new PdfRendererService()
+
+let ipcCleanup: (() => void) | null = null
+
+onMounted(() => {
+  const handlePdfRendering = async ({ pdfData, outputDir }: { pdfData: number[], outputDir: string }) => {
+    console.log('🖼️ Received PDF rendering request in renderer process')
+    console.log(`   PDF data: ${pdfData.length} bytes`)
+    console.log(`   Output: ${outputDir}`)
+    
+    try {
+      // Stage 1: Convert PDF to images
+      await window.electronAPI.updateRenderingProgress('Stage 1: PDF Rendering', 'Converting PDF pages to images...', 40)
+      
+      const renderResult = await pdfRenderer.renderPdfToImages(pdfData, outputDir)
+      console.log(`✅ Stage 1 complete: ${renderResult.files.length} images rendered`)
+      
+      // Stage 2: Invert images using Canvas API (memory efficient)
+      await window.electronAPI.updateRenderingProgress('Stage 2: Image Inversion', 'Inverting colors from negative to positive...', 50)
+      console.log('🔄 Starting Stage 2: Image inversion...')
+      let finalFiles: string[] = [];
+      
+      try {
+        const invertedFiles = await pdfRenderer.invertImageData(renderResult.imageData, outputDir)
+        console.log(`✅ Stage 2 complete: ${invertedFiles.length} images inverted`)
+        finalFiles = invertedFiles
+      } catch (inversionError) {
+        console.error('❌ Image inversion failed, keeping original images:', inversionError)
+        finalFiles = renderResult.files // Use original images if inversion fails
+      }
+      
+      // Stage 3: Create PDF from inverted images
+      await window.electronAPI.updateRenderingProgress('Stage 3: Creating PDF', 'Assembling inverted images into PDF...', 80)
+      console.log('🔄 Starting Stage 3: PDF creation...')
+      
+      try {
+        const pdfPath = await pdfRenderer.createPdfFromImages(finalFiles, outputDir)
+        console.log(`✅ Stage 3 complete: PDF created at ${pdfPath}`)
+      } catch (pdfError) {
+        console.error('❌ PDF creation failed:', pdfError)
+      }
+      
+      console.log('📁 All files saved to:', outputDir)
+      
+      // Notify main process that rendering and inversion are complete
+      await window.electronAPI.notifyRenderingComplete(finalFiles.length)
+    } catch (error) {
+      console.error('❌ PDF rendering failed in renderer:', error)
+      // Notify main process about the error
+      await window.electronAPI.notifyRenderingError(error instanceof Error ? error.message : 'Unknown error')
+    }
+  }
+  
+  ipcCleanup = window.electronAPI.onPdfRenderingRequest(handlePdfRendering)
+})
+
+onUnmounted(() => {
+  ipcCleanup?.()
+})
 </script>
 
 <style>

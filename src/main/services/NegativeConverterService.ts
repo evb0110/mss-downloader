@@ -1,13 +1,7 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import { promises as fs } from 'fs';
-import { join, dirname, basename } from 'path';
+import { join, basename } from 'path';
 import { app } from 'electron';
 import os from 'os';
-import sharp from 'sharp';
-import { PDFDocument } from 'pdf-lib';
-
-const execAsync = promisify(exec);
 
 export interface ConversionSettings {
   quality: number;
@@ -34,6 +28,7 @@ export class NegativeConverterService {
     this.tempDir = join(os.tmpdir(), 'mss-downloader-negative-conversion');
   }
 
+
   private async ensureDirectories(): Promise<void> {
     try {
       await fs.access(this.tempDir);
@@ -42,155 +37,15 @@ export class NegativeConverterService {
     }
   }
 
-  private async extractImagesWithPdfImages(
-    pdfPath: string, 
-    onProgress?: (progress: ConversionProgress) => void
-  ): Promise<string[]> {
-    onProgress?.(({
-      stage: 'Extracting Images',
-      message: 'Extracting images from PDF...',
-      progress: 10
-    }));
 
-    const timestamp = Date.now();
-    const extractDir = join(this.tempDir, `extract_${timestamp}`);
-    
-    try {
-      await fs.access(extractDir);
-      await fs.rm(extractDir, { recursive: true });
-    } catch {
-      // Directory doesn't exist, that's fine
-    }
-    
-    await fs.mkdir(extractDir, { recursive: true });
 
-    try {
-      // Extract as JPEG for better performance and smaller size
-      await execAsync(`pdfimages -j "${pdfPath}" "${join(extractDir, 'page')}"`, { 
-        timeout: 60000 // 1 minute should be enough
-      });
 
-      onProgress?.(({
-        stage: 'Images Extracted',
-        message: 'Images extracted successfully',
-        progress: 25
-      }));
 
-      const files = await fs.readdir(extractDir);
-      const imageFiles = files
-        .filter(file => file.endsWith('.jpg') || file.endsWith('.jpeg'))
-        .sort((a, b) => {
-          const aNum = parseInt(a.match(/\d+/)?.[0] || '0');
-          const bNum = parseInt(b.match(/\d+/)?.[0] || '0');
-          return aNum - bNum;
-        })
-        .map(file => join(extractDir, file));
 
-      return imageFiles;
-    } catch (error) {
-      throw new Error(`Failed to extract images: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  }
 
-  private async invertImagesWithSharp(
-    imagePaths: string[], 
-    onProgress?: (progress: ConversionProgress) => void
-  ): Promise<Buffer[]> {
-    const invertedBuffers: Buffer[] = [];
-    
-    onProgress?.(({
-      stage: 'Inverting Images',
-      message: 'Converting negatives to positives...',
-      progress: 30
-    }));
 
-    // Process images in parallel for much better performance
-    const processPromises = imagePaths.map(async (imagePath, index) => {
-      try {
-        const buffer = await sharp(imagePath)
-          .negate() // This is the inversion operation - much faster than ImageMagick
-          .jpeg({ quality: 90 }) // Keep reasonable quality while reducing size
-          .toBuffer();
 
-        onProgress?.(({
-          stage: 'Inverting Images',
-          message: `Processed ${index + 1}/${imagePaths.length} images`,
-          progress: 30 + Math.round((index + 1) / imagePaths.length * 50)
-        }));
 
-        return { index, buffer };
-      } catch (error) {
-        console.warn(`Failed to invert image ${imagePath}:`, error);
-        return null;
-      }
-    });
-
-    // Wait for all images to be processed
-    const results = await Promise.all(processPromises);
-    
-    // Sort results by index to maintain order
-    const sortedResults = results
-      .filter(result => result !== null)
-      .sort((a, b) => a!.index - b!.index);
-
-    sortedResults.forEach(result => {
-      if (result) {
-        invertedBuffers.push(result.buffer);
-      }
-    });
-
-    if (invertedBuffers.length === 0) {
-      throw new Error('No images were successfully inverted');
-    }
-
-    return invertedBuffers;
-  }
-
-  private async createPdfFromBuffers(
-    imageBuffers: Buffer[],
-    outputPath: string,
-    onProgress?: (progress: ConversionProgress) => void
-  ): Promise<void> {
-    onProgress?.(({
-      stage: 'Creating PDF',
-      message: `Merging ${imageBuffers.length} images into PDF...`,
-      progress: 85
-    }));
-
-    try {
-      const pdfDoc = await PDFDocument.create();
-
-      for (const buffer of imageBuffers) {
-        const img = await pdfDoc.embedJpg(buffer);
-        const page = pdfDoc.addPage([img.width, img.height]);
-        page.drawImage(img, {
-          x: 0,
-          y: 0,
-          width: img.width,
-          height: img.height,
-        });
-      }
-
-      const pdfBytes = await pdfDoc.save();
-      await fs.writeFile(outputPath, pdfBytes);
-
-      onProgress?.(({
-        stage: 'PDF Creation Complete',
-        message: 'Positive PDF created successfully',
-        progress: 95
-      }));
-    } catch (error) {
-      throw new Error(`Failed to create PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  }
-
-  private async cleanupTempFiles(dir: string): Promise<void> {
-    try {
-      await fs.rm(dir, { recursive: true, force: true });
-    } catch (error) {
-      // Ignore cleanup errors
-    }
-  }
 
   async convertPdf(
     fileData: Uint8Array,
@@ -199,66 +54,131 @@ export class NegativeConverterService {
     onProgress?: (progress: ConversionProgress) => void
   ): Promise<ConversionResult> {
     try {
+      onProgress?.({
+        stage: 'Initializing',
+        message: 'Starting PDF to images conversion...',
+        progress: 0
+      });
+
       await this.ensureDirectories();
 
-      onProgress?.(({
-        stage: 'Initializing',
-        message: 'Preparing conversion process...',
-        progress: 0
-      }));
-
       const timestamp = Date.now();
-      const tempPdfPath = join(this.tempDir, `temp_pdf_${timestamp}.pdf`);
+      const randomId = Math.random().toString(36).substring(2, 15);
+      const conversionDir = join(this.tempDir, `conversion_${timestamp}_${randomId}`);
+      
+      // Create unique conversion directory
+      await fs.mkdir(conversionDir, { recursive: true });
+      
+      const tempPdfPath = join(conversionDir, `input.pdf`);
+      
       await fs.writeFile(tempPdfPath, fileData);
 
-      onProgress?.(({
+      onProgress?.({
         stage: 'File Prepared',
         message: 'PDF file saved to temporary location',
-        progress: 5
-      }));
+        progress: 10
+      });
 
-      const extractedImages = await this.extractImagesWithPdfImages(tempPdfPath, onProgress);
-      
-      if (extractedImages.length === 0) {
-        throw new Error('No images found in the PDF file');
-      }
-
-      const invertedBuffers = await this.invertImagesWithSharp(extractedImages, onProgress);
-      
       // Get the original filename without extension
       const originalBaseName = basename(fileName, '.pdf');
       
-      // Keep the original name exactly as provided, no sanitization
-      const outputFileName = `${originalBaseName}_positive.pdf`;
+      // Create output directory in Downloads folder
+      let downloadsPath: string;
+      try {
+        downloadsPath = app.getPath('downloads');
+      } catch {
+        // Fallback for testing without Electron
+        downloadsPath = join(os.homedir(), 'Downloads');
+      }
       
-      // Place in Downloads folder for easy access
-      const outputPath = join(app.getPath('downloads'), outputFileName);
+      const outputDir = join(downloadsPath, `${originalBaseName}_images_${timestamp}`);
+      await fs.mkdir(outputDir, { recursive: true });
 
-      await this.createPdfFromBuffers(invertedBuffers, outputPath, onProgress);
+      onProgress?.({
+        stage: 'Converting to Images',
+        message: 'Using renderer process to convert PDF to images...',
+        progress: 20
+      });
 
-      // Cleanup
-      await this.cleanupTempFiles(dirname(extractedImages[0]));
-      await fs.unlink(tempPdfPath);
+      // Use the new IPC method to trigger PDF rendering in renderer process
+      const { BrowserWindow } = require('electron');
+      
+      const mainWindow = BrowserWindow.getAllWindows()[0];
+      if (!mainWindow) {
+        throw new Error('No main window available for PDF rendering');
+      }
 
-      onProgress?.(({
+      console.log('📄 Requesting PDF rendering from renderer process...');
+      console.log(`   PDF: ${tempPdfPath}`);
+      console.log(`   Output: ${outputDir}`);
+
+      // Read PDF data and send to renderer process
+      const pdfData = await fs.readFile(tempPdfPath);
+      
+      // Send PDF data directly to renderer (not file path)
+      mainWindow.webContents.send('start-pdf-rendering', { 
+        pdfData: Array.from(pdfData), // Convert to array for IPC transfer
+        outputDir: outputDir 
+      });
+
+      onProgress?.({
+        stage: 'PDF Processing Started',
+        message: 'Converting PDF pages to images...',
+        progress: 30
+      });
+
+      // Import the helper function from main.ts
+      const { waitForRendererCompletion } = require('../main');
+      
+      // Wait for renderer to signal completion
+      let actualPageCount: number;
+      try {
+        actualPageCount = await waitForRendererCompletion();
+        console.log(`📄 Renderer completed: ${actualPageCount} pages`);
+      } catch (error) {
+        console.warn('⚠️ Renderer completion timeout, checking files manually');
+        // Fallback to file checking
+        try {
+          const files = await fs.readdir(outputDir);
+          const pngFiles = files.filter(f => f.endsWith('.png'));
+          actualPageCount = pngFiles.length;
+        } catch {
+          actualPageCount = 0;
+        }
+      }
+
+      onProgress?.({
+        stage: 'Images Ready',
+        message: `Processed ${actualPageCount} pages - check output folder`,
+        progress: 90
+      });
+
+      // Cleanup temp PDF
+      try {
+        await fs.rm(conversionDir, { recursive: true, force: true });
+      } catch (cleanupError) {
+        console.warn('⚠️ Could not clean up temporary directory:', cleanupError instanceof Error ? cleanupError.message : cleanupError);
+      }
+
+      onProgress?.({
         stage: 'Conversion Complete! ✅',
-        message: `Successfully converted ${invertedBuffers.length} pages`,
+        message: `Successfully processed ${actualPageCount} pages`,
         progress: 100
-      }));
+      });
 
       return {
         success: true,
-        outputPath,
-        pageCount: invertedBuffers.length
+        outputPath: outputDir,
+        pageCount: actualPageCount
       };
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       
-      onProgress?.(({
+      onProgress?.({
         stage: 'Conversion Failed ❌',
         message: errorMessage
-      }));
+      });
 
       return {
         success: false,

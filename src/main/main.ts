@@ -1,20 +1,18 @@
 import { app, BrowserWindow, Menu, ipcMain, dialog, shell, session } from 'electron';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { join } from 'path';
 import { promises as fs } from 'fs';
 import os from 'os';
-import { ManuscriptDownloaderService } from './services/ManuscriptDownloaderService.js';
-import { ElectronImageCache } from './services/ElectronImageCache.js';
-import { ElectronPdfMerger } from './services/ElectronPdfMerger.js';
-import { EnhancedManuscriptDownloaderService } from './services/EnhancedManuscriptDownloaderService.js';
-import { EnhancedDownloadQueue } from './services/EnhancedDownloadQueue.js';
-import { configService } from './services/ConfigService.js';
-import { NegativeConverterService } from './services/NegativeConverterService.js';
+import { ManuscriptDownloaderService } from './services/ManuscriptDownloaderService';
+import { ElectronImageCache } from './services/ElectronImageCache';
+import { ElectronPdfMerger } from './services/ElectronPdfMerger';
+import { EnhancedManuscriptDownloaderService } from './services/EnhancedManuscriptDownloaderService';
+import { EnhancedDownloadQueue } from './services/EnhancedDownloadQueue';
+import { configService } from './services/ConfigService';
+import { NegativeConverterService } from './services/NegativeConverterService';
 import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
-import type { ConversionSettings } from './services/NegativeConverterService.js';
+import type { ConversionSettings } from './services/NegativeConverterService';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// __dirname is available in CommonJS
 
 // Function to read app version
 async function getAppVersion(): Promise<string> {
@@ -331,6 +329,7 @@ app.whenReady().then(async () => {
   manuscriptDownloader = new ManuscriptDownloaderService(pdfMerger);
   enhancedManuscriptDownloader = new EnhancedManuscriptDownloaderService();
   enhancedDownloadQueue = EnhancedDownloadQueue.getInstance();
+  
   negativeConverter = new NegativeConverterService();
   
   // Clean up any temporary image files from previous sessions
@@ -792,6 +791,32 @@ ipcMain.handle('convert-negative-to-positive', async (_event, { fileData, fileNa
   );
 });
 
+ipcMain.handle('save-image-file', async (_event, filePath: string, imageData: Uint8Array) => {
+  try {
+    await fs.writeFile(filePath, imageData);
+    return true;
+  } catch (error) {
+    console.error('Failed to save image file:', error);
+    throw new Error(`Failed to save image: ${filePath}`);
+  }
+});
+
+ipcMain.handle('render-pdf-to-images', async (_event, pdfPath: string, outputDir: string) => {
+  try {
+    // Create output directory if it doesn't exist
+    await fs.mkdir(outputDir, { recursive: true });
+    
+    // Send message to renderer to do the PDF rendering
+    mainWindow?.webContents.send('start-pdf-rendering', { pdfPath, outputDir });
+    
+    // Return immediately - renderer will handle the work
+    return { success: true, message: 'PDF rendering started in renderer process' };
+  } catch (error) {
+    console.error('Failed to start PDF rendering:', error);
+    throw new Error(`Failed to start PDF rendering: ${error}`);
+  }
+});
+
 ipcMain.handle('open-in-folder', async (_event, filePath: string) => {
   if (!filePath) {
     throw new Error('No file path provided');
@@ -806,4 +831,55 @@ ipcMain.handle('open-in-folder', async (_event, filePath: string) => {
     throw new Error(`File not found: ${filePath}`);
   }
 });
+
+// PDF rendering completion handlers
+let pdfRenderingResolver: ((pageCount: number) => void) | null = null;
+let pdfRenderingRejecter: ((error: Error) => void) | null = null;
+
+ipcMain.handle('pdf-rendering-complete', async (_event, pageCount: number) => {
+  console.log(`📄 Renderer reported completion: ${pageCount} pages`);
+  if (pdfRenderingResolver) {
+    pdfRenderingResolver(pageCount);
+    pdfRenderingResolver = null;
+    pdfRenderingRejecter = null;
+  }
+  return true;
+});
+
+ipcMain.handle('pdf-rendering-error', async (_event, error: string) => {
+  console.log(`❌ Renderer reported error: ${error}`);
+  if (pdfRenderingRejecter) {
+    pdfRenderingRejecter(new Error(error));
+    pdfRenderingResolver = null;
+    pdfRenderingRejecter = null;
+  }
+  return true;
+});
+
+ipcMain.handle('pdf-rendering-progress', async (_event, { stage, message, progress }: { stage: string, message: string, progress?: number }) => {
+  console.log(`📊 Renderer progress: ${stage} - ${message} (${progress || 0}%)`);
+  // Forward progress to the conversion progress handler if needed
+  mainWindow?.webContents.send('negative-conversion-progress', { stage, message, progress });
+  return true;
+});
+
+// Helper function to wait for renderer completion
+function waitForRendererCompletion(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    pdfRenderingResolver = resolve;
+    pdfRenderingRejecter = reject;
+    
+    // Timeout after 2 minutes
+    setTimeout(() => {
+      if (pdfRenderingResolver) {
+        pdfRenderingRejecter = null;
+        pdfRenderingResolver = null;
+        reject(new Error('PDF rendering timed out'));
+      }
+    }, 120000);
+  });
+}
+
+// Export for use in services
+module.exports = { waitForRendererCompletion };
 

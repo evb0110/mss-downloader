@@ -29,6 +29,8 @@
         <div v-if="conversionStatus" class="conversion-status">
           <div class="status-header">
             <h4>{{ conversionStatus.stage }}</h4>
+          </div>
+          <div class="status-message">
             <span class="status-text">{{ conversionStatus.message }}</span>
           </div>
           
@@ -291,10 +293,7 @@ window.electronAPI?.onNegativeConversionProgress?.((progress) => {
 }
 
 .status-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .status-header h4 {
@@ -302,9 +301,16 @@ window.electronAPI?.onNegativeConversionProgress?.((progress) => {
   color: #333;
 }
 
+.status-message {
+  margin-bottom: 1rem;
+}
+
 .status-text {
   color: #666;
   font-size: 0.9rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+  display: block;
 }
 
 .progress-bar {

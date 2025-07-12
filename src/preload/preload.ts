@@ -145,6 +145,9 @@ const api = {
   convertNegativeToPositive: (data: { fileData: ArrayBuffer | Uint8Array | number[]; fileName: string; settings: any }) => 
     ipcRenderer.invoke('convert-negative-to-positive', data),
   
+  saveImageFile: (filePath: string, imageData: Uint8Array) => 
+    ipcRenderer.invoke('save-image-file', filePath, imageData),
+  
   openInFolder: (filePath: string) => 
     ipcRenderer.invoke('open-in-folder', filePath),
   
@@ -155,6 +158,20 @@ const api = {
   
   stopNegativeConversion: () => 
     ipcRenderer.invoke('stop-negative-conversion'),
+  
+  onPdfRenderingRequest: (callback: (data: { pdfData: number[], outputDir: string }) => void) => {
+    ipcRenderer.on('start-pdf-rendering', (_, data) => callback(data));
+    return () => ipcRenderer.removeAllListeners('start-pdf-rendering');
+  },
+  
+  notifyRenderingComplete: (pageCount: number) => 
+    ipcRenderer.invoke('pdf-rendering-complete', pageCount),
+  
+  notifyRenderingError: (error: string) => 
+    ipcRenderer.invoke('pdf-rendering-error', error),
+  
+  updateRenderingProgress: (stage: string, message: string, progress?: number) => 
+    ipcRenderer.invoke('pdf-rendering-progress', { stage, message, progress }),
 };
 
 try {
