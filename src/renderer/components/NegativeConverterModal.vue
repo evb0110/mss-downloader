@@ -49,11 +49,11 @@
 
         <div class="action-buttons">
           <button 
-            v-if="!isConverting && !conversionComplete" 
+            v-if="!isConverting && !conversionComplete && !outputDirectory" 
             class="choose-folder-btn" 
             @click="chooseOutputFolder"
           >
-            📁 {{ outputDirectory ? 'Change Output Folder' : 'Choose Output Folder' }}
+            📁 Choose Output Folder
           </button>
           
           <button 
@@ -63,9 +63,21 @@
           >
             🔄 Convert to Positive
           </button>
-          
+        </div>
+        
+        <!-- Secondary actions when folder is selected -->
+        <div v-if="outputDirectory && !isConverting && !conversionComplete" class="secondary-actions">
           <button 
-            v-if="conversionComplete" 
+            class="change-folder-btn" 
+            @click="chooseOutputFolder"
+          >
+            📁 Change Output Folder
+          </button>
+        </div>
+        
+        <!-- Completion actions -->
+        <div v-if="conversionComplete" class="completion-actions">
+          <button 
             class="download-btn" 
             @click="downloadResult"
           >
@@ -73,7 +85,6 @@
           </button>
           
           <button 
-            v-if="conversionComplete" 
             class="convert-another-btn" 
             @click="resetConverter"
           >
@@ -377,7 +388,7 @@ window.electronAPI?.onNegativeConversionProgress?.((progress) => {
   justify-content: center;
 }
 
-.convert-btn, .download-btn, .convert-another-btn, .choose-folder-btn {
+.convert-btn, .download-btn, .convert-another-btn, .choose-folder-btn, .change-folder-btn {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 4px;
@@ -429,5 +440,29 @@ window.electronAPI?.onNegativeConversionProgress?.((progress) => {
   margin-bottom: 1rem;
   font-size: 0.9rem;
   word-break: break-all;
+}
+
+.secondary-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.completion-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.change-folder-btn {
+  background: #6c757d;
+  color: white;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.change-folder-btn:hover {
+  background: #5a6268;
 }
 </style>

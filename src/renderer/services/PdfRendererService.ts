@@ -8,6 +8,14 @@ export class PdfRendererService {
       const originalFilePath = imageFiles[i];
       console.log(`   🔄 Inverting image ${i + 1}/${imageFiles.length}: ${originalFilePath}`);
       
+      // Update progress for this image (Stage 2: 40-80%)
+      const inversionProgress = 40 + Math.round(((i + 1) / imageFiles.length) * 40);
+      await window.electronAPI.updateRenderingProgress(
+        'Stage 2: Image Inversion', 
+        `Inverting image ${i + 1}/${imageFiles.length} from negative to positive...`, 
+        inversionProgress
+      );
+      
       try {
         // Read image from disk using fetch
         const response = await fetch(`file://${originalFilePath}`);
@@ -117,6 +125,14 @@ export class PdfRendererService {
         const imagePath = imageFiles[i];
         console.log(`   📄 Adding page ${i + 1}/${imageFiles.length}: ${imagePath}`);
         
+        // Update progress for this page (Stage 3: 80-100%)
+        const pdfProgress = 80 + Math.round(((i + 1) / imageFiles.length) * 20);
+        await window.electronAPI.updateRenderingProgress(
+          'Stage 3: Creating PDF', 
+          `Adding page ${i + 1}/${imageFiles.length} to PDF...`, 
+          pdfProgress
+        );
+        
         try {
           // Read the image file
           const response = await fetch(`file://${imagePath}`);
@@ -219,6 +235,14 @@ export class PdfRendererService {
       // Render each page (memory efficient - no storing in memory)
       for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
         console.log(`   🖼️ Rendering page ${pageNum}/${maxPages}...`);
+        
+        // Update progress for this page (Stage 1: 0-40%)
+        const pageProgress = Math.round((pageNum / maxPages) * 40);
+        await window.electronAPI.updateRenderingProgress(
+          'Stage 1: PDF Rendering', 
+          `Converting page ${pageNum}/${maxPages} to image...`, 
+          pageProgress
+        );
         
         const page = await pdfDocument.getPage(pageNum);
         const viewport = page.getViewport({ scale: 1.5 }); // 1.5x for good quality/size balance

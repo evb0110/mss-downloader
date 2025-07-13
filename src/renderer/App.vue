@@ -26,14 +26,12 @@ onMounted(() => {
     console.log(`   Final Dir: ${finalOutputDir}`)
     
     try {
-      // Stage 1: Convert PDF to images (save directly to disk)
-      await window.electronAPI.updateRenderingProgress('Stage 1: PDF Rendering', 'Converting PDF pages to images...', 40)
-      
+      // Stage 1: Convert PDF to images (save directly to disk) - progress updates handled by service
+      console.log('🔄 Starting Stage 1: PDF rendering...')
       const imageFiles = await pdfRenderer.renderPdfFromFile(pdfPath, outputDir)
       console.log(`✅ Stage 1 complete: ${imageFiles.length} images rendered to disk`)
       
-      // Stage 2: Invert images (read from disk, process, save back to disk)
-      await window.electronAPI.updateRenderingProgress('Stage 2: Image Inversion', 'Inverting colors from negative to positive...', 50)
+      // Stage 2: Invert images (read from disk, process, save back to disk) - progress updates handled by service
       console.log('🔄 Starting Stage 2: Image inversion from disk...')
       let finalFiles: string[] = [];
       
@@ -46,8 +44,7 @@ onMounted(() => {
         finalFiles = imageFiles // Use original images if inversion fails
       }
       
-      // Stage 3: Create PDF from inverted images
-      await window.electronAPI.updateRenderingProgress('Stage 3: Creating PDF', 'Assembling inverted images into PDF...', 80)
+      // Stage 3: Create PDF from inverted images - progress updates handled by service
       console.log('🔄 Starting Stage 3: PDF creation...')
       
       try {
