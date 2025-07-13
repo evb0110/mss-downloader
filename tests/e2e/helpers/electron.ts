@@ -4,6 +4,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { tmpdir } from 'os';
 import { randomBytes } from 'crypto';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,8 +23,6 @@ async function forceCleanupElectronApp(app: ElectronApplication) {
     
     try {
       // Force kill electron processes
-      const { exec } = await import('child_process');
-      const { promisify } = await import('util');
       const execAsync = promisify(exec);
       
       const projectName = 'mss-downloader';

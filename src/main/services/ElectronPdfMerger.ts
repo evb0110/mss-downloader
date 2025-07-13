@@ -1,7 +1,7 @@
 import { app, dialog } from 'electron';
 import { join } from 'path';
 import { promises as fs } from 'fs';
-import { EnhancedPdfMerger } from './EnhancedPdfMerger.js';
+import { EnhancedPdfMerger } from './EnhancedPdfMerger';
 
 interface PdfMergerOptions {
     images: Buffer[];

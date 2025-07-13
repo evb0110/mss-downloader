@@ -1,6 +1,5 @@
-import { jsPDF } from 'jspdf';
-
-let pdf: jsPDF | null = null;
+// PDF worker temporarily disabled - using main process pdf-lib instead
+let pdf: any | null = null;
 let pageCount = 0;
 
 // Unlimited canvas dimensions for maximum quality
@@ -95,12 +94,8 @@ function initializePDF(): void {
             }
         }
         
-        pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4',
-            compress: true,
-        });
+        // PDF worker disabled - using main process instead
+        throw new Error('PDF worker is disabled, using main process pdf-lib instead');
         
         pageCount = 0;
         console.log('PDF initialized successfully');

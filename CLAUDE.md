@@ -24,19 +24,28 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 
 ## MANDATORY RULES
 
-### 0. Commit strategy
+### 0. Process Management (CRITICAL - PREVENTS KILLALL VIOLATIONS)
+- **KILLALL ABSOLUTELY FORBIDDEN:** Never use `killall electron`, `killall node`, or any broad process termination commands
+- **PID-SAFE ONLY:** Always use PID-safe commands like `npm run test:e2e:kill` when available
+- **EXPLICIT USER PERMISSION:** ALL process termination requires explicit user request and approval
+- **NO AUTOMATIC CLEANUP:** Never automatically terminate processes for "cleanup" purposes
+- **DEVELOPMENT SERVERS:** Only start when explicitly requested by user
+
+### 1. Commit strategy
 - DO NOT USE `git add .` or similar!
 - User may start several jobs in parallel, so you should track all your changes and commit and push only them. User is smart enough not to start conflicting jobs
 - **CRITICAL BUG**: Bash tool may fail in certain contexts. If Bash commands return errors, create a Node.js script (.cjs file) to execute git commands using `child_process.execSync()` and run it via Bash tool as fallback
 - **TELEGRAM BOT DELIVERY VERIFICATION**: After every version bump, verify that GitHub Actions build succeeded and telegram bot notifications were sent to users. If build failed, immediately fix and ensure users receive the changelog.
 
-### 1. Version Bump Automation
-**AUTOMATIC BUMP REQUIRED** after any functional change:
+### 2. Version Bump Automation (FIXED CONTRADICTION)
+**VALIDATION TRIGGERS** for version bump consideration:
 - Bug fixes affecting app functionality
 - New features or improvements 
 - Library additions/fixes
 - Performance improvements, error message improvements
 - When user says "bump"
+
+**EXPLICIT USER APPROVAL ALWAYS REQUIRED:** Never bump version automatically, even with trigger conditions
 - Telegram bot should send changelog message for every build. It should contain non-technical summary of all fixes and additions after last build: Libraries added, new url patterns for downloads etc. It should be concise, but user should understand from it all the new functionality.
 
 ### CRITICAL TELEGRAM BOT CHANGELOG REQUIREMENTS:
@@ -144,9 +153,10 @@ When adding/fixing libraries, **MANDATORY validation:**
 - Main process: downloading, merging, file operations
 - Renderer process: UI configuration, user interaction  
 - Show minimal output - current task + small summary only
-- **Development Commands:**
-  - `npm run dev` - runs with visible window (for user interaction)
-  - `npm run dev:headless` - runs in headless mode (for automated testing/Claude usage)
+- **Development Commands (EXPLICIT USER REQUEST REQUIRED):**
+  - `npm run dev` - visible window (only when user explicitly requests UI interaction)
+  - `npm run dev:headless` - headless mode (only for validation when explicitly requested)
+- **DEVELOPMENT SERVER POLICY:** Never automatically start development servers without explicit user permission
 - **CRITICAL**: ALWAYS test for maximum possible image resolution when implementing any library - users must get the highest quality available
 
 ## TODO Management

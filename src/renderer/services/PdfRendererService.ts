@@ -61,12 +61,12 @@ export class PdfRendererService {
         ctx.putImageData(imageDataCanvas, 0, 0);
         console.log(`     ✅ Colors inverted successfully`);
         
-        // Convert canvas to blob with JPEG compression
+        // Convert canvas to blob with high-quality JPEG
         const invertedBlob = await new Promise<Blob>((resolve) => {
           canvas.toBlob((blob) => {
             if (blob) resolve(blob);
             else throw new Error('Failed to create blob from canvas');
-          }, 'image/jpeg', 0.85); // 85% quality JPEG
+          }, 'image/jpeg', 0.95); // 95% quality to prevent artifacts
         });
         
         // Convert blob to array buffer
@@ -244,12 +244,12 @@ export class PdfRendererService {
           viewport: viewport
         }).promise;
         
-        // Convert to blob with JPEG compression for smaller file size
+        // Convert to blob with high-quality JPEG to avoid artifacts
         const blob = await new Promise<Blob>((resolve) => {
           canvas.toBlob((blob) => {
             if (blob) resolve(blob);
             else throw new Error(`Failed to create blob for page ${pageNum}`);
-          }, 'image/jpeg', 0.85); // 85% quality JPEG for much smaller files
+          }, 'image/jpeg', 0.95); // 95% quality to prevent artifacts and flashing
         });
         
         // Convert blob to array buffer
@@ -333,12 +333,12 @@ export class PdfRendererService {
           viewport: viewport
         }).promise;
         
-        // Convert to blob with JPEG compression for smaller file size
+        // Convert to blob with high-quality JPEG to avoid artifacts
         const blob = await new Promise<Blob>((resolve) => {
           canvas.toBlob((blob) => {
             if (blob) resolve(blob);
             else throw new Error(`Failed to create blob for page ${pageNum}`);
-          }, 'image/jpeg', 0.85); // 85% quality JPEG for much smaller files
+          }, 'image/jpeg', 0.95); // 95% quality to prevent artifacts and flashing
         });
         
         // Convert blob to array buffer

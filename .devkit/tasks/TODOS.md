@@ -88,6 +88,15 @@
 **Status:** Pending  
 **Priority:** Low  
 
+### 12. Fulda Library PPN ID Extraction Fix
+**URLs:** 
+- https://fuldig.hs-fulda.de/viewer/image/PPN314753702/
+- https://fuldig.hs-fulda.de/viewer/api/v1/records/PPN314753702/manifest/
+**Issue:** Fulda library stopped working - cannot extract PPN ID from URL despite previously working for 3 manuscripts
+**Error:** `Error invoking remote method 'parse-manuscript-url': Error: Failed to load Fulda manuscript: Could not extract PPN ID from Fulda URLhttps://fuldig.hs-fulda.de/viewer/api/v1/records/PPN314753702/manifest/`
+**Status:** Pending  
+**Priority:** High  
+
 ---
 
 ## Notes

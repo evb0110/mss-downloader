@@ -314,7 +314,14 @@ export class ZifImageProcessor {
             try {
                 Canvas = await import('canvas' as any);
             } catch (error) {
-                throw new Error('Canvas dependency not available. Morgan Library .zif processing requires Canvas for tile stitching. Run: npm install canvas');
+                // Canvas not available (e.g., ARM64 build) - return first tile as fallback
+                console.warn('Canvas dependency not available on this platform. Morgan Library .zif processing limited to first tile only.');
+                if (tiles.length > 0) {
+                    console.log('Returning first tile as fallback image...');
+                    return tiles[0].data;
+                } else {
+                    throw new Error('No tiles available and Canvas not installed. Cannot process Morgan Library .zif files on this platform.');
+                }
             }
             
             // Create canvas with full image dimensions

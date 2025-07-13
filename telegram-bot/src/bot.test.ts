@@ -1,10 +1,10 @@
-import { test, describe } from 'node:test';
-import assert from 'node:assert';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { BuildUtils } from './build-utils.js';
-import type { Subscriber, Platform } from './types.js';
+const { test, describe } = require('test');
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const { fileURLToPath } = require('url');
+const { BuildUtils } = require('./build-utils.js');
+const { Subscriber, Platform } = require('./types.js');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { app } from 'electron';
-import { configService } from './ConfigService.js';
+import { configService } from './ConfigService';
 
 export class ManifestCache {
     private cacheDir: string;

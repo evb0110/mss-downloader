@@ -760,10 +760,11 @@ ipcMain.handle('solve-captcha', async (_event, url: string) => {
 });
 
 // Negative converter handlers
-ipcMain.handle('convert-negative-to-positive', async (_event, { fileData, fileName, settings }: {
+ipcMain.handle('convert-negative-to-positive', async (_event, { fileData, fileName, settings, originalFilePath }: {
   fileData: number[] | Uint8Array | ArrayBuffer;
   fileName: string;
   settings: ConversionSettings;
+  originalFilePath?: string;
 }) => {
   if (!negativeConverter) {
     throw new Error('Negative converter not initialized');
@@ -787,7 +788,8 @@ ipcMain.handle('convert-negative-to-positive', async (_event, { fileData, fileNa
     settings,
     (progress) => {
       mainWindow?.webContents.send('negative-conversion-progress', progress);
-    }
+    },
+    originalFilePath
   );
 });
 

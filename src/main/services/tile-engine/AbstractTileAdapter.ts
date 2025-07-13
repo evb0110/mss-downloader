@@ -4,7 +4,7 @@ import {
   TileAuthConfig,
   TileCoordinate,
   TileValidationResult
-} from './interfaces.js';
+} from './interfaces';
 
 export abstract class AbstractTileAdapter implements ITileAdapter {
   abstract readonly name: string;

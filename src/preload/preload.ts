@@ -142,7 +142,7 @@ const api = {
   solveCaptcha: (url: string) => ipcRenderer.invoke('solve-captcha', url),
   
   // Negative converter methods
-  convertNegativeToPositive: (data: { fileData: ArrayBuffer | Uint8Array | number[]; fileName: string; settings: any }) => 
+  convertNegativeToPositive: (data: { fileData: ArrayBuffer | Uint8Array | number[]; fileName: string; settings: any; originalFilePath?: string }) => 
     ipcRenderer.invoke('convert-negative-to-positive', data),
   
   saveImageFile: (filePath: string, imageData: Uint8Array) => 

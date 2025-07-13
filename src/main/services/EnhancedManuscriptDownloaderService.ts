@@ -2,16 +2,17 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { app } from 'electron';
 import { PDFDocument, rgb } from 'pdf-lib';
-import { ManifestCache } from './ManifestCache.js';
-import { configService } from './ConfigService.js';
-import { LibraryOptimizationService } from './LibraryOptimizationService.js';
-import { createProgressMonitor } from './IntelligentProgressMonitor.js';
-import { ZifImageProcessor } from './ZifImageProcessor.js';
-import { TileEngineService } from './tile-engine/TileEngineService.js';
+import { ManifestCache } from './ManifestCache';
+import { configService } from './ConfigService';
+import { LibraryOptimizationService } from './LibraryOptimizationService';
+import { createProgressMonitor } from './IntelligentProgressMonitor';
+import { ZifImageProcessor } from './ZifImageProcessor';
+import { TileEngineService } from './tile-engine/TileEngineService';
 import type { ManuscriptManifest, LibraryInfo } from '../../shared/types';
 import type { TLibrary } from '../../shared/queueTypes';
 import * as https from 'https';
 import { JSDOM } from 'jsdom';
+import { execSync } from 'child_process';
 
 const MIN_VALID_IMAGE_SIZE_BYTES = 1024; // 1KB heuristic
 
@@ -8163,7 +8164,6 @@ export class EnhancedManuscriptDownloaderService {
                     console.log(`MDC Catalonia: Network error on attempt ${attempt}, trying curl fallback: ${error.message}`);
                     
                     try {
-                        const { execSync } = await import('child_process');
                         const headers = options.headers || {};
                         const userAgent = headers['User-Agent'] || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
                         const accept = headers['Accept'] || '*/*';
@@ -8932,7 +8932,4 @@ export class EnhancedManuscriptDownloaderService {
             throw new Error(`Failed to load Fulda manuscript: ${(error as Error).message}`);
         }
     }
-
-
-
 }

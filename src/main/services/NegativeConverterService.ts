@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs';
-import { join, basename } from 'path';
+import { join, basename, dirname } from 'path';
 import { app } from 'electron';
 import os from 'os';
 
@@ -51,7 +51,8 @@ export class NegativeConverterService {
     fileData: Uint8Array,
     fileName: string,
     _settings: ConversionSettings,
-    onProgress?: (progress: ConversionProgress) => void
+    onProgress?: (progress: ConversionProgress) => void,
+    originalFilePath?: string
   ): Promise<ConversionResult> {
     try {
       onProgress?.({
@@ -82,16 +83,21 @@ export class NegativeConverterService {
       // Get the original filename without extension
       const originalBaseName = basename(fileName, '.pdf');
       
-      // Create output directory in Downloads folder
-      let downloadsPath: string;
-      try {
-        downloadsPath = app.getPath('downloads');
-      } catch {
-        // Fallback for testing without Electron
-        downloadsPath = join(os.homedir(), 'Downloads');
+      // Create output directory in same folder as source file (or Downloads as fallback)
+      let outputDir: string;
+      if (originalFilePath) {
+        const sourceDir = dirname(originalFilePath);
+        outputDir = join(sourceDir, `${originalBaseName}_images_${timestamp}`);
+      } else {
+        // Fallback to Downloads folder
+        let downloadsPath: string;
+        try {
+          downloadsPath = app.getPath('downloads');
+        } catch {
+          downloadsPath = join(os.homedir(), 'Downloads');
+        }
+        outputDir = join(downloadsPath, `${originalBaseName}_images_${timestamp}`);
       }
-      
-      const outputDir = join(downloadsPath, `${originalBaseName}_images_${timestamp}`);
       await fs.mkdir(outputDir, { recursive: true });
 
       onProgress?.({

@@ -1,13 +1,13 @@
 import * as path from 'path';
 import { app } from 'electron';
-import { TileEngineCore } from './TileEngineCore.js';
+import { TileEngineCore } from './TileEngineCore';
 import {
   TileEngineConfig,
   TileEngineResult,
   TileDownloadCallbacks,
   ITileAdapter,
   TileDownloadProgress
-} from './interfaces.js';
+} from './interfaces';
 
 export class TileEngineService {
   private engine: TileEngineCore;

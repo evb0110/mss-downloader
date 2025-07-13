@@ -4,10 +4,10 @@ import * as fsSync from 'fs';
 import path from 'path';
 import { app } from 'electron';
 import Store from 'electron-store';
-import { EnhancedManuscriptDownloaderService } from './EnhancedManuscriptDownloaderService.js';
-import { configService } from './ConfigService.js';
-import { ManifestCache } from './ManifestCache.js';
-import { LibraryOptimizationService } from './LibraryOptimizationService.js';
+import { EnhancedManuscriptDownloaderService } from './EnhancedManuscriptDownloaderService';
+import { configService } from './ConfigService';
+import { ManifestCache } from './ManifestCache';
+import { LibraryOptimizationService } from './LibraryOptimizationService';
 import type { QueuedManuscript, QueueState, TLibrary, TStage, TSimultaneousMode } from '../../shared/queueTypes';
 
 export class EnhancedDownloadQueue extends EventEmitter {

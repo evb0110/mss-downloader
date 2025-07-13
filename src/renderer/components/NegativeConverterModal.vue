@@ -59,6 +59,14 @@
           >
             📁 Open in Finder
           </button>
+          
+          <button 
+            v-if="conversionComplete" 
+            class="convert-another-btn" 
+            @click="resetConverter"
+          >
+            🔄 Convert Another File
+          </button>
         </div>
       </div>
     </div>
@@ -151,7 +159,8 @@ const startConversion = async () => {
       settings: {
         quality: conversionSettings.quality,
         dpi: conversionSettings.dpi
-      }
+      },
+      originalFilePath: undefined // File picker doesn't provide full path for security
     })
 
     if (result.success) {
@@ -343,7 +352,7 @@ window.electronAPI?.onNegativeConversionProgress?.((progress) => {
   justify-content: center;
 }
 
-.convert-btn, .download-btn {
+.convert-btn, .download-btn, .convert-another-btn {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 4px;
@@ -368,5 +377,14 @@ window.electronAPI?.onNegativeConversionProgress?.((progress) => {
 
 .download-btn:hover {
   background: #1e7e34;
+}
+
+.convert-another-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.convert-another-btn:hover {
+  background: #5a6268;
 }
 </style>

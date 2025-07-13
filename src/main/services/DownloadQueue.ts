@@ -1,8 +1,8 @@
 import { EventEmitter } from 'events';
-import { ManuscriptDownloaderService } from './ManuscriptDownloaderService.js';
-import { ElectronPdfMerger } from './ElectronPdfMerger.js';
-import { configService } from './ConfigService.js';
-import type { QueuedManuscript, QueueState, TStage, TLibrary, TSimultaneousMode } from '../../shared/queueTypes.js';
+import { ManuscriptDownloaderService } from './ManuscriptDownloaderService';
+import { ElectronPdfMerger } from './ElectronPdfMerger';
+import { configService } from './ConfigService';
+import type { QueuedManuscript, QueueState, TStage, TLibrary, TSimultaneousMode } from '../../shared/queueTypes';
 import Store from 'electron-store';
 
 export class DownloadQueue extends EventEmitter {

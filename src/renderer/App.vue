@@ -55,6 +55,9 @@ onMounted(() => {
       
       console.log('📁 All files saved to:', outputDir)
       
+      // Final progress update
+      await window.electronAPI.updateRenderingProgress('Conversion Complete! ✅', `Successfully processed ${finalFiles.length} pages`, 100)
+      
       // Notify main process that rendering and inversion are complete
       await window.electronAPI.notifyRenderingComplete(finalFiles.length)
     } catch (error) {
