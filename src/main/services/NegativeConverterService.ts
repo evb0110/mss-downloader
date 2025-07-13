@@ -112,12 +112,9 @@ export class NegativeConverterService {
       console.log(`   PDF: ${tempPdfPath}`);
       console.log(`   Output: ${outputDir}`);
 
-      // Read PDF data and send to renderer process
-      const pdfData = await fs.readFile(tempPdfPath);
-      
-      // Send PDF data directly to renderer (not file path)
+      // Send PDF file path to renderer process (avoid memory issues with large files)
       mainWindow.webContents.send('start-pdf-rendering', { 
-        pdfData: Array.from(pdfData), // Convert to array for IPC transfer
+        pdfPath: tempPdfPath, // Send file path instead of data
         outputDir: outputDir 
       });
 

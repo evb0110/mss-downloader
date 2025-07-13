@@ -159,7 +159,7 @@ const api = {
   stopNegativeConversion: () => 
     ipcRenderer.invoke('stop-negative-conversion'),
   
-  onPdfRenderingRequest: (callback: (data: { pdfData: number[], outputDir: string }) => void) => {
+  onPdfRenderingRequest: (callback: (data: { pdfPath: string, outputDir: string }) => void) => {
     ipcRenderer.on('start-pdf-rendering', (_, data) => callback(data));
     return () => ipcRenderer.removeAllListeners('start-pdf-rendering');
   },

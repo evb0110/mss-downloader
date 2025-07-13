@@ -1,18 +1,23 @@
 export class PdfRendererService {
-  async invertImageData(imageDataArray: Uint8Array[], outputDir: string): Promise<string[]> {
-    console.log(`🔄 Inverting ${imageDataArray.length} images using Canvas API...`);
+  async invertImageFiles(imageFiles: string[], outputDir: string): Promise<string[]> {
+    console.log(`🔄 Inverting ${imageFiles.length} images using Canvas API (disk-based)...`);
     
     const invertedFiles: string[] = [];
     
-    for (let i = 0; i < imageDataArray.length; i++) {
-      const imageData = imageDataArray[i];
-      console.log(`   🔄 Inverting image ${i + 1}/${imageDataArray.length}`);
+    for (let i = 0; i < imageFiles.length; i++) {
+      const originalFilePath = imageFiles[i];
+      console.log(`   🔄 Inverting image ${i + 1}/${imageFiles.length}: ${originalFilePath}`);
       
       try {
-        console.log(`     📄 Processing ${imageData.length} bytes of image data`);
+        // Read image from disk using fetch
+        const response = await fetch(`file://${originalFilePath}`);
+        if (!response.ok) {
+          throw new Error(`Failed to read image file: ${response.status}`);
+        }
         
-        // Create a blob from the image data
-        const blob = new Blob([imageData], { type: 'image/png' });
+        const blob = await response.blob();
+        console.log(`     📄 Read ${blob.size} bytes from disk`);
+        
         const imageUrl = URL.createObjectURL(blob);
         
         // Load image into an HTML Image element
@@ -77,8 +82,10 @@ export class PdfRendererService {
         await window.electronAPI.saveImageFile(invertedPath, new Uint8Array(invertedBuffer));
         console.log(`     ✅ File saved successfully`);
         
-        // Clean up
+        // Clean up memory immediately
         URL.revokeObjectURL(imageUrl);
+        canvas.width = 0;
+        canvas.height = 0;
         
         invertedFiles.push(invertedPath);
         console.log(`   ✅ Inverted page ${i + 1}: ${invertedPath}`);
@@ -160,8 +167,30 @@ export class PdfRendererService {
     }
   }
 
-  async renderPdfToImages(pdfData: number[], outputDir: string): Promise<{ files: string[], imageData: Uint8Array[] }> {
-    console.log(`🖼️ Rendering PDF to images from data (${pdfData.length} bytes)`);
+  async renderPdfFromFile(pdfPath: string, outputDir: string): Promise<string[]> {
+    console.log(`🖼️ Reading PDF file from: ${pdfPath}`);
+    
+    try {
+      // Read PDF file from disk
+      const response = await fetch(`file://${pdfPath}`);
+      if (!response.ok) {
+        throw new Error(`Failed to read PDF file: ${response.status}`);
+      }
+      
+      const pdfBuffer = await response.arrayBuffer();
+      const pdfUint8Array = new Uint8Array(pdfBuffer);
+      console.log(`📄 PDF file loaded: ${pdfUint8Array.length} bytes`);
+      
+      // Use Uint8Array directly to avoid array length limits
+      return this.renderPdfFromUint8Array(pdfUint8Array, outputDir);
+    } catch (error) {
+      console.error('❌ Failed to read PDF file:', error);
+      throw error;
+    }
+  }
+
+  async renderPdfFromUint8Array(pdfUint8Array: Uint8Array, outputDir: string): Promise<string[]> {
+    console.log(`🖼️ Rendering PDF to images from Uint8Array (${pdfUint8Array.length} bytes)`);
     
     try {
       // Load PDF.js
@@ -173,11 +202,9 @@ export class PdfRendererService {
         import.meta.url
       ).toString();
       
-      // Convert array back to Uint8Array
-      const pdfUint8Array = new Uint8Array(pdfData);
-      console.log(`📄 Converted to Uint8Array: ${pdfUint8Array.length} bytes`);
+      console.log(`📄 Loading PDF document directly from Uint8Array: ${pdfUint8Array.length} bytes`);
       
-      // Load PDF document
+      // Load PDF document directly from Uint8Array
       const loadingTask = pdfjsLib.getDocument({ data: pdfUint8Array });
       const pdfDocument = await loadingTask.promise;
       
@@ -190,9 +217,8 @@ export class PdfRendererService {
       }
       
       const imageFiles: string[] = [];
-      const imageDataArray: Uint8Array[] = [];
       
-      // Render each page
+      // Render each page (memory efficient - no storing in memory)
       for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
         console.log(`   🖼️ Rendering page ${pageNum}/${maxPages}...`);
         
@@ -228,7 +254,7 @@ export class PdfRendererService {
         const arrayBuffer = await blob.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
         
-        // Save original to file using IPC
+        // Save to file using IPC (immediately to disk, not in memory)
         const fileName = `page-${pageNum.toString().padStart(3, '0')}.png`;
         const filePath = `${outputDir}/${fileName}`;
         
@@ -236,12 +262,106 @@ export class PdfRendererService {
         await window.electronAPI.saveImageFile(filePath, uint8Array);
         
         imageFiles.push(filePath);
-        imageDataArray.push(uint8Array); // Keep image data for inversion
         console.log(`   ✅ Saved page ${pageNum}: ${filePath}`);
+        
+        // Clear canvas and context to free memory
+        canvas.width = 0;
+        canvas.height = 0;
       }
       
-      console.log(`✅ Successfully rendered ${imageFiles.length} pages`);
-      return { files: imageFiles, imageData: imageDataArray };
+      console.log(`✅ Successfully rendered ${imageFiles.length} pages to disk`);
+      return imageFiles;
+      
+    } catch (error) {
+      console.error('❌ PDF rendering failed:', error);
+      throw error;
+    }
+  }
+
+  async renderPdfToImages(pdfData: number[], outputDir: string): Promise<string[]> {
+    console.log(`🖼️ Rendering PDF to images from data (${pdfData.length} bytes)`);
+    
+    try {
+      // Load PDF.js
+      const pdfjsLib = await import('pdfjs-dist');
+      
+      // Set up worker path (works for both dev and production)
+      pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+        'pdfjs-dist/build/pdf.worker.min.mjs',
+        import.meta.url
+      ).toString();
+      
+      // Convert array back to Uint8Array
+      const pdfUint8Array = new Uint8Array(pdfData);
+      console.log(`📄 Converted to Uint8Array: ${pdfUint8Array.length} bytes`);
+      
+      // Load PDF document
+      const loadingTask = pdfjsLib.getDocument({ data: pdfUint8Array });
+      const pdfDocument = await loadingTask.promise;
+      
+      console.log(`📄 PDF loaded - ${pdfDocument.numPages} pages`);
+      
+      // Limit to first 10 pages for testing to avoid timeout/memory issues
+      const maxPages = Math.min(pdfDocument.numPages, 10);
+      if (pdfDocument.numPages > 10) {
+        console.log(`⚠️ Large PDF detected (${pdfDocument.numPages} pages), limiting to first ${maxPages} pages for testing`);
+      }
+      
+      const imageFiles: string[] = [];
+      
+      // Render each page (memory efficient - no storing in memory)
+      for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+        console.log(`   🖼️ Rendering page ${pageNum}/${maxPages}...`);
+        
+        const page = await pdfDocument.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 2.0 }); // 2x for quality
+        
+        // Create canvas using browser API
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        
+        if (!context) {
+          throw new Error(`Failed to get 2D context for page ${pageNum}`);
+        }
+        
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        
+        // Render PDF page to canvas
+        await page.render({
+          canvasContext: context,
+          viewport: viewport
+        }).promise;
+        
+        // Convert to blob
+        const blob = await new Promise<Blob>((resolve) => {
+          canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else throw new Error(`Failed to create blob for page ${pageNum}`);
+          }, 'image/png');
+        });
+        
+        // Convert blob to array buffer
+        const arrayBuffer = await blob.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
+        
+        // Save to file using IPC (immediately to disk, not in memory)
+        const fileName = `page-${pageNum.toString().padStart(3, '0')}.png`;
+        const filePath = `${outputDir}/${fileName}`;
+        
+        // Use IPC to save file in main process
+        await window.electronAPI.saveImageFile(filePath, uint8Array);
+        
+        imageFiles.push(filePath);
+        console.log(`   ✅ Saved page ${pageNum}: ${filePath}`);
+        
+        // Clear canvas and context to free memory
+        canvas.width = 0;
+        canvas.height = 0;
+      }
+      
+      console.log(`✅ Successfully rendered ${imageFiles.length} pages to disk`);
+      return imageFiles;
       
     } catch (error) {
       console.error('❌ PDF rendering failed:', error);

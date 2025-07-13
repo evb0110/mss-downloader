@@ -14,30 +14,30 @@ const pdfRenderer = new PdfRendererService()
 let ipcCleanup: (() => void) | null = null
 
 onMounted(() => {
-  const handlePdfRendering = async ({ pdfData, outputDir }: { pdfData: number[], outputDir: string }) => {
+  const handlePdfRendering = async ({ pdfPath, outputDir }: { pdfPath: string, outputDir: string }) => {
     console.log('🖼️ Received PDF rendering request in renderer process')
-    console.log(`   PDF data: ${pdfData.length} bytes`)
+    console.log(`   PDF path: ${pdfPath}`)
     console.log(`   Output: ${outputDir}`)
     
     try {
-      // Stage 1: Convert PDF to images
+      // Stage 1: Convert PDF to images (save directly to disk)
       await window.electronAPI.updateRenderingProgress('Stage 1: PDF Rendering', 'Converting PDF pages to images...', 40)
       
-      const renderResult = await pdfRenderer.renderPdfToImages(pdfData, outputDir)
-      console.log(`✅ Stage 1 complete: ${renderResult.files.length} images rendered`)
+      const imageFiles = await pdfRenderer.renderPdfFromFile(pdfPath, outputDir)
+      console.log(`✅ Stage 1 complete: ${imageFiles.length} images rendered to disk`)
       
-      // Stage 2: Invert images using Canvas API (memory efficient)
+      // Stage 2: Invert images (read from disk, process, save back to disk)
       await window.electronAPI.updateRenderingProgress('Stage 2: Image Inversion', 'Inverting colors from negative to positive...', 50)
-      console.log('🔄 Starting Stage 2: Image inversion...')
+      console.log('🔄 Starting Stage 2: Image inversion from disk...')
       let finalFiles: string[] = [];
       
       try {
-        const invertedFiles = await pdfRenderer.invertImageData(renderResult.imageData, outputDir)
+        const invertedFiles = await pdfRenderer.invertImageFiles(imageFiles, outputDir)
         console.log(`✅ Stage 2 complete: ${invertedFiles.length} images inverted`)
         finalFiles = invertedFiles
       } catch (inversionError) {
         console.error('❌ Image inversion failed, keeping original images:', inversionError)
-        finalFiles = renderResult.files // Use original images if inversion fails
+        finalFiles = imageFiles // Use original images if inversion fails
       }
       
       // Stage 3: Create PDF from inverted images
