@@ -45,8 +45,10 @@ onMounted(() => {
       console.log('🔄 Starting Stage 3: PDF creation...')
       
       try {
-        const pdfPath = await pdfRenderer.createPdfFromImages(finalFiles, outputDir)
-        console.log(`✅ Stage 3 complete: PDF created at ${pdfPath}`)
+        // Extract source filename for better naming
+        const sourceFileName = pdfPath.split(/[/\\]/).pop() || 'input.pdf'
+        const createdPdfPath = await pdfRenderer.createPdfFromImages(finalFiles, outputDir, sourceFileName)
+        console.log(`✅ Stage 3 complete: PDF created at ${createdPdfPath}`)
       } catch (pdfError) {
         console.error('❌ PDF creation failed:', pdfError)
       }

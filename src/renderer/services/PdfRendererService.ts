@@ -61,20 +61,20 @@ export class PdfRendererService {
         ctx.putImageData(imageDataCanvas, 0, 0);
         console.log(`     ✅ Colors inverted successfully`);
         
-        // Convert canvas to blob
+        // Convert canvas to blob with JPEG compression
         const invertedBlob = await new Promise<Blob>((resolve) => {
           canvas.toBlob((blob) => {
             if (blob) resolve(blob);
             else throw new Error('Failed to create blob from canvas');
-          }, 'image/png');
+          }, 'image/jpeg', 0.85); // 85% quality JPEG
         });
         
         // Convert blob to array buffer
         const invertedBuffer = await invertedBlob.arrayBuffer();
         console.log(`     📦 Buffer created: ${invertedBuffer.byteLength} bytes`);
         
-        // Save inverted image
-        const fileName = `inverted-page-${(i + 1).toString().padStart(3, '0')}.png`;
+        // Save inverted image as JPEG for smaller file size
+        const fileName = `inverted-page-${(i + 1).toString().padStart(3, '0')}.jpg`;
         const invertedPath = `${outputDir}/${fileName}`;
         
         console.log(`     💾 Saving to: ${invertedPath}`);
@@ -93,8 +93,8 @@ export class PdfRendererService {
       } catch (error) {
         console.error(`   ❌ Failed to invert image ${i + 1}:`, error);
         console.error('   Error details:', error);
-        // Create a placeholder name if inversion fails
-        const fileName = `failed-invert-page-${(i + 1).toString().padStart(3, '0')}.png`;
+        // Create a placeholder name if inversion fails  
+        const fileName = `failed-invert-page-${(i + 1).toString().padStart(3, '0')}.jpg`;
         invertedFiles.push(`${outputDir}/${fileName}`);
       }
     }
@@ -103,7 +103,7 @@ export class PdfRendererService {
     return invertedFiles;
   }
 
-  async createPdfFromImages(imageFiles: string[], outputDir: string): Promise<string> {
+  async createPdfFromImages(imageFiles: string[], outputDir: string, sourceFileName?: string): Promise<string> {
     console.log(`📄 Creating PDF from ${imageFiles.length} images...`);
     
     try {
@@ -125,8 +125,8 @@ export class PdfRendererService {
           }
           const imageBytes = await response.arrayBuffer();
           
-          // Embed the image
-          const image = await pdfDoc.embedPng(new Uint8Array(imageBytes));
+          // Embed the image (JPEG format)
+          const image = await pdfDoc.embedJpg(new Uint8Array(imageBytes));
           
           // Create a page with the same dimensions as the image
           const page = pdfDoc.addPage([image.width, image.height]);
@@ -151,8 +151,12 @@ export class PdfRendererService {
       console.log(`   💾 Saving PDF document...`);
       const pdfBytes = await pdfDoc.save();
       
-      // Save PDF to output directory
-      const pdfFileName = 'converted-document.pdf';
+      // Create PDF filename based on source
+      let pdfFileName = 'converted-document_inverted.pdf';
+      if (sourceFileName) {
+        const baseName = sourceFileName.replace(/\.pdf$/i, '');
+        pdfFileName = `${baseName}_inverted.pdf`;
+      }
       const pdfPath = `${outputDir}/${pdfFileName}`;
       
       // Use IPC to save PDF file
@@ -210,11 +214,9 @@ export class PdfRendererService {
       
       console.log(`📄 PDF loaded - ${pdfDocument.numPages} pages`);
       
-      // Limit to first 10 pages for testing to avoid timeout/memory issues
-      const maxPages = Math.min(pdfDocument.numPages, 10);
-      if (pdfDocument.numPages > 10) {
-        console.log(`⚠️ Large PDF detected (${pdfDocument.numPages} pages), limiting to first ${maxPages} pages for testing`);
-      }
+      // Process all pages (no artificial limit)
+      const maxPages = pdfDocument.numPages;
+      console.log(`📄 Processing all ${maxPages} pages...`);
       
       const imageFiles: string[] = [];
       
@@ -223,7 +225,7 @@ export class PdfRendererService {
         console.log(`   🖼️ Rendering page ${pageNum}/${maxPages}...`);
         
         const page = await pdfDocument.getPage(pageNum);
-        const viewport = page.getViewport({ scale: 2.0 }); // 2x for quality
+        const viewport = page.getViewport({ scale: 1.5 }); // 1.5x for good quality/size balance
         
         // Create canvas using browser API
         const canvas = document.createElement('canvas');
@@ -242,20 +244,20 @@ export class PdfRendererService {
           viewport: viewport
         }).promise;
         
-        // Convert to blob
+        // Convert to blob with JPEG compression for smaller file size
         const blob = await new Promise<Blob>((resolve) => {
           canvas.toBlob((blob) => {
             if (blob) resolve(blob);
             else throw new Error(`Failed to create blob for page ${pageNum}`);
-          }, 'image/png');
+          }, 'image/jpeg', 0.85); // 85% quality JPEG for much smaller files
         });
         
         // Convert blob to array buffer
         const arrayBuffer = await blob.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
         
-        // Save to file using IPC (immediately to disk, not in memory)
-        const fileName = `page-${pageNum.toString().padStart(3, '0')}.png`;
+        // Save to file using IPC (immediately to disk, not in memory)  
+        const fileName = `page-${pageNum.toString().padStart(3, '0')}.jpg`;
         const filePath = `${outputDir}/${fileName}`;
         
         // Use IPC to save file in main process
@@ -301,11 +303,9 @@ export class PdfRendererService {
       
       console.log(`📄 PDF loaded - ${pdfDocument.numPages} pages`);
       
-      // Limit to first 10 pages for testing to avoid timeout/memory issues
-      const maxPages = Math.min(pdfDocument.numPages, 10);
-      if (pdfDocument.numPages > 10) {
-        console.log(`⚠️ Large PDF detected (${pdfDocument.numPages} pages), limiting to first ${maxPages} pages for testing`);
-      }
+      // Process all pages (no artificial limit)
+      const maxPages = pdfDocument.numPages;
+      console.log(`📄 Processing all ${maxPages} pages...`);
       
       const imageFiles: string[] = [];
       
@@ -314,7 +314,7 @@ export class PdfRendererService {
         console.log(`   🖼️ Rendering page ${pageNum}/${maxPages}...`);
         
         const page = await pdfDocument.getPage(pageNum);
-        const viewport = page.getViewport({ scale: 2.0 }); // 2x for quality
+        const viewport = page.getViewport({ scale: 1.5 }); // 1.5x for good quality/size balance
         
         // Create canvas using browser API
         const canvas = document.createElement('canvas');
@@ -333,20 +333,20 @@ export class PdfRendererService {
           viewport: viewport
         }).promise;
         
-        // Convert to blob
+        // Convert to blob with JPEG compression for smaller file size
         const blob = await new Promise<Blob>((resolve) => {
           canvas.toBlob((blob) => {
             if (blob) resolve(blob);
             else throw new Error(`Failed to create blob for page ${pageNum}`);
-          }, 'image/png');
+          }, 'image/jpeg', 0.85); // 85% quality JPEG for much smaller files
         });
         
         // Convert blob to array buffer
         const arrayBuffer = await blob.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
         
-        // Save to file using IPC (immediately to disk, not in memory)
-        const fileName = `page-${pageNum.toString().padStart(3, '0')}.png`;
+        // Save to file using IPC (immediately to disk, not in memory)  
+        const fileName = `page-${pageNum.toString().padStart(3, '0')}.jpg`;
         const filePath = `${outputDir}/${fileName}`;
         
         // Use IPC to save file in main process
