@@ -48,6 +48,7 @@
         </div>
 
         <div class="action-buttons">
+          <!-- Choose folder button (only when no folder selected) -->
           <button 
             v-if="!isConverting && !conversionComplete && !outputDirectory" 
             class="choose-folder-btn" 
@@ -56,6 +57,7 @@
             📁 Choose Output Folder
           </button>
           
+          <!-- Convert button (always shown when not converting/complete) -->
           <button 
             v-if="!isConverting && !conversionComplete" 
             class="convert-btn" 
@@ -63,21 +65,19 @@
           >
             🔄 Convert to Positive
           </button>
-        </div>
-        
-        <!-- Secondary actions when folder is selected -->
-        <div v-if="outputDirectory && !isConverting && !conversionComplete" class="secondary-actions">
+          
+          <!-- Change folder button (small, when folder already selected) -->
           <button 
+            v-if="outputDirectory && !isConverting && !conversionComplete" 
             class="change-folder-btn" 
             @click="chooseOutputFolder"
           >
-            📁 Change Output Folder
+            📁 Change Folder
           </button>
-        </div>
-        
-        <!-- Completion actions -->
-        <div v-if="conversionComplete" class="completion-actions">
+          
+          <!-- Completion buttons (when done) -->
           <button 
+            v-if="conversionComplete" 
             class="download-btn" 
             @click="downloadResult"
           >
@@ -85,6 +85,7 @@
           </button>
           
           <button 
+            v-if="conversionComplete" 
             class="convert-another-btn" 
             @click="resetConverter"
           >
@@ -440,19 +441,6 @@ window.electronAPI?.onNegativeConversionProgress?.((progress) => {
   margin-bottom: 1rem;
   font-size: 0.9rem;
   word-break: break-all;
-}
-
-.secondary-actions {
-  display: flex;
-  justify-content: center;
-  margin-top: 0.5rem;
-}
-
-.completion-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 1rem;
 }
 
 .change-folder-btn {
