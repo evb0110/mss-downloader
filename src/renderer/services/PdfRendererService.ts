@@ -103,7 +103,7 @@ export class PdfRendererService {
     return invertedFiles;
   }
 
-  async createPdfFromImages(imageFiles: string[], outputDir: string, sourceFileName?: string): Promise<string> {
+  async createPdfFromImages(imageFiles: string[], outputDir: string, customFileName?: string): Promise<string> {
     console.log(`📄 Creating PDF from ${imageFiles.length} images...`);
     
     try {
@@ -151,12 +151,8 @@ export class PdfRendererService {
       console.log(`   💾 Saving PDF document...`);
       const pdfBytes = await pdfDoc.save();
       
-      // Create PDF filename based on source
-      let pdfFileName = 'converted-document_inverted.pdf';
-      if (sourceFileName) {
-        const baseName = sourceFileName.replace(/\.pdf$/i, '');
-        pdfFileName = `${baseName}_inverted.pdf`;
-      }
+      // Use custom filename if provided, otherwise generate default
+      const pdfFileName = customFileName || 'converted-document_inverted.pdf';
       const pdfPath = `${outputDir}/${pdfFileName}`;
       
       // Use IPC to save PDF file

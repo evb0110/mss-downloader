@@ -14,10 +14,16 @@ const pdfRenderer = new PdfRendererService()
 let ipcCleanup: (() => void) | null = null
 
 onMounted(() => {
-  const handlePdfRendering = async ({ pdfPath, outputDir }: { pdfPath: string, outputDir: string }) => {
+  const handlePdfRendering = async ({ pdfPath, outputDir, finalOutputDir, originalBaseName }: { 
+    pdfPath: string, 
+    outputDir: string, 
+    finalOutputDir: string, 
+    originalBaseName: string 
+  }) => {
     console.log('🖼️ Received PDF rendering request in renderer process')
     console.log(`   PDF path: ${pdfPath}`)
-    console.log(`   Output: ${outputDir}`)
+    console.log(`   Work Dir: ${outputDir}`)
+    console.log(`   Final Dir: ${finalOutputDir}`)
     
     try {
       // Stage 1: Convert PDF to images (save directly to disk)
@@ -45,9 +51,8 @@ onMounted(() => {
       console.log('🔄 Starting Stage 3: PDF creation...')
       
       try {
-        // Extract source filename for better naming
-        const sourceFileName = pdfPath.split(/[/\\]/).pop() || 'input.pdf'
-        const createdPdfPath = await pdfRenderer.createPdfFromImages(finalFiles, outputDir, sourceFileName)
+        // Create PDF with custom name and location
+        const createdPdfPath = await pdfRenderer.createPdfFromImages(finalFiles, finalOutputDir, `${originalBaseName}_inverted.pdf`)
         console.log(`✅ Stage 3 complete: PDF created at ${createdPdfPath}`)
       } catch (pdfError) {
         console.error('❌ PDF creation failed:', pdfError)

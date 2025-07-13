@@ -83,12 +83,16 @@ export class NegativeConverterService {
       // Get the original filename without extension
       const originalBaseName = basename(fileName, '.pdf');
       
-      // Use custom output directory if provided, otherwise use organized Downloads structure
-      let outputDir: string;
+      // Set up output directories - temp work dir vs final output location
+      let workDir: string; // Where images are processed
+      let finalOutputDir: string; // Where final PDF goes
+      
       if (customOutputDir) {
-        outputDir = join(customOutputDir, `${originalBaseName}_inverted`);
+        // Custom folder chosen: put final PDF directly in chosen folder
+        finalOutputDir = customOutputDir;
+        workDir = join(customOutputDir, `${originalBaseName}_temp_${timestamp}`);
       } else {
-        // Default to organized Downloads folder structure
+        // Default Downloads structure: organized subfolder  
         let downloadsPath: string;
         try {
           downloadsPath = app.getPath('downloads');
@@ -97,9 +101,13 @@ export class NegativeConverterService {
         }
         
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-        outputDir = join(downloadsPath, 'PDF_Negative_Conversions', today, `${originalBaseName}_inverted`);
+        const organizedDir = join(downloadsPath, 'PDF_Negative_Conversions', today, `${originalBaseName}_inverted`);
+        finalOutputDir = organizedDir;
+        workDir = organizedDir;
       }
-      await fs.mkdir(outputDir, { recursive: true });
+      
+      await fs.mkdir(workDir, { recursive: true });
+      await fs.mkdir(finalOutputDir, { recursive: true });
 
       onProgress?.({
         stage: 'Converting to Images',
@@ -117,12 +125,15 @@ export class NegativeConverterService {
 
       console.log('📄 Requesting PDF rendering from renderer process...');
       console.log(`   PDF: ${tempPdfPath}`);
-      console.log(`   Output: ${outputDir}`);
+      console.log(`   Work Dir: ${workDir}`);
+      console.log(`   Final Dir: ${finalOutputDir}`);
 
       // Send PDF file path to renderer process (avoid memory issues with large files)
       mainWindow.webContents.send('start-pdf-rendering', { 
         pdfPath: tempPdfPath, // Send file path instead of data
-        outputDir: outputDir 
+        outputDir: workDir, // Use work directory for processing
+        finalOutputDir: finalOutputDir, // Where final PDF should go
+        originalBaseName: originalBaseName // For proper naming
       });
 
       onProgress?.({
@@ -143,7 +154,7 @@ export class NegativeConverterService {
         console.warn('⚠️ Renderer completion timeout, checking files manually');
         // Fallback to file checking
         try {
-          const files = await fs.readdir(outputDir);
+          const files = await fs.readdir(workDir);
           const pngFiles = files.filter(f => f.endsWith('.png'));
           actualPageCount = pngFiles.length;
         } catch {
@@ -157,11 +168,35 @@ export class NegativeConverterService {
         progress: 90
       });
 
-      // Cleanup temp PDF
+      // Cleanup only temp PDF and source images, keep inverted images in case PDF merge failed
       try {
         await fs.rm(conversionDir, { recursive: true, force: true });
+        console.log('🧹 Cleaned up temporary PDF file');
+        
+        // If using custom output, clean up only the source images from temp work directory
+        if (customOutputDir && workDir !== finalOutputDir) {
+          try {
+            const files = await fs.readdir(workDir);
+            const sourceImages = files.filter(f => f.startsWith('page-') && f.endsWith('.jpg'));
+            
+            for (const file of sourceImages) {
+              await fs.unlink(join(workDir, file));
+            }
+            
+            console.log(`🧹 Cleaned up ${sourceImages.length} source images, kept inverted images`);
+            
+            // Only remove work directory if it's empty (no inverted images left)
+            const remainingFiles = await fs.readdir(workDir);
+            if (remainingFiles.length === 0) {
+              await fs.rm(workDir, { recursive: true, force: true });
+              console.log('🧹 Removed empty work directory');
+            }
+          } catch (cleanupError) {
+            console.warn('⚠️ Could not clean up source images:', cleanupError instanceof Error ? cleanupError.message : cleanupError);
+          }
+        }
       } catch (cleanupError) {
-        console.warn('⚠️ Could not clean up temporary directory:', cleanupError instanceof Error ? cleanupError.message : cleanupError);
+        console.warn('⚠️ Could not clean up temporary files:', cleanupError instanceof Error ? cleanupError.message : cleanupError);
       }
 
       onProgress?.({
@@ -172,7 +207,7 @@ export class NegativeConverterService {
 
       return {
         success: true,
-        outputPath: outputDir,
+        outputPath: finalOutputDir,
         pageCount: actualPageCount
       };
 
