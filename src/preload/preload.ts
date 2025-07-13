@@ -113,6 +113,7 @@ const api = {
   // Downloads folder management
   openDownloadsFolder: () => ipcRenderer.invoke('open-downloads-folder'),
   getDownloadsPath: () => ipcRenderer.invoke('get-downloads-path'),
+  chooseSaveDirectory: () => ipcRenderer.invoke('choose-save-directory'),
   showItemInFinder: (filePath: string) => ipcRenderer.invoke('show-item-in-finder', filePath),
   openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
 
@@ -142,7 +143,7 @@ const api = {
   solveCaptcha: (url: string) => ipcRenderer.invoke('solve-captcha', url),
   
   // Negative converter methods
-  convertNegativeToPositive: (data: { fileData: ArrayBuffer | Uint8Array | number[]; fileName: string; settings: any; originalFilePath?: string }) => 
+  convertNegativeToPositive: (data: { fileData: ArrayBuffer | Uint8Array | number[]; fileName: string; settings: any; outputDirectory?: string }) => 
     ipcRenderer.invoke('convert-negative-to-positive', data),
   
   saveImageFile: (filePath: string, imageData: Uint8Array) => 

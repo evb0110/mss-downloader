@@ -629,6 +629,20 @@ ipcMain.handle('get-downloads-path', () => {
   return app.getPath('downloads');
 });
 
+ipcMain.handle('choose-save-directory', async () => {
+  const result = await dialog.showOpenDialog(mainWindow!, {
+    properties: ['openDirectory'],
+    title: 'Choose where to save converted PDF',
+    defaultPath: app.getPath('downloads')
+  });
+  
+  if (result.canceled) {
+    return null;
+  }
+  
+  return result.filePaths[0];
+});
+
 ipcMain.handle('show-item-in-finder', async (_event, filePath: string) => {
   if (!filePath) {
     throw new Error('No file path provided');
@@ -760,11 +774,11 @@ ipcMain.handle('solve-captcha', async (_event, url: string) => {
 });
 
 // Negative converter handlers
-ipcMain.handle('convert-negative-to-positive', async (_event, { fileData, fileName, settings, originalFilePath }: {
+ipcMain.handle('convert-negative-to-positive', async (_event, { fileData, fileName, settings, outputDirectory }: {
   fileData: number[] | Uint8Array | ArrayBuffer;
   fileName: string;
   settings: ConversionSettings;
-  originalFilePath?: string;
+  outputDirectory?: string;
 }) => {
   if (!negativeConverter) {
     throw new Error('Negative converter not initialized');
@@ -789,7 +803,7 @@ ipcMain.handle('convert-negative-to-positive', async (_event, { fileData, fileNa
     (progress) => {
       mainWindow?.webContents.send('negative-conversion-progress', progress);
     },
-    originalFilePath
+    outputDirectory
   );
 });
 

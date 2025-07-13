@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs';
-import { join, basename, dirname } from 'path';
+import { join, basename } from 'path';
 import { app } from 'electron';
 import os from 'os';
 
@@ -52,7 +52,7 @@ export class NegativeConverterService {
     fileName: string,
     _settings: ConversionSettings,
     onProgress?: (progress: ConversionProgress) => void,
-    originalFilePath?: string
+    customOutputDir?: string
   ): Promise<ConversionResult> {
     try {
       onProgress?.({
@@ -83,20 +83,21 @@ export class NegativeConverterService {
       // Get the original filename without extension
       const originalBaseName = basename(fileName, '.pdf');
       
-      // Create output directory in same folder as source file (or Downloads as fallback)
+      // Use custom output directory if provided, otherwise use organized Downloads structure
       let outputDir: string;
-      if (originalFilePath) {
-        const sourceDir = dirname(originalFilePath);
-        outputDir = join(sourceDir, `${originalBaseName}_images_${timestamp}`);
+      if (customOutputDir) {
+        outputDir = join(customOutputDir, `${originalBaseName}_inverted`);
       } else {
-        // Fallback to Downloads folder
+        // Default to organized Downloads folder structure
         let downloadsPath: string;
         try {
           downloadsPath = app.getPath('downloads');
         } catch {
           downloadsPath = join(os.homedir(), 'Downloads');
         }
-        outputDir = join(downloadsPath, `${originalBaseName}_images_${timestamp}`);
+        
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        outputDir = join(downloadsPath, 'PDF_Negative_Conversions', today, `${originalBaseName}_inverted`);
       }
       await fs.mkdir(outputDir, { recursive: true });
 

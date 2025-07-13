@@ -43,7 +43,19 @@
           </div>
         </div>
 
+        <div v-if="outputDirectory" class="output-directory">
+          <strong>Output Folder:</strong> {{ outputDirectory }}
+        </div>
+
         <div class="action-buttons">
+          <button 
+            v-if="!isConverting && !conversionComplete" 
+            class="choose-folder-btn" 
+            @click="chooseOutputFolder"
+          >
+            📁 {{ outputDirectory ? 'Change Output Folder' : 'Choose Output Folder' }}
+          </button>
+          
           <button 
             v-if="!isConverting && !conversionComplete" 
             class="convert-btn" 
@@ -101,6 +113,7 @@ const isConverting = ref(false)
 const conversionComplete = ref(false)
 const conversionStatus = ref<ConversionStatus | null>(null)
 const resultFilePath = ref<string | null>(null)
+const outputDirectory = ref<string | null>(null)
 
 const conversionSettings = reactive<ConversionSettings>({
   quality: 100,
@@ -160,7 +173,7 @@ const startConversion = async () => {
         quality: conversionSettings.quality,
         dpi: conversionSettings.dpi
       },
-      originalFilePath: undefined // File picker doesn't provide full path for security
+      outputDirectory: outputDirectory.value || undefined
     })
 
     if (result.success) {
@@ -190,12 +203,24 @@ const downloadResult = async () => {
   }
 }
 
+const chooseOutputFolder = async () => {
+  try {
+    const selectedPath = await window.electronAPI.chooseSaveDirectory()
+    if (selectedPath) {
+      outputDirectory.value = selectedPath
+    }
+  } catch (error) {
+    console.error('Failed to choose output directory:', error)
+  }
+}
+
 const resetConverter = () => {
   selectedFile.value = null
   isConverting.value = false
   conversionComplete.value = false
   conversionStatus.value = null
   resultFilePath.value = null
+  // Keep outputDirectory for user convenience
 }
 
 
@@ -352,7 +377,7 @@ window.electronAPI?.onNegativeConversionProgress?.((progress) => {
   justify-content: center;
 }
 
-.convert-btn, .download-btn, .convert-another-btn {
+.convert-btn, .download-btn, .convert-another-btn, .choose-folder-btn {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 4px;
@@ -386,5 +411,23 @@ window.electronAPI?.onNegativeConversionProgress?.((progress) => {
 
 .convert-another-btn:hover {
   background: #5a6268;
+}
+
+.choose-folder-btn {
+  background: #17a2b8;
+  color: white;
+}
+
+.choose-folder-btn:hover {
+  background: #138496;
+}
+
+.output-directory {
+  background: #e9ecef;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  word-break: break-all;
 }
 </style>
