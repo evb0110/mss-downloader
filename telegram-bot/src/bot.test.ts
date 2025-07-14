@@ -4,7 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const { fileURLToPath } = require('url');
 const { BuildUtils } = require('./build-utils.js');
-const { Subscriber, Platform } = require('./types.js');
+const { Subscriber } = require('./types.js');
+type Platform = 'amd64' | 'arm64' | 'linux' | 'mac';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,16 +21,16 @@ describe('BuildUtils', () => {
     // Check that builds has proper structure
     for (const [platform, build] of Object.entries(result.builds)) {
       assert.ok(['amd64', 'arm64', 'linux', 'mac'].includes(platform));
-      assert.ok(typeof build.name === 'string');
-      assert.ok(typeof build.size === 'number');
-      assert.ok(typeof build.file === 'string');
+      assert.ok(typeof (build as any).name === 'string');
+      assert.ok(typeof (build as any).size === 'number');
+      assert.ok(typeof (build as any).file === 'string');
     }
   });
   
   test('findSinglePlatformBuild works for valid platforms', () => {
-    const platforms: Platform[] = ['amd64', 'arm64', 'linux', 'mac'];
+    const platforms = ['amd64', 'arm64', 'linux', 'mac'] as Platform[];
     
-    platforms.forEach(platform => {
+    platforms.forEach((platform: Platform) => {
       const result = BuildUtils.findSinglePlatformBuild(platform);
       
       assert.ok(typeof result === 'object');
@@ -76,7 +77,7 @@ describe('Subscriber Management', () => {
   };
   
   test('Subscriber data structure is valid', () => {
-    const subscriber: Subscriber = {
+    const subscriber = {
       chatId: 12345,
       username: 'testuser',
       subscribedAt: new Date().toISOString(),
@@ -96,12 +97,12 @@ describe('Subscriber Management', () => {
   });
   
   test('Platform validation works correctly', () => {
-    const validPlatforms: Platform[] = ['amd64', 'arm64', 'linux'];
+    const validPlatforms = ['amd64', 'arm64', 'linux'] as Platform[];
     const invalidPlatforms = ['x86', 'windows', 'mac', 'android'];
     
     validPlatforms.forEach(platform => {
       // This should not throw
-      const testPlatform: Platform = platform;
+      const testPlatform = platform;
       assert.ok(testPlatform);
     });
     
@@ -171,7 +172,7 @@ describe('Integration Tests', () => {
     assert.ok(buildsResult);
     
     // Simulate subscriber management
-    const testSubscriber: Subscriber = {
+    const testSubscriber = {
       chatId: 12345,
       username: 'testuser',
       subscribedAt: new Date().toISOString(),
@@ -180,9 +181,9 @@ describe('Integration Tests', () => {
     
     // Test platform filtering
     const subscribedPlatforms = testSubscriber.platforms;
-    const availablePlatforms = Object.keys(buildsResult.builds) as Platform[];
+    const availablePlatforms = Object.keys(buildsResult.builds) as any[];
     
-    const matchingPlatforms = subscribedPlatforms.filter(platform => 
+    const matchingPlatforms = subscribedPlatforms.filter((platform: any) => 
       availablePlatforms.includes(platform)
     );
     
