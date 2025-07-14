@@ -110,6 +110,7 @@ interface ConversionStatus {
   stage: string
   message: string
   progress?: number
+  outputPath?: string
 }
 
 const emit = defineEmits<{
@@ -252,6 +253,18 @@ const handleClose = async () => {
 window.electronAPI?.onNegativeConversionProgress?.((progress) => {
   if (conversionStatus.value) {
     conversionStatus.value = progress
+    
+    // Check if conversion is complete based on progress
+    if (progress.stage?.includes('Conversion Complete') || progress.progress === 100) {
+      console.log('🎉 Conversion marked as complete via progress update')
+      conversionComplete.value = true
+      isConverting.value = false
+      
+      // Set result path if provided in progress update
+      if (progress.outputPath) {
+        resultFilePath.value = progress.outputPath
+      }
+    }
   }
 })
 </script>

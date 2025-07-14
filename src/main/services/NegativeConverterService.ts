@@ -12,6 +12,7 @@ export interface ConversionProgress {
   stage: string;
   message: string;
   progress?: number;
+  outputPath?: string;
 }
 
 export interface ConversionResult {
@@ -202,7 +203,8 @@ export class NegativeConverterService {
       onProgress?.({
         stage: 'Conversion Complete! ✅',
         message: `Successfully processed ${actualPageCount} pages`,
-        progress: 100
+        progress: 100,
+        outputPath: finalOutputDir
       });
 
       return {
