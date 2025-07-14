@@ -897,5 +897,5 @@ function waitForRendererCompletion(): Promise<number> {
 }
 
 // Export for use in services
-module.exports = { waitForRendererCompletion };
+export { waitForRendererCompletion };
 

@@ -3,30 +3,51 @@
     v-if="isVisible"
     title="📸 Negative to Positive Converter"
     :show="isVisible"
-    :closeOnOverlay="false"
+    :close-on-overlay="false"
     width="auto"
     @close="handleClose"
   >
     <div class="negative-converter">
-      <div v-if="!selectedFile" class="upload-zone">
-        <div class="upload-area" @click="selectFile" @drop="handleDrop" @dragover.prevent @dragenter.prevent>
-          <div class="upload-icon">📄</div>
+      <div
+        v-if="!selectedFile"
+        class="upload-zone"
+      >
+        <div
+          class="upload-area"
+          @click="selectFile"
+          @drop="handleDrop"
+          @dragover.prevent
+          @dragenter.prevent
+        >
+          <div class="upload-icon">
+            📄
+          </div>
           <h3>Select or Drop PDF with Negative Images</h3>
           <p>Choose a PDF file containing photographic negatives to convert to positive images.</p>
-          <button class="select-file-btn">Select PDF File</button>
+          <button class="select-file-btn">
+            Select PDF File
+          </button>
         </div>
       </div>
 
-      <div v-else class="file-selected">
+      <div
+        v-else
+        class="file-selected"
+      >
         <div class="file-info">
-          <div class="file-icon">📄</div>
+          <div class="file-icon">
+            📄
+          </div>
           <div class="file-details">
             <h4>{{ selectedFile.name }}</h4>
             <p>Size: {{ formatFileSize(selectedFile.size) }}</p>
           </div>
         </div>
 
-        <div v-if="conversionStatus" class="conversion-status">
+        <div
+          v-if="conversionStatus"
+          class="conversion-status"
+        >
           <div class="status-header">
             <h4>{{ conversionStatus.stage }}</h4>
           </div>
@@ -34,16 +55,22 @@
             <span class="status-text">{{ conversionStatus.message }}</span>
           </div>
           
-          <div v-if="conversionStatus.progress !== undefined" class="progress-bar">
+          <div
+            v-if="conversionStatus.progress !== undefined"
+            class="progress-bar"
+          >
             <div 
               class="progress-fill" 
               :style="{ width: conversionStatus.progress + '%' }"
-            ></div>
+            />
             <span class="progress-text">{{ conversionStatus.progress }}%</span>
           </div>
         </div>
 
-        <div v-if="outputDirectory" class="output-directory">
+        <div
+          v-if="outputDirectory"
+          class="output-directory"
+        >
           <strong>Output Folder:</strong> {{ outputDirectory }}
         </div>
 

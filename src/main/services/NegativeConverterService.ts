@@ -117,7 +117,7 @@ export class NegativeConverterService {
       });
 
       // Use the new IPC method to trigger PDF rendering in renderer process
-      const { BrowserWindow } = require('electron');
+      const { BrowserWindow } = await import('electron');
       
       const mainWindow = BrowserWindow.getAllWindows()[0];
       if (!mainWindow) {
@@ -144,7 +144,7 @@ export class NegativeConverterService {
       });
 
       // Import the helper function from main.ts
-      const { waitForRendererCompletion } = require('../main');
+      const { waitForRendererCompletion } = await import('../main');
       
       // Wait for renderer to signal completion
       let actualPageCount: number;

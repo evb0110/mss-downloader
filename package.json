@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Dramatically improved negative-to-positive PDF conversion performance (4x faster with Sharp library)",
-    "Fixed conversion file size bloat issue - output now 1-2x input size instead of 8x",
-    "Implemented parallel image processing for multi-page PDF conversions",
-    "Enhanced negative converter modal UI with auto-sizing and simplified interface"
+    "Fixed negative converter completion detection - buttons now properly show after conversion",
+    "Improved negative converter progress updates - now shows real-time per-page processing",
+    "Enhanced button layout consistency throughout negative converter interface",
+    "Resolved ES module import compatibility issues for better stability"
   ],
   "main": "dist/main/main.js",
   "scripts": {
