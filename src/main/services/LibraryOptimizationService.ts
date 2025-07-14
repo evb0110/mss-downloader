@@ -201,6 +201,12 @@ export class LibraryOptimizationService {
             enableProgressiveBackoff: true,
             optimizationDescription: 'Fulda University optimizations: 4 concurrent downloads, IIIF v2.0 with direct manifest API, maximum resolution support'
         },
+        'wolfenbuettel': {
+            maxConcurrentDownloads: 4, // Herzog August Bibliothek Wolfenbüttel with stable HTTP endpoints
+            timeoutMultiplier: 1.2, // Slightly extended timeout for page discovery and high-resolution downloads
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'Wolfenbüttel HAB optimizations: 4 concurrent downloads, dynamic page discovery, maximum resolution support'
+        },
         'loading': {}
     };
 

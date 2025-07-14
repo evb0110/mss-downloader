@@ -282,6 +282,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://dl.ub.uni-freiburg.de/diglit/codal_25',
             description: 'University of Freiburg digital manuscript collection with METS/MODS metadata and maximum resolution IIIF support',
         },
+        {
+            name: 'Wolfenbüttel Digital Library (HAB)',
+            example: 'https://diglib.hab.de/wdb.php?dir=mss/1008-helmst',
+            description: 'Herzog August Bibliothek Wolfenbüttel digital manuscript collections with high-resolution access',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -445,6 +450,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('rotomagus.fr')) return 'rouen';
         if (url.includes('dl.ub.uni-freiburg.de')) return 'freiburg';
         if (url.includes('fuldig.hs-fulda.de')) return 'fulda';
+        if (url.includes('diglib.hab.de')) return 'wolfenbuettel';
         
         return null;
     }
@@ -982,6 +988,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'fulda':
                     manifest = await this.loadFuldaManifest(originalUrl);
+                    break;
+                case 'wolfenbuettel':
+                    manifest = await this.loadWolfenbuettelManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -8930,6 +8939,70 @@ export class EnhancedManuscriptDownloaderService {
 
         } catch (error) {
             throw new Error(`Failed to load Fulda manuscript: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Load Wolfenbüttel Digital Library manifest
+     */
+    async loadWolfenbuettelManifest(wolfenbuettelUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // URL format: https://diglib.hab.de/wdb.php?dir=mss/1008-helmst
+            const urlMatch = wolfenbuettelUrl.match(/dir=mss\/([^&]+)/);
+            if (!urlMatch) {
+                throw new Error('Could not extract manuscript ID from Wolfenbüttel URL');
+            }
+
+            const manuscriptId = urlMatch[1];
+            const baseImageUrl = `http://diglib.hab.de/mss/${manuscriptId}/max`;
+            
+            // Test pages to find the total number available
+            const pageLinks: string[] = [];
+            let pageNum = 1;
+            let consecutiveFailures = 0;
+            
+            while (consecutiveFailures < 10 && pageNum <= 500) { // Maximum 500 pages
+                const pageStr = pageNum.toString().padStart(5, '0');
+                const imageUrl = `${baseImageUrl}/${pageStr}.jpg`;
+                
+                try {
+                    const response = await this.fetchWithProxyFallback(imageUrl);
+                    if (response.status === 200) {
+                        pageLinks.push(imageUrl);
+                        consecutiveFailures = 0;
+                    } else {
+                        consecutiveFailures++;
+                    }
+                } catch (error) {
+                    consecutiveFailures++;
+                }
+                
+                pageNum++;
+            }
+
+            if (pageLinks.length === 0) {
+                throw new Error(`No pages found for Wolfenbüttel manuscript: ${manuscriptId}`);
+            }
+
+            const displayName = `Wolfenbüttel HAB MS ${manuscriptId}`;
+            
+            console.log(`Found ${pageLinks.length} pages in Wolfenbüttel manuscript`);
+
+            const wolfenbuettelManifest = {
+                displayName,
+                pageLinks,
+                library: 'wolfenbuettel' as const,
+                manifestUrl: wolfenbuettelUrl,
+                originalUrl: wolfenbuettelUrl,
+                totalPages: pageLinks.length
+            };
+
+            this.manifestCache.set(wolfenbuettelUrl, wolfenbuettelManifest).catch(console.warn);
+
+            return wolfenbuettelManifest;
+
+        } catch (error) {
+            throw new Error(`Failed to load Wolfenbüttel manuscript: ${(error as Error).message}`);
         }
     }
 }

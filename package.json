@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.7",
+  "version": "1.4.8",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Fixed negative converter completion detection - buttons now properly show after conversion",
-    "Improved negative converter progress updates - now shows real-time per-page processing",
-    "Enhanced button layout consistency throughout negative converter interface",
-    "Resolved Windows ARM64 build failures by excluding problematic Canvas dependency"
+    "Added Wolfenbüttel Digital Library (Herzog August Bibliothek) manuscript downloads with maximum resolution support",
+    "Implemented dynamic page discovery for Wolfenbüttel manuscripts with 200+ pages capability",
+    "Added high-quality PDF generation from Wolfenbüttel medieval German manuscripts",
+    "Optimized concurrent downloads (4 streams) for Wolfenbüttel library with progressive backoff"
   ],
   "main": "dist/main/main.js",
   "scripts": {
