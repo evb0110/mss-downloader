@@ -885,14 +885,14 @@ function waitForRendererCompletion(): Promise<number> {
     pdfRenderingResolver = resolve;
     pdfRenderingRejecter = reject;
     
-    // Timeout after 2 minutes
+    // Timeout after 30 minutes (for large manuscripts like 151 pages)
     setTimeout(() => {
       if (pdfRenderingResolver) {
         pdfRenderingRejecter = null;
         pdfRenderingResolver = null;
-        reject(new Error('PDF rendering timed out'));
+        reject(new Error('PDF rendering timed out after 30 minutes'));
       }
-    }, 120000);
+    }, 1800000);
   });
 }
 

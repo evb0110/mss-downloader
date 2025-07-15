@@ -124,10 +124,6 @@ export class NegativeConverterService {
         throw new Error('No main window available for PDF rendering');
       }
 
-      console.log('📄 Requesting PDF rendering from renderer process...');
-      console.log(`   PDF: ${tempPdfPath}`);
-      console.log(`   Work Dir: ${workDir}`);
-      console.log(`   Final Dir: ${finalOutputDir}`);
 
       // Send PDF file path to renderer process (avoid memory issues with large files)
       mainWindow.webContents.send('start-pdf-rendering', { 
@@ -150,14 +146,14 @@ export class NegativeConverterService {
       let actualPageCount: number;
       try {
         actualPageCount = await waitForRendererCompletion();
-        console.log(`📄 Renderer completed: ${actualPageCount} pages`);
       } catch (error) {
-        console.warn('⚠️ Renderer completion timeout, checking files manually');
-        // Fallback to file checking
+        
+        // Fallback to file checking - count both .png and .jpg files
         try {
           const files = await fs.readdir(workDir);
-          const pngFiles = files.filter(f => f.endsWith('.png'));
-          actualPageCount = pngFiles.length;
+          const imageFiles = files.filter(f => f.endsWith('.png') || f.endsWith('.jpg'));
+          actualPageCount = imageFiles.length;
+          
         } catch {
           actualPageCount = 0;
         }
@@ -172,7 +168,6 @@ export class NegativeConverterService {
       // Cleanup only temp PDF and source images, keep inverted images in case PDF merge failed
       try {
         await fs.rm(conversionDir, { recursive: true, force: true });
-        console.log('🧹 Cleaned up temporary PDF file');
         
         // If using custom output, clean up only the source images from temp work directory
         if (customOutputDir && workDir !== finalOutputDir) {
@@ -184,20 +179,18 @@ export class NegativeConverterService {
               await fs.unlink(join(workDir, file));
             }
             
-            console.log(`🧹 Cleaned up ${sourceImages.length} source images, kept inverted images`);
             
             // Only remove work directory if it's empty (no inverted images left)
             const remainingFiles = await fs.readdir(workDir);
             if (remainingFiles.length === 0) {
               await fs.rm(workDir, { recursive: true, force: true });
-              console.log('🧹 Removed empty work directory');
             }
-          } catch (cleanupError) {
-            console.warn('⚠️ Could not clean up source images:', cleanupError instanceof Error ? cleanupError.message : cleanupError);
+          } catch {
+            // Silently ignore cleanup errors
           }
         }
-      } catch (cleanupError) {
-        console.warn('⚠️ Could not clean up temporary files:', cleanupError instanceof Error ? cleanupError.message : cleanupError);
+      } catch {
+        // Silently ignore cleanup errors
       }
 
       onProgress?.({

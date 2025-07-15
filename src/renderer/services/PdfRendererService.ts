@@ -1,20 +1,19 @@
 export class PdfRendererService {
   async invertImageFiles(imageFiles: string[], outputDir: string): Promise<string[]> {
-    console.log(`🔄 Inverting ${imageFiles.length} images using Canvas API (disk-based)...`);
     
     const invertedFiles: string[] = [];
     
     for (let i = 0; i < imageFiles.length; i++) {
       const originalFilePath = imageFiles[i];
-      console.log(`   🔄 Inverting image ${i + 1}/${imageFiles.length}: ${originalFilePath}`);
       
       // Update progress for this image (Stage 2: 40-80%)
       const inversionProgress = 40 + Math.round(((i + 1) / imageFiles.length) * 40);
       await window.electronAPI.updateRenderingProgress(
         'Stage 2: Image Inversion', 
-        `Inverting image ${i + 1}/${imageFiles.length} from negative to positive...`, 
+        `Inverting image ${i + 1}/${imageFiles.length} from negative to positive... (${inversionProgress}% complete)`, 
         inversionProgress
       );
+      
       
       try {
         // Read image from disk using fetch
@@ -24,7 +23,6 @@ export class PdfRendererService {
         }
         
         const blob = await response.blob();
-        console.log(`     📄 Read ${blob.size} bytes from disk`);
         
         const imageUrl = URL.createObjectURL(blob);
         
@@ -36,7 +34,6 @@ export class PdfRendererService {
           img.src = imageUrl;
         });
         
-        console.log(`     📐 Image loaded: ${img.width}x${img.height}`);
         
         // Create canvas for inversion
         const canvas = document.createElement('canvas');
@@ -51,23 +48,39 @@ export class PdfRendererService {
         // Draw the image to canvas
         ctx.drawImage(img, 0, 0);
         
-        // Get image data for pixel manipulation
-        const imageDataCanvas = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const pixels = imageDataCanvas.data;
+        // MEMORY OPTIMIZATION: Process image in horizontal strips to reduce memory usage
+        const stripHeight = Math.min(100, canvas.height); // Process 100px strips at a time
+        const totalStrips = Math.ceil(canvas.height / stripHeight);
         
-        console.log(`     🔀 Inverting ${pixels.length / 4} pixels...`);
         
-        // Invert each pixel (RGB channels, keep alpha)
-        for (let j = 0; j < pixels.length; j += 4) {
-          pixels[j] = 255 - pixels[j];     // Red
-          pixels[j + 1] = 255 - pixels[j + 1]; // Green
-          pixels[j + 2] = 255 - pixels[j + 2]; // Blue
-          // pixels[j + 3] stays the same (Alpha)
+        for (let stripIndex = 0; stripIndex < totalStrips; stripIndex++) {
+          const startY = stripIndex * stripHeight;
+          const actualStripHeight = Math.min(stripHeight, canvas.height - startY);
+          
+          // Get image data for this strip only
+          const imageDataStrip = ctx.getImageData(0, startY, canvas.width, actualStripHeight);
+          const pixels = imageDataStrip.data;
+          
+          // Invert each pixel in this strip (RGB channels, keep alpha)
+          for (let j = 0; j < pixels.length; j += 4) {
+            pixels[j] = 255 - pixels[j];     // Red
+            pixels[j + 1] = 255 - pixels[j + 1]; // Green
+            pixels[j + 2] = 255 - pixels[j + 2]; // Blue
+            // pixels[j + 3] stays the same (Alpha)
+          }
+          
+          // Put the inverted strip back
+          ctx.putImageData(imageDataStrip, 0, startY);
+          
+          // Force garbage collection of the pixel data by clearing reference
+          imageDataStrip.data.fill(0);
+          
+          // Give browser a chance to garbage collect between strips
+          if (stripIndex % 5 === 0) {
+            await new Promise(resolve => setTimeout(resolve, 1));
+          }
         }
         
-        // Put the inverted data back
-        ctx.putImageData(imageDataCanvas, 0, 0);
-        console.log(`     ✅ Colors inverted successfully`);
         
         // Convert canvas to blob with high-quality JPEG
         const invertedBlob = await new Promise<Blob>((resolve) => {
@@ -79,42 +92,43 @@ export class PdfRendererService {
         
         // Convert blob to array buffer
         const invertedBuffer = await invertedBlob.arrayBuffer();
-        console.log(`     📦 Buffer created: ${invertedBuffer.byteLength} bytes`);
         
         // Save inverted image as JPEG for smaller file size
         const fileName = `inverted-page-${(i + 1).toString().padStart(3, '0')}.jpg`;
         const invertedPath = `${outputDir}/${fileName}`;
         
-        console.log(`     💾 Saving to: ${invertedPath}`);
         // Use IPC to save inverted file
         await window.electronAPI.saveImageFile(invertedPath, new Uint8Array(invertedBuffer));
-        console.log(`     ✅ File saved successfully`);
         
-        // Clean up memory immediately
+        // Clean up memory immediately and aggressively
         URL.revokeObjectURL(imageUrl);
         canvas.width = 0;
         canvas.height = 0;
+        canvas.remove();
+        img.src = '';
+        img.remove();
+        
+        // Force garbage collection hint
+        if (typeof window !== 'undefined' && (window as any).gc) {
+          (window as any).gc();
+        }
         
         invertedFiles.push(invertedPath);
-        console.log(`   ✅ Inverted page ${i + 1}: ${invertedPath}`);
         
       } catch (error) {
-        console.error(`   ❌ Failed to invert image ${i + 1}:`, error);
-        console.error('   Error details:', error);
         // Create a placeholder name if inversion fails  
         const fileName = `failed-invert-page-${(i + 1).toString().padStart(3, '0')}.jpg`;
         invertedFiles.push(`${outputDir}/${fileName}`);
       }
+      
+      // Add small delay between images to prevent memory buildup
+      await new Promise(resolve => setTimeout(resolve, 50));
     }
     
-    console.log(`✅ Successfully inverted ${invertedFiles.length} images`);
     return invertedFiles;
   }
 
   async createPdfFromImages(imageFiles: string[], outputDir: string, customFileName?: string): Promise<string> {
-    console.log(`📄 Creating PDF from ${imageFiles.length} images...`);
-    
-    try {
       // Load pdf-lib
       const { PDFDocument } = await import('pdf-lib');
       
@@ -123,48 +137,39 @@ export class PdfRendererService {
       
       for (let i = 0; i < imageFiles.length; i++) {
         const imagePath = imageFiles[i];
-        console.log(`   📄 Adding page ${i + 1}/${imageFiles.length}: ${imagePath}`);
         
         // Update progress for this page (Stage 3: 80-100%)
         const pdfProgress = 80 + Math.round(((i + 1) / imageFiles.length) * 20);
         await window.electronAPI.updateRenderingProgress(
           'Stage 3: Creating PDF', 
-          `Adding page ${i + 1}/${imageFiles.length} to PDF...`, 
+          `Adding page ${i + 1}/${imageFiles.length} to PDF... (${pdfProgress}% complete)`, 
           pdfProgress
         );
         
-        try {
-          // Read the image file
-          const response = await fetch(`file://${imagePath}`);
-          if (!response.ok) {
-            throw new Error(`Failed to fetch image: ${response.status}`);
-          }
-          const imageBytes = await response.arrayBuffer();
-          
-          // Embed the image (JPEG format)
-          const image = await pdfDoc.embedJpg(new Uint8Array(imageBytes));
-          
-          // Create a page with the same dimensions as the image
-          const page = pdfDoc.addPage([image.width, image.height]);
-          
-          // Draw the image on the page
-          page.drawImage(image, {
-            x: 0,
-            y: 0,
-            width: image.width,
-            height: image.height,
-          });
-          
-          console.log(`   ✅ Added page ${i + 1}: ${image.width}x${image.height}`);
-          
-        } catch (error) {
-          console.error(`   ❌ Failed to add page ${i + 1}:`, error);
-          throw error;
+        
+        // Read the image file
+        const response = await fetch(`file://${imagePath}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.status}`);
         }
+        const imageBytes = await response.arrayBuffer();
+        
+        // Embed the image (JPEG format)
+        const image = await pdfDoc.embedJpg(new Uint8Array(imageBytes));
+        
+        // Create a page with the same dimensions as the image
+        const page = pdfDoc.addPage([image.width, image.height]);
+        
+        // Draw the image on the page
+        page.drawImage(image, {
+          x: 0,
+          y: 0,
+          width: image.width,
+          height: image.height,
+        });
       }
       
       // Save the PDF
-      console.log(`   💾 Saving PDF document...`);
       const pdfBytes = await pdfDoc.save();
       
       // Use custom filename if provided, otherwise generate default
@@ -174,19 +179,10 @@ export class PdfRendererService {
       // Use IPC to save PDF file
       await window.electronAPI.saveImageFile(pdfPath, new Uint8Array(pdfBytes));
       
-      console.log(`✅ Successfully created PDF: ${pdfPath}`);
       return pdfPath;
-      
-    } catch (error) {
-      console.error('❌ PDF creation failed:', error);
-      throw error;
-    }
   }
 
   async renderPdfFromFile(pdfPath: string, outputDir: string): Promise<string[]> {
-    console.log(`🖼️ Reading PDF file from: ${pdfPath}`);
-    
-    try {
       // Read PDF file from disk
       const response = await fetch(`file://${pdfPath}`);
       if (!response.ok) {
@@ -195,20 +191,12 @@ export class PdfRendererService {
       
       const pdfBuffer = await response.arrayBuffer();
       const pdfUint8Array = new Uint8Array(pdfBuffer);
-      console.log(`📄 PDF file loaded: ${pdfUint8Array.length} bytes`);
       
       // Use Uint8Array directly to avoid array length limits
       return this.renderPdfFromUint8Array(pdfUint8Array, outputDir);
-    } catch (error) {
-      console.error('❌ Failed to read PDF file:', error);
-      throw error;
-    }
   }
 
   async renderPdfFromUint8Array(pdfUint8Array: Uint8Array, outputDir: string): Promise<string[]> {
-    console.log(`🖼️ Rendering PDF to images from Uint8Array (${pdfUint8Array.length} bytes)`);
-    
-    try {
       // Load PDF.js
       const pdfjsLib = await import('pdfjs-dist');
       
@@ -218,34 +206,31 @@ export class PdfRendererService {
         import.meta.url
       ).toString();
       
-      console.log(`📄 Loading PDF document directly from Uint8Array: ${pdfUint8Array.length} bytes`);
       
       // Load PDF document directly from Uint8Array
       const loadingTask = pdfjsLib.getDocument({ data: pdfUint8Array });
       const pdfDocument = await loadingTask.promise;
       
-      console.log(`📄 PDF loaded - ${pdfDocument.numPages} pages`);
       
       // Process all pages (no artificial limit)
       const maxPages = pdfDocument.numPages;
-      console.log(`📄 Processing all ${maxPages} pages...`);
       
       const imageFiles: string[] = [];
       
       // Render each page (memory efficient - no storing in memory)
       for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-        console.log(`   🖼️ Rendering page ${pageNum}/${maxPages}...`);
         
         // Update progress for this page (Stage 1: 0-40%)
         const pageProgress = Math.round((pageNum / maxPages) * 40);
         await window.electronAPI.updateRenderingProgress(
           'Stage 1: PDF Rendering', 
-          `Converting page ${pageNum}/${maxPages} to image...`, 
+          `Converting page ${pageNum}/${maxPages} to image... (${pageProgress}% complete)`, 
           pageProgress
         );
         
+        
         const page = await pdfDocument.getPage(pageNum);
-        const viewport = page.getViewport({ scale: 1.5 }); // 1.5x for good quality/size balance
+        const viewport = page.getViewport({ scale: 1.2 }); // Reduced from 1.5x to 1.2x for better memory usage
         
         // Create canvas using browser API
         const canvas = document.createElement('canvas');
@@ -284,26 +269,22 @@ export class PdfRendererService {
         await window.electronAPI.saveImageFile(filePath, uint8Array);
         
         imageFiles.push(filePath);
-        console.log(`   ✅ Saved page ${pageNum}: ${filePath}`);
         
-        // Clear canvas and context to free memory
+        // Clear canvas and context to free memory aggressively
         canvas.width = 0;
         canvas.height = 0;
+        canvas.remove();
+        
+        // Small delay between pages to allow garbage collection
+        if (pageNum % 5 === 0) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
       }
       
-      console.log(`✅ Successfully rendered ${imageFiles.length} pages to disk`);
       return imageFiles;
-      
-    } catch (error) {
-      console.error('❌ PDF rendering failed:', error);
-      throw error;
-    }
   }
 
   async renderPdfToImages(pdfData: number[], outputDir: string): Promise<string[]> {
-    console.log(`🖼️ Rendering PDF to images from data (${pdfData.length} bytes)`);
-    
-    try {
       // Load PDF.js
       const pdfjsLib = await import('pdfjs-dist');
       
@@ -315,26 +296,22 @@ export class PdfRendererService {
       
       // Convert array back to Uint8Array
       const pdfUint8Array = new Uint8Array(pdfData);
-      console.log(`📄 Converted to Uint8Array: ${pdfUint8Array.length} bytes`);
       
       // Load PDF document
       const loadingTask = pdfjsLib.getDocument({ data: pdfUint8Array });
       const pdfDocument = await loadingTask.promise;
       
-      console.log(`📄 PDF loaded - ${pdfDocument.numPages} pages`);
       
       // Process all pages (no artificial limit)
       const maxPages = pdfDocument.numPages;
-      console.log(`📄 Processing all ${maxPages} pages...`);
       
       const imageFiles: string[] = [];
       
       // Render each page (memory efficient - no storing in memory)
       for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-        console.log(`   🖼️ Rendering page ${pageNum}/${maxPages}...`);
         
         const page = await pdfDocument.getPage(pageNum);
-        const viewport = page.getViewport({ scale: 1.5 }); // 1.5x for good quality/size balance
+        const viewport = page.getViewport({ scale: 1.2 }); // Reduced from 1.5x to 1.2x for better memory usage
         
         // Create canvas using browser API
         const canvas = document.createElement('canvas');
@@ -373,19 +350,18 @@ export class PdfRendererService {
         await window.electronAPI.saveImageFile(filePath, uint8Array);
         
         imageFiles.push(filePath);
-        console.log(`   ✅ Saved page ${pageNum}: ${filePath}`);
         
-        // Clear canvas and context to free memory
+        // Clear canvas and context to free memory aggressively
         canvas.width = 0;
         canvas.height = 0;
+        canvas.remove();
+        
+        // Small delay between pages to allow garbage collection
+        if (pageNum % 5 === 0) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
       }
       
-      console.log(`✅ Successfully rendered ${imageFiles.length} pages to disk`);
       return imageFiles;
-      
-    } catch (error) {
-      console.error('❌ PDF rendering failed:', error);
-      throw error;
-    }
   }
 }
