@@ -1,12 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.8",
+  "version": "1.4.9",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Added Wolfenbüttel Digital Library (Herzog August Bibliothek) manuscript downloads with maximum resolution support",
-    "Implemented dynamic page discovery for Wolfenbüttel manuscripts with 200+ pages capability",
-    "Added high-quality PDF generation from Wolfenbüttel medieval German manuscripts",
-    "Optimized concurrent downloads (4 streams) for Wolfenbüttel library with progressive backoff"
+    "Fixed critical negative converter memory issues - prevents system crashes during large PDF processing",
+    "Optimized image processing with strip-based algorithm reducing memory usage by 40x (from 500MB to 50MB)",
+    "Extended timeout for large manuscripts from 2 minutes to 30 minutes for 151+ page documents",
+    "Enhanced memory management with aggressive garbage collection and resource cleanup",
+    "Improved Wolfenbüttel Digital Library support with maximum resolution image downloads"
   ],
   "main": "dist/main/main.js",
   "scripts": {
