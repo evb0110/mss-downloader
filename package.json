@@ -1,11 +1,11 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.11",
+  "version": "1.4.12",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Fixed critical Wolfenbüttel bug - now downloads ALL manuscript pages instead of only first 20",
-    "Implemented pagination support to load manuscripts with 500+ pages correctly",
-    "Manuscripts like 1008-helmst now download all 576 pages instead of stopping at 20"
+    "Fixed University of Graz error handling for direct image URLs",
+    "Improved error messages to guide users to correct manuscript URLs",
+    "Enhanced URL pattern recognition for Graz digital library"
   ],
   "main": "dist/main/main.js",
   "scripts": {

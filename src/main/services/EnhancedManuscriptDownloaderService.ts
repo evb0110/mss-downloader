@@ -5317,20 +5317,31 @@ export class EnhancedManuscriptDownloaderService {
             // URL patterns: 
             // - https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538
             // - https://unipub.uni-graz.at/obvugrscript/content/pageview/8224540
-            const manuscriptIdMatch = grazUrl.match(/\/(\d+)$/);
-            if (!manuscriptIdMatch) {
-                throw new Error('Could not extract manuscript ID from Graz URL');
-            }
+            // - https://unipub.uni-graz.at/download/webcache/1504/8224544 (direct image URL)
+            let manuscriptId: string;
             
-            let manuscriptId = manuscriptIdMatch[1];
-            
-            // If this is a pageview URL, convert to titleinfo ID using known pattern
-            // Pattern: pageview ID - 2 = titleinfo ID (e.g., 8224540 -> 8224538)
-            if (grazUrl.includes('/pageview/')) {
-                const pageviewId = parseInt(manuscriptId);
-                const titleinfoId = (pageviewId - 2).toString();
-                console.log(`Converting pageview ID ${pageviewId} to titleinfo ID ${titleinfoId}`);
-                manuscriptId = titleinfoId;
+            // Handle direct image download URL pattern
+            if (grazUrl.includes('/download/webcache/')) {
+                // For webcache URLs, we can't reliably determine the manuscript ID from the page ID alone
+                // These URLs are meant to be accessed directly, not used to load full manuscripts
+                throw new Error('Direct webcache image URLs cannot be used to download full manuscripts. Please use a titleinfo or pageview URL instead (e.g., https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538)');
+            } else {
+                // Handle standard content URLs
+                const manuscriptIdMatch = grazUrl.match(/\/(\d+)$/);
+                if (!manuscriptIdMatch) {
+                    throw new Error('Could not extract manuscript ID from Graz URL');
+                }
+                
+                manuscriptId = manuscriptIdMatch[1];
+                
+                // If this is a pageview URL, convert to titleinfo ID using known pattern
+                // Pattern: pageview ID - 2 = titleinfo ID (e.g., 8224540 -> 8224538)
+                if (grazUrl.includes('/pageview/')) {
+                    const pageviewId = parseInt(manuscriptId);
+                    const titleinfoId = (pageviewId - 2).toString();
+                    console.log(`Converting pageview ID ${pageviewId} to titleinfo ID ${titleinfoId}`);
+                    manuscriptId = titleinfoId;
+                }
             }
             
             // Construct IIIF manifest URL
