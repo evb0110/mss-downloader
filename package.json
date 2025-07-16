@@ -1,11 +1,11 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.12",
+  "version": "1.4.13",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Fixed University of Graz error handling for direct image URLs",
-    "Improved error messages to guide users to correct manuscript URLs",
-    "Enhanced URL pattern recognition for Graz digital library"
+    "Fixed BNE Library slow loading - now 3x faster with parallel processing",
+    "Fixed Rouen, Grenoble, and Fulda libraries manuscript loading errors",
+    "Improved SSL handling and URL parsing for better compatibility"
   ],
   "main": "dist/main/main.js",
   "scripts": {

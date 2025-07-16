@@ -671,15 +671,15 @@ export class EnhancedManuscriptDownloaderService {
                 headers
             };
             
-            // Verona domains require full HTTPS module bypass due to SSL certificate validation issues
-            if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
+            // Verona and Grenoble domains require full HTTPS module bypass due to SSL certificate validation issues
+            if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') || url.includes('pagella.bm-grenoble.fr')) {
                 const response = await this.fetchWithHTTPS(url, { ...fetchOptions, timeout });
                 if (timeoutId) clearTimeout(timeoutId);
                 return response;
             }
             
-            // BNE and Grenoble domains use SSL bypass approach
-            if (url.includes('bdh-rd.bne.es') || url.includes('pagella.bm-grenoble.fr')) {
+            // BNE domains use SSL bypass approach
+            if (url.includes('bdh-rd.bne.es')) {
                 if (typeof process !== 'undefined' && process.versions?.node) {
                     const { Agent } = await import('https');
                     fetchOptions.agent = new Agent({
@@ -1585,8 +1585,9 @@ export class EnhancedManuscriptDownloaderService {
                 // Generate IIIF image URLs with maximum resolution
                 const pageLinks: string[] = [];
                 for (let i = 1; i <= totalPages; i++) {
-                    // Use IIIF Image API v1.1 format with correct ARK path: /full/full/0/default.jpg for maximum resolution
-                    const imageUrl = `https://pagella.bm-grenoble.fr/iiif/ark:/12148/${documentId}/f${i}/full/full/0/default.jpg`;
+                    // Use IIIF Image API v1.1 format with maximum resolution: /full/4000,/0/default.jpg
+                    // This provides 4000x5020 pixels instead of the default 3164x3971
+                    const imageUrl = `https://pagella.bm-grenoble.fr/iiif/ark:/12148/${documentId}/f${i}/full/4000,/0/default.jpg`;
                     pageLinks.push(imageUrl);
                 }
                 
@@ -7870,76 +7871,77 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     /**
-     * Robust BNE manuscript discovery - eliminates hanging issues
-     * FIXED: Previous PDF info endpoint caused infinite hanging due to malformed PDF structures
+     * Robust BNE manuscript discovery - optimized with parallel processing
+     * FIXED: Previous implementation was too slow with sequential HEAD requests
      */
     private async robustBneDiscovery(manuscriptId: string, originalUrl: string): Promise<ManuscriptManifest> {
         const discoveredPages: Array<{page: number, contentLength: string, contentType: string}> = [];
         const seenContentHashes = new Set<string>();
-        let consecutiveDuplicates = 0;
-        let consecutiveErrors = 0;
-        const maxConsecutiveDuplicates = 5;
-        const maxConsecutiveErrors = 3;
-        const maxPages = 300; // Hard limit to prevent infinite loops
+        const maxPages = 500; // Increased limit since parallel is faster
+        const batchSize = 10; // Process 10 pages at once
         
-        console.log('BNE: Starting robust page discovery...');
+        console.log('BNE: Starting optimized parallel page discovery...');
         
-        for (let page = 1; page <= maxPages; page++) {
-            const testUrl = `https://bdh-rd.bne.es/pdf.raw?query=id:${manuscriptId}&page=${page}&pdf=true`;
+        for (let batchStart = 1; batchStart <= maxPages; batchStart += batchSize) {
+            const batchEnd = Math.min(batchStart + batchSize - 1, maxPages);
             
-            try {
-                const response = await this.fetchBneWithHttps(testUrl, { method: 'HEAD' });
-                
-                if (response.ok) {
-                    const contentLength = response.headers.get('content-length');
-                    const contentType = response.headers.get('content-type');
+            // Show progress more frequently for better UX
+            if (batchStart % 20 === 1) {
+                console.log(`BNE: Processing pages ${batchStart}-${batchEnd}...`);
+            }
+            
+            // Create promises for batch
+            const batchPromises: Promise<{page: number, response: Response | null, error: any}>[] = [];
+            for (let page = batchStart; page <= batchEnd; page++) {
+                const testUrl = `https://bdh-rd.bne.es/pdf.raw?query=id:${manuscriptId}&page=${page}&pdf=true`;
+                batchPromises.push(
+                    this.fetchBneWithHttps(testUrl, { method: 'HEAD' })
+                        .then(response => ({ page, response, error: null }))
+                        .catch(error => ({ page, response: null, error }))
+                );
+            }
+            
+            // Wait for all in batch
+            const batchResults = await Promise.all(batchPromises);
+            
+            // Process results and check for stop conditions
+            let validPagesInBatch = 0;
+            let errorsInBatch = 0;
+            
+            for (const result of batchResults) {
+                if (result.error) {
+                    errorsInBatch++;
+                } else if (result.response && result.response.ok) {
+                    const contentLength = result.response.headers.get('content-length');
+                    const contentType = result.response.headers.get('content-type');
                     
-                    // Only consider valid content (not tiny error responses)
                     if (contentLength && parseInt(contentLength) > 1000) {
                         const contentHash = `${contentType}-${contentLength}`;
                         
-                        if (seenContentHashes.has(contentHash) && discoveredPages.length > 0) {
-                            consecutiveDuplicates++;
-                            
-                            if (consecutiveDuplicates >= maxConsecutiveDuplicates) {
-                                console.log(`BNE: Stopping after ${consecutiveDuplicates} consecutive duplicates - manuscript complete`);
-                                break;
-                            }
-                        } else {
+                        if (!seenContentHashes.has(contentHash)) {
                             seenContentHashes.add(contentHash);
-                            consecutiveDuplicates = 0;
-                            consecutiveErrors = 0;
-                            
                             discoveredPages.push({
-                                page: page,
+                                page: result.page,
                                 contentLength: contentLength || '0',
                                 contentType: contentType || 'application/pdf'
                             });
-                            
-                            if (page % 50 === 0) {
-                                console.log(`BNE: Discovered ${discoveredPages.length} pages (currently at page ${page})`);
-                            }
-                        }
-                    } else {
-                        consecutiveErrors++;
-                        if (consecutiveErrors >= maxConsecutiveErrors) {
-                            console.log(`BNE: Stopping after ${consecutiveErrors} consecutive small/invalid responses`);
-                            break;
+                            validPagesInBatch++;
                         }
                     }
-                } else {
-                    consecutiveErrors++;
-                    if (consecutiveErrors >= maxConsecutiveErrors || response.status === 404) {
-                        console.log(`BNE: Stopping on HTTP ${response.status} after ${consecutiveErrors} errors`);
-                        break;
-                    }
+                } else if (result.response && result.response.status === 404) {
+                    errorsInBatch++;
                 }
-            } catch (error) {
-                consecutiveErrors++;
-                if (consecutiveErrors >= maxConsecutiveErrors) {
-                    console.log(`BNE: Stopping after ${consecutiveErrors} consecutive network errors`);
-                    break;
-                }
+            }
+            
+            // Stop if no valid pages found in entire batch
+            if (validPagesInBatch === 0 && errorsInBatch >= batchSize / 2) {
+                console.log(`BNE: Stopping - no valid pages found in batch ${batchStart}-${batchEnd}`);
+                break;
+            }
+            
+            // Progress update every 50 pages
+            if (discoveredPages.length > 0 && discoveredPages.length % 50 === 0) {
+                console.log(`BNE: Discovered ${discoveredPages.length} valid pages so far...`);
             }
         }
         
@@ -7947,12 +7949,15 @@ export class EnhancedManuscriptDownloaderService {
             throw new Error('No valid pages found for this BNE manuscript');
         }
         
+        // Sort pages by page number
+        discoveredPages.sort((a, b) => a.page - b.page);
+        
         // Generate page links using optimal format for maximum resolution
         const pageLinks = discoveredPages.map(page => 
             `https://bdh-rd.bne.es/pdf.raw?query=id:${manuscriptId}&page=${page.page}&pdf=true`
         );
         
-        console.log(`BNE robust discovery completed: ${discoveredPages.length} pages found`);
+        console.log(`BNE optimized discovery completed: ${discoveredPages.length} pages found`);
         
         return {
             pageLinks,
@@ -8545,18 +8550,24 @@ export class EnhancedManuscriptDownloaderService {
                     let foundPageCount = null;
                     
                     // Method 1: Search for totalNumberPage in nested PageAViewerFragment structures
-                    if (manifestData.PageAViewerFragment?.parameters?.fragmentDownload?.contenu?.totalNumberPage) {
-                        foundPageCount = manifestData.PageAViewerFragment.parameters.fragmentDownload.contenu.totalNumberPage;
-                        console.log(`Found totalNumberPage in PageAViewerFragment: ${foundPageCount}`);
+                    if (manifestData.PageAViewerFragment?.parameters?.fragmentDownload?.contenu?.libelles?.totalNumberPage) {
+                        foundPageCount = manifestData.PageAViewerFragment.parameters.fragmentDownload.contenu.libelles.totalNumberPage;
+                        console.log(`Found totalNumberPage in PageAViewerFragment.libelles: ${foundPageCount}`);
                     }
                     
-                    // Method 2: Search for totalVues in ViewerFragment
-                    if (!foundPageCount && manifestData.ViewerFragment?.parameters?.totalVues) {
-                        foundPageCount = manifestData.ViewerFragment.parameters.totalVues;
-                        console.log(`Found totalVues in ViewerFragment: ${foundPageCount}`);
+                    // Method 2: Search for totalVues in PageAViewerFragment
+                    if (!foundPageCount && manifestData.PageAViewerFragment?.parameters?.totalVues) {
+                        foundPageCount = manifestData.PageAViewerFragment.parameters.totalVues;
+                        console.log(`Found totalVues in PageAViewerFragment: ${foundPageCount}`);
                     }
                     
-                    // Method 3: Recursive search through the entire manifest for totalNumberPage or totalVues
+                    // Method 3: Search for nbTotalVues in PaginationViewerModel
+                    if (!foundPageCount && manifestData.PageAViewerFragment?.contenu?.PaginationViewerModel?.parameters?.nbTotalVues) {
+                        foundPageCount = manifestData.PageAViewerFragment.contenu.PaginationViewerModel.parameters.nbTotalVues;
+                        console.log(`Found nbTotalVues in PaginationViewerModel: ${foundPageCount}`);
+                    }
+                    
+                    // Method 4: Recursive search through the entire manifest for totalNumberPage or totalVues
                     if (!foundPageCount) {
                         const findPageCount = (obj: any): number | null => {
                             if (typeof obj !== 'object' || obj === null) return null;
@@ -8870,8 +8881,10 @@ export class EnhancedManuscriptDownloaderService {
      */
     async loadFuldaManifest(fuldaUrl: string): Promise<ManuscriptManifest> {
         try {
-            // URL format: https://fuldig.hs-fulda.de/viewer/image/{PPN_ID}/[page]/
-            const urlMatch = fuldaUrl.match(/\/image\/([^/]+)/);
+            // URL formats: 
+            // - https://fuldig.hs-fulda.de/viewer/image/{PPN_ID}/[page]/
+            // - https://fuldig.hs-fulda.de/viewer/api/v1/records/{PPN_ID}/manifest/
+            const urlMatch = fuldaUrl.match(/(?:\/image\/|\/records\/)([^/]+)/);
             if (!urlMatch) {
                 throw new Error('Could not extract PPN ID from Fulda URL');
             }
