@@ -1,12 +1,11 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.10",
+  "version": "1.4.11",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Fixed Wolfenbüttel Digital Library manuscript loading for folio notation manuscripts (001v, 002r format)",
-    "Enhanced Wolfenbüttel implementation to download maximum resolution images (up to 20x higher quality)",
-    "Added automatic page detection from thumbs.php supporting both sequential and folio numbering systems",
-    "Improved manuscript compatibility ensuring all Wolfenbüttel manuscripts load correctly"
+    "Fixed critical Wolfenbüttel bug - now downloads ALL manuscript pages instead of only first 20",
+    "Implemented pagination support to load manuscripts with 500+ pages correctly",
+    "Manuscripts like 1008-helmst now download all 576 pages instead of stopping at 20"
   ],
   "main": "dist/main/main.js",
   "scripts": {
