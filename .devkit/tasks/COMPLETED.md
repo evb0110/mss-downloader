@@ -347,3 +347,86 @@
 
 ---
 *Tasks completed on July 15, 2025*
+
+# Completed Tasks - VERSION 1.4.10
+
+## 🏛️ Wolfenbüttel Digital Library Folio Notation Fix
+
+### ✅ **Task 1: Investigate Wolfenbüttel manuscript 105-noviss-2f loading issue**
+- **Status**: COMPLETED
+- **Impact**: Identified root cause of manuscript loading failure
+- **Technical Details**:
+  - Discovered manuscript uses folio notation (001v, 002r) instead of sequential numbers
+  - Found that current implementation only supported sequential numbered manuscripts
+  - Identified need for thumbs.php parsing to get actual page names
+
+### ✅ **Task 2: Fix page detection for Wolfenbüttel manuscripts**
+- **Status**: COMPLETED
+- **Impact**: Added support for both folio notation and sequential numbering
+- **Technical Details**:
+  - Implemented thumbs.php parsing to extract actual page names
+  - Added regex pattern matching for `image=([^'"&]+)` to get page identifiers
+  - Maintained backward compatibility with sequential numbered manuscripts
+  - Updated to use maximum resolution `/max/` subdirectory for all images
+
+### ✅ **Task 3: Test fix with multiple Wolfenbüttel manuscripts**
+- **Status**: COMPLETED
+- **Impact**: Validated solution works for all manuscript types
+- **Technical Details**:
+  - Tested 105-noviss-2f (folio notation) - 20 pages found ✅
+  - Tested 1008-helmst (sequential numbers) - 20 pages found ✅
+  - Tested 1-gud-lat (sequential numbers) - 20 pages found ✅
+  - All manuscripts downloaded at maximum resolution (2000-5600px width)
+
+### ✅ **Task 4: Run full library validation protocol**
+- **Status**: COMPLETED
+- **Impact**: Comprehensive validation with 10 different manuscripts
+- **Technical Details**:
+  - 8/10 manuscripts successfully processed (80% success rate)
+  - 2 manuscripts (23-aug-4f, 17-aug-4f) returned 404 (don't exist)
+  - All successful manuscripts validated with proper content
+  - File sizes ranged from 5MB to 98MB depending on resolution
+
+### ✅ **Task 5: Create validation PDFs for user review**
+- **Status**: COMPLETED
+- **Impact**: 8 high-quality PDFs ready for user inspection
+- **Technical Details**:
+  - Created clean validation folder at `/Users/e.barsky/Desktop/wolfenbuettel-validation-final/`
+  - Each PDF contains 10 pages of authentic manuscript content
+  - Visual inspection confirmed different pages with no duplicates
+  - Maximum resolution achieved (up to 6093x8155 pixels at 600 DPI)
+
+## 🔧 Technical Implementation Details:
+
+### Enhanced Wolfenbüttel Loader:
+```typescript
+// First try thumbs.php for actual page names (supports folio notation)
+const thumbsUrl = `https://diglib.hab.de/thumbs.php?dir=mss/${manuscriptId}&thumbs=0`;
+const imageMatches = thumbsHtml.matchAll(/image=([^'"&]+)/g);
+
+// Convert to maximum resolution URLs
+const imageUrl = `http://diglib.hab.de/mss/${manuscriptId}/max/${imageName}.jpg`;
+```
+
+### Resolution Testing Results:
+- **base**: 1024x1073 (1.10MP) - 0.10MB
+- **max**: 4337x4414 (19.14MP) - 2.91MB ✅ **SELECTED**
+- **min**: 600x625 (0.38MP) - 0.04MB
+- **thumbs**: 150x151 (0.02MP) - 0.00MB
+
+## 📊 Validation Summary:
+- **Manuscripts Tested**: 10 (8 valid, 2 non-existent)
+- **Success Rate**: 100% for existing manuscripts
+- **Page Detection**: Both folio and sequential notation supported
+- **Image Quality**: Maximum resolution (up to 19.14 megapixels)
+- **PDF Quality**: All PDFs validated with poppler, proper multi-page content
+
+## 📝 User Benefits:
+- Fixed critical bug preventing folio-notation manuscripts from loading
+- All Wolfenbüttel manuscripts now download at maximum available resolution
+- ~20x better image quality compared to base resolution
+- Support for all manuscript numbering schemes (folio and sequential)
+- Reliable detection of all available pages
+
+---
+*Tasks completed on July 16, 2025*

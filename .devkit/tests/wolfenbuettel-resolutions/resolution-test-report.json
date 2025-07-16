@@ -1,0 +1,97 @@
+{
+  "manuscript": "105-noviss-2f",
+  "page": "001v",
+  "timestamp": "2025-07-16T15:35:12.818Z",
+  "results": [
+    {
+      "name": "base",
+      "url": "http://diglib.hab.de/mss/105-noviss-2f/001v.jpg",
+      "width": 1024,
+      "height": 1073,
+      "size": 102022,
+      "sizeMB": "0.10",
+      "megapixels": "1.10",
+      "available": true
+    },
+    {
+      "name": "max",
+      "url": "http://diglib.hab.de/mss/105-noviss-2f/max/001v.jpg",
+      "width": 4337,
+      "height": 4414,
+      "size": 3055345,
+      "sizeMB": "2.91",
+      "megapixels": "19.14",
+      "available": true
+    },
+    {
+      "name": "orig",
+      "url": "http://diglib.hab.de/mss/105-noviss-2f/orig/001v.jpg",
+      "available": false
+    },
+    {
+      "name": "full",
+      "url": "http://diglib.hab.de/mss/105-noviss-2f/full/001v.jpg",
+      "available": false
+    },
+    {
+      "name": "large",
+      "url": "http://diglib.hab.de/mss/105-noviss-2f/large/001v.jpg",
+      "available": false
+    },
+    {
+      "name": "min",
+      "url": "http://diglib.hab.de/mss/105-noviss-2f/min/001v.jpg",
+      "width": 600,
+      "height": 625,
+      "size": 41216,
+      "sizeMB": "0.04",
+      "megapixels": "0.38",
+      "available": true
+    },
+    {
+      "name": "thumb",
+      "url": "http://diglib.hab.de/mss/105-noviss-2f/thumb/001v.jpg",
+      "available": false
+    },
+    {
+      "name": "thumbs",
+      "url": "http://diglib.hab.de/mss/105-noviss-2f/thumbs/001v.jpg",
+      "width": 150,
+      "height": 151,
+      "size": 3782,
+      "sizeMB": "0.00",
+      "megapixels": "0.02",
+      "available": true
+    },
+    {
+      "name": "download",
+      "url": "http://diglib.hab.de/mss/105-noviss-2f/download/001v.jpg",
+      "available": false
+    },
+    {
+      "name": "high",
+      "url": "http://diglib.hab.de/mss/105-noviss-2f/high/001v.jpg",
+      "available": false
+    },
+    {
+      "name": "medium",
+      "url": "http://diglib.hab.de/mss/105-noviss-2f/medium/001v.jpg",
+      "available": false
+    },
+    {
+      "name": "low",
+      "url": "http://diglib.hab.de/mss/105-noviss-2f/low/001v.jpg",
+      "available": false
+    }
+  ],
+  "recommendation": {
+    "name": "max",
+    "url": "http://diglib.hab.de/mss/105-noviss-2f/max/001v.jpg",
+    "width": 4337,
+    "height": 4414,
+    "size": 3055345,
+    "sizeMB": "2.91",
+    "megapixels": "19.14",
+    "available": true
+  }
+}

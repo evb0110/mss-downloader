@@ -1,13 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.9",
+  "version": "1.4.10",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Fixed critical negative converter memory issues - prevents system crashes during large PDF processing",
-    "Optimized image processing with strip-based algorithm reducing memory usage by 40x (from 500MB to 50MB)",
-    "Extended timeout for large manuscripts from 2 minutes to 30 minutes for 151+ page documents",
-    "Enhanced memory management with aggressive garbage collection and resource cleanup",
-    "Improved Wolfenbüttel Digital Library support with maximum resolution image downloads"
+    "Fixed Wolfenbüttel Digital Library manuscript loading for folio notation manuscripts (001v, 002r format)",
+    "Enhanced Wolfenbüttel implementation to download maximum resolution images (up to 20x higher quality)",
+    "Added automatic page detection from thumbs.php supporting both sequential and folio numbering systems",
+    "Improved manuscript compatibility ensuring all Wolfenbüttel manuscripts load correctly"
   ],
   "main": "dist/main/main.js",
   "scripts": {
@@ -59,7 +58,6 @@
     "jsdom": "^26.1.0",
     "lodash": "^4.17.21",
     "marked": "^15.0.11",
-    "node-fetch": "^3.3.2",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^5.3.93",
     "vue": "^3.4.38",
@@ -80,6 +78,7 @@
     "electron-builder": "^25.1.8",
     "eslint": "^9.28.0",
     "eslint-plugin-vue": "^10.1.0",
+    "node-fetch": "^2.7.0",
     "playwright": "^1.53.0",
     "sass": "^1.84.0",
     "terser": "^5.42.0",

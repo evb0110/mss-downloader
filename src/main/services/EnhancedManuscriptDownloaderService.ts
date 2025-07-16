@@ -8954,30 +8954,62 @@ export class EnhancedManuscriptDownloaderService {
             }
 
             const manuscriptId = urlMatch[1];
-            const baseImageUrl = `http://diglib.hab.de/mss/${manuscriptId}/max`;
+            console.log(`Loading Wolfenbüttel manuscript: ${manuscriptId}`);
             
-            // Test pages to find the total number available
+            // First try to get page list from thumbs.php
             const pageLinks: string[] = [];
-            let pageNum = 1;
-            let consecutiveFailures = 0;
-            
-            while (consecutiveFailures < 10 && pageNum <= 500) { // Maximum 500 pages
-                const pageStr = pageNum.toString().padStart(5, '0');
-                const imageUrl = `${baseImageUrl}/${pageStr}.jpg`;
+            try {
+                const thumbsUrl = `https://diglib.hab.de/thumbs.php?dir=mss/${manuscriptId}&thumbs=0`;
+                console.log(`Fetching page list from: ${thumbsUrl}`);
                 
-                try {
-                    const response = await this.fetchWithProxyFallback(imageUrl);
-                    if (response.status === 200) {
-                        pageLinks.push(imageUrl);
-                        consecutiveFailures = 0;
-                    } else {
+                const thumbsResponse = await this.fetchWithProxyFallback(thumbsUrl);
+                if (thumbsResponse.ok) {
+                    const thumbsHtml = await thumbsResponse.text();
+                    
+                    // Extract image names from thumbs page (e.g., image=001v, image=002r)
+                    const imageMatches = thumbsHtml.matchAll(/image=([^'"&]+)/g);
+                    const imageNames = Array.from(imageMatches, m => m[1]);
+                    
+                    if (imageNames.length > 0) {
+                        console.log(`Found ${imageNames.length} images in thumbs page`);
+                        
+                        // Convert image names to full URLs using maximum resolution
+                        for (const imageName of imageNames) {
+                            const imageUrl = `http://diglib.hab.de/mss/${manuscriptId}/max/${imageName}.jpg`;
+                            pageLinks.push(imageUrl);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn(`Failed to fetch thumbs page: ${error}`);
+            }
+            
+            // If thumbs approach failed, fall back to sequential number testing
+            if (pageLinks.length === 0) {
+                console.log('Falling back to sequential page detection');
+                const baseImageUrl = `http://diglib.hab.de/mss/${manuscriptId}/max`;
+                
+                let pageNum = 1;
+                let consecutiveFailures = 0;
+                
+                while (consecutiveFailures < 10 && pageNum <= 500) { // Maximum 500 pages
+                    const pageStr = pageNum.toString().padStart(5, '0');
+                    const imageUrl = `${baseImageUrl}/${pageStr}.jpg`;
+                    
+                    try {
+                        const response = await this.fetchWithProxyFallback(imageUrl);
+                        if (response.status === 200) {
+                            pageLinks.push(imageUrl);
+                            consecutiveFailures = 0;
+                        } else {
+                            consecutiveFailures++;
+                        }
+                    } catch (error) {
                         consecutiveFailures++;
                     }
-                } catch (error) {
-                    consecutiveFailures++;
+                    
+                    pageNum++;
                 }
-                
-                pageNum++;
             }
 
             if (pageLinks.length === 0) {
