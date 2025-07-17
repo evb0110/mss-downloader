@@ -1,11 +1,10 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.14",
+  "version": "1.4.15",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Fixed Verona Library timeout errors - now loads instantly",
-    "Fixed MDC Catalonia and University of Graz download failures",
-    "Fixed 'Add More Documents' function not responding to user input"
+    "HOTFIX: Fixed Windows build error - pdf-lib module not found",
+    "All previous v1.4.14 fixes included"
   ],
   "main": "dist/main/main.js",
   "scripts": {
@@ -108,9 +107,14 @@
       "!node_modules/**/*.d.ts",
       "!node_modules/**/docs/**",
       "!node_modules/**/example/**",
-      "!node_modules/**/examples/**"
+      "!node_modules/**/examples/**",
+      "node_modules/pdf-lib/**/*"
     ],
     "asar": true,
+    "asarUnpack": [
+      "node_modules/pdf-lib/**/*"
+    ],
+    "includeSubNodeModules": true,
     "compression": "maximum",
     "icon": "assets/icon-512.png",
     "win": {
