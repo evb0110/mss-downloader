@@ -1,0 +1,29 @@
+{
+  "testDate": "2025-07-16T21:18:29.535Z",
+  "directConnectionTests": [
+    {
+      "url": "https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=15",
+      "status": "no_manifest",
+      "responseTime": 11955
+    },
+    {
+      "url": "https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=14",
+      "status": "no_manifest",
+      "responseTime": 11077
+    },
+    {
+      "url": "https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=16",
+      "status": "no_manifest",
+      "responseTime": 9153
+    }
+  ],
+  "serviceTest": {
+    "status": "service_error",
+    "error": "Cannot find module '/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/src/main/services/EnhancedManuscriptDownloaderService'\nRequire stack:\n- /Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/tests/test-verona-timeout.js"
+  },
+  "analysis": {
+    "directConnectionSuccess": 0,
+    "directConnectionFailed": 0,
+    "avgResponseTime": 10728.333333333334
+  }
+}

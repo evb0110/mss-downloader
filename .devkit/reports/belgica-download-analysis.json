@@ -1,0 +1,65 @@
+{
+  "manuscript": "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994415",
+  "baseUrl": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/",
+  "manuscriptId": "BE-KBR00_A-1589485_0000-00-00_00",
+  "results": [
+    {
+      "resolution": "zoomthumb",
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomthumb/BE-KBR00_A-1589485_0000-00-00_00_0001_600x400.jpg",
+      "status": 403,
+      "contentType": "text/html; charset=iso-8859-1",
+      "contentLength": "20"
+    },
+    {
+      "resolution": "zoom",
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoom/BE-KBR00_A-1589485_0000-00-00_00_0001_600x400.jpg",
+      "status": 403,
+      "contentType": "text/html; charset=iso-8859-1",
+      "contentLength": "20"
+    },
+    {
+      "resolution": "high",
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/high/BE-KBR00_A-1589485_0000-00-00_00_0001_600x400.jpg",
+      "status": 403,
+      "contentType": "text/html; charset=iso-8859-1",
+      "contentLength": "20"
+    },
+    {
+      "resolution": "full",
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/full/BE-KBR00_A-1589485_0000-00-00_00_0001_600x400.jpg",
+      "status": 403,
+      "contentType": "text/html; charset=iso-8859-1",
+      "contentLength": "20"
+    },
+    {
+      "resolution": "max",
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/max/BE-KBR00_A-1589485_0000-00-00_00_0001_600x400.jpg",
+      "status": 403,
+      "contentType": "text/html; charset=iso-8859-1",
+      "contentLength": "20"
+    },
+    {
+      "resolution": "original",
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/original/BE-KBR00_A-1589485_0000-00-00_00_0001_600x400.jpg",
+      "status": 403,
+      "contentType": "text/html; charset=iso-8859-1",
+      "contentLength": "20"
+    },
+    {
+      "resolution": "zoommax",
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoommax/BE-KBR00_A-1589485_0000-00-00_00_0001_600x400.jpg",
+      "status": 403,
+      "contentType": "text/html; charset=iso-8859-1",
+      "contentLength": "20"
+    },
+    {
+      "resolution": "hires",
+      "url": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/hires/BE-KBR00_A-1589485_0000-00-00_00_0001_600x400.jpg",
+      "status": 403,
+      "contentType": "text/html; charset=iso-8859-1",
+      "contentLength": "20"
+    }
+  ],
+  "workingPattern": "https://viewerd.kbr.be/display/A/1/5/8/9/4/8/5/0000-00-00_00/zoomthumb/BE-KBR00_A-1589485_0000-00-00_00_{pageNum}_600x400.jpg",
+  "notes": "AJAX Zoom system with thumbnails available. Need to find high-res access method."
+}

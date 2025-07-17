@@ -1523,7 +1523,9 @@ async function addAllTestUrls() {
 }
 
 async function openAddMoreDocumentsModal() {
-    // Clear the textarea content
+    console.log('[openAddMoreDocumentsModal] Opening modal...');
+    
+    // Clear the textarea content before showing modal
     bulkUrlText.value = '';
     
     // Show the modal
@@ -1663,14 +1665,20 @@ async function parseManuscriptWithCaptcha(url: string) {
 }
 
 async function processBulkUrls() {
+    console.log('[processBulkUrls] Called with bulkUrlText:', bulkUrlText.value);
+    
     // Clear previous error message
     errorMessage.value = '';
     
     const urls = parseUrls(bulkUrlText.value);
+    console.log('[processBulkUrls] Parsed URLs:', urls);
     
-    if (urls.length === 0) return;
+    if (urls.length === 0) {
+        console.log('[processBulkUrls] No URLs to process, bulkUrlText was:', bulkUrlText.value);
+        return;
+    }
 
-    // Close modal immediately and clear textarea so user can see queue updates
+    // Close modal and clear textarea so user can see queue updates
     showAddMoreDocumentsModal.value = false;
     bulkUrlText.value = '';
 

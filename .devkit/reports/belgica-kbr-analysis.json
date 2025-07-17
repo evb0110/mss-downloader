@@ -1,0 +1,43 @@
+{
+  "url": "https://belgica.kbr.be/BELGICA/doc/SYRACUSE/16994415",
+  "timestamp": "2025-07-16T21:33:27.490Z",
+  "iframes": [
+    {
+      "src": "https://uurl.kbr.be/1558106",
+      "id": "",
+      "class": "",
+      "width": "100%",
+      "height": "100%"
+    }
+  ],
+  "totalRequests": 598,
+  "imageRequests": 524,
+  "uniqueImagePatterns": [
+    "static-png",
+    "other",
+    "static-jpg",
+    "tile-based"
+  ],
+  "sampleImageUrls": [
+    "https://belgica.kbr.be/ui/skins/BRDBNEW/images/logo_kbr.png",
+    "https://belgica.kbr.be/ui/skins/BRDBNEW/images/be-logo.png",
+    "https://belgica.kbr.be/ui/skins/BRDBNEW/images/favicon-std.ico",
+    "https://belgica.kbr.be/ui/skins/BRDBNEW/images/favicon-std.ico",
+    "https://belgica.kbr.be/basicimagedownload.ashx?itemId=5832077",
+    "https://belgica.kbr.be/belgica?itemId=5832077",
+    "https://viewerd.kbr.be/AJAX/axZm/icons/kbr_spinner.gif",
+    "https://viewerd.kbr.be/AJAX/axZm/icons/empty.gif",
+    "https://viewerd.kbr.be/AJAX/axZm/icons/default/zoombutton_pan.jpg",
+    "https://viewerd.kbr.be/AJAX/axZm/icons/default/zoombutton_crop.jpg",
+    "https://viewerd.kbr.be/AJAX/axZm/icons/default/zoombutton_out.jpg",
+    "https://viewerd.kbr.be/AJAX/axZm/icons/default/zoombutton_in.jpg",
+    "https://viewerd.kbr.be/AJAX/axZm/icons/default/zoombutton_ml.jpg",
+    "https://viewerd.kbr.be/AJAX/axZm/icons/default/zoombutton_mt.jpg",
+    "https://viewerd.kbr.be/AJAX/axZm/icons/default/zoombutton_mb.jpg",
+    "https://viewerd.kbr.be/AJAX/axZm/icons/default/zoombutton_mr.jpg",
+    "https://viewerd.kbr.be/AJAX/axZm/icons/default/zoombutton_reset.jpg",
+    "https://viewerd.kbr.be/AJAX/axZm/icons/default/zoombutton_fullscreen.jpg",
+    "https://viewerd.kbr.be/AJAX/axZm/icons/default/zoombutton_arrow_left.jpg",
+    "https://viewerd.kbr.be/AJAX/axZm/icons/default/zoombutton_arrow_right.jpg"
+  ]
+}

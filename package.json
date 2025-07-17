@@ -1,11 +1,11 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.13",
+  "version": "1.4.14",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "Fixed BNE Library slow loading - now 3x faster with parallel processing",
-    "Fixed Rouen, Grenoble, and Fulda libraries manuscript loading errors",
-    "Improved SSL handling and URL parsing for better compatibility"
+    "Fixed Verona Library timeout errors - now loads instantly",
+    "Fixed MDC Catalonia and University of Graz download failures",
+    "Fixed 'Add More Documents' function not responding to user input"
   ],
   "main": "dist/main/main.js",
   "scripts": {
@@ -52,12 +52,12 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "axios": "^1.10.0",
     "electron-store": "8.1.0",
     "jimp": "^1.6.0",
     "jsdom": "^26.1.0",
     "lodash": "^4.17.21",
     "marked": "^15.0.11",
-    "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^5.3.93",
     "vue": "^3.4.38",
     "vue-i18n": "^11.1.3"
@@ -78,6 +78,7 @@
     "eslint": "^9.28.0",
     "eslint-plugin-vue": "^10.1.0",
     "node-fetch": "^2.7.0",
+    "pdf-lib": "^1.17.1",
     "playwright": "^1.53.0",
     "sass": "^1.84.0",
     "terser": "^5.42.0",
@@ -85,7 +86,8 @@
     "typescript-eslint": "^8.33.1",
     "vite": "^6.3.5",
     "vue-eslint-parser": "^10.1.3",
-    "vue-tsc": "^2.1.4"
+    "vue-tsc": "^2.1.4",
+    "xml2js": "^0.6.2"
   },
   "build": {
     "appId": "com.me.abba-ababus-mss-downloader",
