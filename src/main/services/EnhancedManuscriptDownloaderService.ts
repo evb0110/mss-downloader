@@ -791,13 +791,33 @@ export class EnhancedManuscriptDownloaderService {
                     chunks.push(chunk);
                 });
                 
-                res.on('end', () => {
-                    const body = Buffer.concat(chunks);
+                res.on('end', async () => {
+                    let body = Buffer.concat(chunks);
                     const responseHeaders = new Headers();
                     
                     Object.entries(res.headers).forEach(([key, value]) => {
                         responseHeaders.set(key, Array.isArray(value) ? value.join(', ') : value || '');
                     });
+                    
+                    // Handle content decompression
+                    const contentEncoding = res.headers['content-encoding'];
+                    if (contentEncoding) {
+                        const zlib = await import('zlib');
+                        try {
+                            if (contentEncoding === 'gzip') {
+                                body = zlib.gunzipSync(body);
+                            } else if (contentEncoding === 'deflate') {
+                                body = zlib.inflateSync(body);
+                            } else if (contentEncoding === 'br') {
+                                body = zlib.brotliDecompressSync(body);
+                            }
+                            // Remove content-encoding header after decompression
+                            responseHeaders.delete('content-encoding');
+                        } catch (decompressError) {
+                            console.error(`Failed to decompress ${contentEncoding} content:`, decompressError);
+                            // Continue with compressed body if decompression fails
+                        }
+                    }
                     
                     const response = new Response(body, {
                         status: res.statusCode || 200,

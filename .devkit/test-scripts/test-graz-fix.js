@@ -1,102 +1,67 @@
-const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
-const { promisify } = require('util');
-const execAsync = promisify(exec);
+const fs = require('fs');
 
 // Import the service
-const { EnhancedManuscriptDownloaderService } = require('../../dist/main/services/EnhancedManuscriptDownloaderService');
+const { EnhancedManuscriptDownloaderService } = require('../../dist/main/services/EnhancedManuscriptDownloaderService.js');
 
 async function testGrazFix() {
-    console.log('=== Testing University of Graz SSL Fix ===');
-    console.log('Platform:', process.platform);
-    console.log('Node version:', process.version);
-    console.log('');
-
-    const service = new EnhancedManuscriptDownloaderService({
-        get: (key) => {
-            const config = {
-                requestTimeout: 120000,
-                useProxy: false,
-                maxRetries: 3
-            };
-            return config[key];
-        }
-    });
-
+    console.log('Testing University of Graz JSON parsing fix...\n');
+    
+    const service = new EnhancedManuscriptDownloaderService();
     const testUrl = 'https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538';
-    console.log('Test URL:', testUrl);
-    console.log('');
-
+    
     try {
-        console.log('1. Loading manuscript manifest...');
-        const startTime = Date.now();
-        
+        console.log('1. Loading manifest for:', testUrl);
         const manifest = await service.loadGrazManifest(testUrl);
         
-        const loadTime = Date.now() - startTime;
-        console.log(`   ✅ Manifest loaded in ${loadTime}ms`);
-        console.log(`   Title: ${manifest.displayName}`);
-        console.log(`   Pages: ${manifest.pageLinks.length}`);
-        console.log('');
+        console.log('✓ Successfully loaded manifest');
+        console.log('  Display name:', manifest.displayName);
+        console.log('  Total pages:', manifest.totalPages);
+        console.log('  Page links count:', manifest.pageLinks.length);
+        console.log('  First page URL:', manifest.pageLinks[0]);
+        console.log('  Last page URL:', manifest.pageLinks[manifest.pageLinks.length - 1]);
         
-        if (manifest.pageLinks.length > 0) {
-            console.log('2. Testing image download...');
-            const firstPageUrl = manifest.pageLinks[0];
-            console.log(`   First page URL: ${firstPageUrl}`);
+        // Test downloading a few pages
+        console.log('\n2. Testing page downloads...');
+        const testPages = [0, 1, manifest.pageLinks.length - 1];
+        
+        for (const index of testPages) {
+            const pageUrl = manifest.pageLinks[index];
+            console.log(`\n  Downloading page ${index + 1}/${manifest.totalPages}...`);
+            console.log(`  URL: ${pageUrl}`);
             
-            const imageStartTime = Date.now();
-            const response = await service.fetchDirect(firstPageUrl);
-            const imageLoadTime = Date.now() - imageStartTime;
-            
-            if (response.ok) {
-                const buffer = await response.arrayBuffer();
-                console.log(`   ✅ Image downloaded in ${imageLoadTime}ms`);
-                console.log(`   Size: ${buffer.byteLength} bytes`);
+            try {
+                const imageData = await service.downloadSinglePage(pageUrl, 'graz', index + 1, manifest.totalPages);
+                console.log(`  ✓ Downloaded successfully, size: ${imageData.length} bytes`);
                 
-                // Save test image
-                const testDir = path.join(__dirname, '..', 'test-outputs', 'graz-fix-test');
-                if (!fs.existsSync(testDir)) {
-                    fs.mkdirSync(testDir, { recursive: true });
+                // Save first page for inspection
+                if (index === 0) {
+                    const outputPath = path.join(__dirname, 'graz-test-page1.jpg');
+                    fs.writeFileSync(outputPath, imageData);
+                    console.log(`  ✓ Saved test page to: ${outputPath}`);
                 }
-                
-                const imagePath = path.join(testDir, 'test-page-1.jpg');
-                fs.writeFileSync(imagePath, Buffer.from(buffer));
-                console.log(`   Saved to: ${imagePath}`);
-            } else {
-                console.log(`   ❌ Image download failed: ${response.status}`);
+            } catch (downloadError) {
+                console.error(`  ✗ Download failed:`, downloadError.message);
             }
         }
         
-        console.log('');
-        console.log('=== SSL Fix Test Results ===');
-        console.log('✅ Graz manuscript loading is now working!');
-        console.log('The SSL certificate bypass successfully resolves the Windows issue.');
+        console.log('\n✓ All tests completed successfully!');
         
     } catch (error) {
-        console.error('❌ Test failed:', error.message);
-        console.error('Error details:', error);
-        
-        console.log('');
-        console.log('=== Troubleshooting ===');
-        if (error.message.includes('SSL') || error.message.includes('certificate')) {
-            console.log('SSL certificate issue detected. The fix may need adjustment.');
-        } else if (error.message.includes('timeout')) {
-            console.log('Timeout issue. The server may be slow or unresponsive.');
-        } else {
-            console.log('Unexpected error. Check the error details above.');
-        }
+        console.error('✗ Test failed:', error.message);
+        console.error('Stack trace:', error.stack);
     }
 }
 
-// First compile TypeScript
-console.log('Compiling TypeScript...');
-exec('npm run build', (err, stdout, stderr) => {
-    if (err) {
-        console.error('Build failed:', err);
-        return;
-    }
+// First build the TypeScript
+console.log('Building TypeScript...');
+const { execSync } = require('child_process');
+try {
+    execSync('npm run build:main', { stdio: 'inherit' });
+    console.log('Build completed, running test...\n');
     
-    console.log('Build complete, running test...\n');
+    // Run the test
     testGrazFix();
-});
+} catch (buildError) {
+    console.error('Build failed:', buildError.message);
+}

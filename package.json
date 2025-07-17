@@ -1,16 +1,17 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.15",
+  "version": "1.4.16",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "HOTFIX: Fixed Windows build error - pdf-lib module not found",
-    "All previous v1.4.14 fixes included"
+    "HOTFIX: Optimized build size and fixed pdf-lib inclusion",
+    "Fixed Mac and Linux builds",
+    "All v1.4.14 fixes included"
   ],
   "main": "dist/main/main.js",
   "scripts": {
     "dev": "npm run dev:renderer && concurrently --names \"MAIN,RENDERER\" --prefix-colors \"yellow,cyan\" \"npm run dev:main\" \"npm run dev:renderer:watch\"",
-    "dev:main": "npm run build:preload && tsc --project tsconfig.main.json && NODE_ENV=development electron dist/main/main.js",
-    "dev:main:headless": "npm run build:preload && tsc --project tsconfig.main.json && NODE_ENV=development electron dist/main/main.js --headless",
+    "dev:main": "NODE_ENV=development node esbuild.main.config.js && NODE_ENV=development electron dist/main/main.js",
+    "dev:main:headless": "NODE_ENV=development node esbuild.main.config.js && NODE_ENV=development electron dist/main/main.js --headless",
     "dev:headless": "npm run dev:renderer && concurrently --names \"MAIN,RENDERER\" --prefix-colors \"yellow,cyan\" \"npm run dev:main:headless\" \"npm run dev:renderer:watch\"",
     "dev:start": ".devkit/tools/start-dev.sh",
     "dev:kill": ".devkit/tools/kill-dev.sh",
@@ -18,8 +19,9 @@
     "dev:headless:kill": ".devkit/tools/kill-dev-headless.sh",
     "dev:renderer": "npm run build:workers && mkdir -p dist/workers && cp workers-dist/pdf-worker.js dist/workers/",
     "dev:renderer:watch": "vite",
-    "build": "npm run build:preload && npm run build:main && npm run build:renderer && npm run build:workers",
+    "build": "npm run build:main:bundled && npm run build:renderer && npm run build:workers",
     "build:main": "npx tsc --project tsconfig.main.json",
+    "build:main:bundled": "node esbuild.main.config.js",
     "build:preload": "npx tsc --project tsconfig.preload.json",
     "build:renderer": "vite build",
     "build:workers": "vite build --config vite.worker.config.ts",
@@ -74,6 +76,7 @@
     "concurrently": "^9.1.2",
     "electron": "^33.2.1",
     "electron-builder": "^25.1.8",
+    "esbuild": "^0.25.6",
     "eslint": "^9.28.0",
     "eslint-plugin-vue": "^10.1.0",
     "node-fetch": "^2.7.0",
@@ -107,16 +110,12 @@
       "!node_modules/**/*.d.ts",
       "!node_modules/**/docs/**",
       "!node_modules/**/example/**",
-      "!node_modules/**/examples/**",
-      "node_modules/pdf-lib/**/*"
+      "!node_modules/**/examples/**"
     ],
     "asar": true,
-    "asarUnpack": [
-      "node_modules/pdf-lib/**/*"
-    ],
-    "includeSubNodeModules": true,
     "compression": "maximum",
     "icon": "assets/icon-512.png",
+    "npmRebuild": false,
     "win": {
       "target": [
         {
