@@ -525,9 +525,8 @@ export class EnhancedManuscriptDownloaderService {
      * Direct fetch (no proxy needed in Electron main process)
      */
     async fetchDirect(url: string, options: any = {}, attempt: number = 1): Promise<Response> {
-        // Use external signal if provided, otherwise create our own
-        const externalSignal = options.signal;
-        const controller = externalSignal ? new AbortController() : new AbortController();
+        // Always create our own controller for library-specific timeouts
+        const controller = new AbortController();
         
         // Detect library and apply optimized timeout
         const library = this.detectLibrary(url) as TLibrary;
@@ -536,19 +535,23 @@ export class EnhancedManuscriptDownloaderService {
             LibraryOptimizationService.getTimeoutForLibrary(baseTimeout, library, attempt) :
             baseTimeout;
         
-        // Set up timeout only if no external signal is provided
-        // If external signal exists, let the caller handle timeouts
-        let timeoutId: NodeJS.Timeout | undefined;
-        if (!externalSignal) {
-            timeoutId = setTimeout(() => controller.abort(), timeout);
-        }
+        // CRITICAL FIX: Always apply library-specific timeout, even with external signals
+        // This ensures Graz and other libraries get their proper extended timeouts
+        const timeoutId = setTimeout(() => {
+            console.log(`[fetchDirect] Request timed out after ${timeout}ms for ${library || 'unknown'} library: ${url}`);
+            controller.abort();
+        }, timeout);
         
-        // Listen to external signal if provided
+        // Chain external signal if provided
+        const externalSignal = options.signal;
         if (externalSignal) {
-            const abortListener = () => controller.abort();
+            const abortListener = () => {
+                console.log(`[fetchDirect] External signal aborted for ${url}`);
+                controller.abort();
+            };
             externalSignal.addEventListener('abort', abortListener);
             
-            // Clean up listener
+            // Clean up listener when our controller aborts
             controller.signal.addEventListener('abort', () => {
                 externalSignal.removeEventListener('abort', abortListener);
             });
