@@ -1,10 +1,11 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.17",
+  "version": "1.4.18",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
   "changelog": [
-    "HOTFIX: Fixed University of Graz timeout on Windows - increased timeout to 90 seconds",
-    "Improved timeout handling for large manuscript manifests",
+    "HOTFIX: Implemented smart timeout monitoring - downloads continue as long as data flows",
+    "Fixed University of Graz hanging on Windows - no more arbitrary timeout limits",
+    "Downloads now monitor progress and only timeout if no data received for 30 seconds",
     "All previous fixes included"
   ],
   "main": "dist/main/main.js",

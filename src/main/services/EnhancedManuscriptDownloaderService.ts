@@ -751,6 +751,7 @@ export class EnhancedManuscriptDownloaderService {
                 reject(error);
             });
             
+            // Using same timeout as fetchWithHTTPS for consistency
             req.setTimeout(30000, () => {
                 req.destroy();
                 reject(new Error('Request timeout'));
@@ -789,14 +790,66 @@ export class EnhancedManuscriptDownloaderService {
         return new Promise((resolve, reject) => {
             const req = https.request(requestOptions, (res) => {
                 const chunks: Buffer[] = [];
+                let lastDataTime = Date.now();
+                let totalBytes = 0;
+                let progressTimer: NodeJS.Timeout;
+                
+                // Smart timeout: Monitor if data is still flowing
+                const PROGRESS_CHECK_INTERVAL = 10000; // Check every 10 seconds
+                const STALL_TIMEOUT = 30000; // Timeout if no data for 30 seconds
+                const initialTimeout = options.timeout || 30000;
+                
+                // Clear any existing timeout
+                const clearProgressTimer = () => {
+                    if (progressTimer) {
+                        clearTimeout(progressTimer);
+                    }
+                };
+                
+                // Setup progress monitoring
+                const setupProgressMonitor = () => {
+                    clearProgressTimer();
+                    progressTimer = setTimeout(() => {
+                        const timeSinceLastData = Date.now() - lastDataTime;
+                        if (timeSinceLastData > STALL_TIMEOUT) {
+                            req.destroy();
+                            reject(new Error(`Download stalled - no data received for ${STALL_TIMEOUT / 1000} seconds (downloaded ${totalBytes} bytes)`));
+                        } else {
+                            // Still receiving data, continue monitoring
+                            console.log(`[fetchWithHTTPS] Download in progress: ${totalBytes} bytes received, last data ${Math.round(timeSinceLastData / 1000)}s ago`);
+                            setupProgressMonitor();
+                        }
+                    }, PROGRESS_CHECK_INTERVAL);
+                };
+                
+                // Initial timeout for connection establishment
+                const connectionTimer = setTimeout(() => {
+                    if (totalBytes === 0) {
+                        req.destroy();
+                        reject(new Error(`Connection timeout - no response after ${initialTimeout / 1000} seconds`));
+                    }
+                }, initialTimeout);
                 
                 res.on('data', (chunk) => {
                     chunks.push(chunk);
+                    totalBytes += chunk.length;
+                    lastDataTime = Date.now();
+                    
+                    // Clear connection timer once we start receiving data
+                    if (totalBytes === chunk.length) {
+                        clearTimeout(connectionTimer);
+                        setupProgressMonitor();
+                    }
                 });
                 
                 res.on('end', async () => {
+                    clearTimeout(connectionTimer);
+                    clearProgressTimer();
+                    
                     let body = Buffer.concat(chunks);
                     const responseHeaders = new Headers();
+                    
+                    console.log(`[fetchWithHTTPS] Download complete: ${totalBytes} bytes in ${Math.round((Date.now() - lastDataTime + STALL_TIMEOUT) / 1000)}s`);
                     
                     Object.entries(res.headers).forEach(([key, value]) => {
                         responseHeaders.set(key, Array.isArray(value) ? value.join(', ') : value || '');
@@ -830,13 +883,18 @@ export class EnhancedManuscriptDownloaderService {
                     
                     resolve(response);
                 });
+                
+                res.on('error', (error) => {
+                    clearTimeout(connectionTimer);
+                    clearProgressTimer();
+                    reject(error);
+                });
             });
             
-            req.on('error', reject);
-            req.setTimeout(options.timeout || 30000, () => {
-                req.destroy();
-                reject(new Error('Request timeout'));
+            req.on('error', (error) => {
+                reject(error);
             });
+            
             req.end();
         });
     }
