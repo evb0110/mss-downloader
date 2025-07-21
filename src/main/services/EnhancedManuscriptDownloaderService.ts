@@ -107,6 +107,11 @@ export class EnhancedManuscriptDownloaderService {
             description: 'Bibliothèque municipale de Lyon digital manuscripts',
         },
         {
+            name: 'Florence (ContentDM Plutei)',
+            example: 'https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/',
+            description: 'Florence digital manuscripts collection via ContentDM with maximum resolution IIIF support (up to 6000px width)',
+        },
+        {
             name: 'Gallica (BnF)',
             example: 'https://gallica.bnf.fr/ark:/12148/btv1b8449691v/f1.highres',
             description: 'French National Library digital manuscripts (supports any f{page}.* format)',
@@ -451,6 +456,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('bdh-rd.bne.es')) return 'bne';
         if (url.includes('mdc.csuc.cat/digital/collection')) return 'mdc_catalonia';
         if (url.includes('bvpb.mcu.es')) return 'bvpb';
+        if (url.includes('cdm21059.contentdm.oclc.org/digital/collection/plutei')) return 'florence';
         if (url.includes('viewer.onb.ac.at')) return 'onb';
         if (url.includes('rotomagus.fr')) return 'rouen';
         if (url.includes('dl.ub.uni-freiburg.de')) return 'freiburg';
@@ -774,8 +780,24 @@ export class EnhancedManuscriptDownloaderService {
     private async fetchWithHTTPS(url: string, options: any = {}): Promise<Response> {
         const https = await import('https');
         const { URL } = await import('url');
+        const dns = await import('dns').then(m => m.promises);
         
         const urlObj = new URL(url);
+        
+        // Special handling for Graz to resolve ETIMEDOUT issues
+        if (url.includes('unipub.uni-graz.at')) {
+            try {
+                // Pre-resolve DNS to avoid resolution timeouts
+                console.log(`[Graz] Pre-resolving DNS for ${urlObj.hostname}`);
+                const addresses = await dns.resolve4(urlObj.hostname);
+                if (addresses.length > 0) {
+                    console.log(`[Graz] Resolved to ${addresses[0]}`);
+                }
+            } catch (dnsError) {
+                console.warn(`[Graz] DNS resolution failed, proceeding anyway:`, dnsError);
+            }
+        }
+        
         const requestOptions = {
             hostname: urlObj.hostname,
             port: urlObj.port || 443,
@@ -790,11 +812,21 @@ export class EnhancedManuscriptDownloaderService {
                 'Cache-Control': 'no-cache',
                 ...options.headers
             },
-            rejectUnauthorized: false
+            rejectUnauthorized: false,
+            // Add socket timeout for Graz
+            timeout: url.includes('unipub.uni-graz.at') ? 60000 : 30000
         };
         
-        return new Promise((resolve, reject) => {
-            const req = https.request(requestOptions, (res) => {
+        // Implement retry logic for connection timeouts
+        const maxRetries = url.includes('unipub.uni-graz.at') ? 3 : 1;
+        let retryCount = 0;
+        
+        const attemptRequest = (): Promise<Response> => {
+            return new Promise((resolve, reject) => {
+                const attemptStartTime = Date.now();
+                console.log(`[fetchWithHTTPS] Attempt ${retryCount + 1}/${maxRetries} for ${urlObj.hostname}`);
+                
+                const req = https.request(requestOptions, (res) => {
                 const chunks: Buffer[] = [];
                 let lastDataTime = Date.now();
                 let totalBytes = 0;
@@ -897,12 +929,46 @@ export class EnhancedManuscriptDownloaderService {
                 });
             });
             
-            req.on('error', (error) => {
-                reject(error);
+            req.on('error', (error: any) => {
+                const attemptDuration = Date.now() - attemptStartTime;
+                console.log(`[fetchWithHTTPS] Request error after ${attemptDuration}ms:`, error.code, error.message);
+                
+                // Handle connection timeouts with retry for Graz
+                if (url.includes('unipub.uni-graz.at') && 
+                    (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || error.code === 'ENOTFOUND') && 
+                    retryCount < maxRetries - 1) {
+                    
+                    retryCount++;
+                    const backoffDelay = Math.min(1000 * Math.pow(2, retryCount), 10000); // Exponential backoff: 2s, 4s, 8s, max 10s
+                    console.log(`[Graz] Connection failed with ${error.code}, retrying in ${backoffDelay}ms...`);
+                    
+                    setTimeout(() => {
+                        attemptRequest().then(resolve).catch(reject);
+                    }, backoffDelay);
+                } else {
+                    // Final error or non-retryable error
+                    if (error.code === 'ETIMEDOUT' && url.includes('unipub.uni-graz.at')) {
+                        reject(new Error(`University of Graz connection timeout after ${maxRetries} attempts. The server at ${urlObj.hostname} is not responding. Please check your network connection and try again.`));
+                    } else {
+                        reject(error);
+                    }
+                }
+            });
+            
+            // Add connection timeout handling
+            req.on('timeout', () => {
+                console.log(`[fetchWithHTTPS] Socket timeout for ${urlObj.hostname}`);
+                req.destroy();
+                const timeoutError: any = new Error('Socket timeout');
+                timeoutError.code = 'ETIMEDOUT';
+                req.emit('error', timeoutError);
             });
             
             req.end();
         });
+    };
+    
+    return attemptRequest();
     }
 
     /**
@@ -1068,6 +1134,9 @@ export class EnhancedManuscriptDownloaderService {
                 case 'bvpb':
                     manifest = await this.loadBvpbManifest(originalUrl);
                     break;
+                case 'florence':
+                    manifest = await this.loadFlorenceManifest(originalUrl);
+                    break;
                 case 'onb':
                     manifest = await this.loadOnbManifest(originalUrl);
                     break;
@@ -1097,6 +1166,20 @@ export class EnhancedManuscriptDownloaderService {
             
         } catch (error: any) {
             console.error(`Failed to load manifest: ${(error as Error).message}`);
+            
+            // Enhanced error handling for specific network issues
+            if (error.code === 'ETIMEDOUT' && originalUrl.includes('unipub.uni-graz.at')) {
+                throw new Error(`University of Graz connection timeout. The server is not responding - this may be due to high load or network issues. Please try again later or check if the manuscript is accessible through the Graz website.`);
+            }
+            
+            if (error.code === 'ECONNRESET' && originalUrl.includes('unipub.uni-graz.at')) {
+                throw new Error(`University of Graz connection was reset. The server closed the connection unexpectedly. Please try again in a few moments.`);
+            }
+            
+            if (error.message?.includes('timeout') && originalUrl.includes('unipub.uni-graz.at')) {
+                throw new Error(`University of Graz request timed out. Large manuscripts may take longer to load - please try again with patience, as the system allows extended timeouts for Graz manuscripts.`);
+            }
+            
             throw error;
         }
     }
@@ -5684,6 +5767,28 @@ export class EnhancedManuscriptDownloaderService {
             
         } catch (error: any) {
             console.error(`University of Graz manifest loading failed:`, error);
+            
+            // Enhanced error messages for specific network issues
+            if (error.code === 'ETIMEDOUT') {
+                throw new Error(`University of Graz connection timeout. The server is not responding - this may be due to high load or network issues. Please try again later or check if the manuscript is accessible through the Graz website at unipub.uni-graz.at`);
+            }
+            
+            if (error.code === 'ECONNRESET') {
+                throw new Error(`University of Graz connection was reset. The server closed the connection unexpectedly. This often happens with large manuscripts. Please try again in a few moments.`);
+            }
+            
+            if (error.code === 'ENOTFOUND') {
+                throw new Error(`University of Graz server could not be reached. Please check your internet connection and verify that unipub.uni-graz.at is accessible.`);
+            }
+            
+            if (error.message?.includes('timeout')) {
+                throw new Error(`University of Graz request timed out. Large manuscripts from Graz can take several minutes to load. The system automatically extends timeouts for Graz, but the server may still be experiencing issues. Please try again.`);
+            }
+            
+            if (error.message?.includes('AbortError')) {
+                throw new Error(`University of Graz manifest loading was cancelled. The manifest may be very large or the server may be experiencing issues. Please try again.`);
+            }
+            
             throw new Error(`Failed to load University of Graz manuscript: ${(error as Error).message}`);
         }
     }
@@ -8492,6 +8597,125 @@ export class EnhancedManuscriptDownloaderService {
             
         } catch (error: any) {
             throw new Error(`Failed to load BVPB manuscript: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Load Florence (ContentDM Plutei) manuscript using IIIF with maximum resolution support
+     * Supports up to 6000px width for optimal quality
+     */
+    async loadFlorenceManifest(originalUrl: string): Promise<ManuscriptManifest> {
+        try {
+            const urlMatch = originalUrl.match(/cdm21059\.contentdm\.oclc\.org\/digital\/collection\/plutei\/id\/(\d+)/);
+            if (!urlMatch) {
+                throw new Error('Could not extract item ID from Florence URL');
+            }
+
+            const itemId = urlMatch[1];
+            console.log(`🔍 Florence: itemId=${itemId}`);
+
+            const compoundXmlUrl = `https://cdm21059.contentdm.oclc.org/utils/getfile/collection/plutei/id/${itemId}`;
+            console.log('📄 Fetching Florence compound object XML structure...');
+
+            const xmlResponse = await this.fetchDirect(compoundXmlUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+                    'Accept': 'application/xml, text/xml, */*',
+                    'Referer': originalUrl
+                }
+            });
+
+            if (!xmlResponse.ok) {
+                console.log('📄 No compound structure found, treating as single page');
+                const iiifUrl = `http://cdm21059.contentdm.oclc.org/iiif/2/plutei:${itemId}/full/6000,/0/default.jpg`;
+                
+                return {
+                    pageLinks: [iiifUrl],
+                    totalPages: 1,
+                    library: 'florence',
+                    displayName: 'Florence Manuscript',
+                    originalUrl: originalUrl,
+                };
+            }
+
+            const xmlText = await xmlResponse.text();
+            console.log(`📄 XML structure retrieved (${xmlText.length} characters)`);
+
+            const pageMatches = xmlText.match(/<page>[\s\S]*?<\/page>/g);
+            if (!pageMatches || pageMatches.length === 0) {
+                console.log('📄 No compound pages found, treating as single page');
+                const iiifUrl = `http://cdm21059.contentdm.oclc.org/iiif/2/plutei:${itemId}/full/6000,/0/default.jpg`;
+                
+                return {
+                    pageLinks: [iiifUrl],
+                    totalPages: 1,
+                    library: 'florence',
+                    displayName: 'Florence Manuscript',
+                    originalUrl: originalUrl,
+                };
+            }
+
+            console.log(`📄 Found ${pageMatches.length} pages in compound object`);
+
+            const pages: Array<{
+                pagePtr: string;
+                title: string;
+            }> = [];
+
+            let displayName = 'Florence Manuscript';
+
+            for (let i = 0; i < pageMatches.length; i++) {
+                const pageXml = pageMatches[i];
+
+                const titleMatch = pageXml.match(/<pagetitle>(.*?)<\/pagetitle>/);
+                const ptrMatch = pageXml.match(/<pageptr>(.*?)<\/pageptr>/);
+
+                if (!ptrMatch) {
+                    console.warn(`No pageptr found for page ${i + 1}, skipping`);
+                    continue;
+                }
+
+                const pagePtr = ptrMatch[1];
+                const title = titleMatch ? titleMatch[1] : `Page ${i + 1}`;
+
+                if (i === 0 && titleMatch) {
+                    const cleanTitle = titleMatch[1]
+                        .replace(/^\s*carta:\s*/i, '')
+                        .replace(/^\s*page\s*\d+[rv]?\s*/i, '')
+                        .trim();
+                    if (cleanTitle && cleanTitle.length > 3) {
+                        displayName = cleanTitle;
+                    }
+                }
+
+                pages.push({
+                    pagePtr: pagePtr,
+                    title: title
+                });
+
+                console.log(`📄 Page ${i + 1}: ${title} (ptr: ${pagePtr})`);
+            }
+
+            if (pages.length === 0) {
+                throw new Error('No valid pages found in Florence compound object');
+            }
+
+            const pageLinks = pages.map(page => 
+                `http://cdm21059.contentdm.oclc.org/iiif/2/plutei:${page.pagePtr}/full/6000,/0/default.jpg`
+            );
+
+            console.log(`📄 Florence manuscript processed: ${pages.length} pages with maximum resolution (6000px width)`);
+
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'florence',
+                displayName: displayName,
+                originalUrl: originalUrl,
+            };
+
+        } catch (error: any) {
+            throw new Error(`Failed to load Florence manuscript: ${(error as Error).message}`);
         }
     }
 
