@@ -138,9 +138,23 @@
       <!-- Supported Libraries -->
       <div class="libraries-section card">
         <h3>{{ $t('downloader.supportedLibraries') }}</h3>
+        
+        <!-- Search Bar -->
+        <div class="library-search">
+          <input
+            v-model="librarySearchQuery"
+            type="text"
+            :placeholder="$t('downloader.searchLibraries')"
+            class="search-input"
+          >
+          <div class="search-icon">
+            🔍
+          </div>
+        </div>
+        
         <div class="libraries-list">
           <div 
-            v-for="library in supportedLibraries" 
+            v-for="library in filteredLibraries" 
             :key="library.name" 
             class="library-item"
             :class="{ 'library-warning': library.name.includes('⚠️') }"
@@ -158,6 +172,13 @@
               </code>
             </div>
           </div>
+        </div>
+        
+        <div 
+          v-if="filteredLibraries.length === 0 && librarySearchQuery" 
+          class="no-results"
+        >
+          {{ $t('downloader.noLibrariesFound') }}
         </div>
       </div>
     </div>
@@ -192,7 +213,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { DownloadProgress, DownloadStatus, LibraryInfo } from '../../shared/types'
 
@@ -207,6 +228,52 @@ const supportedLibraries = ref<LibraryInfo[]>([])
 const currentLanguage = ref('en')
 const showCacheModal = ref(false)
 const cacheStats = ref<{ size: number; entries: number } | null>(null)
+const librarySearchQuery = ref('')
+
+// Fuzzy search for libraries - filters by name, description, and URL
+const filteredLibraries = computed(() => {
+  if (!librarySearchQuery.value.trim()) {
+    return [...supportedLibraries.value].sort((a, b) => a.name.localeCompare(b.name))
+  }
+
+  const query = librarySearchQuery.value.toLowerCase().trim()
+  
+  const filtered = supportedLibraries.value.filter(library => {
+    const name = library.name.toLowerCase()
+    const description = library.description.toLowerCase()
+    const example = library.example.toLowerCase()
+    
+    // Exact matches get priority
+    if (name.includes(query) || description.includes(query) || example.includes(query)) {
+      return true
+    }
+    
+    // Fuzzy matching - check if query characters appear in order
+    const fuzzyMatch = (text: string) => {
+      let queryIndex = 0
+      for (let i = 0; i < text.length && queryIndex < query.length; i++) {
+        if (text[i] === query[queryIndex]) {
+          queryIndex++
+        }
+      }
+      return queryIndex === query.length
+    }
+    
+    return fuzzyMatch(name) || fuzzyMatch(description) || fuzzyMatch(example)
+  })
+  
+  // Sort filtered results: exact matches first, then by name
+  return filtered.sort((a, b) => {
+    const aName = a.name.toLowerCase()
+    const bName = b.name.toLowerCase()
+    const aExact = aName.includes(query)
+    const bExact = bName.includes(query)
+    
+    if (aExact && !bExact) return -1
+    if (!aExact && bExact) return 1
+    return aName.localeCompare(bName)
+  })
+})
 
 const waitForElectronAPI = () => {
   return new Promise<void>((resolve) => {
@@ -467,6 +534,48 @@ const formatBytes = (bytes: number): string => {
   color: var(--text-color);
   font-size: 1.5rem;
   font-weight: 600;
+}
+
+.library-search {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: var(--background-color);
+  color: var(--text-color);
+  transition: all var(--animation-timing);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-input::placeholder {
+  color: var(--secondary-color);
+}
+
+.search-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--secondary-color);
+  pointer-events: none;
+}
+
+.no-results {
+  text-align: center;
+  padding: 2rem;
+  color: var(--secondary-color);
+  font-style: italic;
 }
 
 .libraries-list {

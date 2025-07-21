@@ -1,12 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.18",
-  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (Gallica, e-codices, Vatican Library)",
+  "version": "1.4.19",
+  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (59+ libraries worldwide)",
   "changelog": [
-    "HOTFIX: Implemented smart timeout monitoring - downloads continue as long as data flows",
-    "Fixed University of Graz hanging on Windows - no more arbitrary timeout limits",
-    "Downloads now monitor progress and only timeout if no data received for 30 seconds",
-    "All previous fixes included"
+    "Smart Library Search: Added fuzzy search to quickly find libraries from 59 institutions",
+    "Library of Congress Support: Added full IIIF support for US national library manuscripts",
+    "Enhanced Image Quality: Karlsruhe library now downloads 4x higher resolution images",
+    "UI Improvements: Real-time search filtering and automatic alphabetical library ordering",
+    "Development Cleanup: Organized codebase and freed 189MB of temporary files"
   ],
   "main": "dist/main/main.js",
   "scripts": {

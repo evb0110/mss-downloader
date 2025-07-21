@@ -132,6 +132,11 @@ export class EnhancedManuscriptDownloaderService {
             description: 'Institut de recherche et d\'histoire des textes digital manuscripts',
         },
         {
+            name: 'Library of Congress',
+            example: 'https://www.loc.gov/item/2010414164/',
+            description: 'Library of Congress digital manuscripts and rare books via IIIF v2.0',
+        },
+        {
             name: 'Laon Bibliothèque',
             example: 'https://bibliotheque-numerique.ville-laon.fr/viewer/1459/?offset=#page=1&viewer=picture&o=download&n=0&q=',
             description: 'Bibliothèque municipale de Laon digital manuscripts',
@@ -409,6 +414,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('digi.vatlib.it')) return 'vatlib';
         if (url.includes('cecilia.mediatheques.grand-albigeois.fr')) return 'cecilia';
         if (url.includes('arca.irht.cnrs.fr')) return 'irht';
+        if (url.includes('www.loc.gov') || url.includes('tile.loc.gov')) return 'loc';
         if (url.includes('patrimoine.bm-dijon.fr')) return 'dijon';
         if (url.includes('bibliotheque-numerique.ville-laon.fr')) return 'laon';
         if (url.includes('iiif.durham.ac.uk')) return 'durham';
@@ -947,6 +953,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'irht':
                     manifest = await this.loadIrhtManifest(originalUrl);
+                    break;
+                case 'loc':
+                    manifest = await this.loadLocManifest(originalUrl);
                     break;
                 case 'dijon':
                     manifest = await this.loadDijonManifest(originalUrl);
@@ -1748,12 +1757,33 @@ export class EnhancedManuscriptDownloaderService {
                                 // Extract base image ID and construct maximum resolution URL
                                 const imageId = image.resource['@id'];
                                 
-                                // For Karlsruhe, use direct webcache/2000/ access for 4x higher resolution (2000x2801 vs 1000x1425)
+                                // For Karlsruhe, use direct webcache/2000/ access for maximum resolution
+                                // Testing showed: webcache/2000/=821KB vs IIIF=269KB (4x quality improvement)
                                 // Extract webcache ID from URL like: https://digital.blb-karlsruhe.de/download/webcache/1000/221191
                                 const webcacheMatch = imageId.match(/webcache\/\d+\/(\d+)/);
-                                const maxResUrl = webcacheMatch ? 
-                                    `https://digital.blb-karlsruhe.de/download/webcache/2000/${webcacheMatch[1]}` :
-                                    imageId.replace('/full/full/0/default.jpg', '/full/2000,/0/default.jpg');
+                                
+                                let maxResUrl: string;
+                                if (webcacheMatch) {
+                                    // Use maximum available webcache resolution (2000px is highest available)
+                                    maxResUrl = `https://digital.blb-karlsruhe.de/download/webcache/2000/${webcacheMatch[1]}`;
+                                } else {
+                                    // Try to extract ID from other patterns and construct webcache URL
+                                    // First try IIIF pattern: .../iiif/ID/full/...
+                                    let idMatch = imageId.match(/\/iiif\/(\d+)\/full/);
+                                    if (!idMatch) {
+                                        // Try general numeric pattern at end: .../ID or .../ID.jpg
+                                        idMatch = imageId.match(/(\d+)(?:\.jpg)?$/);
+                                    }
+                                    
+                                    if (idMatch) {
+                                        maxResUrl = `https://digital.blb-karlsruhe.de/download/webcache/2000/${idMatch[1]}`;
+                                    } else {
+                                        // Last resort: use IIIF format (lower quality but better than nothing)
+                                        maxResUrl = imageId.includes('/full/') ? 
+                                            imageId.replace('/full/full/0/default.jpg', '/full/2000,/0/default.jpg') :
+                                            imageId;
+                                    }
+                                }
                                 pageLinks.push(maxResUrl);
                             }
                         }
@@ -2395,6 +2425,98 @@ export class EnhancedManuscriptDownloaderService {
         }
         
         throw new Error(`Failed to load IRHT manuscript after 3 attempts: ${lastError.message}`);
+    }
+
+    /**
+     * Load Library of Congress manifest (IIIF v2.0)
+     * Supports both item URLs and resource URLs
+     */
+    async loadLocManifest(locUrl: string): Promise<ManuscriptManifest> {
+        try {
+            let manifestUrl = locUrl;
+            
+            // Handle different LOC URL patterns
+            if (locUrl.includes('/item/')) {
+                // Extract item ID: https://www.loc.gov/item/2010414164/
+                const itemMatch = locUrl.match(/\/item\/([^/?]+)/);
+                if (itemMatch) {
+                    manifestUrl = `https://www.loc.gov/item/${itemMatch[1]}/manifest.json`;
+                }
+            } else if (locUrl.includes('/resource/')) {
+                // Extract resource ID: https://www.loc.gov/resource/rbc0001.2022vollb14164/?st=gallery
+                const resourceMatch = locUrl.match(/\/resource\/([^/?]+)/);
+                if (resourceMatch) {
+                    // Try to construct manifest URL from resource pattern
+                    manifestUrl = `https://www.loc.gov/resource/${resourceMatch[1]}/manifest.json`;
+                }
+            }
+            
+            let displayName = 'Library of Congress Manuscript';
+            
+            // Load IIIF manifest
+            const response = await this.fetchDirect(manifestUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to load LOC manifest: HTTP ${response.status}`);
+            }
+            
+            const manifest = await response.json();
+            
+            // Extract title from IIIF v2.0 manifest
+            if (manifest.label) {
+                if (typeof manifest.label === 'string') {
+                    displayName = manifest.label;
+                } else if (Array.isArray(manifest.label)) {
+                    displayName = manifest.label[0]?.['@value'] || manifest.label[0] || displayName;
+                } else if (manifest.label['@value']) {
+                    displayName = manifest.label['@value'];
+                }
+            }
+            
+            // Extract page links from IIIF v2.0 structure
+            const pageLinks: string[] = [];
+            let totalPages = 0;
+            
+            if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+                const canvases = manifest.sequences[0].canvases;
+                totalPages = canvases.length;
+                
+                for (const canvas of canvases) {
+                    if (canvas.images && canvas.images[0]) {
+                        const image = canvas.images[0];
+                        if (image.resource && image.resource.service && image.resource.service['@id']) {
+                            // Use IIIF service for maximum resolution
+                            // Testing showed full/full/0/default.jpg provides excellent quality (3+ MB per page)
+                            const serviceId = image.resource.service['@id'];
+                            const maxResUrl = `${serviceId}/full/full/0/default.jpg`;
+                            pageLinks.push(maxResUrl);
+                        } else if (image.resource && image.resource['@id']) {
+                            // Fallback to direct resource URL
+                            pageLinks.push(image.resource['@id']);
+                        }
+                    }
+                }
+            }
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No pages found in LOC IIIF manifest');
+            }
+            
+            const locManifest = {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'loc' as const,
+                displayName,
+                originalUrl: locUrl,
+            };
+            
+            // Cache the manifest
+            this.manifestCache.set(locUrl, locManifest).catch(console.warn);
+            
+            return locManifest;
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load Library of Congress manuscript: ${(error as Error).message}`);
+        }
     }
 
     async loadDijonManifest(url: string): Promise<ManuscriptManifest> {

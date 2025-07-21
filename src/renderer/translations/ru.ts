@@ -26,7 +26,9 @@ export default {
     clearCache: 'Очистить Кэш',
     cacheStats: 'Статистика Кэша',
     cacheCleared: 'Кэш успешно очищен',
-    workingLibraries: '7 рабочих + 1 в разработке'
+    workingLibraries: '7 рабочих + 1 в разработке',
+    searchLibraries: 'Поиск библиотек...',
+    noLibrariesFound: 'Библиотеки по вашему запросу не найдены'
   },
   libraries: {
     gallica: {

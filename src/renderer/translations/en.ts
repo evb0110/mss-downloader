@@ -26,7 +26,9 @@ export default {
     clearCache: 'Clear Cache',
     cacheStats: 'Cache Statistics',
     cacheCleared: 'Cache cleared successfully',
-    workingLibraries: '8 working + 1 in development'
+    workingLibraries: '8 working + 1 in development',
+    searchLibraries: 'Search libraries...',
+    noLibrariesFound: 'No libraries found matching your search'
   },
   libraries: {
     gallica: {

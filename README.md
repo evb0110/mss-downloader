@@ -8,7 +8,8 @@ A modern Electron application for downloading manuscripts from digital libraries
 
 ## Features
 
-- 🏛️ **Multi-library Support**: Download manuscripts from Gallica BnF, e-codices Unifr, and Vatican Library
+- 🏛️ **Multi-library Support**: Download manuscripts from 50+ digital libraries worldwide
+- 🔍 **Smart Library Search**: Find libraries quickly with fuzzy search and filtering
 - 🎨 **Modern UI**: Clean, professional interface based on modern design principles
 - 🌐 **Multilingual**: Support for English and Russian
 - 📱 **Responsive**: Optimized for different window sizes
@@ -16,12 +17,56 @@ A modern Electron application for downloading manuscripts from digital libraries
 - 📄 **PDF Generation**: Automatic PDF creation from downloaded images
 - 💾 **Smart Caching**: Efficient image caching to prevent re-downloads
 - 🎯 **Progress Tracking**: Real-time download progress with ETA and speed
+- 🔬 **Maximum Resolution**: Automatically downloads highest available image quality
 
 ## Supported Libraries
 
+The application supports **59 digital libraries** worldwide, including:
+
+### Major International Libraries
+- **Library of Congress** - US national library digital manuscripts and rare books
+- **British Library** - UK national library digital manuscript collections  
 - **Gallica (BnF)** - French National Library digital manuscripts
-- **e-codices (Unifr)** - Swiss virtual manuscript library  
 - **Vatican Library** - Vatican Apostolic Library digital collections
+- **Berlin State Library** - German national library manuscript collections
+
+### European University Libraries
+- **Cambridge University Digital Library** - CUDL manuscript collections
+- **University of Toronto (Fisher)** - Thomas Fisher Rare Book Library
+- **Trinity College Cambridge** - Historical manuscript collections
+- **Durham University** - Digital manuscript library
+
+### Specialized Manuscript Collections
+- **e-codices (Unifr)** - Swiss virtual manuscript library
+- **Morgan Library & Museum** - Renowned manuscript and art collections
+- **Stanford Parker Library** - Corpus Christi College, Cambridge manuscripts
+- **IRHT (CNRS)** - French research institute historical texts
+
+### Regional Libraries
+- **BNE (Spain)** - Spanish National Library manuscripts
+- **ONB (Austria)** - Austrian National Library collections
+- **University of Graz** - Austrian manuscript collections
+- **Rome National Library** - Italian historical manuscripts
+
+The application includes intelligent library search with fuzzy matching to help you quickly find the library you need from the full list of 59 supported institutions.
+
+## Library Search Features
+
+The application now includes an enhanced library browsing experience:
+
+- **🔍 Fuzzy Search**: Type partial library names to quickly find matches (e.g., "vatic" finds "Vatican Library")
+- **📝 Multi-field Search**: Search across library names, descriptions, and example URLs
+- **🔄 Real-time Filtering**: Libraries are filtered as you type with instant results
+- **📚 Alphabetical Sorting**: All libraries are automatically sorted alphabetically for consistent browsing
+- **❌ No Results Handling**: Clear messaging when no libraries match your search
+- **🌍 Multilingual Support**: Search works in both English and Russian interfaces
+
+### How to Use Library Search
+
+1. Open the application and scroll to the "Supported Libraries" section
+2. Use the search bar at the top of the libraries list
+3. Type any part of a library name, institution, or country
+4. Browse filtered results or click example URLs to use them immediately
 
 ## Development Setup
 
@@ -142,6 +187,8 @@ The interface is based on the barsky.club design system featuring:
 - Responsive grid layouts
 - Modern typography with Nunito Sans font
 - Card-based components with proper visual hierarchy
+- **Smart Library Search**: Real-time fuzzy search across library names, descriptions, and URLs
+- **Alphabetical Ordering**: Libraries automatically sorted for easy browsing
 
 ## Configuration
 
