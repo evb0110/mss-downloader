@@ -152,12 +152,58 @@
           </div>
         </div>
         
+        <!-- Search Results Summary -->
+        <div
+          v-if="librarySearchQuery.trim()"
+          class="search-summary"
+        >
+          <div class="search-stats">
+            <span class="total-results">
+              {{ searchResults.stats.total }} {{ searchResults.stats.total === 1 ? 'library' : 'libraries' }} found
+            </span>
+            <span
+              v-if="searchResults.stats.total > 0"
+              class="search-breakdown"
+            >
+              <span
+                v-if="searchResults.stats.exact > 0"
+                class="exact-matches"
+              >
+                {{ searchResults.stats.exact }} exact
+              </span>
+              <span
+                v-if="searchResults.stats.partial > 0"
+                class="partial-matches"
+              >
+                {{ searchResults.stats.partial }} partial
+              </span>
+              <span
+                v-if="searchResults.stats.fuzzy > 0"
+                class="fuzzy-matches"
+              >
+                {{ searchResults.stats.fuzzy }} fuzzy
+              </span>
+            </span>
+          </div>
+          <div
+            v-if="searchResults.stats.total === 0"
+            class="search-suggestions"
+          >
+            Try searching for: "cambridge", "british", "vatican", "bnf", "wien", "harvard"
+          </div>
+        </div>
+        
         <div class="libraries-list">
           <div 
-            v-for="library in filteredLibraries" 
+            v-for="(library, index) in filteredLibraries" 
             :key="library.name" 
             class="library-item"
-            :class="{ 'library-warning': library.name.includes('⚠️') }"
+            :class="{ 
+              'library-warning': library.name.includes('⚠️'),
+              'exact-match': librarySearchQuery.trim() && index < searchResults.stats.exact,
+              'partial-match': librarySearchQuery.trim() && index >= searchResults.stats.exact && index < searchResults.stats.exact + searchResults.stats.partial,
+              'fuzzy-match': librarySearchQuery.trim() && index >= searchResults.stats.exact + searchResults.stats.partial
+            }"
           >
             <h4>{{ library.name }}</h4>
             <p>{{ library.description }}</p>
@@ -178,7 +224,18 @@
           v-if="filteredLibraries.length === 0 && librarySearchQuery" 
           class="no-results"
         >
-          {{ $t('downloader.noLibrariesFound') }}
+          <div class="no-results-message">
+            {{ $t('downloader.noLibrariesFound') }}
+          </div>
+          <div class="search-tips">
+            <strong>Search tips:</strong>
+            <ul>
+              <li>Try shorter keywords (e.g., "cambridge" instead of "cambridge university")</li>
+              <li>Search by country or city (e.g., "paris", "london", "vatican")</li>
+              <li>Use common abbreviations (e.g., "bnf", "bne", "bnl")</li>
+              <li>Try institutional keywords (e.g., "library", "national", "university")</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -230,50 +287,90 @@ const showCacheModal = ref(false)
 const cacheStats = ref<{ size: number; entries: number } | null>(null)
 const librarySearchQuery = ref('')
 
-// Fuzzy search for libraries - filters by name, description, and URL
-const filteredLibraries = computed(() => {
+// Enhanced search with categorized results and verbose feedback
+const searchResults = computed(() => {
   if (!librarySearchQuery.value.trim()) {
-    return [...supportedLibraries.value].sort((a, b) => a.name.localeCompare(b.name))
+    return {
+      libraries: [...supportedLibraries.value].sort((a, b) => a.name.localeCompare(b.name)),
+      stats: {
+        total: supportedLibraries.value.length,
+        exact: 0,
+        partial: 0,
+        fuzzy: 0,
+        query: ''
+      }
+    }
   }
 
   const query = librarySearchQuery.value.toLowerCase().trim()
+  const exactMatches: LibraryInfo[] = []
+  const partialMatches: LibraryInfo[] = []
+  const fuzzyMatches: LibraryInfo[] = []
   
-  const filtered = supportedLibraries.value.filter(library => {
+  supportedLibraries.value.forEach(library => {
     const name = library.name.toLowerCase()
     const description = library.description.toLowerCase()
     const example = library.example.toLowerCase()
     
-    // Exact matches get priority
-    if (name.includes(query) || description.includes(query) || example.includes(query)) {
-      return true
+    // Exact name match (highest priority)
+    if (name === query || name.includes(` ${query} `) || name.startsWith(query + ' ') || name.endsWith(' ' + query)) {
+      exactMatches.push(library)
+      return
     }
     
-    // Fuzzy matching - check if query characters appear in order
-    const fuzzyMatch = (text: string) => {
+    // Partial matches in name, description, or URL
+    if (name.includes(query) || description.includes(query) || example.includes(query)) {
+      partialMatches.push(library)
+      return
+    }
+    
+    // Fuzzy matching with higher threshold - at least 70% of query characters must match consecutively
+    const strictFuzzyMatch = (text: string) => {
+      if (query.length < 3) return false // Require at least 3 characters for fuzzy search
+      
+      let maxConsecutive = 0
+      let currentConsecutive = 0
       let queryIndex = 0
+      
       for (let i = 0; i < text.length && queryIndex < query.length; i++) {
         if (text[i] === query[queryIndex]) {
+          currentConsecutive++
           queryIndex++
+        } else {
+          maxConsecutive = Math.max(maxConsecutive, currentConsecutive)
+          currentConsecutive = 0
         }
       }
-      return queryIndex === query.length
+      maxConsecutive = Math.max(maxConsecutive, currentConsecutive)
+      
+      // Require at least 70% of query length to match consecutively
+      return queryIndex === query.length && maxConsecutive >= Math.ceil(query.length * 0.7)
     }
     
-    return fuzzyMatch(name) || fuzzyMatch(description) || fuzzyMatch(example)
+    if (strictFuzzyMatch(name) || strictFuzzyMatch(description)) {
+      fuzzyMatches.push(library)
+    }
   })
   
-  // Sort filtered results: exact matches first, then by name
-  return filtered.sort((a, b) => {
-    const aName = a.name.toLowerCase()
-    const bName = b.name.toLowerCase()
-    const aExact = aName.includes(query)
-    const bExact = bName.includes(query)
-    
-    if (aExact && !bExact) return -1
-    if (!aExact && bExact) return 1
-    return aName.localeCompare(bName)
-  })
+  // Sort each category alphabetically
+  exactMatches.sort((a, b) => a.name.localeCompare(b.name))
+  partialMatches.sort((a, b) => a.name.localeCompare(b.name))
+  fuzzyMatches.sort((a, b) => a.name.localeCompare(b.name))
+  
+  return {
+    libraries: [...exactMatches, ...partialMatches, ...fuzzyMatches],
+    stats: {
+      total: exactMatches.length + partialMatches.length + fuzzyMatches.length,
+      exact: exactMatches.length,
+      partial: partialMatches.length,
+      fuzzy: fuzzyMatches.length,
+      query: query
+    }
+  }
 })
+
+// For backward compatibility
+const filteredLibraries = computed(() => searchResults.value.libraries)
 
 const waitForElectronAPI = () => {
   return new Promise<void>((resolve) => {
@@ -592,6 +689,61 @@ const formatBytes = (bytes: number): string => {
   border-radius: 8px;
   background: var(--background-color);
   transition: all var(--animation-timing);
+  position: relative;
+}
+
+.library-item.exact-match {
+  border-left: 4px solid #059669;
+  background: rgba(5, 150, 105, 0.02);
+}
+
+.library-item.partial-match {
+  border-left: 4px solid #d97706;
+  background: rgba(217, 119, 6, 0.02);
+}
+
+.library-item.fuzzy-match {
+  border-left: 4px solid #7c3aed;
+  background: rgba(124, 58, 237, 0.02);
+}
+
+.library-item.exact-match::before {
+  content: 'EXACT';
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #059669;
+  background: rgba(5, 150, 105, 0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+}
+
+.library-item.partial-match::before {
+  content: 'PARTIAL';
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #d97706;
+  background: rgba(217, 119, 6, 0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+}
+
+.library-item.fuzzy-match::before {
+  content: 'FUZZY';
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
 }
 
 .library-item:hover {

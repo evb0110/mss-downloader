@@ -770,3 +770,41 @@ if (grazUrl.includes('/download/webcache/')) {
 
 ---
 *Tasks completed on July 21, 2025*
+
+---
+
+# VERSION-1.4.20 Completed Tasks
+
+*Tasks completed on July 21, 2025*
+
+## 1. ✅ Enhanced Library Search Verbosity - make supported library search more verbose and less fuzzy
+**Original Issue**: Search in supported libs is too fuzzy, let it be verbose
+**Solution**: Completely overhauled search algorithm with categorized results and verbose feedback
+**Technical Details**:
+- Replaced overly permissive fuzzy matching with stricter three-tier categorization
+- Implemented exact → partial → fuzzy match hierarchy with clear visual indicators
+- Added real-time search statistics showing breakdown by match type ("5 libraries found: 2 exact, 2 partial, 1 fuzzy")
+- Enhanced fuzzy algorithm requiring 70% consecutive character matches and minimum 3 characters
+- Added color-coded visual indicators: green borders for exact matches, orange for partial, purple for fuzzy
+- Implemented "EXACT", "PARTIAL", "FUZZY" badges on each library result
+- Added comprehensive search tips and suggestions when no results found
+- Enhanced no-results messaging with practical search examples
+**Result**: Search is now much less fuzzy with verbose feedback explaining why libraries match and how good the matches are
+
+## 📊 Search Algorithm Improvements:
+- **Before**: Any characters appearing in order anywhere = match (too permissive)
+- **After**: Exact word matches → substring matches → strict fuzzy (70% consecutive)
+- **Feedback**: Live statistics showing match quality breakdown
+- **Visual Cues**: Color-coded borders and badges for immediate match quality understanding
+- **User Guidance**: Helpful tips and examples when searches fail
+
+## 📝 User Benefits:
+- Clear understanding of search result quality with visual indicators
+- More precise search results with less irrelevant matches
+- Real-time feedback showing exactly how many exact vs fuzzy matches found
+- Better search guidance with practical tips and examples
+- Immediate visual feedback about match quality through colors and badges
+- Both components (ManuscriptDownloader and DownloadQueueManager) updated consistently
+
+---
+*Tasks completed on July 21, 2025*

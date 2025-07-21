@@ -855,10 +855,23 @@ https://digi.vatlib.it/..."
     </template>
 
     <div class="libraries-modal-content">
+      <!-- Search Bar -->
+      <div class="library-search">
+        <input
+          v-model="librarySearchQuery"
+          type="text"
+          placeholder="Search libraries..."
+          class="search-input"
+        >
+        <div class="search-icon">
+          🔍
+        </div>
+      </div>
+      
       <div class="libraries-scroll-container">
         <div class="libraries-list">
           <div
-            v-for="library in supportedLibraries"
+            v-for="library in filteredLibraries"
             :key="library.name"
             class="library-item"
           >
@@ -1051,6 +1064,92 @@ const alertModal = ref({
 
 // Supported Libraries - fetched via IPC
 const supportedLibraries = ref<LibraryInfo[]>([]);
+const librarySearchQuery = ref('');
+
+// Enhanced search with categorized results and verbose feedback
+const searchResults = computed(() => {
+  if (!librarySearchQuery.value.trim()) {
+    return {
+      libraries: [...supportedLibraries.value].sort((a, b) => a.name.localeCompare(b.name)),
+      stats: {
+        total: supportedLibraries.value.length,
+        exact: 0,
+        partial: 0,
+        fuzzy: 0,
+        query: ''
+      }
+    }
+  }
+
+  const query = librarySearchQuery.value.toLowerCase().trim();
+  const exactMatches: LibraryInfo[] = [];
+  const partialMatches: LibraryInfo[] = [];
+  const fuzzyMatches: LibraryInfo[] = [];
+  
+  supportedLibraries.value.forEach(library => {
+    const name = library.name.toLowerCase();
+    const description = library.description.toLowerCase();
+    const example = library.example.toLowerCase();
+    
+    // Exact name match (highest priority)
+    if (name === query || name.includes(` ${query} `) || name.startsWith(query + ' ') || name.endsWith(' ' + query)) {
+      exactMatches.push(library);
+      return;
+    }
+    
+    // Partial matches in name, description, or URL
+    if (name.includes(query) || description.includes(query) || example.includes(query)) {
+      partialMatches.push(library);
+      return;
+    }
+    
+    // Fuzzy matching with higher threshold - at least 70% of query characters must match consecutively
+    const strictFuzzyMatch = (text: string) => {
+      if (query.length < 3) return false; // Require at least 3 characters for fuzzy search
+      
+      let maxConsecutive = 0;
+      let currentConsecutive = 0;
+      let queryIndex = 0;
+      
+      for (let i = 0; i < text.length && queryIndex < query.length; i++) {
+        if (text[i] === query[queryIndex]) {
+          currentConsecutive++;
+          queryIndex++;
+        } else {
+          maxConsecutive = Math.max(maxConsecutive, currentConsecutive);
+          currentConsecutive = 0;
+        }
+      }
+      maxConsecutive = Math.max(maxConsecutive, currentConsecutive);
+      
+      // Require at least 70% of query length to match consecutively
+      return queryIndex === query.length && maxConsecutive >= Math.ceil(query.length * 0.7);
+    };
+    
+    if (strictFuzzyMatch(name) || strictFuzzyMatch(description)) {
+      fuzzyMatches.push(library);
+    }
+  });
+  
+  // Sort each category alphabetically
+  exactMatches.sort((a, b) => a.name.localeCompare(b.name));
+  partialMatches.sort((a, b) => a.name.localeCompare(b.name));
+  fuzzyMatches.sort((a, b) => a.name.localeCompare(b.name));
+  
+  return {
+    libraries: [...exactMatches, ...partialMatches, ...fuzzyMatches],
+    stats: {
+      total: exactMatches.length + partialMatches.length + fuzzyMatches.length,
+      exact: exactMatches.length,
+      partial: partialMatches.length,
+      fuzzy: fuzzyMatches.length,
+      query: query
+    }
+  };
+});
+
+// For backward compatibility
+const filteredLibraries = computed(() => searchResults.value.libraries);
 
 // Libraries are now fetched dynamically from the main process
 
@@ -3618,6 +3717,41 @@ label {
     font-size: 0.9rem;
     line-height: 1.4;
     font-style: italic;
+}
+
+.library-search {
+    position: relative;
+    margin: 1rem 0;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: white;
+    color: #495057;
+    transition: all 0.2s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-input::placeholder {
+    color: #6c757d;
+}
+
+.search-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
 }
 
 .libraries-scroll-container {
