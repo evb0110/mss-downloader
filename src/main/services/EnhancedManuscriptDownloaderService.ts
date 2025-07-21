@@ -798,6 +798,17 @@ export class EnhancedManuscriptDownloaderService {
             }
         }
         
+        // Create agent with connection pooling for Graz
+        const agent = url.includes('unipub.uni-graz.at') ? 
+            new https.Agent({
+                keepAlive: true,
+                keepAliveMsecs: 1000,
+                maxSockets: 10,
+                maxFreeSockets: 5,
+                timeout: 120000,
+                rejectUnauthorized: false
+            }) : undefined;
+        
         const requestOptions = {
             hostname: urlObj.hostname,
             port: urlObj.port || 443,
@@ -813,12 +824,14 @@ export class EnhancedManuscriptDownloaderService {
                 ...options.headers
             },
             rejectUnauthorized: false,
-            // Add socket timeout for Graz
-            timeout: url.includes('unipub.uni-graz.at') ? 60000 : 30000
+            // Add extended socket timeout for Graz
+            timeout: url.includes('unipub.uni-graz.at') ? 120000 : 30000,
+            // Use connection pooling agent for Graz
+            agent: agent
         };
         
         // Implement retry logic for connection timeouts
-        const maxRetries = url.includes('unipub.uni-graz.at') ? 3 : 1;
+        const maxRetries = url.includes('unipub.uni-graz.at') ? 5 : 1;
         let retryCount = 0;
         
         const attemptRequest = (): Promise<Response> => {
@@ -935,12 +948,16 @@ export class EnhancedManuscriptDownloaderService {
                 
                 // Handle connection timeouts with retry for Graz
                 if (url.includes('unipub.uni-graz.at') && 
-                    (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || error.code === 'ENOTFOUND') && 
+                    (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || 
+                     error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || 
+                     error.code === 'ENETUNREACH' || error.code === 'EHOSTUNREACH' ||
+                     error.code === 'EPIPE' || error.code === 'ECONNABORTED') && 
                     retryCount < maxRetries - 1) {
                     
                     retryCount++;
-                    const backoffDelay = Math.min(1000 * Math.pow(2, retryCount), 10000); // Exponential backoff: 2s, 4s, 8s, max 10s
-                    console.log(`[Graz] Connection failed with ${error.code}, retrying in ${backoffDelay}ms...`);
+                    // More aggressive exponential backoff: 2s, 4s, 8s, 16s, 32s (max 30s)
+                    const backoffDelay = Math.min(1000 * Math.pow(2, retryCount), 30000);
+                    console.log(`[Graz] Connection failed with ${error.code}, retry ${retryCount}/${maxRetries - 1} in ${backoffDelay}ms...`);
                     
                     setTimeout(() => {
                         attemptRequest().then(resolve).catch(reject);
@@ -948,7 +965,8 @@ export class EnhancedManuscriptDownloaderService {
                 } else {
                     // Final error or non-retryable error
                     if (error.code === 'ETIMEDOUT' && url.includes('unipub.uni-graz.at')) {
-                        reject(new Error(`University of Graz connection timeout after ${maxRetries} attempts. The server at ${urlObj.hostname} is not responding. Please check your network connection and try again.`));
+                        const totalTime = Math.round((Date.now() - attemptStartTime) / 1000);
+                        reject(new Error(`University of Graz connection timeout after ${maxRetries} attempts over ${totalTime} seconds. The server at ${urlObj.hostname} is not responding. This may be due to high server load or network issues. Please try again later or check if the manuscript is accessible at https://unipub.uni-graz.at/`));
                     } else {
                         reject(error);
                     }

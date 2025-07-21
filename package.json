@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.20",
+  "version": "1.4.21",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (59+ libraries worldwide)",
   "changelog": [
-    "Enhanced Library Search: Made search more precise with categorized results (exact/partial/fuzzy)",
-    "Search Feedback: Added verbose search statistics and visual match quality indicators",
-    "Improved Discovery: Better search suggestions and tips for finding the right libraries",
-    "UI Enhancement: Color-coded search results with clear match quality badges",
-    "Search Precision: Stricter fuzzy matching reduces irrelevant results significantly"
+    "Fixed University of Graz connection timeouts with enhanced retry logic",
+    "Graz downloads now retry up to 5 times with exponential backoff",
+    "Extended timeouts for Graz from 30s to 120s for slow connections",
+    "Added connection pooling for improved Graz server reliability",
+    "Better error messages explain Graz server issues clearly"
   ],
   "main": "dist/main/main.js",
   "scripts": {
