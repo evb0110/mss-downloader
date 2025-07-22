@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.28",
-  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (59+ libraries worldwide)",
+  "version": "1.4.29",
+  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (60+ libraries worldwide)",
   "changelog": [
-    "Added Florence (ContentDM Plutei) library support - access high-resolution medieval manuscripts (17-19MP images)",
-    "Implemented IIIF endpoint integration for Florence with maximum quality downloads",
-    "Fixed compound object detection for multi-page Florence manuscripts",
-    "Florence library now fully functional with automatic page extraction"
+    "Added Grenoble Municipal Library manuscript downloads with high-resolution 11-12MP images",
+    "Implemented SSL bypass for Grenoble's secure IIIF server",
+    "Support for Grenoble's ARK identifiers and full resolution downloads",
+    "Enhanced download reliability with SSL certificate handling"
   ],
   "main": "dist/main/main.js",
   "scripts": {

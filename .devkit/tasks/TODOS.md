@@ -20,6 +20,19 @@
 **Status:** Pending
 **Priority:** High
 
+### 3. Library of Congress Download Stuck Issue
+**Task:** DEBUG: This is a tough one, I don't know how to debug and validate, devise a clever way with ultrathink. https://www.loc.gov/item/2010414164/
+**Issue:** биб-ка конгресса застряла на середине, не смогла докачать файлы (Library of Congress got stuck in the middle, couldn't finish downloading files)
+**Status:** Pending
+**Priority:** High
+**URL:** https://www.loc.gov/item/2010414164/
+
+**Investigation needed:**
+- Analyze why download process gets stuck mid-way
+- Devise intelligent debugging approach for validation
+- Test with specific manuscript URL provided
+- Implement robust error handling and retry mechanisms
+
 ---
 
 ## Notes

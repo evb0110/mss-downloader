@@ -1035,7 +1035,7 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadGallicaManifest(originalUrl);
                     break;
                 case 'grenoble':
-                    manifest = await this.loadGrenobleManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('grenoble', originalUrl);
                     break;
                 case 'karlsruhe':
                     manifest = await this.loadKarlsruheManifest(originalUrl);

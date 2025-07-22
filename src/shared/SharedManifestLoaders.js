@@ -43,7 +43,7 @@ class SharedManifestLoaders {
             };
 
             // SSL bypass for specific domains
-            if (url.includes('bdh-rd.bne.es')) {
+            if (url.includes('bdh-rd.bne.es') || url.includes('pagella.bm-grenoble.fr')) {
                 requestOptions.rejectUnauthorized = false;
             }
 
@@ -405,6 +405,8 @@ class SharedManifestLoaders {
                 return await this.getGrazManifest(url);
             case 'florence':
                 return await this.getFlorenceManifest(url);
+            case 'grenoble':
+                return await this.getGrenobleManifest(url);
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }
@@ -473,6 +475,57 @@ class SharedManifestLoaders {
         
         if (images.length === 0) {
             throw new Error('No images found for Florence manuscript');
+        }
+        
+        return { images };
+    }
+
+    /**
+     * Grenoble Municipal Library - IIIF manifest with SSL bypass
+     */
+    async getGrenobleManifest(url) {
+        // Extract document ID from URL (ARK identifier)
+        const match = url.match(/ark:\/12148\/([^/]+)/);
+        if (!match) throw new Error('Invalid Grenoble URL');
+        
+        const documentId = match[1];
+        const manifestUrl = `https://pagella.bm-grenoble.fr/iiif/ark:/12148/${documentId}/manifest.json`;
+        
+        // Fetch IIIF manifest (SSL bypass already configured in fetchUrl)
+        const response = await this.fetchWithRetry(manifestUrl);
+        if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
+        
+        const manifest = await response.json();
+        const images = [];
+        
+        // Process IIIF v2 manifest
+        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            const canvases = manifest.sequences[0].canvases;
+            const maxPages = Math.min(canvases.length, 50);
+            
+            for (let i = 0; i < maxPages; i++) {
+                const canvas = canvases[i];
+                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                    const imageResource = canvas.images[0].resource;
+                    
+                    // Get the highest quality image URL
+                    let imageUrl = imageResource['@id'] || imageResource.id;
+                    
+                    // Ensure we're using the full resolution
+                    if (imageUrl.includes('/full/') && !imageUrl.includes('/full/full/')) {
+                        imageUrl = imageUrl.replace(/\/full\/[^/]+\//, '/full/full/');
+                    }
+                    
+                    images.push({
+                        url: imageUrl,
+                        label: canvas.label || `Page ${i + 1}`
+                    });
+                }
+            }
+        }
+        
+        if (images.length === 0) {
+            throw new Error('No images found in Grenoble manifest');
         }
         
         return { images };
