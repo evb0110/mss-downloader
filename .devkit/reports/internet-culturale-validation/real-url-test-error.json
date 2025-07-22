@@ -1,9 +1,0 @@
-{
-  "timestamp": "2025-07-08T07:55:16.278Z",
-  "testUrl": "https://dam.iccu.sbn.it/mol_46/containers/avQYk0e/manifest",
-  "error": {
-    "message": "(item.label.en || item.label.@value || Object.values(...)[0] || \"\").toLowerCase is not a function",
-    "stack": "TypeError: (item.label.en || item.label.@value || Object.values(...)[0] || \"\").toLowerCase is not a function\n    at InternetCulturaleRealTest.analyzeManifest (/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/test-internet-culturale-real-url.cjs:127:107)\n    at InternetCulturaleRealTest.runTest (/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/test-internet-culturale-real-url.cjs:33:41)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async main (/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/reports/test-internet-culturale-real-url.cjs:328:5)"
-  },
-  "impact": "Test could not complete, but this may indicate network issues rather than code problems"
-}

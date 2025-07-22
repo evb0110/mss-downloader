@@ -403,9 +403,79 @@ class SharedManifestLoaders {
                 return await this.getLibraryOfCongressManifest(url);
             case 'graz':
                 return await this.getGrazManifest(url);
+            case 'florence':
+                return await this.getFlorenceManifest(url);
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }
+    }
+
+    /**
+     * Florence (ContentDM Plutei) - IIIF-based implementation
+     */
+    async getFlorenceManifest(url) {
+        // Extract item ID from URL
+        const match = url.match(/collection\/plutei\/id\/(\d+)/);
+        if (!match) throw new Error('Invalid Florence URL');
+        
+        const itemId = match[1];
+        
+        // Fetch the page HTML to get compound object info
+        const response = await this.fetchWithRetry(url);
+        if (!response.ok) throw new Error(`Failed to fetch page: ${response.status}`);
+        
+        const html = await response.text();
+        
+        // Extract __INITIAL_STATE__ for compound object detection
+        let initialState;
+        const jsonParseMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*JSON\.parse\("(.*)"\);/);
+        
+        if (jsonParseMatch) {
+            try {
+                const safeJsonParse = `JSON.parse("${jsonParseMatch[1]}")`;
+                initialState = eval(safeJsonParse);
+            } catch (e) {
+                throw new Error(`Failed to parse Florence initial state: ${e.message}`);
+            }
+        } else {
+            throw new Error('Could not find __INITIAL_STATE__ in Florence page');
+        }
+        
+        const images = [];
+        const item = initialState.item?.item;
+        
+        if (!item) throw new Error('Could not find item data in Florence page');
+        
+        // Check for compound object (multi-page)
+        if (item.parent && item.parent.children && item.parent.children.length > 0) {
+            // Multi-page document
+            const maxPages = Math.min(item.parent.children.length, 50);
+            
+            for (let i = 0; i < maxPages; i++) {
+                const child = item.parent.children[i];
+                if (child.id) {
+                    // Use IIIF endpoint with maximum resolution
+                    const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${child.id}/full/full/0/default.jpg`;
+                    images.push({
+                        url: imageUrl,
+                        label: child.title || `Page ${i + 1}`
+                    });
+                }
+            }
+        } else {
+            // Single page - use current item
+            const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${item.id}/full/full/0/default.jpg`;
+            images.push({
+                url: imageUrl,
+                label: item.title || 'Page 1'
+            });
+        }
+        
+        if (images.length === 0) {
+            throw new Error('No images found for Florence manuscript');
+        }
+        
+        return { images };
     }
 }
 

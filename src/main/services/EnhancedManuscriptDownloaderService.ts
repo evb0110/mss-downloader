@@ -1174,7 +1174,7 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadBvpbManifest(originalUrl);
                     break;
                 case 'florence':
-                    manifest = await this.loadFlorenceManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('florence', originalUrl);
                     break;
                 case 'onb':
                     manifest = await this.loadOnbManifest(originalUrl);

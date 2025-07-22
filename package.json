@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.27",
+  "version": "1.4.28",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (59+ libraries worldwide)",
   "changelog": [
-    "Fixed MDC Catalonia complex manuscript downloads - now handles 792+ page manuscripts with compound object detection",
-    "Unified SharedManifestLoaders architecture - moved to src/shared for better integration",
-    "Enhanced MDC support with __INITIAL_STATE__ JSON parsing for multi-page manuscripts",
-    "All MDC CONTENTdm sites now working: Rouen, Ille-et-Vilaine, Catalonia with automatic mode detection"
+    "Added Florence (ContentDM Plutei) library support - access high-resolution medieval manuscripts (17-19MP images)",
+    "Implemented IIIF endpoint integration for Florence with maximum quality downloads",
+    "Fixed compound object detection for multi-page Florence manuscripts",
+    "Florence library now fully functional with automatic page extraction"
   ],
   "main": "dist/main/main.js",
   "scripts": {
