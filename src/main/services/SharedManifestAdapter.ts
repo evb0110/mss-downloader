@@ -7,7 +7,7 @@ import type { ManuscriptManifest } from '../../shared/types';
 
 // Dynamic import for Node.js module in TypeScript
 const loadSharedManifestLoaders = async () => {
-    const { SharedManifestLoaders } = await import('../../../.devkit/shared-manifest-loaders.js');
+    const { SharedManifestLoaders } = await import('../../shared/SharedManifestLoaders.js');
     return SharedManifestLoaders;
 };
 
@@ -59,7 +59,7 @@ export class SharedManifestAdapter {
      * Check if library is supported by shared loaders
      */
     isLibrarySupported(libraryId: string): boolean {
-        const supportedLibraries = ['bdl', 'verona', 'vienna_manuscripta', 'bne', 'karlsruhe', 'loc', 'graz'];
+        const supportedLibraries = ['bdl', 'verona', 'vienna_manuscripta', 'bne', 'mdc_catalonia', 'karlsruhe', 'loc', 'graz'];
         return supportedLibraries.includes(libraryId);
     }
 }

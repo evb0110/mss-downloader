@@ -1168,7 +1168,7 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadBneManifest(originalUrl);
                     break;
                 case 'mdc_catalonia':
-                    manifest = await this.loadMdcCataloniaManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('mdc_catalonia', originalUrl);
                     break;
                 case 'bvpb':
                     manifest = await this.loadBvpbManifest(originalUrl);
