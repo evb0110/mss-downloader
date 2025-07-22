@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.23",
+  "version": "1.4.24",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (59+ libraries worldwide)",
   "changelog": [
-    "Fixed Vienna Manuscripta downloads - now uses direct image URLs with folio notation",
-    "Fixed BDL Servizirl API endpoint - updated to use public REST path",
-    "5 libraries now fully working: Karlsruhe, Library of Congress, Graz, Vienna, BDL",
-    "Comprehensive validation with PDF inspection for all fixed libraries",
-    "Enhanced error handling for manuscript URL parsing"
+    "Fixed Verona Biblioteca SSL issues - now uses IIIF server directly",
+    "6 libraries fully working: Karlsruhe, Library of Congress, Graz, Vienna, BDL, Verona",
+    "Verona validation script updated to use nbm.regione.veneto.it endpoint",
+    "High-quality medieval manuscript downloads verified for all libraries",
+    "SSL certificate errors resolved by using correct IIIF endpoints"
   ],
   "main": "dist/main/main.js",
   "scripts": {

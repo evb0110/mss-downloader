@@ -208,34 +208,62 @@ class ValidationScript {
         if (!match) throw new Error('Invalid Verona URL');
         
         const codice = match[1];
-        const infoUrl = `https://www.nuovabibliotecamanoscritta.it/Generale/RicercaManoscritti/AjaxServer.html?type=infoManuscript&codice=${codice}`;
         
-        const response = await this.fetchWithRetry(infoUrl, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json, text/javascript, */*; q=0.01'
-            }
-        });
+        // Mapping from codice to manifest ID
+        const manifestMappings = {
+            '12': 'CXLV1331',
+            '14': 'CVII1001',
+            '15': 'LXXXIX841',
+            '17': 'msClasseIII81'
+        };
         
-        if (!response.ok) throw new Error(`Failed to fetch info: ${response.status}`);
-        
-        const data = await response.json();
-        const images = [];
-        
-        if (data.response && data.response.docs && data.response.docs[0]) {
-            const doc = data.response.docs[0];
-            const numCarte = parseInt(doc.numeroCarte) || 0;
-            
-            for (let i = 1; i <= Math.min(numCarte, 10); i++) {
-                const imageUrl = `https://manus.iccu.sbn.it/webclient/DeliveryManager?pid=${doc.pidCarta}_${String(i).padStart(4, '0')}&custom_att_2=simple_viewer`;
-                images.push({
-                    url: imageUrl,
-                    label: `Page ${i}`
-                });
-            }
+        const manifestId = manifestMappings[codice];
+        if (!manifestId) {
+            throw new Error(`Unknown Verona manuscript code: ${codice}`);
         }
         
-        return { images };
+        // Use the IIIF manifest from nbm.regione.veneto.it
+        const manifestUrl = `https://nbm.regione.veneto.it/manifest/${manifestId}.json`;
+        
+        try {
+            const manifestResponse = await this.fetchWithRetry(manifestUrl);
+            if (!manifestResponse.ok) throw new Error(`Manifest fetch failed: ${manifestResponse.status}`);
+            
+            const manifest = await manifestResponse.json();
+            const images = [];
+            
+            // Extract images from IIIF manifest
+            if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+                const canvases = manifest.sequences[0].canvases.slice(0, 10); // First 10 pages
+                
+                for (const canvas of canvases) {
+                    if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                        const resource = canvas.images[0].resource;
+                        // Use service URL for high quality if available
+                        let imageUrl = resource['@id'] || resource.id;
+                        
+                        if (resource.service && resource.service['@id']) {
+                            // Use IIIF Image API for full resolution
+                            imageUrl = resource.service['@id'] + '/full/full/0/default.jpg';
+                        }
+                        
+                        images.push({
+                            url: imageUrl,
+                            label: canvas.label || `Page ${images.length + 1}`
+                        });
+                    }
+                }
+            }
+            
+            if (images.length === 0) {
+                throw new Error('No images found in manifest');
+            }
+            
+            return { images };
+        } catch (error) {
+            // If IIIF fails, throw error (no fallback to broken ICCU approach)
+            throw new Error(`Failed to load Verona manifest: ${error.message}`);
+        }
     }
 
     async getViennaManuscriptaManifest(url) {
