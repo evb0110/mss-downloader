@@ -6072,57 +6072,52 @@ export class EnhancedManuscriptDownloaderService {
                 console.warn(`Vienna Manuscripta: IIIF manifest failed (${iiifError.message}), falling back to page discovery`);
             }
             
-            // Fallback to original page discovery method
-            console.log('Vienna Manuscripta: Using page discovery fallback method');
-            const baseUrl = `https://manuscripta.at/diglit/${manuscriptId}`;
+            // Fallback to direct image URL construction
+            console.log('Vienna Manuscripta: Using direct image URL construction method');
+            
+            // Parse manuscript ID to build image path
+            const parts = manuscriptId.match(/(AT)(\d+)-(\d+)/);
+            if (!parts) {
+                throw new Error('Invalid Vienna Manuscripta manuscript ID format');
+            }
+            
+            const [, prefix, num1, num2] = parts;
+            const imagePath = `https://manuscripta.at/images/${prefix}/${num1}/${manuscriptId}`;
             
             const pageLinks: string[] = [];
             let pageNum = 1;
+            let consecutiveFailures = 0;
             
-            // Iterate through pages to find all images
-            while (true) {
-                const pageUrl = `${baseUrl}/${pageNum.toString().padStart(4, '0')}`;
-                console.log(`Checking page ${pageNum}: ${pageUrl}`);
+            // Probe for available pages by checking if images exist
+            console.log(`Vienna Manuscripta: Probing for pages at ${imagePath}`);
+            
+            while (consecutiveFailures < 3 && pageNum <= 500) { // Stop after 3 consecutive 404s or 500 pages
+                // Vienna uses folio notation: 001r, 001v, 002r, 002v, etc.
+                const paddedPage = String(Math.ceil(pageNum / 2)).padStart(3, '0');
+                const side = pageNum % 2 === 1 ? 'r' : 'v'; // odd = recto, even = verso
+                const imageUrl = `${imagePath}/${manuscriptId}_${paddedPage}${side}.jpg`;
                 
                 try {
-                    const response = await this.fetchDirect(pageUrl);
-                    if (!response.ok) {
-                        console.log(`Page ${pageNum} returned HTTP ${response.status}, assuming end of manuscript`);
-                        break;
+                    // Quick HEAD request to check if image exists
+                    const response = await this.fetchDirect(imageUrl, { method: 'HEAD' });
+                    
+                    if (response.ok) {
+                        pageLinks.push(imageUrl);
+                        console.log(`Page ${pageNum} (${paddedPage}${side}): Found`);
+                        consecutiveFailures = 0; // Reset failure counter
+                    } else if (response.status === 404) {
+                        console.log(`Page ${pageNum} (${paddedPage}${side}): Not found (404)`);
+                        consecutiveFailures++;
+                    } else {
+                        console.log(`Page ${pageNum} (${paddedPage}${side}): HTTP ${response.status}`);
+                        consecutiveFailures++;
                     }
-                    
-                    const html = await response.text();
-                    
-                    // Extract img_max_url directly from the HTML (simpler and more reliable)
-                    const imgMaxMatch = html.match(/"img_max_url":"([^"]+)"/);
-                    if (!imgMaxMatch) {
-                        console.log(`Page ${pageNum}: No img_max_url found, assuming end of manuscript`);
-                        break;
-                    }
-                    
-                    // Check if pageInfo is empty (indicates end of manuscript)
-                    const pageInfoEmptyMatch = html.match(/const pageInfo = {};/);
-                    if (pageInfoEmptyMatch) {
-                        console.log(`Page ${pageNum}: Empty pageInfo, end of manuscript reached`);
-                        break;
-                    }
-                    
-                    const imageUrl = imgMaxMatch[1];
-                    pageLinks.push(imageUrl);
-                    console.log(`Page ${pageNum}: Found image ${imageUrl}`);
-                    
-                    pageNum++;
-                    
-                    // Safety check to prevent infinite loops
-                    if (pageNum > 1000) {
-                        console.warn('Reached maximum page limit (1000), stopping');
-                        break;
-                    }
-                    
                 } catch (error: any) {
-                    console.log(`Error fetching page ${pageNum}: ${(error as Error).message}`);
-                    break;
+                    console.log(`Page ${pageNum} (${paddedPage}${side}): Network error - ${error.message}`);
+                    consecutiveFailures++;
                 }
+                
+                pageNum++;
             }
             
             if (pageLinks.length === 0) {

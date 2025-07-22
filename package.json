@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.22",
+  "version": "1.4.23",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (59+ libraries worldwide)",
   "changelog": [
-    "Fixed Karlsruhe BLB library - added direct URL support with high-quality downloads",
-    "Enhanced Library of Congress with progress monitoring and timeout optimization",
-    "Improved University of Graz with extended 15-minute timeout for large manuscripts",
-    "Fixed multiple library SSL/TLS issues using enhanced HTTPS handling",
-    "Added comprehensive validation system with maximum resolution testing"
+    "Fixed Vienna Manuscripta downloads - now uses direct image URLs with folio notation",
+    "Fixed BDL Servizirl API endpoint - updated to use public REST path",
+    "5 libraries now fully working: Karlsruhe, Library of Congress, Graz, Vienna, BDL",
+    "Comprehensive validation with PDF inspection for all fixed libraries",
+    "Enhanced error handling for manuscript URL parsing"
   ],
   "main": "dist/main/main.js",
   "scripts": {
