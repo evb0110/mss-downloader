@@ -108,6 +108,11 @@ class ValidationScript {
                 timeout: 30000
             };
 
+            // Add SSL bypass for BNE Spain
+            if (url.includes('bdh-rd.bne.es')) {
+                requestOptions.rejectUnauthorized = false;
+            }
+
             const req = https.request(requestOptions, (res) => {
                 if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
                     const redirectUrl = new URL(res.headers.location, url).href;
@@ -312,23 +317,20 @@ class ValidationScript {
         if (!match) throw new Error('Invalid BNE URL');
         
         const docId = match[1];
-        const infoUrl = `https://bdh-rd.bne.es/vid_json.do?id=${docId}`;
         
-        const response = await this.fetchWithRetry(infoUrl);
-        if (!response.ok) throw new Error(`Failed to fetch info: ${response.status}`);
+        // Skip the unreliable vid_json endpoint and use direct page discovery
+        // BNE requires robust discovery with direct PDF URLs
+        console.log('    Using direct page discovery for BNE (SSL bypass enabled)...');
         
-        const data = await response.json();
         const images = [];
         
-        if (data.pages && Array.isArray(data.pages)) {
-            for (let i = 0; i < Math.min(data.pages.length, 10); i++) {
-                const page = data.pages[i];
-                const imageUrl = `https://bdh-rd.bne.es/zoom.do?id=${docId}&pagina=${i + 1}&tipo=JPG&imagen=1`;
-                images.push({
-                    url: imageUrl,
-                    label: `Page ${i + 1}`
-                });
-            }
+        // Test first 10 pages directly using the known pattern
+        for (let i = 1; i <= 10; i++) {
+            const imageUrl = `https://bdh-rd.bne.es/pdf.raw?query=id:${docId}&page=${i}&pdf=true`;
+            images.push({
+                url: imageUrl,
+                label: `Page ${i}`
+            });
         }
         
         return { images };
@@ -552,7 +554,10 @@ class ValidationScript {
                 }
                 
                 const buffer = await response.buffer();
-                const imagePath = path.join(libraryFolder, `page_${String(i + 1).padStart(3, '0')}.jpg`);
+                
+                // BNE returns PDFs directly, not JPEGs
+                const extension = library.name === 'BNE_Spain' ? 'pdf' : 'jpg';
+                const imagePath = path.join(libraryFolder, `page_${String(i + 1).padStart(3, '0')}.${extension}`);
                 await fs.writeFile(imagePath, buffer);
                 
                 downloadedImages.push({
@@ -568,16 +573,27 @@ class ValidationScript {
             
             for (const img of downloadedImages) {
                 try {
-                    const jpgImage = await pdfDoc.embedJpg(img.buffer);
-                    const page = pdfDoc.addPage([jpgImage.width, jpgImage.height]);
-                    page.drawImage(jpgImage, {
-                        x: 0,
-                        y: 0,
-                        width: jpgImage.width,
-                        height: jpgImage.height
-                    });
+                    if (img.path.endsWith('.pdf')) {
+                        // BNE returns PDFs - merge them
+                        const existingPdfBytes = img.buffer;
+                        const existingPdfDoc = await PDFDocument.load(existingPdfBytes);
+                        const pages = await pdfDoc.copyPages(existingPdfDoc, existingPdfDoc.getPageIndices());
+                        for (const page of pages) {
+                            pdfDoc.addPage(page);
+                        }
+                    } else {
+                        // Regular images
+                        const jpgImage = await pdfDoc.embedJpg(img.buffer);
+                        const page = pdfDoc.addPage([jpgImage.width, jpgImage.height]);
+                        page.drawImage(jpgImage, {
+                            x: 0,
+                            y: 0,
+                            width: jpgImage.width,
+                            height: jpgImage.height
+                        });
+                    }
                 } catch (embedError) {
-                    console.warn(`    Warning: Could not embed image, skipping: ${embedError.message}`);
+                    console.warn(`    Warning: Could not process file, skipping: ${embedError.message}`);
                 }
             }
 
