@@ -412,7 +412,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('themorgan.org')) return 'morgan';
         if (url.includes('gallica.bnf.fr')) return 'gallica';
         if (url.includes('pagella.bm-grenoble.fr')) return 'grenoble';
-        if (url.includes('i3f.vls.io') && url.includes('blb-karlsruhe.de')) return 'karlsruhe';
+        if ((url.includes('i3f.vls.io') && url.includes('blb-karlsruhe.de')) || url.includes('digital.blb-karlsruhe.de')) return 'karlsruhe';
         if (url.includes('digitalcollections.manchester.ac.uk')) return 'manchester';
         if (url.includes('e-codices.unifr.ch') || url.includes('e-codices.ch')) return 'unifr';
         if (url.includes('e-manuscripta.ch')) return 'e_manuscripta';
@@ -795,6 +795,20 @@ export class EnhancedManuscriptDownloaderService {
                 }
             } catch (dnsError) {
                 console.warn(`[Graz] DNS resolution failed, proceeding anyway:`, dnsError);
+            }
+        }
+        
+        // Special handling for Grenoble to resolve DNS issues
+        if (url.includes('pagella.bm-grenoble.fr')) {
+            try {
+                // Pre-resolve DNS to avoid EAI_AGAIN errors
+                console.log(`[Grenoble] Pre-resolving DNS for ${urlObj.hostname}`);
+                const addresses = await dns.resolve4(urlObj.hostname);
+                if (addresses.length > 0) {
+                    console.log(`[Grenoble] Resolved to ${addresses[0]}`);
+                }
+            } catch (dnsError) {
+                console.warn(`[Grenoble] DNS resolution failed, proceeding anyway:`, dnsError);
             }
         }
         
@@ -1810,16 +1824,31 @@ export class EnhancedManuscriptDownloaderService {
      */
     async loadKarlsruheManifest(karlsruheUrl: string): Promise<ManuscriptManifest> {
         try {
-            // Extract manifest URL from viewer URL
-            // URL format: https://i3f.vls.io/?collection=i3fblbk&id=https%3A%2F%2Fdigital.blb-karlsruhe.de%2Fi3f%2Fv20%2F[ID]%2Fmanifest
-            const urlParams = new URLSearchParams(new URL(karlsruheUrl).search);
-            const encodedManifestUrl = urlParams.get('id');
+            let manifestUrl: string;
             
-            if (!encodedManifestUrl) {
-                throw new Error('Could not extract manifest URL from Karlsruhe viewer URL');
+            if (karlsruheUrl.includes('i3f.vls.io')) {
+                // Extract manifest URL from i3f viewer URL
+                // URL format: https://i3f.vls.io/?collection=i3fblbk&id=https%3A%2F%2Fdigital.blb-karlsruhe.de%2Fi3f%2Fv20%2F[ID]%2Fmanifest
+                const urlParams = new URLSearchParams(new URL(karlsruheUrl).search);
+                const encodedManifestUrl = urlParams.get('id');
+                
+                if (!encodedManifestUrl) {
+                    throw new Error('Could not extract manifest URL from Karlsruhe viewer URL');
+                }
+                
+                manifestUrl = decodeURIComponent(encodedManifestUrl);
+            } else if (karlsruheUrl.includes('digital.blb-karlsruhe.de/blbhs/content/titleinfo/')) {
+                // Direct BLB URL format: https://digital.blb-karlsruhe.de/blbhs/content/titleinfo/3464606
+                const idMatch = karlsruheUrl.match(/titleinfo\/(\d+)/);
+                if (!idMatch) {
+                    throw new Error('Could not extract ID from Karlsruhe direct URL');
+                }
+                const id = idMatch[1];
+                manifestUrl = `https://digital.blb-karlsruhe.de/i3f/v20/${id}/manifest`;
+            } else {
+                throw new Error('Unsupported Karlsruhe URL format');
             }
             
-            const manifestUrl = decodeURIComponent(encodedManifestUrl);
             let displayName = 'Karlsruhe BLB Manuscript';
             
             // Load IIIF manifest
@@ -2533,6 +2562,19 @@ export class EnhancedManuscriptDownloaderService {
      * Supports both item URLs and resource URLs
      */
     async loadLocManifest(locUrl: string): Promise<ManuscriptManifest> {
+        // Create progress monitor for LOC loading
+        const progressMonitor = createProgressMonitor(
+            'Library of Congress manifest loading',
+            'loc',
+            {
+                initialTimeout: 60000,
+                progressCheckInterval: 20000,
+                maxTimeout: 360000
+            }
+        );
+        
+        const controller = progressMonitor.start();
+        
         try {
             let manifestUrl = locUrl;
             
@@ -2552,15 +2594,19 @@ export class EnhancedManuscriptDownloaderService {
                 }
             }
             
+            progressMonitor.updateProgress(1, 10, 'Fetching manifest...');
+            
             let displayName = 'Library of Congress Manuscript';
             
             // Load IIIF manifest
-            const response = await this.fetchDirect(manifestUrl);
+            const response = await this.fetchDirect(manifestUrl, {}, 0, controller.signal);
             if (!response.ok) {
                 throw new Error(`Failed to load LOC manifest: HTTP ${response.status}`);
             }
             
             const manifest = await response.json();
+            
+            progressMonitor.updateProgress(3, 10, 'Parsing manifest...');
             
             // Extract title from IIIF v2.0 manifest
             if (manifest.label) {
@@ -2580,6 +2626,8 @@ export class EnhancedManuscriptDownloaderService {
             if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
                 const canvases = manifest.sequences[0].canvases;
                 totalPages = canvases.length;
+                
+                progressMonitor.updateProgress(5, 10, `Processing ${totalPages} pages...`);
                 
                 for (const canvas of canvases) {
                     if (canvas.images && canvas.images[0]) {
@@ -2613,9 +2661,12 @@ export class EnhancedManuscriptDownloaderService {
             // Cache the manifest
             this.manifestCache.set(locUrl, locManifest).catch(console.warn);
             
+            progressMonitor.complete();
+            
             return locManifest;
             
         } catch (error: any) {
+            progressMonitor.abort();
             throw new Error(`Failed to load Library of Congress manuscript: ${(error as Error).message}`);
         }
     }
@@ -5651,7 +5702,7 @@ export class EnhancedManuscriptDownloaderService {
             const progressMonitor = createProgressMonitor(
                 'University of Graz manifest loading',
                 'graz',
-                { initialTimeout: 120000, maxTimeout: 600000, progressCheckInterval: 30000 },
+                { initialTimeout: 180000, maxTimeout: 900000, progressCheckInterval: 30000 },
                 {
                     onInitialTimeoutReached: (state) => {
                         console.log(`[Graz] ${state.statusMessage}`);
@@ -6550,20 +6601,29 @@ export class EnhancedManuscriptDownloaderService {
         try {
             console.log(`Loading BDL manuscript: ${bdlUrl}`);
             
-            // Extract manuscript ID from URL
-            // Expected format: https://www.bdl.servizirl.it/bdl/bookreader/index.html?path=fe&cdOggetto=3903
-            // Remove hash fragment (e.g., #mode/2up) before parsing parameters to prevent hanging
-            const urlWithoutHash = bdlUrl.split('#')[0];
-            const urlParams = new URLSearchParams(urlWithoutHash.split('?')[1]);
-            const manuscriptId = urlParams.get('cdOggetto');
-            const pathType = urlParams.get('path');
+            let manuscriptId: string | null = null;
+            let pathType: string = 'fe'; // Default to public path
             
-            if (!manuscriptId) {
-                throw new Error('Invalid BDL URL format. Missing cdOggetto parameter.');
+            // Handle different BDL URL formats
+            if (bdlUrl.includes('/vufind/Record/BDL-OGGETTO-')) {
+                // Format: https://www.bdl.servizirl.it/vufind/Record/BDL-OGGETTO-3903
+                const match = bdlUrl.match(/BDL-OGGETTO-(\d+)/);
+                if (match) {
+                    manuscriptId = match[1];
+                    console.log(`Extracted manuscript ID from vufind URL: ${manuscriptId}`);
+                }
+            } else if (bdlUrl.includes('/bdl/bookreader/')) {
+                // Format: https://www.bdl.servizirl.it/bdl/bookreader/index.html?path=fe&cdOggetto=3903
+                const urlWithoutHash = bdlUrl.split('#')[0];
+                const urlParams = new URLSearchParams(urlWithoutHash.split('?')[1]);
+                manuscriptId = urlParams.get('cdOggetto');
+                pathType = urlParams.get('path') || 'fe';
+            } else {
+                throw new Error('Unsupported BDL URL format. Please provide a valid BDL manuscript URL.');
             }
             
-            if (!pathType) {
-                throw new Error('Invalid BDL URL format. Missing path parameter.');
+            if (!manuscriptId) {
+                throw new Error('Could not extract manuscript ID from BDL URL.');
             }
             
             console.log(`Extracted manuscript ID: ${manuscriptId}, path: ${pathType}`);
@@ -7990,7 +8050,14 @@ export class EnhancedManuscriptDownloaderService {
             
             // Fetch manifest with proper timeout handling
             console.log(`Loading Verona manifest: ${manifestUrl}`);
-            const response = await this.fetchDirect(manifestUrl, {}, 0);
+            
+            // Use fetchWithHTTPS for Verona to handle SSL/connection issues
+            const response = await this.fetchWithHTTPS(manifestUrl, {
+                headers: {
+                    'Accept': 'application/json, application/ld+json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+            });
             
             if (!response.ok) {
                 if (response.status === 404) {
@@ -8239,6 +8306,21 @@ export class EnhancedManuscriptDownloaderService {
         
         console.log('BNE: Starting optimized parallel page discovery...');
         
+        // Create progress monitor for BNE discovery
+        const progressMonitor = createProgressMonitor(
+            'BNE page discovery',
+            'bne',
+            {
+                initialTimeout: 30000,
+                progressCheckInterval: 10000,
+                maxTimeout: 180000
+            }
+        );
+        
+        const controller = progressMonitor.start();
+        
+        try {
+        
         for (let batchStart = 1; batchStart <= maxPages; batchStart += batchSize) {
             const batchEnd = Math.min(batchStart + batchSize - 1, maxPages);
             
@@ -8246,6 +8328,9 @@ export class EnhancedManuscriptDownloaderService {
             if (batchStart % 20 === 1) {
                 console.log(`BNE: Processing pages ${batchStart}-${batchEnd}...`);
             }
+            
+            // Update progress monitor
+            progressMonitor.updateProgress(batchStart, maxPages, `Checking pages ${batchStart}-${batchEnd}...`);
             
             // Create promises for batch
             const batchPromises: Promise<{page: number, response: Response | null, error: any}>[] = [];
@@ -8316,6 +8401,8 @@ export class EnhancedManuscriptDownloaderService {
         
         console.log(`BNE optimized discovery completed: ${discoveredPages.length} pages found`);
         
+        progressMonitor.complete();
+        
         return {
             pageLinks,
             totalPages: discoveredPages.length,
@@ -8323,6 +8410,11 @@ export class EnhancedManuscriptDownloaderService {
             displayName: `BNE Manuscript ${manuscriptId}`,
             originalUrl: originalUrl,
         };
+        
+        } catch (error: any) {
+            progressMonitor.abort();
+            throw error;
+        }
     }
 
 
@@ -8635,7 +8727,8 @@ export class EnhancedManuscriptDownloaderService {
             const compoundXmlUrl = `https://cdm21059.contentdm.oclc.org/utils/getfile/collection/plutei/id/${itemId}`;
             console.log('📄 Fetching Florence compound object XML structure...');
 
-            const xmlResponse = await this.fetchDirect(compoundXmlUrl, {
+            // Use fetchWithHTTPS for Florence to handle connection issues
+            const xmlResponse = await this.fetchWithHTTPS(compoundXmlUrl, {
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
                     'Accept': 'application/xml, text/xml, */*',
@@ -8645,7 +8738,7 @@ export class EnhancedManuscriptDownloaderService {
 
             if (!xmlResponse.ok) {
                 console.log('📄 No compound structure found, treating as single page');
-                const iiifUrl = `http://cdm21059.contentdm.oclc.org/iiif/2/plutei:${itemId}/full/6000,/0/default.jpg`;
+                const iiifUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${itemId}/full/6000,/0/default.jpg`;
                 
                 return {
                     pageLinks: [iiifUrl],
@@ -8662,7 +8755,7 @@ export class EnhancedManuscriptDownloaderService {
             const pageMatches = xmlText.match(/<page>[\s\S]*?<\/page>/g);
             if (!pageMatches || pageMatches.length === 0) {
                 console.log('📄 No compound pages found, treating as single page');
-                const iiifUrl = `http://cdm21059.contentdm.oclc.org/iiif/2/plutei:${itemId}/full/6000,/0/default.jpg`;
+                const iiifUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${itemId}/full/6000,/0/default.jpg`;
                 
                 return {
                     pageLinks: [iiifUrl],
@@ -8719,7 +8812,7 @@ export class EnhancedManuscriptDownloaderService {
             }
 
             const pageLinks = pages.map(page => 
-                `http://cdm21059.contentdm.oclc.org/iiif/2/plutei:${page.pagePtr}/full/6000,/0/default.jpg`
+                `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${page.pagePtr}/full/6000,/0/default.jpg`
             );
 
             console.log(`📄 Florence manuscript processed: ${pages.length} pages with maximum resolution (6000px width)`);

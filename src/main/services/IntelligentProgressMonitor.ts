@@ -84,11 +84,11 @@ export class IntelligentProgressMonitor {
 
         switch (config.library) {
             case 'graz':
-                // University of Graz has very large IIIF manifests (289KB+)
-                optimized.initialTimeout = 120000; // 2 minutes
+                // University of Graz has very large IIIF manifests (289KB+) and slow servers
+                optimized.initialTimeout = 180000; // 3 minutes - increased from 2
                 optimized.progressCheckInterval = 30000; // 30 seconds
-                optimized.maxTimeout = 600000; // 10 minutes
-                optimized.minProgressThreshold = 0.1; // Any progress is good
+                optimized.maxTimeout = 900000; // 15 minutes - increased from 10
+                optimized.minProgressThreshold = 0.01; // Even minimal progress is acceptable
                 break;
             
             case 'manuscripta':
@@ -138,6 +138,38 @@ export class IntelligentProgressMonitor {
                 optimized.progressCheckInterval = 10000; // 10 seconds
                 optimized.maxTimeout = 120000; // 2 minutes max (skip hanging validation)
                 optimized.minProgressThreshold = 1; // Need clear progress
+                break;
+            
+            case 'vienna_manuscripta':
+                // Vienna Manuscripta (Klosterneuburg) can hang after downloading several manuscripts
+                optimized.initialTimeout = 45000; // 45 seconds
+                optimized.progressCheckInterval = 15000; // 15 seconds
+                optimized.maxTimeout = 240000; // 4 minutes max to prevent hanging
+                optimized.minProgressThreshold = 1; // Need clear progress
+                break;
+            
+            case 'bne':
+                // BNE Spain can hang without progress
+                optimized.initialTimeout = 30000; // 30 seconds
+                optimized.progressCheckInterval = 10000; // 10 seconds
+                optimized.maxTimeout = 180000; // 3 minutes max to prevent hanging
+                optimized.minProgressThreshold = 1; // Need clear progress
+                break;
+            
+            case 'mdc_catalonia':
+                // MDC Catalonia can have connection timeout issues
+                optimized.initialTimeout = 45000; // 45 seconds
+                optimized.progressCheckInterval = 15000; // 15 seconds
+                optimized.maxTimeout = 300000; // 5 minutes
+                optimized.minProgressThreshold = 0.5;
+                break;
+            
+            case 'loc':
+                // Library of Congress can hang on calculation
+                optimized.initialTimeout = 60000; // 1 minute
+                optimized.progressCheckInterval = 20000; // 20 seconds
+                optimized.maxTimeout = 360000; // 6 minutes
+                optimized.minProgressThreshold = 0.5;
                 break;
             
             default:
