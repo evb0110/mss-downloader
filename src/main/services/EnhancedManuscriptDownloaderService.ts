@@ -6628,11 +6628,9 @@ export class EnhancedManuscriptDownloaderService {
             
             console.log(`Extracted manuscript ID: ${manuscriptId}, path: ${pathType}`);
             
-            // Determine service path (public for fe, private for be)
-            const servicePath = pathType === 'fe' ? 'public' : 'private';
-            
             // Fetch pages JSON from BDL API with enhanced timeout
-            const pagesApiUrl = `https://www.bdl.servizirl.it/bdl/${servicePath}/rest/json/item/${manuscriptId}/bookreader/pages`;
+            // The API now uses 'public' path instead of 'fe' in the URL
+            const pagesApiUrl = `https://www.bdl.servizirl.it/bdl/public/rest/json/item/${manuscriptId}/bookreader/pages`;
             console.log(`Fetching pages from: ${pagesApiUrl}`);
             
             // Use intelligent progress monitoring for BDL API call with enhanced timeouts
