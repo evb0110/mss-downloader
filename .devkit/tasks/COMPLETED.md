@@ -1,5 +1,38 @@
 # Completed Tasks
 
+## 2025-07-22: Version 1.4.28 - Florence (ContentDM Plutei) Library Fix
+
+### Tasks Completed:
+1. ✅ Fixed Florence (ContentDM Plutei) library with IIIF implementation
+2. ✅ Implemented high-resolution manuscript support (17-19MP images)
+3. ✅ Added compound object detection for multi-page manuscripts
+4. ✅ Integrated IIIF endpoints with maximum quality downloads
+5. ✅ Validated Florence library with Library Validation Protocol
+6. ✅ Bumped version to 1.4.28 with quality gates (lint + build passed)
+
+### Implementation Details:
+- **IIIF Integration**: Direct IIIF endpoint access using `full/full/0/default.jpg` for maximum resolution
+- **Compound Detection**: Parse `__INITIAL_STATE__` to identify multi-page manuscripts
+- **High Resolution**: Confirmed 17-19 megapixel image downloads (4000-5000px dimensions)
+- **Page Extraction**: Automatic extraction of all pages from compound objects
+- **Error Handling**: Robust JSON parsing for ContentDM state data
+
+### Libraries Status Update:
+**✅ Working (8 total):**
+- Florence (ContentDM Plutei) (fixed in v1.4.28)
+- BDL Servizirl (v1.4.26)
+- Verona (v1.4.26) 
+- Vienna Manuscripta (v1.4.23)
+- BNE Spain (v1.4.25)
+- Karlsruhe (v1.4.22)
+- Library of Congress (v1.4.22)
+- University of Graz (v1.4.21)
+
+**❌ Still Broken (3 remaining):**
+- MDC Catalonia (IIIF manifest discovery issue)
+- Grenoble (DNS resolution failure)
+- [Other broken libraries need investigation]
+
 ## 2025-07-22: Version 1.4.26 - Unified Architecture & Library Fixes
 
 ### Tasks Completed:
