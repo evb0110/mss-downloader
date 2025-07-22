@@ -8,6 +8,7 @@ import { LibraryOptimizationService } from './LibraryOptimizationService';
 import { createProgressMonitor } from './IntelligentProgressMonitor';
 import { ZifImageProcessor } from './ZifImageProcessor';
 import { TileEngineService } from './tile-engine/TileEngineService';
+import { SharedManifestAdapter } from './SharedManifestAdapter';
 import type { ManuscriptManifest, LibraryInfo } from '../../shared/types';
 import type { TLibrary } from '../../shared/queueTypes';
 import * as https from 'https';
@@ -19,11 +20,13 @@ export class EnhancedManuscriptDownloaderService {
     private manifestCache: ManifestCache;
     private zifProcessor: ZifImageProcessor;
     private tileEngineService: TileEngineService;
+    private sharedManifestAdapter: SharedManifestAdapter;
 
     constructor(manifestCache?: ManifestCache) {
         this.manifestCache = manifestCache || new ManifestCache();
         this.zifProcessor = new ZifImageProcessor();
         this.tileEngineService = new TileEngineService();
+        this.sharedManifestAdapter = new SharedManifestAdapter(this.fetchWithHTTPS.bind(this));
         // Clear potentially problematic cached manifests on startup
         this.manifestCache.clearProblematicUrls().catch(error => {
             console.warn('Failed to clear problematic cache entries:', (error as Error).message);
@@ -1134,7 +1137,9 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadModenaManifest(originalUrl);
                     break;
                 case 'bdl':
-                    manifest = await this.loadBDLManifest(originalUrl);
+                    // Use shared manifest loader (sync with validation)
+                    console.log('[BDL] Using shared manifest loader for consistent behavior');
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('bdl', originalUrl);
                     break;
                 case 'europeana':
                     manifest = await this.loadEuropeanaManifest(originalUrl);
@@ -1152,7 +1157,9 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadIccuApiManifest(originalUrl);
                     break;
                 case 'verona':
-                    manifest = await this.loadVeronaManifest(originalUrl);
+                    // Use shared manifest loader (sync with validation)
+                    console.log('[Verona] Using shared manifest loader for consistent behavior');
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('verona', originalUrl);
                     break;
                 case 'diamm':
                     manifest = await this.loadDiammManifest(originalUrl);
