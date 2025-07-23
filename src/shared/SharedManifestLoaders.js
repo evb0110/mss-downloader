@@ -383,6 +383,106 @@ class SharedManifestLoaders {
     }
 
     /**
+     * BVPB (Biblioteca Virtual del Patrimonio Bibliográfico) - Spain
+     * Uses direct image ID access pattern
+     */
+    async getBVPBManifest(url) {
+        // Extract registro ID from URL
+        const match = url.match(/registro\.do\?id=(\d+)/);
+        if (!match) throw new Error('Invalid BVPB URL');
+        
+        const registroId = match[1];
+        
+        // Fetch the registro page to find image viewer links
+        const response = await this.fetchWithRetry(url);
+        if (!response.ok) throw new Error(`Failed to fetch BVPB page: ${response.status}`);
+        
+        const html = await response.text();
+        
+        // Look for all catalogo_imagenes grupo.do paths
+        const grupoMatches = [...html.matchAll(/catalogo_imagenes\/grupo\.do\?path=(\d+)"[^>]*data-analytics-grouptitle="([^"]+)"/g)];
+        
+        let grupoPath = null;
+        
+        // First, try to find "Copia digital" (digital copy) path
+        for (const match of grupoMatches) {
+            if (match[2] && match[2].includes('Copia digital')) {
+                grupoPath = match[1];
+                break;
+            }
+        }
+        
+        // If not found, look for any non-PDF path
+        if (!grupoPath) {
+            for (const match of grupoMatches) {
+                if (match[2] && !match[2].toUpperCase().includes('PDF')) {
+                    grupoPath = match[1];
+                    break;
+                }
+            }
+        }
+        
+        // Fallback to simple pattern
+        if (!grupoPath) {
+            const simpleMatch = html.match(/catalogo_imagenes\/grupo\.do\?path=(\d+)/);
+            if (simpleMatch) {
+                grupoPath = simpleMatch[1];
+            }
+        }
+        
+        if (!grupoPath) throw new Error('No digital copy found for this BVPB manuscript');
+        
+        // First, fetch the main grupo page to see all thumbnails/pages
+        const grupoUrl = `https://bvpb.mcu.es/es/catalogo_imagenes/grupo.do?path=${grupoPath}`;
+        const grupoResponse = await this.fetchWithRetry(grupoUrl);
+        if (!grupoResponse.ok) throw new Error(`Failed to fetch grupo page: ${grupoResponse.status}`);
+        
+        const grupoHtml = await grupoResponse.text();
+        
+        // Extract all image object IDs from miniature links
+        const miniaturePattern = /object-miniature\.do\?id=(\d+)/g;
+        const imageIdPattern = /idImagen=(\d+)/g;
+        const imageIds = [];
+        let idMatch;
+        
+        // Try miniature pattern first
+        while ((idMatch = miniaturePattern.exec(grupoHtml)) !== null) {
+            if (!imageIds.includes(idMatch[1])) {
+                imageIds.push(idMatch[1]);
+            }
+        }
+        
+        // If no miniatures found, try direct image ID pattern
+        if (imageIds.length === 0) {
+            while ((idMatch = imageIdPattern.exec(grupoHtml)) !== null) {
+                if (!imageIds.includes(idMatch[1])) {
+                    imageIds.push(idMatch[1]);
+                }
+            }
+        }
+        
+        if (imageIds.length === 0) {
+            throw new Error('No image IDs found in BVPB viewer');
+        }
+        
+        const images = [];
+        
+        // Get first 10 pages (or all if fewer)
+        const maxPages = Math.min(imageIds.length, 10);
+        for (let i = 0; i < maxPages; i++) {
+            const imageId = imageIds[i];
+            // Direct image URL pattern found in the viewer
+            const imageUrl = `https://bvpb.mcu.es/es/catalogo_imagenes/imagen_id.do?idImagen=${imageId}&formato=jpg&registrardownload=0`;
+            images.push({
+                url: imageUrl,
+                label: `Page ${i + 1}`
+            });
+        }
+        
+        return { images };
+    }
+
+    /**
      * Get manifest for any library
      */
     async getManifestForLibrary(libraryId, url) {
@@ -407,6 +507,14 @@ class SharedManifestLoaders {
                 return await this.getFlorenceManifest(url);
             case 'grenoble':
                 return await this.getGrenobleManifest(url);
+            case 'manchester':
+                return await this.getManchesterManifest(url);
+            case 'toronto':
+                return await this.getTorontoManifest(url);
+            case 'vatican':
+                return await this.getVaticanManifest(url);
+            case 'bvpb':
+                return await this.getBVPBManifest(url);
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }
@@ -529,6 +637,225 @@ class SharedManifestLoaders {
         }
         
         return { images };
+    }
+
+    /**
+     * Manchester Digital Collections - IIIF manifest with 2000px limit
+     * Server limits: maxWidth: 2000, maxHeight: 2000
+     * Native resolution: 3978x5600 (22.3MP) but server-limited
+     */
+    async getManchesterManifest(url) {
+        // Extract manuscript ID from URL (e.g., MS-LATIN-00074)
+        const match = url.match(/view\/(MS-[A-Z]+-\d+)/);
+        if (!match) throw new Error('Invalid Manchester URL');
+        
+        const manuscriptId = match[1];
+        const manifestUrl = `https://www.digitalcollections.manchester.ac.uk/iiif/${manuscriptId}`;
+        
+        // Fetch IIIF manifest
+        const response = await this.fetchWithRetry(manifestUrl);
+        if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
+        
+        const manifest = await response.json();
+        const images = [];
+        
+        // Process IIIF v2 manifest
+        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            const canvases = manifest.sequences[0].canvases;
+            const maxPages = Math.min(canvases.length, 50);
+            
+            for (let i = 0; i < maxPages; i++) {
+                const canvas = canvases[i];
+                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                    const service = canvas.images[0].resource.service;
+                    const imageId = service['@id'] || service.id;
+                    
+                    // Manchester server limits to 2000px max dimension
+                    // We request 2000px width to get the best quality allowed
+                    const imageUrl = `${imageId}/full/2000,/0/default.jpg`;
+                    
+                    images.push({
+                        url: imageUrl,
+                        label: canvas.label || `Page ${i + 1}`
+                    });
+                }
+            }
+        }
+        
+        if (images.length === 0) {
+            throw new Error('No images found in Manchester manifest');
+        }
+        
+        return { images };
+    }
+
+    /**
+     * University of Toronto Fisher Library
+     * Supports both collections viewer URLs and direct IIIF URLs
+     */
+    async getTorontoManifest(url) {
+        let manifestUrl = url;
+        
+        // Handle collections.library.utoronto.ca URLs
+        if (url.includes('collections.library.utoronto.ca')) {
+            const viewMatch = url.match(/\/view\/([^/]+)/);
+            if (!viewMatch) throw new Error('Invalid Toronto collections URL');
+            
+            const itemId = viewMatch[1];
+            
+            // Try different manifest URL patterns
+            const manifestPatterns = [
+                `https://iiif.library.utoronto.ca/presentation/v2/${itemId}/manifest`,
+                `https://iiif.library.utoronto.ca/presentation/v2/${itemId.replace(':', '%3A')}/manifest`,
+                `https://iiif.library.utoronto.ca/presentation/v3/${itemId}/manifest`,
+                `https://iiif.library.utoronto.ca/presentation/v3/${itemId.replace(':', '%3A')}/manifest`,
+                `https://collections.library.utoronto.ca/iiif/${itemId}/manifest`,
+                `https://collections.library.utoronto.ca/iiif/${itemId.replace(':', '%3A')}/manifest`,
+                `https://collections.library.utoronto.ca/api/iiif/${itemId}/manifest`,
+                `https://collections.library.utoronto.ca/api/iiif/${itemId.replace(':', '%3A')}/manifest`
+            ];
+            
+            let manifestFound = false;
+            for (const testUrl of manifestPatterns) {
+                try {
+                    const response = await this.fetchWithRetry(testUrl, {}, 1);
+                    if (response.ok) {
+                        const content = await response.text();
+                        if (content.includes('"@context"')) {
+                            manifestUrl = testUrl;
+                            manifestFound = true;
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    // Try next pattern
+                }
+            }
+            
+            if (!manifestFound) {
+                throw new Error('Could not find valid manifest for Toronto URL');
+            }
+        } else if (url.includes('iiif.library.utoronto.ca') && !url.includes('/manifest')) {
+            manifestUrl = url.endsWith('/') ? `${url}manifest` : `${url}/manifest`;
+        }
+        
+        const response = await this.fetchWithRetry(manifestUrl);
+        if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
+        
+        const manifest = await response.json();
+        const images = [];
+        
+        // Handle IIIF v3
+        if (manifest.items) {
+            const maxPages = Math.min(manifest.items.length, 50);
+            for (let i = 0; i < maxPages; i++) {
+                const item = manifest.items[i];
+                if (item.items && item.items[0] && item.items[0].items && item.items[0].items[0]) {
+                    const annotation = item.items[0].items[0];
+                    if (annotation.body) {
+                        const service = annotation.body.service && annotation.body.service[0];
+                        if (service && service.id) {
+                            const imageUrl = `${service.id}/full/max/0/default.jpg`;
+                            images.push({
+                                url: imageUrl,
+                                label: item.label?.en?.[0] || item.label?.none?.[0] || `Page ${i + 1}`
+                            });
+                        } else if (annotation.body.id) {
+                            images.push({
+                                url: annotation.body.id,
+                                label: item.label?.en?.[0] || item.label?.none?.[0] || `Page ${i + 1}`
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        // Handle IIIF v2
+        else if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            const canvases = manifest.sequences[0].canvases;
+            const maxPages = Math.min(canvases.length, 50);
+            
+            for (let i = 0; i < maxPages; i++) {
+                const canvas = canvases[i];
+                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                    const resource = canvas.images[0].resource;
+                    const service = resource.service;
+                    
+                    if (service) {
+                        const serviceId = service['@id'] || service.id;
+                        const imageUrl = `${serviceId}/full/max/0/default.jpg`;
+                        images.push({
+                            url: imageUrl,
+                            label: canvas.label || `Page ${i + 1}`
+                        });
+                    } else if (resource['@id']) {
+                        images.push({
+                            url: resource['@id'],
+                            label: canvas.label || `Page ${i + 1}`
+                        });
+                    }
+                }
+            }
+        }
+        
+        if (images.length === 0) {
+            throw new Error('No images found in Toronto manifest');
+        }
+        
+        return { images };
+    }
+
+    /**
+     * Vatican Digital Library (DigiVatLib)
+     * Supports manuscripts from digi.vatlib.it
+     * Uses standard IIIF with maximum resolution available
+     */
+    async getVaticanManifest(url) {
+        // Extract manuscript ID from URL
+        const match = url.match(/view\/([^/?]+)/);
+        if (!match) throw new Error('Invalid Vatican Library URL');
+        
+        const manuscriptId = match[1];
+        const manifestUrl = `https://digi.vatlib.it/iiif/${manuscriptId}/manifest.json`;
+        
+        const response = await this.fetchWithRetry(manifestUrl);
+        if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
+        
+        const manifest = await response.json();
+        const images = [];
+        
+        // Get all canvases from the manifest
+        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            const canvases = manifest.sequences[0].canvases;
+            
+            for (let i = 0; i < canvases.length; i++) {
+                const canvas = canvases[i];
+                if (canvas.images && canvas.images[0]) {
+                    const image = canvas.images[0];
+                    const service = image.resource?.service;
+                    
+                    if (service && service['@id']) {
+                        // Vatican supports up to 4000px width with excellent quality
+                        // Testing showed 4000px gives optimal file size/quality balance
+                        const imageUrl = `${service['@id']}/full/4000,/0/default.jpg`;
+                        images.push({
+                            url: imageUrl,
+                            label: canvas.label || `Page ${i + 1}`
+                        });
+                    }
+                }
+            }
+        }
+        
+        if (images.length === 0) {
+            throw new Error('No images found in Vatican manifest');
+        }
+        
+        return { 
+            images,
+            label: manifest.label || manuscriptId,
+            metadata: manifest.metadata || []
+        };
     }
 }
 

@@ -235,14 +235,19 @@ export class EnhancedManuscriptDownloaderService {
             description: 'University of Graz digital manuscript collection with IIIF support',
         },
         {
-            name: 'Vatican Library',
-            example: 'https://digi.vatlib.it/view/MSS_Vat.lat.3225',
-            description: 'Vatican Apostolic Library digital collections',
+            name: 'Vatican Digital Library',
+            example: 'https://digi.vatlib.it/view/MSS_Vat.lat.1',
+            description: 'Vatican Apostolic Library manuscripts with high-resolution IIIF support (up to 4000px width)',
         },
         {
             name: 'Vienna Manuscripta.at',
             example: 'https://manuscripta.at/diglit/AT5000-1013/0001',
             description: 'Austrian National Library digital manuscript collection',
+        },
+        {
+            name: 'BVPB (Biblioteca Virtual del Patrimonio Bibliográfico)',
+            example: 'https://bvpb.mcu.es/es/consulta/registro.do?id=451885',
+            description: 'Spanish Virtual Library of Bibliographic Heritage with digitized manuscripts',
         },
         {
             name: 'Europeana Collections',
@@ -455,16 +460,17 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('dam.iccu.sbn.it') || url.includes('jmms.iccu.sbn.it')) return 'vallicelliana';
         if (url.includes('manus.iccu.sbn.it')) return 'iccu_api';
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) return 'verona';
+        if (url.includes('bvpb.mcu.es')) return 'bvpb';
         if (url.includes('diamm.ac.uk') || url.includes('iiif.diamm.net') || url.includes('musmed.eu/visualiseur-iiif')) return 'diamm';
         if (url.includes('bdh-rd.bne.es')) return 'bne';
         if (url.includes('mdc.csuc.cat/digital/collection')) return 'mdc_catalonia';
-        if (url.includes('bvpb.mcu.es')) return 'bvpb';
         if (url.includes('cdm21059.contentdm.oclc.org/digital/collection/plutei')) return 'florence';
         if (url.includes('viewer.onb.ac.at')) return 'onb';
         if (url.includes('rotomagus.fr')) return 'rouen';
         if (url.includes('dl.ub.uni-freiburg.de')) return 'freiburg';
         if (url.includes('fuldig.hs-fulda.de')) return 'fulda';
         if (url.includes('diglib.hab.de')) return 'wolfenbuettel';
+        if (url.includes('digi.vatlib.it')) return 'vatican';
         
         return null;
     }
@@ -1047,7 +1053,7 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadUnifrManifest(originalUrl);
                     break;
                 case 'vatlib':
-                    manifest = await this.loadVatlibManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('vatican', originalUrl);
                     break;
                 case 'cecilia':
                     manifest = await this.loadCeciliaManifest(originalUrl);
@@ -1190,6 +1196,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'wolfenbuettel':
                     manifest = await this.loadWolfenbuettelManifest(originalUrl);
+                    break;
+                case 'vatican':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('vatican', originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);

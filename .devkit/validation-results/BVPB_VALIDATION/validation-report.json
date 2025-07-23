@@ -1,0 +1,323 @@
+{
+  "timestamp": "2025-07-22T21:42:08.032Z",
+  "totalTested": 10,
+  "successful": 9,
+  "failed": 1,
+  "results": [
+    {
+      "url": "https://bvpb.mcu.es/es/consulta/registro.do?id=451885",
+      "manuscriptId": "451885",
+      "status": "success",
+      "pageCount": 10,
+      "error": null,
+      "imageSizes": [
+        {
+          "page": 1,
+          "size": "255.53 KB"
+        },
+        {
+          "page": 2,
+          "size": "29.30 KB"
+        },
+        {
+          "page": 3,
+          "size": "280.14 KB"
+        },
+        {
+          "page": 4,
+          "size": "266.68 KB"
+        },
+        {
+          "page": 5,
+          "size": "272.82 KB"
+        },
+        {
+          "page": 6,
+          "size": "285.17 KB"
+        },
+        {
+          "page": 7,
+          "size": "281.35 KB"
+        },
+        {
+          "page": 8,
+          "size": "282.31 KB"
+        },
+        {
+          "page": 9,
+          "size": "282.47 KB"
+        },
+        {
+          "page": 10,
+          "size": "259.37 KB"
+        }
+      ],
+      "pdfPath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-results/BVPB_VALIDATION/BVPB_451885.pdf"
+    },
+    {
+      "url": "https://bvpb.mcu.es/es/consulta/registro.do?id=472568",
+      "manuscriptId": "472568",
+      "status": "success",
+      "pageCount": 1,
+      "error": null,
+      "imageSizes": [
+        {
+          "page": 1,
+          "size": "782.18 KB"
+        }
+      ],
+      "pdfPath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-results/BVPB_VALIDATION/BVPB_472568.pdf"
+    },
+    {
+      "url": "https://bvpb.mcu.es/es/consulta/registro.do?id=472569",
+      "manuscriptId": "472569",
+      "status": "success",
+      "pageCount": 1,
+      "error": null,
+      "imageSizes": [
+        {
+          "page": 1,
+          "size": "725.42 KB"
+        }
+      ],
+      "pdfPath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-results/BVPB_VALIDATION/BVPB_472569.pdf"
+    },
+    {
+      "url": "https://bvpb.mcu.es/es/consulta/registro.do?id=463334",
+      "manuscriptId": "463334",
+      "status": "success",
+      "pageCount": 1,
+      "error": null,
+      "imageSizes": [
+        {
+          "page": 1,
+          "size": "7918.45 KB"
+        }
+      ],
+      "pdfPath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-results/BVPB_VALIDATION/BVPB_463334.pdf"
+    },
+    {
+      "url": "https://bvpb.mcu.es/es/consulta/registro.do?id=451876",
+      "manuscriptId": "451876",
+      "status": "success",
+      "pageCount": 10,
+      "error": null,
+      "imageSizes": [
+        {
+          "page": 1,
+          "size": "299.85 KB"
+        },
+        {
+          "page": 2,
+          "size": "341.11 KB"
+        },
+        {
+          "page": 3,
+          "size": "338.12 KB"
+        },
+        {
+          "page": 4,
+          "size": "343.52 KB"
+        },
+        {
+          "page": 5,
+          "size": "324.48 KB"
+        },
+        {
+          "page": 6,
+          "size": "312.65 KB"
+        },
+        {
+          "page": 7,
+          "size": "294.82 KB"
+        },
+        {
+          "page": 8,
+          "size": "310.39 KB"
+        },
+        {
+          "page": 9,
+          "size": "316.32 KB"
+        },
+        {
+          "page": 10,
+          "size": "316.63 KB"
+        }
+      ],
+      "pdfPath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-results/BVPB_VALIDATION/BVPB_451876.pdf"
+    },
+    {
+      "url": "https://bvpb.mcu.es/es/consulta/registro.do?id=465821",
+      "manuscriptId": "465821",
+      "status": "failed",
+      "pageCount": 0,
+      "error": "No digital copy found for this BVPB manuscript",
+      "imageSizes": [],
+      "pdfPath": null
+    },
+    {
+      "url": "https://bvpb.mcu.es/es/consulta/registro.do?id=451887",
+      "manuscriptId": "451887",
+      "status": "success",
+      "pageCount": 10,
+      "error": null,
+      "imageSizes": [
+        {
+          "page": 1,
+          "size": "239.25 KB"
+        },
+        {
+          "page": 2,
+          "size": "324.97 KB"
+        },
+        {
+          "page": 3,
+          "size": "297.10 KB"
+        },
+        {
+          "page": 4,
+          "size": "288.72 KB"
+        },
+        {
+          "page": 5,
+          "size": "290.44 KB"
+        },
+        {
+          "page": 6,
+          "size": "276.74 KB"
+        },
+        {
+          "page": 7,
+          "size": "279.71 KB"
+        },
+        {
+          "page": 8,
+          "size": "302.94 KB"
+        },
+        {
+          "page": 9,
+          "size": "302.17 KB"
+        },
+        {
+          "page": 10,
+          "size": "296.73 KB"
+        }
+      ],
+      "pdfPath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-results/BVPB_VALIDATION/BVPB_451887.pdf"
+    },
+    {
+      "url": "https://bvpb.mcu.es/es/consulta/registro.do?id=472567",
+      "manuscriptId": "472567",
+      "status": "success",
+      "pageCount": 1,
+      "error": null,
+      "imageSizes": [
+        {
+          "page": 1,
+          "size": "739.85 KB"
+        }
+      ],
+      "pdfPath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-results/BVPB_VALIDATION/BVPB_472567.pdf"
+    },
+    {
+      "url": "https://bvpb.mcu.es/es/consulta/registro.do?id=451883",
+      "manuscriptId": "451883",
+      "status": "success",
+      "pageCount": 10,
+      "error": null,
+      "imageSizes": [
+        {
+          "page": 1,
+          "size": "526.71 KB"
+        },
+        {
+          "page": 2,
+          "size": "237.96 KB"
+        },
+        {
+          "page": 3,
+          "size": "133.24 KB"
+        },
+        {
+          "page": 4,
+          "size": "98.35 KB"
+        },
+        {
+          "page": 5,
+          "size": "174.75 KB"
+        },
+        {
+          "page": 6,
+          "size": "269.99 KB"
+        },
+        {
+          "page": 7,
+          "size": "247.35 KB"
+        },
+        {
+          "page": 8,
+          "size": "236.32 KB"
+        },
+        {
+          "page": 9,
+          "size": "263.77 KB"
+        },
+        {
+          "page": 10,
+          "size": "255.00 KB"
+        }
+      ],
+      "pdfPath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-results/BVPB_VALIDATION/BVPB_451883.pdf"
+    },
+    {
+      "url": "https://bvpb.mcu.es/es/consulta/registro.do?id=451879",
+      "manuscriptId": "451879",
+      "status": "success",
+      "pageCount": 10,
+      "error": null,
+      "imageSizes": [
+        {
+          "page": 1,
+          "size": "250.51 KB"
+        },
+        {
+          "page": 2,
+          "size": "38.60 KB"
+        },
+        {
+          "page": 3,
+          "size": "258.31 KB"
+        },
+        {
+          "page": 4,
+          "size": "100.75 KB"
+        },
+        {
+          "page": 5,
+          "size": "233.14 KB"
+        },
+        {
+          "page": 6,
+          "size": "265.43 KB"
+        },
+        {
+          "page": 7,
+          "size": "242.59 KB"
+        },
+        {
+          "page": 8,
+          "size": "244.52 KB"
+        },
+        {
+          "page": 9,
+          "size": "245.86 KB"
+        },
+        {
+          "page": 10,
+          "size": "261.54 KB"
+        }
+      ],
+      "pdfPath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation-results/BVPB_VALIDATION/BVPB_451879.pdf"
+    }
+  ]
+}
