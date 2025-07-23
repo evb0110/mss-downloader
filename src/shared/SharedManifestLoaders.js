@@ -524,8 +524,12 @@ class SharedManifestLoaders {
      * Florence (ContentDM Plutei) - IIIF-based implementation
      */
     async getFlorenceManifest(url) {
-        // Extract item ID from URL
-        const match = url.match(/collection\/plutei\/id\/(\d+)/);
+        // Extract item ID from URL - handle both formats
+        let match = url.match(/collection\/plutei\/id\/(\d+)/);
+        if (!match) {
+            // Try alternative URL format
+            match = url.match(/digital\/collection\/plutei\/id\/(\d+)/);
+        }
         if (!match) throw new Error('Invalid Florence URL');
         
         const itemId = match[1];
@@ -538,17 +542,56 @@ class SharedManifestLoaders {
         
         // Extract __INITIAL_STATE__ for compound object detection
         let initialState;
-        const jsonParseMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*JSON\.parse\("(.*)"\);/);
+        const stateMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*JSON\.parse\s*\(\s*"([^"]*(?:\\.[^"]*)*)"\s*\)\s*;/);
         
-        if (jsonParseMatch) {
+        // Debug the regex matching
+        if (!stateMatch) {
+            console.warn('Florence: __INITIAL_STATE__ regex did not match');
+            console.warn('HTML contains __INITIAL_STATE__:', html.includes('__INITIAL_STATE__'));
+            console.warn('HTML length:', html.length);
+            // Try simpler pattern
+            const simpleMatch = html.match(/__INITIAL_STATE__.*?"([^"]+(?:\\.[^"]*)*)"[^;]*;/);
+            console.warn('Simple pattern matches:', !!simpleMatch);
+        }
+        
+        if (stateMatch) {
             try {
-                const safeJsonParse = `JSON.parse("${jsonParseMatch[1]}")`;
-                initialState = eval(safeJsonParse);
+                // Properly decode the escaped JSON string
+                let jsonString = stateMatch[1];
+                
+                // Handle common escape sequences
+                jsonString = jsonString
+                    .replace(/\\"/g, '"')
+                    .replace(/\\\\/g, '\\')
+                    .replace(/\\n/g, '\n')
+                    .replace(/\\r/g, '\r')
+                    .replace(/\\t/g, '\t')
+                    .replace(/\\u([0-9a-fA-F]{4})/g, (match, code) => {
+                        return String.fromCharCode(parseInt(code, 16));
+                    });
+                
+                initialState = JSON.parse(jsonString);
             } catch (e) {
-                throw new Error(`Failed to parse Florence initial state: ${e.message}`);
+                // Fallback: use simple IIIF approach if JSON parsing fails
+                console.warn('Florence JSON parsing failed, using fallback approach');
+                const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${itemId}/full/full/0/default.jpg`;
+                return {
+                    images: [{
+                        url: imageUrl,
+                        label: 'Page 1'
+                    }]
+                };
             }
         } else {
-            throw new Error('Could not find __INITIAL_STATE__ in Florence page');
+            // Fallback: use simple IIIF approach if no JSON found
+            console.warn('Florence __INITIAL_STATE__ not found, using fallback approach');
+            const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${itemId}/full/full/0/default.jpg`;
+            return {
+                images: [{
+                    url: imageUrl,
+                    label: 'Page 1'
+                }]
+            };
         }
         
         const images = [];

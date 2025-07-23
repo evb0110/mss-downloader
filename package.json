@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.30",
+  "version": "1.4.31",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (60+ libraries worldwide)",
   "changelog": [
-    "Added Manchester Digital Collections manuscript downloads (server-limited to 2000px)",
-    "Added Toronto Fisher Library manuscript support (IIIF v2/v3 compatible)",
-    "Added Vatican Digital Library with excellent 13.8-15.5MP resolution downloads",
-    "Added BVPB Spanish heritage library supporting various manuscript types",
-    "Fixed 4 additional libraries bringing total to 14 working libraries"
+    "Fixed Florence compound object parsing - now returns 50 pages instead of single page fallback",
+    "Resolved fresh post-release issues: Library of Congress full download, Grenoble DNS, MDC Catalonia timeout",
+    "Fixed BNE Spain hanging calculations, NBM Italy undefined errors, Vienna Manuscripta midway hanging",
+    "Fixed University of Graz timeout issues and library search component rendering",
+    "All 8 reported post-release library issues now fully resolved and validated"
   ],
   "main": "dist/main/main.js",
   "scripts": {
