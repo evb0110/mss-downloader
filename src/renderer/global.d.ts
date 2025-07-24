@@ -48,6 +48,9 @@ declare global {
       
       // External links
       openExternal: (url: string) => Promise<boolean>;
+      
+      // Download logs
+      downloadLogs: () => Promise<{ success: boolean; filepath?: string; error?: string }>;
     };
   }
 }

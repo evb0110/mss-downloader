@@ -9,6 +9,7 @@ import { createProgressMonitor } from './IntelligentProgressMonitor';
 import { ZifImageProcessor } from './ZifImageProcessor';
 import { TileEngineService } from './tile-engine/TileEngineService';
 import { SharedManifestAdapter } from './SharedManifestAdapter';
+import { DownloadLogger } from './DownloadLogger';
 import type { ManuscriptManifest, LibraryInfo } from '../../shared/types';
 import type { TLibrary } from '../../shared/queueTypes';
 import * as https from 'https';
@@ -21,12 +22,14 @@ export class EnhancedManuscriptDownloaderService {
     private zifProcessor: ZifImageProcessor;
     private tileEngineService: TileEngineService;
     private sharedManifestAdapter: SharedManifestAdapter;
+    private logger: DownloadLogger;
 
     constructor(manifestCache?: ManifestCache) {
         this.manifestCache = manifestCache || new ManifestCache();
         this.zifProcessor = new ZifImageProcessor();
         this.tileEngineService = new TileEngineService();
         this.sharedManifestAdapter = new SharedManifestAdapter(this.fetchWithHTTPS.bind(this));
+        this.logger = DownloadLogger.getInstance();
         // Clear potentially problematic cached manifests on startup
         this.manifestCache.clearProblematicUrls().catch(error => {
             console.warn('Failed to clear problematic cache entries:', (error as Error).message);
@@ -304,6 +307,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://diglib.hab.de/wdb.php?dir=mss/1008-helmst',
             description: 'Herzog August Bibliothek Wolfenbüttel digital manuscript collections with high-resolution access',
         },
+        {
+            name: 'HHU Düsseldorf (Heinrich-Heine-University)',
+            example: 'https://digital.ulb.hhu.de/i3f/v20/7674176/manifest',
+            description: 'Heinrich-Heine-University Düsseldorf digital manuscripts via IIIF v2.0 with maximum resolution support (up to 4879x6273px)',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -471,6 +479,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('fuldig.hs-fulda.de')) return 'fulda';
         if (url.includes('diglib.hab.de')) return 'wolfenbuettel';
         if (url.includes('digi.vatlib.it')) return 'vatican';
+        if (url.includes('digital.ulb.hhu.de')) return 'hhu';
         
         return null;
     }
@@ -546,6 +555,8 @@ export class EnhancedManuscriptDownloaderService {
      * Direct fetch (no proxy needed in Electron main process)
      */
     async fetchDirect(url: string, options: any = {}, attempt: number = 1): Promise<Response> {
+        const startTime = Date.now();
+        
         // Always create our own controller for library-specific timeouts
         const controller = new AbortController();
         
@@ -556,10 +567,21 @@ export class EnhancedManuscriptDownloaderService {
             LibraryOptimizationService.getTimeoutForLibrary(baseTimeout, library, attempt) :
             baseTimeout;
         
+        this.logger.logDownloadStart(library || 'unknown', url, { attempt, method: 'fetchDirect' });
+        this.logger.log({
+            level: 'debug',
+            library: library || 'unknown',
+            url,
+            message: `Library detected: ${library || 'unknown'}, timeout: ${timeout}ms (base: ${baseTimeout}ms)`,
+            details: { library, timeout, baseTimeout, attempt }
+        });
+        
         // CRITICAL FIX: Always apply library-specific timeout, even with external signals
         // This ensures Graz and other libraries get their proper extended timeouts
         const timeoutId = setTimeout(() => {
-            console.log(`[fetchDirect] Request timed out after ${timeout}ms for ${library || 'unknown'} library: ${url}`);
+            const elapsed = Date.now() - startTime;
+            this.logger.logTimeout(library || 'unknown', url, elapsed, attempt);
+            console.error(`[fetchDirect] TIMEOUT: Request timed out after ${elapsed}ms (configured timeout: ${timeout}ms) for ${library || 'unknown'} library: ${url}`);
             controller.abort();
         }, timeout);
         
@@ -715,9 +737,29 @@ export class EnhancedManuscriptDownloaderService {
             
             const response = await fetch(url, fetchOptions);
             if (timeoutId) clearTimeout(timeoutId);
+            
+            const elapsed = Date.now() - startTime;
+            this.logger.log({
+                level: 'info',
+                library: library || 'unknown',
+                url,
+                message: `Response received - Status: ${response.status}, Time: ${elapsed}ms`,
+                duration: elapsed,
+                details: { status: response.status, statusText: response.statusText }
+            });
+            
+            if (response.ok) {
+                this.logger.logDownloadComplete(library || 'unknown', url, elapsed, 0);
+            }
+            
             return response;
-        } catch (error) {
+        } catch (error: any) {
             if (timeoutId) clearTimeout(timeoutId);
+            
+            const elapsed = Date.now() - startTime;
+            this.logger.logDownloadError(library || 'unknown', url, error, attempt);
+            console.error(`[fetchDirect] ERROR after ${elapsed}ms for ${url}:`, error);
+            
             throw error;
         }
     }
@@ -1199,6 +1241,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'vatican':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('vatican', originalUrl);
+                    break;
+                case 'hhu':
+                    manifest = await this.loadHhuManifest(originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
@@ -2578,6 +2623,14 @@ export class EnhancedManuscriptDownloaderService {
      * Supports both item URLs and resource URLs
      */
     async loadLocManifest(locUrl: string): Promise<ManuscriptManifest> {
+        const startTime = Date.now();
+        this.logger.log({
+            level: 'info',
+            library: 'loc',
+            url: locUrl,
+            message: 'Starting LOC manifest load'
+        });
+        
         // Create progress monitor for LOC loading
         const progressMonitor = createProgressMonitor(
             'Library of Congress manifest loading',
@@ -2594,12 +2647,22 @@ export class EnhancedManuscriptDownloaderService {
         try {
             let manifestUrl = locUrl;
             
+            console.log(`[loadLocManifest] Processing URL pattern...`);
+            
             // Handle different LOC URL patterns
             if (locUrl.includes('/item/')) {
                 // Extract item ID: https://www.loc.gov/item/2010414164/
                 const itemMatch = locUrl.match(/\/item\/([^/?]+)/);
                 if (itemMatch) {
                     manifestUrl = `https://www.loc.gov/item/${itemMatch[1]}/manifest.json`;
+                    console.log(`[loadLocManifest] Transformed item URL to manifest: ${manifestUrl}`);
+                    this.logger.log({
+                        level: 'debug',
+                        library: 'loc',
+                        url: locUrl,
+                        message: 'Transformed item URL to manifest URL',
+                        details: { originalUrl: locUrl, manifestUrl }
+                    });
                 }
             } else if (locUrl.includes('/resource/')) {
                 // Extract resource ID: https://www.loc.gov/resource/rbc0001.2022vollb14164/?st=gallery
@@ -2607,6 +2670,14 @@ export class EnhancedManuscriptDownloaderService {
                 if (resourceMatch) {
                     // Try to construct manifest URL from resource pattern
                     manifestUrl = `https://www.loc.gov/resource/${resourceMatch[1]}/manifest.json`;
+                    console.log(`[loadLocManifest] Transformed resource URL to manifest: ${manifestUrl}`);
+                    this.logger.log({
+                        level: 'debug',
+                        library: 'loc',
+                        url: locUrl,
+                        message: 'Transformed resource URL to manifest URL',
+                        details: { originalUrl: locUrl, manifestUrl }
+                    });
                 }
             }
             
@@ -2614,13 +2685,29 @@ export class EnhancedManuscriptDownloaderService {
             
             let displayName = 'Library of Congress Manuscript';
             
+            console.log(`[loadLocManifest] Fetching manifest from: ${manifestUrl}`);
+            const fetchStartTime = Date.now();
+            
             // Load IIIF manifest
             const response = await this.fetchDirect(manifestUrl, {}, 0, controller.signal);
+            
+            const fetchElapsed = Date.now() - fetchStartTime;
+            console.log(`[loadLocManifest] Manifest fetch completed - Status: ${response.status}, Time: ${fetchElapsed}ms`);
+            
             if (!response.ok) {
+                console.error(`[loadLocManifest] Failed to load manifest - HTTP ${response.status}: ${response.statusText}`);
+                this.logger.log({
+                    level: 'error',
+                    library: 'loc',
+                    url: manifestUrl,
+                    message: `Failed to load manifest - HTTP ${response.status}`,
+                    details: { status: response.status, statusText: response.statusText }
+                });
                 throw new Error(`Failed to load LOC manifest: HTTP ${response.status}`);
             }
             
             const manifest = await response.json();
+            console.log(`[loadLocManifest] Manifest parsed successfully - Type: ${manifest['@type'] || 'unknown'}`);
             
             progressMonitor.updateProgress(3, 10, 'Parsing manifest...');
             
@@ -2643,9 +2730,11 @@ export class EnhancedManuscriptDownloaderService {
                 const canvases = manifest.sequences[0].canvases;
                 totalPages = canvases.length;
                 
+                console.log(`[loadLocManifest] Found ${totalPages} canvases in manifest`);
                 progressMonitor.updateProgress(5, 10, `Processing ${totalPages} pages...`);
                 
-                for (const canvas of canvases) {
+                for (let i = 0; i < canvases.length; i++) {
+                    const canvas = canvases[i];
                     if (canvas.images && canvas.images[0]) {
                         const image = canvas.images[0];
                         if (image.resource && image.resource.service && image.resource.service['@id']) {
@@ -2654,9 +2743,14 @@ export class EnhancedManuscriptDownloaderService {
                             const serviceId = image.resource.service['@id'];
                             const maxResUrl = `${serviceId}/full/full/0/default.jpg`;
                             pageLinks.push(maxResUrl);
+                            
+                            if (i === 0 || i === canvases.length - 1 || i % 10 === 0) {
+                                console.log(`[loadLocManifest] Page ${i + 1}/${totalPages}: ${maxResUrl}`);
+                            }
                         } else if (image.resource && image.resource['@id']) {
                             // Fallback to direct resource URL
                             pageLinks.push(image.resource['@id']);
+                            console.log(`[loadLocManifest] Page ${i + 1} using fallback URL`);
                         }
                     }
                 }
@@ -2679,10 +2773,37 @@ export class EnhancedManuscriptDownloaderService {
             
             progressMonitor.complete();
             
+            const totalElapsed = Date.now() - startTime;
+            console.log(`[loadLocManifest] Successfully loaded manifest - Total pages: ${pageLinks.length}, Time: ${totalElapsed}ms`);
+            console.log(`[loadLocManifest] Display name: ${displayName}`);
+            
+            this.logger.logManifestLoad('loc', locUrl, totalElapsed);
+            this.logger.log({
+                level: 'info',
+                library: 'loc',
+                url: locUrl,
+                message: `Manifest loaded successfully with ${pageLinks.length} pages`,
+                duration: totalElapsed,
+                details: { totalPages: pageLinks.length, displayName }
+            });
+            
             return locManifest;
             
         } catch (error: any) {
             progressMonitor.abort();
+            
+            const elapsed = Date.now() - startTime;
+            console.error(`[loadLocManifest] FAILED after ${elapsed}ms:`, error.message);
+            console.error(`[loadLocManifest] Error details:`, {
+                url: locUrl,
+                manifestUrl: manifestUrl || 'not determined',
+                errorName: error.name,
+                errorMessage: error.message,
+                stack: error.stack
+            });
+            
+            this.logger.logManifestLoad('loc', locUrl, elapsed, error);
+            
             throw new Error(`Failed to load Library of Congress manuscript: ${(error as Error).message}`);
         }
     }
@@ -3041,6 +3162,17 @@ export class EnhancedManuscriptDownloaderService {
      * Download image with retries and proxy fallback
      */
     async downloadImageWithRetries(url: string, attempt = 0): Promise<ArrayBuffer> {
+        const startTime = Date.now();
+        const library = this.detectLibrary(url) as TLibrary;
+        
+        this.logger.log({
+            level: 'info',
+            library: library || 'unknown',
+            url,
+            message: `Starting image download (attempt ${attempt + 1})`,
+            attemptNumber: attempt + 1
+        });
+        
         try {
             if (url.endsWith('.zif')) {
                 return this.downloadAndProcessZifFile(url, attempt);
@@ -3054,6 +3186,14 @@ export class EnhancedManuscriptDownloaderService {
                                      url.includes('mediatheques.orleans.fr') || 
                                      url.includes('aurelia.orleans.fr') || 
                                      url.includes('bdl.servizirl.it');
+            
+            this.logger.log({
+                level: 'debug',
+                library: library || 'unknown',
+                url,
+                message: `Proxy fallback needed: ${needsProxyFallback}`,
+                details: { needsProxyFallback, attempt: attempt + 1 }
+            });
             
             let response: Response;
             try {
@@ -3101,6 +3241,15 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             if (!response.ok) {
+                this.logger.log({
+                    level: 'error',
+                    library: library || 'unknown',
+                    url,
+                    message: `HTTP error: ${response.status} ${response.statusText}`,
+                    attemptNumber: attempt + 1,
+                    details: { status: response.status, statusText: response.statusText }
+                });
+                
                 // Enhanced error messages for BNC Roma HTTP errors
                 if (url.includes('digitale.bnc.roma.sbn.it')) {
                     if (response.status === 500) {
@@ -3135,8 +3284,25 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             const buffer = await response.arrayBuffer();
+            const elapsed = Date.now() - startTime;
+            
+            this.logger.log({
+                level: 'info',
+                library: library || 'unknown',
+                url,
+                message: `Buffer downloaded - Size: ${buffer.byteLength} bytes, Time: ${elapsed}ms`,
+                duration: elapsed,
+                details: { size: buffer.byteLength, speedMbps: (buffer.byteLength / elapsed / 1024).toFixed(2) }
+            });
             
             if (buffer.byteLength < MIN_VALID_IMAGE_SIZE_BYTES) {
+                this.logger.log({
+                    level: 'error',
+                    library: library || 'unknown',
+                    url,
+                    message: `Image too small: ${buffer.byteLength} bytes (min: ${MIN_VALID_IMAGE_SIZE_BYTES})`,
+                    details: { size: buffer.byteLength, minSize: MIN_VALID_IMAGE_SIZE_BYTES }
+                });
                 throw new Error(`Image too small: ${buffer.byteLength} bytes`);
             }
             
@@ -3148,6 +3314,10 @@ export class EnhancedManuscriptDownloaderService {
             return buffer;
             
         } catch (error: any) {
+            const elapsed = Date.now() - startTime;
+            this.logger.logDownloadError(library || 'unknown', url, error, attempt + 1);
+            console.error(`[downloadImageWithRetries] Error after ${elapsed}ms:`, error.message);
+            
             const maxRetries = configService.get('maxRetries');
             if (attempt < maxRetries) {
                 // BDL Quality Fallback: Try lower quality before retrying same quality
@@ -3173,12 +3343,27 @@ export class EnhancedManuscriptDownloaderService {
                     ? LibraryOptimizationService.calculateProgressiveBackoff(attempt + 1)
                     : this.calculateRetryDelay(attempt);
                 
-                console.log(`Retrying ${url} (attempt ${attempt + 1}/${maxRetries}) after ${delay}ms delay` + 
+                this.logger.logRetry(library || 'unknown', url, attempt + 2, delay);
+                console.log(`[downloadImageWithRetries] Will retry - Library: ${library}, Progressive backoff: ${useProgressiveBackoff}, Delay: ${delay}ms`);
+                console.log(`Retrying ${url} (attempt ${attempt + 2}/${maxRetries + 1}) after ${delay}ms delay` + 
                            (useProgressiveBackoff ? ' (progressive backoff)' : ''));
                 
                 await this.sleep(delay);
                 return this.downloadImageWithRetries(url, attempt + 1);
             }
+            
+            const totalTime = Date.now() - startTime;
+            this.logger.log({
+                level: 'error',
+                library: library || 'unknown',
+                url,
+                message: `FINAL FAILURE after ${maxRetries + 1} attempts`,
+                attemptNumber: maxRetries + 1,
+                duration: totalTime,
+                errorStack: error.stack
+            });
+            console.error(`[downloadImageWithRetries] FINAL FAILURE after ${maxRetries + 1} attempts for ${url}`);
+            console.error(`[downloadImageWithRetries] Total time spent: ${totalTime}ms`);
             
             // Enhanced error message for BNC Roma failures
             if (url.includes('digitale.bnc.roma.sbn.it')) {
@@ -9521,6 +9706,91 @@ export class EnhancedManuscriptDownloaderService {
 
         } catch (error) {
             throw new Error(`Failed to load Wolfenbüttel manuscript: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Load HHU Düsseldorf Digital Library manifest
+     */
+    async loadHhuManifest(hhuUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // Extract manuscript ID from URL
+            // URL format: https://digital.ulb.hhu.de/i3f/v20/7674176/manifest
+            let manifestUrl: string;
+            let manuscriptId: string | null = null;
+            
+            if (hhuUrl.includes('/manifest')) {
+                // Already a manifest URL
+                manifestUrl = hhuUrl;
+                const idMatch = hhuUrl.match(/\/v20\/(\d+)\/manifest/);
+                if (idMatch) {
+                    manuscriptId = idMatch[1];
+                }
+            } else {
+                // Extract ID from viewer URL
+                const idMatch = hhuUrl.match(/\/v20\/(\d+)/);
+                if (!idMatch) {
+                    throw new Error('Could not extract manuscript ID from HHU URL');
+                }
+                manuscriptId = idMatch[1];
+                manifestUrl = `https://digital.ulb.hhu.de/i3f/v20/${manuscriptId}/manifest`;
+            }
+            
+            let displayName = `HHU Düsseldorf - ${manuscriptId || 'Manuscript'}`;
+            
+            console.log('Loading HHU manifest from:', manifestUrl);
+            const response = await this.fetchWithHTTPS(manifestUrl);
+            const manifest = JSON.parse(response);
+            
+            // Extract metadata from IIIF manifest
+            if (manifest.label) {
+                displayName = `HHU - ${manifest.label}`;
+            }
+            
+            if (!manifest.sequences || !manifest.sequences[0] || !manifest.sequences[0].canvases) {
+                throw new Error('Invalid IIIF manifest structure');
+            }
+            
+            const canvases = manifest.sequences[0].canvases;
+            const pageLinks: string[] = [];
+            
+            console.log(`Processing ${canvases.length} pages from HHU manuscript`);
+            
+            // Process each canvas to extract maximum quality image URLs
+            for (const canvas of canvases) {
+                if (!canvas.images || !canvas.images[0]) continue;
+                
+                const image = canvas.images[0];
+                const resource = image.resource;
+                
+                if (resource.service && resource.service['@id']) {
+                    const serviceId = resource.service['@id'];
+                    // Use maximum resolution - full/full/0/default.jpg
+                    const imageUrl = `${serviceId}/full/full/0/default.jpg`;
+                    pageLinks.push(imageUrl);
+                } else if (resource['@id']) {
+                    // Fallback to direct image URL
+                    pageLinks.push(resource['@id']);
+                }
+            }
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No images found in HHU manifest');
+            }
+            
+            console.log(`Found ${pageLinks.length} pages in HHU manuscript`);
+            
+            return {
+                displayName,
+                totalPages: pageLinks.length,
+                library: 'hhu',
+                pageLinks,
+                originalUrl: hhuUrl
+            };
+            
+        } catch (error: any) {
+            console.error('Failed to load HHU manifest:', error);
+            throw new Error(`Failed to load HHU Düsseldorf manuscript: ${error.message}`);
         }
     }
 

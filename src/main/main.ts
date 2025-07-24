@@ -9,6 +9,7 @@ import { EnhancedManuscriptDownloaderService } from './services/EnhancedManuscri
 import { EnhancedDownloadQueue } from './services/EnhancedDownloadQueue';
 import { configService } from './services/ConfigService';
 import { NegativeConverterService } from './services/NegativeConverterService';
+import { DownloadLogger } from './services/DownloadLogger';
 import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
 import type { ConversionSettings } from './services/NegativeConverterService';
 
@@ -877,6 +878,18 @@ ipcMain.handle('pdf-rendering-progress', async (_event, { stage, message, progre
   // Forward progress to the conversion progress handler if needed
   mainWindow?.webContents.send('negative-conversion-progress', { stage, message, progress });
   return true;
+});
+
+// Download logs handler
+ipcMain.handle('download-logs', async () => {
+  try {
+    const logger = DownloadLogger.getInstance();
+    const filepath = await logger.saveLogsToFile();
+    return { success: true, filepath };
+  } catch (error) {
+    console.error('Failed to save logs:', error);
+    return { success: false, error: (error as Error).message };
+  }
 });
 
 // Helper function to wait for renderer completion

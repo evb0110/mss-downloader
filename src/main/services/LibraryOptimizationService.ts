@@ -118,10 +118,11 @@ export class LibraryOptimizationService {
             optimizationDescription: 'Berlin State Library optimizations: 3 concurrent downloads, extended timeouts for IIIF manifest processing'
         },
         'loc': {
-            maxConcurrentDownloads: 8, // LOC servers perform best with high concurrency (tested: 31 MB/s with 5-10 concurrent vs 0.94 MB/s with single)
-            timeoutMultiplier: 1.2, // Standard timeout, LOC servers are reliable
-            enableProgressiveBackoff: false, // LOC servers handle concurrent loads well
-            optimizationDescription: 'Library of Congress optimizations: 8 concurrent downloads for optimal performance (30x faster than single-threaded)'
+            maxConcurrentDownloads: 4, // Reduced from 8 for stability - prevents server throttling and hanging
+            timeoutMultiplier: 1.5, // Increased from 1.2 to handle server response variations
+            enableProgressiveBackoff: true, // Enable adaptive retry delays for problematic pages
+            autoSplitThresholdMB: 500, // Split large manuscripts to prevent memory issues
+            optimizationDescription: 'Library of Congress optimizations: 4 concurrent downloads with progressive backoff, enhanced stability for large manuscripts'
         },
         'czech': {
             maxConcurrentDownloads: 2, // Czech library server, conservative limits
@@ -212,6 +213,12 @@ export class LibraryOptimizationService {
             timeoutMultiplier: 1.2, // Slightly extended timeout for page discovery and high-resolution downloads
             enableProgressiveBackoff: true,
             optimizationDescription: 'Wolfenbüttel HAB optimizations: 4 concurrent downloads, dynamic page discovery, maximum resolution support'
+        },
+        'hhu': {
+            maxConcurrentDownloads: 4, // HHU Düsseldorf with IIIF v2.0 infrastructure
+            timeoutMultiplier: 1.3, // Slightly extended timeout for high-resolution images
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'HHU Düsseldorf optimizations: 4 concurrent downloads, IIIF v2.0 with maximum resolution support (up to 4879x6273px)'
         },
         'loading': {}
     };

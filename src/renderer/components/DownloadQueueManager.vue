@@ -74,6 +74,11 @@ https://digi.vatlib.it/..."
         >
           {{ errorMessage }}
         </div>
+        
+        <DownloadLogsButton 
+          v-if="errorMessage || hasFailedDownloads"
+          :show-button="true"
+        />
                 
         <button
           :disabled="isProcessingUrls || !bulkUrlText.trim()"
@@ -965,6 +970,7 @@ import type { LibraryInfo, ManuscriptManifest } from '../../shared/types';
 import Modal from './Modal.vue';
 import Spoiler from './Spoiler.vue';
 import NegativeConverterModal from './NegativeConverterModal.vue';
+import DownloadLogsButton from './DownloadLogsButton.vue';
 import abbaAbabusImage from '../../../assets/abba-ababus.jpg';
 
 // Declare window.electronAPI type
@@ -1504,6 +1510,7 @@ const queueStatsReady = computed(() => {
 
 const hasReadyItems = computed(() => queueItems.value.some((item: QueuedManuscript) => item.status === 'pending'));
 const hasCompletedOrFailedItems = computed(() => queueItems.value.some((item: QueuedManuscript) => item.status === 'completed' || item.status === 'failed'));
+const hasFailedDownloads = computed(() => queueItems.value.some((item: QueuedManuscript) => item.status === 'failed'));
 // Track if the user has manually started queue in this session
 const hasUserStartedQueue = ref(false);
 

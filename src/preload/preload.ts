@@ -116,6 +116,9 @@ const api = {
   chooseSaveDirectory: () => ipcRenderer.invoke('choose-save-directory'),
   showItemInFinder: (filePath: string) => ipcRenderer.invoke('show-item-in-finder', filePath),
   openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
+  
+  // Download logs
+  downloadLogs: () => ipcRenderer.invoke('download-logs'),
 
   // Config management methods
   getConfig: (key: string) => ipcRenderer.invoke('config-get', key),
