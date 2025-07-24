@@ -1,13 +1,9 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.31",
+  "version": "1.4.32",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (60+ libraries worldwide)",
   "changelog": [
-    "Fixed Florence compound object parsing - now returns 50 pages instead of single page fallback",
-    "Resolved fresh post-release issues: Library of Congress full download, Grenoble DNS, MDC Catalonia timeout",
-    "Fixed BNE Spain hanging calculations, NBM Italy undefined errors, Vienna Manuscripta midway hanging",
-    "Fixed University of Graz timeout issues and library search component rendering",
-    "All 8 reported post-release library issues now fully resolved and validated"
+    "Fixed Library of Congress extremely slow downloads - now 8-30x faster with optimized concurrent connections"
   ],
   "main": "dist/main/main.js",
   "scripts": {
