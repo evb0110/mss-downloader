@@ -164,7 +164,7 @@ export class ManifestCache {
     async clearProblematicUrls(): Promise<void> {
         await this.init();
         
-        const problematicDomains = ['bl.digirati.io', 'iiif.bl.uk'];
+        const problematicDomains = ['bl.digirati.io', 'iiif.bl.uk', 'www.loc.gov', 'tile.loc.gov'];
         for (const domain of problematicDomains) {
             await this.clearDomain(domain);
         }

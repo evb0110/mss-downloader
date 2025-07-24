@@ -117,6 +117,12 @@ export class LibraryOptimizationService {
             timeoutMultiplier: 1.5, // Increased timeout for IIIF manifest processing
             optimizationDescription: 'Berlin State Library optimizations: 3 concurrent downloads, extended timeouts for IIIF manifest processing'
         },
+        'loc': {
+            maxConcurrentDownloads: 8, // LOC servers perform best with high concurrency (tested: 31 MB/s with 5-10 concurrent vs 0.94 MB/s with single)
+            timeoutMultiplier: 1.2, // Standard timeout, LOC servers are reliable
+            enableProgressiveBackoff: false, // LOC servers handle concurrent loads well
+            optimizationDescription: 'Library of Congress optimizations: 8 concurrent downloads for optimal performance (30x faster than single-threaded)'
+        },
         'czech': {
             maxConcurrentDownloads: 2, // Czech library server, conservative limits
             timeoutMultiplier: 2.0, // Double timeout for page discovery
