@@ -574,6 +574,14 @@ https://digi.vatlib.it/..."
                     Restart
                   </button>
                   <button
+                    v-if="group.parent.status === 'failed'"
+                    class="download-logs-btn"
+                    title="Download error logs"
+                    @click="downloadLogs"
+                  >
+                    Download Logs
+                  </button>
+                  <button
                     v-if="canStartIndividualGroup(group)"
                     class="start-individual-btn"
                     title="Start this download individually"
@@ -1262,7 +1270,7 @@ function getTotalPagesText(group: { parent: QueuedManuscript; parts: QueuedManus
         const item = group.parent;
         
         // Show loading message for items that are still loading manifests
-        if (item.status === 'loading' || item.totalPages === 0) {
+        if (item.status === 'loading' || !item.totalPages || item.totalPages === 0) {
             return 'Loading manifest...';
         }
         
@@ -2113,7 +2121,7 @@ function validateQueueEditInputs() {
 }
 
 function selectAllPages(totalPages: number) {
-    if (!editingQueueItem.value) return;
+    if (!editingQueueItem.value || !totalPages || totalPages === 0) return;
     
     editingQueueItem.value.startPage = 1;
     editingQueueItem.value.endPage = totalPages;
@@ -2219,6 +2227,19 @@ async function showItemInFinder(filePath: string) {
         await window.electronAPI.showItemInFinder(filePath);
     } catch (error: any) {
         showAlert('Error', `Failed to show file: ${error.message}`);
+    }
+}
+
+async function downloadLogs() {
+    try {
+        const result = await window.electronAPI.downloadLogs();
+        if (result.success && result.filepath) {
+            await window.electronAPI.showItemInFinder(result.filepath);
+        } else {
+            showAlert('Error', `Failed to save logs: ${result.error || 'Unknown error'}`);
+        }
+    } catch (error: any) {
+        showAlert('Error', `Failed to download logs: ${error.message}`);
     }
 }
 
@@ -3069,6 +3090,26 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 
 .restart-item-btn:hover {
     background: #218838;
+}
+
+.download-logs-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.download-logs-btn:hover {
+    background: #5a6268;
 }
 
 .show-finder-btn {
