@@ -8,6 +8,7 @@ import { EnhancedManuscriptDownloaderService } from './EnhancedManuscriptDownloa
 import { configService } from './ConfigService';
 import { ManifestCache } from './ManifestCache';
 import { LibraryOptimizationService } from './LibraryOptimizationService';
+import { DownloadLogger } from './DownloadLogger';
 import type { QueuedManuscript, QueueState, TLibrary, TStage, TSimultaneousMode } from '../../shared/queueTypes';
 
 export class EnhancedDownloadQueue extends EventEmitter {
@@ -448,6 +449,17 @@ export class EnhancedDownloadQueue extends EventEmitter {
     // Queue processing control
     async startProcessing(): Promise<void> {
         if (this.state.isProcessing) return;
+        
+        const logger = DownloadLogger.getInstance();
+        logger.log({
+            level: 'info',
+            library: 'system',
+            message: 'Starting download queue processing',
+            details: { 
+                queueSize: this.state.items.length,
+                pendingItems: this.state.items.filter(i => i.status === 'pending').length
+            }
+        });
         
         this.state.isPaused = false;
         await this.processQueue();
@@ -1428,6 +1440,21 @@ export class EnhancedDownloadQueue extends EventEmitter {
     }
 
     private async processItemConcurrently(item: QueuedManuscript): Promise<void> {
+        // Log the start of processing
+        const logger = DownloadLogger.getInstance();
+        logger.log({
+            level: 'info',
+            library: item.library || 'unknown',
+            url: item.url,
+            message: `Starting download process for ${item.displayName}`,
+            details: { 
+                id: item.id, 
+                totalPages: item.totalPages,
+                library: item.library,
+                isAutoPart: item.isAutoPart
+            }
+        });
+        
         // Add item to active downloads tracking
         if (!this.state.activeItemIds) {
             this.state.activeItemIds = [];
@@ -1449,33 +1476,152 @@ export class EnhancedDownloadQueue extends EventEmitter {
         this.saveToStorage();
         this.notifyListeners();
         
-        const downloader = new EnhancedManuscriptDownloaderService();
+        // Create a dedicated downloader for this concurrent download
+        const downloader = new EnhancedManuscriptDownloaderService(this.manifestCache);
         this.activeDownloaders.set(item.id, downloader);
+        
+        // Calculate dynamic timeout based on file size and library
+        const baseTimeoutMinutes = 15;
+        let timeoutMultiplier = 1;
+        
+        // Large manuscripts need significantly more time
+        if (item.totalPages && item.totalPages > 300) {
+            timeoutMultiplier = 3; // 45 minutes for 300+ pages
+        } else if (item.totalPages && item.totalPages > 200) {
+            timeoutMultiplier = 2; // 30 minutes for 200+ pages
+        }
+        
+        // Manuscripta.se specifically needs extra time due to large file sizes
+        if (item.library === 'manuscripta' && item.totalPages && item.totalPages > 100) {
+            timeoutMultiplier = Math.max(timeoutMultiplier, 3); // At least 45 minutes
+        }
+        
+        // Apply library-specific timeout multipliers from LibraryOptimizationService
+        const libraryConfig = LibraryOptimizationService.getOptimizationsForLibrary(item.library);
+        if (libraryConfig.timeoutMultiplier) {
+            timeoutMultiplier *= libraryConfig.timeoutMultiplier;
+        }
+        
+        const downloadTimeoutMs = baseTimeoutMinutes * timeoutMultiplier * 60 * 1000;
+        const libraryMultiplierInfo = libraryConfig.timeoutMultiplier ? ` [${item.library}: ${libraryConfig.timeoutMultiplier}x]` : '';
+        console.log(`Setting timeout for ${item.displayName}: ${downloadTimeoutMs / (1000 * 60)} minutes (${item.totalPages || 'unknown'} pages)${libraryMultiplierInfo}`);
+        
+        // Set up timeout with proper cleanup
+        const timeoutId = setTimeout(() => {
+            if (item.status === 'downloading') {
+                console.error(`Download timeout for ${item.displayName} after ${downloadTimeoutMs / (1000 * 60)} minutes`);
+                item.status = 'failed';
+                item.error = `Download timeout - exceeded ${downloadTimeoutMs / (1000 * 60)} minutes. Large manuscripts (${item.totalPages || 'unknown'} pages) may require manual splitting.`;
+                this.saveToStorage();
+                this.notifyListeners();
+            }
+        }, downloadTimeoutMs);
         
         try {
             // Load manifest if needed  
-            if (!item.totalPages) {
+            if (!item.totalPages || !item.library) {
                 await this.loadManifestForItem(item.id);
             }
             
-            // Download the item (simplified version)
-            // This would need to be implemented properly based on the EnhancedManuscriptDownloaderService API
-            console.log(`Starting concurrent download for ${item.displayName}`);
+            // Check if document should be auto-split (only for non-part items)
+            if (!item.isAutoPart) {
+                const shouldSplit = await this.checkAndSplitLargeDocument(item);
+                if (shouldSplit) {
+                    // Document was split, the original item has been removed from queue
+                    // No need to mark as completed since it no longer exists
+                    clearTimeout(timeoutId);
+                    return;
+                }
+            }
             
-            item.status = 'completed';
-            item.completedAt = Date.now();
-            item.progress = undefined;
+            // Actually download the manuscript
+            const result = await downloader.downloadManuscript(item.url, {
+                onProgress: (progress: any) => {
+                    // Handle both simple progress (0-1) and detailed progress object
+                    if (typeof progress === 'number') {
+                        item.progress = progress;
+                    } else if (progress && typeof progress === 'object') {
+                        item.progress = {
+                            current: progress.completedPages || 0,
+                            total: progress.totalPages || item.totalPages || 0,
+                            percentage: Math.round((progress.progress || 0) * 100 * 100) / 100, // Round to 2 decimal places
+                            eta: progress.eta || 'calculating...',
+                            stage: 'downloading' as TStage,
+                        };
+                    }
+                    item.eta = progress.eta;
+                    this.notifyListeners();
+                },
+                onManifestLoaded: (manifest: any) => {
+                    item.totalPages = manifest.totalPages;
+                    item.library = manifest.library as TLibrary;
+                    this.notifyListeners();
+                },
+                maxConcurrent: item.libraryOptimizations?.maxConcurrentDownloads || 
+                               this.state.globalSettings.concurrentDownloads,
+                skipExisting: false,
+                // Pass through download options for page range
+                startPage: item.downloadOptions?.startPage,
+                endPage: item.downloadOptions?.endPage,
+                // Pass the queue item for manual manifest data
+                queueItem: item,
+            });
+            
+            if (result.success) {
+                // Verify the output file actually exists before marking as completed
+                const fs = await import('fs/promises');
+                const path = await import('path');
+                
+                try {
+                    // Check if file exists and has reasonable size
+                    const stats = await fs.stat(result.filepath);
+                    const minExpectedSize = Math.max(1024 * 100, (item.totalPages || 1) * 50 * 1024); // At least 100KB or ~50KB per page
+                    
+                    if (stats.size < minExpectedSize) {
+                        throw new Error(`Output file too small: ${stats.size} bytes (expected at least ${minExpectedSize})`);
+                    }
+                    
+                    console.log(`✅ Download verified: ${path.basename(result.filepath)} (${(stats.size / (1024 * 1024)).toFixed(1)}MB)`);
+                    
+                    item.status = 'completed';
+                    item.completedAt = Date.now();
+                    item.progress = undefined;
+                    item.outputPath = result.filepath;
+                    
+                } catch (verificationError: any) {
+                    console.error(`❌ File verification failed for ${item.displayName}:`, verificationError.message);
+                    throw new Error(`Download appeared successful but file verification failed: ${verificationError.message}`);
+                }
+            } else {
+                throw new Error('Download failed without specific error');
+            }
             
         } catch (error: any) {
             if (error.name === 'AbortError' || error.message?.includes('abort')) {
                 item.status = 'paused';
                 item.progress = undefined;
             } else {
+                console.error(`❌ Failed: ${item.displayName} - ${error.message}`);
                 item.status = 'failed';
                 item.error = error.message;
-                item.progress = undefined;
+                item.retryCount = (item.retryCount || 0) + 1;
+                
+                // For large manuscript infinite loop prevention
+                if (item.library === 'manuscripta' && item.totalPages && item.totalPages > 300) {
+                    const maxRetries = 2; // Fewer retries for large manuscripta.se files
+                    if (item.retryCount >= maxRetries) {
+                        item.error = `${error.message} (Large manuscript - max ${maxRetries} retries exceeded to prevent infinite loops)`;
+                        console.error(`Large manuscripta.se manuscript retry limit reached: ${item.displayName}`);
+                    }
+                }
+                
+                // Perform error isolation and cache cleanup to prevent corruption spread
+                await this.handleDownloadError(item, error);
             }
         } finally {
+            // Clear timeout
+            clearTimeout(timeoutId);
+            
             // Remove from active downloads
             this.activeDownloaders.delete(item.id);
             if (this.state.activeItemIds) {
@@ -1484,9 +1630,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     this.state.activeItemIds.splice(index, 1);
                 }
             }
+            
+            this.saveToStorage();
+            this.notifyListeners();
         }
-        
-        this.saveToStorage();
-        this.notifyListeners();
     }
 }

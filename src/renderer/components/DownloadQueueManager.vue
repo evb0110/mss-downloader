@@ -3106,6 +3106,7 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     justify-content: center;
     font-size: 12px;
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .download-logs-btn:hover {
