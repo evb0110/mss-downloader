@@ -1,9 +1,9 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.33",
+  "version": "1.4.34",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (60+ libraries worldwide)",
   "changelog": [
-    "Added HHU Düsseldorf (Heinrich-Heine-University) library support with maximum resolution downloads (30+ megapixels)"
+    "Added Wolfenbüttel HAB alternative URL format support for manuscripts in varia/selecta collections"
   ],
   "main": "dist/main/main.js",
   "scripts": {

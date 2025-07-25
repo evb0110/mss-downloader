@@ -226,4 +226,26 @@
 ### Validation Results:
 - Both test manuscripts downloaded successfully
 - PDFs validated with correct content and high resolution (2000px)
-- No ETIMEDOUT errors encountered during validation
+- No ETIMEDOUT errors encountered during validation# Completed Tasks
+
+## 2025-07-25
+
+### Logging System Implementation
+- Created a logging system that captures detailed download information
+- Implemented 'Download Logs' button in the UI for error states  
+- Added detailed logging for LOC and other problematic libraries
+- Included timestamp, URL, response times, errors in logs
+- Fixed empty logs issue - logger not capturing download events
+- Fixed button text wrapping with white-space: nowrap CSS
+
+### UI Bug Fixes
+- Fixed "undefined Pages" display showing as "All undefined Pages"
+- Fixed missing Download Logs button when downloads fail
+- Added Download Logs button to individual failed queue items
+
+### Wolfenbüttel Library Enhancement
+- Added support for alternative Wolfenbüttel URL format
+- Extended URL parsing to handle both wdb.php?dir= and direct path formats
+- Support URLs like https://diglib.hab.de/varia/selecta/ed000011/start.htm
+- Tested both Wolfenbüttel URL formats work correctly
+EOF < /dev/null
