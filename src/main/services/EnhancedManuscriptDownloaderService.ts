@@ -8909,10 +8909,21 @@ export class EnhancedManuscriptDownloaderService {
      * Supports up to 6000px width for optimal quality
      */
     async loadFlorenceManifest(originalUrl: string): Promise<ManuscriptManifest> {
+        // Log the start of Florence manifest loading
+        this.logger.log({
+            level: 'info',
+            library: 'florence',
+            url: originalUrl,
+            message: 'Starting Florence manifest load',
+            details: { method: 'loadFlorenceManifest' }
+        });
+        
         try {
             const urlMatch = originalUrl.match(/cdm21059\.contentdm\.oclc\.org\/digital\/collection\/plutei\/id\/(\d+)/);
             if (!urlMatch) {
-                throw new Error('Could not extract item ID from Florence URL');
+                const error = new Error('Could not extract item ID from Florence URL');
+                this.logger.logDownloadError('florence', originalUrl, error);
+                throw error;
             }
 
             const itemId = urlMatch[1];
@@ -8983,7 +8994,7 @@ export class EnhancedManuscriptDownloaderService {
                 const pagePtr = ptrMatch[1];
                 const title = titleMatch ? titleMatch[1] : `Page ${i + 1}`;
 
-                if (i === 0 && titleMatch) {
+                if (i === 0 && titleMatch && titleMatch[1]) {
                     const cleanTitle = titleMatch[1]
                         .replace(/^\s*carta:\s*/i, '')
                         .replace(/^\s*page\s*\d+[rv]?\s*/i, '')
@@ -9020,6 +9031,7 @@ export class EnhancedManuscriptDownloaderService {
             };
 
         } catch (error: any) {
+            this.logger.logDownloadError('florence', originalUrl, error as Error);
             throw new Error(`Failed to load Florence manuscript: ${(error as Error).message}`);
         }
     }
