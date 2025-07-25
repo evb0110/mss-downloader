@@ -304,7 +304,7 @@ export class EnhancedManuscriptDownloaderService {
         },
         {
             name: 'Wolfenbüttel Digital Library (HAB)',
-            example: 'https://diglib.hab.de/wdb.php?dir=mss/1008-helmst',
+            example: 'https://diglib.hab.de/wdb.php?dir=mss/1008-helmst or https://diglib.hab.de/varia/selecta/ed000011/start.htm',
             description: 'Herzog August Bibliothek Wolfenbüttel digital manuscript collections with high-resolution access',
         },
         {
@@ -9586,13 +9586,24 @@ export class EnhancedManuscriptDownloaderService {
      */
     async loadWolfenbuettelManifest(wolfenbuettelUrl: string): Promise<ManuscriptManifest> {
         try {
-            // URL format: https://diglib.hab.de/wdb.php?dir=mss/1008-helmst
-            const urlMatch = wolfenbuettelUrl.match(/dir=mss\/([^&]+)/);
-            if (!urlMatch) {
-                throw new Error('Could not extract manuscript ID from Wolfenbüttel URL');
+            // URL formats:
+            // 1. https://diglib.hab.de/wdb.php?dir=mss/1008-helmst
+            // 2. https://diglib.hab.de/varia/selecta/ed000011/start.htm?distype=thumbs-img&imgtyp=0&size=
+            
+            let manuscriptId: string;
+            
+            // Try original format first
+            const dirMatch = wolfenbuettelUrl.match(/dir=mss\/([^&]+)/);
+            if (dirMatch) {
+                manuscriptId = dirMatch[1];
+            } else {
+                // Try alternative format - extract from path
+                const pathMatch = wolfenbuettelUrl.match(/diglib\.hab\.de\/([^/]+\/[^/]+\/[^/]+)/);
+                if (!pathMatch) {
+                    throw new Error('Could not extract manuscript ID from Wolfenbüttel URL');
+                }
+                manuscriptId = pathMatch[1]; // e.g., "varia/selecta/ed000011"
             }
-
-            const manuscriptId = urlMatch[1];
             console.log(`Loading Wolfenbüttel manuscript: ${manuscriptId}`);
             
             // First try to get page list from thumbs.php with pagination
@@ -9604,7 +9615,18 @@ export class EnhancedManuscriptDownloaderService {
                 let hasMorePages = true;
                 
                 while (hasMorePages) {
-                    const thumbsUrl = `https://diglib.hab.de/thumbs.php?dir=mss/${manuscriptId}&pointer=${pointer}`;
+                    // Construct thumbs URL based on manuscript ID format
+                    let thumbsUrl: string;
+                    if (manuscriptId.startsWith('mss/')) {
+                        // Already has mss/ prefix
+                        thumbsUrl = `https://diglib.hab.de/thumbs.php?dir=${manuscriptId}&pointer=${pointer}`;
+                    } else if (manuscriptId.includes('/')) {
+                        // Alternative format like varia/selecta/ed000011
+                        thumbsUrl = `https://diglib.hab.de/thumbs.php?dir=${manuscriptId}&pointer=${pointer}`;
+                    } else {
+                        // Just the manuscript number
+                        thumbsUrl = `https://diglib.hab.de/thumbs.php?dir=mss/${manuscriptId}&pointer=${pointer}`;
+                    }
                     console.log(`Fetching page list from: ${thumbsUrl} (pointer=${pointer})`);
                     
                     const thumbsResponse = await this.fetchWithProxyFallback(thumbsUrl);
@@ -9620,7 +9642,8 @@ export class EnhancedManuscriptDownloaderService {
                             console.log(`Found ${imageNames.length} images on page (total so far: ${allImageNames.length})`);
                             
                             // Check if there's a next page link (forward button)
-                            const nextPageMatch = thumbsHtml.match(/href="thumbs\.php\?dir=mss\/[^&]+&pointer=(\d+)"[^>]*><img[^>]*title="forward"/);
+                            // Updated regex to handle both mss/ and other directory structures
+                            const nextPageMatch = thumbsHtml.match(/href="thumbs\.php\?dir=[^&]+&pointer=(\d+)"[^>]*><img[^>]*title="forward"/);
                             if (nextPageMatch) {
                                 const nextPointer = parseInt(nextPageMatch[1], 10);
                                 // Check if we're stuck on the same page (last page scenario)
@@ -9647,7 +9670,14 @@ export class EnhancedManuscriptDownloaderService {
                     
                     // Convert all unique image names to full URLs using maximum resolution
                     for (const imageName of uniqueImageNames) {
-                        const imageUrl = `http://diglib.hab.de/mss/${manuscriptId}/max/${imageName}.jpg`;
+                        let imageUrl: string;
+                        if (manuscriptId.includes('/')) {
+                            // Already includes path structure
+                            imageUrl = `http://diglib.hab.de/${manuscriptId}/max/${imageName}.jpg`;
+                        } else {
+                            // Just manuscript number, add mss/ prefix
+                            imageUrl = `http://diglib.hab.de/mss/${manuscriptId}/max/${imageName}.jpg`;
+                        }
                         pageLinks.push(imageUrl);
                     }
                 }
@@ -9658,7 +9688,14 @@ export class EnhancedManuscriptDownloaderService {
             // If thumbs approach failed, fall back to sequential number testing
             if (pageLinks.length === 0) {
                 console.log('Falling back to sequential page detection');
-                const baseImageUrl = `http://diglib.hab.de/mss/${manuscriptId}/max`;
+                let baseImageUrl: string;
+                if (manuscriptId.includes('/')) {
+                    // Already includes path structure
+                    baseImageUrl = `http://diglib.hab.de/${manuscriptId}/max`;
+                } else {
+                    // Just manuscript number, add mss/ prefix
+                    baseImageUrl = `http://diglib.hab.de/mss/${manuscriptId}/max`;
+                }
                 
                 let pageNum = 1;
                 let consecutiveFailures = 0;
