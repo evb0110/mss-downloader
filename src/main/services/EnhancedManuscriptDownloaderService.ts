@@ -1322,15 +1322,17 @@ export class EnhancedManuscriptDownloaderService {
                 displayName = mainMatch[1].replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             }
             
-            // Ensure we're fetching the thumbs page
-            let thumbsUrl = morganUrl;
-            // Don't append /thumbs to direct image URLs
-            if (!thumbsUrl.includes('/thumbs') && !thumbsUrl.includes('ica.themorgan.org') && !thumbsUrl.match(/\.(jpg|jpeg|png|gif)$/i)) {
-                thumbsUrl = thumbsUrl.replace(/\/?$/, '/thumbs');
+            // Ensure we're fetching the correct page
+            // FIXED: Don't append /thumbs anymore as it causes redirects/404s
+            let pageUrl = morganUrl;
+            // Remove /thumbs if present (except for ICA format which still uses it)
+            if (!morganUrl.includes('ica.themorgan.org') && pageUrl.includes('/thumbs')) {
+                pageUrl = pageUrl.replace('/thumbs', '');
+                console.log('Morgan: Removed /thumbs suffix to avoid redirect');
             }
             
-            // Fetch the thumbs page to extract image data
-            const pageResponse = await this.fetchDirect(thumbsUrl);
+            // Fetch the page to extract image data
+            const pageResponse = await this.fetchDirect(pageUrl);
             if (!pageResponse.ok) {
                 throw new Error(`Failed to fetch Morgan page: ${pageResponse.status}`);
             }
@@ -1403,13 +1405,12 @@ export class EnhancedManuscriptDownloaderService {
                                 if (individualPageResponse.ok) {
                                     const individualPageContent = await individualPageResponse.text();
                                     
-                                    // Look for download URL pattern
-                                    const downloadMatch = individualPageContent.match(/\/sites\/default\/files\/images\/collection\/download\/([^"']+\.jpg)/);
-                                    
-                                    if (downloadMatch) {
-                                        const downloadUrl = `${baseUrl}/sites/default/files/images/collection/download/${downloadMatch[1]}`;
+                                    // FIXED: Look for facsimile images on individual pages
+                                    const facsimileMatch = individualPageContent.match(/\/sites\/default\/files\/facsimile\/[^"']+\/([^"']+\.jpg)/);
+                                    if (facsimileMatch) {
+                                        const downloadUrl = `${baseUrl}${facsimileMatch[0]}`;
                                         imagesByPriority[1].push(downloadUrl);
-                                        console.log(`Morgan: Found high-res download: ${downloadMatch[1]}`);
+                                        console.log(`Morgan: Found high-res facsimile: ${facsimileMatch[1]}`);
                                     }
                                 }
                                 
