@@ -167,6 +167,115 @@ export class DownloadLogger {
         });
     }
     
+    // PDF Creation Events
+    logPdfCreationStart(library: string, totalImages: number, outputPath: string) {
+        this.log({
+            level: 'info',
+            library,
+            message: `Starting PDF creation with ${totalImages} images`,
+            details: { totalImages, outputPath }
+        });
+    }
+    
+    logPdfCreationComplete(library: string, outputPath: string, fileSize: number, duration: number) {
+        this.log({
+            level: 'info',
+            library,
+            message: `PDF created successfully: ${outputPath} (${(fileSize / 1024 / 1024).toFixed(2)}MB)`,
+            duration,
+            details: { 
+                outputPath, 
+                fileSize, 
+                fileSizeMB: (fileSize / 1024 / 1024).toFixed(2)
+            }
+        });
+    }
+    
+    logPdfCreationError(library: string, error: Error, details?: any) {
+        this.log({
+            level: 'error',
+            library,
+            message: `PDF creation failed: ${error.message}`,
+            errorStack: error.stack,
+            details: { ...details, errorName: error.name }
+        });
+    }
+    
+    // Overall Download Status
+    logManuscriptDownloadComplete(library: string, url: string, totalPages: number, outputFiles: string[], duration: number) {
+        this.log({
+            level: 'info',
+            library,
+            url,
+            message: `Manuscript download completed: ${totalPages} pages saved to ${outputFiles.length} file(s)`,
+            duration,
+            details: { 
+                totalPages, 
+                outputFiles,
+                durationSeconds: (duration / 1000).toFixed(1)
+            }
+        });
+    }
+    
+    logManuscriptDownloadFailed(library: string, url: string, error: Error, failedAtStage: string) {
+        this.log({
+            level: 'error',
+            library,
+            url,
+            message: `Manuscript download failed at ${failedAtStage}: ${error.message}`,
+            errorStack: error.stack,
+            details: { 
+                failedAtStage,
+                errorName: error.name 
+            }
+        });
+    }
+    
+    // Queue Events
+    logQueueItemStart(library: string, url: string, queuePosition: number, totalInQueue: number) {
+        this.log({
+            level: 'info',
+            library,
+            url,
+            message: `Processing queue item ${queuePosition}/${totalInQueue}`,
+            details: { queuePosition, totalInQueue }
+        });
+    }
+    
+    logQueueItemComplete(library: string, url: string, success: boolean, duration: number) {
+        this.log({
+            level: success ? 'info' : 'error',
+            library,
+            url,
+            message: `Queue item ${success ? 'completed' : 'failed'}`,
+            duration,
+            details: { success }
+        });
+    }
+    
+    // File System Events
+    logFileSaved(library: string, filePath: string, fileSize: number) {
+        this.log({
+            level: 'info',
+            library,
+            message: `File saved: ${path.basename(filePath)} (${(fileSize / 1024 / 1024).toFixed(2)}MB)`,
+            details: { 
+                filePath, 
+                fileSize,
+                directory: path.dirname(filePath)
+            }
+        });
+    }
+    
+    logDirectoryCreated(library: string, directoryPath: string) {
+        this.log({
+            level: 'debug',
+            library,
+            message: `Created directory: ${directoryPath}`,
+            details: { directoryPath }
+        });
+    }
+    
     getLogsForExport(): string {
         const exportData = {
             sessionStart: this.sessionStartTime,

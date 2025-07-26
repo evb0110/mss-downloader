@@ -1,11 +1,15 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.35",
+  "version": "1.4.36",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (60+ libraries worldwide)",
   "changelog": [
-    "Fixed Library of Congress download timeouts for large manuscripts (increased timeout to 90 seconds)",
-    "Enhanced error logging system - download logs now always available even for early failures",
-    "Investigated Wolfenbüttel performance - confirmed working correctly, no changes needed"
+    "Fixed critical PDF creation failures - manuscripts now properly save as PDF files",
+    "Fixed Verona Nuova Biblioteca Manoscritta download errors",
+    "Fixed Morgan Library image downloads returning 404 errors",
+    "Fixed University of Graz connection timeouts",
+    "Fixed HHU Düsseldorf URL recognition for /ms/content/titleinfo/ format",
+    "Enhanced download tracking - now shows PDF creation progress and file save status",
+    "Improved error messages to clearly identify where downloads fail"
   ],
   "main": "dist/main/main.js",
   "scripts": {

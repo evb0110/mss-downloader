@@ -36,16 +36,11 @@ export class SharedManifestAdapter {
             
             // Convert shared loader format to Electron format
             const manifest: ManuscriptManifest = {
-                label: `Manuscript from ${libraryId}`,
-                pages: result.images.map((image: any, index: number) => ({
-                    id: `page-${index + 1}`,
-                    label: image.label || `Page ${index + 1}`,
-                    imageUrl: image.url,
-                    thumbnailUrl: image.url, // Use same URL for thumbnail
-                    width: 0, // Will be determined during download
-                    height: 0, // Will be determined during download
-                    format: 'image/jpeg'
-                }))
+                pageLinks: result.images.map((image: any) => image.url),
+                totalPages: result.images.length,
+                library: libraryId as any,
+                displayName: result.displayName || `${libraryId} Manuscript`,
+                originalUrl: url
             };
 
             return manifest;

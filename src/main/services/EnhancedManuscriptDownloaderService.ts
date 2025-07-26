@@ -1282,6 +1282,21 @@ export class EnhancedManuscriptDownloaderService {
      */
     async loadMorganManifest(morganUrl: string): Promise<ManuscriptManifest> {
         try {
+            // Check if this is a direct image URL
+            if (morganUrl.match(/\.(jpg|jpeg|png|gif)$/i)) {
+                // Extract filename for display name
+                const filename = morganUrl.split('/').pop() || 'Morgan Image';
+                const displayName = filename.replace(/\.(jpg|jpeg|png|gif)$/i, '').replace(/_/g, ' ');
+                
+                return {
+                    pageLinks: [morganUrl],
+                    totalPages: 1,
+                    displayName,
+                    library: 'morgan',
+                    originalUrl: morganUrl
+                };
+            }
+            
             // Handle different Morgan URL patterns
             let baseUrl: string;
             let displayName: string = 'Morgan Library Manuscript';
@@ -1309,7 +1324,8 @@ export class EnhancedManuscriptDownloaderService {
             
             // Ensure we're fetching the thumbs page
             let thumbsUrl = morganUrl;
-            if (!thumbsUrl.includes('/thumbs') && !thumbsUrl.includes('ica.themorgan.org')) {
+            // Don't append /thumbs to direct image URLs
+            if (!thumbsUrl.includes('/thumbs') && !thumbsUrl.includes('ica.themorgan.org') && !thumbsUrl.match(/\.(jpg|jpeg|png|gif)$/i)) {
                 thumbsUrl = thumbsUrl.replace(/\/?$/, '/thumbs');
             }
             
@@ -3434,9 +3450,31 @@ export class EnhancedManuscriptDownloaderService {
             endPage,
         } = options;
 
+        const downloadStartTime = Date.now();
+        let manifest: ManuscriptManifest | undefined;
+        let filepath: string | undefined;
+        
         try {
             // Load manifest
-            const manifest = await this.loadManifest(url);
+            const manifestStartTime = Date.now();
+            manifest = await this.loadManifest(url);
+            const manifestLoadDuration = Date.now() - manifestStartTime;
+            
+            // Log manifest loading completion
+            const usingCachedManifest = await this.manifestCache.get(url) !== null;
+            this.logger.log({
+                level: 'info',
+                library: manifest.library || 'unknown',
+                url,
+                message: `Manifest loaded: ${manifest.totalPages} pages found${usingCachedManifest ? ' (from cache)' : ''}`,
+                duration: manifestLoadDuration,
+                details: {
+                    totalPages: manifest.totalPages,
+                    cached: usingCachedManifest,
+                    displayName: manifest.displayName
+                }
+            });
+            
             onManifestLoaded(manifest);
             
             // Get internal cache directory for temporary images
@@ -3732,6 +3770,12 @@ export class EnhancedManuscriptDownloaderService {
                 return aNum - bNum;
             });
             
+            // Log PDF creation start
+            this.logger.logPdfCreationStart(
+                manifest.library || 'unknown',
+                completeImagePaths.length,
+                targetDir
+            );
             
             if (shouldSplit) {
                 // Split into multiple PDFs like barsky.club
@@ -3748,8 +3792,18 @@ export class EnhancedManuscriptDownloaderService {
                     const partFilepath = path.join(targetDir, partFilename);
                     
                     const partStartPage = actualStartPage + startIdx;
-                    await this.convertImagesToPDFWithBlanks(partImages, partFilepath, partStartPage, manifest);
-                    createdFiles.push(partFilepath);
+                    try {
+                        await this.convertImagesToPDFWithBlanks(partImages, partFilepath, partStartPage, manifest);
+                        createdFiles.push(partFilepath);
+                    } catch (pdfError: any) {
+                        console.error(`Failed to create PDF part ${partNumber}: ${pdfError.message}`);
+                        this.logger.logPdfCreationError(manifest.library || 'unknown', pdfError, {
+                            partNumber,
+                            imagesInPart: partImages.length,
+                            outputPath: partFilepath
+                        });
+                        throw new Error(`PDF creation failed for part ${partNumber}: ${pdfError.message}`);
+                    }
                 }
                 
                 
@@ -3762,6 +3816,16 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
                 
+                // Log manuscript download complete with all files
+                const downloadDuration = Date.now() - downloadStartTime;
+                this.logger.logManuscriptDownloadComplete(
+                    manifest.library || 'unknown',
+                    url,
+                    validImagePaths.length,
+                    createdFiles,
+                    downloadDuration
+                );
+                
                 return { 
                     success: true, 
                     filepath: createdFiles[0], // Return first part as primary
@@ -3772,7 +3836,16 @@ export class EnhancedManuscriptDownloaderService {
                 };
             } else {
                 // Single PDF
-                await this.convertImagesToPDFWithBlanks(completeImagePaths, filepath, actualStartPage, manifest);
+                try {
+                    await this.convertImagesToPDFWithBlanks(completeImagePaths, filepath, actualStartPage, manifest);
+                } catch (pdfError: any) {
+                    console.error(`Failed to create PDF: ${pdfError.message}`);
+                    this.logger.logPdfCreationError(manifest.library || 'unknown', pdfError, {
+                        totalImages: completeImagePaths.length,
+                        outputPath: filepath
+                    });
+                    throw new Error(`PDF creation failed: ${pdfError.message}`);
+                }
                 
                 // Clean up temporary images
                 for (const p of validImagePaths) {
@@ -3788,6 +3861,16 @@ export class EnhancedManuscriptDownloaderService {
                     ? `${failedPagesCount} of ${manifest.totalPages} pages couldn't be downloaded`
                     : undefined;
                 
+                // Log manuscript download complete
+                const downloadDuration = Date.now() - downloadStartTime;
+                this.logger.logManuscriptDownloadComplete(
+                    manifest.library || 'unknown',
+                    url,
+                    manifest.totalPages,
+                    [filepath],
+                    downloadDuration
+                );
+                
                 return { 
                     success: true, 
                     filepath, 
@@ -3799,6 +3882,30 @@ export class EnhancedManuscriptDownloaderService {
             
         } catch (error: any) {
             console.error(`❌ Download failed: ${(error as Error).message}`);
+            
+            // Log manuscript download failed with better stage detection
+            let failedStage = 'unknown';
+            if (!manifest) {
+                failedStage = 'manifest_loading';
+            } else if (error.message?.includes('convertImagesToPDF') || 
+                      error.message?.includes('PDF') || 
+                      error.message?.includes('memory') ||
+                      error.message?.includes('No pages created') ||
+                      validImagePaths && validImagePaths.length > 0 && !filepath) {
+                failedStage = 'pdf_creation';
+            } else if (validImagePaths && validImagePaths.length === 0) {
+                failedStage = 'image_download';
+            } else {
+                failedStage = 'processing';
+            }
+            
+            this.logger.logManuscriptDownloadFailed(
+                manifest?.library || this.detectLibrary(url) || 'unknown',
+                url,
+                error as Error,
+                failedStage
+            );
+            
             throw error;
         }
     }
@@ -3807,8 +3914,17 @@ export class EnhancedManuscriptDownloaderService {
      * Convert images to PDF with robust error handling and memory management
      */
     async convertImagesToPDF(imagePaths: string[], outputPath: string, manifest?: any): Promise<void> {
+        const startTime = Date.now();
         const totalImages = imagePaths.length;
         const maxMemoryMB = 1024; // 1GB memory limit
+        
+        // Log PDF conversion start
+        this.logger.log({
+            level: 'info',
+            library: manifest?.library || 'unknown',
+            message: `Starting PDF conversion with ${totalImages} images`,
+            details: { totalImages, outputPath }
+        });
         
         // Special handling for large manuscripta.se files to prevent infinite loops
         let batchSize;
@@ -3934,13 +4050,32 @@ export class EnhancedManuscriptDownloaderService {
             
             const finalPdfBytes = await finalPdfDoc.save();
             await this.writeFileWithVerification(outputPath, Buffer.from(finalPdfBytes));
+            
+            // Log PDF creation complete
+            const duration = Date.now() - startTime;
+            const stats = await fs.stat(outputPath);
+            this.logger.logPdfCreationComplete(
+                manifest?.library || 'unknown',
+                outputPath,
+                stats.size,
+                duration
+            );
         }
         
     }
 
     async convertImagesToPDFWithBlanks(imagePaths: (string | null)[], outputPath: string, startPageNumber: number = 1, manifest?: any): Promise<void> {
+        const startTime = Date.now();
         const totalImages = imagePaths.length;
         const maxMemoryMB = 1024;
+        
+        // Log PDF conversion start
+        this.logger.log({
+            level: 'info',
+            library: manifest?.library || 'unknown',
+            message: `Starting PDF conversion with ${totalImages} images (with blanks for failed pages)`,
+            details: { totalImages, outputPath, startPageNumber }
+        });
         
         // Special handling for large manuscripta.se files to prevent infinite loops
         let batchSize;
@@ -4182,6 +4317,22 @@ export class EnhancedManuscriptDownloaderService {
                     const batchPdfBytes = await batchPdfDoc.save();
                     allPdfBytes.push(batchPdfBytes);
                     
+                    // Log batch progress
+                    const batchNum = Math.floor(i / batchSize) + 1;
+                    const totalBatches = Math.ceil(totalImages / batchSize);
+                    this.logger.log({
+                        level: 'debug',
+                        library: manifest?.library || 'unknown',
+                        message: `PDF batch ${batchNum}/${totalBatches} processed: ${pagesInBatch} pages`,
+                        details: { 
+                            batchNum, 
+                            totalBatches, 
+                            pagesInBatch,
+                            processedCount,
+                            totalImages
+                        }
+                    });
+                    
                     // Force garbage collection after each batch if available
                     if (global.gc) {
                         global.gc();
@@ -4219,6 +4370,16 @@ export class EnhancedManuscriptDownloaderService {
             const finalPdfBytes = await finalPdfDoc.save();
             await fs.writeFile(outputPath, finalPdfBytes);
         }
+        
+        // Log PDF creation complete
+        const duration = Date.now() - startTime;
+        const stats = await fs.stat(outputPath);
+        this.logger.logPdfCreationComplete(
+            manifest?.library || 'unknown',
+            outputPath,
+            stats.size,
+            duration
+        );
     }
 
     async loadFlorusManifest(florusUrl: string): Promise<ManuscriptManifest> {
@@ -9776,8 +9937,16 @@ export class EnhancedManuscriptDownloaderService {
                     manuscriptId = idMatch[1];
                 }
             } else {
-                // Extract ID from viewer URL
-                const idMatch = hhuUrl.match(/\/v20\/(\d+)/);
+                // Extract ID from various URL formats
+                let idMatch = hhuUrl.match(/\/v20\/(\d+)/);
+                if (!idMatch) {
+                    // Try content/titleinfo format
+                    idMatch = hhuUrl.match(/\/titleinfo\/(\d+)/);
+                }
+                if (!idMatch) {
+                    // Try content/pageview format
+                    idMatch = hhuUrl.match(/\/pageview\/(\d+)/);
+                }
                 if (!idMatch) {
                     throw new Error('Could not extract manuscript ID from HHU URL');
                 }

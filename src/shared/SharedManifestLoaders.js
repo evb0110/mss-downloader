@@ -39,7 +39,8 @@ class SharedManifestLoaders {
                     'Accept': options.headers?.Accept || '*/*',
                     ...options.headers
                 },
-                timeout: 30000
+                // Increase timeout for University of Graz due to slow server response
+                timeout: url.includes('unipub.uni-graz.at') ? 120000 : 30000
             };
 
             // SSL bypass for specific domains
@@ -147,7 +148,10 @@ class SharedManifestLoaders {
             });
         }
         
-        return { images };
+        return { 
+            images,
+            displayName: `Verona ${mapping.collection} - ${mapping.manuscriptId}`
+        };
     }
 
     /**
@@ -296,7 +300,10 @@ class SharedManifestLoaders {
             }
         }
         
-        return { images };
+        return { 
+            images,
+            displayName: `University of Graz - ${titleId}`
+        };
     }
 
     /**
