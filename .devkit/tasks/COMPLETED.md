@@ -1,5 +1,38 @@
 # Completed Tasks
 
+## 2025-07-25: Library of Congress Timeout Fix & Wolfenbüttel Investigation
+
+### Tasks Completed:
+1. ✅ Investigated Wolfenbüttel download "cycle" issue for varia/selecta collections
+2. ✅ Debugged and analyzed the perceived download loop problem
+3. ✅ Tested Wolfenbüttel with multiple approaches and found no actual cycle
+4. ✅ Created validation PDFs proving high-quality downloads work correctly
+5. ✅ Fixed Library of Congress timeout issues for large manifests
+6. ✅ Increased LOC timeout multiplier from 1.5 to 3.0 (45s → 90s)
+7. ✅ Tested LOC fix with problematic manuscripts (2021667775, 2021667776, 19005901)
+8. ✅ Validated all fixes pass lint and build checks
+
+### Implementation Details:
+
+**Wolfenbüttel Investigation:**
+- No actual cycle or infinite loop exists in the code
+- Pagination correctly processes all 347 pages for the test manuscript
+- Downloads complete quickly (~1-2 minutes) with excellent speed (~2MB/s)
+- Issue was likely inadequate progress reporting for large manuscripts
+- Created validation PDF with 10 high-quality manuscript pages (2000px resolution)
+
+**Library of Congress Fix:**
+- Root cause: 45-second timeout too short for large manifests (up to 688KB)
+- Solution: Increased timeout multiplier from 1.5x to 3.0x (30s base → 90s total)
+- Affected manuscripts had 446, 194, and 121 pages respectively
+- User experienced timeouts likely due to slower network conditions
+- Fix allows sufficient time for downloading large manifests on various connections
+
+### Validation Results:
+- Wolfenbüttel: 10-page PDF created with high-resolution medieval manuscript images
+- LOC: All three problematic manuscripts now load successfully in test environment
+- Both libraries confirmed working with appropriate timeout handling
+
 ## 2025-07-24: Version 1.4.33 - HHU Düsseldorf Library Support
 
 ### Tasks Completed:

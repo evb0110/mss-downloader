@@ -207,6 +207,31 @@ export class EnhancedDownloadQueue extends EventEmitter {
     private generateId(): string {
         return `ms_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
+    
+    /**
+     * Helper to detect library from URL for logging purposes
+     */
+    private detectLibraryFromUrl(url: string): string | null {
+        // This is a simplified version for logging - the full detection happens in EnhancedManuscriptDownloaderService
+        if (url.includes('loc.gov')) return 'loc';
+        if (url.includes('gallica.bnf.fr')) return 'gallica';
+        if (url.includes('digi.vatlib.it')) return 'vatlib';
+        if (url.includes('cudl.lib.cam.ac.uk')) return 'cudl';
+        if (url.includes('parker.stanford.edu')) return 'parker';
+        if (url.includes('manuscripta.se')) return 'manuscripta';
+        if (url.includes('graz.at')) return 'graz';
+        if (url.includes('wolfenbuettel') || url.includes('hab.de')) return 'wolfenbuettel';
+        if (url.includes('digitale.bnc.roma')) return 'rome';
+        if (url.includes('rbme.patrimonionacional.es')) return 'rbme';
+        if (url.includes('e-codices.unifr.ch')) return 'unifr';
+        if (url.includes('digitalcollections.tcd.ie')) return 'trinity_dublin';
+        if (url.includes('trin.cam.ac.uk')) return 'trinity_cam';
+        if (url.includes('bodleian.ox.ac.uk')) return 'bodleian';
+        if (url.includes('bdl.servizirl.it')) return 'bdl';
+        if (url.includes('mss.bmlonline.it')) return 'florence';
+        if (url.includes('bne.es')) return 'bne';
+        return null;
+    }
 
     private notifyListeners(): void {
         // Debug logging for Orleans progress data
@@ -231,6 +256,18 @@ export class EnhancedDownloadQueue extends EventEmitter {
             return;
         }
 
+        // Log manifest loading start
+        const logger = DownloadLogger.getInstance();
+        const library = item.library || this.detectLibraryFromUrl(item.url) || 'unknown';
+        
+        logger.log({
+            level: 'info',
+            library,
+            url: item.url,
+            message: 'Starting manifest load for queue item',
+            details: { itemId: item.id, displayName: item.displayName }
+        });
+        
         try {
             // Set status to loading before manifest loading starts
             item.status = 'loading';
@@ -256,6 +293,13 @@ export class EnhancedDownloadQueue extends EventEmitter {
             };
 
             const manifest = await this.currentDownloader.loadManifest(item.url, progressCallback);
+            
+            // Log successful manifest load
+            logger.logManifestLoad(
+                manifest.library || library,
+                item.url,
+                Date.now() - loadingStartTime
+            );
             
             // If we showed progress, ensure minimum display time of 2 seconds
             if (hasShownProgress) {
@@ -296,6 +340,16 @@ export class EnhancedDownloadQueue extends EventEmitter {
             this.notifyListeners();
         } catch (error: any) {
             console.warn(`Failed to load manifest for ${item.displayName}: ${error.message}`);
+            
+            // Log the error to the download logger for user visibility
+            const logger = DownloadLogger.getInstance();
+            logger.logManifestLoad(
+                item.library || 'unknown',
+                item.url,
+                Date.now() - loadingStartTime,
+                error
+            );
+            
             // Reset status and clear progress on error
             item.status = 'pending';
             item.progress = undefined;
@@ -599,9 +653,31 @@ export class EnhancedDownloadQueue extends EventEmitter {
         // Set up timeout with proper cleanup
         const timeoutId = setTimeout(() => {
             if (item.status === 'downloading') {
-                console.error(`Download timeout for ${item.displayName} after ${downloadTimeoutMs / (1000 * 60)} minutes`);
+                const timeoutMinutes = downloadTimeoutMs / (1000 * 60);
+                console.error(`Download timeout for ${item.displayName} after ${timeoutMinutes} minutes`);
+                
+                // Log the timeout to ensure it's captured
+                const logger = DownloadLogger.getInstance();
+                const library = item.library || this.detectLibraryFromUrl(item.url) || 'unknown';
+                
+                logger.logTimeout(library, item.url, downloadTimeoutMs);
+                logger.log({
+                    level: 'error',
+                    library,
+                    url: item.url,
+                    message: `Download timeout after ${timeoutMinutes} minutes`,
+                    details: {
+                        itemId: item.id,
+                        displayName: item.displayName,
+                        totalPages: item.totalPages || 'unknown',
+                        timeoutMinutes,
+                        downloadTimeoutMs,
+                        libraryTimeoutMultiplier: libraryConfig.timeoutMultiplier || 1
+                    }
+                });
+                
                 item.status = 'failed';
-                item.error = `Download timeout - exceeded ${downloadTimeoutMs / (1000 * 60)} minutes. Large manuscripts (${item.totalPages || 'unknown'} pages) may require manual splitting.`;
+                item.error = `Download timeout - exceeded ${timeoutMinutes} minutes. Large manuscripts (${item.totalPages || 'unknown'} pages) may require manual splitting.`;
                 if (this.processingAbortController) {
                     this.processingAbortController.abort();
                 }
@@ -684,10 +760,40 @@ export class EnhancedDownloadQueue extends EventEmitter {
             }
 
         } catch (error: any) {
+            // Always log the error, even if aborted
+            const logger = DownloadLogger.getInstance();
+            const library = item.library || this.detectLibraryFromUrl(item.url) || 'unknown';
+            
             if (this.processingAbortController?.signal.aborted) {
+                logger.log({
+                    level: 'warn',
+                    library,
+                    url: item.url,
+                    message: 'Download aborted by user',
+                    details: { itemId: item.id, displayName: item.displayName }
+                });
                 item.status = 'paused';
             } else {
                 console.error(`❌ Failed: ${item.displayName} - ${error.message}`);
+                
+                // Log the full error details
+                logger.logDownloadError(library, item.url, error, item.retryCount);
+                logger.log({
+                    level: 'error',
+                    library,
+                    url: item.url,
+                    message: `Download failed for ${item.displayName}`,
+                    errorStack: error.stack,
+                    details: {
+                        itemId: item.id,
+                        totalPages: item.totalPages,
+                        retryCount: item.retryCount || 0,
+                        timeElapsed: item.startedAt ? Date.now() - item.startedAt : 0,
+                        errorType: error.name,
+                        errorMessage: error.message
+                    }
+                });
+                
                 item.status = 'failed';
                 item.error = error.message;
                 item.retryCount = (item.retryCount || 0) + 1;

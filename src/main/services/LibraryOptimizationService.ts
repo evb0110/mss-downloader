@@ -119,10 +119,10 @@ export class LibraryOptimizationService {
         },
         'loc': {
             maxConcurrentDownloads: 4, // Reduced from 8 for stability - prevents server throttling and hanging
-            timeoutMultiplier: 1.5, // Increased from 1.2 to handle server response variations
+            timeoutMultiplier: 3.0, // Increased to 3.0 to handle large manifests (688KB+) and slower connections
             enableProgressiveBackoff: true, // Enable adaptive retry delays for problematic pages
             autoSplitThresholdMB: 500, // Split large manuscripts to prevent memory issues
-            optimizationDescription: 'Library of Congress optimizations: 4 concurrent downloads with progressive backoff, enhanced stability for large manuscripts'
+            optimizationDescription: 'Library of Congress optimizations: 4 concurrent downloads with progressive backoff, 90s timeout for large manifests, enhanced stability'
         },
         'czech': {
             maxConcurrentDownloads: 2, // Czech library server, conservative limits
