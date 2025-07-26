@@ -1,15 +1,9 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.36",
+  "version": "1.4.37",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (60+ libraries worldwide)",
   "changelog": [
-    "Fixed critical PDF creation failures - manuscripts now properly save as PDF files",
-    "Fixed Verona Nuova Biblioteca Manoscritta download errors",
-    "Fixed Morgan Library image downloads returning 404 errors",
-    "Fixed University of Graz connection timeouts",
-    "Fixed HHU Düsseldorf URL recognition for /ms/content/titleinfo/ format",
-    "Enhanced download tracking - now shows PDF creation progress and file save status",
-    "Improved error messages to clearly identify where downloads fail"
+    "Fixed Morgan Library page extraction - now correctly extracts all pages instead of just 1"
   ],
   "main": "dist/main/main.js",
   "scripts": {

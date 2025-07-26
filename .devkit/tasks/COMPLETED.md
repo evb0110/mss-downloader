@@ -1,5 +1,30 @@
 # Completed Tasks
 
+## 2025-07-26: Morgan Library Page Extraction Fix
+
+### Tasks Completed:
+1. ✅ Investigated Morgan Library - user reports only 1 page download offered
+2. ✅ Checked Morgan Library implementation for page counting issues
+3. ✅ Tested Morgan Library with multiple manuscripts
+4. ✅ Fixed the issue and validated with proper PDFs
+
+### Implementation Details:
+- **Root Cause**: Code was automatically appending "/thumbs" to Morgan URLs, which now causes redirects or returns incomplete data
+- **Fix Applied**: Removed automatic "/thumbs" appending - now uses main collection page directly
+- **Page Extraction**: Fixed to properly extract individual page URLs from main collection page
+
+### Validation Results:
+- **Lindau Gospels**: Now correctly extracts 16 pages (previously only 1)
+- **Arenberg Gospels**: Now correctly extracts 12 pages (previously only 1)
+- **Hours of Catherine of Cleves**: Now correctly extracts 15 pages
+- All PDFs validated with proper manuscript content showing different pages
+- High-resolution facsimile images successfully downloaded
+
+### User Impact:
+- Users can now download complete Morgan Library manuscripts instead of just the cover page
+- All manuscript pages are properly extracted and available for download
+- Fix ensures Morgan Library collection is fully accessible
+
 ## 2025-07-25: Library of Congress Timeout Fix & Wolfenbüttel Investigation
 
 ### Tasks Completed:
