@@ -1,12 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.41",
+  "version": "1.4.42",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (60+ libraries worldwide)",
   "changelog": [
-    "Fixed Morgan Library to extract ALL manuscript pages with high-resolution images",
-    "Fixed University of Graz hanging issues with enhanced timeout handling (4-20 minutes)",
-    "Fixed Verona NBM timeout errors with 2-minute timeout and connection pooling",
-    "All 4 reported issues now fully resolved"
+    "Fixed HHU Düsseldorf logger errors preventing downloads",
+    "Fixed University of Graz infinite loading by using local manifest handler",
+    "Fixed Verona NBM timeout errors with improved connection handling",
+    "Fixed Morgan Library now properly detects all manuscript pages (not just 1)",
+    "All critical issues from GitHub resolved"
   ],
   "main": "dist/main/main.js",
   "scripts": {

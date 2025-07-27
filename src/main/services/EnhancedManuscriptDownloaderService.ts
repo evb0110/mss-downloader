@@ -1205,6 +1205,7 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadInternetCulturaleManifest(originalUrl);
                     break;
                 case 'graz':
+                    // FIXED: Always use local implementation which has better timeout handling
                     manifest = await this.loadGrazManifest(originalUrl);
                     break;
                 case 'cologne':
@@ -1249,9 +1250,8 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadIccuApiManifest(originalUrl);
                     break;
                 case 'verona':
-                    // Use shared manifest loader (sync with validation)
-                    console.log('[Verona] Using shared manifest loader for consistent behavior');
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('verona', originalUrl);
+                    // FIXED: Use local implementation to avoid timeout issues with nuovabibliotecamanoscritta.it
+                    manifest = await this.loadVeronaManifest(originalUrl);
                     break;
                 case 'diamm':
                     manifest = await this.loadDiammManifest(originalUrl);
@@ -1367,16 +1367,45 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             // Ensure we're fetching the correct page
-            // FIXED: Don't append /thumbs anymore as it causes redirects/404s
+            // FIXED: Handle different Morgan URL formats properly
             let pageUrl = morganUrl;
-            // Remove /thumbs if present (except for ICA format which still uses it)
-            if (!morganUrl.includes('ica.themorgan.org') && pageUrl.includes('/thumbs')) {
-                pageUrl = pageUrl.replace('/thumbs', '');
-                console.log('Morgan: Removed /thumbs suffix to avoid redirect');
+            let manuscriptId = '';
+            let startPageNum = null;
+            
+            // Extract manuscript ID and check if it's a single page URL
+            const singlePageMatch = morganUrl.match(/\/collection\/([^/]+)\/(\d+)/);
+            if (singlePageMatch) {
+                manuscriptId = singlePageMatch[1];
+                startPageNum = parseInt(singlePageMatch[2]);
+                // For single page URLs, we need to fetch the thumbs page to find all pages
+                pageUrl = `${baseUrl}/collection/${manuscriptId}/thumbs`;
+                console.log(`Morgan: Single page URL detected, fetching thumbs page for ${manuscriptId}`);
+            } else {
+                // For thumbs URLs or general collection URLs
+                const collectionMatch = morganUrl.match(/\/collection\/([^/]+)/);
+                if (collectionMatch) {
+                    manuscriptId = collectionMatch[1];
+                    // Ensure we have the thumbs page
+                    if (!pageUrl.includes('/thumbs')) {
+                        pageUrl = `${baseUrl}/collection/${manuscriptId}/thumbs`;
+                    }
+                }
             }
             
             // Fetch the page to extract image data
-            const pageResponse = await this.fetchDirect(pageUrl);
+            // FIXED: Handle redirect from /thumbs to main collection page
+            let pageResponse = await this.fetchDirect(pageUrl);
+            
+            // If we get a redirect (301/302), follow it
+            if (pageResponse.status === 301 || pageResponse.status === 302) {
+                const redirectUrl = pageResponse.headers.get('location');
+                if (redirectUrl) {
+                    console.log(`Morgan: Following redirect from ${pageUrl} to ${redirectUrl}`);
+                    pageUrl = redirectUrl.startsWith('http') ? redirectUrl : `${baseUrl}${redirectUrl}`;
+                    pageResponse = await this.fetchDirect(pageUrl);
+                }
+            }
+            
             if (!pageResponse.ok) {
                 throw new Error(`Failed to fetch Morgan page: ${pageResponse.status}`);
             }
@@ -1413,9 +1442,8 @@ export class EnhancedManuscriptDownloaderService {
                 
                 // Priority 0: Generate .zif URLs from image references (MAXIMUM RESOLUTION - 25+ megapixels)
                 // OPTIMIZED: Single regex with capture groups to avoid redundant operations
-                const manuscriptMatch = morganUrl.match(/\/collection\/([^/]+)/);
-                if (manuscriptMatch) {
-                    const manuscriptId = manuscriptMatch[1];
+                // manuscriptId already extracted above
+                if (manuscriptId) {
                     const imageIdRegex = /\/images\/collection\/([^"'?]+)\.jpg/g;
                     const validImagePattern = /\d+v?_\d+/;
                     
@@ -1441,26 +1469,68 @@ export class EnhancedManuscriptDownloaderService {
                         const altPatterns = [
                             new RegExp(`href="[^"]*\\/collection\\/${manuscriptId}\\/(\\d+)[^"]*"`, 'g'),
                             new RegExp(`data-page="(\\d+)"`, 'g'),
-                            new RegExp(`page-(\\d+)`, 'g')
+                            new RegExp(`page-(\\d+)`, 'g'),
+                            // FIXED: Add pattern for thumbnail grid items
+                            new RegExp(`<a[^>]+href="[^"]*\\/collection\\/${manuscriptId}\\/(\\d+)[^"]*"[^>]*>\\s*<img`, 'g'),
+                            // FIXED: Add pattern for data attributes in grid
+                            new RegExp(`data-id="(\\d+)"`, 'g')
                         ];
                         
+                        // Collect all pages from alternative patterns
+                        const allPages = [...uniquePages];
                         for (const pattern of altPatterns) {
                             const altMatches = [...pageContent.matchAll(pattern)];
                             for (const match of altMatches) {
-                                uniquePages.push(match[1]);
+                                allPages.push(match[1]);
                             }
                         }
                         
                         // Remove duplicates and sort
-                        const allUniquePages = [...new Set(uniquePages)].sort((a, b) => parseInt(a) - parseInt(b));
+                        const allUniquePages = [...new Set(allPages)].sort((a, b) => parseInt(a) - parseInt(b));
+                        
+                        // FIXED: If no pages found in thumbs and we started from a single page, create page range
+                        if (allUniquePages.length === 0 && startPageNum !== null) {
+                            console.log(`Morgan: No pages found in thumbs, checking individual page for navigation`);
+                            // Try to find total pages from the original single page
+                            const singlePageResponse = await this.fetchDirect(morganUrl);
+                            if (singlePageResponse.ok) {
+                                const singlePageContent = await singlePageResponse.text();
+                                // Look for page navigation info
+                                const totalPagesMatch = singlePageContent.match(/of\s+(\d+)/i) || 
+                                                      singlePageContent.match(/(\d+)\s*pages?/i) ||
+                                                      singlePageContent.match(/page\s+\d+\s*\/\s*(\d+)/i);
+                                if (totalPagesMatch) {
+                                    const totalPages = parseInt(totalPagesMatch[1]);
+                                    // Generate page numbers array
+                                    for (let i = 1; i <= totalPages; i++) {
+                                        allUniquePages.push(i.toString());
+                                    }
+                                    console.log(`Morgan: Generated ${totalPages} page numbers from navigation info`);
+                                } else {
+                                    // Fallback: assume at least 10 pages around the current page
+                                    const estimatedStart = Math.max(1, startPageNum - 5);
+                                    const estimatedEnd = startPageNum + 50; // Check 50 pages forward
+                                    for (let i = estimatedStart; i <= estimatedEnd; i++) {
+                                        allUniquePages.push(i.toString());
+                                    }
+                                    console.log(`Morgan: No page count found, checking pages ${estimatedStart}-${estimatedEnd}`);
+                                }
+                            }
+                        }
                         
                         console.log(`Morgan: Found ${allUniquePages.length} individual pages for ${manuscriptId}`);
                         console.log(`Morgan: Page numbers detected: ${allUniquePages.slice(0, 10).join(', ')}${allUniquePages.length > 10 ? '...' : ''}`);
-                        this.logger.logInfo('morgan', morganUrl, 'Morgan page detection complete', {
-                            manuscriptId,
-                            totalPagesDetected: allUniquePages.length,
-                            pageNumbers: allUniquePages.slice(0, 20),
-                            detectionMethod: 'multiple patterns'
+                        this.logger.log({
+                            level: 'info',
+                            library: 'morgan',
+                            url: morganUrl,
+                            message: 'Morgan page detection complete',
+                            details: {
+                                manuscriptId,
+                                totalPagesDetected: allUniquePages.length,
+                                pageNumbers: allUniquePages.slice(0, 20),
+                                detectionMethod: 'multiple patterns'
+                            }
                         });
                         
                         // Process all pages - removed artificial limit
@@ -8603,7 +8673,7 @@ export class EnhancedManuscriptDownloaderService {
             
             // Fetch manifest with proper timeout handling
             console.log(`Loading Verona manifest: ${manifestUrl}`);
-            this.logger.logInfo('verona', manifestUrl, 'Starting Verona manifest fetch', {
+            this.logger.logDownloadStart('verona', manifestUrl, {
                 codiceDigital: originalUrl.includes('codice=') ? originalUrl.match(/codice=(\d+)/)?.[1] : undefined,
                 manifestUrl
             });
@@ -8632,10 +8702,16 @@ export class EnhancedManuscriptDownloaderService {
             
             const canvases = manifestData.sequences[0].canvases;
             console.log(`Found ${canvases.length} pages in Verona manuscript`);
-            this.logger.logInfo('verona', manifestUrl, `Verona manifest loaded successfully`, {
-                totalPages: canvases.length,
-                manuscriptLabel: manifestData.label || 'Unknown',
-                manifestSize: JSON.stringify(manifestData).length
+            this.logger.log({
+                level: 'info',
+                library: 'verona',
+                url: manifestUrl,
+                message: 'Verona manifest loaded successfully',
+                details: {
+                    totalPages: canvases.length,
+                    manuscriptLabel: manifestData.label || 'Unknown',
+                    manifestSize: JSON.stringify(manifestData).length
+                }
             });
             
             // Log progress every 10 pages during URL extraction
@@ -8655,10 +8731,16 @@ export class EnhancedManuscriptDownloaderService {
                         // Log progress every 10 pages
                         if (index > 0 && index % 10 === 0 && index > lastLoggedProgress) {
                             lastLoggedProgress = index;
-                            this.logger.logInfo('verona', manifestUrl, `Processing page URLs`, {
-                                processed: index + 1,
-                                total: canvases.length,
-                                percentage: Math.round(((index + 1) / canvases.length) * 100)
+                            this.logger.log({
+                                level: 'info',
+                                library: 'verona',
+                                url: manifestUrl,
+                                message: 'Processing page URLs',
+                                details: {
+                                    processed: index + 1,
+                                    total: canvases.length,
+                                    percentage: Math.round(((index + 1) / canvases.length) * 100)
+                                }
                             });
                         }
                         
@@ -8680,7 +8762,7 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('No valid page images found in manifest');
             }
             
-            this.logger.logInfo('verona', manifestUrl, `Verona manifest processing complete`, {
+            this.logger.logDownloadComplete('verona', manifestUrl, {
                 validPages: pageLinks.length,
                 skippedPages: canvases.length - pageLinks.length,
                 firstPageUrl: pageLinks[0]?.substring(0, 100) + '...'
@@ -10268,7 +10350,7 @@ export class EnhancedManuscriptDownloaderService {
                 }
                 
                 console.log(`[HHU] Successfully extracted ${pageLinks.length} pages in ${Date.now() - startTime}ms`);
-                this.logger.logInfo('hhu', manifestUrl, 'HHU manifest processing complete', {
+                this.logger.logDownloadComplete('hhu', manifestUrl, {
                     totalPages: pageLinks.length,
                     processingTime: Date.now() - startTime,
                     firstPageUrl: pageLinks[0]?.substring(0, 100) + '...'

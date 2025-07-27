@@ -1,0 +1,11 @@
+{
+    "urls": ["https://nuovabibliotecamanoscritta.it/Generale/manoscritti/MANOSCRITTO.html?idManoscritto=76251"],
+    "outputDirectory": ".devkit/validation/results/VERONA",
+    "skipExisting": false,
+    "createSubfolders": false,
+    "downloadWorkers": 1,
+    "pageWorkers": 5,
+    "startPage": 1,
+    "endPage": 5,
+    "selectedManuscripts": []
+}

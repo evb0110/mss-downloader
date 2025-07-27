@@ -1,0 +1,192 @@
+{
+  "sessionStart": "2025-07-27T14:16:30.738Z",
+  "exportTime": "2025-07-27T14:19:12.890Z",
+  "totalLogs": 11,
+  "systemInfo": {
+    "platform": "win32",
+    "arch": "x64",
+    "nodeVersion": "v20.18.3",
+    "appVersion": "1.4.41"
+  },
+  "logs": [
+    {
+      "level": "info",
+      "library": "loading",
+      "url": "https://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "message": "Starting manifest load for queue item",
+      "details": {
+        "itemId": "ms_1753625822996_q0z0fgcbz",
+        "displayName": "Loading manifest for https://www.themorgan.org/collection/lindau-gospel..."
+      },
+      "timestamp": "2025-07-27T14:17:02.998Z"
+    },
+    {
+      "level": "info",
+      "library": "morgan",
+      "url": "https://www.themorgan.org/collection/lindau-gospels",
+      "message": "Download started",
+      "details": {
+        "attempt": 1,
+        "method": "fetchDirect"
+      },
+      "timestamp": "2025-07-27T14:17:03.017Z"
+    },
+    {
+      "level": "debug",
+      "library": "morgan",
+      "url": "https://www.themorgan.org/collection/lindau-gospels",
+      "message": "Library detected: morgan, timeout: 120000ms (base: 30000ms)",
+      "details": {
+        "library": "morgan",
+        "timeout": 120000,
+        "baseTimeout": 30000,
+        "attempt": 1
+      },
+      "timestamp": "2025-07-27T14:17:03.019Z"
+    },
+    {
+      "level": "info",
+      "library": "morgan",
+      "url": "https://www.themorgan.org/collection/lindau-gospels",
+      "message": "Download started",
+      "details": {
+        "attempt": 1,
+        "method": "fetchDirect"
+      },
+      "timestamp": "2025-07-27T14:17:03.275Z"
+    },
+    {
+      "level": "debug",
+      "library": "morgan",
+      "url": "https://www.themorgan.org/collection/lindau-gospels",
+      "message": "Library detected: morgan, timeout: 120000ms (base: 30000ms)",
+      "details": {
+        "library": "morgan",
+        "timeout": 120000,
+        "baseTimeout": 30000,
+        "attempt": 1
+      },
+      "timestamp": "2025-07-27T14:17:03.276Z"
+    },
+    {
+      "level": "info",
+      "library": "morgan",
+      "url": "https://www.themorgan.org/collection/lindau-gospels",
+      "message": "Response received - Status: 200, Time: 1015ms",
+      "duration": 1015,
+      "details": {
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "accept-ranges": "bytes",
+          "age": "16943",
+          "cache-control": "max-age=21600, public",
+          "connection": "keep-alive",
+          "content-encoding": "gzip",
+          "content-language": "en",
+          "content-length": "11232",
+          "content-type": "text/html; charset=UTF-8",
+          "date": "Sun, 27 Jul 2025 14:17:02 GMT",
+          "etag": "\"1753608877\"",
+          "expires": "Sun, 19 Nov 1978 05:00:00 GMT",
+          "last-modified": "Sun, 27 Jul 2025 09:34:37 GMT",
+          "server": "nginx",
+          "vary": "Cookie,Accept-Encoding",
+          "via": "varnish",
+          "x-ah-environment": "prod",
+          "x-cache": "HIT",
+          "x-cache-hits": "15",
+          "x-content-type-options": "nosniff",
+          "x-drupal-cache": "MISS",
+          "x-drupal-dynamic-cache": "MISS",
+          "x-frame-options": "SAMEORIGIN",
+          "x-generator": "Drupal 10 (https://www.drupal.org)",
+          "x-request-id": "v-e6dbe1b4-6acc-11f0-b756-771b33c45356"
+        },
+        "attempt": 1
+      },
+      "timestamp": "2025-07-27T14:17:04.032Z"
+    },
+    {
+      "level": "info",
+      "library": "morgan",
+      "url": "https://www.themorgan.org/collection/lindau-gospels",
+      "message": "Download complete: 0.01MB in 1.0s",
+      "duration": 1015,
+      "details": {
+        "size": 11232,
+        "speedMbps": "0.01"
+      },
+      "timestamp": "2025-07-27T14:17:04.034Z"
+    },
+    {
+      "level": "info",
+      "library": "morgan",
+      "url": "https://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "message": "Manifest loaded successfully",
+      "duration": 1052,
+      "timestamp": "2025-07-27T14:17:04.061Z"
+    },
+    {
+      "level": "info",
+      "library": "morgan",
+      "url": "https://www.themorgan.org/collection/lindau-gospels",
+      "message": "Response received - Status: 200, Time: 2844ms",
+      "duration": 2844,
+      "details": {
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "accept-ranges": "bytes",
+          "age": "0",
+          "cache-control": "max-age=21600, public",
+          "connection": "keep-alive",
+          "content-encoding": "gzip",
+          "content-language": "en",
+          "content-length": "11235",
+          "content-type": "text/html; charset=UTF-8",
+          "date": "Sun, 27 Jul 2025 14:17:04 GMT",
+          "etag": "\"1753625823\"",
+          "expires": "Sun, 19 Nov 1978 05:00:00 GMT",
+          "last-modified": "Sun, 27 Jul 2025 14:17:03 GMT",
+          "server": "nginx",
+          "vary": "Cookie,Accept-Encoding",
+          "via": "varnish",
+          "x-ah-environment": "prod",
+          "x-cache": "MISS",
+          "x-content-type-options": "nosniff",
+          "x-drupal-cache": "MISS",
+          "x-drupal-dynamic-cache": "MISS",
+          "x-frame-options": "SAMEORIGIN",
+          "x-generator": "Drupal 10 (https://www.drupal.org)",
+          "x-request-id": "v-5dde455a-6af4-11f0-a81d-7f9abdfd0b10"
+        },
+        "attempt": 1
+      },
+      "timestamp": "2025-07-27T14:17:06.119Z"
+    },
+    {
+      "level": "info",
+      "library": "morgan",
+      "url": "https://www.themorgan.org/collection/lindau-gospels",
+      "message": "Download complete: 0.01MB in 2.8s",
+      "duration": 2844,
+      "details": {
+        "size": 11235,
+        "speedMbps": "0.00"
+      },
+      "timestamp": "2025-07-27T14:17:06.120Z"
+    },
+    {
+      "level": "info",
+      "library": "loading",
+      "url": "https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=15",
+      "message": "Starting manifest load for queue item",
+      "details": {
+        "itemId": "ms_1753625907557_xmog38upd",
+        "displayName": "Loading manifest for https://www.nuovabibliotecamanoscritta.it/Generale..."
+      },
+      "timestamp": "2025-07-27T14:18:27.558Z"
+    }
+  ]
+}

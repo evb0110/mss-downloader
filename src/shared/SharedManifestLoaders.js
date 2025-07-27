@@ -464,34 +464,145 @@ class SharedManifestLoaders {
      * University of Graz - Working
      */
     async getGrazManifest(url) {
-        const match = url.match(/titleinfo\/(\d+)/);
-        if (!match) throw new Error('Invalid Graz URL');
+        console.log(`[Graz] Processing URL: ${url}`);
         
-        const titleId = match[1];
-        const manifestUrl = `https://unipub.uni-graz.at/i3f/v20/${titleId}/manifest`;
+        // Extract manuscript ID from URL - handle multiple patterns
+        let manuscriptId;
         
-        const response = await this.fetchWithRetry(manifestUrl, {}, 5);
-        if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
-        
-        const manifest = await response.json();
-        const images = [];
-        
-        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
-            for (let i = 0; i < Math.min(manifest.sequences[0].canvases.length, 10); i++) {
-                const canvas = manifest.sequences[0].canvases[i];
-                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
-                    images.push({
-                        url: canvas.images[0].resource['@id'],
-                        label: canvas.label || `Page ${i + 1}`
-                    });
-                }
-            }
+        // Handle direct image download URL pattern
+        if (url.includes('/download/webcache/')) {
+            throw new Error('Direct webcache image URLs cannot be used to download full manuscripts. Please use a titleinfo or pageview URL instead (e.g., https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538)');
         }
         
-        return { 
-            images,
-            displayName: `University of Graz - ${titleId}`
-        };
+        // Handle standard content URLs
+        const manuscriptIdMatch = url.match(/\/(\d+)$/);
+        if (!manuscriptIdMatch) {
+            throw new Error('Could not extract manuscript ID from Graz URL');
+        }
+        
+        manuscriptId = manuscriptIdMatch[1];
+        
+        // If this is a pageview URL, convert to titleinfo ID using known pattern
+        if (url.includes('/pageview/')) {
+            const pageviewId = parseInt(manuscriptId);
+            const titleinfoId = (pageviewId - 2).toString();
+            console.log(`[Graz] Converting pageview ID ${pageviewId} to titleinfo ID ${titleinfoId}`);
+            manuscriptId = titleinfoId;
+        }
+        
+        const manifestUrl = `https://unipub.uni-graz.at/i3f/v20/${manuscriptId}/manifest`;
+        console.log(`[Graz] Fetching IIIF manifest from: ${manifestUrl}`);
+        
+        // Add timeout protection for large manifests
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('University of Graz manifest loading timed out after 5 minutes')), 300000);
+        });
+        
+        try {
+            // Fetch with extended retries and timeout protection
+            const response = await Promise.race([
+                this.fetchWithRetry(manifestUrl, {
+                    headers: {
+                        'Accept': 'application/json, application/ld+json',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                }, 5),
+                timeoutPromise
+            ]);
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch Graz manifest: ${response.status} ${response.statusText}`);
+            }
+            
+            console.log(`[Graz] Manifest downloaded, parsing JSON...`);
+            const manifestText = await response.text();
+            console.log(`[Graz] Manifest size: ${(manifestText.length / 1024).toFixed(1)} KB`);
+            
+            let manifest;
+            try {
+                manifest = JSON.parse(manifestText);
+            } catch (parseError) {
+                throw new Error(`Failed to parse Graz manifest JSON: ${parseError.message}`);
+            }
+            
+            const images = [];
+            let displayName = 'University of Graz Manuscript';
+            
+            // Extract title from manifest metadata
+            if (manifest.label) {
+                if (typeof manifest.label === 'string') {
+                    displayName = manifest.label;
+                } else if (manifest.label['@value']) {
+                    displayName = manifest.label['@value'];
+                } else if (manifest.label.en) {
+                    displayName = Array.isArray(manifest.label.en) ? manifest.label.en[0] : manifest.label.en;
+                } else if (manifest.label.de) {
+                    displayName = Array.isArray(manifest.label.de) ? manifest.label.de[0] : manifest.label.de;
+                }
+            }
+            
+            // Process all canvases (not limited to 10)
+            if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+                const canvases = manifest.sequences[0].canvases;
+                console.log(`[Graz] Found ${canvases.length} pages in manifest`);
+                
+                for (let i = 0; i < canvases.length; i++) {
+                    const canvas = canvases[i];
+                    if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                        const resource = canvas.images[0].resource;
+                        let imageUrl = '';
+                        
+                        // Use webcache URLs for highest resolution
+                        if (resource['@id'] && resource['@id'].includes('/download/webcache/')) {
+                            const pageIdMatch = resource['@id'].match(/\/webcache\/\d+\/(\d+)$/);
+                            if (pageIdMatch) {
+                                const pageId = pageIdMatch[1];
+                                // Use highest available resolution (2000px)
+                                imageUrl = `https://unipub.uni-graz.at/download/webcache/2000/${pageId}`;
+                            } else {
+                                imageUrl = resource['@id'];
+                            }
+                        } else if (resource['@id']) {
+                            imageUrl = resource['@id'];
+                        } else if (resource.service && resource.service['@id']) {
+                            // Fallback to IIIF service URL
+                            const serviceId = resource.service['@id'];
+                            imageUrl = `${serviceId}/full/full/0/default.jpg`;
+                        }
+                        
+                        if (imageUrl) {
+                            images.push({
+                                url: imageUrl,
+                                label: canvas.label || `Page ${i + 1}`
+                            });
+                        }
+                    }
+                    
+                    // Log progress every 10 pages
+                    if ((i + 1) % 10 === 0) {
+                        console.log(`[Graz] Processed ${i + 1}/${canvases.length} pages`);
+                    }
+                }
+            }
+            
+            if (images.length === 0) {
+                throw new Error('No images found in Graz manifest');
+            }
+            
+            console.log(`[Graz] Successfully extracted ${images.length} pages`);
+            
+            return { 
+                images,
+                displayName: displayName
+            };
+            
+        } catch (error) {
+            if (error.message.includes('timeout')) {
+                console.error('[Graz] Manifest loading timed out');
+                throw new Error('University of Graz server is not responding. The manuscript may be too large or the server is experiencing high load. Please try again later.');
+            }
+            throw error;
+        }
     }
 
     /**
