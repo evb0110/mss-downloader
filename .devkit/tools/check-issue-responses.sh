@@ -13,14 +13,37 @@ if [ -z "$open_issues" ]; then
     exit 0
 fi
 
-# Function to get the last comment date from bot/me
-get_last_bot_comment_date() {
+# Get current version from package.json
+VERSION=$(node -p "require('./package.json').version")
+
+# Function to get the last fix comment date from bot/me (containing "Исправлено в версии")
+get_last_fix_comment_date() {
     local issue_num=$1
     # Get my username
     local my_username=$(gh api user -q .login)
     
-    # Get all comments and find the last one from me
-    gh issue view "$issue_num" --json comments -q ".comments[] | select(.author.login == \"$my_username\") | .createdAt" | tail -1
+    # Get all comments and find the last one from me that contains the fix announcement
+    gh issue view "$issue_num" --json comments -q ".comments[] | select(.author.login == \"$my_username\" and (.body | contains(\"Исправлено в версии\"))) | .createdAt" | tail -1
+}
+
+# Function to check if we already tagged the author
+check_if_already_tagged() {
+    local issue_num=$1
+    local author=$2
+    local last_bot_comment=$3
+    
+    # Get my username
+    local my_username=$(gh api user -q .login)
+    
+    # Check if there's a comment from me after the fix comment that contains the author tag
+    local tag_comment=$(gh issue view "$issue_num" --json comments -q ".comments[] | select(.author.login == \"$my_username\" and .createdAt > \"$last_bot_comment\" and (.body | contains(\"@$author\"))) | .createdAt" | head -1)
+    
+    if [ -n "$tag_comment" ]; then
+        echo "$tag_comment"
+        return 0
+    else
+        return 1
+    fi
 }
 
 # Function to check if author responded after bot comment
@@ -65,8 +88,8 @@ echo "$open_issues" | while IFS= read -r issue_json; do
     echo "Issue #$issue_num: $title"
     echo "Author: @$author"
     
-    # Get last bot comment date
-    last_bot_comment=$(get_last_bot_comment_date "$issue_num")
+    # Get last fix comment date (should be the fix announcement)
+    last_bot_comment=$(get_last_fix_comment_date "$issue_num")
     
     if [ -z "$last_bot_comment" ]; then
         echo "  ⚠️  No fix comment posted yet"
@@ -77,23 +100,34 @@ echo "$open_issues" | while IFS= read -r issue_json; do
     if check_author_response "$issue_num" "$author" "$last_bot_comment"; then
         echo "  ✅ Author has responded - check their feedback"
     else
-        # Calculate days since bot comment
-        days_passed=$(days_since "$last_bot_comment")
-        echo "  ⏱️  Days since fix comment: $days_passed"
+        # Check if we already tagged the author
+        tag_date=$(check_if_already_tagged "$issue_num" "$author" "$last_bot_comment")
         
-        # Check if we need to follow up
-        if [ "$days_passed" -ge 2 ] && [ "$days_passed" -lt 5 ]; then
-            echo "  📢 Need to tag author for response"
+        if [ -n "$tag_date" ]; then
+            # We already tagged, check how long ago
+            days_since_tag=$(days_since "$tag_date")
+            echo "  ⏱️  Already tagged author $days_since_tag days ago"
+            
+            if [ "$days_since_tag" -ge 3 ]; then
+                echo "  🔒 Can close issue (no response for $days_since_tag days after tagging)"
+                echo ""
+                echo "  ACTION: Close issue with:"
+                echo "  -------"
+                echo "  Закрываю issue, так как исправление было выпущено в версии $VERSION и не было получено обратной связи в течение $days_since_tag дней."
+                echo "  "
+                echo "  Если проблема всё ещё существует, пожалуйста, откройте новый issue с подробным описанием."
+                echo "  -------"
+            else
+                echo "  ⏳ Waiting for response (${days_since_tag}/3 days)"
+            fi
+        else
+            # No tag yet, should we tag now?
+            echo "  📢 No follow-up tag found"
             echo ""
-            echo "  Suggested comment:"
-            echo "  @$author, пожалуйста, проверьте исправление в версии 1.4.42 и сообщите, работает ли оно."
-        elif [ "$days_passed" -ge 5 ]; then
-            echo "  🔒 Can close issue (no response for $days_passed days)"
-            echo ""
-            echo "  Suggested closing comment:"
-            echo "  Закрываю issue, так как исправление было выпущено в версии 1.4.42 и не было получено обратной связи в течение $days_passed дней."
-            echo "  "
-            echo "  Если проблема всё ещё существует, пожалуйста, откройте новый issue с подробным описанием."
+            echo "  ACTION: Tag author with:"
+            echo "  -------"
+            echo "  @$author, пожалуйста, проверьте исправление в версии $VERSION и сообщите, работает ли оно."
+            echo "  -------"
         fi
     fi
 done
@@ -101,3 +135,5 @@ done
 echo ""
 echo "================================="
 echo "Review complete!"
+echo ""
+echo "To take actions, use gh issue comment <number> --body \"<message>\""

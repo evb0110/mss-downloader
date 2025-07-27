@@ -2,6 +2,20 @@
 
 You need to systematically fix all open GitHub issues for the mss-downloader project.
 
+## FIRST: Check Existing Issues Status
+**ALWAYS START BY CHECKING ISSUE RESPONSES:**
+```bash
+.devkit/tools/check-issue-responses.sh
+```
+
+Then for each issue that needs follow-up:
+1. If fix was posted but no author response yet AND no follow-up tag exists:
+   - Tag the author asking them to test the fix
+2. If follow-up tag exists and 3+ days passed with no response:
+   - Close the issue with explanation
+3. If author responded:
+   - Handle based on their feedback
+
 ## General:
 **TOP PRIORITY**: This is the most important task. You should fix all the bugs, this is not negotiable. We cannot risk.
 **TOP PRIORITY**: You should ensure that you don't break anything while fixing these issues. The fixes should be backward compatible.
