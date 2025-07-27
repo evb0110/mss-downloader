@@ -1456,7 +1456,7 @@ export class EnhancedManuscriptDownloaderService {
                         
                         console.log(`Morgan: Found ${allUniquePages.length} individual pages for ${manuscriptId}`);
                         console.log(`Morgan: Page numbers detected: ${allUniquePages.slice(0, 10).join(', ')}${allUniquePages.length > 10 ? '...' : ''}`);
-                        this.logInfo('morgan', morganUrl, 'Morgan page detection complete', {
+                        this.logger.logInfo('morgan', morganUrl, 'Morgan page detection complete', {
                             manuscriptId,
                             totalPagesDetected: allUniquePages.length,
                             pageNumbers: allUniquePages.slice(0, 20),
@@ -8568,7 +8568,7 @@ export class EnhancedManuscriptDownloaderService {
             
             // Fetch manifest with proper timeout handling
             console.log(`Loading Verona manifest: ${manifestUrl}`);
-            this.logInfo('verona', manifestUrl, 'Starting Verona manifest fetch', {
+            this.logger.logInfo('verona', manifestUrl, 'Starting Verona manifest fetch', {
                 codiceDigital: originalUrl.includes('codice=') ? originalUrl.match(/codice=(\d+)/)?.[1] : undefined,
                 manifestUrl
             });
@@ -8597,7 +8597,7 @@ export class EnhancedManuscriptDownloaderService {
             
             const canvases = manifestData.sequences[0].canvases;
             console.log(`Found ${canvases.length} pages in Verona manuscript`);
-            this.logInfo('verona', manifestUrl, `Verona manifest loaded successfully`, {
+            this.logger.logInfo('verona', manifestUrl, `Verona manifest loaded successfully`, {
                 totalPages: canvases.length,
                 manuscriptLabel: manifestData.label || 'Unknown',
                 manifestSize: JSON.stringify(manifestData).length
@@ -8620,7 +8620,7 @@ export class EnhancedManuscriptDownloaderService {
                         // Log progress every 10 pages
                         if (index > 0 && index % 10 === 0 && index > lastLoggedProgress) {
                             lastLoggedProgress = index;
-                            this.logInfo('verona', manifestUrl, `Processing page URLs`, {
+                            this.logger.logInfo('verona', manifestUrl, `Processing page URLs`, {
                                 processed: index + 1,
                                 total: canvases.length,
                                 percentage: Math.round(((index + 1) / canvases.length) * 100)
@@ -8645,7 +8645,7 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('No valid page images found in manifest');
             }
             
-            this.logInfo('verona', manifestUrl, `Verona manifest processing complete`, {
+            this.logger.logInfo('verona', manifestUrl, `Verona manifest processing complete`, {
                 validPages: pageLinks.length,
                 skippedPages: canvases.length - pageLinks.length,
                 firstPageUrl: pageLinks[0]?.substring(0, 100) + '...'
@@ -10233,7 +10233,7 @@ export class EnhancedManuscriptDownloaderService {
                 }
                 
                 console.log(`[HHU] Successfully extracted ${pageLinks.length} pages in ${Date.now() - startTime}ms`);
-                this.logInfo('hhu', manifestUrl, 'HHU manifest processing complete', {
+                this.logger.logInfo('hhu', manifestUrl, 'HHU manifest processing complete', {
                     totalPages: pageLinks.length,
                     processingTime: Date.now() - startTime,
                     firstPageUrl: pageLinks[0]?.substring(0, 100) + '...'
