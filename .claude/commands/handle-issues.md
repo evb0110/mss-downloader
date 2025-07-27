@@ -43,11 +43,42 @@ After all fixes are complete:
 .devkit/tools/post-fix-actions.sh
 ```
 
+## Issue Follow-up Process:
+After posting fix comments on issues:
+
+1. **Check for user responses** after 24-48 hours:
+   - Use `gh issue view <number> --comments` to check if the author responded
+   - Look for comments from the issue author after your fix announcement
+
+2. **If no response from author**:
+   - Tag the user with: `@<username>, пожалуйста, проверьте исправление в версии X.X.X и сообщите, работает ли оно.`
+   - Wait 3 more days for response
+
+3. **After 3 days of no response**:
+   - Close the issue with explanation:
+   ```
+   Закрываю issue, так как исправление было выпущено в версии X.X.X и не было получено обратной связи в течение 3 дней.
+   
+   Если проблема всё ещё существует, пожалуйста, откройте новый issue с подробным описанием.
+   ```
+
+4. **If user confirms fix works**:
+   - Thank them and close the issue:
+   ```
+   Спасибо за подтверждение! Рад, что проблема решена. Закрываю issue.
+   ```
+
+5. **If user reports fix doesn't work**:
+   - Investigate further
+   - Request additional logs/details
+   - Continue working on the fix
+
 ## Important Guidelines:
 - Focus on fixing root causes, not symptoms
 - Create user-friendly Russian explanations
 - Ensure all fixes are backward compatible
-- Wait for user confirmation before closing issues
+- Always wait for user confirmation or 3-day timeout before closing issues
+- Be polite and helpful in all communications
 
 ## Issue Format:
 Each issue typically contains:
