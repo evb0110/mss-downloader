@@ -1,5 +1,96 @@
 # Completed Tasks
 
+## 2025-07-27: Version 1.4.39 - Critical Issue Fixes
+
+### Fixed all open GitHub issues:
+
+#### Issue #1: дюссельдорф (HHU Düsseldorf)
+- Fixed JSON parsing error by properly awaiting response.text() before JSON.parse()
+- Manuscripts from digital.ulb.hhu.de now download correctly
+
+#### Issue #2: грац (University of Graz) 
+- Enhanced timeout handling with 2-minute timeout for large manuscripts
+- Added 5 retry attempts with exponential backoff
+- Improved IIIF manifest loading with progress monitoring
+
+#### Issue #3: верона (Verona NBM)
+- Fixed connection timeouts with automatic fallback to nbm.regione.veneto.it
+- Increased timeout to 60 seconds with 3 retry attempts
+- Added automatic server switching on connection failure
+
+#### Issue #4: морган (Morgan Library)
+- Fixed imagesByPriority undefined error by moving variable to outer scope
+- All manuscript pages now download properly from Morgan Library
+
+### System improvements:
+- Created comprehensive issue handling system
+- Added automated fix workflow with todo generation
+- Implemented non-technical fix descriptions for user communication
+
+## 2025-07-26: Version 1.4.38 - Critical Library Fixes
+
+### NBM Italy (Verona) - FIXED ✅
+**Issues Fixed:**
+1. **10-page limit removed** - Now loads ALL 254 pages from manifest (was limited to 10)
+2. **URL formatting fixed** - Fixed double slash issue preventing image downloads
+3. **Progress logging added** - Shows progress every 10 pages during processing
+4. **Enhanced error handling** - Better timeout and error messages
+
+**Technical Details:**
+- Fixed trailing slash issue in IIIF service URLs causing double slashes
+- Enhanced `loadVeronaManifest()` with comprehensive logging
+- Added Verona-specific timeout configuration in IntelligentProgressMonitor
+- Validated with 5-page PDF (2.1 MB) showing real manuscript content
+
+### Morgan Library - ENHANCED ✅
+**Issues Fixed:**
+1. **Page detection improved** - Added multiple regex patterns for robust detection
+2. **Size estimation verified** - Confirmed at 5MB per page (not 25MB)
+3. **Logging enhanced** - Added detailed page detection logging
+
+**Technical Details:**
+- Enhanced `loadMorganManifest()` with alternative page detection patterns
+- Added logging for total pages detected and detection method
+- Library optimization settings already properly configured
+
+### University of Graz - FIXED ✅
+**Issues Fixed:**
+1. **Error message corrected** - Now shows actual timeout duration (90s) not 21s
+2. **Downloads verified working** - Successfully downloads manuscripts
+
+**Technical Details:**
+- Fixed error message to show: "timeout after X seconds (Y attempts over Z seconds total)"
+- Validated with 5-page PDF (4.5 MB) - manifest loads in 1 second
+
+### HHU Düsseldorf - FIXED ✅
+**Issues Fixed:**
+1. **Silent failures eliminated** - Added proper error handling and logging
+2. **Timeout increased** - Extended to 90 seconds for large manifests
+3. **Comprehensive logging added** - Tracks all stages of manifest loading
+
+**Technical Details:**
+- Added `logInfo()`, `logDebug()`, `logError()` throughout loadHhuManifest()
+- Increased timeout from 60s to 90s
+- Validated with 5-page PDF (3.5 MB) showing manuscript content
+
+### General Improvements ✅
+1. **Progress logging** - Added 10-second interval logging for long operations
+2. **Error handling** - Enhanced error messages across all libraries
+3. **Code quality** - All changes pass lint and build checks
+
+### User Impact:
+- NBM Italy users can now download complete manuscripts (all pages)
+- Morgan Library users get better page detection
+- Graz users see accurate timeout information
+- HHU users no longer experience silent failures
+- All users benefit from better progress tracking and error messages
+
+### Validation Results:
+- NBM Italy: 2.1 MB PDF with 5 pages (all 254 pages now accessible)
+- University of Graz: 4.5 MB PDF with 5 pages
+- HHU Düsseldorf: 3.5 MB PDF with 5 pages
+- All libraries tested and working correctly
+
 ## 2025-07-26: Morgan Library Page Extraction Fix
 
 ### Tasks Completed:
@@ -57,6 +148,27 @@
 - Wolfenbüttel: 10-page PDF created with high-resolution medieval manuscript images
 - LOC: All three problematic manuscripts now load successfully in test environment
 - Both libraries confirmed working with appropriate timeout handling
+
+## 2025-07-25
+
+### Logging System Implementation
+- Created a logging system that captures detailed download information
+- Implemented 'Download Logs' button in the UI for error states  
+- Added detailed logging for LOC and other problematic libraries
+- Included timestamp, URL, response times, errors in logs
+- Fixed empty logs issue - logger not capturing download events
+- Fixed button text wrapping with white-space: nowrap CSS
+
+### UI Bug Fixes
+- Fixed "undefined Pages" display showing as "All undefined Pages"
+- Fixed missing Download Logs button when downloads fail
+- Added Download Logs button to individual failed queue items
+
+### Wolfenbüttel Library Enhancement
+- Added support for alternative Wolfenbüttel URL format
+- Extended URL parsing to handle both wdb.php?dir= and direct path formats
+- Support URLs like https://diglib.hab.de/varia/selecta/ed000011/start.htm
+- Tested both Wolfenbüttel URL formats work correctly
 
 ## 2025-07-24: Version 1.4.33 - HHU Düsseldorf Library Support
 
@@ -284,90 +396,4 @@
 ### Validation Results:
 - Both test manuscripts downloaded successfully
 - PDFs validated with correct content and high resolution (2000px)
-- No ETIMEDOUT errors encountered during validation# Completed Tasks
-
-## 2025-07-25
-
-### Logging System Implementation
-- Created a logging system that captures detailed download information
-- Implemented 'Download Logs' button in the UI for error states  
-- Added detailed logging for LOC and other problematic libraries
-- Included timestamp, URL, response times, errors in logs
-- Fixed empty logs issue - logger not capturing download events
-- Fixed button text wrapping with white-space: nowrap CSS
-
-### UI Bug Fixes
-- Fixed "undefined Pages" display showing as "All undefined Pages"
-- Fixed missing Download Logs button when downloads fail
-- Added Download Logs button to individual failed queue items
-
-### Wolfenbüttel Library Enhancement
-- Added support for alternative Wolfenbüttel URL format
-- Extended URL parsing to handle both wdb.php?dir= and direct path formats
-- Support URLs like https://diglib.hab.de/varia/selecta/ed000011/start.htm
-- Tested both Wolfenbüttel URL formats work correctly
-EOF < /dev/null
-## 2025-07-26: Version 1.4.38 - Critical Library Fixes
-
-### NBM Italy (Verona) - FIXED ✅
-**Issues Fixed:**
-1. **10-page limit removed** - Now loads ALL 254 pages from manifest (was limited to 10)
-2. **URL formatting fixed** - Fixed double slash issue preventing image downloads
-3. **Progress logging added** - Shows progress every 10 pages during processing
-4. **Enhanced error handling** - Better timeout and error messages
-
-**Technical Details:**
-- Fixed trailing slash issue in IIIF service URLs causing double slashes
-- Enhanced `loadVeronaManifest()` with comprehensive logging
-- Added Verona-specific timeout configuration in IntelligentProgressMonitor
-- Validated with 5-page PDF (2.1 MB) showing real manuscript content
-
-### Morgan Library - ENHANCED ✅
-**Issues Fixed:**
-1. **Page detection improved** - Added multiple regex patterns for robust detection
-2. **Size estimation verified** - Confirmed at 5MB per page (not 25MB)
-3. **Logging enhanced** - Added detailed page detection logging
-
-**Technical Details:**
-- Enhanced `loadMorganManifest()` with alternative page detection patterns
-- Added logging for total pages detected and detection method
-- Library optimization settings already properly configured
-
-### University of Graz - FIXED ✅
-**Issues Fixed:**
-1. **Error message corrected** - Now shows actual timeout duration (90s) not 21s
-2. **Downloads verified working** - Successfully downloads manuscripts
-
-**Technical Details:**
-- Fixed error message to show: "timeout after X seconds (Y attempts over Z seconds total)"
-- Validated with 5-page PDF (4.5 MB) - manifest loads in 1 second
-
-### HHU Düsseldorf - FIXED ✅
-**Issues Fixed:**
-1. **Silent failures eliminated** - Added proper error handling and logging
-2. **Timeout increased** - Extended to 90 seconds for large manifests
-3. **Comprehensive logging added** - Tracks all stages of manifest loading
-
-**Technical Details:**
-- Added `logInfo()`, `logDebug()`, `logError()` throughout loadHhuManifest()
-- Increased timeout from 60s to 90s
-- Validated with 5-page PDF (3.5 MB) showing manuscript content
-
-### General Improvements ✅
-1. **Progress logging** - Added 10-second interval logging for long operations
-2. **Error handling** - Enhanced error messages across all libraries
-3. **Code quality** - All changes pass lint and build checks
-
-### User Impact:
-- NBM Italy users can now download complete manuscripts (all pages)
-- Morgan Library users get better page detection
-- Graz users see accurate timeout information
-- HHU users no longer experience silent failures
-- All users benefit from better progress tracking and error messages
-
-### Validation Results:
-- NBM Italy: 2.1 MB PDF with 5 pages (all 254 pages now accessible)
-- University of Graz: 4.5 MB PDF with 5 pages
-- HHU Düsseldorf: 3.5 MB PDF with 5 pages
-- All libraries tested and working correctly
-EOF < /dev/null
+- No ETIMEDOUT errors encountered during validation

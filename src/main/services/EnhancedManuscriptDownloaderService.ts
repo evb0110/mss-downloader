@@ -726,9 +726,26 @@ export class EnhancedManuscriptDownloaderService {
             if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') || 
                 url.includes('pagella.bm-grenoble.fr') || url.includes('unipub.uni-graz.at') || 
                 url.includes('mdc.csuc.cat')) {
-                const response = await this.fetchWithHTTPS(url, { ...fetchOptions, timeout });
-                if (timeoutId) clearTimeout(timeoutId);
-                return response;
+                try {
+                    const response = await this.fetchWithHTTPS(url, { ...fetchOptions, timeout });
+                    if (timeoutId) clearTimeout(timeoutId);
+                    return response;
+                } catch (httpsError: any) {
+                    // For Verona, if main site fails, try IIIF server directly
+                    if ((url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) && 
+                        (httpsError.code === 'ETIMEDOUT' || httpsError.code === 'ECONNREFUSED')) {
+                        console.warn(`[Verona] Primary connection failed with ${httpsError.code}, attempting IIIF server fallback`);
+                        
+                        // If it's the main site, try the IIIF server
+                        if (url.includes('nuovabibliotecamanoscritta.it')) {
+                            const altUrl = url.replace('www.nuovabibliotecamanoscritta.it', 'nbm.regione.veneto.it');
+                            const response = await this.fetchWithHTTPS(altUrl, { ...fetchOptions, timeout });
+                            if (timeoutId) clearTimeout(timeoutId);
+                            return response;
+                        }
+                    }
+                    throw httpsError;
+                }
             }
             
             // BNE domains use SSL bypass approach
@@ -909,14 +926,16 @@ export class EnhancedManuscriptDownloaderService {
                 ...options.headers
             },
             rejectUnauthorized: false,
-            // Add extended socket timeout for Graz
-            timeout: url.includes('unipub.uni-graz.at') ? 120000 : 30000,
+            // Add extended socket timeout for Graz and Verona
+            timeout: url.includes('unipub.uni-graz.at') ? 120000 : 
+                    (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 60000 : 30000,
             // Use connection pooling agent for Graz
             agent: agent
         };
         
         // Implement retry logic for connection timeouts
-        const maxRetries = url.includes('unipub.uni-graz.at') ? 5 : 1;
+        const maxRetries = url.includes('unipub.uni-graz.at') ? 5 : 
+                         (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 3 : 1;
         let retryCount = 0;
         const overallStartTime = Date.now(); // Track total time from first attempt
         
@@ -1367,6 +1386,16 @@ export class EnhancedManuscriptDownloaderService {
             // Extract image URLs from the page
             const pageLinks: string[] = [];
             
+            // Initialize imagesByPriority at outer scope so it's accessible for logging
+            const imagesByPriority: { [key: number]: string[] } = {
+                0: [], // HIGHEST PRIORITY: .zif tiled images (ULTRA HIGH RESOLUTION 6000x4000+ pixels, 25MP+)
+                1: [], // NEW: High-resolution download URLs (749KB avg, 16.6x improvement)
+                2: [], // High priority: direct full-size images  
+                3: [], // Medium priority: converted styled images (reliable multi-page)
+                4: [], // Low priority: facsimile images
+                5: []  // Lowest priority: other direct references
+            };
+            
             if (morganUrl.includes('ica.themorgan.org')) {
                 // ICA format - look for image references
                 const icaImageRegex = /icaimages\/\d+\/[^"']+\.jpg/g;
@@ -1381,14 +1410,6 @@ export class EnhancedManuscriptDownloaderService {
             } else {
                 // Main Morgan format - MAXIMUM RESOLUTION priority system
                 // FIXED: Prioritize ZIF files for ultra-high resolution (6000x4000+ pixels, 25MP+)
-                const imagesByPriority: { [key: number]: string[] } = {
-                    0: [], // HIGHEST PRIORITY: .zif tiled images (ULTRA HIGH RESOLUTION 6000x4000+ pixels, 25MP+)
-                    1: [], // NEW: High-resolution download URLs (749KB avg, 16.6x improvement)
-                    2: [], // High priority: direct full-size images  
-                    3: [], // Medium priority: converted styled images (reliable multi-page)
-                    4: [], // Low priority: facsimile images
-                    5: []  // Lowest priority: other direct references
-                };
                 
                 // Priority 0: Generate .zif URLs from image references (MAXIMUM RESOLUTION - 25+ megapixels)
                 // OPTIMIZED: Single regex with capture groups to avoid redundant operations
@@ -8643,10 +8664,11 @@ export class EnhancedManuscriptDownloaderService {
             
         } catch (error: any) {
             // Provide specific error messages for common issues
-            if (error.message.includes('timeout')) {
+            if (error.message.includes('timeout') || error.message.includes('ETIMEDOUT') || 
+                error.code === 'ETIMEDOUT' || error.code === 'ECONNREFUSED' || error.code === 'ECONNRESET') {
                 throw new Error(
-                    `Verona NBM server timeout. The server may be slow or overloaded. ` +
-                    `Try again later or use a direct manifest URL if available.`
+                    `Verona NBM server connection failed (${error.code || 'TIMEOUT'}). The server may be temporarily unavailable. ` +
+                    `Please try again in a few minutes. If the problem persists, the server may be undergoing maintenance.`
                 );
             }
             throw new Error(`Failed to load Verona manuscript: ${(error as Error).message}`);
@@ -10154,7 +10176,8 @@ export class EnhancedManuscriptDownloaderService {
                 console.log(`[HHU] Manifest fetch completed in ${Date.now() - startTime}ms`);
                 console.log(`[HHU] Parsing manifest JSON...`);
                 
-                const manifest = JSON.parse(response);
+                const responseText = await response.text();
+                const manifest = JSON.parse(responseText);
             
                 // Extract metadata from IIIF manifest
                 if (manifest.label) {

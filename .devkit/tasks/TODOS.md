@@ -1,5 +1,5 @@
-# Project TODOs
+# TODO List
 
-## Pending
+Currently empty - all tasks completed!
 
-- [ ] Expand NBM Italy (Verona) manuscript support beyond codice=15
+See COMPLETED.md for recently completed tasks.

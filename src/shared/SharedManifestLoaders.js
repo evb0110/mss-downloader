@@ -14,12 +14,24 @@ class SharedManifestLoaders {
     }
 
     async defaultNodeFetch(url, options = {}, retries = 3) {
+        // Increase retries for Verona domains
+        if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
+            retries = 5;
+        }
+        
         for (let i = 0; i < retries; i++) {
             try {
                 return await this.fetchUrl(url, options);
             } catch (error) {
+                console.log(`[SharedManifestLoaders] Attempt ${i + 1}/${retries} failed for ${url}: ${error.message}`);
+                
                 if (i === retries - 1) throw error;
-                await new Promise(resolve => setTimeout(resolve, 2000 * (i + 1)));
+                
+                // Progressive backoff, longer for Verona
+                const baseDelay = (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 3000 : 2000;
+                const delay = baseDelay * (i + 1);
+                console.log(`[SharedManifestLoaders] Waiting ${delay}ms before retry...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
             }
         }
     }
@@ -44,8 +56,14 @@ class SharedManifestLoaders {
             };
 
             // SSL bypass for specific domains
-            if (url.includes('bdh-rd.bne.es') || url.includes('pagella.bm-grenoble.fr') || url.includes('nuovabibliotecamanoscritta.it')) {
+            if (url.includes('bdh-rd.bne.es') || url.includes('pagella.bm-grenoble.fr') || 
+                url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
                 requestOptions.rejectUnauthorized = false;
+            }
+            
+            // Extended timeout for Verona servers
+            if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
+                requestOptions.timeout = 60000; // 60 seconds for Verona
             }
 
             const req = https.request(requestOptions, (res) => {

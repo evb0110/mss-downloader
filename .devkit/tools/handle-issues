@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Handle-issues command - comprehensive issue fixing system
+# This command orchestrates the entire issue fixing workflow
+
+cd "$(dirname "$0")/../.."
+
+# Run the comprehensive fix-all-issues script
+.devkit/tools/fix-all-issues.sh
+
+# After setup is complete, initiate the fix process
+echo ""
+echo "=== Starting Automated Fix Process ==="
+echo ""
+
+# The actual fixing will be done by Claude with agents
+# This is just the setup and orchestration
