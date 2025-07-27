@@ -1,6 +1,12 @@
-# Handle All GitHub Issues
+# Handle All GitHub Issues - AUTONOMOUS WORKFLOW
 
-You need to systematically fix all open GitHub issues for the mss-downloader project.
+**⚠️ SPECIAL AUTONOMOUS WORKFLOW - EXCEPTION TO NORMAL RULES ⚠️**
+
+This command implements an AUTONOMOUS issue-fixing workflow that:
+- Does NOT require Claude user approval for version bumps
+- Performs all validation programmatically (no Finder, no user validation)
+- Seeks approval from ISSUE AUTHORS, not the Claude user
+- Overrides normal version bump approval requirements
 
 ## FIRST: Check Existing Issues Status
 **ALWAYS START BY CHECKING ISSUE RESPONSES:**
@@ -16,98 +22,138 @@ Then for each issue that needs follow-up:
 3. If author responded:
    - Handle based on their feedback
 
-## General:
-**TOP PRIORITY**: This is the most important task. You should fix all the bugs, this is not negotiable. We cannot risk.
-**TOP PRIORITY**: You should ensure that you don't break anything while fixing these issues. The fixes should be backward compatible.
-**Resources** You can use up to 3-5 agents in parallel for different aspects of the same issue, but not for multiple issues at once. You should use ultrathink and ultrathinking agents.
+## General Requirements:
+**TOP PRIORITY**: Fix all bugs without breaking existing functionality
+**BACKWARD COMPATIBILITY**: All fixes must be backward compatible
+**AUTONOMOUS VALIDATION**: All validation must be done programmatically
+**AGENT USAGE**: Use up to 3-5 agents in parallel for one issue (not multiple issues)
 
+## Autonomous Process:
 
-## Process:
-
+### Phase 1: Issue Analysis & Fixing
 1. **Fetch all open issues** from GitHub
-2. **Create a comprehensive TODO list** from the issues
-3. **Work on fixes systematically** using agents as needed
-4. **Don't do them simultaneously** to avoid conflicts
-5. **You can use up to 3-5 agents** in parallel for one issue, but not for multiple issues at once
-6. **Test all fixes** with validation scripts, but don't start dev server, only the node scripts
-7. **Bump version** after all fixes are validated
-8. **Add non-technical explanations** in comments to each issue in Russian. They shouldn't be the same for all issues, but should explain what was fixed in simple terms for each issue
+2. **Analyze each issue** to identify root causes
+3. **Implement fixes** systematically (one issue at a time)
+4. **Create test scripts** that validate each fix programmatically
 
-## Steps to execute:
+### Phase 2: Autonomous Validation (NO USER INTERACTION)
+For each fix, you MUST:
 
-First, run the issue handling setup:
-```bash
-.devkit/tools/handle-issues
-```
+1. **Create validation scripts** that:
+   - Use the exact URLs from the issue reports
+   - Download 5-10 pages programmatically
+   - Verify the specific error is resolved
+   - Check PDF validity with poppler
+   - Return success/failure status
 
-Then, for each issue:
-1. Analyze the error and identify root cause
-2. Implement the fix in the appropriate library handler
-3. Create a test script to validate the fix. It should use the same code as the main process but run in a test environment.
-   - Ensure it uses real manuscript URLs from the issues.
-4. Save a non-technical explanation to `.devkit/fixes/issue_N_fix.txt`
-
-After all fixes are complete:
-1. Run validation for all fixes
-2. Update package.json version and changelog
-3. Commit with descriptive message
-4. Push to trigger GitHub Actions build
-5. Run post-fix actions to notify users:
-```bash
-.devkit/tools/post-fix-actions.sh
-```
-
-## Issue Follow-up Process:
-After posting fix comments on issues:
-
-1. **Check for user responses** after 24-48 hours:
-   - Use `gh issue view <number> --comments` to check if the author responded
-   - Look for comments from the issue author after your fix announcement
-
-2. **If no response from author**:
-   - Tag the user with: `@<username>, пожалуйста, проверьте исправление в версии X.X.X и сообщите, работает ли оно.`
-   - Wait 3 more days for response
-
-3. **After 3 days of no response**:
-   - Close the issue with explanation:
-   ```
-   Закрываю issue, так как исправление было выпущено в версии X.X.X и не было получено обратной связи в течение 3 дней.
+2. **Self-inspect all PDFs** using:
+   ```bash
+   # Check file sizes
+   ls -la validation/*.pdf
    
-   Если проблема всё ещё существует, пожалуйста, откройте новый issue с подробным описанием.
+   # Verify PDF structure
+   pdfimages -list validation/*.pdf
+   
+   # Extract and inspect sample images
+   pdfimages -png -f 1 -l 3 validation/*.pdf validation/test
    ```
 
-4. **If user confirms fix works**:
-   - Thank them and close the issue:
-   ```
-   Спасибо за подтверждение! Рад, что проблема решена. Закрываю issue.
+3. **Validation criteria** (must ALL pass):
+   - No zero-byte files
+   - PDF contains actual images (not error pages)
+   - Multiple different pages when expected
+   - No authentication errors
+   - Specific issue error is resolved
+
+4. **If ANY validation fails**:
+   - Fix the issue
+   - Re-run validation
+   - Repeat until 100% success
+
+### Phase 3: Autonomous Version Bump (NO USER APPROVAL)
+**ONLY after ALL validations pass:**
+
+1. **Pre-bump checks:**
+   ```bash
+   npm run lint      # Must pass with no errors
+   npm run build     # Must complete successfully
    ```
 
-5. **If user reports fix doesn't work**:
-   - Investigate further
-   - Request additional logs/details
-   - Continue working on the fix
+2. **Update package.json:**
+   - Bump patch version
+   - Update changelog with specific fixes
+
+3. **Commit and push:**
+   ```bash
+   git add -A
+   git commit -m "VERSION-X.X.X: Fix critical GitHub issues - [list libraries]"
+   git push origin main
+   ```
+
+### Phase 4: Issue Author Notification
+1. **Add fix comments** to each issue in Russian:
+   ```
+   Исправлено в версии X.X.X! 🎉
+   
+   [Specific non-technical explanation of what was fixed]
+   
+   Пожалуйста, обновитесь до версии X.X.X и проверьте, что всё работает корректно.
+   
+   Новая версия будет доступна через несколько минут после автоматической сборки.
+   ```
+
+2. **Monitor responses** using check-issue-responses.sh
+
+3. **Follow up as needed:**
+   - Tag non-responsive authors after initial comment
+   - Close issues after 3 days of no response
+   - Continue fixing if authors report problems
+
+## Validation Script Template:
+```javascript
+const { SharedManifestLoaders } = require('./src/shared/SharedManifestLoaders.js');
+const fs = require('fs').promises;
+const { execSync } = require('child_process');
+
+async function validateIssueFix(issueNumber, testUrl, expectedBehavior) {
+    console.log(`Validating fix for issue #${issueNumber}...`);
+    
+    try {
+        // Test the specific fix
+        const loaders = new SharedManifestLoaders();
+        const manifest = await loaders.getManifestForUrl(testUrl);
+        
+        // Download test pages
+        // ... download logic ...
+        
+        // Verify with poppler
+        execSync('pdfinfo test.pdf');
+        
+        // Check specific issue is resolved
+        if (expectedBehavior) {
+            console.log('✅ Issue #' + issueNumber + ' fixed!');
+            return true;
+        }
+    } catch (error) {
+        console.error('❌ Validation failed:', error.message);
+        return false;
+    }
+}
+```
 
 ## Important Guidelines:
-- Focus on fixing root causes, not symptoms
-- Create user-friendly Russian explanations
-- Ensure all fixes are backward compatible
-- Always wait for user confirmation or 3-day timeout before closing issues
-- Be polite and helpful in all communications
+- **NO MANUAL VALIDATION**: Everything must be verified programmatically
+- **NO USER APPROVAL**: Version bump is automatic after validation passes
+- **ISSUE AUTHOR APPROVAL**: We seek approval from issue authors, not Claude user
+- **QUALITY GATES**: Lint and build must pass before any commit
+- **RUSSIAN COMMUNICATION**: All issue comments must be in Russian
+- **SPECIFIC EXPLANATIONS**: Each issue gets a unique, specific explanation
 
-## Issue Format:
-Each issue typically contains:
-- Error message
-- Manuscript URL that failed
-- Log files (if attached)
-- User comments in Russian
+## Conflict Resolution:
+This autonomous workflow OVERRIDES the following normal rules:
+- "WAIT for mandatory user validation of PDF files" → Validation is programmatic
+- "NEVER BUMP VERSION WITHOUT EXPLICIT USER APPROVAL" → Bump is automatic
+- "MANDATORY validation by user!!!" → Self-validation only
+- "ONLY OPEN FINDER WHEN READY" → Never open Finder in this workflow
 
-## Fix Description Template:
-```
-Проблема с [библиотека] была исправлена.
-
-[Описание что было сделано на понятном языке]
-
-Теперь вы можете [что пользователь может делать].
-```
-
-Remember: The goal is to fix ALL open issues efficiently and communicate clearly with users about what was fixed.
+Remember: This is an EXCEPTION workflow designed for autonomous issue resolution. The goal is to fix issues quickly and get approval from issue authors, not the Claude user.
