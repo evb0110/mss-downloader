@@ -1542,22 +1542,35 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
                 
-                // Select highest quality images based on priority - OPTIMIZED O(n) algorithm
-                const getFilenameFromUrl = (url: string) => {
-                    const match = url.match(/([^/]+)\.(jpg|zif)$/);
-                    return match ? match[1] : url;
-                };
-                
-                // Use Map for O(n) deduplication instead of O(n²) Set operations
-                const filenameMap = new Map<string, string>();
-                
-                // Add images by priority, avoiding duplicates based on filename
-                for (let priority = 0; priority <= 5; priority++) {
-                    for (const imageUrl of imagesByPriority[priority]) {
-                        const filename = getFilenameFromUrl(imageUrl);
-                        if (!filenameMap.has(filename)) {
-                            filenameMap.set(filename, imageUrl);
-                            pageLinks.push(imageUrl);
+                // FIXED: Properly select all discovered images with highest quality
+                // Priority 1 contains all individually fetched high-resolution facsimile images
+                if (imagesByPriority[1].length > 0) {
+                    // Use high-resolution facsimile images from individual pages
+                    console.log(`Morgan: Using ${imagesByPriority[1].length} high-resolution facsimile images`);
+                    pageLinks.push(...imagesByPriority[1]);
+                } else if (imagesByPriority[0].length > 0) {
+                    // Fallback to ZIF ultra-high resolution images if no facsimile images found
+                    console.log(`Morgan: Using ${imagesByPriority[0].length} ZIF ultra-high resolution images`);
+                    pageLinks.push(...imagesByPriority[0]);
+                } else {
+                    // Fallback to other image priorities if no high-res images found
+                    console.log('Morgan: No high-resolution images found, using fallback priorities');
+                    const getFilenameFromUrl = (url: string) => {
+                        const match = url.match(/([^/]+)\.(jpg|zif)$/);
+                        return match ? match[1] : url;
+                    };
+                    
+                    // Use Map for deduplication
+                    const filenameMap = new Map<string, string>();
+                    
+                    // Add images by priority, avoiding duplicates based on filename
+                    for (let priority = 2; priority <= 5; priority++) {
+                        for (const imageUrl of imagesByPriority[priority]) {
+                            const filename = getFilenameFromUrl(imageUrl);
+                            if (!filenameMap.has(filename)) {
+                                filenameMap.set(filename, imageUrl);
+                                pageLinks.push(imageUrl);
+                            }
                         }
                     }
                 }
@@ -6144,11 +6157,16 @@ export class EnhancedManuscriptDownloaderService {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             };
             
-            // Use intelligent progress monitoring for Graz's large IIIF manifests (289KB)
+            // FIXED: Enhanced progress monitoring for Graz's large IIIF manifests with better timeout handling
             const progressMonitor = createProgressMonitor(
                 'University of Graz manifest loading',
                 'graz',
-                { initialTimeout: 180000, maxTimeout: 900000, progressCheckInterval: 30000 },
+                { 
+                    initialTimeout: 240000,     // 4 minutes initial (increased)
+                    maxTimeout: 1200000,        // 20 minutes max (increased)
+                    progressCheckInterval: 15000, // Check every 15 seconds
+                    minProgressThreshold: 0.01   // Any progress is good progress
+                },
                 {
                     onInitialTimeoutReached: (state) => {
                         console.log(`[Graz] ${state.statusMessage}`);
@@ -6169,28 +6187,45 @@ export class EnhancedManuscriptDownloaderService {
             progressMonitor.updateProgress(0, 1, 'Loading University of Graz IIIF manifest...');
             
             let response: Response;
+            let manifestData: any;
             try {
-                // Use fetchDirect instead of fetchWithProxyFallback to respect library-specific timeouts (2x multiplier for Graz)
-                response = await this.fetchDirect(manifestUrl, { 
+                // FIXED: Use fetchWithHTTPS for Graz to handle SSL and timeout issues better
+                response = await this.fetchWithHTTPS(manifestUrl, { 
                     headers,
-                    signal: controller.signal 
+                    timeout: 300000 // 5 minutes timeout for manifest
                 });
                 
                 if (!response.ok) {
                     throw new Error(`Failed to fetch IIIF manifest: ${response.status} ${response.statusText}`);
                 }
                 
-                progressMonitor.updateProgress(1, 1, 'IIIF manifest loaded successfully');
+                progressMonitor.updateProgress(0.5, 1, 'IIIF manifest downloaded, parsing...');
+                
+                // Parse JSON with timeout protection
+                const jsonText = await response.text();
+                console.log(`Graz manifest size: ${(jsonText.length / 1024).toFixed(1)} KB`);
+                
+                try {
+                    manifestData = JSON.parse(jsonText);
+                } catch (parseError) {
+                    throw new Error(`Failed to parse IIIF manifest JSON: ${(parseError as Error).message}`);
+                }
+                
+                progressMonitor.updateProgress(1, 1, 'IIIF manifest parsed successfully');
             } catch (error: any) {
-                if (error.name === 'AbortError') {
-                    throw new Error('University of Graz manifest loading timed out. The manifest may be very large or the server may be experiencing issues.');
+                if (error.name === 'AbortError' || error.message?.includes('timeout')) {
+                    throw new Error('University of Graz manifest loading timed out. The server may be experiencing high load. Please try again in a few moments.');
+                }
+                if (error.code === 'ECONNRESET') {
+                    throw new Error('University of Graz connection was reset. This often happens with large manuscripts. Please try again.');
                 }
                 throw error;
             } finally {
                 progressMonitor.complete();
             }
             
-            const manifest = await response.json();
+            // Use already-parsed manifestData
+            const manifest = manifestData;
             console.log(`IIIF manifest loaded, processing canvases...`);
             
             const pageLinks: string[] = [];

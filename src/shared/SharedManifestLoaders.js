@@ -40,6 +40,15 @@ class SharedManifestLoaders {
         // Dynamic require to avoid lint error
         const https = eval("require('https')");
         
+        // Connection pooling agent for Verona to handle connection issues
+        const veronaAgent = new https.Agent({
+            keepAlive: true,
+            keepAliveMsecs: 1000,
+            maxSockets: 5,
+            maxFreeSockets: 2,
+            timeout: 120000
+        });
+        
         return new Promise((resolve, reject) => {
             const urlObj = new URL(url);
             const requestOptions = {
@@ -63,7 +72,8 @@ class SharedManifestLoaders {
             
             // Extended timeout for Verona servers
             if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
-                requestOptions.timeout = 60000; // 60 seconds for Verona
+                requestOptions.timeout = 120000; // 120 seconds for Verona (increased for reliability)
+                requestOptions.agent = veronaAgent; // Use connection pooling
             }
 
             const req = https.request(requestOptions, (res) => {
@@ -89,7 +99,13 @@ class SharedManifestLoaders {
                 });
             });
 
-            req.on('error', reject);
+            req.on('error', (error) => {
+                if (error.code === 'ETIMEDOUT' && (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it'))) {
+                    reject(new Error('Verona server connection timeout (ETIMEDOUT). The server may be experiencing high load. Please try again in a few moments.'));
+                } else {
+                    reject(error);
+                }
+            });
             req.on('timeout', () => {
                 req.destroy();
                 reject(new Error('Request timeout'));
@@ -247,7 +263,16 @@ class SharedManifestLoaders {
     async fetchVeronaIIIFManifest(manifestUrl) {
         console.log('[Verona] Fetching IIIF manifest from:', manifestUrl);
         
-        const response = await this.fetchWithRetry(manifestUrl);
+        // Add timeout monitoring
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Verona manifest fetch timeout after 2 minutes')), 120000);
+        });
+        
+        try {
+            const response = await Promise.race([
+                this.fetchWithRetry(manifestUrl),
+                timeoutPromise
+            ]);
         if (!response.ok) {
             throw new Error(`Failed to fetch Verona manifest: ${response.status}`);
         }
@@ -308,6 +333,13 @@ class SharedManifestLoaders {
             images,
             displayName: `Verona - ${displayName}`
         };
+        } catch (error) {
+            if (error.message.includes('timeout')) {
+                console.error('[Verona] Manifest fetch timed out');
+                throw new Error('Verona server is not responding. Please try again later.');
+            }
+            throw error;
+        }
     }
 
     /**
