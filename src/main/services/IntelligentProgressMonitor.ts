@@ -99,6 +99,15 @@ export class IntelligentProgressMonitor {
                 optimized.maxTimeout = 300000; // 5 minutes
                 optimized.minProgressThreshold = 1; // Need clear progress
                 break;
+                
+            case 'verona':
+            case 'nbm':
+                // NBM Italy / Verona can have large manifests and slow downloads
+                optimized.initialTimeout = 90000; // 1.5 minutes
+                optimized.progressCheckInterval = 10000; // 10 seconds for better feedback
+                optimized.maxTimeout = 600000; // 10 minutes
+                optimized.minProgressThreshold = 0.5; // Reasonable progress expected
+                break;
             
             case 'orleans':
                 // Orleans can be slow but reliable
@@ -170,6 +179,14 @@ export class IntelligentProgressMonitor {
                 optimized.progressCheckInterval = 20000; // 20 seconds
                 optimized.maxTimeout = 360000; // 6 minutes
                 optimized.minProgressThreshold = 0.5;
+                break;
+            
+            case 'hhu':
+                // HHU Düsseldorf can have slow manifest loading
+                optimized.initialTimeout = 60000; // 60 seconds for manifest loading
+                optimized.progressCheckInterval = 15000; // 15 seconds
+                optimized.maxTimeout = 300000; // 5 minutes
+                optimized.minProgressThreshold = 0.8; // Allow slower progress due to large images
                 break;
             
             default:

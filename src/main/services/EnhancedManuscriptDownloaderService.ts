@@ -268,6 +268,11 @@ export class EnhancedManuscriptDownloaderService {
             description: 'Biblioteca Vallicelliana manuscripts via DAM and JMMS platforms',
         },
         {
+            name: 'Omnes Vallicelliana',
+            example: 'https://omnes.dbseret.com/vallicelliana/iiif/IT-RM0281_D5/manifest',
+            description: 'Biblioteca Vallicelliana manuscripts via Omnes digital platform',
+        },
+        {
             name: 'Verona Library (NBM)',
             example: 'https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=15',
             description: 'Nuova Biblioteca Manoscritta (Verona) manuscripts via IIIF',
@@ -466,6 +471,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('europeana.eu')) return 'europeana';
         if (url.includes('omnes.dbseret.com/montecassino')) return 'monte_cassino';
         if (url.includes('dam.iccu.sbn.it') || url.includes('jmms.iccu.sbn.it')) return 'vallicelliana';
+        if (url.includes('omnes.dbseret.com/vallicelliana')) return 'omnes_vallicelliana';
         if (url.includes('manus.iccu.sbn.it')) return 'iccu_api';
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) return 'verona';
         if (url.includes('bvpb.mcu.es')) return 'bvpb';
@@ -739,17 +745,31 @@ export class EnhancedManuscriptDownloaderService {
             if (timeoutId) clearTimeout(timeoutId);
             
             const elapsed = Date.now() - startTime;
+            
+            // Log response headers for debugging
+            const responseHeaders: Record<string, string> = {};
+            response.headers.forEach((value, key) => {
+                responseHeaders[key] = value;
+            });
+            
             this.logger.log({
                 level: 'info',
                 library: library || 'unknown',
                 url,
                 message: `Response received - Status: ${response.status}, Time: ${elapsed}ms`,
                 duration: elapsed,
-                details: { status: response.status, statusText: response.statusText }
+                details: { 
+                    status: response.status, 
+                    statusText: response.statusText,
+                    headers: responseHeaders,
+                    attempt
+                }
             });
             
             if (response.ok) {
-                this.logger.logDownloadComplete(library || 'unknown', url, elapsed, 0);
+                const contentLength = response.headers.get('content-length');
+                const size = contentLength ? parseInt(contentLength, 10) : 0;
+                this.logger.logDownloadComplete(library || 'unknown', url, elapsed, size);
             }
             
             return response;
@@ -898,6 +918,7 @@ export class EnhancedManuscriptDownloaderService {
         // Implement retry logic for connection timeouts
         const maxRetries = url.includes('unipub.uni-graz.at') ? 5 : 1;
         let retryCount = 0;
+        const overallStartTime = Date.now(); // Track total time from first attempt
         
         const attemptRequest = (): Promise<Response> => {
             return new Promise((resolve, reject) => {
@@ -1030,8 +1051,9 @@ export class EnhancedManuscriptDownloaderService {
                 } else {
                     // Final error or non-retryable error
                     if (error.code === 'ETIMEDOUT' && url.includes('unipub.uni-graz.at')) {
-                        const totalTime = Math.round((Date.now() - attemptStartTime) / 1000);
-                        reject(new Error(`University of Graz connection timeout after ${maxRetries} attempts over ${totalTime} seconds. The server at ${urlObj.hostname} is not responding. This may be due to high server load or network issues. Please try again later or check if the manuscript is accessible at https://unipub.uni-graz.at/`));
+                        const totalTime = Math.round((Date.now() - overallStartTime) / 1000);
+                        const actualTimeout = Math.round(timeout / 1000);
+                        reject(new Error(`University of Graz connection timeout after ${actualTimeout} seconds (${maxRetries} attempts over ${totalTime} seconds total). The server at ${urlObj.hostname} is not responding. This may be due to high server load or network issues. Please try again later or check if the manuscript is accessible at https://unipub.uni-graz.at/`));
                     } else {
                         reject(error);
                     }
@@ -1200,6 +1222,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'vallicelliana':
                     manifest = await this.loadVallicellianManifest(originalUrl);
+                    break;
+                case 'omnes_vallicelliana':
+                    manifest = await this.loadOmnesVallicellianManifest(originalUrl);
                     break;
                 case 'iccu_api':
                     manifest = await this.loadIccuApiManifest(originalUrl);
@@ -1391,10 +1416,34 @@ export class EnhancedManuscriptDownloaderService {
                         const pageMatches = [...pageContent.matchAll(pageUrlRegex)];
                         const uniquePages = [...new Set(pageMatches.map(match => match[1]))];
                         
-                        console.log(`Morgan: Found ${uniquePages.length} individual pages for ${manuscriptId}`);
+                        // Also try alternative patterns for page detection
+                        const altPatterns = [
+                            new RegExp(`href="[^"]*\\/collection\\/${manuscriptId}\\/(\\d+)[^"]*"`, 'g'),
+                            new RegExp(`data-page="(\\d+)"`, 'g'),
+                            new RegExp(`page-(\\d+)`, 'g')
+                        ];
                         
-                        // Limit to first 50 pages for performance (can be adjusted)
-                        const pagesToProcess = uniquePages.slice(0, 50);
+                        for (const pattern of altPatterns) {
+                            const altMatches = [...pageContent.matchAll(pattern)];
+                            for (const match of altMatches) {
+                                uniquePages.push(match[1]);
+                            }
+                        }
+                        
+                        // Remove duplicates and sort
+                        const allUniquePages = [...new Set(uniquePages)].sort((a, b) => parseInt(a) - parseInt(b));
+                        
+                        console.log(`Morgan: Found ${allUniquePages.length} individual pages for ${manuscriptId}`);
+                        console.log(`Morgan: Page numbers detected: ${allUniquePages.slice(0, 10).join(', ')}${allUniquePages.length > 10 ? '...' : ''}`);
+                        this.logInfo('morgan', morganUrl, 'Morgan page detection complete', {
+                            manuscriptId,
+                            totalPagesDetected: allUniquePages.length,
+                            pageNumbers: allUniquePages.slice(0, 20),
+                            detectionMethod: 'multiple patterns'
+                        });
+                        
+                        // Process all pages - removed artificial limit
+                        const pagesToProcess = allUniquePages;
                         
                         // Parse each individual page for high-resolution download URLs
                         for (const pageNum of pagesToProcess) {
@@ -1431,16 +1480,16 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
                 
-                // Priority 1: Look for direct full-size image references
+                // Priority 2: Look for direct full-size image references
                 const fullSizeImageRegex = /\/sites\/default\/files\/images\/collection\/[^"'?]+\.jpg/g;
                 const fullSizeMatches = pageContent.match(fullSizeImageRegex) || [];
                 
                 for (const match of fullSizeMatches) {
                     const fullUrl = `${baseUrl}${match}`;
-                    imagesByPriority[4].push(fullUrl);
+                    imagesByPriority[2].push(fullUrl);
                 }
                 
-                // Priority 2: Extract styled images converted to original (fallback for reliability)
+                // Priority 3: Extract styled images converted to original (fallback for reliability)
                 const styledImageRegex = /\/sites\/default\/files\/styles\/[^"']*\/public\/images\/collection\/[^"'?]+\.jpg/g;
                 const styledMatches = pageContent.match(styledImageRegex) || [];
                 
@@ -1450,19 +1499,19 @@ export class EnhancedManuscriptDownloaderService {
                     // To: /sites/default/files/images/collection/filename.jpg
                     const originalPath = match.replace(/\/styles\/[^/]+\/public\//, '/');
                     const fullUrl = `${baseUrl}${originalPath}`;
-                    imagesByPriority[2].push(fullUrl);
+                    imagesByPriority[3].push(fullUrl);
                 }
                 
-                // Priority 3: Fallback to facsimile images (legacy format)
+                // Priority 4: Fallback to facsimile images (legacy format)
                 const facsimileRegex = /\/sites\/default\/files\/facsimile\/[^"']+\.jpg/g;
                 const facsimileMatches = pageContent.match(facsimileRegex) || [];
                 
                 for (const match of facsimileMatches) {
                     const fullUrl = `${baseUrl}${match}`;
-                    imagesByPriority[3].push(fullUrl);
+                    imagesByPriority[4].push(fullUrl);
                 }
                 
-                // Priority 4: Other direct image references
+                // Priority 5: Other direct image references
                 const directImageRegex = /https?:\/\/[^"']*themorgan\.org[^"']*\.jpg/g;
                 const directMatches = pageContent.match(directImageRegex) || [];
                 
@@ -1514,6 +1563,16 @@ export class EnhancedManuscriptDownloaderService {
             
             // Remove duplicates and sort
             const uniquePageLinks = [...new Set(pageLinks)].sort();
+            
+            // Log priority distribution for debugging
+            console.log(`Morgan: Image quality distribution:`);
+            console.log(`  - Priority 0 (ZIF ultra-high res): ${imagesByPriority[0].length} images`);
+            console.log(`  - Priority 1 (High-res facsimile): ${imagesByPriority[1].length} images`);
+            console.log(`  - Priority 2 (Direct full-size): ${imagesByPriority[2].length} images`);
+            console.log(`  - Priority 3 (Converted styled): ${imagesByPriority[3].length} images`);
+            console.log(`  - Priority 4 (Legacy facsimile): ${imagesByPriority[4].length} images`);
+            console.log(`  - Priority 5 (Other direct): ${imagesByPriority[5].length} images`);
+            console.log(`Morgan: Total unique images: ${uniquePageLinks.length}`);
             
             const morganManifest = {
                 pageLinks: uniquePageLinks,
@@ -3182,13 +3241,16 @@ export class EnhancedManuscriptDownloaderService {
         const startTime = Date.now();
         const library = this.detectLibrary(url) as TLibrary;
         
-        this.logger.log({
-            level: 'info',
-            library: library || 'unknown',
-            url,
-            message: `Starting image download (attempt ${attempt + 1})`,
-            attemptNumber: attempt + 1
-        });
+        // Only log on first attempt to avoid duplicates with fetchDirect
+        if (attempt === 0) {
+            this.logger.log({
+                level: 'info',
+                library: library || 'unknown',
+                url,
+                message: `Starting image download`,
+                attemptNumber: attempt + 1
+            });
+        }
         
         try {
             if (url.endsWith('.zif')) {
@@ -8270,6 +8332,85 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     /**
+     * Load Omnes Vallicelliana manifest from omnes.dbseret.com/vallicelliana
+     */
+    async loadOmnesVallicellianManifest(originalUrl: string): Promise<ManuscriptManifest> {
+        try {
+            let manifestUrl: string;
+            let displayName: string;
+            
+            // Handle both direct manifest URLs and viewer URLs
+            if (originalUrl.includes('/manifest')) {
+                manifestUrl = originalUrl;
+                // Extract ID from manifest URL
+                const idMatch = originalUrl.match(/iiif\/([^/]+)\/manifest/);
+                displayName = idMatch ? `Vallicelliana ${idMatch[1]}` : 'Vallicelliana Manuscript';
+            } else {
+                // Extract ID from regular URL and construct manifest URL
+                const idMatch = originalUrl.match(/omnes\.dbseret\.com\/vallicelliana\/iiif\/([^/?]+)/);
+                if (!idMatch) {
+                    throw new Error('Cannot extract manuscript ID from Omnes Vallicelliana URL');
+                }
+                const manuscriptId = idMatch[1];
+                manifestUrl = `https://omnes.dbseret.com/vallicelliana/iiif/${manuscriptId}/manifest`;
+                displayName = `Vallicelliana ${manuscriptId}`;
+            }
+            
+            console.log(`Loading Omnes Vallicelliana manifest from: ${manifestUrl}`);
+            
+            // Fetch and parse IIIF manifest
+            const response = await this.fetchDirect(manifestUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch manifest: HTTP ${response.status}`);
+            }
+            
+            const manifestData = await response.json();
+            
+            // Extract display name from manifest label
+            if (manifestData.label) {
+                displayName = manifestData.label;
+            }
+            
+            // Get canvases from IIIF v2 structure
+            const canvases = manifestData.sequences?.[0]?.canvases || [];
+            if (canvases.length === 0) {
+                throw new Error('No canvases found in manifest');
+            }
+            
+            // Extract page URLs using full/full/0/default.jpg for maximum resolution
+            const pageLinks = canvases.map((canvas: any) => {
+                if (canvas.images && canvas.images[0]) {
+                    const imageService = canvas.images[0].resource.service;
+                    if (imageService && imageService['@id']) {
+                        // Extract canvas ID and construct full resolution URL
+                        const serviceId = imageService['@id'];
+                        const canvasId = serviceId.split('/').pop();
+                        return `https://omnes.dbseret.com/vallicelliana/iiif/2/${canvasId}/full/full/0/default.jpg`;
+                    }
+                }
+                return null;
+            }).filter((url: string) => url !== null);
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No valid image URLs found in manifest');
+            }
+            
+            console.log(`Found ${pageLinks.length} pages in Omnes Vallicelliana manuscript: ${displayName}`);
+            
+            return {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'omnes_vallicelliana' as any,
+                displayName: displayName,
+                originalUrl: originalUrl,
+            };
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load Omnes Vallicelliana manuscript: ${(error as Error).message}`);
+        }
+    }
+
+    /**
      * Load ICCU API manifest for manus.iccu.sbn.it URLs
      */
     async loadIccuApiManifest(originalUrl: string): Promise<ManuscriptManifest> {
@@ -8406,6 +8547,10 @@ export class EnhancedManuscriptDownloaderService {
             
             // Fetch manifest with proper timeout handling
             console.log(`Loading Verona manifest: ${manifestUrl}`);
+            this.logInfo('verona', manifestUrl, 'Starting Verona manifest fetch', {
+                codiceDigital: originalUrl.includes('codice=') ? originalUrl.match(/codice=(\d+)/)?.[1] : undefined,
+                manifestUrl
+            });
             
             // Use fetchWithHTTPS for Verona to handle SSL/connection issues
             const response = await this.fetchWithHTTPS(manifestUrl, {
@@ -8431,6 +8576,14 @@ export class EnhancedManuscriptDownloaderService {
             
             const canvases = manifestData.sequences[0].canvases;
             console.log(`Found ${canvases.length} pages in Verona manuscript`);
+            this.logInfo('verona', manifestUrl, `Verona manifest loaded successfully`, {
+                totalPages: canvases.length,
+                manuscriptLabel: manifestData.label || 'Unknown',
+                manifestSize: JSON.stringify(manifestData).length
+            });
+            
+            // Log progress every 10 pages during URL extraction
+            let lastLoggedProgress = 0;
             
             // Extract page URLs with maximum quality
             const pageLinks = canvases.map((canvas: any, index: number) => {
@@ -8439,9 +8592,21 @@ export class EnhancedManuscriptDownloaderService {
                     
                     // NBM uses IIIF Image API - construct highest quality URL
                     if (resource.service && resource.service['@id']) {
-                        const serviceId = resource.service['@id'].replace(/\/$/, '');
+                        const serviceId = resource.service['@id'].replace(/\/$/, ''); // Remove trailing slash to avoid double slashes
                         // Use full/full for maximum native resolution
-                        return `${serviceId}/full/full/0/native.jpg`;
+                        const imageUrl = `${serviceId}/full/full/0/native.jpg`;
+                        
+                        // Log progress every 10 pages
+                        if (index > 0 && index % 10 === 0 && index > lastLoggedProgress) {
+                            lastLoggedProgress = index;
+                            this.logInfo('verona', manifestUrl, `Processing page URLs`, {
+                                processed: index + 1,
+                                total: canvases.length,
+                                percentage: Math.round(((index + 1) / canvases.length) * 100)
+                            });
+                        }
+                        
+                        return imageUrl;
                     } else if (resource['@id']) {
                         // Direct resource URL - already at full resolution
                         return resource['@id'];
@@ -8458,6 +8623,12 @@ export class EnhancedManuscriptDownloaderService {
             if (pageLinks.length === 0) {
                 throw new Error('No valid page images found in manifest');
             }
+            
+            this.logInfo('verona', manifestUrl, `Verona manifest processing complete`, {
+                validPages: pageLinks.length,
+                skippedPages: canvases.length - pageLinks.length,
+                firstPageUrl: pageLinks[0]?.substring(0, 100) + '...'
+            });
             
             // Extract title from manifest
             const title = manifestData.label || manifestData['@label'] || displayName;
@@ -9924,11 +10095,16 @@ export class EnhancedManuscriptDownloaderService {
      * Load HHU Düsseldorf Digital Library manifest
      */
     async loadHhuManifest(hhuUrl: string): Promise<ManuscriptManifest> {
+        const startTime = Date.now();
+        console.log(`[HHU] Starting manifest load from URL: ${hhuUrl}`);
+        
         try {
             // Extract manuscript ID from URL
             // URL format: https://digital.ulb.hhu.de/i3f/v20/7674176/manifest
             let manifestUrl: string;
             let manuscriptId: string | null = null;
+            
+            console.log('[HHU] Parsing URL to extract manuscript ID...');
             
             if (hhuUrl.includes('/manifest')) {
                 // Already a manifest URL
@@ -9937,6 +10113,7 @@ export class EnhancedManuscriptDownloaderService {
                 if (idMatch) {
                     manuscriptId = idMatch[1];
                 }
+                console.log(`[HHU] Found manifest URL, manuscript ID: ${manuscriptId}`);
             } else {
                 // Extract ID from various URL formats
                 let idMatch = hhuUrl.match(/\/v20\/(\d+)/);
@@ -9953,63 +10130,125 @@ export class EnhancedManuscriptDownloaderService {
                 }
                 manuscriptId = idMatch[1];
                 manifestUrl = `https://digital.ulb.hhu.de/i3f/v20/${manuscriptId}/manifest`;
+                console.log(`[HHU] Extracted manuscript ID: ${manuscriptId}, manifest URL: ${manifestUrl}`);
             }
             
             let displayName = `HHU Düsseldorf - ${manuscriptId || 'Manuscript'}`;
             
-            console.log('Loading HHU manifest from:', manifestUrl);
-            const response = await this.fetchWithHTTPS(manifestUrl);
-            const manifest = JSON.parse(response);
+            console.log(`[HHU] Loading manifest from: ${manifestUrl}`);
             
-            // Extract metadata from IIIF manifest
-            if (manifest.label) {
-                displayName = `HHU - ${manifest.label}`;
-            }
+            // Set a timeout for the manifest fetch
+            const fetchTimeout = 60000; // 60 seconds timeout for manifest loading
+            const timeoutPromise = new Promise<never>((_, reject) => {
+                setTimeout(() => {
+                    reject(new Error(`HHU manifest loading timeout after ${fetchTimeout / 1000} seconds`));
+                }, fetchTimeout);
+            });
             
-            if (!manifest.sequences || !manifest.sequences[0] || !manifest.sequences[0].canvases) {
-                throw new Error('Invalid IIIF manifest structure');
-            }
-            
-            const canvases = manifest.sequences[0].canvases;
-            const pageLinks: string[] = [];
-            
-            console.log(`Processing ${canvases.length} pages from HHU manuscript`);
-            
-            // Process each canvas to extract maximum quality image URLs
-            for (const canvas of canvases) {
-                if (!canvas.images || !canvas.images[0]) continue;
+            try {
+                const response = await Promise.race([
+                    this.fetchWithHTTPS(manifestUrl),
+                    timeoutPromise
+                ]);
                 
-                const image = canvas.images[0];
-                const resource = image.resource;
+                console.log(`[HHU] Manifest fetch completed in ${Date.now() - startTime}ms`);
+                console.log(`[HHU] Parsing manifest JSON...`);
                 
-                if (resource.service && resource.service['@id']) {
-                    const serviceId = resource.service['@id'];
-                    // Use maximum resolution - full/full/0/default.jpg
-                    const imageUrl = `${serviceId}/full/full/0/default.jpg`;
-                    pageLinks.push(imageUrl);
-                } else if (resource['@id']) {
-                    // Fallback to direct image URL
-                    pageLinks.push(resource['@id']);
+                const manifest = JSON.parse(response);
+            
+                // Extract metadata from IIIF manifest
+                if (manifest.label) {
+                    displayName = `HHU - ${manifest.label}`;
+                    console.log(`[HHU] Manuscript label: ${manifest.label}`);
                 }
+                
+                if (!manifest.sequences || !manifest.sequences[0] || !manifest.sequences[0].canvases) {
+                    console.error('[HHU] Invalid manifest structure:', {
+                        hasSequences: !!manifest.sequences,
+                        hasFirstSequence: !!(manifest.sequences && manifest.sequences[0]),
+                        hasCanvases: !!(manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases)
+                    });
+                    throw new Error('Invalid IIIF manifest structure - missing sequences or canvases');
+                }
+                
+                const canvases = manifest.sequences[0].canvases;
+                const pageLinks: string[] = [];
+                
+                console.log(`[HHU] Processing ${canvases.length} pages from manuscript`);
+                
+                // Process each canvas to extract maximum quality image URLs
+                for (let i = 0; i < canvases.length; i++) {
+                    const canvas = canvases[i];
+                    if (!canvas.images || !canvas.images[0]) {
+                        console.warn(`[HHU] Canvas ${i + 1} has no images, skipping`);
+                        continue;
+                    }
+                    
+                    const image = canvas.images[0];
+                    const resource = image.resource;
+                    
+                    if (resource.service && resource.service['@id']) {
+                        const serviceId = resource.service['@id'];
+                        // Use maximum resolution - full/full/0/default.jpg
+                        const imageUrl = `${serviceId}/full/full/0/default.jpg`;
+                        pageLinks.push(imageUrl);
+                        if (i < 3 || i === canvases.length - 1) {
+                            console.log(`[HHU] Page ${i + 1} image URL: ${imageUrl}`);
+                        }
+                    } else if (resource['@id']) {
+                        // Fallback to direct image URL
+                        pageLinks.push(resource['@id']);
+                        console.log(`[HHU] Page ${i + 1} using direct URL: ${resource['@id']}`);
+                    } else {
+                        console.warn(`[HHU] Page ${i + 1} has no accessible image URL`);
+                    }
+                }
+                
+                if (pageLinks.length === 0) {
+                    console.error('[HHU] No valid image URLs found in manifest');
+                    throw new Error('No images found in HHU manifest');
+                }
+                
+                console.log(`[HHU] Successfully extracted ${pageLinks.length} pages in ${Date.now() - startTime}ms`);
+                this.logInfo('hhu', manifestUrl, 'HHU manifest processing complete', {
+                    totalPages: pageLinks.length,
+                    processingTime: Date.now() - startTime,
+                    firstPageUrl: pageLinks[0]?.substring(0, 100) + '...'
+                });
+                
+                return {
+                    displayName,
+                    totalPages: pageLinks.length,
+                    library: 'hhu',
+                    pageLinks,
+                    originalUrl: hhuUrl
+                };
+                
+            } catch (fetchError: any) {
+                console.error(`[HHU] Manifest fetch/parse error: ${fetchError.message}`);
+                throw fetchError;
             }
-            
-            if (pageLinks.length === 0) {
-                throw new Error('No images found in HHU manifest');
-            }
-            
-            console.log(`Found ${pageLinks.length} pages in HHU manuscript`);
-            
-            return {
-                displayName,
-                totalPages: pageLinks.length,
-                library: 'hhu',
-                pageLinks,
-                originalUrl: hhuUrl
-            };
             
         } catch (error: any) {
-            console.error('Failed to load HHU manifest:', error);
-            throw new Error(`Failed to load HHU Düsseldorf manuscript: ${error.message}`);
+            const duration = Date.now() - startTime;
+            console.error(`[HHU] Failed to load manifest after ${duration}ms:`, {
+                url: hhuUrl,
+                error: error.message,
+                stack: error.stack
+            });
+            
+            // Provide more specific error messages
+            if (error.message.includes('timeout')) {
+                throw new Error(`HHU Düsseldorf manifest loading timed out after ${duration / 1000} seconds. The server may be slow or unresponsive. Please try again later or check if the manuscript is accessible at ${hhuUrl}`);
+            } else if (error.message.includes('Could not extract manuscript ID')) {
+                throw new Error(`Invalid HHU URL format. Expected formats: /i3f/v20/[ID]/manifest, /content/titleinfo/[ID], or /content/pageview/[ID]. Received: ${hhuUrl}`);
+            } else if (error.message.includes('Invalid IIIF manifest structure')) {
+                throw new Error(`HHU server returned an invalid IIIF manifest. The manuscript may not be available or the server format may have changed.`);
+            } else if (error.message.includes('ECONNREFUSED') || error.message.includes('ENOTFOUND')) {
+                throw new Error(`Cannot connect to HHU Düsseldorf server. Please check your internet connection and verify the URL is correct.`);
+            } else {
+                throw new Error(`Failed to load HHU Düsseldorf manuscript: ${error.message}`);
+            }
         }
     }
 

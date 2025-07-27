@@ -49,7 +49,13 @@ export class LibraryOptimizationService {
         },
         // Default libraries (no special optimizations)
         'nypl': {},
-        'morgan': {},
+        'morgan': {
+            maxConcurrentDownloads: 2, // Reduced concurrency for ZIF file processing
+            timeoutMultiplier: 4.0, // Extended timeout for large ZIF file downloads and processing
+            enableProgressiveBackoff: true, // Enable backoff for server stability
+            autoSplitThresholdMB: 300, // Lower threshold due to ZIF processing overhead
+            optimizationDescription: 'Morgan Library optimizations: 2 concurrent downloads, 4x timeout for ZIF processing, auto-split at 300MB'
+        },
         'gallica': {},
         'grenoble': {
             maxConcurrentDownloads: 3, // Moderate concurrent downloads for Gallica-based infrastructure
@@ -151,10 +157,16 @@ export class LibraryOptimizationService {
             timeoutMultiplier: 1.3, // Slightly increased timeout for DAM platform
             optimizationDescription: 'Vallicelliana Library optimizations: 4 concurrent downloads, DAM platform compatibility'
         },
+        'omnes_vallicelliana': {
+            maxConcurrentDownloads: 4, // Omnes Vallicelliana IIIF v2 service with good performance
+            timeoutMultiplier: 1.2, // Standard timeout, server responds well
+            optimizationDescription: 'Omnes Vallicelliana optimizations: 4 concurrent downloads, IIIF v2 manifest-based access with full resolution support'
+        },
         'verona': {
             maxConcurrentDownloads: 3, // Verona IIIF service via NBM
             timeoutMultiplier: 1.5, // Increased timeout for complex URL mapping and IIIF manifest processing
-            optimizationDescription: 'Verona Biblioteca Manoscritta optimizations: 3 concurrent downloads, extended timeouts for complex interface'
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'Verona NBM optimizations: 3 concurrent downloads, extended timeouts for large manuscripts (200+ pages), dynamic IIIF manifest discovery'
         },
         'europeana': {
             maxConcurrentDownloads: 4, // Europeana IIIF aggregator with good performance

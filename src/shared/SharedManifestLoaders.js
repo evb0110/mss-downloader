@@ -44,7 +44,7 @@ class SharedManifestLoaders {
             };
 
             // SSL bypass for specific domains
-            if (url.includes('bdh-rd.bne.es') || url.includes('pagella.bm-grenoble.fr')) {
+            if (url.includes('bdh-rd.bne.es') || url.includes('pagella.bm-grenoble.fr') || url.includes('nuovabibliotecamanoscritta.it')) {
                 requestOptions.rejectUnauthorized = false;
             }
 
@@ -115,42 +115,180 @@ class SharedManifestLoaders {
     }
 
     /**
-     * Verona - Fixed with direct IIIF access pattern
+     * Verona - NBM (Nuova Biblioteca Manoscritta) with dynamic IIIF manifest fetching
      */
     async getVeronaManifest(url) {
-        const match = url.match(/codice=(\d+)/);
-        if (!match) throw new Error('Invalid Verona URL');
+        console.log('[Verona] Processing URL:', url);
         
-        const codice = match[1];
+        // Check if this is a direct IIIF manifest URL
+        if (url.includes('mirador_json/manifest/')) {
+            console.log('[Verona] Direct IIIF manifest URL detected');
+            return await this.fetchVeronaIIIFManifest(url);
+        }
         
-        // New mapping based on network traffic analysis
-        const manuscriptMappings = {
-            '15': { collection: 'VR0056', manuscriptId: 'LXXXIX+(84)' } // From network traffic analysis
-            // Other codice mappings would need to be verified with network traffic
+        // Extract codice from interface URL
+        const codiceMatch = url.match(/codice=(\d+)/);
+        const codiceDigitalMatch = url.match(/codiceDigital=(\d+)/);
+        const codice = codiceMatch?.[1] || codiceDigitalMatch?.[1];
+        
+        if (!codice) {
+            throw new Error('Invalid Verona URL - no codice parameter found');
+        }
+        
+        console.log('[Verona] Extracted codice:', codice);
+        
+        // Try to discover the manifest URL from the HTML page
+        try {
+            const manifestUrl = await this.discoverVeronaManifestUrl(url, codice);
+            if (manifestUrl) {
+                console.log('[Verona] Discovered manifest URL:', manifestUrl);
+                return await this.fetchVeronaIIIFManifest(manifestUrl);
+            }
+        } catch (error) {
+            console.warn('[Verona] Failed to discover manifest URL:', error.message);
+        }
+        
+        // Fallback to known mappings with enhanced discovery
+        const knownMappings = {
+            '15': 'LXXXIX841',  // LXXXIX (84)
+            '14': 'CVII1001'    // CVII (100) - based on test patterns
         };
         
-        const mapping = manuscriptMappings[codice];
-        if (!mapping) {
-            throw new Error(`Unknown Verona manuscript code: ${codice}`);
+        const manifestId = knownMappings[codice];
+        if (manifestId) {
+            const manifestUrl = `https://nbm.regione.veneto.it/documenti/mirador_json/manifest/${manifestId}.json`;
+            console.log('[Verona] Using known mapping, manifest URL:', manifestUrl);
+            return await this.fetchVeronaIIIFManifest(manifestUrl);
         }
         
+        throw new Error(`Unable to find manifest for Verona manuscript code: ${codice}. Please use the direct IIIF manifest URL instead.`);
+    }
+    
+    /**
+     * Discover Verona manifest URL from HTML page
+     */
+    async discoverVeronaManifestUrl(pageUrl, codice) {
+        console.log('[Verona] Attempting to discover manifest URL from page');
+        
+        try {
+            const response = await this.fetchWithRetry(pageUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch page: ${response.status}`);
+            }
+            
+            const html = await response.text();
+            
+            // Look for manifest references in the HTML
+            // Common patterns: manifest.json links, Mirador configuration, etc.
+            const manifestPatterns = [
+                /manifest[/\\]([A-Z]+\d+)\.json/i,
+                /"manifestUri":\s*"([^"]+manifest[^"]+)"/,
+                /data-manifest="([^"]+)"/,
+                /mirador_json\/manifest\/([A-Z]+\d+)/i
+            ];
+            
+            for (const pattern of manifestPatterns) {
+                const match = html.match(pattern);
+                if (match) {
+                    let manifestUrl = match[1];
+                    
+                    // If we only got the ID, construct the full URL
+                    if (!manifestUrl.startsWith('http')) {
+                        if (manifestUrl.includes('.json')) {
+                            manifestUrl = `https://nbm.regione.veneto.it${manifestUrl.startsWith('/') ? '' : '/'}${manifestUrl}`;
+                        } else {
+                            manifestUrl = `https://nbm.regione.veneto.it/documenti/mirador_json/manifest/${manifestUrl}.json`;
+                        }
+                    }
+                    
+                    console.log('[Verona] Found manifest URL in HTML:', manifestUrl);
+                    return manifestUrl;
+                }
+            }
+            
+            // Try to find Mirador viewer initialization
+            const miradorMatch = html.match(/Mirador\.viewer\s*\(\s*{[^}]*manifestUri[^}]*}\s*\)/);
+            if (miradorMatch) {
+                const manifestUriMatch = miradorMatch[0].match(/"manifestUri":\s*"([^"]+)"/);
+                if (manifestUriMatch) {
+                    console.log('[Verona] Found manifest in Mirador config:', manifestUriMatch[1]);
+                    return manifestUriMatch[1];
+                }
+            }
+            
+        } catch (error) {
+            console.error('[Verona] Error discovering manifest URL:', error);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Fetch and parse Verona IIIF manifest
+     */
+    async fetchVeronaIIIFManifest(manifestUrl) {
+        console.log('[Verona] Fetching IIIF manifest from:', manifestUrl);
+        
+        const response = await this.fetchWithRetry(manifestUrl);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch Verona manifest: ${response.status}`);
+        }
+        
+        const manifest = await response.json();
         const images = [];
         
-        // Generate first 10 pages using the exact pattern from network traffic
-        for (let i = 1; i <= 10; i++) {
-            const pageNum = String(i).padStart(3, '0');
-            // Use the exact working pattern from network traffic
-            const imageUrl = `https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%252Fbibliotecadigitale%252Fnbm%252FVR0056%252FLXXXIX%2B%252884%2529%252FVR0056-Cod._LXXXIX_%252884%2529_c._${pageNum}r/full/full/0/native.jpg`;
+        // Extract manuscript label/title
+        const displayName = manifest.label || 'Verona Manuscript';
+        console.log('[Verona] Manuscript:', displayName);
+        
+        // Parse IIIF v2 manifest structure
+        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            const canvases = manifest.sequences[0].canvases;
+            console.log('[Verona] Found', canvases.length, 'pages in manifest');
             
-            images.push({
-                url: imageUrl,
-                label: `Page ${pageNum}r`
-            });
+            // Process ALL pages, not just 10
+            for (let i = 0; i < canvases.length; i++) {
+                const canvas = canvases[i];
+                
+                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                    const resource = canvas.images[0].resource;
+                    const service = resource.service;
+                    
+                    // Get the best quality image URL
+                    let imageUrl = resource['@id'] || resource.id;
+                    
+                    // If we have a IIIF service, use it to get maximum resolution
+                    if (service && service['@id']) {
+                        const serviceUrl = service['@id'].replace(/\/$/, ''); // Remove trailing slash
+                        // Test different resolution parameters to find the best quality
+                        // Verona supports: full/full, full/max, full/2000, etc.
+                        imageUrl = `${serviceUrl}/full/max/0/default.jpg`;
+                        
+                        // Log progress every 10 pages
+                        if ((i + 1) % 10 === 0) {
+                            console.log(`[Verona] Processing page ${i + 1}/${canvases.length}`);
+                        }
+                    }
+                    
+                    images.push({
+                        url: imageUrl,
+                        label: canvas.label || `Page ${i + 1}`
+                    });
+                }
+            }
+        } else {
+            throw new Error('Invalid Verona IIIF manifest structure');
         }
+        
+        if (images.length === 0) {
+            throw new Error('No images found in Verona manifest');
+        }
+        
+        console.log('[Verona] Successfully extracted', images.length, 'pages');
         
         return { 
             images,
-            displayName: `Verona ${mapping.collection} - ${mapping.manuscriptId}`
+            displayName: `Verona - ${displayName}`
         };
     }
 

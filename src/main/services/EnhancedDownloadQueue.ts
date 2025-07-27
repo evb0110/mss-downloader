@@ -1107,8 +1107,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                                     manifest.library === 'czech' ? 0.5 :
                                     manifest.library === 'modena' ? 0.4 :
                                     manifest.library === 'bdl' ? 0.5 :
-                                    manifest.library === 'morgan' ? 25.0 : // Morgan .zif files are very large (average 25MB per stitched image)
-                                    0.4; // 600KB for Orleans IIIF, 800KB for Internet Culturale IIIF, 700KB for Manuscripta IIIF, 800KB for Graz IIIF, 500KB for Cologne webcache, 300KB for Rome, 1.2MB for NYPL IIIF, 500KB for Czech, 400KB for Modena mobile, 500KB for BDL IIIF, 25MB for Morgan .zif, 400KB for Florus
+                                    manifest.library === 'morgan' ? 5.0 : // Morgan .zif files reduced estimate (5MB per stitched image)
+                                    0.4; // 600KB for Orleans IIIF, 800KB for Internet Culturale IIIF, 700KB for Manuscripta IIIF, 800KB for Graz IIIF, 500KB for Cologne webcache, 300KB for Rome, 1.2MB for NYPL IIIF, 500KB for Czech, 400KB for Modena mobile, 500KB for BDL IIIF, 5MB for Morgan .zif, 400KB for Florus
                 const estimatedTotalSizeMB = avgPageSizeMB * manifest.totalPages;
                 item.estimatedSizeMB = estimatedTotalSizeMB;
                 
