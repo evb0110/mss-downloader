@@ -46,6 +46,8 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 - When user says "bump"
 
 **EXPLICIT USER APPROVAL ALWAYS REQUIRED:** Never bump version automatically, even with trigger conditions
+
+**EXCEPTION: /handle-issues AUTONOMOUS WORKFLOW:** The `/handle-issues` command is AUTONOMOUS and does NOT require user approval for version bumps. It validates programmatically and seeks approval from GitHub issue authors instead. ALL issue comments must be in Russian.
 - Telegram bot should send changelog message for every build. It should contain non-technical summary of all fixes and additions after last build: Libraries added, new url patterns for downloads etc. It should be concise, but user should understand from it all the new functionality.
 
 ### CRITICAL TELEGRAM BOT CHANGELOG REQUIREMENTS:
