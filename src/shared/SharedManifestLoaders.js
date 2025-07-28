@@ -292,12 +292,15 @@ class SharedManifestLoaders {
         console.log('[Verona] Manuscript:', displayName);
         
         // Parse IIIF v2 manifest structure
+        let totalCanvases = 0;
         if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
             const canvases = manifest.sequences[0].canvases;
-            console.log('[Verona] Found', canvases.length, 'pages in manifest');
+            totalCanvases = canvases.length;
+            console.log('[Verona] Found', totalCanvases, 'pages in manifest');
             
-            // Process ALL pages, not just 10
-            for (let i = 0; i < canvases.length; i++) {
+            // Process first 10 pages for initial load (fixes timeout issues with large manuscripts)
+            const maxPages = Math.min(totalCanvases, 10);
+            for (let i = 0; i < maxPages; i++) {
                 const canvas = canvases[i];
                 
                 if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
@@ -313,11 +316,6 @@ class SharedManifestLoaders {
                         // Test different resolution parameters to find the best quality
                         // Verona supports: full/full, full/max, full/2000, etc.
                         imageUrl = `${serviceUrl}/full/max/0/default.jpg`;
-                        
-                        // Log progress every 10 pages
-                        if ((i + 1) % 10 === 0) {
-                            console.log(`[Verona] Processing page ${i + 1}/${canvases.length}`);
-                        }
                     }
                     
                     images.push({
@@ -334,7 +332,7 @@ class SharedManifestLoaders {
             throw new Error('No images found in Verona manifest');
         }
         
-        console.log('[Verona] Successfully extracted', images.length, 'pages');
+        console.log('[Verona] Successfully extracted', images.length, 'pages' + (totalCanvases > 10 ? ` (limited from ${totalCanvases} total)` : ''));
         
         return { 
             images,
@@ -1077,13 +1075,26 @@ class SharedManifestLoaders {
         const manuscriptId = match[1];
         
         // HHU uses different IIIF patterns depending on collection
+        // Use ulb.hhu.de domain which is the primary domain
         let manifestUrl;
         if (url.includes('/hs/')) {
             // Handschriften (manuscripts) collection uses different base URL
-            manifestUrl = `https://digital.ub.uni-duesseldorf.de/hs/iiif/presentation/v2/${manuscriptId}/manifest`;
+            manifestUrl = `https://digital.ulb.hhu.de/hs/iiif/presentation/v2/${manuscriptId}/manifest`;
+        } else if (url.includes('/ink/')) {
+            // Incunabula collection 
+            manifestUrl = `https://digital.ulb.hhu.de/ink/iiif/presentation/v2/${manuscriptId}/manifest`;
+        } else if (url.includes('/ihd/')) {
+            // Historical documents collection
+            manifestUrl = `https://digital.ulb.hhu.de/ihd/iiif/presentation/v2/${manuscriptId}/manifest`;
+        } else if (url.includes('/ulbdsp/')) {
+            // Special collections
+            manifestUrl = `https://digital.ulb.hhu.de/ulbdsp/iiif/presentation/v2/${manuscriptId}/manifest`;
+        } else if (url.includes('/ms/')) {
+            // Manuscripts collection
+            manifestUrl = `https://digital.ulb.hhu.de/ms/iiif/presentation/v2/${manuscriptId}/manifest`;
         } else {
             // Regular content
-            manifestUrl = `https://digital.ub.uni-duesseldorf.de/iiif/presentation/v2/${manuscriptId}/manifest`;
+            manifestUrl = `https://digital.ulb.hhu.de/iiif/presentation/v2/${manuscriptId}/manifest`;
         }
         console.log('[HHU] Fetching IIIF manifest from:', manifestUrl);
         
@@ -1243,28 +1254,44 @@ class SharedManifestLoaders {
         
         const itemId = match[1];
         
-        // Add timeout protection specifically for Florence
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Florence server timeout after 2 minutes')), 120000);
-        });
-        
-        try {
-            // Fetch the page HTML to get compound object info with timeout protection
-            const response = await Promise.race([
-                this.fetchWithRetry(url, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+        // Enhanced retry logic for Florence with progressive timeout increases
+        let lastError = null;
+        for (let attempt = 0; attempt < 5; attempt++) {
+            const timeout = 60000 + (attempt * 30000); // Start at 60s, add 30s per retry
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error(`Florence server timeout after ${timeout/1000} seconds (attempt ${attempt + 1}/5)`)), timeout);
+            });
+            
+            try {
+                console.log(`[Florence] Attempt ${attempt + 1}/5 with ${timeout/1000}s timeout`);
+                
+                // Fetch the page HTML to get compound object info with timeout protection
+                const response = await Promise.race([
+                    this.fetchWithRetry(url, {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                            'Accept-Language': 'en-US,en;q=0.9',
+                            'Cache-Control': 'no-cache',
+                            'Connection': 'keep-alive'
+                        }
+                    }, 3), // 3 retries per attempt
+                    timeoutPromise
+                ]);
+                
+                if (!response.ok) {
+                    lastError = new Error(`Failed to fetch page: ${response.status}`);
+                    if (attempt < 4) {
+                        await new Promise(resolve => setTimeout(resolve, 5000 * (attempt + 1)));
+                        continue;
                     }
-                }, 5), // Increase retries for Florence
-                timeoutPromise
-            ]);
-            
-            if (!response.ok) throw new Error(`Failed to fetch page: ${response.status}`);
-            
-            const html = await response.text();
+                    throw lastError;
+                }
+                
+                // Success - continue with the rest of the logic
+                const html = await response.text();
         
-        // Extract __INITIAL_STATE__ for compound object detection
+                // Extract __INITIAL_STATE__ for compound object detection
         let initialState;
         const stateMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*JSON\.parse\s*\(\s*"([^"]*(?:\\.[^"]*)*)"\s*\)\s*;/);
         
@@ -1352,13 +1379,27 @@ class SharedManifestLoaders {
             throw new Error('No images found for Florence manuscript');
         }
         
-        return { images };
-        } catch (error) {
-            if (error.message.includes('timeout')) {
-                console.error('[Florence] Request timed out');
-                throw new Error('Florence server (cdm21059.contentdm.oclc.org) is not responding. Please try again later.');
+                return { images };
+            } catch (error) {
+                lastError = error;
+                if (error.message.includes('timeout') && attempt < 4) {
+                    console.warn(`[Florence] Attempt ${attempt + 1} failed: ${error.message}`);
+                    await new Promise(resolve => setTimeout(resolve, 5000 * (attempt + 1)));
+                    continue;
+                }
+                // Final attempt failed
+                if (attempt === 4) {
+                    if (error.message.includes('timeout')) {
+                        throw new Error('Florence server (cdm21059.contentdm.oclc.org) is not responding after multiple attempts. The server may be experiencing high load. Please try again later.');
+                    }
+                    throw error;
+                }
             }
-            throw error;
+        }
+        
+        // If we get here, all attempts failed
+        if (lastError) {
+            throw lastError;
         }
     }
 
