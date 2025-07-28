@@ -16,7 +16,7 @@ class SharedManifestLoaders {
     async defaultNodeFetch(url, options = {}, retries = 3) {
         // Increase retries for Verona domains
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
-            retries = 5;
+            retries = 7; // Increased from 5 to 7 for better reliability
         }
         
         for (let i = 0; i < retries; i++) {
@@ -25,10 +25,17 @@ class SharedManifestLoaders {
             } catch (error) {
                 console.log(`[SharedManifestLoaders] Attempt ${i + 1}/${retries} failed for ${url}: ${error.message}`);
                 
-                if (i === retries - 1) throw error;
+                if (i === retries - 1) {
+                    // Enhanced error message for Verona timeouts
+                    if ((url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) && 
+                        (error.code === 'ETIMEDOUT' || error.message.includes('timeout'))) {
+                        throw new Error('Verona server (nuovabibliotecamanoscritta.it) is not responding. The server may be experiencing high load or maintenance. Please try again later.');
+                    }
+                    throw error;
+                }
                 
                 // Progressive backoff, longer for Verona
-                const baseDelay = (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 3000 : 2000;
+                const baseDelay = (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 5000 : 2000;
                 const delay = baseDelay * (i + 1);
                 console.log(`[SharedManifestLoaders] Waiting ${delay}ms before retry...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
@@ -60,8 +67,8 @@ class SharedManifestLoaders {
                     'Accept': options.headers?.Accept || '*/*',
                     ...options.headers
                 },
-                // Increase timeout for University of Graz due to slow server response
-                timeout: url.includes('unipub.uni-graz.at') ? 120000 : 30000
+                // Increase timeout for University of Graz and Florence due to slow server response
+                timeout: (url.includes('unipub.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org')) ? 120000 : 30000
             };
 
             // SSL bypass for specific domains
@@ -543,6 +550,16 @@ class SharedManifestLoaders {
             } catch (parseError) {
                 console.error('[Graz] JSON parse error:', parseError.message);
                 console.error('[Graz] Response text (first 500 chars):', manifestText.substring(0, 500));
+                
+                // Check for specific error patterns
+                if (manifestText.includes('503 Service Unavailable')) {
+                    throw new Error('University of Graz server is temporarily unavailable (503). Please try again later.');
+                } else if (manifestText.includes('504 Gateway Timeout')) {
+                    throw new Error('University of Graz server gateway timeout (504). The manuscript may be too large or the server is overloaded.');
+                } else if (manifestText.trim() === '') {
+                    throw new Error('University of Graz returned empty response. Please verify the manuscript ID is correct.');
+                }
+                
                 throw new Error(`Failed to parse Graz manifest JSON: ${parseError.message}`);
             }
             
@@ -826,6 +843,348 @@ class SharedManifestLoaders {
     }
 
     /**
+     * Morgan Library - Supports multiple URL patterns with high-resolution image extraction
+     */
+    async getMorganManifest(url) {
+        console.log('[Morgan] Processing URL:', url);
+        
+        // Handle direct image URLs
+        if (url.match(/\.(jpg|jpeg|png|gif)$/i)) {
+            const filename = url.split('/').pop() || 'Morgan Image';
+            return {
+                images: [{
+                    url: url,
+                    label: filename
+                }]
+            };
+        }
+        
+        // Extract manuscript ID and determine base URL
+        let baseUrl;
+        let manuscriptId = '';
+        let displayName = 'Morgan Library Manuscript';
+        
+        if (url.includes('ica.themorgan.org')) {
+            // ICA format - handle both /manuscript/thumbs/ and /manuscript/page/ patterns
+            const icaMatch = url.match(/\/manuscript\/(?:thumbs|page)\/(\d+)/);
+            if (!icaMatch) throw new Error('Invalid Morgan ICA URL format');
+            baseUrl = 'https://ica.themorgan.org';
+            manuscriptId = icaMatch[1];
+            displayName = `Morgan ICA Manuscript ${manuscriptId}`;
+        } else {
+            // Main format
+            const mainMatch = url.match(/\/collection\/([^/]+)(?:\/(\d+))?(?:\/thumbs)?/);
+            if (!mainMatch) throw new Error('Invalid Morgan URL format');
+            baseUrl = 'https://www.themorgan.org';
+            manuscriptId = mainMatch[1];
+            displayName = mainMatch[1].replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+        
+        // Fetch the collection page
+        let pageUrl = url;
+        if (!pageUrl.includes('/thumbs') && !url.includes('ica.themorgan.org')) {
+            pageUrl = `${baseUrl}/collection/${manuscriptId}/thumbs`;
+        }
+        
+        const response = await this.fetchWithRetry(pageUrl);
+        if (!response.ok) throw new Error(`Failed to fetch Morgan page: ${response.status}`);
+        
+        const html = await response.text();
+        const images = [];
+        
+        if (url.includes('ica.themorgan.org')) {
+            // ICA format - extract image URLs with better pattern matching
+            // Look for full image URLs or icaimages paths
+            const icaImageRegex = /(?:https?:\/\/ica\.themorgan\.org\/)?icaimages\/\d+\/[^"']+\.(?:jpg|jpeg|png)/gi;
+            const icaMatches = [...new Set(html.match(icaImageRegex) || [])];
+            
+            // Also try alternative pattern for image references
+            if (icaMatches.length === 0) {
+                const altRegex = /\/icaimages\/[^"']+\.(?:jpg|jpeg|png)/gi;
+                const altMatches = html.match(altRegex) || [];
+                icaMatches.push(...altMatches);
+            }
+            
+            // Also check for data-zoom-image attributes
+            const zoomRegex = /data-zoom-image="([^"]+icaimages[^"]+)"/gi;
+            let zoomMatch;
+            while ((zoomMatch = zoomRegex.exec(html)) !== null) {
+                icaMatches.push(zoomMatch[1]);
+            }
+            
+            // Deduplicate and process
+            const uniqueImages = [...new Set(icaMatches)];
+            
+            for (let i = 0; i < Math.min(uniqueImages.length, 50); i++) {
+                let imageUrl = uniqueImages[i];
+                // Ensure full URL
+                if (!imageUrl.startsWith('http')) {
+                    imageUrl = imageUrl.startsWith('/') ? 
+                        `https://ica.themorgan.org${imageUrl}` : 
+                        `https://ica.themorgan.org/${imageUrl}`;
+                }
+                images.push({
+                    url: imageUrl,
+                    label: `Page ${i + 1}`
+                });
+            }
+            
+            // If still no images, check for viewer.php pattern
+            if (images.length === 0) {
+                console.log('[Morgan ICA] No images found with standard patterns, checking viewer.php');
+                const viewerMatch = html.match(/viewer\.php\?id=(\d+)/);
+                if (viewerMatch) {
+                    // Generate image URLs based on common ICA pattern
+                    const baseId = viewerMatch[1];
+                    for (let i = 1; i <= 10; i++) {
+                        images.push({
+                            url: `https://ica.themorgan.org/icaimages/${baseId}/${String(i).padStart(3, '0')}.jpg`,
+                            label: `Page ${i}`
+                        });
+                    }
+                }
+            }
+        } else {
+            // Main Morgan format - prioritize high-resolution images
+            const imagesByPriority = {
+                0: [], // ZIF ultra-high resolution
+                1: [], // High-res facsimile
+                2: [], // Direct full-size
+                3: [], // Styled images
+                4: [], // Legacy facsimile
+                5: []  // Other direct references
+            };
+            
+            // Priority 0: ZIF files
+            if (manuscriptId) {
+                const imageIdRegex = /\/images\/collection\/([^"'?]+)\.jpg/g;
+                const validImagePattern = /\d+v?_\d+/;
+                let match;
+                
+                while ((match = imageIdRegex.exec(html)) !== null) {
+                    const imageId = match[1];
+                    if (validImagePattern.test(imageId) && !imageId.includes('front-cover')) {
+                        const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptId}/${imageId}.zif`;
+                        imagesByPriority[0].push(zifUrl);
+                    }
+                }
+            }
+            
+            // Priority 1: High-res facsimile from individual pages
+            try {
+                const pageUrlRegex = new RegExp(`\\/collection\\/${manuscriptId}\\/(\\d+)`, 'g');
+                const pageMatches = [...html.matchAll(pageUrlRegex)];
+                const uniquePages = [...new Set(pageMatches.map(match => match[1]))];
+                
+                // Fetch first 10 individual pages to get high-res URLs
+                for (let i = 0; i < Math.min(uniquePages.length, 10); i++) {
+                    const pageNum = uniquePages[i];
+                    const individualPageUrl = `${baseUrl}/collection/${manuscriptId}/${pageNum}`;
+                    
+                    try {
+                        const pageResponse = await this.fetchWithRetry(individualPageUrl, {}, 1);
+                        if (pageResponse.ok) {
+                            const pageContent = await pageResponse.text();
+                            const facsimileMatch = pageContent.match(/\/sites\/default\/files\/facsimile\/[^"']+\.jpg/);
+                            if (facsimileMatch) {
+                                imagesByPriority[1].push(`${baseUrl}${facsimileMatch[0]}`);
+                            }
+                        }
+                    } catch (error) {
+                        console.warn(`[Morgan] Failed to fetch page ${pageNum}:`, error.message);
+                    }
+                }
+            } catch (error) {
+                console.warn('[Morgan] Error fetching individual pages:', error.message);
+            }
+            
+            // Priority 2: Direct full-size images
+            const fullSizeRegex = /\/sites\/default\/files\/images\/collection\/[^"'?]+\.jpg/g;
+            const fullSizeMatches = html.match(fullSizeRegex) || [];
+            for (const match of fullSizeMatches) {
+                imagesByPriority[2].push(`${baseUrl}${match}`);
+            }
+            
+            // Priority 3: Styled images (convert to original)
+            const styledRegex = /\/sites\/default\/files\/styles\/[^"']*\/public\/images\/collection\/[^"'?]+\.jpg/g;
+            const styledMatches = html.match(styledRegex) || [];
+            for (const match of styledMatches) {
+                const originalPath = match.replace(/\/styles\/[^/]+\/public\//, '/');
+                imagesByPriority[3].push(`${baseUrl}${originalPath}`);
+            }
+            
+            // Priority 4: Legacy facsimile
+            const facsimileRegex = /\/sites\/default\/files\/facsimile\/[^"']+\.jpg/g;
+            const facsimileMatches = html.match(facsimileRegex) || [];
+            for (const match of facsimileMatches) {
+                imagesByPriority[4].push(`${baseUrl}${match}`);
+            }
+            
+            // Select images by priority
+            for (let priority = 0; priority <= 5; priority++) {
+                if (imagesByPriority[priority].length > 0) {
+                    console.log(`[Morgan] Using priority ${priority} images: ${imagesByPriority[priority].length} found`);
+                    for (let i = 0; i < Math.min(imagesByPriority[priority].length, 50); i++) {
+                        images.push({
+                            url: imagesByPriority[priority][i],
+                            label: `Page ${i + 1}`
+                        });
+                    }
+                    break;
+                }
+            }
+        }
+        
+        // Extract title from page
+        const titleMatch = html.match(/<title[^>]*>([^<]+)</);
+        if (titleMatch) {
+            const pageTitle = titleMatch[1].replace(/\s*\|\s*The Morgan Library.*$/i, '').trim();
+            if (pageTitle && pageTitle !== 'The Morgan Library & Museum') {
+                displayName = pageTitle;
+            }
+        }
+        
+        // Look for manuscript identifier
+        const msMatch = html.match(/MS\s+M\.?\s*(\d+)/i);
+        if (msMatch) {
+            displayName = `${displayName} (MS M.${msMatch[1]})`;
+        }
+        
+        if (images.length === 0) {
+            throw new Error('No images found on Morgan Library page');
+        }
+        
+        console.log(`[Morgan] Successfully extracted ${images.length} images`);
+        
+        return {
+            images,
+            displayName
+        };
+    }
+
+    /**
+     * Heinrich Heine University Düsseldorf (HHU) - IIIF manifest support
+     */
+    async getHHUManifest(url) {
+        console.log('[HHU] Processing URL:', url);
+        
+        // Extract ID from URL patterns like:
+        // https://digital.ub.uni-duesseldorf.de/content/titleinfo/7938251
+        // https://digital.ub.uni-duesseldorf.de/hs/content/titleinfo/259994
+        const match = url.match(/titleinfo\/(\d+)/);
+        if (!match) throw new Error('Invalid HHU URL format');
+        
+        const manuscriptId = match[1];
+        
+        // HHU uses different IIIF patterns depending on collection
+        let manifestUrl;
+        if (url.includes('/hs/')) {
+            // Handschriften (manuscripts) collection uses different base URL
+            manifestUrl = `https://digital.ub.uni-duesseldorf.de/hs/iiif/presentation/v2/${manuscriptId}/manifest`;
+        } else {
+            // Regular content
+            manifestUrl = `https://digital.ub.uni-duesseldorf.de/iiif/presentation/v2/${manuscriptId}/manifest`;
+        }
+        console.log('[HHU] Fetching IIIF manifest from:', manifestUrl);
+        
+        try {
+            const response = await this.fetchWithRetry(manifestUrl, {
+                headers: {
+                    'Accept': 'application/json, application/ld+json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            });
+            
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error(`HHU manuscript not found: ${manuscriptId}. Please verify the URL is correct.`);
+                }
+                throw new Error(`Failed to fetch HHU manifest: ${response.status} ${response.statusText}`);
+            }
+            
+            const manifestText = await response.text();
+            
+            // Validate response is JSON
+            if (!manifestText || manifestText.trim().length === 0) {
+                throw new Error('HHU returned empty manifest response');
+            }
+            
+            if (manifestText.trim().startsWith('<!DOCTYPE') || manifestText.trim().startsWith('<html')) {
+                throw new Error('HHU returned HTML instead of JSON manifest. The manuscript may not be available.');
+            }
+            
+            let manifest;
+            try {
+                manifest = JSON.parse(manifestText);
+            } catch (parseError) {
+                console.error('[HHU] JSON parse error:', parseError.message);
+                console.error('[HHU] Response text (first 500 chars):', manifestText.substring(0, 500));
+                throw new Error(`Failed to parse HHU manifest JSON: ${parseError.message}`);
+            }
+            
+            const images = [];
+            let displayName = manifest.label || `HHU Manuscript ${manuscriptId}`;
+            
+            // Extract images from IIIF v2 manifest
+            if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+                const canvases = manifest.sequences[0].canvases;
+                console.log(`[HHU] Found ${canvases.length} pages in manifest`);
+                
+                // Process all pages, not just first 10
+                for (let i = 0; i < canvases.length; i++) {
+                    const canvas = canvases[i];
+                    
+                    if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                        const resource = canvas.images[0].resource;
+                        const service = resource.service;
+                        
+                        let imageUrl = '';
+                        
+                        // Try to get highest resolution from IIIF service
+                        if (service && service['@id']) {
+                            // HHU supports full resolution downloads
+                            imageUrl = `${service['@id']}/full/full/0/default.jpg`;
+                        } else if (resource['@id']) {
+                            imageUrl = resource['@id'];
+                        }
+                        
+                        if (imageUrl) {
+                            images.push({
+                                url: imageUrl,
+                                label: canvas.label || `Page ${i + 1}`
+                            });
+                        }
+                    }
+                    
+                    // Log progress for large manuscripts
+                    if ((i + 1) % 50 === 0) {
+                        console.log(`[HHU] Processing page ${i + 1}/${canvases.length}`);
+                    }
+                }
+            } else {
+                throw new Error('Invalid HHU IIIF manifest structure - no canvases found');
+            }
+            
+            if (images.length === 0) {
+                throw new Error('No images found in HHU manifest');
+            }
+            
+            console.log(`[HHU] Successfully extracted ${images.length} pages`);
+            
+            return {
+                images,
+                displayName
+            };
+            
+        } catch (error) {
+            if (error.message.includes('timeout')) {
+                throw new Error('HHU server request timed out. Please try again later.');
+            }
+            throw error;
+        }
+    }
+
+    /**
      * Get manifest for any library
      */
     async getManifestForLibrary(libraryId, url) {
@@ -858,6 +1217,11 @@ class SharedManifestLoaders {
                 return await this.getVaticanManifest(url);
             case 'bvpb':
                 return await this.getBVPBManifest(url);
+            case 'morgan':
+                return await this.getMorganManifest(url);
+            case 'hhu':
+            case 'duesseldorf':
+                return await this.getHHUManifest(url);
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }
@@ -867,6 +1231,8 @@ class SharedManifestLoaders {
      * Florence (ContentDM Plutei) - IIIF-based implementation
      */
     async getFlorenceManifest(url) {
+        console.log('[Florence] Processing URL:', url);
+        
         // Extract item ID from URL - handle both formats
         let match = url.match(/collection\/plutei\/id\/(\d+)/);
         if (!match) {
@@ -877,11 +1243,26 @@ class SharedManifestLoaders {
         
         const itemId = match[1];
         
-        // Fetch the page HTML to get compound object info
-        const response = await this.fetchWithRetry(url);
-        if (!response.ok) throw new Error(`Failed to fetch page: ${response.status}`);
+        // Add timeout protection specifically for Florence
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Florence server timeout after 2 minutes')), 120000);
+        });
         
-        const html = await response.text();
+        try {
+            // Fetch the page HTML to get compound object info with timeout protection
+            const response = await Promise.race([
+                this.fetchWithRetry(url, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                    }
+                }, 5), // Increase retries for Florence
+                timeoutPromise
+            ]);
+            
+            if (!response.ok) throw new Error(`Failed to fetch page: ${response.status}`);
+            
+            const html = await response.text();
         
         // Extract __INITIAL_STATE__ for compound object detection
         let initialState;
@@ -972,6 +1353,13 @@ class SharedManifestLoaders {
         }
         
         return { images };
+        } catch (error) {
+            if (error.message.includes('timeout')) {
+                console.error('[Florence] Request timed out');
+                throw new Error('Florence server (cdm21059.contentdm.oclc.org) is not responding. Please try again later.');
+            }
+            throw error;
+        }
     }
 
     /**
