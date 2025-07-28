@@ -1,5 +1,66 @@
-Проблема с библиотекой Дюссельдорфа была исправлена. 
+ISSUE #1 FIX: HHU Düsseldorf JSON Parsing Error
+==============================================
 
-Приложение теперь правильно обрабатывает ответы от сервера HHU Düsseldorf. Ранее возникала ошибка при попытке прочитать данные с сервера, но теперь программа корректно получает и обрабатывает информацию о рукописях.
+PROBLEM:
+- Error: "Unexpected token 'o', "[object Response]" is not valid JSON"
+- URL: https://digital.ulb.hhu.de/ms/content/titleinfo/7674176
+- The error occurs because the code is trying to parse a Response object directly instead of extracting its text content first
 
-Теперь вы можете успешно скачивать рукописи из цифровой библиотеки университета Дюссельдорфа без ошибок.
+ROOT CAUSE:
+In loadHhuManifest() function, after fetching with fetchWithHTTPS:
+```typescript
+const response = await Promise.race([
+    this.fetchWithHTTPS(manifestUrl),
+    timeoutPromise
+]);
+
+// BUG: response is a Response object, not text
+const responseText = await response.text();
+const manifest = JSON.parse(responseText);
+```
+
+The issue is that when the Promise race resolves with a timeout, it's likely returning the Promise object itself or some other non-Response object.
+
+FIX:
+Add proper type checking and error handling:
+
+```typescript
+const response = await Promise.race([
+    this.fetchWithHTTPS(manifestUrl),
+    timeoutPromise
+]);
+
+// Check if we got a valid Response object
+if (!response || typeof response.text !== 'function') {
+    throw new Error('Invalid response received from HHU server - expected Response object');
+}
+
+console.log(`[HHU] Manifest fetch completed in ${Date.now() - startTime}ms`);
+console.log(`[HHU] Parsing manifest JSON...`);
+
+const responseText = await response.text();
+
+// Additional validation before parsing
+if (!responseText || responseText.trim().length === 0) {
+    throw new Error('Empty response received from HHU server');
+}
+
+// Check if response is HTML error page
+if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+    throw new Error('Received HTML error page instead of JSON manifest from HHU server');
+}
+
+try {
+    const manifest = JSON.parse(responseText);
+    // ... rest of the code
+} catch (parseError) {
+    console.error('[HHU] JSON parse error:', parseError);
+    console.error('[HHU] Response text (first 500 chars):', responseText.substring(0, 500));
+    throw new Error(`Failed to parse HHU manifest JSON: ${parseError.message}`);
+}
+```
+
+IMPLEMENTATION LOCATION:
+File: src/main/services/EnhancedManuscriptDownloaderService.ts
+Function: loadHhuManifest()
+Line: Around line 4555

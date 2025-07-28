@@ -1,0 +1,27 @@
+[
+  {
+    "library": "morgan",
+    "name": "Morgan - ImagesByPriority Fix",
+    "status": "failed",
+    "error": "Could not find imagesByPriority data in Morgan page",
+    "manifest": null,
+    "pdfPath": null,
+    "pdfSize": 0,
+    "pageCount": 0,
+    "timeElapsed": 767
+  },
+  {
+    "library": "hhu",
+    "name": "HHU Düsseldorf - JSON Parsing Fix",
+    "status": "success",
+    "error": null,
+    "manifest": {
+      "title": "MS-A-14 - Pauli epistolae. Epistolae canonicae.",
+      "totalPages": 299
+    },
+    "pdfPath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation/validation-morgan-hhu-2025-07-28/hhu-manuscript.pdf",
+    "pdfSize": 1902215,
+    "pageCount": 10,
+    "timeElapsed": 7836
+  }
+]

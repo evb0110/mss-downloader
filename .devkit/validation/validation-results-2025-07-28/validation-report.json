@@ -1,0 +1,63 @@
+[
+  {
+    "library": "florence",
+    "name": "Florence - Timeout Handling Fix",
+    "status": "success",
+    "error": null,
+    "manifest": {
+      "totalPages": 50
+    },
+    "pdfPath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation/validation-results-2025-07-28/florence-manuscript.pdf",
+    "pdfSize": 16163481,
+    "pageCount": 10,
+    "timeElapsed": 57239
+  },
+  {
+    "library": "morgan",
+    "name": "Morgan - ImagesByPriority Fix",
+    "status": "failed",
+    "error": "Unsupported library: morgan",
+    "manifest": null,
+    "pdfPath": null,
+    "pdfSize": 0,
+    "pageCount": 0,
+    "timeElapsed": 0
+  },
+  {
+    "library": "verona",
+    "name": "Verona - Timeout Handling Fix",
+    "status": "success",
+    "error": null,
+    "manifest": {
+      "totalPages": 254
+    },
+    "pdfPath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation/validation-results-2025-07-28/verona-manuscript.pdf",
+    "pdfSize": 4261677,
+    "pageCount": 10,
+    "timeElapsed": 10330
+  },
+  {
+    "library": "graz",
+    "name": "Graz - Manifest Parsing Fix",
+    "status": "success",
+    "error": null,
+    "manifest": {
+      "totalPages": 405
+    },
+    "pdfPath": "/Users/e.barsky/Desktop/Personal/Electron/mss-downloader/.devkit/validation/validation-results-2025-07-28/graz-manuscript.pdf",
+    "pdfSize": 9230825,
+    "pageCount": 10,
+    "timeElapsed": 11265
+  },
+  {
+    "library": "hhu",
+    "name": "HHU Düsseldorf - JSON Parsing Fix",
+    "status": "failed",
+    "error": "Unsupported library: hhu",
+    "manifest": null,
+    "pdfPath": null,
+    "pdfSize": 0,
+    "pageCount": 0,
+    "timeElapsed": 0
+  }
+]

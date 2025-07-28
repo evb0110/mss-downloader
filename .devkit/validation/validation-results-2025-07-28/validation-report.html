@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MSS Downloader Validation Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        .summary { background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 20px 0; }
+        .success { color: #28a745; }
+        .failed { color: #dc3545; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <h1>MSS Downloader Validation Report</h1>
+    <p>Generated: 7/28/2025, 11:47:10 AM</p>
+    
+    <div class="summary">
+        <h2>Summary</h2>
+        <p>Total Tests: 5</p>
+        <p class="success">✅ Passed: 3</p>
+        <p class="failed">❌ Failed: 2</p>
+    </div>
+    
+    <h2>Test Results</h2>
+    <table>
+        <tr>
+            <th>Library</th>
+            <th>Status</th>
+            <th>Time (s)</th>
+            <th>Pages</th>
+            <th>PDF Size (MB)</th>
+            <th>Error</th>
+        </tr>
+        
+        <tr>
+            <td>Florence - Timeout Handling Fix</td>
+            <td class="success">✅ Pass</td>
+            <td>57.2</td>
+            <td>10</td>
+            <td>15.41</td>
+            <td>-</td>
+        </tr>
+        
+        <tr>
+            <td>Morgan - ImagesByPriority Fix</td>
+            <td class="failed">❌ Fail</td>
+            <td>0.0</td>
+            <td>-</td>
+            <td>-</td>
+            <td>Unsupported library: morgan</td>
+        </tr>
+        
+        <tr>
+            <td>Verona - Timeout Handling Fix</td>
+            <td class="success">✅ Pass</td>
+            <td>10.3</td>
+            <td>10</td>
+            <td>4.06</td>
+            <td>-</td>
+        </tr>
+        
+        <tr>
+            <td>Graz - Manifest Parsing Fix</td>
+            <td class="success">✅ Pass</td>
+            <td>11.3</td>
+            <td>10</td>
+            <td>8.80</td>
+            <td>-</td>
+        </tr>
+        
+        <tr>
+            <td>HHU Düsseldorf - JSON Parsing Fix</td>
+            <td class="failed">❌ Fail</td>
+            <td>0.0</td>
+            <td>-</td>
+            <td>-</td>
+            <td>Unsupported library: hhu</td>
+        </tr>
+        
+    </table>
+</body>
+</html>

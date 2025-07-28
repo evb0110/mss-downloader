@@ -722,10 +722,10 @@ export class EnhancedManuscriptDownloaderService {
                 headers
             };
             
-            // Verona, Grenoble, Graz, and MDC Catalonia domains benefit from full HTTPS module bypass for better reliability
+            // Verona, Grenoble, Graz, MDC Catalonia, and Florence domains benefit from full HTTPS module bypass for better reliability
             if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') || 
                 url.includes('pagella.bm-grenoble.fr') || url.includes('unipub.uni-graz.at') || 
-                url.includes('mdc.csuc.cat')) {
+                url.includes('mdc.csuc.cat') || url.includes('cdm21059.contentdm.oclc.org')) {
                 try {
                     const response = await this.fetchWithHTTPS(url, { ...fetchOptions, timeout });
                     if (timeoutId) clearTimeout(timeoutId);
@@ -900,8 +900,37 @@ export class EnhancedManuscriptDownloaderService {
             }
         }
         
-        // Create agent with connection pooling for Graz
-        const agent = url.includes('unipub.uni-graz.at') ? 
+        // Special handling for Florence to resolve ETIMEDOUT issues
+        if (url.includes('cdm21059.contentdm.oclc.org')) {
+            try {
+                // Pre-resolve DNS to avoid resolution timeouts
+                console.log(`[Florence] Pre-resolving DNS for ${urlObj.hostname}`);
+                const addresses = await dns.resolve4(urlObj.hostname);
+                if (addresses.length > 0) {
+                    console.log(`[Florence] Resolved to ${addresses[0]}`);
+                }
+            } catch (dnsError) {
+                console.warn(`[Florence] DNS resolution failed, proceeding anyway:`, dnsError);
+            }
+        }
+        
+        // Special handling for Verona to resolve ETIMEDOUT issues
+        if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
+            try {
+                // Pre-resolve DNS to avoid resolution timeouts
+                console.log(`[Verona] Pre-resolving DNS for ${urlObj.hostname}`);
+                const addresses = await dns.resolve4(urlObj.hostname);
+                if (addresses.length > 0) {
+                    console.log(`[Verona] Resolved to ${addresses[0]}`);
+                }
+            } catch (dnsError) {
+                console.warn(`[Verona] DNS resolution failed, proceeding anyway:`, dnsError);
+            }
+        }
+        
+        // Create agent with connection pooling for Graz, Florence, and Verona
+        const agent = (url.includes('unipub.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org') ||
+                      url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 
             new https.Agent({
                 keepAlive: true,
                 keepAliveMsecs: 1000,
@@ -1051,8 +1080,9 @@ export class EnhancedManuscriptDownloaderService {
                 const attemptDuration = Date.now() - attemptStartTime;
                 console.log(`[fetchWithHTTPS] Request error after ${attemptDuration}ms:`, error.code, error.message);
                 
-                // Handle connection timeouts with retry for Graz
-                if (url.includes('unipub.uni-graz.at') && 
+                // Handle connection timeouts with retry for Graz, Florence, and Verona
+                if ((url.includes('unipub.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org') || 
+                     url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) && 
                     (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || 
                      error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || 
                      error.code === 'ENETUNREACH' || error.code === 'EHOSTUNREACH' ||
@@ -1062,7 +1092,10 @@ export class EnhancedManuscriptDownloaderService {
                     retryCount++;
                     // More aggressive exponential backoff: 2s, 4s, 8s, 16s, 32s (max 30s)
                     const backoffDelay = Math.min(1000 * Math.pow(2, retryCount), 30000);
-                    console.log(`[Graz] Connection failed with ${error.code}, retry ${retryCount}/${maxRetries - 1} in ${backoffDelay}ms...`);
+                    const libraryName = url.includes('unipub.uni-graz.at') ? 'Graz' : 
+                                      url.includes('cdm21059.contentdm.oclc.org') ? 'Florence' :
+                                      (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 'Verona' : 'Unknown';
+                    console.log(`[${libraryName}] Connection failed with ${error.code}, retry ${retryCount}/${maxRetries - 1} in ${backoffDelay}ms...`);
                     
                     setTimeout(() => {
                         attemptRequest().then(resolve).catch(reject);
@@ -1073,6 +1106,14 @@ export class EnhancedManuscriptDownloaderService {
                         const totalTime = Math.round((Date.now() - overallStartTime) / 1000);
                         const actualTimeout = Math.round(timeout / 1000);
                         reject(new Error(`University of Graz connection timeout after ${actualTimeout} seconds (${maxRetries} attempts over ${totalTime} seconds total). The server at ${urlObj.hostname} is not responding. This may be due to high server load or network issues. Please try again later or check if the manuscript is accessible at https://unipub.uni-graz.at/`));
+                    } else if (error.code === 'ETIMEDOUT' && url.includes('cdm21059.contentdm.oclc.org')) {
+                        const totalTime = Math.round((Date.now() - overallStartTime) / 1000);
+                        const actualTimeout = Math.round(timeout / 1000);
+                        reject(new Error(`Florence library (ContentDM) connection timeout after ${actualTimeout} seconds (${maxRetries} attempts over ${totalTime} seconds total). The server at ${urlObj.hostname} is not responding. This may be due to high server load or network issues. Please try again later or check if the manuscript is accessible at https://cdm21059.contentdm.oclc.org/`));
+                    } else if (error.code === 'ETIMEDOUT' && (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it'))) {
+                        const totalTime = Math.round((Date.now() - overallStartTime) / 1000);
+                        const actualTimeout = Math.round(requestOptions.timeout / 1000);
+                        reject(new Error(`Verona NBM connection timeout after ${actualTimeout} seconds (${maxRetries} attempts over ${totalTime} seconds total). The server at ${urlObj.hostname} is not responding. This may be due to high server load or network issues. Please try again later or check if the manuscript is accessible at https://www.nuovabibliotecamanoscritta.it/`));
                     } else {
                         reject(error);
                     }
@@ -1453,7 +1494,9 @@ export class EnhancedManuscriptDownloaderService {
                         // FIXED: Use correct pattern for Lindau Gospels (76874v_*) and similar manuscripts
                         if (validImagePattern.test(imageId) && !imageId.includes('front-cover')) {
                             const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptId}/${imageId}.zif`;
-                            imagesByPriority[0].push(zifUrl);
+                            if (imagesByPriority && imagesByPriority[0]) {
+                                imagesByPriority[0].push(zifUrl);
+                            }
                         }
                     }
                     
@@ -1549,7 +1592,9 @@ export class EnhancedManuscriptDownloaderService {
                                     const facsimileMatch = individualPageContent.match(/\/sites\/default\/files\/facsimile\/[^"']+\/([^"']+\.jpg)/);
                                     if (facsimileMatch) {
                                         const downloadUrl = `${baseUrl}${facsimileMatch[0]}`;
-                                        imagesByPriority[1].push(downloadUrl);
+                                        if (imagesByPriority && imagesByPriority[1]) {
+                                            imagesByPriority[1].push(downloadUrl);
+                                        }
                                         console.log(`Morgan: Found high-res facsimile: ${facsimileMatch[1]}`);
                                     }
                                 }
@@ -1562,7 +1607,7 @@ export class EnhancedManuscriptDownloaderService {
                             }
                         }
                         
-                        if (imagesByPriority[1].length > 0) {
+                        if (imagesByPriority && imagesByPriority[1] && imagesByPriority[1].length > 0) {
                             console.log(`Morgan: Successfully found ${imagesByPriority[1].length} high-resolution download URLs`);
                         }
                         
@@ -1577,7 +1622,9 @@ export class EnhancedManuscriptDownloaderService {
                 
                 for (const match of fullSizeMatches) {
                     const fullUrl = `${baseUrl}${match}`;
-                    imagesByPriority[2].push(fullUrl);
+                    if (imagesByPriority && imagesByPriority[2]) {
+                        imagesByPriority[2].push(fullUrl);
+                    }
                 }
                 
                 // Priority 3: Extract styled images converted to original (fallback for reliability)
@@ -1590,7 +1637,9 @@ export class EnhancedManuscriptDownloaderService {
                     // To: /sites/default/files/images/collection/filename.jpg
                     const originalPath = match.replace(/\/styles\/[^/]+\/public\//, '/');
                     const fullUrl = `${baseUrl}${originalPath}`;
-                    imagesByPriority[3].push(fullUrl);
+                    if (imagesByPriority && imagesByPriority[3]) {
+                        imagesByPriority[3].push(fullUrl);
+                    }
                 }
                 
                 // Priority 4: Fallback to facsimile images (legacy format)
@@ -1599,7 +1648,9 @@ export class EnhancedManuscriptDownloaderService {
                 
                 for (const match of facsimileMatches) {
                     const fullUrl = `${baseUrl}${match}`;
-                    imagesByPriority[4].push(fullUrl);
+                    if (imagesByPriority && imagesByPriority[4]) {
+                        imagesByPriority[4].push(fullUrl);
+                    }
                 }
                 
                 // Priority 5: Other direct image references
@@ -1608,17 +1659,19 @@ export class EnhancedManuscriptDownloaderService {
                 
                 for (const match of directMatches) {
                     if (match.includes('facsimile') || match.includes('images/collection')) {
-                        imagesByPriority[5].push(match);
+                        if (imagesByPriority && imagesByPriority[5]) {
+                            imagesByPriority[5].push(match);
+                        }
                     }
                 }
                 
                 // FIXED: Properly select all discovered images with highest quality
                 // Priority 1 contains all individually fetched high-resolution facsimile images
-                if (imagesByPriority[1].length > 0) {
+                if (imagesByPriority && imagesByPriority[1] && imagesByPriority[1].length > 0) {
                     // Use high-resolution facsimile images from individual pages
                     console.log(`Morgan: Using ${imagesByPriority[1].length} high-resolution facsimile images`);
                     pageLinks.push(...imagesByPriority[1]);
-                } else if (imagesByPriority[0].length > 0) {
+                } else if (imagesByPriority && imagesByPriority[0] && imagesByPriority[0].length > 0) {
                     // Fallback to ZIF ultra-high resolution images if no facsimile images found
                     console.log(`Morgan: Using ${imagesByPriority[0].length} ZIF ultra-high resolution images`);
                     pageLinks.push(...imagesByPriority[0]);
@@ -1634,12 +1687,16 @@ export class EnhancedManuscriptDownloaderService {
                     const filenameMap = new Map<string, string>();
                     
                     // Add images by priority, avoiding duplicates based on filename
-                    for (let priority = 2; priority <= 5; priority++) {
-                        for (const imageUrl of imagesByPriority[priority]) {
-                            const filename = getFilenameFromUrl(imageUrl);
-                            if (!filenameMap.has(filename)) {
-                                filenameMap.set(filename, imageUrl);
-                                pageLinks.push(imageUrl);
+                    if (imagesByPriority) {
+                        for (let priority = 2; priority <= 5; priority++) {
+                            if (imagesByPriority[priority]) {
+                                for (const imageUrl of imagesByPriority[priority]) {
+                                    const filename = getFilenameFromUrl(imageUrl);
+                                    if (!filenameMap.has(filename)) {
+                                        filenameMap.set(filename, imageUrl);
+                                        pageLinks.push(imageUrl);
+                                    }
+                                }
                             }
                         }
                     }
@@ -1668,14 +1725,16 @@ export class EnhancedManuscriptDownloaderService {
             // Remove duplicates and sort
             const uniquePageLinks = [...new Set(pageLinks)].sort();
             
-            // Log priority distribution for debugging
-            console.log(`Morgan: Image quality distribution:`);
-            console.log(`  - Priority 0 (ZIF ultra-high res): ${imagesByPriority[0].length} images`);
-            console.log(`  - Priority 1 (High-res facsimile): ${imagesByPriority[1].length} images`);
-            console.log(`  - Priority 2 (Direct full-size): ${imagesByPriority[2].length} images`);
-            console.log(`  - Priority 3 (Converted styled): ${imagesByPriority[3].length} images`);
-            console.log(`  - Priority 4 (Legacy facsimile): ${imagesByPriority[4].length} images`);
-            console.log(`  - Priority 5 (Other direct): ${imagesByPriority[5].length} images`);
+            // Log priority distribution for debugging - only if imagesByPriority is defined
+            if (typeof imagesByPriority !== 'undefined' && imagesByPriority) {
+                console.log(`Morgan: Image quality distribution:`);
+                console.log(`  - Priority 0 (ZIF ultra-high res): ${imagesByPriority[0].length} images`);
+                console.log(`  - Priority 1 (High-res facsimile): ${imagesByPriority[1].length} images`);
+                console.log(`  - Priority 2 (Direct full-size): ${imagesByPriority[2].length} images`);
+                console.log(`  - Priority 3 (Converted styled): ${imagesByPriority[3].length} images`);
+                console.log(`  - Priority 4 (Legacy facsimile): ${imagesByPriority[4].length} images`);
+                console.log(`  - Priority 5 (Other direct): ${imagesByPriority[5].length} images`);
+            }
             console.log(`Morgan: Total unique images: ${uniquePageLinks.length}`);
             
             const morganManifest = {
@@ -6259,6 +6318,7 @@ export class EnhancedManuscriptDownloaderService {
             let response: Response;
             let manifestData: any;
             try {
+                console.log(`[Graz] Starting manifest fetch with 5 minute timeout...`);
                 // FIXED: Use fetchWithHTTPS for Graz to handle SSL and timeout issues better
                 response = await this.fetchWithHTTPS(manifestUrl, { 
                     headers,
@@ -6283,11 +6343,21 @@ export class EnhancedManuscriptDownloaderService {
                 
                 progressMonitor.updateProgress(1, 1, 'IIIF manifest parsed successfully');
             } catch (error: any) {
+                console.error(`[Graz] Manifest loading error:`, error);
+                console.error(`[Graz] Error code: ${error.code}, Error name: ${error.name}`);
+                console.error(`[Graz] Full error details:`, JSON.stringify(error, null, 2));
+                
                 if (error.name === 'AbortError' || error.message?.includes('timeout')) {
                     throw new Error('University of Graz manifest loading timed out. The server may be experiencing high load. Please try again in a few moments.');
                 }
                 if (error.code === 'ECONNRESET') {
                     throw new Error('University of Graz connection was reset. This often happens with large manuscripts. Please try again.');
+                }
+                if (error.code === 'ENOTFOUND') {
+                    throw new Error('University of Graz server could not be found. Please check your internet connection.');
+                }
+                if (error.code === 'ECONNREFUSED') {
+                    throw new Error('University of Graz server refused the connection. The server may be down for maintenance.');
                 }
                 throw error;
             } finally {
@@ -6317,6 +6387,8 @@ export class EnhancedManuscriptDownloaderService {
             // Process IIIF sequences and canvases
             if (manifest.sequences && manifest.sequences.length > 0) {
                 const sequence = manifest.sequences[0];
+                console.log(`[Graz] Processing ${sequence.canvases?.length || 0} canvases from manifest`);
+                
                 if (sequence.canvases) {
                     for (const canvas of sequence.canvases) {
                         if (canvas.images && canvas.images.length > 0) {
@@ -6361,7 +6433,10 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             if (pageLinks.length === 0) {
-                throw new Error('No page images found in IIIF manifest');
+                console.error(`[Graz] No page images found in manifest structure`);
+                console.error(`[Graz] Manifest sequences: ${manifest.sequences?.length || 0}`);
+                console.error(`[Graz] First sequence canvases: ${manifest.sequences?.[0]?.canvases?.length || 0}`);
+                throw new Error('No page images found in IIIF manifest. The manifest structure may be different than expected.');
             }
             
             // Sanitize display name for filesystem
@@ -6386,7 +6461,19 @@ export class EnhancedManuscriptDownloaderService {
             };
             
         } catch (error: any) {
-            console.error(`University of Graz manifest loading failed:`, error);
+            console.error(`[Graz] loadGrazManifest failed:`, error);
+            console.error(`[Graz] Error stack:`, error.stack);
+            console.error(`[Graz] Original URL: ${grazUrl}`);
+            console.error(`[Graz] Manifest URL attempted: ${manifestUrl || 'not constructed'}`);
+            
+            // Log to download logger for better debugging
+            this.logger.logError('manifest_load_error', error, {
+                library: 'graz',
+                url: grazUrl,
+                manifestUrl: manifestUrl || 'not constructed',
+                errorCode: error.code,
+                errorName: error.name
+            });
             
             // Enhanced error messages for specific network issues
             if (error.code === 'ETIMEDOUT') {
@@ -6407,6 +6494,10 @@ export class EnhancedManuscriptDownloaderService {
             
             if (error.message?.includes('AbortError')) {
                 throw new Error(`University of Graz manifest loading was cancelled. The manifest may be very large or the server may be experiencing issues. Please try again.`);
+            }
+            
+            if (error.message?.includes('Could not extract manuscript ID')) {
+                throw new Error(`Invalid Graz URL format. Please use a URL like: https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538`);
             }
             
             throw new Error(`Failed to load University of Graz manuscript: ${(error as Error).message}`);
@@ -10290,11 +10381,36 @@ export class EnhancedManuscriptDownloaderService {
                     timeoutPromise
                 ]);
                 
+                // Check if we got a valid Response object
+                if (!response || typeof response.text !== 'function') {
+                    console.error('[HHU] Invalid response object:', response);
+                    throw new Error('Invalid response received from HHU server - expected Response object');
+                }
+                
                 console.log(`[HHU] Manifest fetch completed in ${Date.now() - startTime}ms`);
                 console.log(`[HHU] Parsing manifest JSON...`);
                 
                 const responseText = await response.text();
-                const manifest = JSON.parse(responseText);
+                
+                // Additional validation before parsing
+                if (!responseText || responseText.trim().length === 0) {
+                    throw new Error('Empty response received from HHU server');
+                }
+                
+                // Check if response is HTML error page
+                if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+                    console.error('[HHU] Received HTML instead of JSON, first 500 chars:', responseText.substring(0, 500));
+                    throw new Error('Received HTML error page instead of JSON manifest from HHU server');
+                }
+                
+                let manifest;
+                try {
+                    manifest = JSON.parse(responseText);
+                } catch (parseError: any) {
+                    console.error('[HHU] JSON parse error:', parseError);
+                    console.error('[HHU] Response text (first 500 chars):', responseText.substring(0, 500));
+                    throw new Error(`Failed to parse HHU manifest JSON: ${parseError.message}`);
+                }
             
                 // Extract metadata from IIIF manifest
                 if (manifest.label) {

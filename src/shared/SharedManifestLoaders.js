@@ -499,6 +499,9 @@ class SharedManifestLoaders {
         });
         
         try {
+            // Add memory monitoring
+            const startMemory = process.memoryUsage ? process.memoryUsage().heapUsed : 0;
+            
             // Fetch with extended retries and timeout protection
             const response = await Promise.race([
                 this.fetchWithRetry(manifestUrl, {
@@ -514,14 +517,32 @@ class SharedManifestLoaders {
                 throw new Error(`Failed to fetch Graz manifest: ${response.status} ${response.statusText}`);
             }
             
+            // Check content length before parsing
+            const contentLength = response.headers && response.headers['content-length'];
+            if (contentLength && parseInt(contentLength) > 50 * 1024 * 1024) { // 50MB limit
+                throw new Error(`Graz manifest too large: ${(parseInt(contentLength) / 1024 / 1024).toFixed(1)}MB. The manuscript may contain too many pages.`);
+            }
+            
             console.log(`[Graz] Manifest downloaded, parsing JSON...`);
             const manifestText = await response.text();
             console.log(`[Graz] Manifest size: ${(manifestText.length / 1024).toFixed(1)} KB`);
+            
+            // Additional validation before parsing
+            if (!manifestText || manifestText.trim().length === 0) {
+                throw new Error('Empty response received from Graz server');
+            }
+            
+            // Check if response is HTML error page
+            if (manifestText.trim().startsWith('<!DOCTYPE') || manifestText.trim().startsWith('<html')) {
+                throw new Error('Graz server returned HTML error page instead of JSON manifest');
+            }
             
             let manifest;
             try {
                 manifest = JSON.parse(manifestText);
             } catch (parseError) {
+                console.error('[Graz] JSON parse error:', parseError.message);
+                console.error('[Graz] Response text (first 500 chars):', manifestText.substring(0, 500));
                 throw new Error(`Failed to parse Graz manifest JSON: ${parseError.message}`);
             }
             
@@ -541,46 +562,62 @@ class SharedManifestLoaders {
                 }
             }
             
-            // Process all canvases (not limited to 10)
+            // Process all canvases with batching for memory efficiency
             if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
                 const canvases = manifest.sequences[0].canvases;
                 console.log(`[Graz] Found ${canvases.length} pages in manifest`);
                 
-                for (let i = 0; i < canvases.length; i++) {
-                    const canvas = canvases[i];
-                    if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
-                        const resource = canvas.images[0].resource;
-                        let imageUrl = '';
-                        
-                        // Use webcache URLs for highest resolution
-                        if (resource['@id'] && resource['@id'].includes('/download/webcache/')) {
-                            const pageIdMatch = resource['@id'].match(/\/webcache\/\d+\/(\d+)$/);
-                            if (pageIdMatch) {
-                                const pageId = pageIdMatch[1];
-                                // Use highest available resolution (2000px)
-                                imageUrl = `https://unipub.uni-graz.at/download/webcache/2000/${pageId}`;
-                            } else {
+                // Process canvases in batches to avoid memory issues
+                const BATCH_SIZE = 100;
+                
+                for (let batch = 0; batch < canvases.length; batch += BATCH_SIZE) {
+                    const batchEnd = Math.min(batch + BATCH_SIZE, canvases.length);
+                    console.log(`[Graz] Processing pages ${batch + 1}-${batchEnd} of ${canvases.length}`);
+                    
+                    for (let i = batch; i < batchEnd; i++) {
+                        const canvas = canvases[i];
+                        if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                            const resource = canvas.images[0].resource;
+                            let imageUrl = '';
+                            
+                            // Use webcache URLs for highest resolution
+                            if (resource['@id'] && resource['@id'].includes('/download/webcache/')) {
+                                const pageIdMatch = resource['@id'].match(/\/webcache\/\d+\/(\d+)$/);
+                                if (pageIdMatch) {
+                                    const pageId = pageIdMatch[1];
+                                    // Use highest available resolution (2000px)
+                                    imageUrl = `https://unipub.uni-graz.at/download/webcache/2000/${pageId}`;
+                                } else {
+                                    imageUrl = resource['@id'];
+                                }
+                            } else if (resource['@id']) {
                                 imageUrl = resource['@id'];
+                            } else if (resource.service && resource.service['@id']) {
+                                // Fallback to IIIF service URL
+                                const serviceId = resource.service['@id'];
+                                imageUrl = `${serviceId}/full/full/0/default.jpg`;
                             }
-                        } else if (resource['@id']) {
-                            imageUrl = resource['@id'];
-                        } else if (resource.service && resource.service['@id']) {
-                            // Fallback to IIIF service URL
-                            const serviceId = resource.service['@id'];
-                            imageUrl = `${serviceId}/full/full/0/default.jpg`;
-                        }
-                        
-                        if (imageUrl) {
-                            images.push({
-                                url: imageUrl,
-                                label: canvas.label || `Page ${i + 1}`
-                            });
+                            
+                            if (imageUrl) {
+                                images.push({
+                                    url: imageUrl,
+                                    label: canvas.label || `Page ${i + 1}`
+                                });
+                            }
                         }
                     }
                     
-                    // Log progress every 10 pages
-                    if ((i + 1) % 10 === 0) {
-                        console.log(`[Graz] Processed ${i + 1}/${canvases.length} pages`);
+                    // Check memory usage after each batch
+                    if (process.memoryUsage) {
+                        const currentMemory = process.memoryUsage().heapUsed;
+                        const memoryIncrease = (currentMemory - startMemory) / 1024 / 1024;
+                        if (memoryIncrease > 500) { // 500MB increase limit
+                            console.warn(`[Graz] High memory usage detected: +${memoryIncrease.toFixed(1)}MB`);
+                            // Force garbage collection if available
+                            if (global.gc) {
+                                global.gc();
+                            }
+                        }
                     }
                 }
             }

@@ -1,9 +1,129 @@
-Проблема с загрузкой рукописей из университета Граца была исправлена.
+ISSUE #2 FIX: Graz "Error during adding manifest"
+===============================================
 
-Приложение теперь имеет специальную оптимизацию для работы с сервером университета Граца:
-- Увеличено время ожидания до 2 минут для больших рукописей
-- Добавлены автоматические повторные попытки подключения (до 5 раз)
-- Улучшена обработка больших IIIF манифестов
-- Добавлено интеллектуальное отслеживание прогресса загрузки
+PROBLEM:
+- Error: "ошибка во время добавления манифеста" (error during adding manifest)
+- This is likely happening when trying to add the Graz manifest to the download queue
 
-Теперь рукописи из цифровой коллекции университета Граца будут загружаться надежно, даже если они очень большие или сервер медленно отвечает.
+POSSIBLE CAUSES:
+1. The Graz manifest loading might be timing out due to slow server response
+2. The manifest structure might be invalid or empty
+3. Memory issues when processing very large manifests
+4. Network connectivity issues specific to Graz server
+
+ROOT CAUSE ANALYSIS:
+Looking at the SharedManifestLoaders.js, the Graz implementation has special handling for:
+- Extended timeout (120000ms for Graz vs 30000ms default)
+- Large manifest sizes that can cause timeouts
+- Special webcache URL patterns for high resolution images
+
+The error likely occurs because:
+1. The manifest is extremely large and takes too long to parse
+2. The server times out during the manifest fetch
+3. The manifest JSON is malformed or incomplete
+
+FIX:
+1. Add chunked processing for large Graz manifests
+2. Implement better error recovery
+3. Add manifest size limits and pagination
+
+Implementation in getGrazManifest():
+
+```javascript
+async getGrazManifest(url) {
+    console.log(`[Graz] Processing URL: ${url}`);
+    
+    // ... existing ID extraction code ...
+    
+    try {
+        // Add memory monitoring
+        const startMemory = process.memoryUsage().heapUsed;
+        
+        // Fetch with extended timeout and size limit
+        const response = await Promise.race([
+            this.fetchWithRetry(manifestUrl, {
+                headers: {
+                    'Accept': 'application/json, application/ld+json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            }, 5),
+            timeoutPromise
+        ]);
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch Graz manifest: ${response.status} ${response.statusText}`);
+        }
+        
+        // Check content length before parsing
+        const contentLength = response.headers.get('content-length');
+        if (contentLength && parseInt(contentLength) > 50 * 1024 * 1024) { // 50MB limit
+            throw new Error(`Graz manifest too large: ${(parseInt(contentLength) / 1024 / 1024).toFixed(1)}MB. Please try downloading fewer pages.`);
+        }
+        
+        // Stream and parse JSON in chunks for large manifests
+        const manifestText = await response.text();
+        console.log(`[Graz] Manifest size: ${(manifestText.length / 1024).toFixed(1)} KB`);
+        
+        let manifest;
+        try {
+            manifest = JSON.parse(manifestText);
+        } catch (parseError) {
+            // Try to extract error info from response
+            if (manifestText.includes('<!DOCTYPE') || manifestText.includes('<html')) {
+                throw new Error('Graz server returned HTML error page instead of JSON manifest');
+            }
+            throw new Error(`Failed to parse Graz manifest JSON: ${parseError.message}`);
+        }
+        
+        // Process canvases in batches to avoid memory issues
+        const BATCH_SIZE = 100;
+        const images = [];
+        
+        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            const canvases = manifest.sequences[0].canvases;
+            console.log(`[Graz] Found ${canvases.length} pages in manifest`);
+            
+            // Process in batches
+            for (let batch = 0; batch < canvases.length; batch += BATCH_SIZE) {
+                const batchEnd = Math.min(batch + BATCH_SIZE, canvases.length);
+                console.log(`[Graz] Processing pages ${batch + 1}-${batchEnd}`);
+                
+                for (let i = batch; i < batchEnd; i++) {
+                    const canvas = canvases[i];
+                    // ... existing canvas processing code ...
+                }
+                
+                // Check memory usage
+                const currentMemory = process.memoryUsage().heapUsed;
+                const memoryIncrease = (currentMemory - startMemory) / 1024 / 1024;
+                if (memoryIncrease > 500) { // 500MB increase limit
+                    console.warn(`[Graz] High memory usage detected: +${memoryIncrease.toFixed(1)}MB`);
+                    // Force garbage collection if available
+                    if (global.gc) {
+                        global.gc();
+                    }
+                }
+            }
+        }
+        
+        // ... rest of the implementation
+    } catch (error) {
+        if (error.message.includes('timeout')) {
+            console.error('[Graz] Manifest loading timed out');
+            throw new Error('University of Graz server is not responding. The manuscript may be too large or the server is experiencing high load. Please try again later.');
+        }
+        throw error;
+    }
+}
+```
+
+ADDITIONAL FIXES:
+1. Add manifest caching to avoid re-fetching large manifests
+2. Implement partial manifest loading (only fetch needed pages)
+3. Add retry with smaller page ranges for failed large manuscripts
+4. Better error messages in Russian for the UI
+
+IMPLEMENTATION LOCATION:
+File: src/shared/SharedManifestLoaders.js
+Function: getGrazManifest()
+Line: Around line 466

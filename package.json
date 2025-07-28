@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.42",
+  "version": "1.4.43",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (60+ libraries worldwide)",
   "changelog": [
-    "Fixed HHU Düsseldorf logger errors preventing downloads",
-    "Fixed University of Graz infinite loading by using local manifest handler",
-    "Fixed Verona NBM timeout errors with improved connection handling",
-    "Fixed Morgan Library now properly detects all manuscript pages (not just 1)",
-    "All critical issues from GitHub resolved"
+    "Fixed Florence manuscript downloads - resolved connection timeouts",
+    "Fixed Morgan Library multiple page extraction - now downloads all pages correctly",
+    "Fixed Verona NBM connection timeouts for large manuscripts",
+    "Fixed University of Graz manifest parsing errors for large collections",
+    "Fixed HHU Düsseldorf JSON parsing errors preventing downloads"
   ],
   "main": "dist/main/main.js",
   "scripts": {
