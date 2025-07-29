@@ -232,6 +232,24 @@ export class LibraryOptimizationService {
             enableProgressiveBackoff: true,
             optimizationDescription: 'HHU Düsseldorf optimizations: 4 concurrent downloads, IIIF v2.0 with maximum resolution support (up to 4879x6273px)'
         },
+        'florence': {
+            maxConcurrentDownloads: 3, // Florence ContentDM with progressive retry logic
+            timeoutMultiplier: 2.0, // Extended timeout for JavaScript execution timing
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'Florence ContentDM optimizations: 3 concurrent downloads, progressive timeout increases, enhanced retry logic'
+        },
+        'gams': {
+            maxConcurrentDownloads: 3, // GAMS University of Graz with context-based IIIF
+            timeoutMultiplier: 1.5, // Extended timeout for IIIF manifest processing
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'GAMS University of Graz optimizations: 3 concurrent downloads, context-based IIIF support, extended timeouts'
+        },
+        'vatican': {
+            maxConcurrentDownloads: 4, // Vatican Library with stable IIIF infrastructure
+            timeoutMultiplier: 1.2, // Standard timeout for reliable servers
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'Vatican Library optimizations: 4 concurrent downloads, IIIF compliant, stable infrastructure'
+        },
         'loading': {}
     };
 
