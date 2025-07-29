@@ -1342,6 +1342,9 @@ export class EnhancedManuscriptDownloaderService {
                 case 'hhu':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('hhu', originalUrl);
                     break;
+                case 'bordeaux':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('bordeaux', originalUrl);
+                    break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);
             }
