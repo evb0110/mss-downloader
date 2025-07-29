@@ -1,0 +1,85 @@
+{
+  "timestamp": "2025-07-29T12:08:15.525Z",
+  "summary": {
+    "totalTests": 8,
+    "successCount": 8,
+    "failureCount": 0,
+    "successRate": 100,
+    "totalDurationMs": 9921
+  },
+  "results": [
+    {
+      "test": "Server Health Check",
+      "success": true,
+      "duration": 838,
+      "message": "Server is responsive",
+      "details": "Health check completed in 838ms"
+    },
+    {
+      "test": "Verona URL: Primary timeout issue URL (codice=15)",
+      "url": "https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=15",
+      "success": true,
+      "duration": 1815,
+      "imagesFound": 10,
+      "displayName": "Verona - LXXXIX (84)",
+      "isValid": true,
+      "details": "Found 10 pages in 2s"
+    },
+    {
+      "test": "Image Accessibility: Primary timeout issue URL (codice=15)",
+      "url": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/max/0/default.jpg",
+      "success": true,
+      "httpStatus": 200,
+      "details": "Image accessible (200)"
+    },
+    {
+      "test": "Verona URL: Secondary test URL (codice=14)",
+      "url": "https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=14",
+      "success": true,
+      "duration": 1841,
+      "imagesFound": 10,
+      "displayName": "Verona - CVII (100)",
+      "isValid": true,
+      "details": "Found 10 pages in 2s"
+    },
+    {
+      "test": "Image Accessibility: Secondary test URL (codice=14)",
+      "url": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/max/0/default.jpg",
+      "success": true,
+      "httpStatus": 200,
+      "details": "Image accessible (200)"
+    },
+    {
+      "test": "Verona URL: Direct manifest URL test",
+      "url": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/LXXXIX841.json",
+      "success": true,
+      "duration": 1149,
+      "imagesFound": 10,
+      "displayName": "Verona - LXXXIX (84)",
+      "isValid": true,
+      "details": "Found 10 pages in 1s"
+    },
+    {
+      "test": "Image Accessibility: Direct manifest URL test",
+      "url": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/max/0/default.jpg",
+      "success": true,
+      "httpStatus": 200,
+      "details": "Image accessible (200)"
+    },
+    {
+      "test": "Concurrent Load Test",
+      "success": true,
+      "duration": 1656,
+      "successCount": 3,
+      "totalRequests": 3,
+      "details": "3/3 requests succeeded in 2s"
+    }
+  ],
+  "improvements": [
+    "Exponential backoff with jitter implemented",
+    "Adaptive timeouts (90s discovery, 180s manifest)",
+    "Server health checking added",
+    "Enhanced error messages with specific guidance",
+    "Better connection handling and retry logic"
+  ]
+}

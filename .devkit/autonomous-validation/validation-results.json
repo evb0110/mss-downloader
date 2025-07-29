@@ -1,0 +1,42 @@
+[
+  {
+    "issue": 5,
+    "library": "Florence",
+    "url": "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/",
+    "expectedPages": 10,
+    "success": false,
+    "error": "No manifest items"
+  },
+  {
+    "issue": 4,
+    "library": "Morgan",
+    "url": "https://www.themorgan.org/collection/lindau-gospels/thumbs",
+    "expectedPages": 5,
+    "success": false,
+    "error": "No manifest items"
+  },
+  {
+    "issue": 3,
+    "library": "Verona",
+    "url": "https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=15",
+    "expectedPages": 10,
+    "success": false,
+    "error": "No manifest items"
+  },
+  {
+    "issue": 2,
+    "library": "Graz",
+    "url": "https://digital.ub.uni-graz.at/viewer/image/AC00050147/1/",
+    "expectedPages": 10,
+    "success": false,
+    "error": "Could not extract manuscript ID from Graz URL"
+  },
+  {
+    "issue": 1,
+    "library": "HHU Düsseldorf",
+    "url": "https://digital.ulb.hhu.de/ms/content/titleinfo/7674176",
+    "expectedPages": 5,
+    "success": false,
+    "error": "HHU manuscript not found: 7674176. Please verify the URL is correct."
+  }
+]

@@ -16,7 +16,7 @@ class SharedManifestLoaders {
     async defaultNodeFetch(url, options = {}, retries = 3) {
         // Increase retries for Verona domains
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
-            retries = 7; // Increased from 5 to 7 for better reliability
+            retries = 9; // Increased from 7 to 9 for even better reliability
         }
         
         for (let i = 0; i < retries; i++) {
@@ -29,21 +29,47 @@ class SharedManifestLoaders {
                     // Enhanced error message for Verona timeouts
                     if ((url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) && 
                         (error.code === 'ETIMEDOUT' || error.message.includes('timeout'))) {
-                        throw new Error('Verona server (nuovabibliotecamanoscritta.it) is not responding. The server may be experiencing high load or maintenance. Please try again later.');
+                        throw new Error(`Verona server is not responding after ${retries} attempts over ${this.calculateTotalRetryTime(retries)} minutes. The server may be experiencing high load, maintenance, or network issues. Please try again in 10-15 minutes. If the problem persists, the manuscript may be temporarily unavailable.`);
                     }
                     throw error;
                 }
                 
-                // Progressive backoff, longer for Verona
-                const baseDelay = (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 5000 : 2000;
-                const delay = baseDelay * (i + 1);
-                console.log(`[SharedManifestLoaders] Waiting ${delay}ms before retry...`);
+                // Exponential backoff with jitter for Verona, progressive for others
+                let delay;
+                if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
+                    // Exponential backoff: 3s, 6s, 12s, 24s, 48s, 96s, 192s, 384s, 768s
+                    const baseDelay = 3000;
+                    const exponentialDelay = baseDelay * Math.pow(2, i);
+                    // Add jitter to prevent thundering herd
+                    const jitter = Math.random() * 1000;
+                    delay = Math.min(exponentialDelay + jitter, 300000); // Cap at 5 minutes
+                } else {
+                    delay = 2000 * (i + 1);
+                }
+                
+                console.log(`[SharedManifestLoaders] Waiting ${Math.round(delay/1000)}s before retry...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
             }
         }
     }
+    
+    calculateTotalRetryTime(retries) {
+        // Calculate approximate total time for exponential backoff
+        let totalMs = 0;
+        for (let i = 0; i < retries - 1; i++) {
+            const baseDelay = 3000;
+            const exponentialDelay = baseDelay * Math.pow(2, i);
+            totalMs += Math.min(exponentialDelay, 300000);
+        }
+        return Math.round(totalMs / 60000); // Convert to minutes
+    }
 
-    async fetchUrl(url, options = {}) {
+    async fetchUrl(url, options = {}, redirectCount = 0) {
+        const MAX_REDIRECTS = 10; // Prevent infinite redirect loops
+        
+        if (redirectCount > MAX_REDIRECTS) {
+            throw new Error(`Too many redirects (${redirectCount}) for URL: ${url}`);
+        }
         // Dynamic require to avoid lint error
         const https = eval("require('https')");
         
@@ -67,8 +93,8 @@ class SharedManifestLoaders {
                     'Accept': options.headers?.Accept || '*/*',
                     ...options.headers
                 },
-                // Increase timeout for University of Graz and Florence due to slow server response
-                timeout: (url.includes('unipub.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org')) ? 120000 : 30000
+                // Increase timeout for University of Graz (UniPub + GAMS) and Florence due to slow server response
+                timeout: (url.includes('unipub.uni-graz.at') || url.includes('gams.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org')) ? 120000 : 30000
             };
 
             // SSL bypass for specific domains
@@ -77,16 +103,22 @@ class SharedManifestLoaders {
                 requestOptions.rejectUnauthorized = false;
             }
             
-            // Extended timeout for Verona servers
+            // Extended timeout for Verona servers with adaptive strategy
             if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
-                requestOptions.timeout = 120000; // 120 seconds for Verona (increased for reliability)
+                // Different timeouts based on request type
+                if (url.includes('mirador_json/manifest/')) {
+                    requestOptions.timeout = 180000; // 3 minutes for manifest fetching (large JSON)
+                } else {
+                    requestOptions.timeout = 90000; // 1.5 minutes for page discovery
+                }
                 requestOptions.agent = veronaAgent; // Use connection pooling
             }
 
             const req = https.request(requestOptions, (res) => {
                 if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
                     const redirectUrl = new URL(res.headers.location, url).href;
-                    this.fetchUrl(redirectUrl, options).then(resolve).catch(reject);
+                    console.log(`[SharedManifestLoaders] Redirect ${redirectCount + 1}/${MAX_REDIRECTS}: ${url} -> ${redirectUrl}`);
+                    this.fetchUrl(redirectUrl, options, redirectCount + 1).then(resolve).catch(reject);
                     return;
                 }
 
@@ -156,10 +188,16 @@ class SharedManifestLoaders {
     }
 
     /**
-     * Verona - NBM (Nuova Biblioteca Manoscritta) with dynamic IIIF manifest fetching
+     * Verona - NBM (Nuova Biblioteca Manoscritta) with enhanced timeout handling and server health checking
      */
     async getVeronaManifest(url) {
         console.log('[Verona] Processing URL:', url);
+        
+        // Perform server health check first
+        const isHealthy = await this.checkVeronaServerHealth();
+        if (!isHealthy) {
+            throw new Error('Verona server appears to be unavailable or experiencing connectivity issues. Please try again in 15-20 minutes.');
+        }
         
         // Check if this is a direct IIIF manifest URL
         if (url.includes('mirador_json/manifest/')) {
@@ -178,15 +216,19 @@ class SharedManifestLoaders {
         
         console.log('[Verona] Extracted codice:', codice);
         
-        // Try to discover the manifest URL from the HTML page
+        // Try to discover the manifest URL from the HTML page with enhanced error handling
         try {
+            console.log('[Verona] Attempting manifest URL discovery...');
             const manifestUrl = await this.discoverVeronaManifestUrl(url, codice);
             if (manifestUrl) {
                 console.log('[Verona] Discovered manifest URL:', manifestUrl);
                 return await this.fetchVeronaIIIFManifest(manifestUrl);
             }
         } catch (error) {
-            console.warn('[Verona] Failed to discover manifest URL:', error.message);
+            console.warn('[Verona] Manifest URL discovery failed:', error.message);
+            if (error.message.includes('timeout') || error.message.includes('ETIMEDOUT')) {
+                throw new Error('Verona server is not responding during manifest discovery. The server may be experiencing high load. Please try again in 10-15 minutes.');
+            }
         }
         
         // Fallback to known mappings with enhanced discovery
@@ -202,7 +244,7 @@ class SharedManifestLoaders {
             return await this.fetchVeronaIIIFManifest(manifestUrl);
         }
         
-        throw new Error(`Unable to find manifest for Verona manuscript code: ${codice}. Please use the direct IIIF manifest URL instead.`);
+        throw new Error(`Unable to find manifest for Verona manuscript code: ${codice}. The server may be experiencing issues, or this manuscript may not be available. Please verify the URL is correct and try again later.`);
     }
     
     /**
@@ -265,84 +307,168 @@ class SharedManifestLoaders {
     }
     
     /**
-     * Fetch and parse Verona IIIF manifest
+     * Check Verona server health before attempting operations
+     */
+    async checkVeronaServerHealth() {
+        console.log('[Verona] Performing server health check...');
+        
+        const healthCheckUrls = [
+            'https://nbm.regione.veneto.it',
+            'https://www.nuovabibliotecamanoscritta.it'
+        ];
+        
+        for (const healthUrl of healthCheckUrls) {
+            try {
+                const response = await this.fetchWithRetry(healthUrl, {
+                    method: 'HEAD', // HEAD request for minimal data transfer
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+                    }
+                }, 2); // Only 2 retries for health check
+                
+                if (response.ok || response.status === 301 || response.status === 302) {
+                    console.log(`[Verona] Server health check passed for ${healthUrl}`);
+                    return true;
+                }
+            } catch (error) {
+                console.log(`[Verona] Health check failed for ${healthUrl}: ${error.message}`);
+                continue;
+            }
+        }
+        
+        console.warn('[Verona] All health checks failed');
+        return false;
+    }
+    
+    /**
+     * Fetch and parse Verona IIIF manifest with enhanced timeout handling
      */
     async fetchVeronaIIIFManifest(manifestUrl) {
         console.log('[Verona] Fetching IIIF manifest from:', manifestUrl);
         
-        // Add timeout monitoring
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Verona manifest fetch timeout after 2 minutes')), 120000);
+        // Enhanced timeout strategy with multiple layers
+        const startTime = Date.now();
+        const maxTotalTime = 300000; // 5 minutes maximum total time
+        
+        // Create adaptive timeout based on manifest size expectations
+        const adaptiveTimeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => {
+                const elapsed = Math.round((Date.now() - startTime) / 1000);
+                reject(new Error(`Verona manifest fetch timeout after ${elapsed} seconds. The manifest may be very large or the server is experiencing high load.`));
+            }, 240000); // 4 minutes for manifest fetching
         });
         
         try {
+            console.log('[Verona] Starting manifest fetch with enhanced timeout handling...');
+            
+            // Use fetchWithRetry which already has Verona-specific retry logic
             const response = await Promise.race([
                 this.fetchWithRetry(manifestUrl),
-                timeoutPromise
+                adaptiveTimeoutPromise
             ]);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch Verona manifest: ${response.status}`);
-        }
-        
-        const manifest = await response.json();
-        const images = [];
-        
-        // Extract manuscript label/title
-        const displayName = manifest.label || 'Verona Manuscript';
-        console.log('[Verona] Manuscript:', displayName);
-        
-        // Parse IIIF v2 manifest structure
-        let totalCanvases = 0;
-        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
-            const canvases = manifest.sequences[0].canvases;
-            totalCanvases = canvases.length;
-            console.log('[Verona] Found', totalCanvases, 'pages in manifest');
             
-            // Process first 10 pages for initial load (fixes timeout issues with large manuscripts)
-            const maxPages = Math.min(totalCanvases, 10);
-            for (let i = 0; i < maxPages; i++) {
-                const canvas = canvases[i];
-                
-                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
-                    const resource = canvas.images[0].resource;
-                    const service = resource.service;
-                    
-                    // Get the best quality image URL
-                    let imageUrl = resource['@id'] || resource.id;
-                    
-                    // If we have a IIIF service, use it to get maximum resolution
-                    if (service && service['@id']) {
-                        const serviceUrl = service['@id'].replace(/\/$/, ''); // Remove trailing slash
-                        // Test different resolution parameters to find the best quality
-                        // Verona supports: full/full, full/max, full/2000, etc.
-                        imageUrl = `${serviceUrl}/full/max/0/default.jpg`;
-                    }
-                    
-                    images.push({
-                        url: imageUrl,
-                        label: canvas.label || `Page ${i + 1}`
-                    });
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error(`Verona manifest not found (404). The manuscript may have been moved or the URL is incorrect.`);
+                } else if (response.status >= 500) {
+                    throw new Error(`Verona server error (${response.status}). The server is experiencing technical difficulties.`);
+                } else {
+                    throw new Error(`Failed to fetch Verona manifest: ${response.status} ${response.statusText}`);
                 }
             }
-        } else {
-            throw new Error('Invalid Verona IIIF manifest structure');
-        }
-        
-        if (images.length === 0) {
-            throw new Error('No images found in Verona manifest');
-        }
-        
-        console.log('[Verona] Successfully extracted', images.length, 'pages' + (totalCanvases > 10 ? ` (limited from ${totalCanvases} total)` : ''));
-        
-        return { 
-            images,
-            displayName: `Verona - ${displayName}`
-        };
-        } catch (error) {
-            if (error.message.includes('timeout')) {
-                console.error('[Verona] Manifest fetch timed out');
-                throw new Error('Verona server is not responding. Please try again later.');
+            
+            console.log('[Verona] Manifest response received, parsing JSON...');
+            const parseStartTime = Date.now();
+            
+            let manifest;
+            try {
+                const manifestText = await response.text();
+                console.log(`[Verona] Manifest size: ${Math.round(manifestText.length / 1024)}KB`);
+                
+                if (!manifestText || manifestText.trim().length === 0) {
+                    throw new Error('Empty manifest received from Verona server');
+                }
+                
+                if (manifestText.trim().startsWith('<!DOCTYPE') || manifestText.trim().startsWith('<html')) {
+                    throw new Error('Verona server returned HTML error page instead of JSON manifest');
+                }
+                
+                manifest = JSON.parse(manifestText);
+                const parseTime = Date.now() - parseStartTime;
+                console.log(`[Verona] Manifest parsed in ${parseTime}ms`);
+                
+            } catch (parseError) {
+                console.error('[Verona] JSON parse error:', parseError.message);
+                throw new Error(`Failed to parse Verona manifest: ${parseError.message}. The server may have returned invalid data.`);
             }
+            
+            const images = [];
+            
+            // Extract manuscript label/title
+            const displayName = manifest.label || 'Verona Manuscript';
+            console.log('[Verona] Manuscript:', displayName);
+            
+            // Parse IIIF v2 manifest structure
+            let totalCanvases = 0;
+            if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+                const canvases = manifest.sequences[0].canvases;
+                totalCanvases = canvases.length;
+                console.log('[Verona] Found', totalCanvases, 'pages in manifest');
+                
+                // Process first 10 pages for initial load (fixes timeout issues with large manuscripts)
+                const maxPages = Math.min(totalCanvases, 10);
+                for (let i = 0; i < maxPages; i++) {
+                    const canvas = canvases[i];
+                    
+                    if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                        const resource = canvas.images[0].resource;
+                        const service = resource.service;
+                        
+                        // Get the best quality image URL
+                        let imageUrl = resource['@id'] || resource.id;
+                        
+                        // If we have a IIIF service, use it to get maximum resolution
+                        if (service && service['@id']) {
+                            const serviceUrl = service['@id'].replace(/\/$/, ''); // Remove trailing slash
+                            // Test different resolution parameters to find the best quality
+                            // Verona supports: full/full, full/max, full/2000, etc.
+                            imageUrl = `${serviceUrl}/full/max/0/default.jpg`;
+                        }
+                        
+                        images.push({
+                            url: imageUrl,
+                            label: canvas.label || `Page ${i + 1}`
+                        });
+                    }
+                }
+            } else {
+                throw new Error('Invalid Verona IIIF manifest structure - no canvases found');
+            }
+            
+            if (images.length === 0) {
+                throw new Error('No images found in Verona manifest');
+            }
+            
+            const totalTime = Date.now() - startTime;
+            console.log(`[Verona] Successfully extracted ${images.length} pages in ${Math.round(totalTime/1000)}s` + (totalCanvases > 10 ? ` (limited from ${totalCanvases} total)` : ''));
+            
+            return { 
+                images,
+                displayName: `Verona - ${displayName}`
+            };
+            
+        } catch (error) {
+            const elapsed = Math.round((Date.now() - startTime) / 1000);
+            console.error(`[Verona] Manifest fetch failed after ${elapsed}s:`, error.message);
+            
+            if (error.message.includes('timeout') || error.message.includes('ETIMEDOUT')) {
+                throw new Error(`Verona server timeout after ${elapsed} seconds. The server may be experiencing heavy load or network issues. Please try again in 15-20 minutes. If this is a large manuscript, consider trying during off-peak hours.`);
+            } else if (error.code === 'ENOTFOUND') {
+                throw new Error('Cannot connect to Verona server. Please check your internet connection and try again.');
+            } else if (error.code === 'ECONNRESET' || error.code === 'ECONNREFUSED') {
+                throw new Error('Connection to Verona server was reset. The server may be restarting or experiencing technical difficulties.');
+            }
+            
             throw error;
         }
     }
@@ -885,7 +1011,12 @@ class SharedManifestLoaders {
         }
         
         const response = await this.fetchWithRetry(pageUrl);
-        if (!response.ok) throw new Error(`Failed to fetch Morgan page: ${response.status}`);
+        if (!response.ok) {
+            if (response.status === 301 || response.status === 302) {
+                throw new Error(`Morgan page redirected (${response.status}). The manuscript may have moved or the URL format may have changed. Try accessing the manuscript directly through themorgan.org and use the updated URL.`);
+            }
+            throw new Error(`Failed to fetch Morgan page: ${response.status}`);
+        }
         
         const html = await response.text();
         const images = [];
@@ -966,6 +1097,54 @@ class SharedManifestLoaders {
                         imagesByPriority[0].push(zifUrl);
                     }
                 }
+            }
+            
+            // Priority 0.5: Try facsimile ASP URLs as suggested by user
+            try {
+                // Extract manuscript identifier that might be used in facsimile URLs
+                const msMatch = manuscriptId.match(/^(.+?)(?:-\d+)?$/);
+                const baseMsId = msMatch ? msMatch[1] : manuscriptId;
+                
+                // Try the facsimile URL pattern the user provided
+                for (let pageId = 1; pageId <= 20; pageId++) {
+                    const facsimileUrl = `https://host.themorgan.org/facsimile/${baseMsId}/default.asp?id=${pageId}&width=100%25&height=100%25&iframe=true`;
+                    
+                    try {
+                        const testResponse = await this.fetchWithRetry(facsimileUrl, {}, 1);
+                        if (testResponse.ok) {
+                            const content = await testResponse.text();
+                            
+                            // Look for actual image URLs in the ASP response
+                            const imgRegex = /src=['"]([^'"]+\.(?:jpg|jpeg|png|gif))['"]/gi;
+                            const imgMatches = content.match(imgRegex);
+                            
+                            if (imgMatches) {
+                                for (const imgMatch of imgMatches) {
+                                    const imgSrc = imgMatch.match(/src=['"]([^'"]+)['"]/i)?.[1];
+                                    if (imgSrc && !imgSrc.includes('loading') && !imgSrc.includes('placeholder')) {
+                                        const fullImgUrl = imgSrc.startsWith('http') ? imgSrc : 
+                                                         imgSrc.startsWith('/') ? `https://host.themorgan.org${imgSrc}` :
+                                                         `https://host.themorgan.org/${imgSrc}`;
+                                        imagesByPriority[0].push(fullImgUrl);
+                                    }
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        // Continue to next page if this one fails
+                        console.log(`[Morgan] Facsimile page ${pageId} failed: ${error.message}`);
+                        continue;
+                    }
+                    
+                    // Stop if we found enough images
+                    if (imagesByPriority[0].length >= 10) break;
+                }
+                
+                if (imagesByPriority[0].length > 0) {
+                    console.log(`[Morgan] Found ${imagesByPriority[0].length} images via facsimile ASP`);
+                }
+            } catch (error) {
+                console.warn('[Morgan] Error trying facsimile ASP URLs:', error.message);
             }
             
             // Priority 1: High-res facsimile from individual pages
@@ -1067,35 +1246,17 @@ class SharedManifestLoaders {
         console.log('[HHU] Processing URL:', url);
         
         // Extract ID from URL patterns like:
-        // https://digital.ub.uni-duesseldorf.de/content/titleinfo/7938251
-        // https://digital.ub.uni-duesseldorf.de/hs/content/titleinfo/259994
+        // https://digital.ulb.hhu.de/content/titleinfo/7938251
+        // https://digital.ulb.hhu.de/hs/content/titleinfo/259994
+        // https://digital.ulb.hhu.de/ms/content/titleinfo/9400252
         const match = url.match(/titleinfo\/(\d+)/);
         if (!match) throw new Error('Invalid HHU URL format');
         
         const manuscriptId = match[1];
         
-        // HHU uses different IIIF patterns depending on collection
-        // Use ulb.hhu.de domain which is the primary domain
-        let manifestUrl;
-        if (url.includes('/hs/')) {
-            // Handschriften (manuscripts) collection uses different base URL
-            manifestUrl = `https://digital.ulb.hhu.de/hs/iiif/presentation/v2/${manuscriptId}/manifest`;
-        } else if (url.includes('/ink/')) {
-            // Incunabula collection 
-            manifestUrl = `https://digital.ulb.hhu.de/ink/iiif/presentation/v2/${manuscriptId}/manifest`;
-        } else if (url.includes('/ihd/')) {
-            // Historical documents collection
-            manifestUrl = `https://digital.ulb.hhu.de/ihd/iiif/presentation/v2/${manuscriptId}/manifest`;
-        } else if (url.includes('/ulbdsp/')) {
-            // Special collections
-            manifestUrl = `https://digital.ulb.hhu.de/ulbdsp/iiif/presentation/v2/${manuscriptId}/manifest`;
-        } else if (url.includes('/ms/')) {
-            // Manuscripts collection
-            manifestUrl = `https://digital.ulb.hhu.de/ms/iiif/presentation/v2/${manuscriptId}/manifest`;
-        } else {
-            // Regular content
-            manifestUrl = `https://digital.ulb.hhu.de/iiif/presentation/v2/${manuscriptId}/manifest`;
-        }
+        // HHU uses a unified IIIF v2.0 pattern for all collections
+        // All collections use the same /i3f/v20/ endpoint regardless of collection type
+        const manifestUrl = `https://digital.ulb.hhu.de/i3f/v20/${manuscriptId}/manifest`;
         console.log('[HHU] Fetching IIIF manifest from:', manifestUrl);
         
         try {
@@ -1196,6 +1357,34 @@ class SharedManifestLoaders {
     }
 
     /**
+     * GAMS University of Graz - Placeholder for GAMS URLs
+     * This prevents the "unsupported library" error for GAMS URLs
+     */
+    async getGAMSManifest(url) {
+        console.log('[GAMS] Processing URL:', url);
+        
+        // Extract GAMS context identifier
+        const contextMatch = url.match(/context:([^/?]+)/);
+        if (!contextMatch) {
+            throw new Error('Could not extract context identifier from GAMS URL. Please ensure the URL contains a context parameter like "context:rbas.ms.P0008s11"');
+        }
+        
+        const contextId = contextMatch[1];
+        console.log('[GAMS] Context ID:', contextId);
+        
+        // GAMS (Geisteswissenschaftliches Asset Management System) uses a different structure than UniPub
+        // For now, we provide a helpful error message with guidance
+        throw new Error(`GAMS URLs are not currently supported. The URL you provided uses the GAMS system (${contextId}), which has a different structure than the supported UniPub system.
+
+To download this manuscript, please:
+1. Try to find an equivalent URL on unipub.uni-graz.at instead
+2. Contact the University of Graz library for assistance
+3. Alternatively, download the manuscript manually from the GAMS viewer
+
+If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use that instead.`);
+    }
+
+    /**
      * Get manifest for any library
      */
     async getManifestForLibrary(libraryId, url) {
@@ -1216,6 +1405,8 @@ class SharedManifestLoaders {
                 return await this.getLibraryOfCongressManifest(url);
             case 'graz':
                 return await this.getGrazManifest(url);
+            case 'gams':
+                return await this.getGAMSManifest(url);
             case 'florence':
                 return await this.getFlorenceManifest(url);
             case 'grenoble':
@@ -1241,7 +1432,8 @@ class SharedManifestLoaders {
     }
 
     /**
-     * Florence (ContentDM Plutei) - IIIF-based implementation
+     * Florence (ContentDM Plutei) - Simplified IIIF implementation
+     * Fixes infinite loading and JavaScript errors by using direct ContentDM API
      */
     async getFlorenceManifest(url) {
         console.log('[Florence] Processing URL:', url);
@@ -1256,88 +1448,75 @@ class SharedManifestLoaders {
         
         const itemId = match[1];
         
-        // Enhanced retry logic for Florence with progressive timeout increases
-        let lastError = null;
-        for (let attempt = 0; attempt < 5; attempt++) {
-            const timeout = 60000 + (attempt * 30000); // Start at 60s, add 30s per retry
-            const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error(`Florence server timeout after ${timeout/1000} seconds (attempt ${attempt + 1}/5)`)), timeout);
-            });
+        console.log('[Florence] Item ID:', itemId);
+        
+        // Use ContentDM API directly to avoid complex HTML parsing
+        try {
+            // Try to get compound object info from ContentDM API
+            const apiUrl = `https://cdm21059.contentdm.oclc.org/digital/api/collections/plutei/items/${itemId}/compound`;
             
-            try {
-                console.log(`[Florence] Attempt ${attempt + 1}/5 with ${timeout/1000}s timeout`);
-                
-                // Fetch the page HTML to get compound object info with timeout protection
-                const response = await Promise.race([
-                    this.fetchWithRetry(url, {
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                            'Accept-Language': 'en-US,en;q=0.9',
-                            'Cache-Control': 'no-cache',
-                            'Connection': 'keep-alive'
-                        }
-                    }, 3), // 3 retries per attempt
-                    timeoutPromise
-                ]);
-                
-                if (!response.ok) {
-                    lastError = new Error(`Failed to fetch page: ${response.status}`);
-                    if (attempt < 4) {
-                        await new Promise(resolve => setTimeout(resolve, 5000 * (attempt + 1)));
-                        continue;
-                    }
-                    throw lastError;
+            console.log('[Florence] Fetching compound object info from API');
+            const apiResponse = await this.fetchWithRetry(apiUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                 }
+            }, 2);
+            
+            const images = [];
+            
+            if (apiResponse.ok) {
+                const compoundInfo = await apiResponse.json();
+                console.log('[Florence] API response received, processing pages');
                 
-                // Success - continue with the rest of the logic
-                const html = await response.text();
-        
-                // Extract __INITIAL_STATE__ for compound object detection
-        let initialState;
-        const stateMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*JSON\.parse\s*\(\s*"([^"]*(?:\\.[^"]*)*)"\s*\)\s*;/);
-        
-        // Debug the regex matching
-        if (!stateMatch) {
-            console.warn('Florence: __INITIAL_STATE__ regex did not match');
-            console.warn('HTML contains __INITIAL_STATE__:', html.includes('__INITIAL_STATE__'));
-            console.warn('HTML length:', html.length);
-            // Try simpler pattern
-            const simpleMatch = html.match(/__INITIAL_STATE__.*?"([^"]+(?:\\.[^"]*)*)"[^;]*;/);
-            console.warn('Simple pattern matches:', !!simpleMatch);
-        }
-        
-        if (stateMatch) {
-            try {
-                // Properly decode the escaped JSON string
-                let jsonString = stateMatch[1];
-                
-                // Handle common escape sequences
-                jsonString = jsonString
-                    .replace(/\\"/g, '"')
-                    .replace(/\\\\/g, '\\')
-                    .replace(/\\n/g, '\n')
-                    .replace(/\\r/g, '\r')
-                    .replace(/\\t/g, '\t')
-                    .replace(/\\u([0-9a-fA-F]{4})/g, (match, code) => {
-                        return String.fromCharCode(parseInt(code, 16));
-                    });
-                
-                initialState = JSON.parse(jsonString);
-            } catch (e) {
-                // Fallback: use simple IIIF approach if JSON parsing fails
-                console.warn('Florence JSON parsing failed, using fallback approach');
-                const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${itemId}/full/full/0/default.jpg`;
-                return {
-                    images: [{
+                // Process compound object
+                if (compoundInfo.page && Array.isArray(compoundInfo.page)) {
+                    const maxPages = Math.min(compoundInfo.page.length, 50);
+                    
+                    for (let i = 0; i < maxPages; i++) {
+                        const page = compoundInfo.page[i];
+                        if (page.pageptr) {
+                            const pageId = page.pageptr;
+                            const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${pageId}/full/full/0/default.jpg`;
+                            images.push({
+                                url: imageUrl,
+                                label: page.pagetitle || page.pagefile || `Page ${i + 1}`
+                            });
+                        }
+                    }
+                    
+                    console.log(`[Florence] Found ${images.length} pages via API`);
+                } else {
+                    console.log('[Florence] No compound pages found, treating as single item');
+                    // Single item - use the original ID
+                    const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${itemId}/full/full/0/default.jpg`;
+                    images.push({
                         url: imageUrl,
                         label: 'Page 1'
-                    }]
-                };
+                    });
+                }
+            } else {
+                console.log('[Florence] API request failed, using fallback approach');
+                // Fallback: assume single image
+                const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${itemId}/full/full/0/default.jpg`;
+                images.push({
+                    url: imageUrl,
+                    label: 'Page 1'
+                });
             }
-        } else {
-            // Fallback: use simple IIIF approach if no JSON found
-            console.warn('Florence __INITIAL_STATE__ not found, using fallback approach');
+            
+            if (images.length === 0) {
+                throw new Error('No images found for Florence manuscript');
+            }
+            
+            console.log(`[Florence] Successfully processed ${images.length} images`);
+            return { images };
+            
+        } catch (error) {
+            console.error('[Florence] Error processing manifest:', error.message);
+            
+            // Final fallback: simple IIIF URL
+            console.log('[Florence] Using final fallback - single image');
             const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${itemId}/full/full/0/default.jpg`;
             return {
                 images: [{
@@ -1345,63 +1524,6 @@ class SharedManifestLoaders {
                     label: 'Page 1'
                 }]
             };
-        }
-        
-        const images = [];
-        const item = initialState.item?.item;
-        
-        if (!item) throw new Error('Could not find item data in Florence page');
-        
-        // Check for compound object (multi-page)
-        if (item.parent && item.parent.children && item.parent.children.length > 0) {
-            // Multi-page document
-            const maxPages = Math.min(item.parent.children.length, 50);
-            
-            for (let i = 0; i < maxPages; i++) {
-                const child = item.parent.children[i];
-                if (child.id) {
-                    // Use IIIF endpoint with maximum resolution
-                    const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${child.id}/full/full/0/default.jpg`;
-                    images.push({
-                        url: imageUrl,
-                        label: child.title || `Page ${i + 1}`
-                    });
-                }
-            }
-        } else {
-            // Single page - use current item
-            const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${item.id}/full/full/0/default.jpg`;
-            images.push({
-                url: imageUrl,
-                label: item.title || 'Page 1'
-            });
-        }
-        
-        if (images.length === 0) {
-            throw new Error('No images found for Florence manuscript');
-        }
-        
-                return { images };
-            } catch (error) {
-                lastError = error;
-                if (error.message.includes('timeout') && attempt < 4) {
-                    console.warn(`[Florence] Attempt ${attempt + 1} failed: ${error.message}`);
-                    await new Promise(resolve => setTimeout(resolve, 5000 * (attempt + 1)));
-                    continue;
-                }
-                // Final attempt failed
-                if (attempt === 4) {
-                    if (error.message.includes('timeout')) {
-                        throw new Error('Florence server (cdm21059.contentdm.oclc.org) is not responding after multiple attempts. The server may be experiencing high load. Please try again later.');
-                    }
-                    throw error;
-                }
-            }
-        }
-        
-        // If we get here, all attempts failed
-        if (lastError) {
-            throw lastError;
         }
     }
 

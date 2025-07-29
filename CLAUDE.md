@@ -94,8 +94,8 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 - **EXPLICIT APPROVAL ONLY:** User must say "approved", "proceed", "bump version", or similar explicit confirmation
 - **WAIT FOR CONFIRMATION:** Always present validation results and wait for user response before proceeding
 
-### 2. Library Validation Protocol  
-When adding/fixing libraries, **MANDATORY validation:**
+### 2. Library Validation Protocol (IF NOT IN /handle-issues command!)
+When adding/fixing libraries, **IF NOT IN /handle-issues command! MANDATORY validation:**
 1. **MANDATORY MAXIMUM RESOLUTION TESTING:** Test multiple IIIF parameters (full/full, full/max, full/2000, full/4000, etc.) to find the largest possible image resolution. Compare file sizes, dimensions, and quality. This is ABSOLUTELY CRITICAL - users must get the highest quality available.
 2. PDFs should be created using test scripts with implemented library logic, not with devserver or actual app
 3. Download 10 different manuscript pages from manifest URLs (or all available if fewer) using the HIGHEST RESOLUTION found

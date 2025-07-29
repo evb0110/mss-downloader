@@ -495,6 +495,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('diglib.hab.de')) return 'wolfenbuettel';
         if (url.includes('digi.vatlib.it')) return 'vatican';
         if (url.includes('digital.ulb.hhu.de')) return 'hhu';
+        if (url.includes('manuscrits.bordeaux.fr') || url.includes('selene.bordeaux.fr')) return 'bordeaux';
         
         return null;
     }
@@ -1258,7 +1259,7 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('graz', originalUrl);
                     break;
                 case 'gams':
-                    manifest = await this.loadGAMSManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('gams', originalUrl);
                     break;
                 case 'cologne':
                     manifest = await this.loadCologneManifest(originalUrl);
