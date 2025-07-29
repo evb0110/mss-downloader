@@ -7,6 +7,7 @@ import { configService } from './ConfigService';
 import { LibraryOptimizationService } from './LibraryOptimizationService';
 import { createProgressMonitor } from './IntelligentProgressMonitor';
 import { ZifImageProcessor } from './ZifImageProcessor';
+import { DziImageProcessor } from './DziImageProcessor';
 import { TileEngineService } from './tile-engine/TileEngineService';
 import { SharedManifestAdapter } from './SharedManifestAdapter';
 import { DownloadLogger } from './DownloadLogger';
@@ -20,6 +21,7 @@ const MIN_VALID_IMAGE_SIZE_BYTES = 1024; // 1KB heuristic
 export class EnhancedManuscriptDownloaderService {
     private manifestCache: ManifestCache;
     private zifProcessor: ZifImageProcessor;
+    private dziProcessor: DziImageProcessor;
     private tileEngineService: TileEngineService;
     private sharedManifestAdapter: SharedManifestAdapter;
     private logger: DownloadLogger;
@@ -27,6 +29,7 @@ export class EnhancedManuscriptDownloaderService {
     constructor(manifestCache?: ManifestCache) {
         this.manifestCache = manifestCache || new ManifestCache();
         this.zifProcessor = new ZifImageProcessor();
+        this.dziProcessor = new DziImageProcessor();
         this.tileEngineService = new TileEngineService();
         this.sharedManifestAdapter = new SharedManifestAdapter(this.fetchWithHTTPS.bind(this));
         this.logger = DownloadLogger.getInstance();
@@ -316,6 +319,11 @@ export class EnhancedManuscriptDownloaderService {
             name: 'HHU Düsseldorf (Heinrich-Heine-University)',
             example: 'https://digital.ulb.hhu.de/i3f/v20/7674176/manifest',
             description: 'Heinrich-Heine-University Düsseldorf digital manuscripts via IIIF v2.0 with maximum resolution support (up to 4879x6273px)',
+        },
+        {
+            name: 'Bordeaux Bibliothèques',
+            example: 'https://manuscrits.bordeaux.fr/ark:/26678/btv1b52509616g/f13.item.zoom',
+            description: 'Bordeaux Libraries digital manuscripts using Deep Zoom Image (DZI) tile technology for ultra-high resolution',
         },
     ];
 
@@ -3423,6 +3431,10 @@ export class EnhancedManuscriptDownloaderService {
                 return this.downloadAndProcessZifFile(url, attempt);
             }
             
+            if (url.endsWith('.dzi')) {
+                return this.downloadAndProcessDziFile(url, attempt);
+            }
+            
             // Use proxy fallback for libraries with connection issues or when direct access fails
             // Note: Internet Culturale removed from proxy list to fix authentication issues
             // BDL added due to IIIF server instability (60% connection failures)
@@ -3662,6 +3674,48 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             throw new Error(`Failed to process ZIF file after ${maxRetries + 1} attempts: ${(error as Error).message}`);
+        }
+    }
+
+    async downloadAndProcessDziFile(url: string, attempt = 0): Promise<ArrayBuffer> {
+        // Calculate timeout based on attempt number (more time for retries)
+        const baseTimeout = 300000; // 5 minutes base
+        const timeoutMs = baseTimeout + (attempt * 120000); // +2 minutes per retry
+        
+        try {
+            console.log(`Processing DZI file: ${url} (attempt ${attempt + 1})`);
+            
+            // Use the dedicated DZI processor with timeout protection
+            const representativeImageBuffer = await this.dziProcessor.processDziImage(url);
+            
+            console.log(`DZI processed successfully: ${(representativeImageBuffer.length / 1024 / 1024).toFixed(2)} MB high-quality image`);
+            
+            // Convert Buffer to ArrayBuffer for compatibility
+            const arrayBuffer = new ArrayBuffer(representativeImageBuffer.length);
+            const view = new Uint8Array(arrayBuffer);
+            view.set(representativeImageBuffer);
+            
+            return arrayBuffer;
+            
+        } catch (error: any) {
+            const maxRetries = configService.get('maxRetries');
+            if (attempt < maxRetries) {
+                const isTimeoutError = (error as Error).message.includes('timeout') || (error as Error).message.includes('timed out');
+                const delay = isTimeoutError ? this.calculateRetryDelay(attempt) * 2 : this.calculateRetryDelay(attempt);
+                
+                console.log(`DZI processing failed (attempt ${attempt + 1}/${maxRetries}): ${(error as Error).message}${isTimeoutError ? ' [TIMEOUT]' : ''}`);
+                console.log(`Retrying DZI processing in ${delay / 1000}s with ${timeoutMs / 1000}s timeout...`);
+                
+                await this.sleep(delay);
+                return this.downloadAndProcessDziFile(url, attempt + 1);
+            }
+            
+            // Provide more specific error message for timeout issues
+            if ((error as Error).message.includes('timeout') || (error as Error).message.includes('timed out')) {
+                throw new Error(`DZI processing timed out after ${maxRetries + 1} attempts. This manuscript may be very large or the server may be overloaded. Please try again later.`);
+            }
+            
+            throw new Error(`Failed to process DZI file after ${maxRetries + 1} attempts: ${(error as Error).message}`);
         }
     }
 

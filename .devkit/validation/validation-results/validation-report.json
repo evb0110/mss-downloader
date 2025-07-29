@@ -1,0 +1,171 @@
+{
+  "passed": [],
+  "failed": [],
+  "details": {
+    "1": {
+      "issue": {
+        "issue": 1,
+        "name": "Düsseldorf (HHU)",
+        "description": "JSON parsing errors",
+        "urls": [
+          "https://digital.ub.uni-duesseldorf.de/content/titleinfo/7938251",
+          "https://digital.ub.uni-duesseldorf.de/hs/content/titleinfo/259994"
+        ]
+      },
+      "urls": [
+        {
+          "issue": 1,
+          "name": "Düsseldorf (HHU)",
+          "url": "https://digital.ub.uni-duesseldorf.de/content/titleinfo/7938251",
+          "success": false,
+          "error": "HHU manuscript not found: 7938251. Please verify the URL is correct.",
+          "pagesDownloaded": 0,
+          "pdfCreated": false,
+          "pdfValid": false
+        },
+        {
+          "issue": 1,
+          "name": "Düsseldorf (HHU)",
+          "url": "https://digital.ub.uni-duesseldorf.de/hs/content/titleinfo/259994",
+          "success": false,
+          "error": "HHU manuscript not found: 259994. Please verify the URL is correct.",
+          "pagesDownloaded": 0,
+          "pdfCreated": false,
+          "pdfValid": false
+        }
+      ]
+    },
+    "2": {
+      "issue": {
+        "issue": 2,
+        "name": "University of Graz",
+        "description": "Timeout errors",
+        "urls": [
+          "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538",
+          "https://unipub.uni-graz.at/obvugrscript/content/pageview/8191388"
+        ]
+      },
+      "urls": [
+        {
+          "issue": 2,
+          "name": "University of Graz",
+          "url": "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538",
+          "success": false,
+          "error": "Command failed: img2pdf /home/evb/WebstormProjects/mss-downloader/.devkit/validation/issue-2-test/page-001.jpg /home/evb/WebstormProjects/mss-downloader/.devkit/validation/issue-2-test/page-002.jpg /home/evb/WebstormProjects/mss-downloader/.devkit/validation/issue-2-test/page-003.jpg /home/evb/WebstormProjects/mss-downloader/.devkit/validation/issue-2-test/page-004.jpg /home/evb/WebstormProjects/mss-downloader/.devkit/validation/issue-2-test/page-005.jpg -o \"/home/evb/WebstormProjects/mss-downloader/.devkit/validation/issue-2-test/issue-2-test.pdf\"\n/bin/sh: 1: img2pdf: not found\n",
+          "pagesDownloaded": 5,
+          "pdfCreated": false,
+          "pdfValid": false
+        },
+        {
+          "issue": 2,
+          "name": "University of Graz",
+          "url": "https://unipub.uni-graz.at/obvugrscript/content/pageview/8191388",
+          "success": false,
+          "error": "Failed to fetch Graz manifest: 404 Not Found",
+          "pagesDownloaded": 0,
+          "pdfCreated": false,
+          "pdfValid": false
+        }
+      ]
+    },
+    "3": {
+      "issue": {
+        "issue": 3,
+        "name": "Verona NBM",
+        "description": "Large manuscript timeouts",
+        "urls": [
+          "https://www.nuovabibliotecamanoscritta.it/catalogo/item/padova-biblioteca-universitaria-ms-550",
+          "https://nuovabibliotecamanoscritta.it/catalogo/item/verona-biblioteca-civica-ms-1945"
+        ]
+      },
+      "urls": [
+        {
+          "issue": 3,
+          "name": "Verona NBM",
+          "url": "https://www.nuovabibliotecamanoscritta.it/catalogo/item/padova-biblioteca-universitaria-ms-550",
+          "success": false,
+          "error": "Invalid Verona URL - no codice parameter found",
+          "pagesDownloaded": 0,
+          "pdfCreated": false,
+          "pdfValid": false
+        },
+        {
+          "issue": 3,
+          "name": "Verona NBM",
+          "url": "https://nuovabibliotecamanoscritta.it/catalogo/item/verona-biblioteca-civica-ms-1945",
+          "success": false,
+          "error": "Invalid Verona URL - no codice parameter found",
+          "pagesDownloaded": 0,
+          "pdfCreated": false,
+          "pdfValid": false
+        }
+      ]
+    },
+    "4": {
+      "issue": {
+        "issue": 4,
+        "name": "Morgan Library",
+        "description": "Single page extraction",
+        "urls": [
+          "https://www.themorgan.org/collection/treasures-of-islamic-manuscript-painting/1",
+          "https://ica.themorgan.org/manuscript/thumbs/142852"
+        ]
+      },
+      "urls": [
+        {
+          "issue": 4,
+          "name": "Morgan Library",
+          "url": "https://www.themorgan.org/collection/treasures-of-islamic-manuscript-painting/1",
+          "success": false,
+          "error": "No images found on Morgan Library page",
+          "pagesDownloaded": 0,
+          "pdfCreated": false,
+          "pdfValid": false
+        },
+        {
+          "issue": 4,
+          "name": "Morgan Library",
+          "url": "https://ica.themorgan.org/manuscript/thumbs/142852",
+          "success": false,
+          "error": "No images found on Morgan Library page",
+          "pagesDownloaded": 0,
+          "pdfCreated": false,
+          "pdfValid": false
+        }
+      ]
+    },
+    "5": {
+      "issue": {
+        "issue": 5,
+        "name": "Florence ContentDM",
+        "description": "JavaScript errors and loading",
+        "urls": [
+          "https://teca.bmlonline.it/digital/collection/plutei/id/272",
+          "https://teca.bmlonline.it/digital/collection/plutei/id/26925"
+        ]
+      },
+      "urls": [
+        {
+          "issue": 5,
+          "name": "Florence ContentDM",
+          "url": "https://teca.bmlonline.it/digital/collection/plutei/id/272",
+          "success": false,
+          "error": "getaddrinfo EAI_AGAIN teca.bmlonline.it",
+          "pagesDownloaded": 0,
+          "pdfCreated": false,
+          "pdfValid": false
+        },
+        {
+          "issue": 5,
+          "name": "Florence ContentDM",
+          "url": "https://teca.bmlonline.it/digital/collection/plutei/id/26925",
+          "success": false,
+          "error": "getaddrinfo EAI_AGAIN teca.bmlonline.it",
+          "pagesDownloaded": 0,
+          "pdfCreated": false,
+          "pdfValid": false
+        }
+      ]
+    }
+  }
+}

@@ -43,6 +43,14 @@ export class SharedManifestAdapter {
                 originalUrl: url
             };
 
+            // Add special properties for tile-based libraries
+            if (result.type === 'tiles' || result.type === 'dzi') {
+                (manifest as any).type = result.type;
+                (manifest as any).requiresTileAssembly = result.requiresTileAssembly;
+                (manifest as any).processorType = result.processorType;
+                (manifest as any).images = result.images; // Preserve full image info for tile processing
+            }
+
             return manifest;
         } catch (error) {
             console.error(`SharedManifestAdapter error for ${libraryId}:`, error);
@@ -54,7 +62,7 @@ export class SharedManifestAdapter {
      * Check if library is supported by shared loaders
      */
     isLibrarySupported(libraryId: string): boolean {
-        const supportedLibraries = ['bdl', 'verona', 'vienna_manuscripta', 'bne', 'mdc_catalonia', 'florence', 'grenoble', 'manchester', 'toronto', 'vatican', 'karlsruhe', 'loc', 'graz', 'bvpb', 'morgan', 'hhu', 'duesseldorf'];
+        const supportedLibraries = ['bdl', 'verona', 'vienna_manuscripta', 'bne', 'mdc_catalonia', 'florence', 'grenoble', 'manchester', 'toronto', 'vatican', 'karlsruhe', 'loc', 'graz', 'bvpb', 'morgan', 'hhu', 'duesseldorf', 'bordeaux'];
         return supportedLibraries.includes(libraryId);
     }
 }

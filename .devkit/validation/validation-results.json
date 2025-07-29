@@ -1,0 +1,71 @@
+{
+  "date": "2025-07-29T07:25:02.049Z",
+  "passed": 1,
+  "total": 8,
+  "results": [
+    {
+      "issue": 1,
+      "name": "Düsseldorf (HHU)",
+      "url": "https://digital.ub.uni-duesseldorf.de/content/titleinfo/7938251",
+      "success": false,
+      "images": 0,
+      "error": "HHU manuscript not found: 7938251. Please verify the URL is correct."
+    },
+    {
+      "issue": 1,
+      "name": "Düsseldorf (HHU)",
+      "url": "https://digital.ub.uni-duesseldorf.de/hs/content/titleinfo/259994",
+      "success": false,
+      "images": 0,
+      "error": "HHU manuscript not found: 259994. Please verify the URL is correct."
+    },
+    {
+      "issue": 2,
+      "name": "University of Graz",
+      "url": "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538",
+      "success": true,
+      "images": 405,
+      "error": null
+    },
+    {
+      "issue": 2,
+      "name": "University of Graz",
+      "url": "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8191386",
+      "success": false,
+      "images": 0,
+      "error": "Failed to fetch Graz manifest: 404 Not Found"
+    },
+    {
+      "issue": 3,
+      "name": "Verona NBM",
+      "url": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/PP1.json",
+      "success": false,
+      "images": 0,
+      "error": "Failed to fetch Verona manifest: 404"
+    },
+    {
+      "issue": 3,
+      "name": "Verona NBM",
+      "url": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/VR1945.json",
+      "success": false,
+      "images": 0,
+      "error": "Failed to fetch Verona manifest: 404"
+    },
+    {
+      "issue": 4,
+      "name": "Morgan Library",
+      "url": "https://www.themorgan.org/collection/treasures-of-islamic-manuscript-painting/thumbs",
+      "success": false,
+      "images": 0,
+      "error": "No images found on Morgan Library page"
+    },
+    {
+      "issue": 4,
+      "name": "Morgan Library",
+      "url": "https://ica.themorgan.org/manuscript/page/1/142852",
+      "success": false,
+      "images": 0,
+      "error": "No images found on Morgan Library page"
+    }
+  ]
+}

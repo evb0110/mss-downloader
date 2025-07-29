@@ -1,0 +1,117 @@
+{
+  "images": [
+    {
+      "url": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f1.dzi",
+      "label": "Page 1",
+      "type": "dzi",
+      "manuscriptId": "btv1b10509613h",
+      "pageNumber": 1,
+      "tileSize": 256,
+      "overlap": 1,
+      "format": "jpg",
+      "dziMetadataUrl": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f1.dzi"
+    },
+    {
+      "url": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f2.dzi",
+      "label": "Page 2",
+      "type": "dzi",
+      "manuscriptId": "btv1b10509613h",
+      "pageNumber": 2,
+      "tileSize": 256,
+      "overlap": 1,
+      "format": "jpg",
+      "dziMetadataUrl": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f2.dzi"
+    },
+    {
+      "url": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f3.dzi",
+      "label": "Page 3",
+      "type": "dzi",
+      "manuscriptId": "btv1b10509613h",
+      "pageNumber": 3,
+      "tileSize": 256,
+      "overlap": 1,
+      "format": "jpg",
+      "dziMetadataUrl": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f3.dzi"
+    },
+    {
+      "url": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f4.dzi",
+      "label": "Page 4",
+      "type": "dzi",
+      "manuscriptId": "btv1b10509613h",
+      "pageNumber": 4,
+      "tileSize": 256,
+      "overlap": 1,
+      "format": "jpg",
+      "dziMetadataUrl": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f4.dzi"
+    },
+    {
+      "url": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f5.dzi",
+      "label": "Page 5",
+      "type": "dzi",
+      "manuscriptId": "btv1b10509613h",
+      "pageNumber": 5,
+      "tileSize": 256,
+      "overlap": 1,
+      "format": "jpg",
+      "dziMetadataUrl": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f5.dzi"
+    },
+    {
+      "url": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f6.dzi",
+      "label": "Page 6",
+      "type": "dzi",
+      "manuscriptId": "btv1b10509613h",
+      "pageNumber": 6,
+      "tileSize": 256,
+      "overlap": 1,
+      "format": "jpg",
+      "dziMetadataUrl": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f6.dzi"
+    },
+    {
+      "url": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f7.dzi",
+      "label": "Page 7",
+      "type": "dzi",
+      "manuscriptId": "btv1b10509613h",
+      "pageNumber": 7,
+      "tileSize": 256,
+      "overlap": 1,
+      "format": "jpg",
+      "dziMetadataUrl": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f7.dzi"
+    },
+    {
+      "url": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f8.dzi",
+      "label": "Page 8",
+      "type": "dzi",
+      "manuscriptId": "btv1b10509613h",
+      "pageNumber": 8,
+      "tileSize": 256,
+      "overlap": 1,
+      "format": "jpg",
+      "dziMetadataUrl": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f8.dzi"
+    },
+    {
+      "url": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f9.dzi",
+      "label": "Page 9",
+      "type": "dzi",
+      "manuscriptId": "btv1b10509613h",
+      "pageNumber": 9,
+      "tileSize": 256,
+      "overlap": 1,
+      "format": "jpg",
+      "dziMetadataUrl": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f9.dzi"
+    },
+    {
+      "url": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f10.dzi",
+      "label": "Page 10",
+      "type": "dzi",
+      "manuscriptId": "btv1b10509613h",
+      "pageNumber": 10,
+      "tileSize": 256,
+      "overlap": 1,
+      "format": "jpg",
+      "dziMetadataUrl": "https://manuscrits.bordeaux.fr/vignettes/btv1b10509613h/f10.dzi"
+    }
+  ],
+  "type": "dzi",
+  "displayName": "Bordeaux - btv1b10509613h",
+  "requiresTileAssembly": true
+}

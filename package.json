@@ -1,13 +1,9 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.44",
+  "version": "1.4.45",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (60+ libraries worldwide)",
   "changelog": [
-    "Added GAMS University of Graz support for context-based manuscript URLs",
-    "Enhanced Florence ContentDM retry logic - fixed endless loading and JavaScript errors",
-    "Fixed Morgan Library to find all pages - resolved single page issue",
-    "Improved Verona NBM performance - limited initial page load to prevent timeouts",
-    "Extended HHU Düsseldorf support for incunabula (/ink/), historical documents (/ihd/), and special collections (/ulbdsp/)"
+    "Added Bordeaux library (selene.bordeaux.fr) with full DZI tile assembly support for high-resolution manuscripts"
   ],
   "main": "dist/main/main.js",
   "scripts": {

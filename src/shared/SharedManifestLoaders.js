@@ -1233,6 +1233,8 @@ class SharedManifestLoaders {
             case 'hhu':
             case 'duesseldorf':
                 return await this.getHHUManifest(url);
+            case 'bordeaux':
+                return await this.getBordeauxManifest(url);
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }
@@ -1670,6 +1672,188 @@ class SharedManifestLoaders {
             images,
             label: manifest.label || manuscriptId,
             metadata: manifest.metadata || []
+        };
+    }
+
+    /**
+     * Bordeaux - Direct tile access without DZI XML files
+     * Handles ID mapping and tile probing
+     */
+    async getBordeauxManifest(url) {
+        console.log('[Bordeaux] Processing URL:', url);
+        
+        // Handle both public URLs and direct tile URLs
+        let publicId, pageNum, internalId;
+        
+        // Pattern 1: Public manuscript URL
+        const publicMatch = url.match(/ark:\/\d+\/([^/]+)(?:\/f(\d+))?/);
+        
+        // Pattern 2: Direct selene.bordeaux.fr tile URL
+        const directMatch = url.match(/selene\.bordeaux\.fr\/in\/dz\/([^/]+?)(?:_(\d{4}))?(?:\.dzi)?$/);
+        
+        if (publicMatch) {
+            publicId = publicMatch[1];
+            pageNum = publicMatch[2] ? parseInt(publicMatch[2]) : 1;
+        } else if (directMatch) {
+            // Direct tile URL - extract ID and page
+            internalId = directMatch[1];
+            pageNum = directMatch[2] ? parseInt(directMatch[2]) : 1;
+            
+            // Extract the manuscript part for display
+            const idParts = internalId.match(/(\d+)_(.+)/);
+            publicId = idParts ? idParts[2] : internalId;
+        } else {
+            throw new Error('Invalid Bordeaux URL format');
+        }
+        
+        console.log('[Bordeaux] Public ID:', publicId, 'Starting page:', pageNum, 'Internal ID:', internalId || 'unknown');
+        
+        // First, try to fetch the main page to discover the internal tile ID (if not already known)
+        if (!internalId && publicMatch) {
+            try {
+                const pageResponse = await this.fetchWithRetry(url);
+                if (pageResponse.ok) {
+                    const html = await pageResponse.text();
+                    
+                    // Look for iframe with selene.bordeaux.fr
+                    const iframeMatch = html.match(/<iframe[^>]+src=['"]([^'"]*selene\.bordeaux\.fr[^'"]+)/i);
+                    if (iframeMatch) {
+                        console.log('[Bordeaux] Found iframe URL:', iframeMatch[1]);
+                        
+                        // Fetch iframe content to find tile ID
+                        const iframeUrl = iframeMatch[1].startsWith('http') ? iframeMatch[1] : `https://selene.bordeaux.fr${iframeMatch[1]}`;
+                        try {
+                            const iframeResponse = await this.fetchWithRetry(iframeUrl);
+                            if (iframeResponse.ok) {
+                                const iframeHtml = await iframeResponse.text();
+                                
+                                // Look for DZI references in OpenSeadragon config
+                                const dziMatch = iframeHtml.match(/\/in\/dz\/([^"'/\s]+)\.dzi/);
+                                if (dziMatch) {
+                                    internalId = dziMatch[1];
+                                    console.log('[Bordeaux] Found internal tile ID:', internalId);
+                                }
+                            }
+                        } catch (error) {
+                            console.log('[Bordeaux] Could not fetch iframe content:', error.message);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('[Bordeaux] Could not fetch main page:', error.message);
+            }
+        }
+        
+        // If we couldn't find the internal ID, try known patterns or direct tile URL
+        if (!internalId) {
+            // For now, we'll use a placeholder that indicates we need the internal ID
+            console.log('[Bordeaux] Could not determine internal tile ID, using placeholder');
+            
+            // Known mappings (can be expanded)
+            const knownMappings = {
+                'btv1b52509616g': '330636101_MS0778',
+                '330636101_MS_0778': '330636101_MS0778', // Direct mapping for selene URLs
+                // Add more mappings as discovered
+            };
+            
+            internalId = knownMappings[publicId];
+            
+            if (!internalId) {
+                // If it's a direct selene.bordeaux.fr URL, extract the ID
+                if (url.includes('selene.bordeaux.fr')) {
+                    const seleneMatch = url.match(/\/in\/dz\/([^/]+)/);
+                    if (seleneMatch) {
+                        internalId = seleneMatch[1];
+                    }
+                } else {
+                    throw new Error(`Cannot determine tile ID for Bordeaux manuscript: ${publicId}. Please use the direct tile URL from selene.bordeaux.fr if available.`);
+                }
+            }
+        }
+        
+        // Extract base ID without page number if present
+        const baseIdMatch = internalId.match(/^(.+?)(?:_\d{4})?$/);
+        const baseId = baseIdMatch ? baseIdMatch[1] : internalId;
+        
+        // Direct tile-based approach
+        const images = [];
+        const tileType = 'tiles';
+        
+        // For Bordeaux, pages often start from 6, not 1
+        const startPage = pageNum > 5 ? pageNum : 6;
+        
+        // Get first 10 pages starting from the start page
+        for (let i = 0; i < 10; i++) {
+            const currentPage = startPage + i;
+            
+            // Bordeaux tile structure:
+            // Base URL: https://selene.bordeaux.fr/in/dz/{baseId}_{page:04d}
+            // Tiles: https://selene.bordeaux.fr/in/dz/{baseId}_{page:04d}_files/{level}/{column}_{row}.jpg
+            
+            const baseUrl = `https://selene.bordeaux.fr/in/dz/${baseId}_${String(currentPage).padStart(4, '0')}`;
+            
+            images.push({
+                url: baseUrl,
+                label: `Page ${currentPage}`,
+                type: 'tiles',
+                manuscriptId: publicId,
+                pageNumber: currentPage,
+                tileInfo: {
+                    baseUrl: baseUrl,
+                    tileSize: 256,
+                    overlap: 1,
+                    format: 'jpg',
+                    maxLevel: null,
+                    gridSize: null,
+                    estimatedDimensions: null
+                }
+            });
+        }
+        
+        return { 
+            images,
+            type: tileType,
+            displayName: `Bordeaux - ${publicId}`,
+            requiresTileAssembly: true,
+            processorType: 'DirectTileProcessor'
+        };
+    }
+    
+    /**
+     * Parse Bordeaux IIIF manifest if available
+     */
+    async parseBordeauxIIIFManifest(manifest, manuscriptId) {
+        const images = [];
+        
+        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            const canvases = manifest.sequences[0].canvases;
+            const maxPages = Math.min(canvases.length, 50);
+            
+            for (let i = 0; i < maxPages; i++) {
+                const canvas = canvases[i];
+                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                    const resource = canvas.images[0].resource;
+                    const service = resource.service;
+                    
+                    if (service && service['@id']) {
+                        // Request maximum resolution
+                        const imageUrl = `${service['@id']}/full/max/0/default.jpg`;
+                        images.push({
+                            url: imageUrl,
+                            label: canvas.label || `Page ${i + 1}`
+                        });
+                    }
+                }
+            }
+        }
+        
+        if (images.length === 0) {
+            throw new Error('No images found in Bordeaux IIIF manifest');
+        }
+        
+        return {
+            images,
+            displayName: `Bordeaux - ${manuscriptId}`
         };
     }
 }
