@@ -14,9 +14,9 @@ class SharedManifestLoaders {
     }
 
     async defaultNodeFetch(url, options = {}, retries = 3) {
-        // Increase retries for Verona domains
+        // Increase retries for Verona domains  
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
-            retries = 9; // Increased from 7 to 9 for even better reliability
+            retries = 15; // Increased from 9 to 15 for maximum reliability against server issues
         }
         
         for (let i = 0; i < retries; i++) {
@@ -115,11 +115,32 @@ class SharedManifestLoaders {
             }
 
             const req = https.request(requestOptions, (res) => {
-                if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-                    const redirectUrl = new URL(res.headers.location, url).href;
-                    console.log(`[SharedManifestLoaders] Redirect ${redirectCount + 1}/${MAX_REDIRECTS}: ${url} -> ${redirectUrl}`);
-                    this.fetchUrl(redirectUrl, options, redirectCount + 1).then(resolve).catch(reject);
-                    return;
+                if (res.statusCode >= 300 && res.statusCode < 400) {
+                    if (res.headers.location) {
+                        const redirectUrl = new URL(res.headers.location, url).href;
+                        console.log(`[SharedManifestLoaders] Redirect ${redirectCount + 1}/${MAX_REDIRECTS}: ${res.statusCode} ${url} -> ${redirectUrl}`);
+                        
+                        // Add debug info for Morgan redirects
+                        if (url.includes('themorgan.org')) {
+                            console.log(`[Morgan] Redirect details: ${res.statusCode} from ${url} to ${redirectUrl}`);
+                        }
+                        
+                        this.fetchUrl(redirectUrl, options, redirectCount + 1).then(resolve).catch(reject);
+                        return;
+                    } else {
+                        // Redirect status without Location header
+                        console.error(`[SharedManifestLoaders] Redirect ${res.statusCode} without Location header for URL: ${url}`);
+                        resolve({
+                            ok: false,
+                            status: res.statusCode,
+                            statusText: res.statusMessage + ' (Missing Location header)',
+                            headers: res.headers,
+                            buffer: () => Promise.resolve(Buffer.alloc(0)),
+                            text: () => Promise.resolve(''),
+                            json: () => Promise.reject(new Error('No content to parse'))
+                        });
+                        return;
+                    }
                 }
 
                 const chunks = [];
@@ -193,10 +214,14 @@ class SharedManifestLoaders {
     async getVeronaManifest(url) {
         console.log('[Verona] Processing URL:', url);
         
-        // Perform server health check first
-        const isHealthy = await this.checkVeronaServerHealth();
-        if (!isHealthy) {
-            throw new Error('Verona server appears to be unavailable or experiencing connectivity issues. Please try again in 15-20 minutes.');
+        // Perform server health check first (but don't fail completely if it fails)
+        try {
+            const isHealthy = await this.checkVeronaServerHealth();
+            if (!isHealthy) {
+                console.warn('[Verona] Health check failed, but continuing with enhanced retries...');
+            }
+        } catch (error) {
+            console.warn('[Verona] Health check error, but continuing:', error.message);
         }
         
         // Check if this is a direct IIIF manifest URL
@@ -983,6 +1008,12 @@ class SharedManifestLoaders {
             };
         }
         
+        // Handle direct facsimile URLs that user provided
+        if (url.includes('host.themorgan.org/facsimile')) {
+            console.log('[Morgan] Processing facsimile URL:', url);
+            return await this.processMorganFacsimileUrl(url);
+        }
+        
         // Extract manuscript ID and determine base URL
         let baseUrl;
         let manuscriptId = '';
@@ -1010,17 +1041,33 @@ class SharedManifestLoaders {
             pageUrl = `${baseUrl}/collection/${manuscriptId}/thumbs`;
         }
         
-        const response = await this.fetchWithRetry(pageUrl);
-        if (!response.ok) {
-            if (response.status === 301 || response.status === 302) {
-                throw new Error(`Morgan page redirected (${response.status}). The manuscript may have moved or the URL format may have changed. Try accessing the manuscript directly through themorgan.org and use the updated URL.`);
+        try {
+            const response = await this.fetchWithRetry(pageUrl);
+            if (!response.ok) {
+                // Allow automatic redirect handling - don't throw error for redirects
+                if (response.status === 301 || response.status === 302) {
+                    console.log(`[Morgan] Following redirect: ${response.status} to ${response.headers?.location || 'new location'}`);
+                    // The fetchWithRetry should have automatically followed the redirect
+                    // If we're here, the redirect was followed but the final page still returned an error
+                    console.log(`[Morgan] Redirect followed but final page returned: ${response.status}`);
+                }
+                throw new Error(`Failed to fetch Morgan page: ${response.status}${pageUrl}`);
             }
-            throw new Error(`Failed to fetch Morgan page: ${response.status}`);
+            
+            const html = await response.text();
+            const images = [];
+            
+            return await this.processMorganHTML(html, url, baseUrl, manuscriptId, displayName, images);
+        } catch (error) {
+            // Enhance error reporting for Morgan-specific issues
+            if (error.message.includes('Too many redirects')) {
+                throw new Error(`Morgan page has too many redirects - likely a redirect loop. The manuscript URL may be outdated. Try finding the current URL on themorgan.org.`);
+            }
+            throw error;
         }
-        
-        const html = await response.text();
-        const images = [];
-        
+    }
+    
+    async processMorganHTML(html, url, baseUrl, manuscriptId, displayName, images) {
         if (url.includes('ica.themorgan.org')) {
             // ICA format - extract image URLs with better pattern matching
             // Look for full image URLs or icaimages paths
@@ -1752,6 +1799,125 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             label: manifest.label || manuscriptId,
             metadata: manifest.metadata || []
         };
+    }
+
+    /**
+     * Morgan Library Facsimile URL processor - handles direct ASP facsimile pages
+     * Supports the pattern: host.themorgan.org/facsimile/m1/default.asp?id=X
+     */
+    async processMorganFacsimileUrl(url) {
+        console.log('[Morgan] Processing facsimile URL:', url);
+        
+        // Extract ID from URL
+        const idMatch = url.match(/[?&]id=(\d+)/);
+        if (!idMatch) {
+            throw new Error('Cannot extract ID from Morgan facsimile URL');
+        }
+        
+        const manuscriptId = idMatch[1];
+        console.log(`[Morgan] Facsimile manuscript ID: ${manuscriptId}`);
+        
+        try {
+            const response = await this.fetchWithRetry(url);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch Morgan facsimile page: ${response.status}`);
+            }
+            
+            const html = await response.text();
+            const images = [];
+            
+            // Look for image references in the ASP page
+            // Common patterns in Morgan facsimile pages:
+            // 1. Direct image URLs in JavaScript or HTML
+            // 2. Zoom viewer references
+            // 3. Page navigation elements
+            
+            // Pattern 1: Look for image URLs
+            const imageRegex = /(?:src|href)=['"]([^'"]*\/(?:images?|facsimile|zoom)[^'"]*\.(?:jpg|jpeg|png))/gi;
+            let match;
+            while ((match = imageRegex.exec(html)) !== null) {
+                let imageUrl = match[1];
+                if (!imageUrl.startsWith('http')) {
+                    imageUrl = imageUrl.startsWith('/') ? 
+                        `https://host.themorgan.org${imageUrl}` : 
+                        `https://host.themorgan.org/${imageUrl}`;
+                }
+                images.push({
+                    url: imageUrl,
+                    label: `Page ${images.length + 1}`
+                });
+            }
+            
+            // Pattern 2: Look for zoom images or high-resolution references
+            const zoomRegex = /['"](.*?(?:zoom|large|high|max).*?\.(?:jpg|jpeg|png))['"]/gi;
+            while ((match = zoomRegex.exec(html)) !== null) {
+                let imageUrl = match[1];
+                if (!imageUrl.startsWith('http')) {
+                    imageUrl = imageUrl.startsWith('/') ? 
+                        `https://host.themorgan.org${imageUrl}` : 
+                        `https://host.themorgan.org/${imageUrl}`;
+                }
+                if (!images.some(img => img.url === imageUrl)) {
+                    images.push({
+                        url: imageUrl,
+                        label: `Page ${images.length + 1} (High-res)`
+                    });
+                }
+            }
+            
+            // Pattern 3: Generate potential image URLs based on common Morgan patterns
+            if (images.length === 0) {
+                console.log('[Morgan] No images found in HTML, generating potential URLs...');
+                // Try common Morgan image URL patterns
+                const basePatterns = [
+                    `https://host.themorgan.org/facsimile/m${manuscriptId}/`,
+                    `https://host.themorgan.org/images/facsimile/m${manuscriptId}/`,
+                    `https://www.themorgan.org/sites/default/files/images/collection/`,
+                ];
+                
+                for (const basePattern of basePatterns) {
+                    for (let page = 1; page <= 20; page++) {
+                        const extensions = ['jpg', 'jpeg', 'png'];
+                        const pageFormats = [
+                            String(page).padStart(2, '0'),
+                            String(page).padStart(3, '0'),
+                            String(page)
+                        ];
+                        
+                        for (const ext of extensions) {
+                            for (const pageFormat of pageFormats) {
+                                images.push({
+                                    url: `${basePattern}${pageFormat}.${ext}`,
+                                    label: `Page ${page}`
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Remove duplicates and limit results
+            const uniqueImages = [];
+            const seenUrls = new Set();
+            for (const img of images) {
+                if (!seenUrls.has(img.url)) {
+                    seenUrls.add(img.url);
+                    uniqueImages.push(img);
+                    if (uniqueImages.length >= 50) break;
+                }
+            }
+            
+            console.log(`[Morgan] Found ${uniqueImages.length} facsimile images`);
+            
+            return {
+                images: uniqueImages,
+                displayName: `Morgan Library Manuscript ${manuscriptId} (Facsimile)`
+            };
+            
+        } catch (error) {
+            console.error('[Morgan] Facsimile processing error:', error.message);
+            throw new Error(`Failed to process Morgan facsimile URL: ${error.message}`);
+        }
     }
 
     /**

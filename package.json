@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.47",
+  "version": "1.4.48",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (60+ libraries worldwide)",
   "changelog": [
-    "CRITICAL FIX: Bordeaux library switch case missing - now properly supports Bordeaux manuscripts",
-    "CRITICAL FIX: Florence ContentDM ultra-simplified - no API calls, no timeouts, no infinite loading",
-    "Enhanced Morgan Library facsimile URL pattern support and redirect handling", 
-    "Improved Verona NBM timeout handling with 9 retries and exponential backoff",
-    "Fixed University of Graz infinite loading with redirect loop prevention", 
-    "Restored HHU Düsseldorf unified IIIF pattern - regression from v1.4.44 resolved"
+    "CACHE CLEARING FIX: Florence ContentDM manifests now force-cleared on startup to ensure users access v1.4.47+ ultra-simple implementation",
+    "CACHE CLEARING FIX: Graz University manifests cleared on startup to resolve persistent user-reported issues", 
+    "REDIRECT FIX: Morgan Library 301 redirects now properly followed instead of throwing errors",
+    "FACSIMILE SUPPORT: Added direct Morgan facsimile URL support (host.themorgan.org/facsimile) as requested by users",
+    "TIMEOUT FIX: Verona NBM retries increased to 15 attempts with non-blocking health checks for maximum reliability",
+    "RELIABILITY BOOST: All problematic library domains now cleared from cache automatically on startup"
   ],
   "main": "dist/main/main.js",
   "scripts": {

@@ -37,6 +37,39 @@ export class EnhancedManuscriptDownloaderService {
         this.manifestCache.clearProblematicUrls().catch(error => {
             console.warn('Failed to clear problematic cache entries:', (error as Error).message);
         });
+        
+        // Force clear Florence cache to ensure users get v1.4.47+ ultra-simple implementation
+        this.clearFlorenceCacheOnStartup();
+        
+        // Clear Graz cache to resolve persistent issues reported by users
+        this.clearGrazCacheOnStartup();
+    }
+
+    /**
+     * Clear Florence ContentDM cache on startup to ensure users get the new ultra-simple implementation
+     * This resolves the issue where cached manifests prevent access to the v1.4.47+ improvements
+     */
+    private async clearFlorenceCacheOnStartup(): Promise<void> {
+        try {
+            await this.manifestCache.clearDomain('cdm21059.contentdm.oclc.org');
+            console.log('✅ Florence cache cleared on startup - users will access new ultra-simple implementation');
+        } catch (error) {
+            console.warn('⚠️ Failed to clear Florence cache on startup:', (error as Error).message);
+        }
+    }
+
+    /**
+     * Clear Graz cache on startup to resolve persistent user-reported issues
+     * This ensures users get the latest implementation without cached problems
+     */
+    private async clearGrazCacheOnStartup(): Promise<void> {
+        try {
+            await this.manifestCache.clearDomain('unipub.uni-graz.at');
+            await this.manifestCache.clearDomain('gams.uni-graz.at');
+            console.log('✅ Graz cache cleared on startup - resolving persistent user issues');
+        } catch (error) {
+            console.warn('⚠️ Failed to clear Graz cache on startup:', (error as Error).message);
+        }
     }
 
     static readonly SUPPORTED_LIBRARIES: LibraryInfo[] = [
