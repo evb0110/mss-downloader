@@ -24,6 +24,7 @@ class SharedManifestLoaders {
                 return await this.fetchUrl(url, options);
             } catch (error) {
                 console.log(`[SharedManifestLoaders] Attempt ${i + 1}/${retries} failed for ${url}: ${error.message}`);
+                if (error.code) console.log(`[SharedManifestLoaders] Error code: ${error.code}`);
                 
                 if (i === retries - 1) {
                     // Enhanced error message for Verona timeouts
@@ -71,8 +72,12 @@ class SharedManifestLoaders {
             throw new Error(`Too many redirects (${redirectCount}) for URL: ${url}`);
         }
         
-        // In Electron environment, use built-in fetch when available
-        if (typeof fetch !== 'undefined') {
+        // Check if we need to use HTTPS module for SSL bypass domains
+        const needsSSLBypass = url.includes('bdh-rd.bne.es') || url.includes('pagella.bm-grenoble.fr') || 
+                               url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it');
+        
+        // In Electron environment, use built-in fetch when available (unless SSL bypass needed)
+        if (typeof fetch !== 'undefined' && !needsSSLBypass) {
             try {
                 const controller = new AbortController();
                 const timeoutMs = this.getTimeoutForUrl(url);
@@ -133,10 +138,15 @@ class SharedManifestLoaders {
                 timeout: timeoutMs
             };
 
-            // SSL bypass for specific domains
+            // SSL bypass for specific domains with certificate issues
             if (url.includes('bdh-rd.bne.es') || url.includes('pagella.bm-grenoble.fr') || 
                 url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
                 requestOptions.rejectUnauthorized = false;
+                // Additional headers for Verona servers
+                if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
+                    requestOptions.headers['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8';
+                    requestOptions.headers['Accept-Language'] = 'en-US,en;q=0.9';
+                }
             }
 
             const req = https.request(requestOptions, (res) => {
@@ -301,7 +311,7 @@ class SharedManifestLoaders {
         
         const manifestId = knownMappings[codice];
         if (manifestId) {
-            const manifestUrl = `https://nbm.regione.veneto.it/documenti/mirador_json/manifest/${manifestId}.json`;
+            const manifestUrl = `https://www.nuovabibliotecamanoscritta.it/documenti/mirador_json/manifest/${manifestId}.json`;
             console.log('[Verona] Using known mapping, manifest URL:', manifestUrl);
             return await this.fetchVeronaIIIFManifest(manifestUrl);
         }
@@ -340,9 +350,9 @@ class SharedManifestLoaders {
                     // If we only got the ID, construct the full URL
                     if (!manifestUrl.startsWith('http')) {
                         if (manifestUrl.includes('.json')) {
-                            manifestUrl = `https://nbm.regione.veneto.it${manifestUrl.startsWith('/') ? '' : '/'}${manifestUrl}`;
+                            manifestUrl = `https://www.nuovabibliotecamanoscritta.it${manifestUrl.startsWith('/') ? '' : '/'}${manifestUrl}`;
                         } else {
-                            manifestUrl = `https://nbm.regione.veneto.it/documenti/mirador_json/manifest/${manifestUrl}.json`;
+                            manifestUrl = `https://www.nuovabibliotecamanoscritta.it/documenti/mirador_json/manifest/${manifestUrl}.json`;
                         }
                     }
                     
@@ -375,8 +385,8 @@ class SharedManifestLoaders {
         console.log('[Verona] Performing server health check...');
         
         const healthCheckUrls = [
-            'https://nbm.regione.veneto.it',
-            'https://www.nuovabibliotecamanoscritta.it'
+            'https://www.nuovabibliotecamanoscritta.it',
+            'https://nbm.regione.veneto.it' // Keep old URL as fallback
         ];
         
         for (const healthUrl of healthCheckUrls) {
@@ -1077,11 +1087,8 @@ class SharedManifestLoaders {
         try {
             const response = await this.fetchWithRetry(pageUrl);
             if (!response.ok) {
-                // Enhanced error reporting for different status codes
-                if (response.status === 301 || response.status === 302) {
-                    const redirectLocation = response.headers?.location || response.headers?.Location || 'unknown location';
-                    throw new Error(`Morgan page redirect failed: ${response.status} redirecting to ${redirectLocation}. The URL may be outdated or the redirect chain is too long.`);
-                } else if (response.status === 404) {
+                // Don't treat redirects as errors - they should be followed automatically by fetchWithRetry
+                if (response.status === 404) {
                     throw new Error(`Morgan page not found (404): ${pageUrl}. The manuscript may have been moved or removed.`);
                 } else if (response.status >= 500) {
                     throw new Error(`Morgan server error (${response.status}): The server is experiencing issues. Please try again later.`);

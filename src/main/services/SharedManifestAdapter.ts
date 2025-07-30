@@ -35,9 +35,10 @@ export class SharedManifestAdapter {
             const result = await this.sharedLoaders.getManifestForLibrary(libraryId, url);
             
             // Convert shared loader format to Electron format
+            // Handle Bordeaux and other tile-based formats that don't have images array
             const manifest: ManuscriptManifest = {
-                pageLinks: result.images.map((image: any) => image.url),
-                totalPages: result.images.length,
+                pageLinks: result.images ? result.images.map((image: any) => image.url) : [],
+                totalPages: result.images ? result.images.length : (result.pageCount || 0),
                 library: libraryId as any,
                 displayName: result.displayName || `${libraryId} Manuscript`,
                 originalUrl: url
@@ -48,7 +49,9 @@ export class SharedManifestAdapter {
                 (manifest as any).type = result.type;
                 (manifest as any).requiresTileAssembly = result.requiresTileAssembly;
                 (manifest as any).processorType = result.processorType;
-                (manifest as any).images = result.images; // Preserve full image info for tile processing
+                if (result.images) {
+                    (manifest as any).images = result.images; // Preserve full image info for tile processing
+                }
             }
             
             // Handle new Bordeaux format with tile processor integration
