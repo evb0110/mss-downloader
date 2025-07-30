@@ -1,0 +1,116 @@
+{
+  "timestamp": "2025-07-30T12:52:40.189Z",
+  "manifest": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/LXXXIX841.json",
+  "manuscript": "LXXXIX (84)",
+  "totalPages": 254,
+  "baseImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+  "resolutionTests": [
+    {
+      "path": "full/full/0/native.jpg",
+      "name": "native_full",
+      "status": "success",
+      "size": 406770,
+      "sizeMB": 0.39,
+      "sizeKB": 397.2,
+      "url": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/0/native.jpg",
+      "filename": ".devkit/verona-resolution-test/native_full.jpg",
+      "width": 300,
+      "height": 300,
+      "pixels": 90000
+    },
+    {
+      "path": "full/max/0/default.jpg",
+      "name": "max_default",
+      "status": "success",
+      "size": 406770,
+      "sizeMB": 0.39,
+      "sizeKB": 397.2,
+      "url": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/max/0/default.jpg",
+      "filename": ".devkit/verona-resolution-test/max_default.jpg",
+      "width": 300,
+      "height": 300,
+      "pixels": 90000
+    },
+    {
+      "path": "full/20000,/0/default.jpg",
+      "name": "w20000",
+      "status": "success",
+      "size": 28358258,
+      "sizeMB": 27.04,
+      "sizeKB": 27693.6,
+      "url": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/20000,/0/default.jpg",
+      "filename": ".devkit/verona-resolution-test/w20000.jpg",
+      "width": 1,
+      "height": 1,
+      "pixels": 1
+    },
+    {
+      "path": "full/10000,/0/default.jpg",
+      "name": "w10000",
+      "status": "success",
+      "size": 10162124,
+      "sizeMB": 9.69,
+      "sizeKB": 9923.9,
+      "url": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/10000,/0/default.jpg",
+      "filename": ".devkit/verona-resolution-test/w10000.jpg",
+      "width": 1,
+      "height": 1,
+      "pixels": 1
+    },
+    {
+      "path": "full/5000,/0/default.jpg",
+      "name": "w5000",
+      "status": "success",
+      "size": 3794296,
+      "sizeMB": 3.62,
+      "sizeKB": 3705.4,
+      "url": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/5000,/0/default.jpg",
+      "filename": ".devkit/verona-resolution-test/w5000.jpg",
+      "width": 1,
+      "height": 1,
+      "pixels": 1
+    },
+    {
+      "path": "full/2000,/0/default.jpg",
+      "name": "w2000_current",
+      "status": "success",
+      "size": 1072821,
+      "sizeMB": 1.02,
+      "sizeKB": 1047.7,
+      "url": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/2000,/0/default.jpg",
+      "filename": ".devkit/verona-resolution-test/w2000_current.jpg",
+      "width": 1,
+      "height": 1,
+      "pixels": 1
+    },
+    {
+      "path": "full/1000,/0/default.jpg",
+      "name": "w1000",
+      "status": "success",
+      "size": 405740,
+      "sizeMB": 0.39,
+      "sizeKB": 396.2,
+      "url": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/1000,/0/default.jpg",
+      "filename": ".devkit/verona-resolution-test/w1000.jpg",
+      "width": 1,
+      "height": 1,
+      "pixels": 1
+    }
+  ],
+  "analysis": {
+    "totalSuccessful": 7,
+    "currentImplementation": {
+      "name": "w2000_current",
+      "sizeMB": 1.02,
+      "dimensions": "1x1",
+      "pixels": 1
+    },
+    "recommended": {
+      "name": "w20000",
+      "sizeMB": 27.04,
+      "dimensions": "1x1",
+      "pixels": 1
+    },
+    "qualityUpgradeOpportunity": true
+  }
+}

@@ -1,0 +1,2366 @@
+{
+  "timestamp": "2025-07-30T12:44:57.427Z",
+  "summary": {
+    "totalTests": 120,
+    "successful": 10,
+    "failed": 110,
+    "successRate": 8
+  },
+  "manifestsProcessed": 3,
+  "imageServicesFound": 10,
+  "resolutionPatternsTested": 12,
+  "bestPatterns": [
+    {
+      "pattern": "pct:0,0,100,100/max/0/default.jpg",
+      "successCount": 10,
+      "totalFileSize": 4632164,
+      "totalPixels": 194400,
+      "avgQualityScore": 0.46,
+      "maxDimensions": {
+        "width": 133,
+        "height": 160
+      },
+      "avgDownloadTime": 771,
+      "avgFileSize": 463216,
+      "avgPixels": 19440
+    }
+  ],
+  "maxResolution": {
+    "pixels": 21280,
+    "dimensions": {
+      "width": 133,
+      "height": 160
+    },
+    "pattern": "pct:0,0,100,100/max/0/default.jpg",
+    "fileSize": 394065
+  },
+  "recommendedPattern": "pct:0,0,100,100/max/0/default.jpg",
+  "allResults": [
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+      "pattern": "full/full",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/full/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 297,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+      "pattern": "full/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 298,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+      "pattern": "full/2000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/2000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 306,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+      "pattern": "full/4000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/4000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 305,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+      "pattern": "full/8000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/8000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 294,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+      "pattern": "full/10000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/10000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 299,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+      "pattern": "max/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/max/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 294,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+      "pattern": "full/1024",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/1024/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 299,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+      "pattern": "full/1600",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/1600/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 299,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+      "pattern": "full/3200",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/3200/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 299,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+      "pattern": "full/6400",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/6400/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 297,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+      "pattern": "pct:0,0,100,100/max/0/default.jpg",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/pct:0,0,100,100/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 200,
+      "isSuccess": true,
+      "fileSize": 406770,
+      "downloadTime": 769,
+      "contentType": "image/jpeg",
+      "error": null,
+      "imageDimensions": {
+        "width": 130,
+        "height": 160
+      },
+      "qualityScore": 0.41
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+      "pattern": "full/full",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/full/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 298,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+      "pattern": "full/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 298,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+      "pattern": "full/2000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/2000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 300,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+      "pattern": "full/4000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/4000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 294,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+      "pattern": "full/8000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/8000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 305,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+      "pattern": "full/10000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/10000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 301,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+      "pattern": "max/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/max/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 315,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+      "pattern": "full/1024",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/1024/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 306,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+      "pattern": "full/1600",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/1600/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 347,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+      "pattern": "full/3200",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/3200/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 294,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+      "pattern": "full/6400",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/6400/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 296,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+      "pattern": "pct:0,0,100,100/max/0/default.jpg",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/pct:0,0,100,100/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 200,
+      "isSuccess": true,
+      "fileSize": 403008,
+      "downloadTime": 769,
+      "contentType": "image/jpeg",
+      "error": null,
+      "imageDimensions": {
+        "width": 132,
+        "height": 160
+      },
+      "qualityScore": 0.4
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+      "pattern": "full/full",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/full/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 304,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+      "pattern": "full/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 302,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+      "pattern": "full/2000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/2000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 296,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+      "pattern": "full/4000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/4000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 312,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+      "pattern": "full/8000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/8000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 298,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+      "pattern": "full/10000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/10000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 303,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+      "pattern": "max/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/max/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 308,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+      "pattern": "full/1024",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/1024/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 304,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+      "pattern": "full/1600",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/1600/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 301,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+      "pattern": "full/3200",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/3200/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 302,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+      "pattern": "full/6400",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/6400/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 307,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+      "pattern": "pct:0,0,100,100/max/0/default.jpg",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/pct:0,0,100,100/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 200,
+      "isSuccess": true,
+      "fileSize": 394065,
+      "downloadTime": 768,
+      "contentType": "image/jpeg",
+      "error": null,
+      "imageDimensions": {
+        "width": 133,
+        "height": 160
+      },
+      "qualityScore": 0.39
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+      "pattern": "full/full",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/full/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 294,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+      "pattern": "full/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 302,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+      "pattern": "full/2000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/2000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 309,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+      "pattern": "full/4000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/4000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 298,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+      "pattern": "full/8000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/8000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 298,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+      "pattern": "full/10000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/10000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 298,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+      "pattern": "max/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/max/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 297,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+      "pattern": "full/1024",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/1024/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 296,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+      "pattern": "full/1600",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/1600/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 297,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+      "pattern": "full/3200",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/3200/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 296,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+      "pattern": "full/6400",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/6400/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 296,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+      "pattern": "pct:0,0,100,100/max/0/default.jpg",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/pct:0,0,100,100/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 200,
+      "isSuccess": true,
+      "fileSize": 384948,
+      "downloadTime": 696,
+      "contentType": "image/jpeg",
+      "error": null,
+      "imageDimensions": {
+        "width": 130,
+        "height": 160
+      },
+      "qualityScore": 0.38
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+      "pattern": "full/full",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/full/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 296,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+      "pattern": "full/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 302,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+      "pattern": "full/2000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/2000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 301,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+      "pattern": "full/4000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/4000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 299,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+      "pattern": "full/8000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/8000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 293,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+      "pattern": "full/10000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/10000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 296,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+      "pattern": "max/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/max/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 302,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+      "pattern": "full/1024",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/1024/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 298,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+      "pattern": "full/1600",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/1600/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 294,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+      "pattern": "full/3200",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/3200/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 303,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+      "pattern": "full/6400",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/6400/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 293,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+      "pattern": "pct:0,0,100,100/max/0/default.jpg",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/pct:0,0,100,100/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FLXXXIX+%2884%29%2FVR0056-Cod._LXXXIX_%2884%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 200,
+      "isSuccess": true,
+      "fileSize": 308328,
+      "downloadTime": 770,
+      "contentType": "image/jpeg",
+      "error": null,
+      "imageDimensions": {
+        "width": 133,
+        "height": 160
+      },
+      "qualityScore": 0.31
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+      "pattern": "full/full",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/full/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 296,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+      "pattern": "full/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 297,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+      "pattern": "full/2000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/2000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 300,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+      "pattern": "full/4000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/4000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 299,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+      "pattern": "full/8000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/8000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 293,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+      "pattern": "full/10000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/10000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 299,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+      "pattern": "max/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/max/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 301,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+      "pattern": "full/1024",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/1024/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 295,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+      "pattern": "full/1600",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/1600/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 305,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+      "pattern": "full/3200",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/3200/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 296,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+      "pattern": "full/6400",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/6400/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 303,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+      "pattern": "pct:0,0,100,100/max/0/default.jpg",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/pct:0,0,100,100/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r",
+        "canvasIndex": 0,
+        "canvasLabel": "1r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001r/full/full/0/native.jpg"
+      },
+      "statusCode": 200,
+      "isSuccess": true,
+      "fileSize": 552029,
+      "downloadTime": 777,
+      "contentType": "image/jpeg",
+      "error": null,
+      "imageDimensions": {
+        "width": 110,
+        "height": 160
+      },
+      "qualityScore": 0.55
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+      "pattern": "full/full",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/full/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 356,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+      "pattern": "full/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 297,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+      "pattern": "full/2000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/2000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 303,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+      "pattern": "full/4000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/4000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 297,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+      "pattern": "full/8000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/8000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 527,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+      "pattern": "full/10000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/10000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 336,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+      "pattern": "max/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/max/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 307,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+      "pattern": "full/1024",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/1024/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 308,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+      "pattern": "full/1600",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/1600/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 304,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+      "pattern": "full/3200",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/3200/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 299,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+      "pattern": "full/6400",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/6400/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 297,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+      "pattern": "pct:0,0,100,100/max/0/default.jpg",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/pct:0,0,100,100/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v",
+        "canvasIndex": 1,
+        "canvasLabel": "1v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._001v/full/full/0/native.jpg"
+      },
+      "statusCode": 200,
+      "isSuccess": true,
+      "fileSize": 536148,
+      "downloadTime": 784,
+      "contentType": "image/jpeg",
+      "error": null,
+      "imageDimensions": {
+        "width": 111,
+        "height": 160
+      },
+      "qualityScore": 0.54
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+      "pattern": "full/full",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/full/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 320,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+      "pattern": "full/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 301,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+      "pattern": "full/2000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/2000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 320,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+      "pattern": "full/4000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/4000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 298,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+      "pattern": "full/8000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/8000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 302,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+      "pattern": "full/10000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/10000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 300,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+      "pattern": "max/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/max/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 357,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+      "pattern": "full/1024",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/1024/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 300,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+      "pattern": "full/1600",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/1600/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 297,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+      "pattern": "full/3200",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/3200/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 315,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+      "pattern": "full/6400",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/6400/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 297,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+      "pattern": "pct:0,0,100,100/max/0/default.jpg",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/pct:0,0,100,100/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r",
+        "canvasIndex": 2,
+        "canvasLabel": "2r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002r/full/full/0/native.jpg"
+      },
+      "statusCode": 200,
+      "isSuccess": true,
+      "fileSize": 520427,
+      "downloadTime": 789,
+      "contentType": "image/jpeg",
+      "error": null,
+      "imageDimensions": {
+        "width": 113,
+        "height": 160
+      },
+      "qualityScore": 0.52
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+      "pattern": "full/full",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/full/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 307,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+      "pattern": "full/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 302,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+      "pattern": "full/2000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/2000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 297,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+      "pattern": "full/4000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/4000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 294,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+      "pattern": "full/8000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/8000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 315,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+      "pattern": "full/10000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/10000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 304,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+      "pattern": "max/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/max/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 309,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+      "pattern": "full/1024",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/1024/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 294,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+      "pattern": "full/1600",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/1600/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 1385,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+      "pattern": "full/3200",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/3200/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 295,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+      "pattern": "full/6400",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/6400/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 295,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+      "pattern": "pct:0,0,100,100/max/0/default.jpg",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/pct:0,0,100,100/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v",
+        "canvasIndex": 3,
+        "canvasLabel": "2v",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._002v/full/full/0/native.jpg"
+      },
+      "statusCode": 200,
+      "isSuccess": true,
+      "fileSize": 612012,
+      "downloadTime": 798,
+      "contentType": "image/jpeg",
+      "error": null,
+      "imageDimensions": {
+        "width": 112,
+        "height": 160
+      },
+      "qualityScore": 0.61
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+      "pattern": "full/full",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/full/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 308,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+      "pattern": "full/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 316,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+      "pattern": "full/2000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/2000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 292,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+      "pattern": "full/4000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/4000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 298,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+      "pattern": "full/8000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/8000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 294,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+      "pattern": "full/10000",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/10000/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 308,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+      "pattern": "max/max",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/max/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 840,
+      "downloadTime": 299,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+      "pattern": "full/1024",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/1024/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 293,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+      "pattern": "full/1600",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/1600/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 292,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+      "pattern": "full/3200",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/3200/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 296,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+      "pattern": "full/6400",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/6400/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 400,
+      "isSuccess": false,
+      "fileSize": 832,
+      "downloadTime": 292,
+      "contentType": "text/html;charset=utf-8",
+      "error": "HTTP 400",
+      "imageDimensions": null,
+      "qualityScore": null
+    },
+    {
+      "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+      "pattern": "pct:0,0,100,100/max/0/default.jpg",
+      "imageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/pct:0,0,100,100/max/0/default.jpg",
+      "canvasInfo": {
+        "serviceUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r",
+        "canvasIndex": 4,
+        "canvasLabel": "3r",
+        "originalImageUrl": "https://nbm.regione.veneto.it/digilib/servlet/Scaler/IIIF/documenti%2Fbibliotecadigitale%2Fnbm%2FVR0056%2FCVII+%28100%29%2FVR0056-Cod._CVII_%28100%29_c._003r/full/full/0/native.jpg"
+      },
+      "statusCode": 200,
+      "isSuccess": true,
+      "fileSize": 514429,
+      "downloadTime": 792,
+      "contentType": "image/jpeg",
+      "error": null,
+      "imageDimensions": {
+        "width": 111,
+        "height": 160
+      },
+      "qualityScore": 0.51
+    }
+  ],
+  "patternStatistics": {
+    "pct:0,0,100,100/max/0/default.jpg": {
+      "pattern": "pct:0,0,100,100/max/0/default.jpg",
+      "successCount": 10,
+      "totalFileSize": 4632164,
+      "totalPixels": 194400,
+      "avgQualityScore": 0.46,
+      "maxDimensions": {
+        "width": 133,
+        "height": 160
+      },
+      "avgDownloadTime": 771,
+      "avgFileSize": 463216,
+      "avgPixels": 19440
+    }
+  }
+}

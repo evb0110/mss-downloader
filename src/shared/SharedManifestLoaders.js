@@ -507,6 +507,13 @@ class SharedManifestLoaders {
                             imageUrl = `${serviceUrl}/full/max/0/default.jpg`;
                         }
                         
+                        // CRITICAL FIX: Replace old server URL with new one
+                        // The manifest from the new server still contains image URLs pointing to the old server
+                        if (imageUrl && imageUrl.includes('nbm.regione.veneto.it')) {
+                            imageUrl = imageUrl.replace('nbm.regione.veneto.it', 'www.nuovabibliotecamanoscritta.it');
+                            console.log('[Verona] Updated image URL from old to new server');
+                        }
+                        
                         images.push({
                             url: imageUrl,
                             label: canvas.label || `Page ${i + 1}`

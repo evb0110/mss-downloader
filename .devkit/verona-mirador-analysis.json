@@ -1,0 +1,212 @@
+{
+  "timestamp": "2025-07-30T12:22:03.916Z",
+  "miradorPattern": "https://www.nuovabibliotecamanoscritta.it/VisualizzaVolume/mirador.html?codiceDigital=X&volume=Y",
+  "manifestPattern": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/ID.json",
+  "summary": {
+    "totalTests": 5,
+    "successfulMirador": 5,
+    "withManifests": 3,
+    "validManifests": 3
+  },
+  "parameterMapping": [
+    {
+      "codiceDigital": 14,
+      "volume": 1,
+      "title": "CVII (100)_1",
+      "manifestUrl": "documenti/mirador_json/manifest/CVII1001.json",
+      "fullManifestUrl": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/CVII1001.json",
+      "manifestId": "CVII1001"
+    },
+    {
+      "codiceDigital": 15,
+      "volume": 1,
+      "title": "LXXXIX (84)_1",
+      "manifestUrl": "documenti/mirador_json/manifest/LXXXIX841.json",
+      "fullManifestUrl": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/LXXXIX841.json",
+      "manifestId": "LXXXIX841"
+    },
+    {
+      "codiceDigital": 16,
+      "volume": 1,
+      "title": "CCXCVII (435)_1",
+      "manifestUrl": "documenti/mirador_json/manifest/CCXCVII4351.json",
+      "fullManifestUrl": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/CCXCVII4351.json",
+      "manifestId": "CCXCVII4351"
+    }
+  ],
+  "miradorResults": [
+    {
+      "codiceDigital": 14,
+      "volume": 1,
+      "description": "codice 14, volume 1",
+      "url": "https://www.nuovabibliotecamanoscritta.it/VisualizzaVolume/mirador.html?codiceDigital=14&volume=1",
+      "statusCode": 200,
+      "contentLength": 1448,
+      "isSuccess": true,
+      "manifestData": [
+        {
+          "location": "Verona",
+          "manifestUri": "documenti/mirador_json/manifest/CVII1001.json",
+          "title": "CVII (100)_1",
+          "widgets": [
+            {
+              "width": 400,
+              "type": "imageView",
+              "height": 300
+            }
+          ]
+        }
+      ],
+      "manifestUrl": "documenti/mirador_json/manifest/CVII1001.json",
+      "title": "CVII (100)_1",
+      "location": "Verona",
+      "fullManifestUrl": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/CVII1001.json",
+      "observations": [
+        "Found 1 manifest(s)",
+        "Contains valid manifest data"
+      ]
+    },
+    {
+      "codiceDigital": 15,
+      "volume": 1,
+      "description": "codice 15, volume 1",
+      "url": "https://www.nuovabibliotecamanoscritta.it/VisualizzaVolume/mirador.html?codiceDigital=15&volume=1",
+      "statusCode": 200,
+      "contentLength": 1450,
+      "isSuccess": true,
+      "manifestData": [
+        {
+          "location": "Verona",
+          "manifestUri": "documenti/mirador_json/manifest/LXXXIX841.json",
+          "title": "LXXXIX (84)_1",
+          "widgets": [
+            {
+              "width": 400,
+              "type": "imageView",
+              "height": 300
+            }
+          ]
+        }
+      ],
+      "manifestUrl": "documenti/mirador_json/manifest/LXXXIX841.json",
+      "title": "LXXXIX (84)_1",
+      "location": "Verona",
+      "fullManifestUrl": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/LXXXIX841.json",
+      "observations": [
+        "Found 1 manifest(s)",
+        "Contains valid manifest data"
+      ]
+    },
+    {
+      "codiceDigital": 15,
+      "volume": 2,
+      "description": "codice 15, volume 2",
+      "url": "https://www.nuovabibliotecamanoscritta.it/VisualizzaVolume/mirador.html?codiceDigital=15&volume=2",
+      "statusCode": 200,
+      "contentLength": 1281,
+      "isSuccess": true,
+      "manifestData": [],
+      "manifestUrl": null,
+      "title": null,
+      "location": null,
+      "fullManifestUrl": null,
+      "observations": []
+    },
+    {
+      "codiceDigital": 16,
+      "volume": 1,
+      "description": "codice 16, volume 1",
+      "url": "https://www.nuovabibliotecamanoscritta.it/VisualizzaVolume/mirador.html?codiceDigital=16&volume=1",
+      "statusCode": 200,
+      "contentLength": 1454,
+      "isSuccess": true,
+      "manifestData": [
+        {
+          "location": "Verona",
+          "manifestUri": "documenti/mirador_json/manifest/CCXCVII4351.json",
+          "title": "CCXCVII (435)_1",
+          "widgets": [
+            {
+              "width": 400,
+              "type": "imageView",
+              "height": 300
+            }
+          ]
+        }
+      ],
+      "manifestUrl": "documenti/mirador_json/manifest/CCXCVII4351.json",
+      "title": "CCXCVII (435)_1",
+      "location": "Verona",
+      "fullManifestUrl": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/CCXCVII4351.json",
+      "observations": [
+        "Found 1 manifest(s)",
+        "Contains valid manifest data"
+      ]
+    },
+    {
+      "codiceDigital": 16,
+      "volume": 2,
+      "description": "codice 16, volume 2",
+      "url": "https://www.nuovabibliotecamanoscritta.it/VisualizzaVolume/mirador.html?codiceDigital=16&volume=2",
+      "statusCode": 200,
+      "contentLength": 1281,
+      "isSuccess": true,
+      "manifestData": [],
+      "manifestUrl": null,
+      "title": null,
+      "location": null,
+      "fullManifestUrl": null,
+      "observations": []
+    }
+  ],
+  "manifestResults": [
+    {
+      "url": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/CVII1001.json",
+      "statusCode": 200,
+      "contentLength": 250692,
+      "isSuccess": true,
+      "isValidIIIF": true,
+      "pageCount": 250,
+      "observations": [
+        "Valid IIIF manifest",
+        "250 pages/canvases",
+        "Label: \"CVII (100)\""
+      ],
+      "codiceDigital": 14,
+      "volume": 1,
+      "sourceTitle": "CVII (100)_1"
+    },
+    {
+      "url": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/LXXXIX841.json",
+      "statusCode": 200,
+      "contentLength": 255724,
+      "isSuccess": true,
+      "isValidIIIF": true,
+      "pageCount": 254,
+      "observations": [
+        "Valid IIIF manifest",
+        "254 pages/canvases",
+        "Label: \"LXXXIX (84)\""
+      ],
+      "codiceDigital": 15,
+      "volume": 1,
+      "sourceTitle": "LXXXIX (84)_1"
+    },
+    {
+      "url": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/CCXCVII4351.json",
+      "statusCode": 200,
+      "contentLength": 315036,
+      "isSuccess": true,
+      "isValidIIIF": true,
+      "pageCount": 310,
+      "observations": [
+        "Valid IIIF manifest",
+        "310 pages/canvases",
+        "Label: \"CCXCVII (435)\""
+      ],
+      "codiceDigital": 16,
+      "volume": 1,
+      "sourceTitle": "CCXCVII (435)_1"
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "timestamp": "2025-07-30T11:22:43.366Z",
+  "testUrl": "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538",
+  "manifest": {
+    "totalPages": 405,
+    "displayName": "Table of Contents",
+    "type": "standard"
+  },
+  "downloadResults": {
+    "attempted": 10,
+    "successful": 10,
+    "failed": 0,
+    "totalSize": "8.41",
+    "averagePageSize": "0.84",
+    "pages": [
+      {
+        "pageNum": 1,
+        "url": "https://unipub.uni-graz.at/download/webcache/2000/8224540",
+        "label": "Page 1",
+        "path": "/Users/evb/WebstormProjects/mss-downloader/.devkit/validation-results/v1.4.49/graz-test-pages/page_001.jpg",
+        "size": 1017631,
+        "duration": 995
+      },
+      {
+        "pageNum": 2,
+        "url": "https://unipub.uni-graz.at/download/webcache/2000/8224542",
+        "label": "Page 2",
+        "path": "/Users/evb/WebstormProjects/mss-downloader/.devkit/validation-results/v1.4.49/graz-test-pages/page_002.jpg",
+        "size": 986230,
+        "duration": 812
+      },
+      {
+        "pageNum": 3,
+        "url": "https://unipub.uni-graz.at/download/webcache/2000/8224544",
+        "label": "Page 3",
+        "path": "/Users/evb/WebstormProjects/mss-downloader/.devkit/validation-results/v1.4.49/graz-test-pages/page_003.jpg",
+        "size": 1039047,
+        "duration": 202
+      },
+      {
+        "pageNum": 4,
+        "url": "https://unipub.uni-graz.at/download/webcache/2000/8224545",
+        "label": "Page 4",
+        "path": "/Users/evb/WebstormProjects/mss-downloader/.devkit/validation-results/v1.4.49/graz-test-pages/page_004.jpg",
+        "size": 848744,
+        "duration": 185
+      },
+      {
+        "pageNum": 5,
+        "url": "https://unipub.uni-graz.at/download/webcache/2000/8224546",
+        "label": "Page 5",
+        "path": "/Users/evb/WebstormProjects/mss-downloader/.devkit/validation-results/v1.4.49/graz-test-pages/page_005.jpg",
+        "size": 793662,
+        "duration": 192
+      },
+      {
+        "pageNum": 6,
+        "url": "https://unipub.uni-graz.at/download/webcache/2000/8224547",
+        "label": "Page 6",
+        "path": "/Users/evb/WebstormProjects/mss-downloader/.devkit/validation-results/v1.4.49/graz-test-pages/page_006.jpg",
+        "size": 885291,
+        "duration": 174
+      },
+      {
+        "pageNum": 7,
+        "url": "https://unipub.uni-graz.at/download/webcache/2000/8224548",
+        "label": "Page 7",
+        "path": "/Users/evb/WebstormProjects/mss-downloader/.devkit/validation-results/v1.4.49/graz-test-pages/page_007.jpg",
+        "size": 869296,
+        "duration": 184
+      },
+      {
+        "pageNum": 8,
+        "url": "https://unipub.uni-graz.at/download/webcache/2000/8224549",
+        "label": "Page 8",
+        "path": "/Users/evb/WebstormProjects/mss-downloader/.devkit/validation-results/v1.4.49/graz-test-pages/page_008.jpg",
+        "size": 781722,
+        "duration": 176
+      },
+      {
+        "pageNum": 9,
+        "url": "https://unipub.uni-graz.at/download/webcache/2000/8224550",
+        "label": "Page 9",
+        "path": "/Users/evb/WebstormProjects/mss-downloader/.devkit/validation-results/v1.4.49/graz-test-pages/page_009.jpg",
+        "size": 759566,
+        "duration": 169
+      },
+      {
+        "pageNum": 10,
+        "url": "https://unipub.uni-graz.at/download/webcache/2000/8224551",
+        "label": "Page 10",
+        "path": "/Users/evb/WebstormProjects/mss-downloader/.devkit/validation-results/v1.4.49/graz-test-pages/page_010.jpg",
+        "size": 839899,
+        "duration": 210
+      }
+    ]
+  },
+  "memoryUsage": {
+    "rss": 63938560,
+    "heapTotal": 14401536,
+    "heapUsed": 11097256,
+    "external": 7014388,
+    "arrayBuffers": 3603767
+  },
+  "resolutionAnalysis": {
+    "estimatedResolution": "Medium (1000-1500px)",
+    "qualityAssessment": "Adequate for screen viewing",
+    "recommendedUse": "Suitable for screen viewing and basic printing"
+  }
+}

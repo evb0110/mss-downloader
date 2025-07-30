@@ -1,0 +1,10 @@
+{
+  "issueNumber": 9999,
+  "testUrl": "https://www.themorgan.org/collection/lindau-gospels/thumbs",
+  "libraryName": "morgan",
+  "expectedBehavior": "Multiple pages should load correctly",
+  "validationDate": "2025-07-30T13:17:46.091Z",
+  "result": "FAILED",
+  "error": "PDF validation failed: Command failed: pdfinfo \"/Users/evb/WebstormProjects/mss-downloader/.devkit/validation/issue-9999/issue-9999-morgan-validation.pdf\"\n/bin/sh: pdfinfo: command not found\n",
+  "stack": "Error: PDF validation failed: Command failed: pdfinfo \"/Users/evb/WebstormProjects/mss-downloader/.devkit/validation/issue-9999/issue-9999-morgan-validation.pdf\"\n/bin/sh: pdfinfo: command not found\n\n    at validateIssueFix (/Users/evb/WebstormProjects/mss-downloader/.devkit/tools/nodejs-validation-template.js:154:19)\n    at async testValidationTemplate (/Users/evb/WebstormProjects/mss-downloader/.devkit/tools/test-nodejs-validation.js:24:25)"
+}

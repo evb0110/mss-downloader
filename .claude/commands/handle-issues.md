@@ -1,12 +1,22 @@
-# Handle All GitHub Issues - AUTONOMOUS WORKFLOW
+# Handle All GitHub Issues - AUTONOMOUS WORKFLOW v2.0
 
 **Preliminary**
 - if `jq` isn't installed on the computer, install it
 - if `gh` isn't installed, install it and ask user to authorize and use it to access issues
+- always use `gh` to download issues and attached logs or other files
+
+**⚠️ CRITICAL LESSONS LEARNED FROM v1.4.49 FAILURE ⚠️**
+- NEVER create isolated test scripts - ALWAYS use production code
+- NEVER test with "known good" URLs - ALWAYS use exact user-reported URLs
+- NEVER declare success without reproducing and fixing the actual user errors
+- NEVER implement superficial fixes - ALWAYS find and fix root causes
 
 **⚠️ SPECIAL AUTONOMOUS WORKFLOW - EXCEPTION TO NORMAL RULES ⚠️**
 
 This command implements an AUTONOMOUS issue-fixing workflow that:
+- MUST use production code for ALL testing (no isolated scripts)
+- MUST test with EXACT URLs from user reports
+- MUST reproduce user errors before declaring them fixed
 - Does NOT require Claude user approval for version bumps
 - Performs all validation programmatically (no Finder, no user validation)
 - Seeks approval from ISSUE AUTHORS, not the Claude user
@@ -119,88 +129,124 @@ For each fix, you MUST:
    - Close issues after 3 days of no response
    - Continue fixing if authors report problems
 
-## Validation Script Template (NODE.JS ONLY - NO ELECTRON):
+## MANDATORY PRODUCTION CODE TEST FRAMEWORK
+
+### Step 1: Create Production Test Framework FIRST
+**CRITICAL**: Before ANY fixes, create a test framework that uses ACTUAL production code:
+
 ```javascript
-const { SharedManifestLoaders } = require('./src/shared/SharedManifestLoaders.js');
-const fs = require('fs').promises;
-const { execSync } = require('child_process');
+// File: .devkit/test-scripts/production-code-test-framework.js
+// #!/usr/bin/env node
+
+/**
+ * MANDATORY: This framework tests the ACTUAL production code directly
+ * NO isolated test scripts allowed - just the real code
+ */
+
 const path = require('path');
-const https = require('https');
-const PDFDocument = require('pdfkit'); // Same PDF library as Electron
+const fs = require('fs');
 
-async function downloadImage(url) {
-    return new Promise((resolve, reject) => {
-        https.get(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-        }, (response) => {
-            if (response.statusCode !== 200) {
-                reject(new Error(`HTTP ${response.statusCode}`));
-                return;
-            }
-            const chunks = [];
-            response.on('data', chunk => chunks.push(chunk));
-            response.on('end', () => resolve(Buffer.concat(chunks)));
-            response.on('error', reject);
-        }).on('error', reject);
-    });
-}
+// Import the ACTUAL production SharedManifestLoaders
+const { SharedManifestLoaders } = require('../../src/shared/SharedManifestLoaders.js');
 
-async function validateIssueFix(issueNumber, testUrl, expectedBehavior) {
-    console.log(`Validating fix for issue #${issueNumber}...`);
+// Test configuration with EXACT user URLs from GitHub issues
+const USER_REPORTED_URLS = {
+    // COPY EXACT URLs FROM GITHUB ISSUES - NO MODIFICATIONS
+    libraryName: {
+        issue: '#X',
+        userUrl: 'EXACT URL FROM ISSUE',
+        userError: 'EXACT ERROR MESSAGE FROM USER',
+        expectedBehavior: 'What should happen'
+    }
+};
+
+class ProductionCodeTester {
+    constructor() {
+        this.manifestLoaders = new SharedManifestLoaders();
+        this.results = {};
+    }
+
+    async testLibrary(libraryId, config) {
+        console.log(`Testing ${libraryId} with EXACT user URL: ${config.userUrl}`);
+        
+        try {
+            // Use ACTUAL production code to detect library
+            const detectedLibrary = this.detectLibrary(config.userUrl);
+            
+            // Call ACTUAL production manifest loader
+            const manifest = await this.manifestLoaders.getManifestForLibrary(
+                detectedLibrary, 
+                config.userUrl
+            );
+            
+            console.log('✅ SUCCESS: Production code loaded manifest');
+            return { success: true, manifest };
+            
+        } catch (error) {
+            console.log(`❌ FAILED: ${error.message}`);
+            
+            // CRITICAL: Check if this matches user-reported error
+            if (error.message.includes(config.userError)) {
+                console.log('⚠️ REPRODUCED USER ERROR - This needs fixing!');
+            }
+            
+            return { success: false, error: error.message };
+        }
+    }
     
-    try {
-        // CRITICAL: Use same SharedManifestLoaders as Electron main process
-        const loaders = new SharedManifestLoaders();
-        const manifest = await loaders.getManifestForUrl(testUrl);
-        
-        console.log('Manifest loaded:', manifest.displayName);
-        console.log('Total pages:', manifest.images.length);
-        
-        // Download test pages (5-10 pages for validation)
-        const pagesToTest = Math.min(10, manifest.images.length);
-        const validationDir = path.join('.devkit/validation/issue-' + issueNumber);
-        await fs.mkdir(validationDir, { recursive: true });
-        
-        const doc = new PDFDocument({ autoFirstPage: false });
-        const pdfPath = path.join(validationDir, `issue-${issueNumber}-validation.pdf`);
-        doc.pipe(require('fs').createWriteStream(pdfPath));
-        
-        for (let i = 0; i < pagesToTest; i++) {
-            const image = manifest.images[i];
-            console.log(`  Downloading page ${i + 1}: ${image.label || image.url}`);
-            
-            const imageBuffer = await downloadImage(image.url);
-            console.log(`    Downloaded: ${(imageBuffer.length / 1024).toFixed(1)}KB`);
-            
-            // Add to PDF
-            doc.addPage({ size: 'A4' });
-            doc.image(imageBuffer, 0, 0, { 
-                fit: [doc.page.width, doc.page.height],
-                align: 'center',
-                valign: 'center'
-            });
-        }
-        
-        doc.end();
-        console.log(`PDF created: ${pdfPath}`);
-        
-        // Verify with poppler (same as Electron validation)
-        execSync(`pdfinfo "${pdfPath}"`);
-        console.log('PDF validation passed!');
-        
-        // Check specific issue is resolved
-        if (expectedBehavior) {
-            console.log('✅ Issue #' + issueNumber + ' fixed!');
-            return true;
-        }
-    } catch (error) {
-        console.error('❌ Validation failed:', error.message);
-        return false;
+    detectLibrary(url) {
+        // MUST match production detection logic EXACTLY
+        // Copy from actual production code, don't reinvent
     }
 }
 ```
+
+### Step 2: REPRODUCE User Errors First
+**MANDATORY**: Before fixing ANYTHING, you MUST:
+1. Run the test framework with EXACT user URLs
+2. REPRODUCE the exact errors users report
+3. Identify the SPECIFIC line of production code failing
+4. Document the root cause
+
+### Step 3: Fix Root Causes in Production Code
+**ONLY fix issues in the actual source files**:
+- `src/shared/SharedManifestLoaders.js`
+- `src/main/services/*.ts`
+- Other production files
+
+**NEVER create workaround scripts or test-only fixes**
+
+### Step 4: Validate with Production Test Framework
+Run the SAME test framework after fixes to ensure:
+1. All user URLs now work
+2. No regressions in other libraries
+3. Production code actually changed
+
+## MANDATORY SAFEGUARDS (LESSONS FROM v1.4.49 FAILURE)
+
+### 1. URL Testing Requirements
+- **EXACT URLS ONLY**: Copy URLs character-by-character from GitHub issues
+- **NO URL MODIFICATIONS**: Don't "fix" or "clean up" user URLs
+- **REPRODUCE FIRST**: Must reproduce exact user error before fixing
+- **TEST AFTER FIX**: Must verify error is gone with same URL
+
+### 2. Code Testing Requirements  
+- **PRODUCTION CODE ONLY**: Import and use actual src/ files
+- **NO ISOLATED SCRIPTS**: Never create standalone test implementations
+- **NO MOCK DATA**: Use real manifest loaders, real fetch logic
+- **MATCH PRODUCTION**: Test environment must match Electron exactly
+
+### 3. Root Cause Analysis
+- **DEBUG FIRST**: Add console.log to production code to find failure point
+- **UNDERSTAND WHY**: Document why the error occurs
+- **FIX SOURCE**: Only fix in production source files
+- **NO WORKAROUNDS**: Fix the actual problem, not symptoms
+
+### 4. Evidence Requirements
+- **BEFORE**: Show exact error with user URL
+- **AFTER**: Show success with same URL
+- **LOGS**: Include detailed console output
+- **MANIFEST DATA**: Show actual loaded manifest structure
 
 ## Important Guidelines:
 - **NO MANUAL VALIDATION**: Everything must be verified programmatically
@@ -209,6 +255,7 @@ async function validateIssueFix(issueNumber, testUrl, expectedBehavior) {
 - **QUALITY GATES**: Lint and build must pass before any commit
 - **RUSSIAN COMMUNICATION**: All issue comments must be in Russian
 - **SPECIFIC EXPLANATIONS**: Each issue gets a unique, specific explanation
+- **PRODUCTION CODE TESTING**: All validation MUST use actual production code
 
 ## Conflict Resolution:
 This autonomous workflow OVERRIDES the following normal rules:
@@ -216,6 +263,12 @@ This autonomous workflow OVERRIDES the following normal rules:
 - "NEVER BUMP VERSION WITHOUT EXPLICIT USER APPROVAL" → Bump is automatic
 - "MANDATORY validation by user!!!" → Self-validation only
 - "ONLY OPEN FINDER WHEN READY FOR FINAL USER VALIDATION" → **NEVER OPEN FINDER** in this workflow
+
+BUT ENFORCES these critical rules:
+- **ALWAYS use production code for testing** (no exceptions)
+- **ALWAYS test exact user URLs** (no "better" URLs)
+- **ALWAYS reproduce errors first** (no assuming)
+- **ALWAYS fix root causes** (no bandaids)
 
 ## CRITICAL: NO FINDER/FILE MANAGER OPENING
 - **NEVER use shell.openItem, shell.openPath, shell.showItemInFolder**
@@ -225,3 +278,16 @@ This autonomous workflow OVERRIDES the following normal rules:
 - Users do NOT inspect PDFs manually in this autonomous workflow
 
 Remember: This is an EXCEPTION workflow designed for autonomous issue resolution. The goal is to fix issues quickly and get approval from issue authors, not the Claude user.
+
+## FINAL CHECKLIST BEFORE VERSION BUMP
+
+- [ ] Created production code test framework (not isolated scripts)
+- [ ] Used EXACT URLs from user reports (character-for-character)
+- [ ] Reproduced ALL user errors before fixing
+- [ ] Fixed root causes in production source files
+- [ ] Validated ALL user URLs work after fixes
+- [ ] No workarounds or test-only code
+- [ ] Lint and build pass
+- [ ] Test results show 100% success with user URLs
+
+If ANY checkbox is not complete, DO NOT bump version.

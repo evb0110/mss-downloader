@@ -1,0 +1,24 @@
+{
+  "sessionStart": "2025-07-30T13:50:40.057Z",
+  "exportTime": "2025-07-30T14:20:07.227Z",
+  "totalLogs": 1,
+  "systemInfo": {
+    "platform": "win32",
+    "arch": "x64",
+    "nodeVersion": "v20.18.3",
+    "appVersion": "1.4.49"
+  },
+  "logs": [
+    {
+      "level": "info",
+      "library": "loading",
+      "url": "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+      "message": "Starting manifest load for queue item",
+      "details": {
+        "itemId": "ms_1753885185233_h8kgc17q1",
+        "displayName": "Loading manifest for https://selene.bordeaux.fr/ark:/27705/330636101_MS..."
+      },
+      "timestamp": "2025-07-30T14:19:45.245Z"
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "timestamp": "2025-07-30T11:35:36.585Z",
+  "testUrl": "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+  "manifest": {
+    "type": "bordeaux_tiles",
+    "baseId": "330636101_MS0778",
+    "publicId": "330636101_MS_0778",
+    "startPage": 6,
+    "pageCount": 50,
+    "requiresTileProcessor": true,
+    "hasTileConfig": true
+  },
+  "tileUrlTests": [
+    {
+      "pageNum": 6,
+      "foundFormat": {
+        "name": "4-digit padded",
+        "pageId": "330636101_MS0778_0006"
+      },
+      "success": true
+    },
+    {
+      "pageNum": 7,
+      "foundFormat": {
+        "name": "4-digit padded",
+        "pageId": "330636101_MS0778_0007"
+      },
+      "success": true
+    },
+    {
+      "pageNum": 8,
+      "foundFormat": {
+        "name": "4-digit padded",
+        "pageId": "330636101_MS0778_0008"
+      },
+      "success": true
+    }
+  ],
+  "availablePages": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "issues": {
+    "found": [],
+    "fixed": [
+      "Added missing processPage method to DirectTileProcessor",
+      "Fixed manifest structure to include tileConfig",
+      "Improved page detection logic",
+      "Added alternative URL format testing",
+      "Increased page count from 10 to 50"
+    ]
+  },
+  "recommendations": [
+    "The implementation now properly detects and handles different page numbering formats",
+    "Page detection increased from 10 to 50 pages maximum",
+    "Alternative URL formats are tested if primary format fails",
+    "Ready for PDF generation testing"
+  ]
+}

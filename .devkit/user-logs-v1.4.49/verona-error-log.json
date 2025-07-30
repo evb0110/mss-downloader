@@ -1,0 +1,57 @@
+{
+  "sessionStart": "2025-07-30T14:22:42.606Z",
+  "exportTime": "2025-07-30T14:26:08.628Z",
+  "totalLogs": 4,
+  "systemInfo": {
+    "platform": "win32",
+    "arch": "x64",
+    "nodeVersion": "v20.18.3",
+    "appVersion": "1.4.49"
+  },
+  "logs": [
+    {
+      "level": "info",
+      "library": "loading",
+      "url": "https://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "message": "Starting manifest load for queue item",
+      "details": {
+        "itemId": "ms_1753885369136_w8f342inb",
+        "displayName": "Loading manifest for https://www.themorgan.org/collection/lindau-gospel..."
+      },
+      "timestamp": "2025-07-30T14:22:49.137Z"
+    },
+    {
+      "level": "info",
+      "library": "loading",
+      "url": "https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=15",
+      "message": "Starting manifest load for queue item",
+      "details": {
+        "itemId": "ms_1753885454205_glp5zp234",
+        "displayName": "Loading manifest for https://www.nuovabibliotecamanoscritta.it/Generale..."
+      },
+      "timestamp": "2025-07-30T14:24:14.206Z"
+    },
+    {
+      "level": "info",
+      "library": "verona",
+      "url": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/LXXXIX841.json",
+      "message": "Download started",
+      "details": {
+        "codiceDigital": "15",
+        "manifestUrl": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/LXXXIX841.json"
+      },
+      "timestamp": "2025-07-30T14:24:14.208Z"
+    },
+    {
+      "level": "info",
+      "library": "verona",
+      "url": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/LXXXIX841.json",
+      "message": "Download started",
+      "details": {
+        "codiceDigital": "15",
+        "manifestUrl": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/LXXXIX841.json"
+      },
+      "timestamp": "2025-07-30T14:24:14.219Z"
+    }
+  ]
+}

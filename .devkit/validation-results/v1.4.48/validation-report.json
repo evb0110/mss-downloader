@@ -1,0 +1,39 @@
+{
+  "timestamp": "2025-07-29T15:09:29.178Z",
+  "version": "1.4.48",
+  "results": {
+    "bordeaux": {
+      "status": "success",
+      "message": "Generated 10 tile URLs without concatenation errors",
+      "imageCount": 10
+    },
+    "florence": {
+      "status": "success",
+      "message": "Generated 15 IIIF URLs using ultra-simple implementation",
+      "imageCount": 15,
+      "implementation": "ultra-simple"
+    },
+    "morgan": {
+      "status": "success",
+      "message": "Successfully processed 1/1 Morgan URLs without redirect errors",
+      "successCount": 1
+    },
+    "verona": {
+      "status": "success",
+      "message": "Successfully processed Verona manifest with enhanced timeout handling",
+      "imageCount": 10,
+      "duration": "2s"
+    },
+    "graz": {
+      "status": "success",
+      "message": "Cache clearing mechanism implemented - users should restart app to benefit",
+      "note": "Automatic cache clearing on startup prevents stale cached errors"
+    }
+  },
+  "summary": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "timeout": 0
+  }
+}

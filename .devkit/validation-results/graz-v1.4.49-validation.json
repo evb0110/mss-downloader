@@ -1,0 +1,53 @@
+{
+  "timestamp": "2025-07-30T10:13:08.138Z",
+  "summary": {
+    "total": 4,
+    "successful": 2,
+    "failed": 2
+  },
+  "results": [
+    {
+      "url": "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538",
+      "success": true,
+      "duration": 1571,
+      "imageCount": 405,
+      "displayName": "Table of Contents"
+    },
+    {
+      "url": "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/259994",
+      "success": false,
+      "error": "Failed to fetch Graz manifest: 404 Not Found"
+    },
+    {
+      "url": "https://gams.uni-graz.at/context:rbas.ms.P0008s11",
+      "success": false,
+      "error": "GAMS URLs are not currently supported. The URL you provided uses the GAMS system (rbas.ms.P0008s11), which has a different structure than the supported UniPub system.\n\nTo download this manuscript, please:\n1. Try to find an equivalent URL on unipub.uni-graz.at instead\n2. Contact the University of Graz library for assistance\n3. Alternatively, download the manuscript manually from the GAMS viewer\n\nIf you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use that instead."
+    },
+    {
+      "url": "https://unipub.uni-graz.at/obvugrscript/content/pageview/8224540",
+      "success": true,
+      "duration": 862,
+      "imageCount": 405,
+      "displayName": "Table of Contents"
+    }
+  ],
+  "errors": [
+    {
+      "url": "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/259994",
+      "error": "Failed to fetch Graz manifest: 404 Not Found",
+      "stack": "Error: Failed to fetch Graz manifest: 404 Not Found\n    at SharedManifestLoaders.getGrazManifest (/Users/evb/WebstormProjects/mss-downloader/src/shared/SharedManifestLoaders.js:699:23)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async GrazValidationTest.testGrazUrl (/Users/evb/WebstormProjects/mss-downloader/.devkit/validation-scripts/test-graz-v1.4.49-fix.cjs:80:20)\n    at async GrazValidationTest.runAllTests (/Users/evb/WebstormProjects/mss-downloader/.devkit/validation-scripts/test-graz-v1.4.49-fix.cjs:34:32)"
+    },
+    {
+      "url": "https://gams.uni-graz.at/context:rbas.ms.P0008s11",
+      "error": "GAMS URLs are not currently supported. The URL you provided uses the GAMS system (rbas.ms.P0008s11), which has a different structure than the supported UniPub system.\n\nTo download this manuscript, please:\n1. Try to find an equivalent URL on unipub.uni-graz.at instead\n2. Contact the University of Graz library for assistance\n3. Alternatively, download the manuscript manually from the GAMS viewer\n\nIf you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use that instead.",
+      "stack": "Error: GAMS URLs are not currently supported. The URL you provided uses the GAMS system (rbas.ms.P0008s11), which has a different structure than the supported UniPub system.\n\nTo download this manuscript, please:\n1. Try to find an equivalent URL on unipub.uni-graz.at instead\n2. Contact the University of Graz library for assistance\n3. Alternatively, download the manuscript manually from the GAMS viewer\n\nIf you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use that instead.\n    at SharedManifestLoaders.getGAMSManifest (/Users/evb/WebstormProjects/mss-downloader/src/shared/SharedManifestLoaders.js:1415:15)\n    at GrazValidationTest.testGrazUrl (/Users/evb/WebstormProjects/mss-downloader/.devkit/validation-scripts/test-graz-v1.4.49-fix.cjs:78:38)\n    at GrazValidationTest.runAllTests (/Users/evb/WebstormProjects/mss-downloader/.devkit/validation-scripts/test-graz-v1.4.49-fix.cjs:34:43)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+    }
+  ],
+  "memoryUsage": {
+    "rss": 64454656,
+    "heapTotal": 15216640,
+    "heapUsed": 9910672,
+    "external": 3430454,
+    "arrayBuffers": 140981
+  }
+}

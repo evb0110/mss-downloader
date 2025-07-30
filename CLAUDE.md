@@ -1,5 +1,21 @@
 # CLAUDE.md
 
+## 🚨 CRITICAL LESSONS FROM v1.4.49 FAILURE - READ FIRST 🚨
+
+**THE PROBLEM**: In v1.4.49, we claimed to fix all issues but NONE were actually fixed because:
+1. Test scripts were isolated implementations, not production code
+2. We tested with "known good" URLs instead of actual failing user URLs  
+3. We never reproduced the user errors before claiming fixes
+4. Superficial changes were made without finding root causes
+
+**MANDATORY RULES TO PREVENT RECURRENCE**:
+- **ALWAYS test with production code** - Import actual src/ files, no isolated scripts
+- **ALWAYS use exact user URLs** - Copy from issues character-by-character
+- **ALWAYS reproduce errors first** - See the failure before claiming a fix
+- **ALWAYS fix root causes** - Debug to find WHY it fails, not just THAT it fails
+
+---
+
 Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF creation.
 
 **Technologies:** Electron, Vue 3, TypeScript, SCSS, Vite, `electron-store`
@@ -127,7 +143,29 @@ When adding/fixing libraries, **IF NOT IN /handle-issues command! MANDATORY vali
 13. After user's approval bump and push
 14. Move completed todos to completed.md
 
-### 3. Testing Requirements
+### 3. Testing Requirements - CRITICAL UPDATES FROM v1.4.49 FAILURE
+
+**🚨 MANDATORY PRODUCTION CODE TESTING 🚨**
+- **NEVER CREATE ISOLATED TEST SCRIPTS** - Always import and use actual production code
+- **ALWAYS USE EXACT USER URLs** - Copy character-by-character from issue reports
+- **REPRODUCE ERRORS FIRST** - Must see the exact user error before claiming to fix it
+- **TEST WITH PRODUCTION CODE** - Create test frameworks that use real src/ files:
+  ```javascript
+  // ✅ CORRECT - Uses actual production code
+  const { SharedManifestLoaders } = require('../../src/shared/SharedManifestLoaders.js');
+  const loaders = new SharedManifestLoaders();
+  
+  // ❌ WRONG - Isolated test implementation
+  async function testManifest() { /* custom logic */ }
+  ```
+
+**Root Cause Analysis Requirements:**
+- Debug with console.log in production code to find exact failure point
+- Document WHY the error occurs (e.g., "server URL changed", "SSL cert issue")
+- Fix only in production source files, never in test scripts
+- Validate fix with same exact user URL that was failing
+
+**Standard Testing Requirements:**
 - Write comprehensive test suite for every bug fix
 - Include PDF download + poppler validation
 - Run tests repeatedly until consistently passing

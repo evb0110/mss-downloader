@@ -1,0 +1,39 @@
+{
+  "timestamp": "2025-07-30T11:13:37.711Z",
+  "version": "v1.4.49",
+  "library": "florence",
+  "testUrls": [
+    "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/",
+    "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317539/",
+    "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/174871/"
+  ],
+  "results": [
+    {
+      "url": "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/",
+      "status": "success",
+      "pageCount": 1,
+      "duration": 1922,
+      "firstPageUrl": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:317515/full/max/0/default.jpg"
+    },
+    {
+      "url": "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317539/",
+      "status": "success",
+      "pageCount": 314,
+      "duration": 902036,
+      "firstPageUrl": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:317223/full/max/0/default.jpg"
+    },
+    {
+      "url": "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/174871/",
+      "status": "success",
+      "pageCount": 1,
+      "duration": 850,
+      "firstPageUrl": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:174871/full/max/0/default.jpg"
+    }
+  ],
+  "summary": {
+    "successful": 3,
+    "failed": 0,
+    "totalPages": 316,
+    "averagePages": 105.33333333333333
+  }
+}

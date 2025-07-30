@@ -1,0 +1,77 @@
+{
+  "passed": 2,
+  "failed": 3,
+  "details": {
+    "graz": {
+      "library": "University of Graz",
+      "issue": "#2",
+      "tests": [
+        {
+          "url": "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538",
+          "success": true,
+          "note": "URL accessible but no deep validation"
+        },
+        {
+          "url": "https://gams.uni-graz.at/context:corema.a1",
+          "success": false,
+          "error": "URL not accessible"
+        }
+      ],
+      "success": false,
+      "successRate": "1/2"
+    },
+    "verona": {
+      "library": "Verona NBM",
+      "issue": "#3",
+      "tests": [
+        {
+          "url": "https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=15",
+          "success": false,
+          "error": "URL not accessible: Command failed: curl -I \"https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=15\" --max-time 10\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0\ncurl: (60) SSL certificate problem: unable to get local issuer certificate\nMore details here: https://curl.se/docs/sslcerts.html\n\ncurl failed to verify the legitimacy of the server and therefore could not\nestablish a secure connection to it. To learn more about this situation and\nhow to fix it, please visit the web page mentioned above.\n"
+        }
+      ],
+      "success": false,
+      "successRate": "0/1"
+    },
+    "morgan": {
+      "library": "Morgan Library",
+      "issue": "#4",
+      "tests": [
+        {
+          "url": "https://www.themorgan.org/collection/lindau-gospels/thumbs",
+          "success": false,
+          "error": "Command failed: node \"/Users/evb/WebstormProjects/mss-downloader/.devkit/validation-scripts/test-morgan-v1.4.49-fix.js\""
+        }
+      ],
+      "success": false,
+      "successRate": "0/1"
+    },
+    "florence": {
+      "library": "Florence ContentDM",
+      "issue": "#5",
+      "tests": [
+        {
+          "url": "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/",
+          "success": true,
+          "note": "URL accessible but no deep validation"
+        }
+      ],
+      "success": true,
+      "successRate": "1/1"
+    },
+    "bordeaux": {
+      "library": "Bordeaux",
+      "issue": "#6",
+      "tests": [
+        {
+          "url": "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+          "success": true,
+          "note": "URL accessible but no deep validation"
+        }
+      ],
+      "success": true,
+      "successRate": "1/1"
+    }
+  },
+  "timestamp": "2025-07-30T13:17:16.027Z"
+}
