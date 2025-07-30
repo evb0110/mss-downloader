@@ -353,4 +353,72 @@ export class DirectTileProcessor {
         
         return images;
     }
+    
+    /**
+     * Process a single page for Bordeaux-style tiled manuscripts
+     * Used by EnhancedManuscriptDownloaderService for individual page processing
+     */
+    async processPage(baseId: string, pageNum: number, outputPath: string): Promise<{ success: boolean; error?: string }> {
+        try {
+            console.log(`[DirectTile] Processing Bordeaux page ${pageNum} with base ID: ${baseId}`);
+            
+            // Construct the tile URL for this specific page
+            // Bordeaux uses pattern: baseId_pageNum (4 digits) for tiled pages
+            const pageId = `${baseId}_${String(pageNum).padStart(4, '0')}`;
+            const tileBaseUrl = `https://selene.bordeaux.fr/in/dz/${pageId}`;
+            
+            console.log(`[DirectTile] Tile base URL: ${tileBaseUrl}`);
+            
+            // First, test if any tiles exist for this page
+            const testTileUrl = `${tileBaseUrl}_files/0/0_0.jpg`;
+            console.log(`[DirectTile] Testing tile existence: ${testTileUrl}`);
+            
+            const testResult = await this.fetchUrl(testTileUrl);
+            if (!testResult.exists) {
+                // Try with different page number formats if the 4-digit padded doesn't work
+                const alternativeFormats = [
+                    String(pageNum), // No padding
+                    String(pageNum).padStart(2, '0'), // 2-digit padding
+                    String(pageNum).padStart(3, '0')  // 3-digit padding
+                ];
+                
+                let foundFormat = null;
+                for (const format of alternativeFormats) {
+                    const altPageId = `${baseId}_${format}`;
+                    const altTileUrl = `https://selene.bordeaux.fr/in/dz/${altPageId}_files/0/0_0.jpg`;
+                    console.log(`[DirectTile] Testing alternative format: ${altTileUrl}`);
+                    
+                    const altResult = await this.fetchUrl(altTileUrl);
+                    if (altResult.exists) {
+                        foundFormat = altPageId;
+                        break;
+                    }
+                }
+                
+                if (foundFormat) {
+                    console.log(`[DirectTile] Found working format: ${foundFormat}`);
+                    const altTileBaseUrl = `https://selene.bordeaux.fr/in/dz/${foundFormat}`;
+                    const imageBuffer = await this.processTiledImage(altTileBaseUrl);
+                    await fs.writeFile(outputPath, imageBuffer);
+                    console.log(`[DirectTile] Successfully saved page ${pageNum} to ${outputPath} using alternative format`);
+                    return { success: true };
+                } else {
+                    throw new Error(`No tiles found for page ${pageNum}. Tested various formats including ${pageId}.`);
+                }
+            }
+            
+            // Process the tiled image using the original format
+            const imageBuffer = await this.processTiledImage(tileBaseUrl);
+            
+            // Save to output path
+            await fs.writeFile(outputPath, imageBuffer);
+            
+            console.log(`[DirectTile] Successfully saved page ${pageNum} to ${outputPath}`);
+            return { success: true };
+            
+        } catch (error: any) {
+            console.error(`[DirectTile] Error processing page ${pageNum}:`, error.message);
+            return { success: false, error: error.message };
+        }
+    }
 }

@@ -44,11 +44,31 @@ export class SharedManifestAdapter {
             };
 
             // Add special properties for tile-based libraries
-            if (result.type === 'tiles' || result.type === 'dzi') {
+            if (result.type === 'tiles' || result.type === 'dzi' || result.type === 'bordeaux_tiles') {
                 (manifest as any).type = result.type;
                 (manifest as any).requiresTileAssembly = result.requiresTileAssembly;
                 (manifest as any).processorType = result.processorType;
                 (manifest as any).images = result.images; // Preserve full image info for tile processing
+            }
+            
+            // Handle new Bordeaux format with tile processor integration
+            if (result.requiresTileProcessor) {
+                (manifest as any).requiresTileProcessor = true;
+                (manifest as any).tileConfig = {
+                    type: result.type,
+                    baseId: result.baseId,
+                    publicId: result.publicId,
+                    startPage: result.startPage,
+                    pageCount: result.pageCount,
+                    tileBaseUrl: result.tileBaseUrl
+                };
+                // Generate placeholder page links for UI
+                manifest.pageLinks = [];
+                for (let i = 0; i < result.pageCount; i++) {
+                    const pageNum = result.startPage + i;
+                    manifest.pageLinks.push(`${result.tileBaseUrl}/${result.baseId}_${String(pageNum).padStart(4, '0')}`);
+                }
+                manifest.totalPages = result.pageCount;
             }
 
             return manifest;

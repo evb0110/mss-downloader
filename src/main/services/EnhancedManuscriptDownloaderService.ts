@@ -9,6 +9,7 @@ import { createProgressMonitor } from './IntelligentProgressMonitor';
 import { ZifImageProcessor } from './ZifImageProcessor';
 import { DziImageProcessor } from './DziImageProcessor';
 import { TileEngineService } from './tile-engine/TileEngineService';
+import { DirectTileProcessor } from './DirectTileProcessor';
 import { SharedManifestAdapter } from './SharedManifestAdapter';
 import { DownloadLogger } from './DownloadLogger';
 import type { ManuscriptManifest, LibraryInfo } from '../../shared/types';
@@ -23,6 +24,7 @@ export class EnhancedManuscriptDownloaderService {
     private zifProcessor: ZifImageProcessor;
     private dziProcessor: DziImageProcessor;
     private tileEngineService: TileEngineService;
+    private directTileProcessor: DirectTileProcessor;
     private sharedManifestAdapter: SharedManifestAdapter;
     private logger: DownloadLogger;
 
@@ -31,6 +33,7 @@ export class EnhancedManuscriptDownloaderService {
         this.zifProcessor = new ZifImageProcessor();
         this.dziProcessor = new DziImageProcessor();
         this.tileEngineService = new TileEngineService();
+        this.directTileProcessor = new DirectTileProcessor();
         this.sharedManifestAdapter = new SharedManifestAdapter(this.fetchWithHTTPS.bind(this));
         this.logger = DownloadLogger.getInstance();
         // Clear potentially problematic cached manifests on startup
@@ -3903,6 +3906,49 @@ export class EnhancedManuscriptDownloaderService {
                 if (!imageUrl || imageUrl === '') {
                     console.warn(`Skipping missing page ${pageIndex + 1}`);
                     completedPages++;
+                    updateProgress();
+                    return;
+                }
+                
+                // Check if this manifest requires the DirectTileProcessor (Bordeaux)
+                if ((manifest as any).requiresTileProcessor && (manifest as any).tileConfig) {
+                    const imgFile = `${sanitizedName}_page_${pageIndex + 1}.jpg`;
+                    const imgPath = path.join(tempImagesDir, imgFile);
+                    
+                    try {
+                        // Skip if already downloaded
+                        await fs.access(imgPath);
+                        imagePaths[pageIndex] = imgPath;
+                        completedPages++;
+                        updateProgress();
+                        return;
+                    } catch {
+                        // Use DirectTileProcessor for Bordeaux
+                        try {
+                            const tileConfig = (manifest as any).tileConfig;
+                            const pageNum = tileConfig.startPage + pageIndex;
+                            console.log(`[Bordeaux] Processing page ${pageNum} using DirectTileProcessor`);
+                            
+                            const result = await this.directTileProcessor.processPage(
+                                tileConfig.baseId,
+                                pageNum,
+                                imgPath
+                            );
+                            
+                            if (result.success) {
+                                imagePaths[pageIndex] = imgPath;
+                                completedPages++;
+                                console.log(`[Bordeaux] Successfully processed page ${pageNum}`);
+                            } else {
+                                console.error(`[Bordeaux] Failed to process page ${pageNum}: ${result.error}`);
+                                failedPages.push(pageIndex + 1);
+                            }
+                        } catch (error: any) {
+                            console.error(`[Bordeaux] Error processing page ${pageIndex + 1}: ${error.message}`);
+                            failedPages.push(pageIndex + 1);
+                        }
+                    }
+                    
                     updateProgress();
                     return;
                 }
