@@ -1,5 +1,9 @@
 # Handle All GitHub Issues - AUTONOMOUS WORKFLOW
 
+**Preliminary**
+- if `jq` isn't installed on the computer, install it
+- if `gh` isn't installed, install it and ask user to authorize and use it to access issues
+
 **⚠️ SPECIAL AUTONOMOUS WORKFLOW - EXCEPTION TO NORMAL RULES ⚠️**
 
 This command implements an AUTONOMOUS issue-fixing workflow that:
@@ -26,7 +30,7 @@ Then for each issue that needs follow-up:
 **TOP PRIORITY**: Fix all bugs without breaking existing functionality
 **BACKWARD COMPATIBILITY**: All fixes must be backward compatible
 **AUTONOMOUS VALIDATION**: All validation must be done programmatically
-**AGENT USAGE**: Use up to 3-5 agents in parallel for one issue (not multiple issues)
+**NO SUBAGENTS**: Work consecutively through all tasks - do NOT use subagents or parallel processing
 
 ## Autonomous Process:
 
@@ -115,25 +119,76 @@ For each fix, you MUST:
    - Close issues after 3 days of no response
    - Continue fixing if authors report problems
 
-## Validation Script Template:
+## Validation Script Template (NODE.JS ONLY - NO ELECTRON):
 ```javascript
 const { SharedManifestLoaders } = require('./src/shared/SharedManifestLoaders.js');
 const fs = require('fs').promises;
 const { execSync } = require('child_process');
+const path = require('path');
+const https = require('https');
+const PDFDocument = require('pdfkit'); // Same PDF library as Electron
+
+async function downloadImage(url) {
+    return new Promise((resolve, reject) => {
+        https.get(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+        }, (response) => {
+            if (response.statusCode !== 200) {
+                reject(new Error(`HTTP ${response.statusCode}`));
+                return;
+            }
+            const chunks = [];
+            response.on('data', chunk => chunks.push(chunk));
+            response.on('end', () => resolve(Buffer.concat(chunks)));
+            response.on('error', reject);
+        }).on('error', reject);
+    });
+}
 
 async function validateIssueFix(issueNumber, testUrl, expectedBehavior) {
     console.log(`Validating fix for issue #${issueNumber}...`);
     
     try {
-        // Test the specific fix
+        // CRITICAL: Use same SharedManifestLoaders as Electron main process
         const loaders = new SharedManifestLoaders();
         const manifest = await loaders.getManifestForUrl(testUrl);
         
-        // Download test pages
-        // ... download logic ...
+        console.log('Manifest loaded:', manifest.displayName);
+        console.log('Total pages:', manifest.images.length);
         
-        // Verify with poppler
-        execSync('pdfinfo test.pdf');
+        // Download test pages (5-10 pages for validation)
+        const pagesToTest = Math.min(10, manifest.images.length);
+        const validationDir = path.join('.devkit/validation/issue-' + issueNumber);
+        await fs.mkdir(validationDir, { recursive: true });
+        
+        const doc = new PDFDocument({ autoFirstPage: false });
+        const pdfPath = path.join(validationDir, `issue-${issueNumber}-validation.pdf`);
+        doc.pipe(require('fs').createWriteStream(pdfPath));
+        
+        for (let i = 0; i < pagesToTest; i++) {
+            const image = manifest.images[i];
+            console.log(`  Downloading page ${i + 1}: ${image.label || image.url}`);
+            
+            const imageBuffer = await downloadImage(image.url);
+            console.log(`    Downloaded: ${(imageBuffer.length / 1024).toFixed(1)}KB`);
+            
+            // Add to PDF
+            doc.addPage({ size: 'A4' });
+            doc.image(imageBuffer, 0, 0, { 
+                fit: [doc.page.width, doc.page.height],
+                align: 'center',
+                valign: 'center'
+            });
+        }
+        
+        doc.end();
+        console.log(`PDF created: ${pdfPath}`);
+        
+        // Verify with poppler (same as Electron validation)
+        execSync(`pdfinfo "${pdfPath}"`);
+        console.log('PDF validation passed!');
         
         // Check specific issue is resolved
         if (expectedBehavior) {
@@ -160,6 +215,13 @@ This autonomous workflow OVERRIDES the following normal rules:
 - "WAIT for mandatory user validation of PDF files" → Validation is programmatic
 - "NEVER BUMP VERSION WITHOUT EXPLICIT USER APPROVAL" → Bump is automatic
 - "MANDATORY validation by user!!!" → Self-validation only
-- "ONLY OPEN FINDER WHEN READY" → Never open Finder in this workflow
+- "ONLY OPEN FINDER WHEN READY FOR FINAL USER VALIDATION" → **NEVER OPEN FINDER** in this workflow
+
+## CRITICAL: NO FINDER/FILE MANAGER OPENING
+- **NEVER use shell.openItem, shell.openPath, shell.showItemInFolder**
+- **NEVER open file manager or Finder windows**
+- **NEVER use commands like `open` (macOS) or `explorer` (Windows)**
+- All validation results are saved to files only
+- Users do NOT inspect PDFs manually in this autonomous workflow
 
 Remember: This is an EXCEPTION workflow designed for autonomous issue resolution. The goal is to fix issues quickly and get approval from issue authors, not the Claude user.

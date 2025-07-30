@@ -58,30 +58,37 @@ print_color "$GREEN" "Todo list created at: $todos_file"
 print_color "$YELLOW" "Step 3: Creating comprehensive fix plan..."
 fix_plan_file=".devkit/issue-fix-plan.json"
 
-# Create a structured plan for agents
+# Create a structured plan for consecutive work (NO AGENTS)
 cat > "$fix_plan_file" << 'EOF'
 {
   "task": "Fix all open MSS Downloader issues",
-  "approach": "systematic",
+  "approach": "consecutive",
+  "workflow": "single-threaded",
   "phases": [
     {
       "phase": 1,
       "name": "Issue Analysis",
       "description": "Analyze each issue to understand the root cause",
-      "agents_needed": 1
+      "approach": "consecutive - work through each issue one by one"
     },
     {
       "phase": 2,
       "name": "Implementation",
       "description": "Implement fixes for all identified issues",
-      "agents_needed": 2
+      "approach": "consecutive - implement fixes one by one"
     },
     {
       "phase": 3,
-      "name": "Testing",
-      "description": "Test all fixes thoroughly with validation scripts",
-      "agents_needed": 1
+      "name": "Node.js Testing",
+      "description": "Test all fixes thoroughly with Node.js validation scripts",
+      "approach": "consecutive - test each fix using Node.js (never Electron)"
     }
+  ],
+  "critical_requirements": [
+    "NO SUBAGENTS - work consecutively through all tasks",
+    "NODE.JS TESTING ONLY - never spawn Electron",
+    "Use SharedManifestLoaders directly in Node.js",
+    "Create validation PDFs using Node.js scripts"
   ]
 }
 EOF
@@ -104,22 +111,38 @@ cat > .devkit/fix-instructions.md << 'EOF'
 ## Overview
 You need to fix all open issues found in `.devkit/current-issues.json`.
 
-## Process
+## Process (WORK CONSECUTIVELY - NO SUBAGENTS)
 1. **Analyze Issues**: Read each issue carefully and understand the problem
 2. **Implement Fixes**: Make necessary code changes to fix each issue
-3. **Test Thoroughly**: Create test scripts and validation PDFs for each fix
+3. **Test Thoroughly**: Create Node.js validation scripts and PDFs for each fix
 4. **Document Changes**: Keep track of what was fixed for each issue
 
 ## Important Guidelines
-- Use 3 subagents to work on different aspects in parallel
+- **CRITICAL: DO NOT USE SUBAGENTS** - Work through all tasks consecutively
+- **CRITICAL: NODE.JS TESTING ONLY** - Never run Electron for testing
 - Focus on fixing the actual problems, not just symptoms
-- Test with real manuscript URLs from the issues
+- Test with real manuscript URLs from the issues using Node.js scripts
 - Ensure all fixes are backward compatible
-- Create comprehensive validation for each library
+- Create comprehensive Node.js validation for each library
+
+## Testing Requirements
+- Use SharedManifestLoaders directly in Node.js (same as Electron main process)
+- Import dependencies: `const { SharedManifestLoaders } = require('./src/shared/SharedManifestLoaders.js')`
+- Use pdfkit for PDF creation (same library as Electron)
+- Use https module for image downloads
+- Use fs.promises for file operations
+- Validate with poppler using execSync('pdfinfo filename.pdf')
+
+## CRITICAL: NO FINDER/FILE MANAGER OPENING
+- **NEVER use shell.openItem, shell.openPath, shell.showItemInFolder**
+- **NEVER open file manager or Finder windows**
+- **NEVER use commands like `open` (macOS) or `explorer` (Windows)**
+- All validation results are saved to files only
+- No manual PDF inspection by users in autonomous workflow
 
 ## After Fixing
-- Run all tests
-- Create validation PDFs
+- Run all Node.js tests
+- Create validation PDFs using Node.js scripts
 - Prepare non-technical explanations for each issue
 - DO NOT bump version until all fixes are confirmed working
 
@@ -145,8 +168,38 @@ echo "  - Fix plan: $fix_plan_file"
 echo "  - Instructions: .devkit/fix-instructions.md"
 echo ""
 print_color "$GREEN" "Claude will now work on fixing all issues systematically."
-print_color "$GREEN" "After fixes are complete, you'll be prompted to validate before version bump."
+print_color "$GREEN" "After fixes are complete, Node.js validation will run automatically."
 echo ""
+
+# Create validation runner script call
+cat > .devkit/run-validations.sh << 'VALSCRIPT'
+#!/bin/bash
+# Run Node.js validations for all fixed issues
+
+echo "🧪 Starting Node.js validation for all fixed issues..."
+echo "CRITICAL: This uses Node.js only - never spawns Electron"
+echo ""
+
+cd "$(dirname "$0")/.."
+node .devkit/tools/run-issue-validations.js
+
+validation_result=$?
+
+if [ $validation_result -eq 0 ]; then
+    echo ""
+    echo "✅ All validations passed!"
+    echo "✅ Ready for autonomous version bump"
+else
+    echo ""
+    echo "❌ Some validations failed"
+    echo "❌ Fix issues before proceeding with version bump"
+    exit 1
+fi
+VALSCRIPT
+
+chmod +x .devkit/run-validations.sh
+
+print_color "$GREEN" "Node.js validation runner created: .devkit/run-validations.sh"
 
 # Step 6: Create post-fix script
 cat > .devkit/tools/post-fix-actions.sh << 'POSTFIX'
