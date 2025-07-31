@@ -46,6 +46,12 @@ const USER_REPORTED_URLS = {
         userUrl: 'https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778',
         expectedBehavior: 'Should parse manifest without undefined errors',
         userError: "TypeError: Cannot read properties of undefined (reading 'map')"
+    },
+    bodleian: {
+        issue: '#7',
+        userUrl: 'https://digital.bodleian.ox.ac.uk/objects/ce827512-d440-4833-bdba-f4f4f079d2cd/',
+        expectedBehavior: 'Should recognize and download Bodleian manuscripts',
+        userError: 'новая библиотека'
     }
 };
 
@@ -150,6 +156,9 @@ class ProductionCodeTester {
         }
         if (url.includes('selene.bordeaux.fr')) {
             return 'bordeaux';
+        }
+        if (url.includes('digital.bodleian.ox.ac.uk')) {
+            return 'bodleian';
         }
         
         return null;

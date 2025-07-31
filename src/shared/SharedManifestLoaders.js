@@ -1478,6 +1478,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 return await this.getHHUManifest(url);
             case 'bordeaux':
                 return await this.getBordeauxManifest(url);
+            case 'bodleian':
+                return await this.getBodleianManifest(url);
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }
@@ -1530,7 +1532,24 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 if (manifestText.trim().startsWith('{') || manifestText.trim().startsWith('[')) {
                     const manifest = JSON.parse(manifestText);
                     console.log('[Florence] Successfully parsed IIIF manifest');
-                    return this.parseFlorenceIIIFManifest(manifest, itemId);
+                    const iiifResult = this.parseFlorenceIIIFManifest(manifest, itemId);
+                    
+                    // If IIIF manifest only has 1 image, this might be a compound object
+                    // Check if we need to discover child pages
+                    if (iiifResult.images.length === 1) {
+                        console.log('[Florence] Only 1 image in IIIF manifest, checking for compound object...');
+                        try {
+                            const compoundResult = await this.detectFlorenceCompoundObject(itemId);
+                            if (compoundResult.images.length > 1) {
+                                console.log(`[Florence] Found compound object with ${compoundResult.images.length} pages`);
+                                return compoundResult;
+                            }
+                        } catch (compoundError) {
+                            console.log('[Florence] Compound object detection failed:', compoundError.message);
+                        }
+                    }
+                    
+                    return iiifResult;
                 }
             }
         } catch (manifestError) {
@@ -2112,6 +2131,213 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     }
 
     /**
+     * Detect Florence compound object by analyzing page data
+     */
+    async detectFlorenceCompoundObject(itemId) {
+        console.log('[Florence] Detecting compound object for item:', itemId);
+        
+        const pageUrl = `https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/${itemId}`;
+        const pageResponse = await this.fetchWithRetry(pageUrl, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+            }
+        }, 2);
+        
+        if (!pageResponse.ok) {
+            throw new Error(`Failed to fetch Florence page: ${pageResponse.status}`);
+        }
+        
+        const html = await pageResponse.text();
+        const images = [];
+        
+        // Look for the parent object with children in the page data
+        // From the debug, we know there's a structure with lots of children
+        // Let's look for parentId first, then fetch the parent page
+        const parentIdMatch = html.match(/parentId.*?(\d+)/);
+        if (parentIdMatch) {
+            const parentId = parentIdMatch[1];
+            console.log(`[Florence] Found parent ID: ${parentId}, fetching parent page...`);
+            
+            try {
+                const parentUrl = `https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/${parentId}`;
+                const parentResponse = await this.fetchWithRetry(parentUrl, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                    }
+                }, 2);
+                
+                if (parentResponse.ok) {
+                    const parentHtml = await parentResponse.text();
+                    
+                    // Look for children array in parent page - use a more flexible pattern
+                    const childrenPatterns = [
+                        /"children":\s*\[([\s\S]*?)\]/,
+                        /"children":\s*\[([^\]]+)\]/
+                    ];
+                    
+                    for (const pattern of childrenPatterns) {
+                        const childrenMatch = parentHtml.match(pattern);
+                        if (childrenMatch) {
+                            console.log('[Florence] Found children array in parent page');
+                            const childrenData = childrenMatch[1];
+                            const childMatches = [...childrenData.matchAll(/"id":(\d+)/g)];
+                            
+                            console.log(`[Florence] Found ${childMatches.length} child pages`);
+                            
+                            // Create IIIF URLs for each child page
+                            for (const childMatch of childMatches) {
+                                const childId = childMatch[1];
+                                const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${childId}/full/max/0/default.jpg`;
+                                
+                                // Try to extract title from the children data  
+                                const titleRegex = new RegExp(`"id":${childId}[^}]*"title":"([^"]+)"`);
+                                const titleMatch = childrenData.match(titleRegex);
+                                const title = titleMatch ? titleMatch[1] : `Page ${images.length + 1}`;
+                                
+                                images.push({
+                                    url: imageUrl,
+                                    label: title
+                                });
+                            }
+                            break;
+                        }
+                    }
+                }
+            } catch (parentError) {
+                console.log('[Florence] Failed to fetch parent page:', parentError.message);
+            }
+        } else {
+            // Fallback: look for children directly in current page
+            const childrenMatch = html.match(/"children":\s*\[([^\]]+)\]/);
+            if (childrenMatch) {
+                console.log('[Florence] Found children array in current page');
+                const childrenData = childrenMatch[1];
+                const childMatches = [...childrenData.matchAll(/"id":(\d+)/g)];
+                
+                console.log(`[Florence] Found ${childMatches.length} child pages`);
+                
+                for (const childMatch of childMatches) {
+                    const childId = childMatch[1];
+                    const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${childId}/full/max/0/default.jpg`;
+                    images.push({
+                        url: imageUrl,
+                        label: `Page ${images.length + 1}`
+                    });
+                }
+            }
+        }
+        
+        // Fallback: if we found a parent ID but no children, try generating child URLs
+        if (images.length === 0 && parentIdMatch) {
+            console.log('[Florence] No children found, trying URL generation based on parent...');
+            
+            // For Florence ContentDM, if we have a parent ID, the children are usually
+            // sequential IDs starting from a base number. Let's try to find them.
+            const parentId = parseInt(parentIdMatch[1]);
+            const currentId = parseInt(itemId);
+            
+            // Find the starting ID - usually it's lower than the current ID
+            let startId = Math.min(parentId, currentId) + 1; // Start from parent + 1
+            let maxPages = 300; // Reasonable limit for a manuscript
+            
+            console.log(`[Florence] Generating URLs from ${startId} for up to ${maxPages} pages`);
+            
+            // Test a few URLs to find the actual range
+            const https = require('https'); 
+            let validStart = -1;
+            let validEnd = -1;
+            
+            // Test first few IDs to find valid range
+            for (let testId = startId; testId < startId + 50; testId++) {
+                const testUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${testId}/full/max/0/default.jpg`;
+                
+                try {
+                    const testResult = await new Promise((resolve) => {
+                        const req = https.get(testUrl, (response) => {
+                            resolve({ success: response.statusCode === 200 });
+                        });
+                        req.on('error', () => resolve({ success: false }));
+                        req.setTimeout(5000, () => {
+                            req.destroy();
+                            resolve({ success: false });
+                        });
+                    });
+                    
+                    if (testResult.success) {
+                        if (validStart === -1) validStart = testId;
+                        validEnd = testId;
+                    } else if (validStart !== -1) {
+                        // Found a gap, stop here
+                        break;
+                    }
+                } catch (error) {
+                    // Continue testing
+                }
+                
+                // Small delay to avoid overwhelming the server
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            if (validStart !== -1) {
+                console.log(`[Florence] Found valid ID range: ${validStart} to ${validEnd}`);
+                
+                // Generate URLs for the valid range
+                for (let id = validStart; id <= validEnd; id++) {
+                    const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${id}/full/max/0/default.jpg`;
+                    images.push({
+                        url: imageUrl,
+                        label: `Page ${images.length + 1}`
+                    });
+                }
+            }
+        }
+        
+        // Final fallback: look for page count indicators
+        if (images.length === 0) {
+            console.log('[Florence] No valid URLs found, trying page count detection...');
+            
+            const patterns = [
+                /(?:page|item)\s*(\d+)\s*of\s*(\d+)/i,
+                /totalPages['"]\s*:\s*(\d+)/i,
+                /pageCount['"]\s*:\s*(\d+)/i
+            ];
+            
+            let totalPages = 0;
+            for (const pattern of patterns) {
+                const match = html.match(pattern);
+                if (match && match[1]) {
+                    totalPages = parseInt(match[1]);
+                    if (totalPages > 1 && totalPages < 1000) {
+                        console.log(`[Florence] Detected ${totalPages} pages from pattern`);
+                        break;
+                    }
+                }
+            }
+            
+            // Generate URLs for detected page count
+            if (totalPages > 1) {
+                const baseId = parseInt(itemId);
+                for (let i = 0; i < totalPages; i++) {
+                    const pageId = baseId + i;
+                    const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${pageId}/full/max/0/default.jpg`;
+                    images.push({
+                        url: imageUrl,
+                        label: `Page ${i + 1}`
+                    });
+                }
+            }
+        }
+        
+        if (images.length === 0) {
+            throw new Error('No compound object structure detected');
+        }
+        
+        return { images };
+    }
+
+    /**
      * Bordeaux - Fixed with proper tile processor integration
      */
     async getBordeauxManifest(url) {
@@ -2282,6 +2508,94 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         return {
             images,
             displayName: `Bordeaux - ${manuscriptId}`
+        };
+    }
+
+    /**
+     * Bodleian Library (Oxford) - IIIF v2 manifest support
+     * Supports manuscripts from digital.bodleian.ox.ac.uk
+     */
+    async getBodleianManifest(url) {
+        console.log('[Bodleian] Processing URL:', url);
+        
+        // Extract object ID from URL
+        const match = url.match(/objects\/([^/?]+)/);
+        if (!match) throw new Error('Invalid Bodleian URL');
+        
+        const objectId = match[1];
+        const manifestUrl = `https://iiif.bodleian.ox.ac.uk/iiif/manifest/${objectId}.json`;
+        
+        console.log('[Bodleian] Fetching IIIF manifest from:', manifestUrl);
+        
+        const response = await this.fetchWithRetry(manifestUrl);
+        if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
+        
+        const manifest = await response.json();
+        const images = [];
+        
+        // Process IIIF v2 manifest
+        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            const canvases = manifest.sequences[0].canvases;
+            console.log(`[Bodleian] Processing ${canvases.length} pages from IIIF manifest`);
+            
+            // Process all canvases (Bodleian manuscripts can be quite long)
+            const maxPages = Math.min(canvases.length, 200); // Reasonable limit
+            
+            for (let i = 0; i < maxPages; i++) {
+                const canvas = canvases[i];
+                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                    const resource = canvas.images[0].resource;
+                    const service = resource.service;
+                    
+                    if (service && service['@id']) {
+                        // Request maximum resolution available
+                        const imageUrl = `${service['@id']}/full/max/0/default.jpg`;
+                        images.push({
+                            url: imageUrl,
+                            label: canvas.label || `Page ${i + 1}`
+                        });
+                    } else if (resource['@id']) {
+                        // Fallback to direct resource URL
+                        images.push({
+                            url: resource['@id'],
+                            label: canvas.label || `Page ${i + 1}`
+                        });
+                    }
+                }
+            }
+        }
+        // Handle IIIF v3 if needed
+        else if (manifest.items) {
+            console.log(`[Bodleian] Processing ${manifest.items.length} items from IIIF v3 manifest`);
+            
+            const maxPages = Math.min(manifest.items.length, 200);
+            
+            for (let i = 0; i < maxPages; i++) {
+                const item = manifest.items[i];
+                if (item.items && item.items[0] && item.items[0].items && item.items[0].items[0]) {
+                    const annotation = item.items[0].items[0];
+                    if (annotation.body && annotation.body.service && annotation.body.service[0]) {
+                        const service = annotation.body.service[0];
+                        if (service.id) {
+                            images.push({
+                                url: `${service.id}/full/max/0/default.jpg`,
+                                label: item.label?.en?.[0] || item.label?.none?.[0] || `Page ${i + 1}`
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (images.length === 0) {
+            throw new Error('No images found in Bodleian manifest');
+        }
+        
+        console.log(`[Bodleian] Successfully extracted ${images.length} pages`);
+        
+        return {
+            images,
+            displayName: manifest.label || `Bodleian - ${objectId}`
         };
     }
 }

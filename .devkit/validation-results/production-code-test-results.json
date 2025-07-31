@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-07-30T18:06:31.761Z",
+  "timestamp": "2025-07-31T20:19:01.840Z",
   "tests": {
     "graz": {
       "libraryId": "graz",
@@ -14,7 +14,7 @@
         "pages": 0,
         "images": 405
       },
-      "duration": 715
+      "duration": 937
     },
     "verona": {
       "libraryId": "verona",
@@ -29,7 +29,7 @@
         "pages": 0,
         "images": 10
       },
-      "duration": 1643
+      "duration": 1754
     },
     "morgan": {
       "libraryId": "morgan",
@@ -44,7 +44,7 @@
         "pages": 0,
         "images": 10
       },
-      "duration": 12004
+      "duration": 14324
     },
     "florence": {
       "libraryId": "florence",
@@ -57,9 +57,9 @@
       "manifest": {
         "title": "Unknown",
         "pages": 0,
-        "images": 1
+        "images": 21
       },
-      "duration": 1342
+      "duration": 16184
     },
     "bordeaux": {
       "libraryId": "bordeaux",
@@ -74,12 +74,27 @@
         "pages": 0,
         "images": 0
       },
-      "duration": 549
+      "duration": 473
+    },
+    "bodleian": {
+      "libraryId": "bodleian",
+      "issue": "#7",
+      "userUrl": "https://digital.bodleian.ox.ac.uk/objects/ce827512-d440-4833-bdba-f4f4f079d2cd/",
+      "userError": "новая библиотека",
+      "expectedBehavior": "Should recognize and download Bodleian manuscripts",
+      "success": true,
+      "actualError": null,
+      "manifest": {
+        "title": "Unknown",
+        "pages": 0,
+        "images": 164
+      },
+      "duration": 288
     }
   },
   "summary": {
-    "total": 5,
-    "passed": 5,
+    "total": 6,
+    "passed": 6,
     "failed": 0
   }
 }
