@@ -25,7 +25,7 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 - By default they can work in parallel. 
 - You should split phases of you work into parts and assign these parts to different agents. 
 - You should orchestrate their work cleverly. 
-- If an agent's findings are large, they can write them into files in any subfolder of `./devkit`. 
+- If an agent's findings are large, they can write them into files in appropriate `.devkit/` subfolders (reports, docs, artifacts). 
 - You can spawn agents as many times as you want, just don't overcome the limit of parallel. 
 - Agents have same permissions as main process.
 - NB! Each agent should work silently, not bloating terminal with any output. 
@@ -137,7 +137,7 @@ When adding/fixing libraries, **IF NOT IN /handle-issues command! MANDATORY vali
    - **NEVER CREATE FAKE MULTI-PAGE PDFs:** Do not duplicate single pages to create artificial multi-page PDFs
    - **CRITICAL:** If ANY PDF is 0 bytes or fails inspection, FIX the issue before presenting to user
    - Only after proper validation for every file, claude can present them to the user
-10. **MANDATORY validation by user!!!:** Create a single clean folder containing ONLY the final PDF files with clear names (no subfolders, no individual image files, no test files, no logs). Delete all previous validation folders and temporary files. The validation folder should contain exclusively the final PDF files ready for user inspection. **ONLY OPEN FINDER WHEN READY FOR FINAL USER VALIDATION** - do not open finder during development, testing, or intermediate validation steps.
+10. **MANDATORY validation by user!!!:** Create a single clean folder in `.devkit/validation/READY-FOR-USER/` containing ONLY the final PDF files with clear names (no subfolders, no individual image files, no test files, no logs). Delete all previous validation folders and temporary files. The validation folder should contain exclusively the final PDF files ready for user inspection. **ONLY OPEN FINDER WHEN READY FOR FINAL USER VALIDATION** - do not open finder during development, testing, or intermediate validation steps.
 11. You should only ask user's validation when all the tasks and fixes are done and all libraries and manuscripts are ready
 12. **WAIT FOR USER APPROVAL:** Do not proceed with version bump until user confirms validation passed
 13. After user's approval bump and push
@@ -183,11 +183,54 @@ When adding/fixing libraries, **IF NOT IN /handle-issues command! MANDATORY vali
   3. Push fixes to trigger new build
   4. **CRITICAL:** Ensure changelog reaches users - if version was bumped but build failed, the telegram bot won't send notifications until build succeeds
 
-### 5. File Organization
-- Store all reports/analysis in `.devkit/reports/` (create if doesn't exist)
-- Use `.devkit/` subfolders for all development files
-- Organize reports for readability (by date/library/issue type)
-- Never leave temporary files in project root
+### 5. File Organization - STRICT STRUCTURE ENFORCEMENT
+
+**MANDATORY .devkit/ Structure:**
+```
+.devkit/
+├── validation/     # PDF validation files, test manuscripts, validation reports
+├── testing/        # Test scripts (test-*.js), performance tests, manual procedures  
+├── scripts/        # Utility scripts (commit.sh, release.sh, build helpers)
+├── docs/           # Development documentation, implementation reports, analysis
+├── reports/        # Generated reports and analysis results
+├── tasks/          # Todo management (COMPLETED.md for finished tasks)
+└── artifacts/      # Build artifacts, temporary files, generated content
+```
+
+**ABSOLUTELY FORBIDDEN IN PROJECT ROOT:**
+- ❌ Validation folders (`VALIDATION-*`, `validation-pdfs-*`, `BELGICA-*`)
+- ❌ Test scripts (`test-*.js`, `*-test.js`, `*-validation.js`)
+- ❌ Utility scripts (`*.sh` except standard build scripts)
+- ❌ Documentation reports (`*-IMPLEMENTATION.md`, `*-REPORT.md`, `*-ANALYSIS.md`)
+- ❌ Temporary/artifact files (`__*__`, `*-temp`, validation folders)
+
+**MANDATORY FILE PLACEMENT:**
+- **Validation artifacts** MUST go to `.devkit/validation/`
+- **Test files** MUST go to `.devkit/testing/`
+- **Scripts** MUST go to `.devkit/scripts/`
+- **Documentation** MUST go to `.devkit/docs/`
+- **Reports** MUST go to `.devkit/reports/`
+- **Completed todos** MUST go to `.devkit/tasks/COMPLETED.md`
+
+**ANTI-ACCUMULATION ENFORCEMENT (CRITICAL - PREVENTS TECHNICAL DEBT):**
+- **FRESHLY CLEANED:** 2025-07-31 - Removed 1,026 files (1.3GB) of technical debt
+- **MAXIMUM LIMITS:** 200 files total, 200MB total in `.devkit/`
+- **LIFECYCLE RULE:** CREATE → USE → DELETE (never accumulate)
+- **MANDATORY CLEANUP:** Delete one-off scripts after issue resolution
+- **VALIDATION CLEANUP:** Delete old validation results after library implementation  
+- **REPORT CLEANUP:** Delete library analysis after successful implementation
+- **ARTIFACT CLEANUP:** Delete build artifacts and temporary files immediately
+- **WEEKLY AUDITS:** Review and purge accumulated files every week
+- **NO EXCEPTIONS:** If it's not actively used, DELETE IT
+
+**DEBUGGING PROTOCOL (CRITICAL - PREVENTS DIRECTORY CONFUSION):**
+- **ALWAYS CHECK PWD WHEN STRUGGLING:** If file operations fail or files "can't be found":
+  1. **IMMEDIATELY run `pwd`** to verify current working directory
+  2. **VERIFY you're in project root** (`/home/evb/WebstormProjects/mss-downloader`)
+  3. **CHECK for nested directories** - avoid working inside `.devkit/reports/` etc.
+  4. **USE absolute paths** when in doubt to avoid directory confusion
+- **LESSON LEARNED:** 2025-07-31 - Directory confusion caused cleanup failures
+- **MANDATORY:** Always confirm location before file operations, especially cleanup tasks
 
 ### 6. Development Context
 - Main process: downloading, merging, file operations
