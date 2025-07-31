@@ -1,11 +1,10 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.52",
+  "version": "1.4.53",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "FLORENCE LIBRARY FIX: Fixed compound object detection - now discovers all pages in manuscripts (was finding only 1 page, now finds 20+ pages)",
-    "BODLEIAN LIBRARY ADDED: New support for Oxford Bodleian Library manuscripts with full IIIF v2 integration",
-    "BORDEAUX LIBRARY IMPROVEMENTS: Enhanced tile processor integration for better download reliability"
+    "BODLEIAN LIBRARY CRITICAL FIX: Fixed SSL certificate validation for Oxford Bodleian Library - manuscripts now download correctly",
+    "ESLINT COMPLIANCE: Fixed require() import statements to maintain code quality standards"
   ],
   "main": "dist/main/main.js",
   "scripts": {

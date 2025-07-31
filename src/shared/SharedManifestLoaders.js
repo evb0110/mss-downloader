@@ -74,7 +74,8 @@ class SharedManifestLoaders {
         
         // Check if we need to use HTTPS module for SSL bypass domains
         const needsSSLBypass = url.includes('bdh-rd.bne.es') || url.includes('pagella.bm-grenoble.fr') || 
-                               url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it');
+                               url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') ||
+                               url.includes('iiif.bodleian.ox.ac.uk');
         
         // In Electron environment, use built-in fetch when available (unless SSL bypass needed)
         if (typeof fetch !== 'undefined' && !needsSSLBypass) {
@@ -140,7 +141,8 @@ class SharedManifestLoaders {
 
             // SSL bypass for specific domains with certificate issues
             if (url.includes('bdh-rd.bne.es') || url.includes('pagella.bm-grenoble.fr') || 
-                url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
+                url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') ||
+                url.includes('iiif.bodleian.ox.ac.uk')) {
                 requestOptions.rejectUnauthorized = false;
                 // Additional headers for Verona servers
                 if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
@@ -2245,7 +2247,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             console.log(`[Florence] Generating URLs from ${startId} for up to ${maxPages} pages`);
             
             // Test a few URLs to find the actual range
-            const https = require('https'); 
+            const https = eval("require('https')"); 
             let validStart = -1;
             let validEnd = -1;
             
