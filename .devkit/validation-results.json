@@ -1,0 +1,168 @@
+{
+  "timestamp": "2025-08-01T22:53:33.172Z",
+  "summary": {
+    "fixed": [],
+    "working": [],
+    "failed": [
+      {
+        "title": "грац",
+        "url": "https://gams.uni-graz.at/o:hora.3-1",
+        "expectedLibrary": "graz",
+        "userError": "грузит манифест бесконечно",
+        "issueKey": "issue_2",
+        "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+      },
+      {
+        "title": "верона",
+        "url": "https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=15",
+        "expectedLibrary": "verona",
+        "userError": "TIMEOUT",
+        "issueKey": "issue_3",
+        "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+      },
+      {
+        "title": "морган",
+        "url": "https://www.themorgan.org/collection/lindau-gospels/thumbs",
+        "expectedLibrary": "morgan",
+        "userError": "301",
+        "issueKey": "issue_4",
+        "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+      },
+      {
+        "title": "Флоренция",
+        "url": "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/",
+        "expectedLibrary": "florence",
+        "userError": "reply was never sent",
+        "issueKey": "issue_5",
+        "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+      },
+      {
+        "title": "Бордо",
+        "url": "https://1886.bordeaux.fr/ark:/48743/btv1b52509616g",
+        "expectedLibrary": "bordeaux",
+        "userError": "видит только 50 страниц",
+        "issueKey": "issue_6",
+        "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+      },
+      {
+        "title": "Бодлеянская",
+        "url": "https://digital.bodleian.ox.ac.uk/objects/ce827512-d440-4833-bdba-f4f4f079d2cd/",
+        "expectedLibrary": "bodleian",
+        "userError": "fixed in 1.4.52",
+        "issueKey": "issue_7",
+        "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+      },
+      {
+        "title": "Бодлеянская",
+        "url": "https://digital.bodleian.ox.ac.uk/objects/ce827512-d440-4833-bdba-f4f4f079d2cd/",
+        "expectedLibrary": "bodleian",
+        "userError": "Unsupported library",
+        "issueKey": "issue_8",
+        "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+      },
+      {
+        "title": "BDL",
+        "url": "https://www.bdl.servizirl.it/vufind/Record/BDL-OGGETTO-3903",
+        "expectedLibrary": "bdl",
+        "userError": "ENOTFOUND",
+        "issueKey": "issue_9",
+        "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+      },
+      {
+        "title": "Цюрих",
+        "url": "https://www.e-manuscripta.ch/zuz/content/zoom/24451322",
+        "expectedLibrary": "e_manuscripta",
+        "userError": "только первые 11",
+        "issueKey": "issue_10",
+        "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+      },
+      {
+        "title": "BNE",
+        "url": "https://bvpb.mcu.es/es/consulta/registro.do?id=406029",
+        "expectedLibrary": "bne",
+        "userError": "видит манифест, но не качает",
+        "issueKey": "issue_11",
+        "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+      },
+      {
+        "title": "каталония",
+        "url": "https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1",
+        "expectedLibrary": "mdc_catalonia",
+        "userError": "ETIMEDOUT",
+        "issueKey": "issue_12",
+        "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+      },
+      {
+        "title": "гренобль",
+        "url": "https://pagella.bm-grenoble.fr/ark:/12148/btv1b10663927k/f1.item.zoom",
+        "expectedLibrary": "grenoble",
+        "userError": "EAI_AGAIN",
+        "issueKey": "issue_13",
+        "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+      },
+      {
+        "title": "Карлсруэ",
+        "url": "https://i3f.vls.io/iiif/iiif-server?img=/AUGE-2-PERG-1--F--0001.jpg&id=https%3A%2F%2Fdigital.blb-karlsruhe.de%2Fid%2F2926018%2Fmanifest&bx=7500&by=9375&bw=7500&bh=9375&rot=0&scaledWidth=1500&scaledHeight=1875",
+        "expectedLibrary": "karlsruhe",
+        "userError": "new issue",
+        "issueKey": "issue_14",
+        "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+      }
+    ],
+    "needsWork": []
+  },
+  "results": {
+    "issue_2": {
+      "success": false,
+      "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+    },
+    "issue_3": {
+      "success": false,
+      "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+    },
+    "issue_4": {
+      "success": false,
+      "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+    },
+    "issue_5": {
+      "success": false,
+      "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+    },
+    "issue_6": {
+      "success": false,
+      "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+    },
+    "issue_7": {
+      "success": false,
+      "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+    },
+    "issue_8": {
+      "success": false,
+      "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+    },
+    "issue_9": {
+      "success": false,
+      "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+    },
+    "issue_10": {
+      "success": false,
+      "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+    },
+    "issue_11": {
+      "success": false,
+      "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+    },
+    "issue_12": {
+      "success": false,
+      "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+    },
+    "issue_13": {
+      "success": false,
+      "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+    },
+    "issue_14": {
+      "success": false,
+      "error": "this.manifestLoaders.parseManuscriptUrl is not a function"
+    }
+  }
+}

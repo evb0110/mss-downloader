@@ -170,7 +170,38 @@ class SharedManifestLoaders {
             const req = https.request(requestOptions, (res) => {
                 if (res.statusCode >= 300 && res.statusCode < 400) {
                     if (res.headers.location) {
-                        const redirectUrl = new URL(res.headers.location, url).href;
+                        let redirectUrl;
+                        try {
+                            // CRITICAL FIX: Validate that location header contains a proper URL
+                            // before attempting to construct new URL to prevent error message concatenation
+                            const location = res.headers.location.trim();
+                            
+                            // Check if location is a proper URL (absolute or relative)
+                            if (location.startsWith('http://') || location.startsWith('https://')) {
+                                // Absolute URL - use as-is
+                                redirectUrl = location;
+                            } else if (location.startsWith('/') || location.match(/^[a-zA-Z0-9-._~:/?#[\]@!$&'()*+,;=]+$/)) {
+                                // Relative URL or path - safe to resolve against base URL
+                                redirectUrl = new URL(location, url).href;
+                            } else {
+                                // Invalid location header - likely contains error message
+                                throw new Error(`Invalid redirect location header: "${location}"`);
+                            }
+                        } catch (urlError) {
+                            // Failed to create valid redirect URL - treat as error
+                            console.error(`[SharedManifestLoaders] Invalid redirect location from ${url}: ${res.headers.location}`);
+                            resolve({
+                                ok: false,
+                                status: res.statusCode,
+                                statusText: `Invalid redirect location: ${res.headers.location}`,
+                                headers: res.headers,
+                                buffer: () => Promise.resolve(Buffer.alloc(0)),
+                                text: () => Promise.resolve(''),
+                                json: () => Promise.reject(new Error('Invalid redirect response'))
+                            });
+                            return;
+                        }
+                        
                         console.log(`[SharedManifestLoaders] Redirect ${redirectCount + 1}/${MAX_REDIRECTS}: ${res.statusCode} ${url} -> ${redirectUrl}`);
                         
                         this.fetchUrl(redirectUrl, options, redirectCount + 1).then(resolve).catch(reject);
@@ -630,19 +661,50 @@ class SharedManifestLoaders {
      * Karlsruhe - Working
      */
     async getKarlsruheManifest(url) {
-        const match = url.match(/titleinfo\/(\d+)/);
-        if (!match) throw new Error('Invalid Karlsruhe URL');
+        let manifestUrl;
         
-        const titleId = match[1];
-        const manifestUrl = `https://digital.blb-karlsruhe.de/i3f/v20/${titleId}/manifest`;
+        // Handle proxy URLs from i3f.vls.io
+        if (url.includes('i3f.vls.io')) {
+            console.log('[Karlsruhe] Processing proxy URL from i3f.vls.io');
+            
+            // Extract the actual manifest URL from the id parameter
+            const urlObj = new URL(url);
+            const manifestId = urlObj.searchParams.get('id');
+            
+            if (!manifestId) {
+                throw new Error('Invalid Karlsruhe proxy URL: missing id parameter');
+            }
+            
+            // Decode the URL-encoded manifest URL
+            manifestUrl = decodeURIComponent(manifestId);
+            console.log(`[Karlsruhe] Extracted manifest URL: ${manifestUrl}`);
+            
+            // Validate it's a Karlsruhe manifest URL
+            if (!manifestUrl.includes('digital.blb-karlsruhe.de')) {
+                throw new Error('Invalid Karlsruhe manifest URL in proxy');
+            }
+        } else {
+            // Handle direct titleinfo URLs
+            const match = url.match(/titleinfo\/(\d+)/);
+            if (!match) {
+                throw new Error('Invalid Karlsruhe URL. Expected either a titleinfo URL or i3f.vls.io proxy URL');
+            }
+            
+            const titleId = match[1];
+            manifestUrl = `https://digital.blb-karlsruhe.de/i3f/v20/${titleId}/manifest`;
+        }
+        
+        console.log(`[Karlsruhe] Fetching IIIF manifest from: ${manifestUrl}`);
         
         const response = await this.fetchWithRetry(manifestUrl);
-        if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
+        if (!response.ok) throw new Error(`Failed to fetch Karlsruhe manifest: ${response.status} ${response.statusText}`);
         
         const manifest = await response.json();
         const images = [];
         
         if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            console.log(`[Karlsruhe] Found ${manifest.sequences[0].canvases.length} pages in manifest`);
+            
             for (let i = 0; i < Math.min(manifest.sequences[0].canvases.length, 10); i++) {
                 const canvas = manifest.sequences[0].canvases[i];
                 if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
@@ -654,6 +716,7 @@ class SharedManifestLoaders {
             }
         }
         
+        console.log(`[Karlsruhe] Successfully extracted ${images.length} pages`);
         return { images };
     }
 
@@ -2364,6 +2427,91 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     }
 
     /**
+     * Discover the actual page range for a Bordeaux manuscript by testing tile availability
+     */
+    async discoverBordeauxPageRange(baseId) {
+        console.log(`[Bordeaux] Discovering page range for baseId: ${baseId}`);
+        
+        const baseUrl = 'https://selene.bordeaux.fr/in/dz';
+        const availablePages = [];
+        
+        // Test a reasonable range of pages
+        const maxTestPages = 200; // Don't test too many to avoid overwhelming the server
+        
+        // First, do a quick scan to find the general range
+        const quickScanPages = [1, 5, 6, 10, 20, 30, 50, 75, 100, 150, 200];
+        let foundAny = false;
+        let minFound = null;
+        let maxFound = null;
+        
+        console.log(`[Bordeaux] Quick scan for page availability...`);
+        for (const page of quickScanPages) {
+            const pageId = `${baseId}_${String(page).padStart(4, '0')}`;
+            const testUrl = `${baseUrl}/${pageId}_files/0/0_0.jpg`;
+            
+            try {
+                const response = await this.fetchUrl(testUrl);
+                if (response.ok) {
+                    foundAny = true;
+                    if (minFound === null || page < minFound) minFound = page;
+                    if (maxFound === null || page > maxFound) maxFound = page;
+                    console.log(`[Bordeaux] Quick scan: Page ${page} available`);
+                }
+            } catch (error) {
+                // Ignore errors during discovery
+            }
+            
+            // Small delay to be respectful to the server
+            await new Promise(resolve => setTimeout(resolve, 50));
+        }
+        
+        if (!foundAny) {
+            console.log(`[Bordeaux] No pages found in quick scan`);
+            return { firstPage: null, lastPage: null, totalPages: 0, availablePages: [] };
+        }
+        
+        console.log(`[Bordeaux] Quick scan found pages between ${minFound} and ${maxFound}`);
+        
+        // Now do a detailed scan in the discovered range
+        const detailedStart = Math.max(1, minFound - 5);
+        const detailedEnd = Math.min(maxTestPages, maxFound + 10);
+        
+        console.log(`[Bordeaux] Detailed scan from ${detailedStart} to ${detailedEnd}...`);
+        
+        for (let page = detailedStart; page <= detailedEnd; page++) {
+            const pageId = `${baseId}_${String(page).padStart(4, '0')}`;
+            const testUrl = `${baseUrl}/${pageId}_files/0/0_0.jpg`;
+            
+            try {
+                const response = await this.fetchUrl(testUrl);
+                if (response.ok) {
+                    availablePages.push(page);
+                }
+            } catch (error) {
+                // Ignore errors during discovery
+            }
+            
+            // Progress indication for long scans
+            if (page % 10 === 0) {
+                console.log(`[Bordeaux] Scanned up to page ${page}... (${availablePages.length} found)`);
+            }
+            
+            // Small delay to be respectful to the server
+            await new Promise(resolve => setTimeout(resolve, 25));
+        }
+        
+        const result = {
+            firstPage: availablePages.length > 0 ? availablePages[0] : null,
+            lastPage: availablePages.length > 0 ? availablePages[availablePages.length - 1] : null,
+            totalPages: availablePages.length,
+            availablePages: availablePages
+        };
+        
+        console.log(`[Bordeaux] Page discovery complete: ${result.totalPages} pages found (${result.firstPage}-${result.lastPage})`);
+        return result;
+    }
+
+    /**
      * Bordeaux - Fixed with proper tile processor integration
      */
     async getBordeauxManifest(url) {
@@ -2466,18 +2614,19 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const baseIdMatch = internalId.match(/^(.+?)(?:_\d{4})?$/);
         const baseId = baseIdMatch ? baseIdMatch[1] : internalId;
         
-        // For Bordeaux, determine proper start page based on URL pattern
-        // If user specified a page number in URL (f13), respect it
-        // Otherwise, use 6 as default start page (common pattern for this manuscript)
-        let startPage = pageNum || 6;
+        // For Bordeaux, discover the actual page range by testing availability
+        console.log('[Bordeaux] Discovering actual page range...');
+        const pageDiscovery = await this.discoverBordeauxPageRange(baseId);
         
-        // Bordeaux manuscripts often have pages numbered starting from different values
-        // For MS_0778, testing shows pages are available from 6-20+
-        // Common patterns: pages 6-20, sometimes 1-10, or other ranges
-        if (!pageNum && publicMatch) {
-            // For this specific manuscript, start from page 6
-            startPage = 6; // Start from 6 based on validation results
+        let startPage = pageNum || pageDiscovery.firstPage || 1;
+        let pageCount = pageDiscovery.totalPages;
+        
+        // If user specified a specific page, respect it but use discovered total count
+        if (pageNum && pageDiscovery.totalPages > 0) {
+            startPage = pageNum;
         }
+        
+        console.log(`[Bordeaux] Discovered ${pageCount} pages, starting from page ${startPage}`);
         
         // Return manifest structure that will be processed by the tile processor
         return { 
@@ -2485,7 +2634,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             baseId: baseId,
             publicId: publicId,
             startPage: startPage,
-            pageCount: 50, // Increased from 10 to allow more pages
+            pageCount: pageCount,
             tileBaseUrl: 'https://selene.bordeaux.fr/in/dz',
             displayName: `Bordeaux - ${publicId}`,
             // This signals to the download service to use the tile processor
@@ -2493,8 +2642,10 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             tileConfig: {
                 baseId: baseId,
                 startPage: startPage,
-                pageCount: 50, // Increased from 10 to allow more pages
-                tileBaseUrl: 'https://selene.bordeaux.fr/in/dz'
+                pageCount: pageCount,
+                tileBaseUrl: 'https://selene.bordeaux.fr/in/dz',
+                // Store discovered page range for the tile processor
+                pageRange: pageDiscovery
             }
         };
     }
@@ -2626,6 +2777,143 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     }
 
     /**
+     * Discover all blocks for an e-manuscripta manuscript
+     * Many e-manuscripta manuscripts are split into multiple blocks with sequential IDs
+     */
+    async discoverEManuscriptaBlocks(baseManuscriptId, library) {
+        console.log(`[e-manuscripta] Discovering blocks for manuscript ${baseManuscriptId} in library ${library}`);
+        
+        const baseId = parseInt(baseManuscriptId);
+        const discoveredBlocks = new Set([baseId]);
+        
+        // Strategy 1: Sequential search with common patterns
+        // Most e-manuscripta blocks increment by 11 (pages per block)
+        const searchPattern = 11;
+        const maxSearchRange = 200; // Don't search too far to avoid overwhelming server
+        
+        console.log(`[e-manuscripta] Searching blocks around ${baseId} with pattern +/-${searchPattern}`);
+        
+        // Search backwards from base ID
+        for (let offset = searchPattern; offset <= maxSearchRange; offset += searchPattern) {
+            const testId = baseId - offset;
+            if (testId <= 0) break;
+            
+            try {
+                const testUrl = `https://www.e-manuscripta.ch/${library}/content/zoom/${testId}`;
+                const response = await this.fetchUrl(testUrl);
+                if (response.ok) {
+                    discoveredBlocks.add(testId);
+                    console.log(`[e-manuscripta] Found block (backward): ${testId}`);
+                } else {
+                    // If we hit a 404, we've likely found the start of the manuscript
+                    if (response.status === 404) {
+                        console.log(`[e-manuscripta] Backward search stopped at ${testId} (not found)`);
+                        break;
+                    }
+                }
+            } catch (error) {
+                // Continue searching even if there's an error
+            }
+            
+            // Small delay to be respectful to the server
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        // Search forwards from base ID
+        for (let offset = searchPattern; offset <= maxSearchRange; offset += searchPattern) {
+            const testId = baseId + offset;
+            
+            try {
+                const testUrl = `https://www.e-manuscripta.ch/${library}/content/zoom/${testId}`;
+                const response = await this.fetchUrl(testUrl);
+                if (response.ok) {
+                    discoveredBlocks.add(testId);
+                    console.log(`[e-manuscripta] Found block (forward): ${testId}`);
+                } else {
+                    // If we hit a 404, we've likely found the end of the manuscript
+                    if (response.status === 404) {
+                        console.log(`[e-manuscripta] Forward search stopped at ${testId} (not found)`);
+                        break;
+                    }
+                }
+            } catch (error) {
+                // Continue searching even if there's an error
+            }
+            
+            // Small delay to be respectful to the server
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        // Strategy 2: Check specific known patterns for this manuscript
+        // Some manuscripts might have different patterns
+        if (discoveredBlocks.size === 1) {
+            console.log(`[e-manuscripta] Trying alternative patterns...`);
+            
+            const alternativePatterns = [1, 10, 12, 20]; // Other common patterns
+            
+            for (const pattern of alternativePatterns) {
+                let foundWithPattern = false;
+                
+                // Test a few IDs with this pattern
+                for (let i = 1; i <= 5; i++) {
+                    const testId = baseId + (i * pattern);
+                    
+                    try {
+                        const testUrl = `https://www.e-manuscripta.ch/${library}/content/zoom/${testId}`;
+                        const response = await this.fetchUrl(testUrl);
+                        if (response.ok) {
+                            discoveredBlocks.add(testId);
+                            foundWithPattern = true;
+                            console.log(`[e-manuscripta] Found block with pattern +${pattern}: ${testId}`);
+                        }
+                    } catch (error) {
+                        // Ignore errors
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+                
+                // If we found blocks with this pattern, continue searching
+                if (foundWithPattern) {
+                    console.log(`[e-manuscripta] Pattern +${pattern} seems to work, extending search...`);
+                    
+                    for (let i = 6; i <= 20; i++) {
+                        const testId = baseId + (i * pattern);
+                        
+                        try {
+                            const testUrl = `https://www.e-manuscripta.ch/${library}/content/zoom/${testId}`;
+                            const response = await this.fetchUrl(testUrl);
+                            if (response.ok) {
+                                discoveredBlocks.add(testId);
+                            } else if (response.status === 404) {
+                                break; // End of manuscript
+                            }
+                        } catch (error) {
+                            // Continue
+                        }
+                        
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                    }
+                    break; // Found a working pattern, stop trying others
+                }
+            }
+        }
+        
+        const sortedBlocks = Array.from(discoveredBlocks).sort((a, b) => a - b);
+        const totalPages = sortedBlocks.length * 11; // Assuming 11 pages per block
+        
+        console.log(`[e-manuscripta] Block discovery complete: ${sortedBlocks.length} blocks found`);
+        console.log(`[e-manuscripta] Block IDs: ${sortedBlocks.join(', ')}`);
+        console.log(`[e-manuscripta] Estimated total pages: ${totalPages}`);
+        
+        return {
+            blocks: sortedBlocks,
+            totalPages: totalPages,
+            baseId: baseId
+        };
+    }
+
+    /**
      * e-manuscripta.ch - Swiss manuscript library
      * Supports manuscripts from www.e-manuscripta.ch
      */
@@ -2703,30 +2991,13 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         
-        // Method 4: Check for block-based structure (some manuscripts have pages in blocks)
-        // Look for navigation links to other blocks
-        const blockIds = new Set();
-        blockIds.add(manuscriptId); // Add current ID
+        // Method 4: Advanced block discovery for e-manuscripta manuscripts
+        console.log(`[e-manuscripta] Attempting advanced block discovery for manuscript ${manuscriptId}`);
+        const blockDiscovery = await this.discoverEManuscriptaBlocks(manuscriptId, library);
         
-        // Find all zoom links that might be related blocks
-        const zoomLinkMatches = Array.from(html.matchAll(/href=['"]([^'"]*\/content\/zoom\/(\d+))['"]/g));
-        for (const match of zoomLinkMatches) {
-            const linkedId = match[2];
-            // Check if the ID is close to our manuscript ID (likely part of same manuscript)
-            const currentIdNum = parseInt(manuscriptId);
-            const linkedIdNum = parseInt(linkedId);
-            
-            // If IDs are within a reasonable range, they're likely part of the same manuscript
-            if (Math.abs(linkedIdNum - currentIdNum) < 1000) {
-                blockIds.add(linkedId);
-            }
-        }
-        
-        if (blockIds.size > 1) {
-            console.log(`[e-manuscripta] Found ${blockIds.size} blocks for this manuscript`);
-            // Each block typically has 11 pages, multiply by number of blocks
-            totalPages = blockIds.size * 11;
-            console.log(`[e-manuscripta] Estimated ${totalPages} total pages across all blocks`);
+        if (blockDiscovery.blocks.length > 1) {
+            totalPages = blockDiscovery.totalPages;
+            console.log(`[e-manuscripta] Advanced discovery found ${blockDiscovery.blocks.length} blocks with ${totalPages} total pages`);
         }
         
         // Extract title
@@ -2736,16 +3007,34 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             displayName = titleMatch[1].trim();
         }
         
-        // For now, we'll create page placeholders that will be converted to actual image URLs
-        // e-manuscripta doesn't expose direct image URLs easily, so we need to 
-        // create references that the main downloader can process
-        for (let i = 1; i <= Math.min(totalPages, 500); i++) { // Reasonable limit
-            // Use a special URL format that the main downloader will recognize
-            // and convert to actual downloadable images
-            images.push({
-                url: `e-manuscripta://${library}/${manuscriptId}/page/${i}`,
-                label: `Page ${i}`
-            });
+        // Generate page references across all discovered blocks
+        // If we have block discovery data, use it to create proper block/page mappings
+        if (blockDiscovery && blockDiscovery.blocks.length > 1) {
+            console.log(`[e-manuscripta] Generating pages for ${blockDiscovery.blocks.length} blocks`);
+            
+            let globalPageNum = 1;
+            for (const blockId of blockDiscovery.blocks) {
+                // Each block typically has 11 pages
+                for (let pageInBlock = 1; pageInBlock <= 11; pageInBlock++) {
+                    images.push({
+                        url: `e-manuscripta://${library}/${blockId}/page/${pageInBlock}`,
+                        label: `Page ${globalPageNum}`,
+                        blockId: blockId,
+                        pageInBlock: pageInBlock
+                    });
+                    globalPageNum++;
+                }
+            }
+        } else {
+            // Fallback to original method for single-block manuscripts
+            for (let i = 1; i <= Math.min(totalPages, 500); i++) { // Reasonable limit
+                // Use a special URL format that the main downloader will recognize
+                // and convert to actual downloadable images
+                images.push({
+                    url: `e-manuscripta://${library}/${manuscriptId}/page/${i}`,
+                    label: `Page ${i}`
+                });
+            }
         }
         
         console.log(`[e-manuscripta] Successfully extracted ${images.length} pages`);

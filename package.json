@@ -1,11 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.56",
+  "version": "1.4.57",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "CRITICAL FIXES: Fixed Graz timeout error, Bodleian library detection, Bordeaux page handling",
-    "ENHANCED ERROR HANDLING: Improved network error messages for DNS/timeout issues across all libraries",
-    "COMPREHENSIVE GITHUB FIXES: Addressed all 13 open issues with production-tested solutions"
+    "URL CONCATENATION FIX: Resolved critical bug causing malformed URLs across 6 libraries (Morgan, Florence, Bodleian, BDL, Catalonia, Grenoble)",
+    "BORDEAUX PAGES: Dynamic page discovery now detects ALL pages (195+) instead of being limited to 50",
+    "E-MANUSCRIPTA: Advanced block discovery finds 407 pages across 37 blocks instead of only 11",
+    "KARLSRUHE: Added support for i3f.vls.io proxy URLs for German manuscripts"
   ],
   "main": "dist/main/main.js",
   "scripts": {
