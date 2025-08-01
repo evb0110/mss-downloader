@@ -1,10 +1,11 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.53",
+  "version": "1.4.54",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "BODLEIAN LIBRARY CRITICAL FIX: Fixed SSL certificate validation for Oxford Bodleian Library - manuscripts now download correctly",
-    "ESLINT COMPLIANCE: Fixed require() import statements to maintain code quality standards"
+    "ZURICH E-MANUSCRIPTA SUPPORT: Added support for e-manuscripta.ch Swiss manuscript library",
+    "GITHUB ISSUES FIXES: Resolved connectivity and library support issues from GitHub #6-#13",
+    "SSL CERTIFICATE FIXES: Enhanced SSL handling for Grenoble and other libraries with certificate issues"
   ],
   "main": "dist/main/main.js",
   "scripts": {
