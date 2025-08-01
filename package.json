@@ -1,11 +1,11 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.54",
+  "version": "1.4.55",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "ZURICH E-MANUSCRIPTA SUPPORT: Added support for e-manuscripta.ch Swiss manuscript library",
-    "GITHUB ISSUES FIXES: Resolved connectivity and library support issues from GitHub #6-#13",
-    "SSL CERTIFICATE FIXES: Enhanced SSL handling for Grenoble and other libraries with certificate issues"
+    "GRAZ URL FIX: Enhanced Graz library support for viewer/image URL patterns",
+    "VERIFIED LIBRARIES: Confirmed Verona, Morgan, and Florence libraries working correctly",
+    "COMPREHENSIVE GITHUB FIXES: Addressed all remaining open issues #2-#13"
   ],
   "main": "dist/main/main.js",
   "scripts": {

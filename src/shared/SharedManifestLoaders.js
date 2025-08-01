@@ -687,7 +687,13 @@ class SharedManifestLoaders {
         }
         
         // Handle standard content URLs
-        const manuscriptIdMatch = url.match(/\/(\d+)$/);
+        let manuscriptIdMatch = url.match(/\/(\d+)$/);
+        
+        // Handle viewer/image pattern: /viewer/image/{ID}/{PAGE}/
+        if (!manuscriptIdMatch) {
+            manuscriptIdMatch = url.match(/\/viewer\/image\/([^/]+)\/\d+/);
+        }
+        
         if (!manuscriptIdMatch) {
             throw new Error('Could not extract manuscript ID from Graz URL');
         }
