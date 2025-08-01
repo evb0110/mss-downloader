@@ -27,11 +27,26 @@ class SharedManifestLoaders {
                 if (error.code) console.log(`[SharedManifestLoaders] Error code: ${error.code}`);
                 
                 if (i === retries - 1) {
-                    // Enhanced error message for Verona timeouts
-                    if ((url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) && 
-                        (error.code === 'ETIMEDOUT' || error.message.includes('timeout'))) {
-                        throw new Error(`Verona server is not responding after ${retries} attempts over ${this.calculateTotalRetryTime(retries)} minutes. The server may be experiencing high load, maintenance, or network issues. Please try again in 10-15 minutes. If the problem persists, the manuscript may be temporarily unavailable.`);
+                    // Enhanced error messages for specific error types
+                    if (error.code === 'ENOTFOUND' || error.code === 'EAI_AGAIN') {
+                        const domain = new URL(url).hostname;
+                        throw new Error(`DNS resolution failed for ${domain}. This may be due to:\n1. Network connectivity issues\n2. DNS server problems\n3. Firewall blocking the domain\n4. The server may be temporarily down\n\nPlease check your internet connection and try again.`);
                     }
+                    
+                    if (error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
+                        const domain = new URL(url).hostname;
+                        // Library-specific timeout messages
+                        if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
+                            throw new Error(`Verona server is not responding after ${retries} attempts over ${this.calculateTotalRetryTime(retries)} minutes. The server may be experiencing high load, maintenance, or network issues. Please try again in 10-15 minutes.`);
+                        } else if (url.includes('mdc.csuc.cat')) {
+                            throw new Error(`Catalonia MDC server timeout after ${retries} attempts. The server at ${domain} is not responding. This may be due to high server load or network issues.`);
+                        } else if (url.includes('cdm21059.contentdm.oclc.org')) {
+                            throw new Error(`Florence library server timeout after ${retries} attempts. The ContentDM server is not responding. Please try again later.`);
+                        } else {
+                            throw new Error(`Connection timeout for ${domain} after ${retries} attempts. The server is not responding. Please try again later.`);
+                        }
+                    }
+                    
                     throw error;
                 }
                 
@@ -75,7 +90,8 @@ class SharedManifestLoaders {
         // Check if we need to use HTTPS module for SSL bypass domains
         const needsSSLBypass = url.includes('bdh-rd.bne.es') || url.includes('pagella.bm-grenoble.fr') || 
                                url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') ||
-                               url.includes('iiif.bodleian.ox.ac.uk');
+                               url.includes('iiif.bodleian.ox.ac.uk') || url.includes('bdl.servizirl.it') ||
+                               url.includes('mdc.csuc.cat') || url.includes('cdm21059.contentdm.oclc.org');
         
         // In Electron environment, use built-in fetch when available (unless SSL bypass needed)
         if (typeof fetch !== 'undefined' && !needsSSLBypass) {
@@ -2685,6 +2701,32 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 totalPages = parseInt(pageOfMatch[1]);
                 console.log(`[e-manuscripta] Found ${totalPages} pages from page indicator`);
             }
+        }
+        
+        // Method 4: Check for block-based structure (some manuscripts have pages in blocks)
+        // Look for navigation links to other blocks
+        const blockIds = new Set();
+        blockIds.add(manuscriptId); // Add current ID
+        
+        // Find all zoom links that might be related blocks
+        const zoomLinkMatches = Array.from(html.matchAll(/href=['"]([^'"]*\/content\/zoom\/(\d+))['"]/g));
+        for (const match of zoomLinkMatches) {
+            const linkedId = match[2];
+            // Check if the ID is close to our manuscript ID (likely part of same manuscript)
+            const currentIdNum = parseInt(manuscriptId);
+            const linkedIdNum = parseInt(linkedId);
+            
+            // If IDs are within a reasonable range, they're likely part of the same manuscript
+            if (Math.abs(linkedIdNum - currentIdNum) < 1000) {
+                blockIds.add(linkedId);
+            }
+        }
+        
+        if (blockIds.size > 1) {
+            console.log(`[e-manuscripta] Found ${blockIds.size} blocks for this manuscript`);
+            // Each block typically has 11 pages, multiply by number of blocks
+            totalPages = blockIds.size * 11;
+            console.log(`[e-manuscripta] Estimated ${totalPages} total pages across all blocks`);
         }
         
         // Extract title

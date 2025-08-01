@@ -532,6 +532,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('digi.vatlib.it')) return 'vatican';
         if (url.includes('digital.ulb.hhu.de')) return 'hhu';
         if (url.includes('manuscrits.bordeaux.fr') || url.includes('selene.bordeaux.fr')) return 'bordeaux';
+        if (url.includes('digital.bodleian.ox.ac.uk')) return 'bodleian';
         
         return null;
     }
@@ -1002,8 +1003,8 @@ export class EnhancedManuscriptDownloaderService {
             },
             rejectUnauthorized: false,
             // Add extended socket timeout for Graz and Verona
-            timeout: url.includes('unipub.uni-graz.at') ? 120000 : 
-                    (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 60000 : 30000,
+            timeout: options.timeout || (url.includes('unipub.uni-graz.at') ? 120000 : 
+                    (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 60000 : 30000),
             // Use connection pooling agent for Graz
             agent: agent
         };
@@ -1380,6 +1381,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'bordeaux':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('bordeaux', originalUrl);
+                    break;
+                case 'bodleian':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('bodleian', originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);

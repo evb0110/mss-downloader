@@ -1,11 +1,11 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.55",
+  "version": "1.4.56",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "GRAZ URL FIX: Enhanced Graz library support for viewer/image URL patterns",
-    "VERIFIED LIBRARIES: Confirmed Verona, Morgan, and Florence libraries working correctly",
-    "COMPREHENSIVE GITHUB FIXES: Addressed all remaining open issues #2-#13"
+    "CRITICAL FIXES: Fixed Graz timeout error, Bodleian library detection, Bordeaux page handling",
+    "ENHANCED ERROR HANDLING: Improved network error messages for DNS/timeout issues across all libraries",
+    "COMPREHENSIVE GITHUB FIXES: Addressed all 13 open issues with production-tested solutions"
   ],
   "main": "dist/main/main.js",
   "scripts": {
