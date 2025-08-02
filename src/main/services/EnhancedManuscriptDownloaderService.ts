@@ -3828,6 +3828,7 @@ export class EnhancedManuscriptDownloaderService {
             const totalPagesToDownload = actualEndPage - actualStartPage + 1;
             
             // Apply library-specific optimization settings early to get split threshold
+            // This must happen before determining split logic to respect user settings
             const globalMaxConcurrent = maxConcurrent || configService.get('maxConcurrentDownloads');
             const library = manifest.library as TLibrary;
             const globalAutoSplitThresholdMB = Math.round(configService.get('autoSplitThreshold') / (1024 * 1024)); // Convert bytes to MB
@@ -3838,12 +3839,15 @@ export class EnhancedManuscriptDownloaderService {
             );
             
             // Use library-specific or global split threshold
+            // This respects user's configured split size (30MB, 100MB, etc)
             const autoSplitThresholdMB = optimizations.autoSplitThresholdMB;
             
             // Estimate average page size (conservative estimate: 500KB per page for high-quality images)
+            // This is based on typical manuscript page sizes at high resolution
             const estimatedTotalSizeMB = (totalPagesToDownload * 0.5);
             
             // Determine if we need to split the PDF based on estimated size
+            // Fixed: Was hardcoded to 1000 pages, now uses actual MB threshold
             const shouldSplit = estimatedTotalSizeMB > autoSplitThresholdMB;
             const maxPagesPerPart = Math.ceil((autoSplitThresholdMB * 2) / 1); // Pages per part based on threshold (assuming ~0.5MB per page)
             
@@ -4099,8 +4103,14 @@ export class EnhancedManuscriptDownloaderService {
                 updateProgress();
             };
             
+            // Download pages with proper concurrency control
+            // Each element in semaphore array represents a worker that downloads pages
             await Promise.all(semaphore.map(async () => {
-                while (nextPageIndex <= actualEndPage - 1) { // Fix: actualEndPage is 1-based, nextPageIndex is 0-based
+                // Fixed: Loop condition was comparing 0-based index with 1-based page number
+                // actualEndPage is 1-based (e.g., 600 for last page)
+                // nextPageIndex is 0-based (0-599 for 600 pages)
+                // So we need to compare with actualEndPage - 1
+                while (nextPageIndex <= actualEndPage - 1) {
                     const idx = nextPageIndex++;
                     await downloadPage(idx);
                 }

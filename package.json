@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.60",
+  "version": "1.4.61",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "CACHE FIX: Clear Cache now properly clears ALL caches including ElectronImageCache - fixes issue where old version cache persisted",
-    "SPLIT SIZE FIX: PDF splitting now respects file size settings (30MB, 100MB, etc) instead of hardcoded 1000-page limit",
-    "DOWNLOAD LOOP FIX: Fixed 0-based vs 1-based index comparison that could limit downloads",
-    "KARLSRUHE: Confirmed working with all 600+ pages after cache clearing"
+    "AUTO-WIPE ON UPGRADE: All caches and data are now automatically wiped when version changes - ensures clean state",
+    "ENHANCED CLEAR CACHE: Clear Cache button now performs complete data wipe using VersionMigrationService",
+    "MANDATORY CLEAN STATE: Prevents any corruption or issues from old cached data between versions",
+    "All fixes from 1.4.60 included: cache clearing, split size respect, download loop fix"
   ],
   "main": "dist/main/main.js",
   "scripts": {

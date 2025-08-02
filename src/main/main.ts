@@ -10,6 +10,7 @@ import { EnhancedDownloadQueue } from './services/EnhancedDownloadQueue';
 import { configService } from './services/ConfigService';
 import { NegativeConverterService } from './services/NegativeConverterService';
 import { DownloadLogger } from './services/DownloadLogger';
+import { VersionMigrationService } from './services/VersionMigrationService';
 import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
 import type { ConversionSettings } from './services/NegativeConverterService';
 
@@ -325,6 +326,25 @@ async function cleanupTempFiles(): Promise<void> {
 app.commandLine.appendSwitch('disable-features', 'Autofill');
 
 app.whenReady().then(async () => {
+  // CRITICAL: Check for version changes and wipe all caches if needed
+  // This MUST happen before initializing any services to ensure clean state
+  try {
+    const migrationService = new VersionMigrationService();
+    const migrated = await migrationService.checkAndMigrate();
+    
+    if (migrated) {
+      console.log('Version migration performed - all caches wiped for clean state');
+      
+      // Log migration info - dialog will be shown after window creation
+      // We can't show dialog here as window might not exist yet
+      console.log('Will show migration notification after window is ready');
+    }
+  } catch (error) {
+    console.error('Version migration failed:', error);
+    // Continue anyway, but there might be issues
+  }
+  
+  // Now initialize services with clean state
   imageCache = new ElectronImageCache();
   pdfMerger = new ElectronPdfMerger();
   manuscriptDownloader = new ManuscriptDownloaderService(pdfMerger);
@@ -610,16 +630,22 @@ ipcMain.handle('clear-all-caches', async () => {
   }
   
   try {
-    // Clear the queue's caches (manifest cache, temp files)
-    await enhancedDownloadQueue.clearAllCaches();
+    // Use the version migration service to perform a complete wipe
+    // This ensures ALL data is cleared, just like a version upgrade
+    const migrationService = new VersionMigrationService();
+    await migrationService.forceFullWipe();
     
-    // Also clear the ElectronImageCache
+    // Reinitialize services after wipe
     if (imageCache) {
-      await imageCache.clearCache();
-      console.log('Cleared ElectronImageCache');
+      imageCache = new ElectronImageCache();
     }
     
-    return { success: true, message: 'All caches cleared successfully' };
+    // Clear queue's in-memory state
+    await enhancedDownloadQueue.clearAllCaches();
+    
+    console.log('Performed complete cache wipe - all data cleared');
+    
+    return { success: true, message: 'All caches and data completely wiped' };
   } catch (error: any) {
     throw new Error(`Failed to clear all caches: ${error.message}`);
   }
