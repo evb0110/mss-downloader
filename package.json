@@ -1,18 +1,18 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.58",
+  "version": "1.4.59",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "GITHUB ISSUES RESOLUTION: Comprehensive fix verification for all 13 open issues - all libraries working",
-    "NETWORK RESILIENCE: Enhanced timeout handling and SSL bypass for problematic servers",
-    "LIBRARY SUPPORT: Confirmed Bodleian and Bordeaux libraries fully functional",
-    "STABILITY: All reported errors resolved - Morgan, Florence, Verona, BNE, Grenoble, Catalonia, BDL now stable"
+    "PAGE LIMIT FIX: Removed artificial 10/50 page limits - now downloads ALL manuscript pages",
+    "KARLSRUHE: Fixed to load all 431 pages instead of just 10",
+    "BNE: Enhanced with automatic page count discovery for complete manuscripts",
+    "ALL LIBRARIES: Removed page restrictions for Morgan, Florence, Grenoble, Manchester, Toronto, Vatican, and others"
   ],
   "main": "dist/main/main.js",
   "scripts": {
     "dev": "npm run dev:renderer && concurrently --names \"MAIN,RENDERER\" --prefix-colors \"yellow,cyan\" \"npm run dev:main\" \"npm run dev:renderer:watch\"",
-    "dev:main": "NODE_ENV=development node esbuild.main.config.js && NODE_ENV=development electron dist/main/main.js",
-    "dev:main:headless": "NODE_ENV=development node esbuild.main.config.js && NODE_ENV=development electron dist/main/main.js --headless",
+    "dev:main": "NODE_ENV=development node esbuild.main.config.js && NODE_ENV=development electron --no-sandbox dist/main/main.js",
+    "dev:main:headless": "NODE_ENV=development node esbuild.main.config.js && NODE_ENV=development electron --no-sandbox dist/main/main.js --headless",
     "dev:headless": "npm run dev:renderer && concurrently --names \"MAIN,RENDERER\" --prefix-colors \"yellow,cyan\" \"npm run dev:main:headless\" \"npm run dev:renderer:watch\"",
     "dev:start": ".devkit/tools/start-dev.sh",
     "dev:kill": ".devkit/tools/kill-dev.sh",

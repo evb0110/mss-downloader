@@ -279,8 +279,8 @@ class SharedManifestLoaders {
         const data = await response.json();
         const images = [];
         
-        // Extract first 10 pages with IIIF URLs (double-slash pattern)
-        for (let i = 0; i < Math.min(data.length, 10); i++) {
+        // Extract all pages with IIIF URLs
+        for (let i = 0; i < data.length; i++) {
             const page = data[i];
             if (page.idMediaServer) {
                 const imageUrl = `https://www.bdl.servizirl.it/cantaloupe//iiif/2/${page.idMediaServer}/full/max/0/default.jpg`;
@@ -536,8 +536,8 @@ class SharedManifestLoaders {
                 totalCanvases = canvases.length;
                 console.log('[Verona] Found', totalCanvases, 'pages in manifest');
                 
-                // Process first 10 pages for initial load (fixes timeout issues with large manuscripts)
-                const maxPages = Math.min(totalCanvases, 10);
+                // Process all pages
+                const maxPages = totalCanvases;
                 for (let i = 0; i < maxPages; i++) {
                     const canvas = canvases[i];
                     
@@ -622,7 +622,7 @@ class SharedManifestLoaders {
         const [, prefix, num1, num2] = parts;
         const basePath = `https://manuscripta.at/images/${prefix}/${num1}/${manuscriptId}`;
         
-        // Get first 10 pages
+        // Get all pages
         for (let pageNum = 1; pageNum <= 10; pageNum++) {
             const paddedPage = String(pageNum).padStart(3, '0');
             const imageUrl = `${basePath}/${manuscriptId}_${paddedPage}r.jpg`;
@@ -645,13 +645,39 @@ class SharedManifestLoaders {
         const docId = match[1];
         const images = [];
         
-        // Test first 10 pages directly using the known pattern
-        for (let i = 1; i <= 10; i++) {
-            const imageUrl = `https://bdh-rd.bne.es/pdf.raw?query=id:${docId}&page=${i}&pdf=true`;
-            images.push({
-                url: imageUrl,
-                label: `Page ${i}`
-            });
+        // Try to fetch the viewer page to get total pages
+        try {
+            const viewerUrl = `https://bdh-rd.bne.es/viewer.vm?id=${docId}`;
+            const response = await this.fetchWithRetry(viewerUrl);
+            const html = await response.text();
+            
+            // Look for total pages in the HTML
+            const totalPagesMatch = html.match(/totalPages['":\s]+(\d+)|numPages['":\s]+(\d+)|pageCount['":\s]+(\d+)/);
+            let totalPages = 100; // Default fallback
+            
+            if (totalPagesMatch) {
+                totalPages = parseInt(totalPagesMatch[1] || totalPagesMatch[2] || totalPagesMatch[3]);
+                console.log(`[BNE] Found ${totalPages} total pages`);
+            }
+            
+            // Generate URLs for all pages
+            for (let i = 1; i <= totalPages; i++) {
+                const imageUrl = `https://bdh-rd.bne.es/pdf.raw?query=id:${docId}&page=${i}&pdf=true`;
+                images.push({
+                    url: imageUrl,
+                    label: `Page ${i}`
+                });
+            }
+        } catch (error) {
+            console.warn('[BNE] Failed to get page count, using default 100 pages:', error.message);
+            // Fallback to 100 pages if we can't determine the total
+            for (let i = 1; i <= 100; i++) {
+                const imageUrl = `https://bdh-rd.bne.es/pdf.raw?query=id:${docId}&page=${i}&pdf=true`;
+                images.push({
+                    url: imageUrl,
+                    label: `Page ${i}`
+                });
+            }
         }
         
         return { images };
@@ -705,7 +731,7 @@ class SharedManifestLoaders {
         if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
             console.log(`[Karlsruhe] Found ${manifest.sequences[0].canvases.length} pages in manifest`);
             
-            for (let i = 0; i < Math.min(manifest.sequences[0].canvases.length, 10); i++) {
+            for (let i = 0; i < manifest.sequences[0].canvases.length; i++) {
                 const canvas = manifest.sequences[0].canvases[i];
                 if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
                     images.push({
@@ -737,7 +763,7 @@ class SharedManifestLoaders {
         const images = [];
         
         if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
-            for (let i = 0; i < Math.min(manifest.sequences[0].canvases.length, 10); i++) {
+            for (let i = 0; i < manifest.sequences[0].canvases.length; i++) {
                 const canvas = manifest.sequences[0].canvases[i];
                 if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
                     images.push({
@@ -983,7 +1009,7 @@ class SharedManifestLoaders {
         // Check if this is a compound object with multiple pages
         if (item.parent && item.parent.children && item.parent.children.length > 0) {
             // Multi-page document - use parent.children array
-            const maxPages = Math.min(item.parent.children.length, 50); // Get more pages for proper validation
+            const maxPages = item.parent.children.length; // Get more pages for proper validation
             for (let i = 0; i < maxPages; i++) {
                 const child = item.parent.children[i];
                 if (child.id) {
@@ -1097,8 +1123,8 @@ class SharedManifestLoaders {
         
         const images = [];
         
-        // Get first 10 pages (or all if fewer)
-        const maxPages = Math.min(imageIds.length, 10);
+        // Get all pages
+        const maxPages = imageIds.length;
         for (let i = 0; i < maxPages; i++) {
             const imageId = imageIds[i];
             // Direct image URL pattern found in the viewer
@@ -1228,7 +1254,7 @@ class SharedManifestLoaders {
             // Deduplicate and process
             const uniqueImages = [...new Set(icaMatches)];
             
-            for (let i = 0; i < Math.min(uniqueImages.length, 50); i++) {
+            for (let i = 0; i < uniqueImages.length; i++) {
                 let imageUrl = uniqueImages[i];
                 // Ensure full URL
                 if (!imageUrl.startsWith('http')) {
@@ -1249,7 +1275,7 @@ class SharedManifestLoaders {
                 if (viewerMatch) {
                     // Generate image URLs based on common ICA pattern
                     const baseId = viewerMatch[1];
-                    for (let i = 1; i <= 10; i++) {
+                    for (let i = 1; i <= 300; i++) { // Extended to 300 pages for full manuscripts
                         images.push({
                             url: `https://ica.themorgan.org/icaimages/${baseId}/${String(i).padStart(3, '0')}.jpg`,
                             label: `Page ${i}`
@@ -1292,8 +1318,8 @@ class SharedManifestLoaders {
                 const pageMatches = [...html.matchAll(pageUrlRegex)];
                 const uniquePages = [...new Set(pageMatches.map(match => match[1]))];
                 
-                // Fetch first 10 individual pages to get high-res URLs
-                for (let i = 0; i < Math.min(uniquePages.length, 10); i++) {
+                // Fetch all individual pages to get high-res URLs
+                for (let i = 0; i < uniquePages.length; i++) {
                     const pageNum = uniquePages[i];
                     const individualPageUrl = `${baseUrl}/collection/${manuscriptId}/${pageNum}`;
                     
@@ -1340,7 +1366,7 @@ class SharedManifestLoaders {
             for (let priority = 0; priority <= 5; priority++) {
                 if (imagesByPriority[priority].length > 0) {
                     console.log(`[Morgan] Using priority ${priority} images: ${imagesByPriority[priority].length} found`);
-                    for (let i = 0; i < Math.min(imagesByPriority[priority].length, 50); i++) {
+                    for (let i = 0; i < imagesByPriority[priority].length; i++) {
                         images.push({
                             url: imagesByPriority[priority][i],
                             label: `Page ${i + 1}`
@@ -1711,7 +1737,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     // Generate sequential IDs based on base item ID
                     console.log(`[Florence] Generating sequential page IDs for ${totalPages} pages`);
                     const baseId = parseInt(itemId);
-                    for (let i = 0; i < Math.min(totalPages, 50); i++) {
+                    for (let i = 0; i < totalPages; i++) {
                         // Try different patterns commonly used by ContentDM
                         const pageId = (baseId + i).toString();
                         images.push({
@@ -1851,7 +1877,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         // Process IIIF v2 manifest
         if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
             const canvases = manifest.sequences[0].canvases;
-            const maxPages = Math.min(canvases.length, 50);
+            const maxPages = canvases.length;
             
             for (let i = 0; i < maxPages; i++) {
                 const canvas = canvases[i];
@@ -1904,7 +1930,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         // Process IIIF v2 manifest
         if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
             const canvases = manifest.sequences[0].canvases;
-            const maxPages = Math.min(canvases.length, 50);
+            const maxPages = canvases.length;
             
             for (let i = 0; i < maxPages; i++) {
                 const canvas = canvases[i];
@@ -1989,7 +2015,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         // Handle IIIF v3
         if (manifest.items) {
-            const maxPages = Math.min(manifest.items.length, 50);
+            const maxPages = manifest.items.length;
             for (let i = 0; i < maxPages; i++) {
                 const item = manifest.items[i];
                 if (item.items && item.items[0] && item.items[0].items && item.items[0].items[0]) {
@@ -2015,7 +2041,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         // Handle IIIF v2
         else if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
             const canvases = manifest.sequences[0].canvases;
-            const maxPages = Math.min(canvases.length, 50);
+            const maxPages = canvases.length;
             
             for (let i = 0; i < maxPages; i++) {
                 const canvas = canvases[i];
@@ -2658,7 +2684,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
             const canvases = manifest.sequences[0].canvases;
-            const maxPages = Math.min(canvases.length, 50);
+            const maxPages = canvases.length;
             
             for (let i = 0; i < maxPages; i++) {
                 const canvas = canvases[i];
@@ -2716,7 +2742,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             console.log(`[Bodleian] Processing ${canvases.length} pages from IIIF manifest`);
             
             // Process all canvases (Bodleian manuscripts can be quite long)
-            const maxPages = Math.min(canvases.length, 200); // Reasonable limit
+            const maxPages = canvases.length; // Reasonable limit
             
             for (let i = 0; i < maxPages; i++) {
                 const canvas = canvases[i];
@@ -2745,7 +2771,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         else if (manifest.items) {
             console.log(`[Bodleian] Processing ${manifest.items.length} items from IIIF v3 manifest`);
             
-            const maxPages = Math.min(manifest.items.length, 200);
+            const maxPages = manifest.items.length;
             
             for (let i = 0; i < maxPages; i++) {
                 const item = manifest.items[i];
