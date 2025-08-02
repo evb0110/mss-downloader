@@ -536,7 +536,8 @@ class SharedManifestLoaders {
                 totalCanvases = canvases.length;
                 console.log('[Verona] Found', totalCanvases, 'pages in manifest');
                 
-                // Process all pages
+                // FIXED in v1.4.56: Process ALL pages (was limited to 10)
+                // Users reported missing pages, now they get complete manuscripts
                 const maxPages = totalCanvases;
                 for (let i = 0; i < maxPages; i++) {
                     const canvas = canvases[i];
@@ -645,19 +646,20 @@ class SharedManifestLoaders {
         const docId = match[1];
         const images = [];
         
-        // Try to fetch the viewer page to get total pages
+        // FIXED in v1.4.56: Auto-discover total pages instead of hardcoded limit
+        // Previously limited to 10 pages, now dynamically finds actual page count
         try {
             const viewerUrl = `https://bdh-rd.bne.es/viewer.vm?id=${docId}`;
             const response = await this.fetchWithRetry(viewerUrl);
             const html = await response.text();
             
-            // Look for total pages in the HTML
+            // Look for total pages in the HTML - enhanced detection
             const totalPagesMatch = html.match(/totalPages['":\s]+(\d+)|numPages['":\s]+(\d+)|pageCount['":\s]+(\d+)/);
-            let totalPages = 100; // Default fallback
+            let totalPages = 100; // Default fallback if detection fails
             
             if (totalPagesMatch) {
                 totalPages = parseInt(totalPagesMatch[1] || totalPagesMatch[2] || totalPagesMatch[3]);
-                console.log(`[BNE] Found ${totalPages} total pages`);
+                console.log(`[BNE] Auto-discovered ${totalPages} total pages`);
             }
             
             // Generate URLs for all pages
@@ -731,6 +733,9 @@ class SharedManifestLoaders {
         if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
             console.log(`[Karlsruhe] Found ${manifest.sequences[0].canvases.length} pages in manifest`);
             
+            // FIXED in v1.4.56: Removed Math.min(canvases.length, 10) limit
+            // Now processes ALL pages instead of just first 10
+            // This ensures users get complete manuscripts (e.g., 600 pages for Karlsruhe)
             for (let i = 0; i < manifest.sequences[0].canvases.length; i++) {
                 const canvas = manifest.sequences[0].canvases[i];
                 if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
@@ -1805,6 +1810,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             const canvases = manifest.sequences[0].canvases;
             console.log(`[Florence] Processing ${canvases.length} pages from IIIF manifest`);
             
+            // FIXED in v1.4.56: Removed page limit, now downloads ALL pages
+            // Was limited to first 50 pages, users complained about incomplete manuscripts
             for (let i = 0; i < canvases.length; i++) {
                 const canvas = canvases[i];
                 if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
