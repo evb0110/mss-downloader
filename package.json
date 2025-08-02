@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.59",
+  "version": "1.4.60",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "PAGE LIMIT FIX: Removed artificial 10/50 page limits - now downloads ALL manuscript pages",
-    "KARLSRUHE: Fixed to load all 431 pages instead of just 10",
-    "BNE: Enhanced with automatic page count discovery for complete manuscripts",
-    "ALL LIBRARIES: Removed page restrictions for Morgan, Florence, Grenoble, Manchester, Toronto, Vatican, and others"
+    "CACHE FIX: Clear Cache now properly clears ALL caches including ElectronImageCache - fixes issue where old version cache persisted",
+    "SPLIT SIZE FIX: PDF splitting now respects file size settings (30MB, 100MB, etc) instead of hardcoded 1000-page limit",
+    "DOWNLOAD LOOP FIX: Fixed 0-based vs 1-based index comparison that could limit downloads",
+    "KARLSRUHE: Confirmed working with all 600+ pages after cache clearing"
   ],
   "main": "dist/main/main.js",
   "scripts": {

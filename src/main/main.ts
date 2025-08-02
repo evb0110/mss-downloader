@@ -610,10 +610,31 @@ ipcMain.handle('clear-all-caches', async () => {
   }
   
   try {
+    // Clear the queue's caches (manifest cache, temp files)
     await enhancedDownloadQueue.clearAllCaches();
+    
+    // Also clear the ElectronImageCache
+    if (imageCache) {
+      await imageCache.clearCache();
+      console.log('Cleared ElectronImageCache');
+    }
+    
     return { success: true, message: 'All caches cleared successfully' };
   } catch (error: any) {
     throw new Error(`Failed to clear all caches: ${error.message}`);
+  }
+});
+
+ipcMain.handle('get-cache-stats', async () => {
+  if (!imageCache) {
+    throw new Error('Image cache not initialized');
+  }
+  
+  try {
+    const stats = await imageCache.getCacheStats();
+    return stats;
+  } catch (error: any) {
+    throw new Error(`Failed to get cache stats: ${error.message}`);
   }
 });
 

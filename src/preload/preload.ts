@@ -109,6 +109,8 @@ const api = {
   cleanupIndexedDBCache: () => ipcRenderer.invoke('cleanup-indexeddb-cache'),
   clearManifestCache: () => ipcRenderer.invoke('clear-manifest-cache'),
   clearAllCaches: () => ipcRenderer.invoke('clear-all-caches'),
+  clearCache: () => ipcRenderer.invoke('clear-all-caches'), // Alias for backward compatibility
+  getCacheStats: () => ipcRenderer.invoke('get-cache-stats'),
 
   // Downloads folder management
   openDownloadsFolder: () => ipcRenderer.invoke('open-downloads-folder'),

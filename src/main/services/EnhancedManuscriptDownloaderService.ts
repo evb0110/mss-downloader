@@ -3827,9 +3827,25 @@ export class EnhancedManuscriptDownloaderService {
             const actualEndPage = Math.min(manifest.totalPages, endPage || manifest.totalPages);
             const totalPagesToDownload = actualEndPage - actualStartPage + 1;
             
-            // Determine if we need to split the PDF (like barsky.club)
-            const shouldSplit = totalPagesToDownload > 1000;
-            const maxPagesPerPart = 250;
+            // Apply library-specific optimization settings early to get split threshold
+            const globalMaxConcurrent = maxConcurrent || configService.get('maxConcurrentDownloads');
+            const library = manifest.library as TLibrary;
+            const globalAutoSplitThresholdMB = Math.round(configService.get('autoSplitThreshold') / (1024 * 1024)); // Convert bytes to MB
+            const optimizations = LibraryOptimizationService.applyOptimizations(
+                globalAutoSplitThresholdMB,
+                globalMaxConcurrent,
+                library
+            );
+            
+            // Use library-specific or global split threshold
+            const autoSplitThresholdMB = optimizations.autoSplitThresholdMB;
+            
+            // Estimate average page size (conservative estimate: 500KB per page for high-quality images)
+            const estimatedTotalSizeMB = (totalPagesToDownload * 0.5);
+            
+            // Determine if we need to split the PDF based on estimated size
+            const shouldSplit = estimatedTotalSizeMB > autoSplitThresholdMB;
+            const maxPagesPerPart = Math.ceil((autoSplitThresholdMB * 2) / 1); // Pages per part based on threshold (assuming ~0.5MB per page)
             
             let filename: string;
             let filepath: string;
@@ -3884,15 +3900,7 @@ export class EnhancedManuscriptDownloaderService {
                 });
             };
             
-            // Apply library-specific optimization settings for concurrent downloads
-            const globalMaxConcurrent = maxConcurrent || configService.get('maxConcurrentDownloads');
-            const library = manifest.library as TLibrary;
-            const autoSplitThresholdMB = Math.round(configService.get('autoSplitThreshold') / (1024 * 1024)); // Convert bytes to MB
-            const optimizations = LibraryOptimizationService.applyOptimizations(
-                autoSplitThresholdMB,
-                globalMaxConcurrent,
-                library
-            );
+            // Use the already calculated optimizations
             const actualMaxConcurrent = optimizations.maxConcurrentDownloads;
             
             // Log optimization info for debugging
@@ -4092,7 +4100,7 @@ export class EnhancedManuscriptDownloaderService {
             };
             
             await Promise.all(semaphore.map(async () => {
-                while (nextPageIndex < actualEndPage) {
+                while (nextPageIndex <= actualEndPage - 1) { // Fix: actualEndPage is 1-based, nextPageIndex is 0-based
                     const idx = nextPageIndex++;
                     await downloadPage(idx);
                 }
