@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.61",
+  "version": "1.4.62",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "AUTO-WIPE ON UPGRADE: All caches and data are now automatically wiped when version changes - ensures clean state",
-    "ENHANCED CLEAR CACHE: Clear Cache button now performs complete data wipe using VersionMigrationService",
-    "MANDATORY CLEAN STATE: Prevents any corruption or issues from old cached data between versions",
-    "All fixes from 1.4.60 included: cache clearing, split size respect, download loop fix"
+    "MUNICH LIBRARY ADDED: Full support for Munich Digital Collections (Digitale Sammlungen) - download Bavarian State Library manuscripts",
+    "MORGAN LIBRARY FIX: Fixed redirect handling and improved error messages for Morgan Library manuscripts",
+    "FLORENCE LIBRARY FIX: Added 30-second timeout protection to prevent infinite loops during compound object detection",
+    "ENHANCED ERROR HANDLING: Better error messages for debugging connection issues across all libraries"
   ],
   "main": "dist/main/main.js",
   "scripts": {

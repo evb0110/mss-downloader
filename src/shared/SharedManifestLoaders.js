@@ -1583,6 +1583,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 return await this.getGrenobleManifest(url);
             case 'manchester':
                 return await this.getManchesterManifest(url);
+            case 'munich':
+                return await this.getMunichManifest(url);
             case 'toronto':
                 return await this.getTorontoManifest(url);
             case 'vatican':
@@ -1659,13 +1661,23 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     if (iiifResult.images.length === 1) {
                         console.log('[Florence] Only 1 image in IIIF manifest, checking for compound object...');
                         try {
-                            const compoundResult = await this.detectFlorenceCompoundObject(itemId);
+                            // Add timeout wrapper to prevent infinite loops (GitHub issue #5)
+                            const timeoutPromise = new Promise((_, reject) => 
+                                setTimeout(() => reject(new Error('Compound object detection timeout after 30s')), 30000)
+                            );
+                            
+                            const compoundResult = await Promise.race([
+                                this.detectFlorenceCompoundObject(itemId),
+                                timeoutPromise
+                            ]);
+                            
                             if (compoundResult.images.length > 1) {
                                 console.log(`[Florence] Found compound object with ${compoundResult.images.length} pages`);
                                 return compoundResult;
                             }
                         } catch (compoundError) {
                             console.log('[Florence] Compound object detection failed:', compoundError.message);
+                            // Continue with IIIF result even if compound detection fails
                         }
                     }
                     
@@ -1962,6 +1974,77 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         }
         
         return { images };
+    }
+
+    /**
+     * Munich Digital Collections (Digitale Sammlungen)
+     * Standard IIIF v2 implementation with reliable image service
+     */
+    async getMunichManifest(url) {
+        console.log('[Munich] Processing URL:', url);
+        
+        // Extract manuscript ID from viewer URL
+        // Format: https://www.digitale-sammlungen.de/en/view/bsb00050763?page=1
+        const match = url.match(/view\/([a-z0-9]+)/i);
+        if (!match) {
+            throw new Error('Invalid Munich Digital Collections URL. Expected format: https://www.digitale-sammlungen.de/en/view/[manuscript-id]');
+        }
+        
+        const manuscriptId = match[1];
+        const manifestUrl = `https://api.digitale-sammlungen.de/iiif/presentation/v2/${manuscriptId}/manifest`;
+        console.log('[Munich] IIIF manifest URL:', manifestUrl);
+        
+        // Fetch IIIF manifest
+        const response = await this.fetchWithRetry(manifestUrl);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch Munich manifest: ${response.status}`);
+        }
+        
+        const manifest = await response.json();
+        const images = [];
+        
+        // Process IIIF v2 manifest
+        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            const canvases = manifest.sequences[0].canvases;
+            const maxPages = canvases.length;
+            console.log(`[Munich] Found ${maxPages} pages in manifest`);
+            
+            for (let i = 0; i < maxPages; i++) {
+                const canvas = canvases[i];
+                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                    const imageResource = canvas.images[0].resource;
+                    const service = imageResource.service;
+                    const imageId = service?.['@id'] || service?.id || imageResource['@id'];
+                    
+                    if (imageId) {
+                        // Use /full/max/ for highest quality available
+                        const imageUrl = imageId.includes('/iiif/image/') ? 
+                            `${imageId}/full/max/0/default.jpg` : 
+                            imageId;
+                        
+                        images.push({
+                            url: imageUrl,
+                            label: canvas.label || `Page ${i + 1}`
+                        });
+                    }
+                }
+            }
+        }
+        
+        if (images.length === 0) {
+            throw new Error('No images found in Munich manifest');
+        }
+        
+        return {
+            type: 'iiif',
+            manifest: manifest,
+            images: images,
+            metadata: {
+                title: manifest.label || 'Munich Digital Collections Manuscript',
+                library: 'Munich Digital Collections',
+                iiifVersion: '2'
+            }
+        };
     }
 
     /**
@@ -2366,6 +2449,10 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             
             console.log(`[Florence] Generating URLs from ${startId} for up to ${maxPages} pages`);
             
+            // TIMEOUT FIX: Limit compound object detection to prevent infinite loops
+            const detectionTimeout = 30000; // 30 seconds max for detection
+            const detectionStartTime = Date.now();
+            
             // Test a few URLs to find the actual range
             const https = eval("require('https')"); 
             let validStart = -1;
@@ -2373,6 +2460,12 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             
             // Test first few IDs to find valid range
             for (let testId = startId; testId < startId + 50; testId++) {
+                // Check if we've exceeded the timeout
+                if (Date.now() - detectionStartTime > detectionTimeout) {
+                    console.log('[Florence] Compound object detection timeout - returning current results');
+                    break;
+                }
+                
                 const testUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${testId}/full/max/0/default.jpg`;
                 
                 try {
@@ -2407,6 +2500,12 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 
                 // Generate URLs for the valid range
                 for (let id = validStart; id <= validEnd; id++) {
+                    // Check timeout again during URL generation
+                    if (Date.now() - detectionStartTime > detectionTimeout) {
+                        console.log('[Florence] URL generation timeout - returning partial results');
+                        break;
+                    }
+                    
                     const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${id}/full/max/0/default.jpg`;
                     images.push({
                         url: imageUrl,

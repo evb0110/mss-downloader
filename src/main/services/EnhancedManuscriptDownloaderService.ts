@@ -197,6 +197,11 @@ export class EnhancedManuscriptDownloaderService {
             description: 'University of Manchester John Rylands Library medieval manuscripts via IIIF v2.0',
         },
         {
+            name: 'Munich Digital Collections (Digitale Sammlungen)',
+            example: 'https://www.digitale-sammlungen.de/en/view/bsb00050763?page=1',
+            description: 'Bavarian State Library digital manuscripts via IIIF v2.0 with high-resolution support',
+        },
+        {
             name: 'Manuscripta.se',
             example: 'https://manuscripta.se/ms/101124',
             description: 'Swedish digital catalogue of medieval and early modern manuscripts via IIIF',
@@ -479,6 +484,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('pagella.bm-grenoble.fr')) return 'grenoble';
         if ((url.includes('i3f.vls.io') && url.includes('blb-karlsruhe.de')) || url.includes('digital.blb-karlsruhe.de')) return 'karlsruhe';
         if (url.includes('digitalcollections.manchester.ac.uk')) return 'manchester';
+        if (url.includes('digitale-sammlungen.de')) return 'munich';
         if (url.includes('e-codices.unifr.ch') || url.includes('e-codices.ch')) return 'unifr';
         if (url.includes('e-manuscripta.ch')) return 'e_manuscripta';
         if (url.includes('digi.vatlib.it')) return 'vatlib';
@@ -1220,6 +1226,9 @@ export class EnhancedManuscriptDownloaderService {
                 case 'manchester':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('manchester', originalUrl);
                     break;
+                case 'munich':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('munich', originalUrl);
+                    break;
                 case 'unifr':
                     manifest = await this.loadUnifrManifest(originalUrl);
                     break;
@@ -1490,20 +1499,33 @@ export class EnhancedManuscriptDownloaderService {
             
             // Fetch the page to extract image data
             // FIXED: Handle redirect from /thumbs to main collection page
-            let pageResponse = await this.fetchDirect(pageUrl);
-            
-            // If we get a redirect (301/302), follow it
-            if (pageResponse.status === 301 || pageResponse.status === 302) {
-                const redirectUrl = pageResponse.headers.get('location');
-                if (redirectUrl) {
-                    console.log(`Morgan: Following redirect from ${pageUrl} to ${redirectUrl}`);
-                    pageUrl = redirectUrl.startsWith('http') ? redirectUrl : `${baseUrl}${redirectUrl}`;
-                    pageResponse = await this.fetchDirect(pageUrl);
+            let pageResponse: Response;
+            try {
+                pageResponse = await this.fetchDirect(pageUrl, {
+                    redirect: 'manual' // Handle redirects manually to debug
+                });
+                
+                // If we get a redirect (301/302), follow it
+                if (pageResponse.status === 301 || pageResponse.status === 302) {
+                    const redirectUrl = pageResponse.headers.get('location');
+                    if (redirectUrl) {
+                        console.log(`Morgan: Following redirect from ${pageUrl} to ${redirectUrl}`);
+                        const fullRedirectUrl = redirectUrl.startsWith('http') ? redirectUrl : `${baseUrl}${redirectUrl}`;
+                        pageResponse = await this.fetchDirect(fullRedirectUrl, {
+                            redirect: 'follow'
+                        });
+                        pageUrl = fullRedirectUrl;
+                    } else {
+                        throw new Error(`Redirect response but no location header from ${pageUrl}`);
+                    }
                 }
+            } catch (error: any) {
+                // Enhanced error message for debugging
+                throw new Error(`Failed to fetch Morgan page from ${pageUrl}: ${error.message}`);
             }
             
             if (!pageResponse.ok) {
-                throw new Error(`Failed to fetch Morgan page: ${pageResponse.status}`);
+                throw new Error(`Failed to fetch Morgan page: ${pageResponse.status} for URL: ${pageUrl}`);
             }
             
             const pageContent = await pageResponse.text();
@@ -2386,6 +2408,95 @@ export class EnhancedManuscriptDownloaderService {
 
 
 
+    /**
+     * Load Munich Digital Collections manifest (IIIF v2.0)
+     */
+    async loadMunichManifest(munichUrl: string): Promise<ManuscriptManifest> {
+        try {
+            // Extract manuscript ID from URL
+            // URL format: https://www.digitale-sammlungen.de/en/view/{MANUSCRIPT_ID}?page=1
+            const urlMatch = munichUrl.match(/view\/([a-z0-9]+)/i);
+            if (!urlMatch) {
+                throw new Error('Could not extract manuscript ID from Munich URL');
+            }
+            
+            const manuscriptId = urlMatch[1];
+            let displayName = `Munich Digital Collections - ${manuscriptId}`;
+            
+            // Construct IIIF manifest URL
+            const manifestUrl = `https://api.digitale-sammlungen.de/iiif/presentation/v2/${manuscriptId}/manifest`;
+            
+            // Load IIIF manifest
+            const response = await this.fetchDirect(manifestUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to load manifest: HTTP ${response.status}`);
+            }
+            
+            const manifest = await response.json();
+            
+            // Extract metadata from IIIF v2.0 manifest
+            if (manifest.label) {
+                if (typeof manifest.label === 'string') {
+                    displayName = manifest.label;
+                } else if (Array.isArray(manifest.label)) {
+                    displayName = manifest.label[0]?.['@value'] || manifest.label[0] || displayName;
+                } else if (manifest.label['@value']) {
+                    displayName = manifest.label['@value'];
+                }
+            }
+            
+            // Get page count from sequences/canvases (IIIF v2.0)
+            let totalPages = 0;
+            const pageLinks: string[] = [];
+            
+            if (manifest.sequences && manifest.sequences.length > 0) {
+                const sequence = manifest.sequences[0];
+                if (sequence.canvases && Array.isArray(sequence.canvases)) {
+                    totalPages = sequence.canvases.length;
+                    
+                    // Extract image URLs with maximum resolution
+                    for (const canvas of sequence.canvases) {
+                        if (canvas.images && canvas.images.length > 0) {
+                            const image = canvas.images[0];
+                            if (image.resource) {
+                                const service = image.resource.service;
+                                const imageId = service?.['@id'] || service?.id || image.resource['@id'];
+                                
+                                if (imageId) {
+                                    // Munich IIIF service supports /full/max/ for highest quality
+                                    const imageUrl = imageId.includes('/iiif/image/') ? 
+                                        `${imageId}/full/max/0/default.jpg` : 
+                                        imageId;
+                                    pageLinks.push(imageUrl);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (pageLinks.length === 0) {
+                throw new Error('No images found in Munich manifest');
+            }
+            
+            const munichManifest: ManuscriptManifest = {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'munich' as const,
+                displayName,
+                originalUrl: munichUrl,
+            };
+            
+            // Cache the manifest
+            this.manifestCache.set(munichUrl, munichManifest).catch(console.warn);
+            
+            return munichManifest;
+            
+        } catch (error: any) {
+            throw new Error(`Failed to load Munich manuscript: ${(error as Error).message}`);
+        }
+    }
+    
     /**
      * Load IIIF manifest (for Vatican, Durham, UGent, British Library)
      */
