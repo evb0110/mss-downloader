@@ -3891,6 +3891,7 @@ export class EnhancedManuscriptDownloaderService {
         const downloadStartTime = Date.now();
         let manifest: ManuscriptManifest | undefined;
         let filepath: string | undefined;
+        let validImagePaths: string[] = [];
         
         try {
             // Load manifest
@@ -4245,7 +4246,7 @@ export class EnhancedManuscriptDownloaderService {
                 completeImagePaths[i] = imagePaths[actualPageIndex] || null;
             }
             
-            const validImagePaths = imagePaths.filter(Boolean);
+            validImagePaths = imagePaths.filter(Boolean);
             
             if (validImagePaths.length === 0) {
                 throw new Error('No images were successfully downloaded');

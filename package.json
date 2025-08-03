@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.62",
+  "version": "1.4.63",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "MUNICH LIBRARY ADDED: Full support for Munich Digital Collections (Digitale Sammlungen) - download Bavarian State Library manuscripts",
-    "MORGAN LIBRARY FIX: Fixed redirect handling and improved error messages for Morgan Library manuscripts",
-    "FLORENCE LIBRARY FIX: Added 30-second timeout protection to prevent infinite loops during compound object detection",
-    "ENHANCED ERROR HANDLING: Better error messages for debugging connection issues across all libraries"
+    "MUNICH LIBRARY FIX: Fixed 'validImagePaths is not defined' error - variable scope issue resolved for error handling",
+    "GITHUB ISSUES ADDRESSED: Responded to all 12 open issues with fixes and recommendations",
+    "NETWORK ISSUES CLARIFIED: Added guidance for VPN requirements (Grenoble, Verona) and DNS/timeout issues",
+    "NORWEGIAN LIBRARY IDENTIFIED: Norwegian National Library (nb.no) identified as potential future addition"
   ],
   "main": "dist/main/main.js",
   "scripts": {
@@ -35,7 +35,7 @@
     "dist:win:arm:clean": "node scripts/build-arm64-clean.cjs",
     "dist:mac": "npm run build && electron-builder --mac",
     "dist:linux": "npm run build && electron-builder --linux",
-    "lint": "eslint src --ext .vue,.js,.ts",
+    "lint": "eslint src --ext .vue,.js,.ts --max-warnings 0",
     "lint:fix": "eslint src --ext .vue,.js,.ts --fix",
     "test:e2e": "npm run build && npx playwright test",
     "test:e2e:start": ".devkit/tools/start-tests.sh",
