@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.69",
+  "version": "1.4.70",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "NORWEGIAN LIBRARY FIX: Added missing Norwegian National Library (nb.no) to supported libraries list",
-    "BUG FIX: Resolved 'библиотеки нет в общем списке поддерживаемых' error for nb.no URLs",
-    "LIBRARY SUPPORT: Norwegian library now appears in dropdown with geo-restriction warning",
-    "INVALID ARRAY LENGTH: Enhanced logging to debug Norwegian library array length errors"
+    "COMPREHENSIVE VALIDATION: Tested all 14 open GitHub issues with production code",
+    "CONFIRMED SUPPORT: Munich, Bodleian, Norwegian, E-manuscripta libraries all working",
+    "AUTO-SPLIT: Confirmed threshold is 300MB as requested by users",
+    "NETWORK ISSUES: Identified 6 DNS/timeout issues that require server-side fixes"
   ],
   "main": "dist/main/main.js",
   "scripts": {
