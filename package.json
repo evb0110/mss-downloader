@@ -1,6 +1,6 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.70",
+  "version": "1.4.71",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
     "COMPREHENSIVE VALIDATION: Tested all 14 open GitHub issues with production code",
