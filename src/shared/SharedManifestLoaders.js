@@ -3173,8 +3173,11 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             for (const blockId of blockDiscovery.blocks) {
                 // Each block typically has 11 pages
                 for (let pageInBlock = 1; pageInBlock <= 11; pageInBlock++) {
+                    // Generate actual download URL for e-manuscripta
+                    // Calculate the actual page ID: blockId + (pageInBlock - 1)
+                    const pageId = blockId + (pageInBlock - 1);
                     images.push({
-                        url: `e-manuscripta://${library}/${blockId}/page/${pageInBlock}`,
+                        url: `https://www.e-manuscripta.ch/${library}/download/webcache/2000/${pageId}`,
                         label: `Page ${globalPageNum}`,
                         blockId: blockId,
                         pageInBlock: pageInBlock
@@ -3185,10 +3188,10 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         } else {
             // Fallback to original method for single-block manuscripts
             for (let i = 1; i <= Math.min(totalPages, 500); i++) { // Reasonable limit
-                // Use a special URL format that the main downloader will recognize
-                // and convert to actual downloadable images
+                // Generate actual download URL
+                const pageId = parseInt(manuscriptId) + (i - 1);
                 images.push({
-                    url: `e-manuscripta://${library}/${manuscriptId}/page/${i}`,
+                    url: `https://www.e-manuscripta.ch/${library}/download/webcache/2000/${pageId}`,
                     label: `Page ${i}`
                 });
             }
