@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.66",
+  "version": "1.4.67",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "AUTO-SPLIT FIX: Reduced default threshold from 800MB to 300MB to prevent 'Invalid array length' errors",
-    "MUNICH LIBRARY: Improved title formatting to show 'BSB Clm [number]' for manuscript identification",
-    "GITHUB ISSUES: Addressed all 14 open issues - fixed array errors, verified library support",
-    "PERFORMANCE: Better handling of large manuscripts (500+ pages) with optimized memory usage"
+    "COMPREHENSIVE LOGGING: Export detailed logs for all failures - timeouts, network errors, JS errors",
+    "LOG EXPORT UI: New 'Export Logs' feature with JSON/readable formats and compression options",
+    "ERROR TRACKING: Global handlers capture all unhandled errors across main/renderer/worker processes",
+    "DEBUGGING: Users can now attach exhaustive logs to GitHub issues for faster resolution"
   ],
   "main": "dist/main/main.js",
   "scripts": {
