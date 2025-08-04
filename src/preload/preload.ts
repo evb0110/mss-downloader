@@ -180,6 +180,24 @@ const api = {
   
   updateRenderingProgress: (stage: string, message: string, progress?: number) => 
     ipcRenderer.invoke('pdf-rendering-progress', { stage, message, progress }),
+  
+  // Logging methods
+  logRendererError: (error: {
+    message: string;
+    filename?: string;
+    lineno?: number;
+    colno?: number;
+    stack?: string;
+    type?: string;
+  }) => ipcRenderer.invoke('log-renderer-error', error),
+  
+  exportLogs: (options?: {
+    format?: 'json' | 'readable';
+    includeDebug?: boolean;
+    compress?: boolean;
+  }) => ipcRenderer.invoke('export-logs', options),
+  
+  getRecentLogs: (count?: number) => ipcRenderer.invoke('get-recent-logs', count),
 };
 
 try {

@@ -13,6 +13,14 @@ const GC_INTERVAL = 3;
 
 const isWindows = typeof navigator !== 'undefined' && /Windows/.test(navigator.userAgent);
 
+// Helper function to send log messages to main process
+function log(entry: LogEntry): void {
+    postMessage({
+        type: 'log',
+        data: entry
+    } as WorkerResponse);
+}
+
 // Unlimited resolution for all platforms
 // const WINDOWS_MAX_CANVAS_WIDTH = 1200; // Removed - using unlimited resolution
 // const WINDOWS_MAX_CANVAS_HEIGHT = 1200; // Removed - using unlimited resolution
@@ -27,8 +35,19 @@ interface WorkerMessage {
 }
 
 interface WorkerResponse {
-    type: 'ready' | 'progress' | 'complete' | 'error' | 'chunkComplete' | 'pageProcessed' | 'imageProcessingFailed' | 'assemblyComplete';
+    type: 'ready' | 'progress' | 'complete' | 'error' | 'chunkComplete' | 'pageProcessed' | 'imageProcessingFailed' | 'assemblyComplete' | 'log';
     data?: any;
+}
+
+interface LogEntry {
+    level: 'debug' | 'info' | 'warn' | 'error';
+    message: string;
+    details?: any;
+    error?: {
+        message: string;
+        stack?: string;
+        code?: string;
+    };
 }
 
 interface ProcessedPageData {
@@ -74,6 +93,16 @@ self.onmessage = async function(e: MessageEvent<WorkerMessage>) {
                 break;
         }
     } catch (error: any) {
+        log({
+            level: 'error',
+            message: `Worker error processing ${type} message`,
+            error: {
+                message: error.message,
+                stack: error.stack,
+                code: error.code
+            },
+            details: { messageType: type, data }
+        });
         postMessage({ 
             type: 'error', 
             data: { message: error.message },
@@ -84,6 +113,16 @@ self.onmessage = async function(e: MessageEvent<WorkerMessage>) {
 function initializePDF(): void {
     try {
         console.log('Initializing new PDF document...');
+        log({
+            level: 'info',
+            message: 'Initializing PDF document',
+            details: {
+                userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A',
+                platform: typeof navigator !== 'undefined' ? navigator.platform : 'N/A',
+                isWindows,
+                windowsOptimizations: isWindows
+            }
+        });
         
         if (typeof navigator !== 'undefined') {
             console.log('User Agent:', navigator.userAgent);
@@ -101,6 +140,14 @@ function initializePDF(): void {
         console.log('PDF initialized successfully');
     } catch (error: any) {
         console.error('Failed to initialize PDF:', error);
+        log({
+            level: 'error',
+            message: 'Failed to initialize PDF',
+            error: {
+                message: error.message,
+                stack: error.stack
+            }
+        });
         throw new Error(`Failed to initialize PDF: ${error.message}`);
     }
 }
@@ -114,7 +161,18 @@ async function addPageToPDF(imageBlob: Blob, pageNumber: number, totalPages: num
         console.log(`Processing page ${pageNumber}/${totalPages}`);
 
         if (imageBlob.size > (isWindows ? WINDOWS_MAX_IMAGE_SIZE_MB : 100) * 1024 * 1024) {
-            console.warn(`Image ${pageNumber} is very large (${Math.round(imageBlob.size / 1024 / 1024)}MB), skipping to prevent memory issues`);
+            const sizeMB = Math.round(imageBlob.size / 1024 / 1024);
+            console.warn(`Image ${pageNumber} is very large (${sizeMB}MB), skipping to prevent memory issues`);
+            log({
+                level: 'warn',
+                message: `Skipping large image to prevent memory issues`,
+                details: {
+                    pageNumber,
+                    imageSizeMB: sizeMB,
+                    maxSizeMB: isWindows ? WINDOWS_MAX_IMAGE_SIZE_MB : 100,
+                    isWindows
+                }
+            });
             postMessage({
                 type: 'imageProcessingFailed',
                 data: { pageNumber, originalImageBlob: imageBlob }
@@ -179,6 +237,18 @@ async function addPageToPDF(imageBlob: Blob, pageNumber: number, totalPages: num
         
     } catch (error: any) {
         console.error(`Failed to process page ${pageNumber}:`, error);
+        log({
+            level: 'error',
+            message: `Failed to process page ${pageNumber}`,
+            error: {
+                message: error.message,
+                stack: error.stack
+            },
+            details: {
+                pageNumber,
+                imageBlobSize: imageBlob.size
+            }
+        });
         postMessage({
             type: 'imageProcessingFailed',
             data: { pageNumber, originalImageBlob: imageBlob }

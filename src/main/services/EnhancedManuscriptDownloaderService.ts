@@ -12,6 +12,7 @@ import { TileEngineService } from './tile-engine/TileEngineService';
 import { DirectTileProcessor } from './DirectTileProcessor';
 import { SharedManifestAdapter } from './SharedManifestAdapter';
 import { DownloadLogger } from './DownloadLogger';
+import { comprehensiveLogger } from './ComprehensiveLogger';
 import type { ManuscriptManifest, LibraryInfo } from '../../shared/types';
 import type { TLibrary } from '../../shared/queueTypes';
 import * as https from 'https';
@@ -56,8 +57,27 @@ export class EnhancedManuscriptDownloaderService {
         try {
             await this.manifestCache.clearDomain('cdm21059.contentdm.oclc.org');
             console.log('✅ Florence cache cleared on startup - users will access new ultra-simple implementation');
+            comprehensiveLogger.log({
+                level: 'info',
+                category: 'system',
+                library: 'Florence',
+                details: {
+                    message: 'Florence cache cleared on startup',
+                    reason: 'Ensure users get ultra-simple implementation'
+                }
+            });
         } catch (error) {
             console.warn('⚠️ Failed to clear Florence cache on startup:', (error as Error).message);
+            comprehensiveLogger.log({
+                level: 'error',
+                category: 'system',
+                library: 'Florence',
+                errorMessage: (error as Error).message,
+                errorStack: (error as Error).stack,
+                details: {
+                    message: 'Failed to clear Florence cache on startup'
+                }
+            });
         }
     }
 
@@ -70,8 +90,28 @@ export class EnhancedManuscriptDownloaderService {
             await this.manifestCache.clearDomain('unipub.uni-graz.at');
             await this.manifestCache.clearDomain('gams.uni-graz.at');
             console.log('✅ Graz cache cleared on startup - resolving persistent user issues');
+            comprehensiveLogger.log({
+                level: 'info',
+                category: 'system',
+                library: 'Graz',
+                details: {
+                    message: 'Graz cache cleared on startup',
+                    domains: ['unipub.uni-graz.at', 'gams.uni-graz.at'],
+                    reason: 'Resolve persistent user-reported issues'
+                }
+            });
         } catch (error) {
             console.warn('⚠️ Failed to clear Graz cache on startup:', (error as Error).message);
+            comprehensiveLogger.log({
+                level: 'error',
+                category: 'system',
+                library: 'Graz',
+                errorMessage: (error as Error).message,
+                errorStack: (error as Error).stack,
+                details: {
+                    message: 'Failed to clear Graz cache on startup'
+                }
+            });
         }
     }
 
@@ -942,18 +982,53 @@ export class EnhancedManuscriptDownloaderService {
         const dns = await import('dns').then(m => m.promises);
         
         const urlObj = new URL(url);
+        const library = this.detectLibraryFromUrl(url);
+        const startTime = Date.now();
+        
+        comprehensiveLogger.logNetworkRequest(url, {
+            method: options.method || 'GET',
+            headers: options.headers,
+            library,
+            timeout: options.timeout
+        });
         
         // Special handling for Graz to resolve ETIMEDOUT issues
         if (url.includes('unipub.uni-graz.at')) {
+            const dnsStartTime = Date.now();
             try {
                 // Pre-resolve DNS to avoid resolution timeouts
                 console.log(`[Graz] Pre-resolving DNS for ${urlObj.hostname}`);
                 const addresses = await dns.resolve4(urlObj.hostname);
                 if (addresses.length > 0) {
                     console.log(`[Graz] Resolved to ${addresses[0]}`);
+                    comprehensiveLogger.log({
+                        level: 'debug',
+                        category: 'network',
+                        library: 'Graz',
+                        url,
+                        dnsLookupTime: Date.now() - dnsStartTime,
+                        details: {
+                            message: 'DNS pre-resolution successful',
+                            hostname: urlObj.hostname,
+                            addresses
+                        }
+                    });
                 }
-            } catch (dnsError) {
+            } catch (dnsError: any) {
                 console.warn(`[Graz] DNS resolution failed, proceeding anyway:`, dnsError);
+                comprehensiveLogger.log({
+                    level: 'warn',
+                    category: 'network',
+                    library: 'Graz',
+                    url,
+                    dnsLookupTime: Date.now() - dnsStartTime,
+                    errorCode: dnsError.code,
+                    errorMessage: dnsError.message,
+                    details: {
+                        message: 'DNS pre-resolution failed, proceeding anyway',
+                        hostname: urlObj.hostname
+                    }
+                });
             }
         }
         
@@ -1069,7 +1144,22 @@ export class EnhancedManuscriptDownloaderService {
                         const timeSinceLastData = Date.now() - lastDataTime;
                         if (timeSinceLastData > STALL_TIMEOUT) {
                             req.destroy();
-                            reject(new Error(`Download stalled - no data received for ${STALL_TIMEOUT / 1000} seconds (downloaded ${totalBytes} bytes)`));
+                            const stallError = new Error(`Download stalled - no data received for ${STALL_TIMEOUT / 1000} seconds (downloaded ${totalBytes} bytes)`);
+                            comprehensiveLogger.log({
+                                level: 'error',
+                                category: 'network',
+                                library,
+                                url,
+                                errorMessage: stallError.message,
+                                bytesTransferred: totalBytes,
+                                duration: Date.now() - attemptStartTime,
+                                details: {
+                                    message: 'Download stalled',
+                                    stallDuration: timeSinceLastData,
+                                    bytesReceived: totalBytes
+                                }
+                            });
+                            reject(stallError);
                         } else {
                             // Still receiving data, continue monitoring
                             console.log(`[fetchWithHTTPS] Download in progress: ${totalBytes} bytes received, last data ${Math.round(timeSinceLastData / 1000)}s ago`);
@@ -1082,7 +1172,13 @@ export class EnhancedManuscriptDownloaderService {
                 const connectionTimer = setTimeout(() => {
                     if (totalBytes === 0) {
                         req.destroy();
-                        reject(new Error(`Connection timeout - no response after ${initialTimeout / 1000} seconds`));
+                        const timeoutError = new Error(`Connection timeout - no response after ${initialTimeout / 1000} seconds`);
+                        comprehensiveLogger.logTimeout(url, initialTimeout, {
+                            library,
+                            attemptNumber: retryCount + 1,
+                            bytesReceived: 0
+                        });
+                        reject(timeoutError);
                     }
                 }, initialTimeout);
                 
@@ -1137,6 +1233,14 @@ export class EnhancedManuscriptDownloaderService {
                         headers: responseHeaders
                     });
                     
+                    comprehensiveLogger.logNetworkResponse(url, {
+                        statusCode: res.statusCode || 200,
+                        headers: Object.fromEntries(responseHeaders.entries()),
+                        duration: Date.now() - attemptStartTime,
+                        bytesReceived: totalBytes,
+                        library
+                    });
+                    
                     resolve(response);
                 });
                 
@@ -1150,6 +1254,12 @@ export class EnhancedManuscriptDownloaderService {
             req.on('error', (error: any) => {
                 const attemptDuration = Date.now() - attemptStartTime;
                 console.log(`[fetchWithHTTPS] Request error after ${attemptDuration}ms:`, error.code, error.message);
+                
+                comprehensiveLogger.logNetworkError(url, error, {
+                    library,
+                    attemptNumber: retryCount + 1,
+                    duration: attemptDuration
+                });
                 
                 // Handle connection timeouts with retry for Graz, Florence, and Verona
                 if ((url.includes('unipub.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org') || 
@@ -10928,6 +11038,49 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error(`Failed to load GAMS manuscript: ${error.message}`);
             }
         }
+    }
+    
+    private detectLibraryFromUrl(url: string): string {
+        // Map of domain patterns to library names
+        const libraryPatterns = [
+            { pattern: /bdl\.servizirl\.it/, name: 'BDL' },
+            { pattern: /staatsbibliothek-berlin\.de/, name: 'Berlin State Library' },
+            { pattern: /bdh-rd\.bne\.es/, name: 'BNE' },
+            { pattern: /bl\.digirati\.io/, name: 'British Library' },
+            { pattern: /cambridge\.org/, name: 'Cambridge' },
+            { pattern: /mdc\.csuc\.cat/, name: 'Catalonia MDC' },
+            { pattern: /digi\.vatlib\.it/, name: 'DigiVatLib' },
+            { pattern: /digital\.bodleian\.ox\.ac\.uk/, name: 'Digital Bodleian' },
+            { pattern: /europeana\.eu/, name: 'Europeana' },
+            { pattern: /cdm21059\.contentdm\.oclc\.org/, name: 'Florence' },
+            { pattern: /gallica\.bnf\.fr/, name: 'Gallica' },
+            { pattern: /uni-graz\.at|gams\.uni-graz\.at/, name: 'Graz' },
+            { pattern: /internetculturale\.it/, name: 'Internet Culturale' },
+            { pattern: /blb-karlsruhe\.de/, name: 'Karlsruhe' },
+            { pattern: /themorgan\.org/, name: 'Morgan Library' },
+            { pattern: /bsb-muenchen\.de/, name: 'Munich BSB' },
+            { pattern: /glossa\.uni-graz\.at/, name: 'Graz Glossa' },
+            { pattern: /nb\.no/, name: 'National Library of Norway' },
+            { pattern: /dhb\.thulb\.uni-jena\.de/, name: 'Jena' },
+            { pattern: /e-codices\.unifr\.ch/, name: 'e-codices' },
+            { pattern: /digi\.ub\.uni-heidelberg\.de/, name: 'Heidelberg' },
+            { pattern: /nbn-resolving\.de/, name: 'Wolfenbuttel' },
+            { pattern: /socrates\.leidenuniv\.nl/, name: 'Leiden' },
+            { pattern: /cdm\.csbsju\.edu/, name: 'St John\'s' },
+            { pattern: /bavarikon\.de/, name: 'Bavarikon' },
+            { pattern: /manuscripts\.ru/, name: 'Russian State Library' },
+            { pattern: /nbm\.regione\.veneto\.it|nuovabibliotecamanoscritta\.it/, name: 'Verona' },
+            { pattern: /pagella\.bm-grenoble\.fr/, name: 'Grenoble' },
+            { pattern: /rotomagus\.fr/, name: 'Rouen' }
+        ];
+        
+        for (const { pattern, name } of libraryPatterns) {
+            if (pattern.test(url)) {
+                return name;
+            }
+        }
+        
+        return 'Unknown';
     }
 
 }

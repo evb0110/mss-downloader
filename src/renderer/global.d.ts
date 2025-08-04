@@ -51,6 +51,24 @@ declare global {
       
       // Download logs
       downloadLogs: () => Promise<{ success: boolean; filepath?: string; error?: string }>;
+      
+      // Comprehensive logging
+      logRendererError: (error: {
+        message: string;
+        filename?: string;
+        lineno?: number;
+        colno?: number;
+        stack?: string;
+        type?: string;
+      }) => Promise<void>;
+      
+      exportLogs: (options?: {
+        format?: 'json' | 'readable';
+        includeDebug?: boolean;
+        compress?: boolean;
+      }) => Promise<string>;
+      
+      getRecentLogs: (count?: number) => Promise<any>;
     };
   }
 }

@@ -11,10 +11,41 @@ import { configService } from './services/ConfigService';
 import { NegativeConverterService } from './services/NegativeConverterService';
 import { DownloadLogger } from './services/DownloadLogger';
 import { VersionMigrationService } from './services/VersionMigrationService';
+import { comprehensiveLogger } from './services/ComprehensiveLogger';
 import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
 import type { ConversionSettings } from './services/NegativeConverterService';
 
 // __dirname is available in CommonJS
+
+const isDev = (process.env.NODE_ENV === 'development' || !app.isPackaged) && process.env.NODE_ENV !== 'test';
+
+// Setup global error handlers
+process.on('unhandledRejection', (reason, promise) => {
+  comprehensiveLogger.logUnhandledRejection(reason, promise);
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  comprehensiveLogger.logUncaughtException(error);
+  console.error('Uncaught Exception:', error);
+  // In production, we might want to restart the app
+  if (!isDev) {
+    app.relaunch();
+    app.exit(1);
+  }
+});
+
+// Log process crashes
+process.on('exit', (code) => {
+  comprehensiveLogger.log({
+    level: code === 0 ? 'info' : 'error',
+    category: 'system',
+    details: {
+      message: `Process exiting with code ${code}`,
+      exitCode: code
+    }
+  });
+});
 
 // Function to read app version
 async function getAppVersion(): Promise<string> {
@@ -27,8 +58,6 @@ async function getAppVersion(): Promise<string> {
     return '1.0.0';
   }
 }
-
-const isDev = (process.env.NODE_ENV === 'development' || !app.isPackaged) && process.env.NODE_ENV !== 'test';
 
 let mainWindow: BrowserWindow | null = null;
 let manuscriptDownloader: ManuscriptDownloaderService | null = null;
@@ -602,6 +631,37 @@ ipcMain.handle('queue-move-item', async (_event, fromIndex: number, toIndex: num
     throw new Error('Enhanced download queue not initialized');
   }
   return enhancedDownloadQueue.moveItem(fromIndex, toIndex);
+});
+
+// Logging handlers
+ipcMain.handle('log-renderer-error', async (_event, error: {
+  message: string;
+  filename?: string;
+  lineno?: number;
+  colno?: number;
+  stack?: string;
+  type?: string;
+}) => {
+  comprehensiveLogger.logRendererError(error);
+});
+
+ipcMain.handle('export-logs', async (_event, options?: {
+  format?: 'json' | 'readable';
+  includeDebug?: boolean;
+  compress?: boolean;
+}) => {
+  return comprehensiveLogger.exportLogs(options);
+});
+
+ipcMain.handle('get-recent-logs', async (_event, count?: number) => {
+  return comprehensiveLogger.log({
+    level: 'info',
+    category: 'system',
+    details: {
+      message: 'Recent logs requested',
+      count: count || 100
+    }
+  });
 });
 
 ipcMain.handle('cleanup-indexeddb-cache', async () => {
