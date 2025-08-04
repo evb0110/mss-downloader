@@ -1038,7 +1038,7 @@ const queueState = ref<QueueState>({
         autoStart: false,
         concurrentDownloads: 3,
         pauseBetweenItems: 0,
-        autoSplitThresholdMB: 800,
+        autoSplitThresholdMB: 300, // Reduced to prevent "Invalid array length" errors
         simultaneousMode: 'sequential' as TSimultaneousMode,
         maxSimultaneousDownloads: 3,
     },

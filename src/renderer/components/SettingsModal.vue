@@ -67,7 +67,7 @@
                 v-model.number="autoSplitThresholdMB" 
                 type="number" 
                 min="100" 
-                max="2000"
+                max="800"
                 step="50"
                 @change="updateAutoSplitThreshold"
               >
@@ -154,7 +154,7 @@ const localConfig = reactive({
   maxConcurrentDownloads: 8,
   maxRetries: 10,
   requestTimeout: 30000,
-  autoSplitThreshold: 800 * 1024 * 1024, // bytes
+  autoSplitThreshold: 300 * 1024 * 1024, // 300MB in bytes - reduced to prevent "Invalid array length" errors
   language: 'en',
   theme: 'system'
 });

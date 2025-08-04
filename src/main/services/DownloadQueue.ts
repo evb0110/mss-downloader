@@ -27,7 +27,7 @@ export class DownloadQueue extends EventEmitter {
                 autoStart: false,
                 concurrentDownloads: configService.get('maxConcurrentDownloads'),
                 pauseBetweenItems: 0,
-                autoSplitThresholdMB: 800,
+                autoSplitThresholdMB: 300, // Reduced from 800MB to prevent "Invalid array length" errors
                 simultaneousMode: 'sequential' as TSimultaneousMode,
                 maxSimultaneousDownloads: 3,
             },

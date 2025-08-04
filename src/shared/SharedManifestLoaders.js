@@ -2038,15 +2038,37 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             throw new Error('No images found in Munich manifest');
         }
         
+        // Extract shelf mark from manifest metadata or URL
+        let displayTitle = manifest.label || 'Munich Digital Collections Manuscript';
+        
+        // Check if the manuscriptId looks like a Clm number (e.g., bsb00050763)
+        if (manuscriptId.startsWith('bsb000')) {
+            // Extract the numeric part after 'bsb00'
+            const clmNumber = manuscriptId.substring(5);
+            // Format as "BSB Clm [number]" as requested by user
+            displayTitle = `BSB Clm ${parseInt(clmNumber, 10)}`;
+        } else if (manifest.metadata) {
+            // Try to find shelf mark in metadata
+            const shelfMarkEntry = manifest.metadata.find(m => 
+                m.label === 'Signatur' || 
+                m.label === 'Shelf mark' || 
+                m.label === 'Call Number'
+            );
+            if (shelfMarkEntry && shelfMarkEntry.value) {
+                displayTitle = shelfMarkEntry.value;
+            }
+        }
+        
         return {
             type: 'iiif',
             manifest: manifest,
             images: images,
             metadata: {
-                title: manifest.label || 'Munich Digital Collections Manuscript',
+                title: displayTitle,
                 library: 'Munich Digital Collections',
                 iiifVersion: '2'
-            }
+            },
+            displayName: displayTitle // Add displayName for consistency
         };
     }
 
