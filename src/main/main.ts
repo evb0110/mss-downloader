@@ -481,8 +481,39 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
   }
   
   try {
+    // Log the incoming URL for debugging
+    comprehensiveLogger.log({
+      level: 'debug',
+      category: 'manifest',
+      url,
+      details: {
+        message: 'Parse manuscript URL request received',
+        urlType: typeof url,
+        urlLength: url?.length
+      }
+    });
+    
+    // Validate URL parameter
+    if (!url || typeof url !== 'string') {
+      throw new Error(`Invalid URL parameter: expected string, got ${typeof url} (${url})`);
+    }
+    
     return await enhancedManuscriptDownloader.loadManifest(url);
   } catch (error: any) {
+    // Enhanced error logging with URL context
+    comprehensiveLogger.log({
+      level: 'error',
+      category: 'manifest',
+      url: url || 'undefined',
+      errorMessage: error.message,
+      errorStack: error.stack,
+      details: {
+        message: 'Parse manuscript URL failed',
+        originalUrl: url,
+        urlType: typeof url
+      }
+    });
+    
     // Check if this is a captcha error that should be handled by the UI
     if (error.message?.startsWith('CAPTCHA_REQUIRED:')) {
       // Let the error pass through to the UI for captcha handling
