@@ -1602,6 +1602,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 return await this.getBodleianManifest(url);
             case 'e_manuscripta':
                 return await this.getEManuscriptaManifest(url);
+            case 'norwegian':
+            case 'nb':
+                return await this.getNorwegianManifest(url);
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }
@@ -3174,6 +3177,178 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         return {
             images,
             displayName
+        };
+    }
+
+    /**
+     * Norwegian National Library (nb.no) - IIIF v1 manifest
+     * 
+     * IMPORTANT: Some Norwegian National Library content is geo-restricted and only
+     * accessible from Norwegian IP addresses. Users outside Norway may encounter
+     * HTTP 403 errors when trying to access certain manuscripts.
+     * 
+     * Workarounds for geo-blocked content:
+     * 1. Use a VPN service with Norwegian servers
+     * 2. Access the content from within Norway
+     * 3. Check if the manuscript has alternative access methods
+     * 4. Contact nb.no for access permissions
+     */
+    async getNorwegianManifest(url) {
+        console.log('[Norwegian] Processing URL:', url);
+        
+        // Extract item ID from URL
+        // URL pattern: https://www.nb.no/items/{id}?page=X
+        const match = url.match(/\/items\/([a-f0-9]+)/);
+        if (!match) throw new Error('Invalid Norwegian National Library URL');
+        
+        const itemId = match[1];
+        
+        // Try v1 API first (the one that works from curl)
+        const manifestUrl = `https://api.nb.no/catalog/v1/iiif/${itemId}/manifest?profile=nbdigital`;
+        
+        console.log(`[Norwegian] IIIF v1 manifest URL: ${manifestUrl}`);
+        
+        // Fetch IIIF manifest with proper headers
+        // Note: Even with proper headers, some content may still be geo-blocked
+        const response = await this.fetchUrl(manifestUrl, {
+            headers: {
+                'Accept': 'application/json, text/plain, */*',
+                'Authorization': 'null',
+                'Origin': 'https://www.nb.no',
+                'Referer': 'https://www.nb.no/'
+            }
+        });
+        
+        if (!response.ok) {
+            // Try v3 API as fallback
+            const v3Url = `https://api.nb.no/catalog/v3/iiif/${itemId}/manifest`;
+            console.log(`[Norwegian] Trying v3 API: ${v3Url}`);
+            const v3Response = await this.fetchWithRetry(v3Url);
+            if (!v3Response.ok) {
+                throw new Error(`Failed to fetch manifest: ${response.status}`);
+            }
+            return this.parseNorwegianV3Manifest(await v3Response.json(), itemId);
+        }
+        
+        const manifest = await response.json();
+        const images = [];
+        
+        // Extract metadata
+        let displayName = 'Norwegian Manuscript';
+        if (manifest.label) {
+            displayName = manifest.label;
+        }
+        
+        // Process sequences (IIIF v2 structure)
+        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            for (const canvas of manifest.sequences[0].canvases) {
+                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                    const resource = canvas.images[0].resource;
+                    
+                    // Get the service URL for dynamic sizing
+                    let imageUrl = resource['@id'] || resource.id;
+                    
+                    // If there's a service, use it to construct URLs
+                    if (resource.service) {
+                        const serviceId = resource.service['@id'] || resource.service.id;
+                        // Use a reasonable size that should work
+                        imageUrl = `${serviceId}/full/2000,/0/default.jpg`;
+                    }
+                    
+                    images.push({
+                        url: imageUrl,
+                        label: canvas.label || `Page ${images.length + 1}`,
+                        width: resource.width,
+                        height: resource.height
+                    });
+                }
+            }
+        }
+        
+        console.log(`[Norwegian] Found ${images.length} pages in IIIF v1/v2 manifest`);
+        
+        return {
+            images,
+            displayName,
+            metadata: {
+                library: 'Norwegian National Library',
+                id: itemId,
+                rights: manifest.license || 'https://www.nb.no/lisens/stromming',
+                requiresCookies: true,  // Important flag for download handling
+                requiresNorwegianIP: true  // Some content only accessible from Norwegian IPs
+            },
+            type: 'iiif'
+        };
+    }
+    
+    /**
+     * Parse Norwegian v3 manifest (fallback)
+     */
+    parseNorwegianV3Manifest(manifest, itemId) {
+        const images = [];
+        let displayName = 'Norwegian Manuscript';
+        
+        if (manifest.label) {
+            if (typeof manifest.label === 'object') {
+                const labels = manifest.label['no'] || manifest.label['nb'] || manifest.label['nn'] || manifest.label['en'] || Object.values(manifest.label)[0];
+                displayName = Array.isArray(labels) ? labels[0] : labels;
+            } else {
+                displayName = manifest.label;
+            }
+        }
+        
+        if (manifest.items) {
+            for (let i = 0; i < manifest.items.length; i++) {
+                const canvas = manifest.items[i];
+                
+                if (canvas.items && canvas.items[0] && canvas.items[0].items) {
+                    for (const annotation of canvas.items[0].items) {
+                        if (annotation.body) {
+                            const body = annotation.body;
+                            
+                            let imageUrl = null;
+                            if (body.id) {
+                                imageUrl = body.id;
+                            } else if (body.service && body.service[0]) {
+                                const service = body.service[0];
+                                const serviceId = service['@id'] || service.id;
+                                // Use a reasonable size
+                                imageUrl = `${serviceId}/full/2000,/0/default.jpg`;
+                            }
+                            
+                            if (imageUrl) {
+                                let label = `Page ${i + 1}`;
+                                if (canvas.label) {
+                                    if (typeof canvas.label === 'object') {
+                                        const labels = canvas.label['no'] || canvas.label['nb'] || canvas.label['nn'] || canvas.label['en'] || Object.values(canvas.label)[0];
+                                        label = Array.isArray(labels) ? labels[0] : labels;
+                                    } else {
+                                        label = canvas.label;
+                                    }
+                                }
+                                
+                                images.push({
+                                    url: imageUrl,
+                                    label: label
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return {
+            images,
+            displayName,
+            metadata: {
+                library: 'Norwegian National Library',
+                id: itemId,
+                rights: manifest.rights || 'https://www.nb.no/lisens/stromming',
+                requiresCookies: true,
+                requiresNorwegianIP: true  // Some content only accessible from Norwegian IPs
+            },
+            type: 'iiif'
         };
     }
 }

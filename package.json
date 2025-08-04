@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.63",
+  "version": "1.4.64",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "MUNICH LIBRARY FIX: Fixed 'validImagePaths is not defined' error - variable scope issue resolved for error handling",
-    "GITHUB ISSUES ADDRESSED: Responded to all 12 open issues with fixes and recommendations",
-    "NETWORK ISSUES CLARIFIED: Added guidance for VPN requirements (Grenoble, Verona) and DNS/timeout issues",
-    "NORWEGIAN LIBRARY IDENTIFIED: Norwegian National Library (nb.no) identified as potential future addition"
+    "NORWEGIAN LIBRARY: Added enhanced error detection for geo-blocked content with clear user guidance",
+    "PROXY FALLBACK: Implemented automatic proxy attempts for Norwegian content (limited success due to server-side blocking)",
+    "ERROR MESSAGES: Improved error handling to specifically detect and explain IP-based geo-restrictions",
+    "METADATA FLAGS: Added requiresNorwegianIP flag to properly identify geo-restricted manuscripts"
   ],
   "main": "dist/main/main.js",
   "scripts": {

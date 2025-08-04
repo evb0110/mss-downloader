@@ -485,6 +485,7 @@ export class EnhancedManuscriptDownloaderService {
         if ((url.includes('i3f.vls.io') && url.includes('blb-karlsruhe.de')) || url.includes('digital.blb-karlsruhe.de')) return 'karlsruhe';
         if (url.includes('digitalcollections.manchester.ac.uk')) return 'manchester';
         if (url.includes('digitale-sammlungen.de')) return 'munich';
+        if (url.includes('nb.no')) return 'norwegian';
         if (url.includes('e-codices.unifr.ch') || url.includes('e-codices.ch')) return 'unifr';
         if (url.includes('e-manuscripta.ch')) return 'e_manuscripta';
         if (url.includes('digi.vatlib.it')) return 'vatlib';
@@ -551,11 +552,28 @@ export class EnhancedManuscriptDownloaderService {
         'https://cors-anywhere.herokuapp.com/',
         'https://proxy.cors.sh/',
     ];
+    
+    /**
+     * Norwegian proxy for geo-restricted content (requires Norwegian IP)
+     * Using proxy services that might have Norwegian exit nodes
+     */
+    private readonly NORWEGIAN_PROXIES = [
+        // These are general proxies that might work
+        'https://api.allorigins.win/raw?url=',
+        'https://cors-anywhere.herokuapp.com/',
+        // Additional proxies that might have European/Nordic nodes
+        'https://thingproxy.freeboard.io/fetch/',
+        'https://api.codetabs.com/v1/proxy?quest='
+    ];
 
     /**
      * Fetch with automatic proxy fallback
      */
     async fetchWithProxyFallback(url: string, options: any = {}): Promise<Response> {
+        // For Norwegian content, try Norwegian-friendly proxies first
+        const isNorwegianContent = url.includes('nb.no') || url.includes('api.nb.no');
+        const proxiesToTry = isNorwegianContent ? this.NORWEGIAN_PROXIES : this.PROXY_SERVERS;
+        
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), configService.get('requestTimeout'));
         
@@ -582,7 +600,7 @@ export class EnhancedManuscriptDownloaderService {
             clearTimeout(timeoutId);
             
             // If direct access fails, try proxy servers
-            for (const proxy of this.PROXY_SERVERS) {
+            for (const proxy of proxiesToTry) {
                 try {
                     const proxyController = new AbortController();
                     const proxyTimeoutId = setTimeout(() => proxyController.abort(), configService.get('requestTimeout'));
@@ -1228,6 +1246,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'munich':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('munich', originalUrl);
+                    break;
+                case 'norwegian':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('norwegian', originalUrl);
                     break;
                 case 'unifr':
                     manifest = await this.loadUnifrManifest(originalUrl);
@@ -3594,9 +3615,18 @@ export class EnhancedManuscriptDownloaderService {
             // Note: Internet Culturale removed from proxy list to fix authentication issues
             // BDL added due to IIIF server instability (60% connection failures)
             // University of Graz removed from proxy list to use library-specific timeout multiplier (2.0x)
+            // Special handling for Norwegian content that may be geo-blocked
+            const isNorwegianContent = url.includes('nb.no') || url.includes('api.nb.no');
+            
+            // For Norwegian content, always try proxy fallback due to geo-blocking
+            if (isNorwegianContent && attempt === 0) {
+                console.log('[Norwegian] Detected nb.no content - will use proxy fallback for geo-blocked images');
+            }
+            
             const needsProxyFallback = url.includes('digitallibrary.unicatt.it') || 
                                      url.includes('mediatheques.orleans.fr') || 
-                                     url.includes('aurelia.orleans.fr') || 
+                                     url.includes('aurelia.orleans.fr') ||
+                                     isNorwegianContent ||  // Always use proxy for Norwegian content 
                                      url.includes('bdl.servizirl.it');
             
             this.logger.log({
@@ -3689,6 +3719,16 @@ export class EnhancedManuscriptDownloaderService {
                         throw new Error(`MDC Catalonia resolution not supported (HTTP 501): The requested image resolution is not supported. Try a different resolution (full/full, full/max, full/800,).`);
                     } else if (response.status >= 500) {
                         throw new Error(`MDC Catalonia server error (HTTP ${response.status}): The mdc.csuc.cat server is experiencing technical difficulties.`);
+                    }
+                }
+                
+                // Enhanced error handling for Norwegian National Library geo-blocking
+                if (url.includes('nb.no') && response.status === 403) {
+                    const errorBody = await response.text().catch(() => '');
+                    if (errorBody.includes('geo') || errorBody.includes('location') || errorBody.includes('Norway') || errorBody.includes('Norge')) {
+                        throw new Error(`Norwegian National Library geo-blocking detected (HTTP 403): This content is only accessible from Norwegian IP addresses. \n\nPossible solutions:\n1. Use a VPN with Norwegian servers\n2. Access the content from within Norway\n3. Check if the manuscript has alternative access options\n4. Contact the Norwegian National Library for access permissions\n\nURL: ${url}`);
+                    } else {
+                        throw new Error(`Norwegian National Library access denied (HTTP 403): Access to this manuscript may be restricted. This could be due to:\n1. Geographic IP restrictions (Norwegian IP required)\n2. Authentication requirements\n3. Copyright or access restrictions\n\nPlease verify the manuscript's access policy at nb.no`);
                     }
                 }
                 
