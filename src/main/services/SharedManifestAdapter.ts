@@ -85,7 +85,7 @@ export class SharedManifestAdapter {
      * Check if library is supported by shared loaders
      */
     isLibrarySupported(libraryId: string): boolean {
-        const supportedLibraries = ['bdl', 'verona', 'vienna_manuscripta', 'bne', 'mdc_catalonia', 'florence', 'grenoble', 'manchester', 'toronto', 'vatican', 'karlsruhe', 'loc', 'graz', 'bvpb', 'morgan', 'hhu', 'duesseldorf', 'bordeaux'];
+        const supportedLibraries = ['bdl', 'bodleian', 'verona', 'vienna_manuscripta', 'bne', 'mdc_catalonia', 'florence', 'grenoble', 'manchester', 'munich', 'toronto', 'vatican', 'karlsruhe', 'loc', 'graz', 'gams', 'bvpb', 'morgan', 'hhu', 'duesseldorf', 'bordeaux', 'e_manuscripta', 'norwegian', 'nb'];
         return supportedLibraries.includes(libraryId);
     }
 }

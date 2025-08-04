@@ -1169,7 +1169,7 @@ const filteredLibraries = computed(() => searchResults.value.libraries);
 
 // Queue settings
 const queueSettings = ref({
-    autoSplitThresholdMB: 800,
+    autoSplitThresholdMB: 300, // Changed from 800 to 300 as requested in issue #18
     maxConcurrentDownloads: 3
 });
 

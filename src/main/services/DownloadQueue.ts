@@ -900,6 +900,12 @@ export class DownloadQueue extends EventEmitter {
             storedState.globalSettings.maxSimultaneousDownloads = 3;
         }
         
+        // Migration: Force auto-split threshold to 300MB if it's above that (issue #18)
+        if (!storedState.globalSettings.autoSplitThresholdMB || storedState.globalSettings.autoSplitThresholdMB > 300) {
+            console.log(`Migrating auto-split threshold from ${storedState.globalSettings.autoSplitThresholdMB || 'undefined'}MB to 300MB`);
+            storedState.globalSettings.autoSplitThresholdMB = 300;
+        }
+        
         this.state = storedState;
     }
     
