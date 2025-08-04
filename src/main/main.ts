@@ -19,6 +19,22 @@ import type { ConversionSettings } from './services/NegativeConverterService';
 
 const isDev = (process.env.NODE_ENV === 'development' || !app.isPackaged) && process.env.NODE_ENV !== 'test';
 
+// Ensure single instance
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+    // Another instance is already running, quit this one
+    app.quit();
+} else {
+    app.on('second-instance', () => {
+        // Someone tried to run a second instance, focus our window instead
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) mainWindow.restore();
+            mainWindow.focus();
+        }
+    });
+}
+
 // Setup global error handlers
 process.on('unhandledRejection', (reason, promise) => {
   comprehensiveLogger.logUnhandledRejection(reason, promise);
@@ -28,9 +44,14 @@ process.on('unhandledRejection', (reason, promise) => {
 process.on('uncaughtException', (error) => {
   comprehensiveLogger.logUncaughtException(error);
   console.error('Uncaught Exception:', error);
-  // In production, we might want to restart the app
+  // In production, show error dialog instead of relaunching
+  // to prevent window duplication issues
   if (!isDev) {
-    app.relaunch();
+    dialog.showErrorBox(
+      'Unexpected Error',
+      'The application encountered an unexpected error. Please restart the application manually.\n\n' + 
+      'Error: ' + error.message
+    );
     app.exit(1);
   }
 });
