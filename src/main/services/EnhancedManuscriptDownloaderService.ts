@@ -242,6 +242,11 @@ export class EnhancedManuscriptDownloaderService {
             description: 'Bavarian State Library digital manuscripts via IIIF v2.0 with high-resolution support',
         },
         {
+            name: 'Norwegian National Library (nb.no)',
+            example: 'https://www.nb.no/items/1ef274e1cff5ab191d974e96d09c4cc1?page=0',
+            description: 'National Library of Norway digital manuscripts (Note: May require Norwegian IP for image access due to geo-restrictions)',
+        },
+        {
             name: 'Manuscripta.se',
             example: 'https://manuscripta.se/ms/101124',
             description: 'Swedish digital catalogue of medieval and early modern manuscripts via IIIF',
