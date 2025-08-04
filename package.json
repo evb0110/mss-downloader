@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.67",
+  "version": "1.4.68",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "COMPREHENSIVE LOGGING: Export detailed logs for all failures - timeouts, network errors, JS errors",
-    "LOG EXPORT UI: New 'Export Logs' feature with JSON/readable formats and compression options",
-    "ERROR TRACKING: Global handlers capture all unhandled errors across main/renderer/worker processes",
-    "DEBUGGING: Users can now attach exhaustive logs to GitHub issues for faster resolution"
+    "DEBUGGING ENHANCEMENT: Enhanced error reporting for Munich 'Unsupported library' and Morgan 'imagesByPriority' issues",
+    "URL VALIDATION: Added comprehensive URL parameter validation for better error messages",
+    "LOGGING IMPROVEMENTS: Better context capture for manuscript parsing failures",
+    "USER EXPERIENCE: More helpful error messages when library detection fails"
   ],
   "main": "dist/main/main.js",
   "scripts": {
