@@ -503,32 +503,64 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
   
   try {
     // CRITICAL FIX: Detect and fix malformed URLs where hostname is concatenated with URL
-    if (url && typeof url === 'string' && url.includes('.frhttps://')) {
-      comprehensiveLogger.log({
-        level: 'error',
-        category: 'manifest',
-        url,
-        details: {
-          message: 'DETECTED MALFORMED URL: hostname concatenated with URL',
-          malformedUrl: url
-        }
-      });
-      
-      // Extract the correct URL from the malformed string
-      const match = url.match(/(https:\/\/.+)$/);
-      if (match) {
-        const correctedUrl = match[1];
+    if (url && typeof url === 'string') {
+      // Check for .frhttps:// pattern (existing)
+      if (url.includes('.frhttps://')) {
         comprehensiveLogger.log({
-          level: 'info',
+          level: 'error',
           category: 'manifest',
-          url: correctedUrl,
+          url,
           details: {
-            message: 'URL corrected',
-            originalUrl: url,
-            correctedUrl: correctedUrl
+            message: 'DETECTED MALFORMED URL: hostname concatenated with URL',
+            malformedUrl: url
           }
         });
-        url = correctedUrl;
+        
+        // Extract the correct URL from the malformed string
+        const match = url.match(/(https:\/\/.+)$/);
+        if (match) {
+          const correctedUrl = match[1];
+          comprehensiveLogger.log({
+            level: 'info',
+            category: 'manifest',
+            url: correctedUrl,
+            details: {
+              message: 'URL corrected',
+              originalUrl: url,
+              correctedUrl: correctedUrl
+            }
+          });
+          url = correctedUrl;
+        }
+      }
+      // NEW: Check for IP:PORThttps:// pattern
+      else if (url.match(/\d+\.\d+\.\d+\.\d+:\d+https:\/\//)) {
+        comprehensiveLogger.log({
+          level: 'error',
+          category: 'manifest',
+          url,
+          details: {
+            message: 'DETECTED MALFORMED URL: IP:PORT concatenated with URL',
+            malformedUrl: url
+          }
+        });
+        
+        // Extract the correct URL from the malformed string
+        const match = url.match(/\d+\.\d+\.\d+\.\d+:\d+(https:\/\/.+)$/);
+        if (match) {
+          const correctedUrl = match[1];
+          comprehensiveLogger.log({
+            level: 'info',
+            category: 'manifest',
+            url: correctedUrl,
+            details: {
+              message: 'URL corrected from IP:PORT concatenation',
+              originalUrl: url,
+              correctedUrl: correctedUrl
+            }
+          });
+          url = correctedUrl;
+        }
       }
     }
     

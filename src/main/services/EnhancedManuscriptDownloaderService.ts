@@ -1080,6 +1080,46 @@ export class EnhancedManuscriptDownloaderService {
             }
         }
         
+        // Special handling for MDC Catalonia to resolve timeout issues
+        if (url.includes('mdc.csuc.cat')) {
+            const dnsStartTime = Date.now();
+            try {
+                // Pre-resolve DNS to avoid resolution timeouts
+                console.log(`[MDC Catalonia] Pre-resolving DNS for ${urlObj.hostname}`);
+                const addresses = await dns.resolve4(urlObj.hostname);
+                if (addresses.length > 0) {
+                    console.log(`[MDC Catalonia] Resolved to ${addresses[0]}`);
+                    comprehensiveLogger.log({
+                        level: 'debug',
+                        category: 'network',
+                        library: 'MDC Catalonia',
+                        url,
+                        dnsLookupTime: Date.now() - dnsStartTime,
+                        details: {
+                            message: 'DNS pre-resolution successful',
+                            hostname: urlObj.hostname,
+                            addresses
+                        }
+                    });
+                }
+            } catch (dnsError: any) {
+                console.warn(`[MDC Catalonia] DNS resolution failed, proceeding anyway:`, dnsError);
+                comprehensiveLogger.log({
+                    level: 'warn',
+                    category: 'network',
+                    library: 'MDC Catalonia',
+                    url,
+                    dnsLookupTime: Date.now() - dnsStartTime,
+                    errorCode: dnsError.code,
+                    errorMessage: dnsError.message,
+                    details: {
+                        message: 'DNS pre-resolution failed, proceeding anyway',
+                        hostname: urlObj.hostname
+                    }
+                });
+            }
+        }
+        
         // Create agent with connection pooling for Graz, Florence, and Verona
         const agent = (url.includes('unipub.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org') ||
                       url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 
@@ -1267,9 +1307,10 @@ export class EnhancedManuscriptDownloaderService {
                     duration: attemptDuration
                 });
                 
-                // Handle connection timeouts with retry for Graz, Florence, and Verona
+                // Handle connection timeouts with retry for Graz, Florence, Verona, and MDC Catalonia
                 if ((url.includes('unipub.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org') || 
-                     url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) && 
+                     url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') ||
+                     url.includes('mdc.csuc.cat')) && 
                     (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || 
                      error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || 
                      error.code === 'ENETUNREACH' || error.code === 'EHOSTUNREACH' ||
@@ -1281,6 +1322,7 @@ export class EnhancedManuscriptDownloaderService {
                     const backoffDelay = Math.min(1000 * Math.pow(2, retryCount), 30000);
                     const libraryName = url.includes('unipub.uni-graz.at') ? 'Graz' : 
                                       url.includes('cdm21059.contentdm.oclc.org') ? 'Florence' :
+                                      url.includes('mdc.csuc.cat') ? 'MDC Catalonia' :
                                       (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 'Verona' : 'Unknown';
                     console.log(`[${libraryName}] Connection failed with ${error.code}, retry ${retryCount}/${maxRetries - 1} in ${backoffDelay}ms...`);
                     
@@ -1301,6 +1343,10 @@ export class EnhancedManuscriptDownloaderService {
                         const totalTime = Math.round((Date.now() - overallStartTime) / 1000);
                         const actualTimeout = Math.round(requestOptions.timeout / 1000);
                         reject(new Error(`Verona NBM connection timeout after ${actualTimeout} seconds (${maxRetries} attempts over ${totalTime} seconds total). The server at ${urlObj.hostname} is not responding. This may be due to high server load or network issues. Please try again later or check if the manuscript is accessible at https://www.nuovabibliotecamanoscritta.it/`));
+                    } else if (error.code === 'ETIMEDOUT' && url.includes('mdc.csuc.cat')) {
+                        const totalTime = Math.round((Date.now() - overallStartTime) / 1000);
+                        const actualTimeout = Math.round(timeout / 1000);
+                        reject(new Error(`MDC Catalonia connection timeout after ${actualTimeout} seconds (${maxRetries} attempts over ${totalTime} seconds total). The server at ${urlObj.hostname} is not responding. This may be due to high server load, network restrictions, or regional blocking. Please try again later or check if the manuscript is accessible at https://mdc.csuc.cat/`));
                     } else {
                         reject(error);
                     }

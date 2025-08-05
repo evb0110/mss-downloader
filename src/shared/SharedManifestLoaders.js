@@ -257,7 +257,22 @@ class SharedManifestLoaders {
             });
 
             req.on('error', (error) => {
-                reject(error);
+                // CRITICAL FIX: Clean error to prevent URL malformation
+                // Node.js ETIMEDOUT errors contain address/port that can get concatenated with URLs
+                if (error.code === 'ETIMEDOUT') {
+                    const cleanError = new Error(`Connection timeout: ${error.message}`);
+                    cleanError.code = error.code;
+                    cleanError.originalUrl = url;
+                    // Store network details separately to prevent concatenation
+                    cleanError.networkDetails = {
+                        address: error.address,
+                        port: error.port,
+                        syscall: error.syscall
+                    };
+                    reject(cleanError);
+                } else {
+                    reject(error);
+                }
             });
             req.on('timeout', () => {
                 req.destroy();
