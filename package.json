@@ -1,6 +1,6 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.77",
+  "version": "1.4.78",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
     "🔥 ULTRA-PRIORITY FIX: e-manuscripta.ch timeout error resolved (#10)",
