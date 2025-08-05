@@ -4191,7 +4191,20 @@ export class EnhancedManuscriptDownloaderService {
             let nextPageIndex = actualStartPage - 1; // Convert to 0-based index
             
             const downloadPage = async (pageIndex: number) => {
-                let imageUrl = manifest.pageLinks[pageIndex];
+                // Fix for Bordeaux and other libraries: map page index to manifest array index
+                // pageIndex is absolute (e.g., 5 for page 6), but manifest.pageLinks may start from 0
+                const manifestIndex = pageIndex - (actualStartPage - 1);
+                
+                // Validate manifestIndex is within bounds
+                if (manifestIndex < 0 || manifestIndex >= manifest.pageLinks.length) {
+                    console.error(`Page index ${pageIndex + 1} (manifest index ${manifestIndex}) is out of bounds for manifest with ${manifest.pageLinks.length} pages`);
+                    failedPages.push(pageIndex + 1);
+                    completedPages++;
+                    updateProgress();
+                    return;
+                }
+                
+                let imageUrl = manifest.pageLinks[manifestIndex];
                 
                 // Skip placeholder URLs (empty strings) used for missing pages
                 if (!imageUrl || imageUrl === '') {
@@ -4209,7 +4222,9 @@ export class EnhancedManuscriptDownloaderService {
                     try {
                         // Skip if already downloaded
                         await fs.access(imgPath);
-                        imagePaths[pageIndex] = imgPath;
+                        // Store in array using relative index for proper array management
+                        const relativeIndex = pageIndex - (actualStartPage - 1);
+                        imagePaths[relativeIndex] = imgPath;
                         completedPages++;
                         updateProgress();
                         return;
@@ -4227,7 +4242,9 @@ export class EnhancedManuscriptDownloaderService {
                             );
                             
                             if (result.success) {
-                                imagePaths[pageIndex] = imgPath;
+                                // Store in array using relative index for proper array management
+                        const relativeIndex = pageIndex - (actualStartPage - 1);
+                        imagePaths[relativeIndex] = imgPath;
                                 completedPages++;
                                 console.log(`[Bordeaux] Successfully processed page ${pageNum}`);
                             } else {
@@ -4253,7 +4270,9 @@ export class EnhancedManuscriptDownloaderService {
                     try {
                         // Skip if already downloaded
                         await fs.access(imgPath);
-                        imagePaths[pageIndex] = imgPath;
+                        // Store in array using relative index for proper array management
+                        const relativeIndex = pageIndex - (actualStartPage - 1);
+                        imagePaths[relativeIndex] = imgPath;
                         completedPages++;
                         updateProgress();
                         return;
@@ -4289,7 +4308,9 @@ export class EnhancedManuscriptDownloaderService {
                             );
                             
                             if (result.success) {
-                                imagePaths[pageIndex] = imgPath;
+                                // Store in array using relative index for proper array management
+                        const relativeIndex = pageIndex - (actualStartPage - 1);
+                        imagePaths[relativeIndex] = imgPath;
                                 completedPages++;
                                 console.log(`Successfully downloaded ${result.downloadedTiles} tiles for page ${pageIndex + 1}`);
                             } else {
@@ -4365,7 +4386,9 @@ export class EnhancedManuscriptDownloaderService {
                         const writePromise = fs.writeFile(imgPath, Buffer.from(imageData));
                         writePromises.push(writePromise);
                         // Only mark path if download succeeded
-                        imagePaths[pageIndex] = imgPath;
+                        // Store in array using relative index for proper array management
+                        const relativeIndex = pageIndex - (actualStartPage - 1);
+                        imagePaths[relativeIndex] = imgPath;
                         completedPages++; // Only increment on successful download
                     } catch (error: any) {
                         console.error(`\n❌ Failed to download page ${pageIndex + 1}: ${(error as Error).message}`);
@@ -4405,8 +4428,8 @@ export class EnhancedManuscriptDownloaderService {
             // Create complete array with placeholders for failed pages - only for the requested page range
             const completeImagePaths: (string | null)[] = [];
             for (let i = 0; i < totalPagesToDownload; i++) {
-                const actualPageIndex = actualStartPage - 1 + i; // Convert to 0-based index
-                completeImagePaths[i] = imagePaths[actualPageIndex] || null;
+                // imagePaths uses relative indexing now, so just use i directly
+                completeImagePaths[i] = imagePaths[i] || null;
             }
             
             validImagePaths = imagePaths.filter(Boolean);
