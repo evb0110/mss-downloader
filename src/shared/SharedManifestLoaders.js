@@ -3136,12 +3136,84 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         
+        // Strategy 3: Extended search for distant block series
+        // Some manuscripts have multiple disjoint series separated by large gaps
+        console.log(`[e-manuscripta] Checking for distant block series...`);
+        
+        // Define strategic probe points based on common manuscript structures
+        // Include both exact multiples of 11 and +1 offsets (some manuscripts start at n*11+1)
+        const extendedProbeDistances = [
+            -385, -384, -374, -363, -352, -341, -330,  // Backward probes (includes -384 for user case)
+            -275, -264, -253, -242, -231, -220,        // Backward probes (~11 * 25, 24, 23, 22, 21, 20)
+            330, 341, 352, 363, 374, 385               // Forward probes
+        ];
+        
+        for (const distance of extendedProbeDistances) {
+            const probeId = baseId + distance;
+            if (probeId <= 0) continue;
+            
+            try {
+                const probeUrl = `https://www.e-manuscripta.ch/${library}/content/zoom/${probeId}`;
+                const response = await this.fetchUrl(probeUrl);
+                
+                if (response.ok) {
+                    console.log(`[e-manuscripta] Found distant block at ${probeId} (${distance > 0 ? '+' : ''}${distance} from base)`);
+                    discoveredBlocks.add(probeId);
+                    
+                    // Explore around this new discovery point
+                    for (let localOffset = 11; localOffset <= 88; localOffset += 11) {
+                        // Check backward
+                        const backId = probeId - localOffset;
+                        if (backId > 0) {
+                            try {
+                                const backUrl = `https://www.e-manuscripta.ch/${library}/content/zoom/${backId}`;
+                                const backResponse = await this.fetchUrl(backUrl);
+                                if (backResponse.ok) {
+                                    discoveredBlocks.add(backId);
+                                    console.log(`[e-manuscripta] Found related block: ${backId}`);
+                                }
+                            } catch (error) {
+                                // Continue
+                            }
+                        }
+                        
+                        // Check forward
+                        const fwdId = probeId + localOffset;
+                        try {
+                            const fwdUrl = `https://www.e-manuscripta.ch/${library}/content/zoom/${fwdId}`;
+                            const fwdResponse = await this.fetchUrl(fwdUrl);
+                            if (fwdResponse.ok) {
+                                discoveredBlocks.add(fwdId);
+                                console.log(`[e-manuscripta] Found related block: ${fwdId}`);
+                            }
+                        } catch (error) {
+                            // Continue
+                        }
+                        
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                    }
+                }
+            } catch (error) {
+                // Continue with next probe
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
         const sortedBlocks = Array.from(discoveredBlocks).sort((a, b) => a - b);
         const totalPages = sortedBlocks.length * 11; // Assuming 11 pages per block
         
         console.log(`[e-manuscripta] Block discovery complete: ${sortedBlocks.length} blocks found`);
         console.log(`[e-manuscripta] Block IDs: ${sortedBlocks.join(', ')}`);
         console.log(`[e-manuscripta] Estimated total pages: ${totalPages}`);
+        
+        // Log any large gaps for debugging
+        for (let i = 1; i < sortedBlocks.length; i++) {
+            const gap = sortedBlocks[i] - sortedBlocks[i-1];
+            if (gap > 50) {
+                console.log(`[e-manuscripta] Gap detected: ${gap} between blocks ${sortedBlocks[i-1]} and ${sortedBlocks[i]}`);
+            }
+        }
         
         return {
             blocks: sortedBlocks,
