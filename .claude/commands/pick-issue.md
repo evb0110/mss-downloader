@@ -43,9 +43,47 @@ elif [[ "$1" =~ github\.com/.*/issues/([0-9]+) ]]; then
     # Extract issue number from URL
     TARGET_ISSUE="${BASH_REMATCH[1]}"
 else
-    # Pick most recent issue
-    TARGET_ISSUE=$(cat .devkit/all-open-issues.json | jq -r 'sort_by(.createdAt) | reverse | .[0].number')
-    echo "No issue specified - picking most recent: #$TARGET_ISSUE"
+    # Pick most recent unresolved issue where last comment is from author
+    echo "No issue specified - analyzing issues to find best candidate..."
+    
+    # Get detailed issue data with comments
+    gh issue list --state open --json number,title,author,createdAt --limit 100 > .devkit/issue-candidates.json
+    
+    # Find issues where last comment is from author (not from MSS team)
+    BEST_ISSUE=""
+    for issue_num in $(cat .devkit/issue-candidates.json | jq -r '.[].number'); do
+        # Get issue comments
+        gh api "repos/{owner}/{repo}/issues/$issue_num/comments" --jq '.[].user.login' > .devkit/comment-authors-$issue_num.txt 2>/dev/null || continue
+        
+        # Get issue author
+        ISSUE_AUTHOR=$(cat .devkit/issue-candidates.json | jq -r ".[] | select(.number == $issue_num) | .author.login")
+        
+        # Check if last comment is from author (not from bot or MSS team)
+        if [ -s .devkit/comment-authors-$issue_num.txt ]; then
+            LAST_COMMENTER=$(tail -1 .devkit/comment-authors-$issue_num.txt)
+            if [ "$LAST_COMMENTER" = "$ISSUE_AUTHOR" ] && [ "$LAST_COMMENTER" != "github-actions[bot]" ]; then
+                BEST_ISSUE=$issue_num
+                break
+            fi
+        else
+            # No comments yet, issue is fresh from author
+            BEST_ISSUE=$issue_num
+            break
+        fi
+    done
+    
+    # Clean up temporary files
+    rm -f .devkit/comment-authors-*.txt
+    
+    if [ -z "$BEST_ISSUE" ]; then
+        # Fallback: pick most recent issue
+        TARGET_ISSUE=$(cat .devkit/issue-candidates.json | jq -r 'sort_by(.createdAt) | reverse | .[0].number')
+        echo "No issues with author's last comment found - picking most recent: #$TARGET_ISSUE"
+    else
+        TARGET_ISSUE=$BEST_ISSUE
+        ISSUE_TITLE=$(cat .devkit/issue-candidates.json | jq -r ".[] | select(.number == $TARGET_ISSUE) | .title")
+        echo "Selected issue #$TARGET_ISSUE: $ISSUE_TITLE (last comment from author)"
+    fi
 fi
 
 # Extract COMPLETE issue data
