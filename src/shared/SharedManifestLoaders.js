@@ -89,6 +89,52 @@ class SharedManifestLoaders {
         }
         return Math.round(totalMs / 60000); // Convert to minutes
     }
+    
+    /**
+     * ULTRA-PRIORITY FIX: Comprehensive URL sanitization to prevent hostname concatenation
+     * This addresses Issue #13 where URLs like 'pagella.bm-grenoble.frhttps://...' cause DNS errors
+     */
+    sanitizeUrl(url) {
+        if (!url || typeof url !== 'string') return url;
+        
+        // Pattern 1: hostname directly concatenated with protocol (most common)
+        // Example: pagella.bm-grenoble.frhttps://pagella.bm-grenoble.fr/...
+        const concatenatedPattern = /^([a-z0-9.-]+)(https?:\/\/.+)$/i;
+        const match = url.match(concatenatedPattern);
+        if (match) {
+            const [, hostname, actualUrl] = match;
+            console.error(`[URL SANITIZER] Detected concatenated URL: ${url}`);
+            console.error(`[URL SANITIZER] Extracted hostname: ${hostname}`);
+            console.error(`[URL SANITIZER] Extracted URL: ${actualUrl}`);
+            
+            // Verify the extracted URL is valid
+            try {
+                new URL(actualUrl);
+                console.log(`[URL SANITIZER] Fixed URL: ${actualUrl}`);
+                return actualUrl;
+            } catch (e) {
+                console.error('[URL SANITIZER] Extracted URL is still invalid:', e.message);
+            }
+        }
+        
+        // Pattern 2: Check for any domain+protocol patterns
+        const domainPatterns = [
+            /\.(fr|com|org|edu|net|it|es|at|uk|de|ch)(https?:\/\/)/i,
+            /^[^:/\s]+\.[^:/\s]+(https?:\/\/)/i
+        ];
+        
+        for (const pattern of domainPatterns) {
+            if (pattern.test(url)) {
+                const protocolMatch = url.match(/(https?:\/\/.+)$/);
+                if (protocolMatch) {
+                    console.error(`[URL SANITIZER] Fixed malformed URL pattern: ${url} -> ${protocolMatch[1]}`);
+                    return protocolMatch[1];
+                }
+            }
+        }
+        
+        return url;
+    }
 
     async fetchUrl(url, options = {}, redirectCount = 0) {
         const MAX_REDIRECTS = 10; // Prevent infinite redirect loops
@@ -97,7 +143,10 @@ class SharedManifestLoaders {
             throw new Error(`Too many redirects (${redirectCount}) for URL: ${url}`);
         }
         
-        // CRITICAL FIX: Detect and fix malformed URLs where hostname is concatenated with URL
+        // ULTRA-CRITICAL FIX: Enhanced detection and fix for malformed URLs
+        url = this.sanitizeUrl(url);
+        
+        // Legacy check for backward compatibility
         if (url && typeof url === 'string' && url.includes('.frhttps://')) {
             console.error('[SharedManifestLoaders] DETECTED MALFORMED URL:', url);
             const match = url.match(/(https:\/\/.+)$/);
@@ -160,11 +209,30 @@ class SharedManifestLoaders {
         const https = eval("require('https')");
         
         return new Promise((resolve, reject) => {
-            const urlObj = new URL(url);
+            // DEFENSIVE: Ensure URL is sanitized before creating URL object
+            url = this.sanitizeUrl(url);
+            
+            let urlObj;
+            try {
+                urlObj = new URL(url);
+            } catch (error) {
+                console.error('[SharedManifestLoaders] Invalid URL after sanitization:', url);
+                reject(new Error(`Invalid URL: ${url}. Original error: ${error.message}`));
+                return;
+            }
+            
             const timeoutMs = this.getTimeoutForUrl(url);
             
+            // ULTRA-DEFENSIVE: Final hostname validation before request
+            const hostname = urlObj.hostname;
+            if (hostname.includes('://')) {
+                console.error(`[CRITICAL] Hostname contains protocol: ${hostname}`);
+                reject(new Error(`Invalid hostname detected: ${hostname}`));
+                return;
+            }
+            
             const requestOptions = {
-                hostname: urlObj.hostname,
+                hostname: hostname,
                 path: urlObj.pathname + urlObj.search,
                 method: options.method || 'GET',
                 headers: {

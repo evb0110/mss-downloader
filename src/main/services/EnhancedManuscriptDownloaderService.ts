@@ -115,6 +115,74 @@ export class EnhancedManuscriptDownloaderService {
         }
     }
 
+    /**
+     * ULTRA-PRIORITY FIX: Comprehensive URL sanitization to prevent hostname concatenation
+     * This addresses Issue #13 where URLs like 'pagella.bm-grenoble.frhttps://...' cause DNS errors
+     */
+    private sanitizeUrl(url: string): string {
+        if (!url || typeof url !== 'string') return url;
+        
+        // Pattern 1: hostname directly concatenated with protocol (most common)
+        // Example: pagella.bm-grenoble.frhttps://pagella.bm-grenoble.fr/...
+        const concatenatedPattern = /^([a-z0-9.-]+)(https?:\/\/.+)$/i;
+        const match = url.match(concatenatedPattern);
+        if (match) {
+            const [, hostname, actualUrl] = match;
+            console.error(`[URL SANITIZER] Detected concatenated URL: ${url}`);
+            console.error(`[URL SANITIZER] Extracted hostname: ${hostname}`);
+            console.error(`[URL SANITIZER] Extracted URL: ${actualUrl}`);
+            comprehensiveLogger.log({
+                level: 'error',
+                category: 'url-sanitizer',
+                library: 'grenoble',
+                url: actualUrl,
+                details: {
+                    message: 'Fixed malformed URL',
+                    malformedUrl: url,
+                    extractedHostname: hostname,
+                    fixedUrl: actualUrl
+                }
+            });
+            
+            // Verify the extracted URL is valid
+            try {
+                new URL(actualUrl);
+                console.log(`[URL SANITIZER] Fixed URL: ${actualUrl}`);
+                return actualUrl;
+            } catch (e) {
+                console.error('[URL SANITIZER] Extracted URL is still invalid:', (e as Error).message);
+            }
+        }
+        
+        // Pattern 2: Check for any domain+protocol patterns
+        const domainPatterns = [
+            /\.(fr|com|org|edu|net|it|es|at|uk|de|ch)(https?:\/\/)/i,
+            /^[^:/\s]+\.[^:/\s]+(https?:\/\/)/i
+        ];
+        
+        for (const pattern of domainPatterns) {
+            if (pattern.test(url)) {
+                const protocolMatch = url.match(/(https?:\/\/.+)$/);
+                if (protocolMatch) {
+                    console.error(`[URL SANITIZER] Fixed malformed URL pattern: ${url} -> ${protocolMatch[1]}`);
+                    comprehensiveLogger.log({
+                        level: 'warn',
+                        category: 'url-sanitizer',
+                        url: protocolMatch[1],
+                        details: {
+                            message: 'Fixed URL with domain pattern',
+                            malformedUrl: url,
+                            fixedUrl: protocolMatch[1]
+                        }
+                    });
+                    return protocolMatch[1];
+                }
+            }
+        }
+        
+        return url;
+    }
+
     static readonly SUPPORTED_LIBRARIES: LibraryInfo[] = [
         {
             name: 'BDL (Biblioteca Digitale Lombarda)',
@@ -983,6 +1051,9 @@ export class EnhancedManuscriptDownloaderService {
      * This fixes SSL certificate validation issues with Node.js fetch API
      */
     private async fetchWithHTTPS(url: string, options: any = {}): Promise<Response> {
+        // ULTRA-PRIORITY FIX: Sanitize URL before any processing
+        url = this.sanitizeUrl(url);
+        
         const https = await import('https');
         const { URL } = await import('url');
         const dns = await import('dns').then(m => m.promises);
@@ -1041,9 +1112,17 @@ export class EnhancedManuscriptDownloaderService {
         // Special handling for Grenoble to resolve DNS issues
         if (url.includes('pagella.bm-grenoble.fr')) {
             try {
+                // ULTRA-DEFENSIVE: Validate hostname before DNS lookup
+                const hostname = urlObj.hostname;
+                if (hostname.includes('://') || hostname.includes('https')) {
+                    console.error(`[Grenoble] CRITICAL: Malformed hostname detected: ${hostname}`);
+                    console.error(`[Grenoble] Full URL was: ${url}`);
+                    throw new Error(`Invalid hostname for DNS lookup: ${hostname}`);
+                }
+                
                 // Pre-resolve DNS to avoid EAI_AGAIN errors
-                console.log(`[Grenoble] Pre-resolving DNS for ${urlObj.hostname}`);
-                const addresses = await dns.resolve4(urlObj.hostname);
+                console.log(`[Grenoble] Pre-resolving DNS for ${hostname}`);
+                const addresses = await dns.resolve4(hostname);
                 if (addresses.length > 0) {
                     console.log(`[Grenoble] Resolved to ${addresses[0]}`);
                 }
@@ -1132,8 +1211,27 @@ export class EnhancedManuscriptDownloaderService {
                 rejectUnauthorized: false
             }) : undefined;
         
+        // ULTRA-DEFENSIVE: Final hostname validation
+        const hostname = urlObj.hostname;
+        if (hostname.includes('://') || hostname.includes('https')) {
+            const error = new Error(`Invalid hostname detected: ${hostname}. URL: ${url}`);
+            comprehensiveLogger.log({
+                level: 'error',
+                category: 'network',
+                library,
+                url,
+                errorCode: 'INVALID_HOSTNAME',
+                errorMessage: error.message,
+                details: {
+                    hostname,
+                    url
+                }
+            });
+            throw error;
+        }
+        
         const requestOptions = {
-            hostname: urlObj.hostname,
+            hostname: hostname,
             port: urlObj.port || 443,
             path: urlObj.pathname + urlObj.search,
             method: options.method || 'GET',

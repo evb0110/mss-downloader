@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.82",
+  "version": "1.4.83",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "🔥 ULTRA-PRIORITY FIX v1.4.81: Critical fix for Issue #12 - MDC Catalonia URL malformation error",
-    "Fixed malformed URL error showing IP:PORT concatenated with URL (193.240.184.109:443https://...)",
-    "Added comprehensive error handling for MDC Catalonia with retry logic and DNS pre-resolution",
-    "Clean, helpful error messages now shown instead of malformed URLs for all connection timeouts"
+    "🔥 ULTRA-PRIORITY FIX v1.4.83: Critical fix for Issue #13 - Grenoble URL concatenation error",
+    "Fixed persistent malformed URL error showing hostname concatenated with URL (pagella.bm-grenoble.frhttps://...)",
+    "Added comprehensive URL sanitization at multiple layers to prevent hostname+URL concatenation",
+    "Validated fix with exact user scenario - Grenoble library now works correctly even with malformed URLs"
   ],
   "main": "dist/main/main.js",
   "scripts": {
