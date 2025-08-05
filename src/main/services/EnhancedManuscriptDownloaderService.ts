@@ -620,7 +620,7 @@ export class EnhancedManuscriptDownloaderService {
         const proxiesToTry = isNorwegianContent ? this.NORWEGIAN_PROXIES : this.PROXY_SERVERS;
         
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), configService.get('requestTimeout'));
+        const timeoutId = setTimeout(() => controller.abort(), configService.get('requestTimeout') || 30000);
         
         const fetchOptions = {
             ...options,
@@ -648,7 +648,7 @@ export class EnhancedManuscriptDownloaderService {
             for (const proxy of proxiesToTry) {
                 try {
                     const proxyController = new AbortController();
-                    const proxyTimeoutId = setTimeout(() => proxyController.abort(), configService.get('requestTimeout'));
+                    const proxyTimeoutId = setTimeout(() => proxyController.abort(), configService.get('requestTimeout') || 30000);
                     
                     const proxyUrl = `${proxy}${encodeURIComponent(url)}`;
                     const proxyResponse = await fetch(proxyUrl, {
@@ -684,7 +684,8 @@ export class EnhancedManuscriptDownloaderService {
         
         // Detect library and apply optimized timeout
         const library = this.detectLibrary(url) as TLibrary;
-        const baseTimeout = configService.get('requestTimeout');
+        // CRITICAL FIX: Ensure baseTimeout is never undefined to prevent NaN timeout
+        const baseTimeout = configService.get('requestTimeout') || 30000; // Default to 30 seconds if undefined
         const timeout = library ? 
             LibraryOptimizationService.getTimeoutForLibrary(baseTimeout, library, attempt) :
             baseTimeout;

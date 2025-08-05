@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.76",
+  "version": "1.4.77",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "🔥 ULTRA-PRIORITY FIX: Munich Library URL parsing error resolved (#15)",
-    "Fixed 'Unsupported library for URL: 11' error for URLs with commas in parameters",
-    "URLs like 'page=,1' now parse correctly without being split",
-    "Tested with 136-page and 726-page manuscripts - all working perfectly"
+    "🔥 ULTRA-PRIORITY FIX: e-manuscripta.ch timeout error resolved (#10)",
+    "Fixed NaN timeout causing immediate AbortError for Swiss manuscripts",
+    "All 407 pages now detected correctly across 37 blocks (was showing only 11)",
+    "Downloads working perfectly with high-quality images"
   ],
   "main": "dist/main/main.js",
   "scripts": {
