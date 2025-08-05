@@ -10,11 +10,20 @@
 **🔥 CRITICAL FOCUS: ONE ISSUE, MAXIMUM RESOURCES 🔥**
 
 This command adapts the handle-issues workflow but with ULTRA-FOCUS on a SINGLE issue:
-- Accepts: Issue number, GitHub issue URL, or picks most recent if none provided
+- Accepts: Issue number, GitHub issue URL, or automatically selects best candidate
 - Allocates MAXIMUM computational resources to solve ONE issue perfectly
 - Uses DEEP analysis, extensive testing, and comprehensive validation
 - Implements the AUTONOMOUS workflow for rapid resolution
 - ULTRATHINK: Apply deepest possible analysis to understand and fix root causes
+- **AUTO-START**: Immediately begins work on best available issue if none specified
+
+## 🚀 AUTONOMOUS EXECUTION DIRECTIVE 🚀
+**CRITICAL**: This is a FULLY AUTONOMOUS command. When executed:
+1. **DO NOT WAIT** for user confirmation at any step
+2. **IMMEDIATELY PROCEED** through all phases
+3. **AUTO-SELECT** best issue if none specified
+4. **CONTINUE WORKING** until issue is completely resolved
+5. **ONLY STOP** when ready for version bump or if blocked
 
 ## Usage Patterns:
 ```bash
@@ -24,14 +33,17 @@ This command adapts the handle-issues workflow but with ULTRA-FOCUS on a SINGLE 
 # Pick specific issue by URL
 /claude pick-issue https://github.com/user/repo/issues/15
 
-# Pick most recent issue (default)
+# Auto-select and start working immediately (default)
 /claude pick-issue
 ```
 
-## MANDATORY FIRST STEP: Issue Selection & Deep Analysis
+## MANDATORY FIRST STEP: Autonomous Issue Selection & Deep Analysis
 
-### Step 1: Identify Target Issue
+### Step 1: Identify Target Issue - IMMEDIATE AUTONOMOUS START
 ```bash
+# Create workspace
+mkdir -p .devkit/ultra-priority
+
 # Fetch ALL issues to find the target
 gh issue list --state open --json number,title,body,author,comments,createdAt --limit 100 > .devkit/all-open-issues.json
 
@@ -39,12 +51,14 @@ gh issue list --state open --json number,title,body,author,comments,createdAt --
 if [[ "$1" =~ ^[0-9]+$ ]]; then
     # Issue number provided
     TARGET_ISSUE="$1"
+    echo "🎯 Using specified issue #$TARGET_ISSUE"
 elif [[ "$1" =~ github\.com/.*/issues/([0-9]+) ]]; then
     # Extract issue number from URL
     TARGET_ISSUE="${BASH_REMATCH[1]}"
+    echo "🎯 Extracted issue #$TARGET_ISSUE from URL"
 else
-    # Pick most recent unresolved issue where last comment is from author
-    echo "No issue specified - analyzing issues to find best candidate..."
+    # AUTO-START: Pick best candidate immediately without waiting
+    echo "🚀 AUTO-START: Analyzing all open issues to select best candidate..."
     
     # Get detailed issue data with comments
     gh issue list --state open --json number,title,author,createdAt --limit 100 > .devkit/issue-candidates.json
@@ -78,19 +92,30 @@ else
     if [ -z "$BEST_ISSUE" ]; then
         # Fallback: pick most recent issue
         TARGET_ISSUE=$(cat .devkit/issue-candidates.json | jq -r 'sort_by(.createdAt) | reverse | .[0].number')
-        echo "No issues with author's last comment found - picking most recent: #$TARGET_ISSUE"
+        echo "⚡ AUTO-SELECTED: Most recent issue #$TARGET_ISSUE"
     else
         TARGET_ISSUE=$BEST_ISSUE
         ISSUE_TITLE=$(cat .devkit/issue-candidates.json | jq -r ".[] | select(.number == $TARGET_ISSUE) | .title")
-        echo "Selected issue #$TARGET_ISSUE: $ISSUE_TITLE (last comment from author)"
+        echo "⚡ AUTO-SELECTED: Issue #$TARGET_ISSUE: $ISSUE_TITLE (author's last comment pending)"
     fi
+    
+    echo "🔥 STARTING ULTRA-PRIORITY WORK IMMEDIATELY ON ISSUE #$TARGET_ISSUE"
 fi
 
 # Extract COMPLETE issue data
 cat .devkit/all-open-issues.json | jq ".[] | select(.number == $TARGET_ISSUE)" > .devkit/target-issue.json
+
+# IMMEDIATE PROCEED TO ANALYSIS - NO USER CONFIRMATION NEEDED
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔥 ULTRA-PRIORITY AUTONOMOUS MODE ACTIVATED 🔥"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 ```
 
-### Step 2: ULTRA-DEEP Issue Analysis
+### Step 2: ULTRA-DEEP Issue Analysis - PROCEED IMMEDIATELY
+**DO NOT WAIT FOR USER - CONTINUE AUTONOMOUSLY**
+
+After selecting the issue, IMMEDIATELY proceed with the analysis. Do not ask for confirmation or wait for user input. The autonomous mode means you start working right away.
+
 **MANDATORY OUTPUT:**
 ```
 === 🔥 ULTRA-PRIORITY ISSUE ANALYSIS 🔥 ===
@@ -113,6 +138,8 @@ RESOURCE ALLOCATION:
 - Time Investment: AS NEEDED
 ```
 
+**AUTONOMOUS ACTION**: After displaying this analysis, IMMEDIATELY continue to Phase 1 without waiting.
+
 ### Step 3: Download ALL Attachments & Logs
 ```bash
 # Create dedicated workspace for this issue
@@ -125,6 +152,15 @@ gh issue view $TARGET_ISSUE --comments > .devkit/ultra-priority/issue-$TARGET_IS
 # Extract logs from comments
 # Save everything for deep analysis
 ```
+
+## 🎯 AUTONOMOUS WORKFLOW EXECUTION 🎯
+
+**IMPORTANT**: From this point forward, execute ALL phases sequentially without stopping:
+- Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5
+- Do NOT pause between phases
+- Do NOT ask for user confirmation
+- Do NOT wait for feedback
+- ONLY communicate results and progress
 
 ## Phase 1: ULTRA-DEEP Root Cause Analysis
 
