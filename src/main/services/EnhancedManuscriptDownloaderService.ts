@@ -4097,9 +4097,9 @@ export class EnhancedManuscriptDownloaderService {
             
             // Apply library-specific optimization settings early to get split threshold
             // This must happen before determining split logic to respect user settings
-            const globalMaxConcurrent = maxConcurrent || configService.get('maxConcurrentDownloads');
+            const globalMaxConcurrent = maxConcurrent || configService.get('maxConcurrentDownloads') || 3;
             const library = manifest.library as TLibrary;
-            const globalAutoSplitThresholdMB = Math.round(configService.get('autoSplitThreshold') / (1024 * 1024)); // Convert bytes to MB
+            const globalAutoSplitThresholdMB = Math.round((configService.get('autoSplitThreshold') || 314572800) / (1024 * 1024)); // Convert bytes to MB, default 300MB
             const optimizations = LibraryOptimizationService.applyOptimizations(
                 globalAutoSplitThresholdMB,
                 globalMaxConcurrent,
@@ -4176,8 +4176,8 @@ export class EnhancedManuscriptDownloaderService {
             let actualMaxConcurrent = optimizations.maxConcurrentDownloads || globalMaxConcurrent || 3;
             
             // Validate actualMaxConcurrent to prevent "Invalid array length" error
-            if (!Number.isInteger(actualMaxConcurrent) || actualMaxConcurrent <= 0) {
-                console.warn(`Invalid maxConcurrentDownloads value: ${actualMaxConcurrent}. Using default: 3`);
+            if (!Number.isInteger(actualMaxConcurrent) || actualMaxConcurrent <= 0 || !Number.isFinite(actualMaxConcurrent)) {
+                console.warn(`Invalid maxConcurrentDownloads value: ${actualMaxConcurrent} (type: ${typeof actualMaxConcurrent}). Using default: 3`);
                 actualMaxConcurrent = 3;
             }
             

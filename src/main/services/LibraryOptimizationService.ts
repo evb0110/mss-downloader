@@ -284,10 +284,12 @@ export class LibraryOptimizationService {
 
         return {
             autoSplitThresholdMB: libraryOpts.autoSplitThresholdMB || globalAutoSplitThresholdMB,
-            maxConcurrentDownloads: Math.min(
-                libraryOpts.maxConcurrentDownloads || globalMaxConcurrent,
-                globalMaxConcurrent
-            ),
+            maxConcurrentDownloads: globalMaxConcurrent && Number.isInteger(globalMaxConcurrent) && globalMaxConcurrent > 0
+                ? Math.min(
+                    libraryOpts.maxConcurrentDownloads || globalMaxConcurrent,
+                    globalMaxConcurrent
+                )
+                : (libraryOpts.maxConcurrentDownloads || 3),
             timeoutMultiplier: libraryOpts.timeoutMultiplier || 1.0,
             enableProgressiveBackoff: libraryOpts.enableProgressiveBackoff || false,
             optimizationDescription: libraryOpts.optimizationDescription
