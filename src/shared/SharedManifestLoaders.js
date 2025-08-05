@@ -646,11 +646,56 @@ class SharedManifestLoaders {
         const docId = match[1];
         const images = [];
         
-        // FIXED in v1.4.56: Auto-discover total pages instead of hardcoded limit
-        // Previously limited to 10 pages, now dynamically finds actual page count
+        // ULTRA-PRIORITY FIX v1.4.74: Direct PDF access to prevent hanging
+        // Skip HTML parsing which can hang - test direct PDF access instead
+        console.log(`[BNE] Processing manuscript ID: ${docId}`);
+        
+        const testUrl = `https://bdh-rd.bne.es/pdf.raw?query=id:${docId}&page=1&pdf=true`;
+        
+        try {
+            // Test if PDFs are directly accessible with enhanced timeout
+            console.log(`[BNE] Testing direct PDF access...`);
+            const startTime = Date.now();
+            
+            // Use HEAD request to quickly test PDF availability
+            const testResponse = await this.fetchWithRetry(testUrl, {
+                method: 'HEAD',
+                timeout: 15000, // 15 second timeout
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            }, 5); // 5 retries for reliability
+            
+            const responseTime = Date.now() - startTime;
+            console.log(`[BNE] PDF access test completed in ${responseTime}ms`);
+            
+            if (testResponse.ok || testResponse.status === 200) {
+                // Direct PDF access works - generate URLs without HTML parsing
+                console.log(`[BNE] Direct PDF access confirmed, generating 100 page URLs`);
+                
+                for (let i = 1; i <= 100; i++) {
+                    images.push({
+                        url: `https://bdh-rd.bne.es/pdf.raw?query=id:${docId}&page=${i}&pdf=true`,
+                        label: `Page ${i}`
+                    });
+                }
+                
+                return { images };
+            }
+        } catch (error) {
+            console.warn(`[BNE] Direct PDF test failed: ${error.message}, falling back to HTML parsing`);
+        }
+        
+        // Fallback: Try HTML parsing with enhanced timeouts
         try {
             const viewerUrl = `https://bdh-rd.bne.es/viewer.vm?id=${docId}`;
-            const response = await this.fetchWithRetry(viewerUrl);
+            const response = await this.fetchWithRetry(viewerUrl, {
+                timeout: 30000, // 30 second timeout
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            }, 5); // 5 retries
+            
             const html = await response.text();
             
             // Look for total pages in the HTML - enhanced detection
@@ -659,7 +704,7 @@ class SharedManifestLoaders {
             
             if (totalPagesMatch) {
                 totalPages = parseInt(totalPagesMatch[1] || totalPagesMatch[2] || totalPagesMatch[3]);
-                console.log(`[BNE] Auto-discovered ${totalPages} total pages`);
+                console.log(`[BNE] Auto-discovered ${totalPages} total pages from HTML`);
             }
             
             // Generate URLs for all pages
@@ -671,8 +716,8 @@ class SharedManifestLoaders {
                 });
             }
         } catch (error) {
-            console.warn('[BNE] Failed to get page count, using default 100 pages:', error.message);
-            // Fallback to 100 pages if we can't determine the total
+            console.warn('[BNE] HTML parsing failed, using default 100 pages:', error.message);
+            // Final fallback to 100 pages
             for (let i = 1; i <= 100; i++) {
                 const imageUrl = `https://bdh-rd.bne.es/pdf.raw?query=id:${docId}&page=${i}&pdf=true`;
                 images.push({
