@@ -1,6 +1,6 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.79",
+  "version": "1.4.80",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
     "🔥 ULTRA-PRIORITY FIX: Bodleian Library crash resolved (#17)",
