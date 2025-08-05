@@ -991,6 +991,9 @@ export class EnhancedManuscriptDownloaderService {
      * This fixes Node.js v22.16.0 compatibility issues with fetch API and SSL bypass
      */
     private async fetchBneWithHttps(url: string, options: { method?: string } = {}): Promise<Response> {
+        // ULTRA-PRIORITY FIX: Sanitize URL before any processing
+        url = this.sanitizeUrl(url);
+        
         return new Promise((resolve, reject) => {
             const urlObj = new URL(url);
             const requestOptions = {

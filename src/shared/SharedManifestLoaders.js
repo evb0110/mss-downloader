@@ -39,12 +39,16 @@ class SharedManifestLoaders {
                 if (i === retries - 1) {
                     // Enhanced error messages for specific error types
                     if (error.code === 'ENOTFOUND' || error.code === 'EAI_AGAIN') {
-                        const domain = new URL(url).hostname;
+                        // ULTRA-PRIORITY FIX: Sanitize URL before extracting hostname
+                        const sanitizedUrl = this.sanitizeUrl(url);
+                        const domain = new URL(sanitizedUrl).hostname;
                         throw new Error(`DNS resolution failed for ${domain}. This may be due to:\n1. Network connectivity issues\n2. DNS server problems\n3. Firewall blocking the domain\n4. The server may be temporarily down\n\nPlease check your internet connection and try again.`);
                     }
                     
                     if (error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
-                        const domain = new URL(url).hostname;
+                        // ULTRA-PRIORITY FIX: Sanitize URL before extracting hostname
+                        const sanitizedUrl = this.sanitizeUrl(url);
+                        const domain = new URL(sanitizedUrl).hostname;
                         // Library-specific timeout messages
                         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
                             throw new Error(`Verona server is not responding after ${retries} attempts over ${this.calculateTotalRetryTime(retries)} minutes. The server may be experiencing high load, maintenance, or network issues. Please try again in 10-15 minutes.`);

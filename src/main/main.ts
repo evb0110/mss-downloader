@@ -502,10 +502,29 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
   }
   
   try {
-    // CRITICAL FIX: Detect and fix malformed URLs where hostname is concatenated with URL
+    // ULTRA-PRIORITY FIX: Comprehensive URL sanitization to prevent hostname concatenation
     if (url && typeof url === 'string') {
+      // Pattern 1: hostname directly concatenated with protocol (most common)
+      // Example: pagella.bm-grenoble.frhttps://pagella.bm-grenoble.fr/...
+      const concatenatedPattern = /^([a-z0-9.-]+)(https?:\/\/.+)$/i;
+      const concatenatedMatch = url.match(concatenatedPattern);
+      if (concatenatedMatch) {
+        const [, hostname, actualUrl] = concatenatedMatch;
+        comprehensiveLogger.log({
+          level: 'error',
+          category: 'manifest',
+          url: actualUrl,
+          details: {
+            message: 'DETECTED MALFORMED URL: hostname concatenated with URL',
+            malformedUrl: url,
+            extractedHostname: hostname,
+            extractedUrl: actualUrl
+          }
+        });
+        url = actualUrl;
+      }
       // Check for .frhttps:// pattern (existing)
-      if (url.includes('.frhttps://')) {
+      else if (url.includes('.frhttps://')) {
         comprehensiveLogger.log({
           level: 'error',
           category: 'manifest',
