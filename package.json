@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.74",
+  "version": "1.4.75",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "COMPREHENSIVE VALIDATION: Tested all 14 open GitHub issues with production code",
-    "CONFIRMED SUPPORT: Munich, Bodleian, Norwegian, E-manuscripta libraries all working",
-    "AUTO-SPLIT: Confirmed threshold is 300MB as requested by users",
-    "NETWORK ISSUES: Identified 6 DNS/timeout issues that require server-side fixes"
+    "🔥 ULTRA-PRIORITY FIX: Bodleian Library 'Invalid array length' crash resolved (#17)",
+    "Added validation for concurrent downloads to prevent array creation errors",
+    "Added explicit Bodleian optimizations: 3 concurrent downloads, extended timeouts",
+    "Tested all 5 URLs from issue #17 - all manuscripts now download successfully"
   ],
   "main": "dist/main/main.js",
   "scripts": {

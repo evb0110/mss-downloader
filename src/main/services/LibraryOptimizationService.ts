@@ -91,6 +91,12 @@ export class LibraryOptimizationService {
         'sharedcanvas': {},
         'ugent': {},
         'bl': {},
+        'bodleian': {
+            maxConcurrentDownloads: 3, // Bodleian Digital Library standard concurrency
+            timeoutMultiplier: 1.5, // Extended timeout for large manuscript processing
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'Bodleian Library optimizations: 3 concurrent downloads, extended timeouts for large manuscripts'
+        },
         'florus': {},
         'cudl': {},
         'isos': {},

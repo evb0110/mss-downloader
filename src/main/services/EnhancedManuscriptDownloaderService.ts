@@ -4171,14 +4171,21 @@ export class EnhancedManuscriptDownloaderService {
                 });
             };
             
-            // Use the already calculated optimizations
-            const actualMaxConcurrent = optimizations.maxConcurrentDownloads;
+            // Use the already calculated optimizations with validation
+            let actualMaxConcurrent = optimizations.maxConcurrentDownloads || globalMaxConcurrent || 3;
+            
+            // Validate actualMaxConcurrent to prevent "Invalid array length" error
+            if (!Number.isInteger(actualMaxConcurrent) || actualMaxConcurrent <= 0) {
+                console.warn(`Invalid maxConcurrentDownloads value: ${actualMaxConcurrent}. Using default: 3`);
+                actualMaxConcurrent = 3;
+            }
             
             // Log optimization info for debugging
             if (optimizations.optimizationDescription) {
                 console.log(`Applying ${library} optimizations: ${optimizations.optimizationDescription}`);
                 console.log(`Using ${actualMaxConcurrent} concurrent downloads (global: ${globalMaxConcurrent})`);
             }
+            
             const semaphore = new Array(actualMaxConcurrent).fill(null);
             let nextPageIndex = actualStartPage - 1; // Convert to 0-based index
             
