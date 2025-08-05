@@ -1726,10 +1726,51 @@ onMounted(async () => {
 });
 
 function parseUrls(text: string): string[] {
-    return text
-        .split(/[\s,;]+/)
-        .map((url) => url.trim())
-        .filter((url) => url.length > 0);
+    // Smart URL parsing that preserves commas in query parameters
+    const urls: string[] = [];
+    
+    // Special handling for URLs with commas in query parameters
+    // Look for patterns like "?page=,1" or "?page=, 1"
+    const urlPattern = /https?:\/\/[^\s;]+/g;
+    let match;
+    let lastIndex = 0;
+    
+    while ((match = urlPattern.exec(text)) !== null) {
+        let url = match[0];
+        
+        // Check if URL ends with "=" and might have a comma-separated value after it
+        if (url.endsWith('=')) {
+            // Look for comma followed by value after this URL
+            const afterMatch = text.substring(match.index + url.length);
+            const commaValueMatch = afterMatch.match(/^,\s*([^\s;]+)/);
+            if (commaValueMatch) {
+                url += commaValueMatch[0].replace(/\s+/g, ''); // Remove spaces
+                urlPattern.lastIndex = match.index + url.length;
+            }
+        } else if (url.includes('=,')) {
+            // URL already contains =, pattern, check if we need to grab more
+            const afterMatch = text.substring(match.index + url.length);
+            const valueMatch = afterMatch.match(/^\s*([^\s;]+)/);
+            if (valueMatch && !valueMatch[1].includes('://')) {
+                url += valueMatch[1];
+                urlPattern.lastIndex = match.index + url.length;
+            }
+        }
+        
+        urls.push(url);
+        lastIndex = urlPattern.lastIndex;
+    }
+    
+    // If no URLs found with pattern, fall back to simple splitting
+    // This handles non-URL text that might be in the input
+    if (urls.length === 0) {
+        return text
+            .split(/[\s;]+/)
+            .map((item) => item.trim())
+            .filter((item) => item.length > 0);
+    }
+    
+    return urls;
 }
 
 async function parseManuscriptWithCaptcha(url: string) {

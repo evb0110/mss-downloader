@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.75",
+  "version": "1.4.76",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "🔥 ULTRA-PRIORITY FIX: Bodleian Library 'Invalid array length' crash resolved (#17)",
-    "Added validation for concurrent downloads to prevent array creation errors",
-    "Added explicit Bodleian optimizations: 3 concurrent downloads, extended timeouts",
-    "Tested all 5 URLs from issue #17 - all manuscripts now download successfully"
+    "🔥 ULTRA-PRIORITY FIX: Munich Library URL parsing error resolved (#15)",
+    "Fixed 'Unsupported library for URL: 11' error for URLs with commas in parameters",
+    "URLs like 'page=,1' now parse correctly without being split",
+    "Tested with 136-page and 726-page manuscripts - all working perfectly"
   ],
   "main": "dist/main/main.js",
   "scripts": {
