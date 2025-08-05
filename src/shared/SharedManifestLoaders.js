@@ -14,6 +14,16 @@ class SharedManifestLoaders {
     }
 
     async defaultNodeFetch(url, options = {}, retries = 3) {
+        // CRITICAL FIX: Validate URL before processing
+        if (url && typeof url === 'string' && url.includes('.frhttps://')) {
+            console.error('[defaultNodeFetch] DETECTED MALFORMED URL:', url);
+            const match = url.match(/(https:\/\/.+)$/);
+            if (match) {
+                url = match[1];
+                console.log('[defaultNodeFetch] CORRECTED URL TO:', url);
+            }
+        }
+        
         // Increase retries for Verona domains  
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
             retries = 15; // Increased from 9 to 15 for maximum reliability against server issues
@@ -85,6 +95,16 @@ class SharedManifestLoaders {
         
         if (redirectCount > MAX_REDIRECTS) {
             throw new Error(`Too many redirects (${redirectCount}) for URL: ${url}`);
+        }
+        
+        // CRITICAL FIX: Detect and fix malformed URLs where hostname is concatenated with URL
+        if (url && typeof url === 'string' && url.includes('.frhttps://')) {
+            console.error('[SharedManifestLoaders] DETECTED MALFORMED URL:', url);
+            const match = url.match(/(https:\/\/.+)$/);
+            if (match) {
+                url = match[1];
+                console.log('[SharedManifestLoaders] CORRECTED URL TO:', url);
+            }
         }
         
         // Check if we need to use HTTPS module for SSL bypass domains

@@ -502,6 +502,36 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
   }
   
   try {
+    // CRITICAL FIX: Detect and fix malformed URLs where hostname is concatenated with URL
+    if (url && typeof url === 'string' && url.includes('.frhttps://')) {
+      comprehensiveLogger.log({
+        level: 'error',
+        category: 'manifest',
+        url,
+        details: {
+          message: 'DETECTED MALFORMED URL: hostname concatenated with URL',
+          malformedUrl: url
+        }
+      });
+      
+      // Extract the correct URL from the malformed string
+      const match = url.match(/(https:\/\/.+)$/);
+      if (match) {
+        const correctedUrl = match[1];
+        comprehensiveLogger.log({
+          level: 'info',
+          category: 'manifest',
+          url: correctedUrl,
+          details: {
+            message: 'URL corrected',
+            originalUrl: url,
+            correctedUrl: correctedUrl
+          }
+        });
+        url = correctedUrl;
+      }
+    }
+    
     // Log the incoming URL for debugging
     comprehensiveLogger.log({
       level: 'debug',
