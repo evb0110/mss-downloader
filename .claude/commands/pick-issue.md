@@ -1,0 +1,420 @@
+# Pick Single GitHub Issue - ULTRA-PRIORITY AUTONOMOUS WORKFLOW v1.0
+
+**⚡ ULTRA-PRIORITY MODE ⚡**: This command focuses ALL available resources on solving ONE critical issue with MAXIMUM thoroughness and depth.
+
+**Preliminary**
+- if `jq` isn't installed on the computer, install it
+- if `gh` isn't installed, install it and ask user to authorize and use it to access issues
+- always use `gh` to download issues and attached logs or other files
+
+**🔥 CRITICAL FOCUS: ONE ISSUE, MAXIMUM RESOURCES 🔥**
+
+This command adapts the handle-issues workflow but with ULTRA-FOCUS on a SINGLE issue:
+- Accepts: Issue number, GitHub issue URL, or picks most recent if none provided
+- Allocates MAXIMUM computational resources to solve ONE issue perfectly
+- Uses DEEP analysis, extensive testing, and comprehensive validation
+- Implements the AUTONOMOUS workflow for rapid resolution
+- ULTRATHINK: Apply deepest possible analysis to understand and fix root causes
+
+## Usage Patterns:
+```bash
+# Pick specific issue by number
+/claude pick-issue 15
+
+# Pick specific issue by URL
+/claude pick-issue https://github.com/user/repo/issues/15
+
+# Pick most recent issue (default)
+/claude pick-issue
+```
+
+## MANDATORY FIRST STEP: Issue Selection & Deep Analysis
+
+### Step 1: Identify Target Issue
+```bash
+# Fetch ALL issues to find the target
+gh issue list --state open --json number,title,body,author,comments,createdAt --limit 100 > .devkit/all-open-issues.json
+
+# Determine which issue to handle
+if [[ "$1" =~ ^[0-9]+$ ]]; then
+    # Issue number provided
+    TARGET_ISSUE="$1"
+elif [[ "$1" =~ github\.com/.*/issues/([0-9]+) ]]; then
+    # Extract issue number from URL
+    TARGET_ISSUE="${BASH_REMATCH[1]}"
+else
+    # Pick most recent issue
+    TARGET_ISSUE=$(cat .devkit/all-open-issues.json | jq -r 'sort_by(.createdAt) | reverse | .[0].number')
+    echo "No issue specified - picking most recent: #$TARGET_ISSUE"
+fi
+
+# Extract COMPLETE issue data
+cat .devkit/all-open-issues.json | jq ".[] | select(.number == $TARGET_ISSUE)" > .devkit/target-issue.json
+```
+
+### Step 2: ULTRA-DEEP Issue Analysis
+**MANDATORY OUTPUT:**
+```
+=== 🔥 ULTRA-PRIORITY ISSUE ANALYSIS 🔥 ===
+Target Issue: #15 - Biblioteca Nacional de España
+Author: @username
+Created: 2024-01-15
+
+COMPREHENSIVE ISSUE BREAKDOWN:
+1. Primary Error: [Exact error message]
+2. Affected URL: [Exact URL from issue]
+3. Library System: [Detected library type]
+4. Root Cause Hypothesis: [Initial analysis]
+5. Related Components: [All affected code paths]
+6. Historical Context: [Previous similar issues]
+
+RESOURCE ALLOCATION:
+- Analysis Depth: MAXIMUM
+- Test Coverage: EXHAUSTIVE
+- Validation Cycles: UNLIMITED
+- Time Investment: AS NEEDED
+```
+
+### Step 3: Download ALL Attachments & Logs
+```bash
+# Create dedicated workspace for this issue
+mkdir -p .devkit/ultra-priority/issue-$TARGET_ISSUE/{logs,attachments,analysis}
+
+# Download all comments and attachments
+gh issue view $TARGET_ISSUE --comments > .devkit/ultra-priority/issue-$TARGET_ISSUE/full-thread.txt
+
+# Parse and download any attached files
+# Extract logs from comments
+# Save everything for deep analysis
+```
+
+## Phase 1: ULTRA-DEEP Root Cause Analysis
+
+### 1.1 Production Code Mapping
+Create comprehensive code flow analysis:
+```javascript
+// File: .devkit/ultra-priority/issue-$TARGET_ISSUE/analysis/code-flow-map.js
+
+const fs = require('fs');
+const path = require('path');
+
+// Map ENTIRE code execution path for the failing URL
+class UltraDeepAnalyzer {
+    constructor(issueData) {
+        this.issue = issueData;
+        this.codeFlowMap = new Map();
+        this.failurePoints = [];
+    }
+    
+    async analyzeCompletePath() {
+        console.log('🔬 ULTRA-DEEP ANALYSIS INITIATED');
+        
+        // 1. Trace from UI click to manifest load
+        await this.traceUIFlow();
+        
+        // 2. Map all network requests
+        await this.mapNetworkFlow();
+        
+        // 3. Analyze all data transformations
+        await this.analyzeDataFlow();
+        
+        // 4. Check all error boundaries
+        await this.checkErrorHandling();
+        
+        // 5. Review historical changes
+        await this.reviewGitHistory();
+        
+        return this.generateComprehensiveReport();
+    }
+}
+```
+
+### 1.2 Multi-Dimensional Testing
+**MANDATORY: Test from EVERY angle:**
+
+1. **URL Variations Testing:**
+   - Original exact URL
+   - URL with different parameters
+   - URL at different depths
+   - URL with special characters
+   - URL encoding variations
+
+2. **Network Condition Testing:**
+   - Normal connection
+   - Slow connection simulation
+   - Intermittent failures
+   - Proxy configurations
+   - SSL variations
+
+3. **Data Format Testing:**
+   - Expected format
+   - Malformed responses
+   - Empty responses
+   - Partial data
+   - Encoding issues
+
+### 1.3 Historical Pattern Analysis
+```bash
+# Search for similar issues in closed issues
+gh issue list --state closed --search "$LIBRARY_NAME" --json number,title,body > .devkit/historical-similar.json
+
+# Analyze git history for related files
+git log --grep="$LIBRARY_NAME" --oneline > .devkit/related-commits.txt
+
+# Check for regression patterns
+git diff HEAD~20..HEAD -- src/shared/SharedManifestLoaders.js > .devkit/recent-changes.diff
+```
+
+## Phase 2: EXHAUSTIVE Solution Development
+
+### 2.1 Solution Strategy Matrix
+**Create MULTIPLE solution approaches:**
+```
+SOLUTION MATRIX for Issue #15:
+┌─────────────────────────────────────────┐
+│ Approach A: Direct Fix                  │
+│ - Modify URL parsing logic              │
+│ - Risk: May affect other libraries      │
+│ - Confidence: 70%                       │
+├─────────────────────────────────────────┤
+│ Approach B: New Handler                 │
+│ - Create dedicated BNE handler          │
+│ - Risk: Code duplication                │
+│ - Confidence: 90%                       │
+├─────────────────────────────────────────┤
+│ Approach C: Pattern Enhancement         │
+│ - Enhance regex patterns                │
+│ - Risk: Complexity increase             │
+│ - Confidence: 85%                       │
+└─────────────────────────────────────────┘
+```
+
+### 2.2 Implementation with MAXIMUM Safety
+```javascript
+// BEFORE any changes - create safety snapshot
+const safetySnapshot = {
+    timestamp: new Date().toISOString(),
+    issue: TARGET_ISSUE,
+    originalCode: fs.readFileSync('src/shared/SharedManifestLoaders.js', 'utf8'),
+    workingLibraries: await testAllExistingLibraries(),
+    approach: selectedApproach
+};
+
+fs.writeFileSync('.devkit/ultra-priority/safety-snapshot.json', JSON.stringify(safetySnapshot));
+```
+
+### 2.3 Progressive Implementation
+1. **Implement minimal fix first**
+2. **Test with exact user URL**
+3. **If successful, enhance gradually**
+4. **Test after EACH enhancement**
+5. **Stop at optimal solution**
+
+## Phase 3: ULTRA-VALIDATION Protocol
+
+### 3.1 Exhaustive Test Suite
+```javascript
+// File: .devkit/ultra-priority/issue-$TARGET_ISSUE/ultra-validation.js
+
+class UltraValidator {
+    async validateComprehensively() {
+        const results = {
+            primary: await this.testExactUserScenario(),
+            variations: await this.testAllURLVariations(),
+            regression: await this.testAllOtherLibraries(),
+            performance: await this.measurePerformanceImpact(),
+            stability: await this.runStressTests(),
+            edge_cases: await this.testEdgeCases()
+        };
+        
+        // Generate visual proof
+        await this.generateVisualEvidence(results);
+        
+        return results;
+    }
+    
+    async runStressTests() {
+        // Download 100 pages
+        // Test concurrent requests
+        // Test memory usage
+        // Test error recovery
+    }
+    
+    async generateVisualEvidence(results) {
+        // Create comparison PDFs
+        // Generate performance graphs
+        // Create error/success matrix
+        // Build comprehensive report
+    }
+}
+```
+
+### 3.2 Multi-Environment Validation
+```bash
+# Test in different environments
+npm run test:e2e               # Electron environment
+node validation-script.js      # Pure Node.js
+npm run build && test built    # Production build
+
+# Test with different Node versions if possible
+```
+
+### 3.3 Evidence Collection
+**MANDATORY evidence before version bump:**
+1. Screenshot of working download
+2. PDF validation showing correct content
+3. Performance metrics showing no regression
+4. Test results from ALL other libraries
+5. Memory usage comparison
+6. Network request analysis
+
+## Phase 4: ULTRA-DETAILED Documentation
+
+### 4.1 Comprehensive Fix Report
+```markdown
+# Fix Report for Issue #[NUMBER]
+
+## Executive Summary
+[One paragraph explaining the fix]
+
+## Root Cause Analysis
+### The Problem
+[Detailed explanation with code examples]
+
+### Why It Failed
+[Step-by-step failure analysis]
+
+### Historical Context
+[Any related issues or previous attempts]
+
+## Solution Implementation
+### Approach Chosen
+[Why this approach over others]
+
+### Code Changes
+[Detailed diff with explanations]
+
+### Safety Measures
+[How we ensured no regressions]
+
+## Validation Results
+### Primary Test
+[Results with exact user URL]
+
+### Comprehensive Testing
+[Matrix of all test results]
+
+### Performance Impact
+[Before/after metrics]
+
+## Visual Evidence
+[Screenshots and PDF samples]
+```
+
+### 4.2 Issue Author Communication
+**ULTRA-PRIORITY Russian response:**
+```markdown
+🔥 **РЕШЕНИЕ С МАКСИМАЛЬНЫМ ПРИОРИТЕТОМ** 🔥
+
+Уважаемый @[author],
+
+Ваша проблема была обработана с **МАКСИМАЛЬНЫМ приоритетом** и **ГЛУБОЧАЙШИМ анализом**.
+
+## 📊 Результаты ультра-анализа:
+[Подробное объяснение проблемы]
+
+## ✅ Реализованное решение:
+[Техническое описание исправления]
+
+## 🔬 Проверка решения:
+- Протестировано с вашим точным URL: ✅
+- Скачано страниц для проверки: 100 ✅
+- Проверка других библиотек: ✅ (регрессий нет)
+- Производительность: ✅ (улучшена на 15%)
+
+## 📥 Доказательства:
+[Приложены тестовые PDF файлы]
+
+**Версия X.X.X** уже доступна для скачивания.
+
+Это исправление получило наш **МАКСИМАЛЬНЫЙ** уровень тестирования и валидации.
+
+С уважением,
+Команда MSS Downloader
+```
+
+## Phase 5: AUTONOMOUS Version Bump
+
+### Pre-bump Ultra-Checklist:
+- [ ] Issue selected and deeply analyzed
+- [ ] Root cause identified with 100% confidence
+- [ ] Multiple solution approaches evaluated
+- [ ] Optimal solution implemented
+- [ ] Exact user URL working perfectly
+- [ ] 100+ page stress test passed
+- [ ] All other libraries tested (no regressions)
+- [ ] Performance improved or maintained
+- [ ] Memory usage optimal
+- [ ] Visual evidence generated
+- [ ] Comprehensive report written
+- [ ] npm run lint - ZERO errors
+- [ ] npm run build - SUCCESS
+
+### Version Bump with EMPHASIS:
+```bash
+# Update package.json with ULTRA-PRIORITY marker
+# In commit message, emphasize the critical nature
+
+git add -A
+git commit -m "🔥 ULTRA-PRIORITY FIX v.X.X.X: Critical fix for Issue #$TARGET_ISSUE - $ISSUE_TITLE
+
+- MAXIMUM RESOURCES allocated to this fix
+- DEEPEST ANALYSIS performed
+- COMPREHENSIVE VALIDATION completed
+- 100% confidence in solution stability"
+
+git push origin main
+```
+
+## CRITICAL SUCCESS FACTORS
+
+### 1. Resource Allocation
+- **NO TIME LIMITS** - Take as long as needed
+- **MAXIMUM COMPUTING** - Use all available resources
+- **DEEP THINKING** - Analyze from every angle
+- **EXHAUSTIVE TESTING** - Test beyond normal limits
+
+### 2. Quality Standards
+- **100% Confidence** - No doubts about the fix
+- **Zero Regressions** - Nothing else can break
+- **Performance Gain** - Should work better than before
+- **Future Proof** - Handle edge cases proactively
+
+### 3. Communication Excellence
+- **Author Engagement** - Treat author as VIP
+- **Detailed Updates** - Provide progress reports
+- **Visual Proof** - Show, don't just tell
+- **Personal Touch** - Make them feel heard
+
+## Conflict Resolution
+This ULTRA-PRIORITY workflow:
+- **OVERRIDES** time constraints
+- **MAXIMIZES** resource usage
+- **REQUIRES** deepest analysis
+- **DEMANDS** perfect solution
+
+But MAINTAINS:
+- Production code testing requirements
+- No isolated script creation
+- Exact URL testing
+- Root cause fixing (not symptoms)
+
+## FINAL ULTRA-CHECKLIST
+- [ ] Spent MAXIMUM effort on analysis
+- [ ] Explored ALL solution paths
+- [ ] Tested EXHAUSTIVELY
+- [ ] Created COMPREHENSIVE documentation
+- [ ] Achieved 100% confidence
+- [ ] Delivered EXCEPTIONAL fix
+
+**Remember: This is ULTRA-PRIORITY mode. One issue, maximum resources, perfect solution.**
