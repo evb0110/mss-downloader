@@ -465,8 +465,8 @@ https://digi.vatlib.it/..."
                       class="manuscript-error-link"
                       style="cursor: pointer;"
                       @click.prevent="openInBrowser(group.parent.url)"
-                      @contextmenu.prevent="copyLinkToClipboard(group.parent.url)"
-                      :title="`Left click: Open in browser\nRight click: Copy link`"
+                      @contextmenu.prevent="showContextMenu($event, group.parent.url)"
+                      title="Click to open in browser"
                     >
                       {{ group.parent.url }}
                     </a>
@@ -477,8 +477,8 @@ https://digi.vatlib.it/..."
                       class="manuscript-title-link"
                       style="cursor: pointer;"
                       @click.prevent="openInBrowser(group.parent.url)"
-                      @contextmenu.prevent="copyLinkToClipboard(group.parent.url)"
-                      :title="`Left click: Open in browser\nRight click: Copy link`"
+                      @contextmenu.prevent="showContextMenu($event, group.parent.url)"
+                      title="Click to open in browser"
                     >
                       {{ group.parent.displayName }}
                     </a>
@@ -848,6 +848,21 @@ https://digi.vatlib.it/..."
     @close="closeAlertModal"
   />
 
+  <!-- Context Menu -->
+  <div 
+    v-if="contextMenu.visible"
+    class="context-menu"
+    :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }"
+    @click.stop
+  >
+    <div class="context-menu-item" @click="copyLinkFromMenu">
+      📋 Copy Link
+    </div>
+    <div class="context-menu-item" @click="openLinkFromMenu">
+      🌐 Open in Browser
+    </div>
+  </div>
+
   <!-- Log Viewer Modal -->
   <div v-if="showLogViewer" class="log-viewer-modal">
     <div class="log-viewer-content">
@@ -1098,6 +1113,14 @@ const currentLogs = ref<any[]>([]);
 const currentLogItem = ref<any>(null);
 const downloadLogs = ref<Map<string, any[]>>(new Map());
 const showAddMoreDocumentsModal = ref(false);
+
+// Context menu state
+const contextMenu = ref({
+    visible: false,
+    x: 0,
+    y: 0,
+    url: ''
+});
 
 // Set up queue monitoring for logs
 let logMonitorInterval: NodeJS.Timeout | null = null;
@@ -2423,10 +2446,36 @@ async function openInBrowser(url: string) {
     }
 }
 
+// Context menu functions
+function showContextMenu(event: MouseEvent, url: string) {
+    contextMenu.value = {
+        visible: true,
+        x: event.clientX,
+        y: event.clientY,
+        url: url
+    };
+    
+    // Close menu when clicking elsewhere
+    document.addEventListener('click', hideContextMenu, { once: true });
+}
+
+function hideContextMenu() {
+    contextMenu.value.visible = false;
+}
+
+async function copyLinkFromMenu() {
+    await copyLinkToClipboard(contextMenu.value.url);
+    hideContextMenu();
+}
+
+async function openLinkFromMenu() {
+    await openInBrowser(contextMenu.value.url);
+    hideContextMenu();
+}
+
 async function copyLinkToClipboard(url: string) {
     try {
         await navigator.clipboard.writeText(url);
-        // Optional: Show a brief toast notification
         console.log('Link copied to clipboard:', url);
     } catch (error) {
         console.error('Failed to copy link:', error);
@@ -3019,6 +3068,31 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 
 .view-logs-btn:hover {
     background: #5a6268;
+}
+
+/* Context menu */
+.context-menu {
+    position: fixed;
+    background: #2d2d2d;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 4px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    min-width: 150px;
+}
+
+.context-menu-item {
+    padding: 8px 16px;
+    color: #e0e0e0;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+    user-select: none;
+}
+
+.context-menu-item:hover {
+    background: #3a3a3a;
 }
 
 /* Log viewer modal */
