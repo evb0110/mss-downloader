@@ -503,6 +503,58 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
   }
   
   try {
+    // ULTRA-PRIORITY FIX for Issue #13: Apply same URL sanitization as regular handler
+    if (url && typeof url === 'string') {
+      // Pattern 1: hostname directly concatenated with protocol (most common)
+      // Example: pagella.bm-grenoble.frhttps://pagella.bm-grenoble.fr/...
+      const concatenatedPattern = /^([a-z0-9.-]+)(https?:\/\/.+)$/i;
+      const concatenatedMatch = url.match(concatenatedPattern);
+      if (concatenatedMatch) {
+        const [, hostname, actualUrl] = concatenatedMatch;
+        comprehensiveLogger.log({
+          level: 'error',
+          category: 'manifest',
+          url: actualUrl,
+          details: {
+            message: 'DETECTED MALFORMED URL in chunked handler: hostname concatenated with URL',
+            malformedUrl: url,
+            extractedHostname: hostname,
+            extractedUrl: actualUrl
+          }
+        });
+        url = actualUrl;
+      }
+      // Check for .frhttps:// pattern (existing)
+      else if (url.includes('.frhttps://')) {
+        comprehensiveLogger.log({
+          level: 'error',
+          category: 'manifest',
+          url,
+          details: {
+            message: 'DETECTED MALFORMED URL in chunked handler: hostname concatenated with URL',
+            malformedUrl: url
+          }
+        });
+        
+        // Extract the correct URL from the malformed string
+        const match = url.match(/(https:\/\/.+)$/);
+        if (match) {
+          const correctedUrl = match[1];
+          comprehensiveLogger.log({
+            level: 'info',
+            category: 'manifest',
+            url: correctedUrl,
+            details: {
+              message: 'URL corrected in chunked handler',
+              originalUrl: url,
+              correctedUrl: correctedUrl
+            }
+          });
+          url = correctedUrl;
+        }
+      }
+    }
+    
     const manifest = await enhancedManuscriptDownloader.loadManifest(url);
     
     // Check if manifest is large and needs chunking
