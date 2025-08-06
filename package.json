@@ -1,6 +1,6 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.85",
+  "version": "1.4.86",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
     "🔥 ULTRA-PRIORITY FIX v1.4.83: Critical fix for Issue #13 - Grenoble URL concatenation error",

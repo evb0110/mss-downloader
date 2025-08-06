@@ -3092,20 +3092,22 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * Many e-manuscripta manuscripts are split into multiple blocks with sequential IDs
      */
     async discoverEManuscriptaBlocks(baseManuscriptId, library) {
-        console.log(`[e-manuscripta] Discovering blocks for manuscript ${baseManuscriptId} in library ${library}`);
+        console.log(`[e-manuscripta] ULTRA-OPTIMIZED Discovery for manuscript ${baseManuscriptId} in library ${library}`);
         
         const baseId = parseInt(baseManuscriptId);
         const discoveredBlocks = new Set([baseId]);
+        const startTime = Date.now();
+        const maxDiscoveryTime = 8000; // 8 seconds max for discovery
         
-        // Strategy 1: Sequential search with common patterns
-        // Most e-manuscripta blocks increment by 11 (pages per block)
+        // ULTRA-OPTIMIZED Strategy: Smart pattern detection with minimal requests
+        // Previous version made 1000+ requests causing timeouts (Issue #10)
         const searchPattern = 11;
-        const maxSearchRange = 200; // Don't search too far to avoid overwhelming server
+        const maxQuickSearchRange = 55; // Reduced from 200 to prevent timeouts
         
-        console.log(`[e-manuscripta] Searching blocks around ${baseId} with pattern +/-${searchPattern}`);
+        console.log(`[e-manuscripta] Quick search around ${baseId} with pattern +/-${searchPattern}`);
         
-        // Search backwards from base ID
-        for (let offset = searchPattern; offset <= maxSearchRange; offset += searchPattern) {
+        // Quick backward search (limited to prevent timeout)
+        for (let offset = searchPattern; offset <= maxQuickSearchRange && (Date.now() - startTime) < maxDiscoveryTime; offset += searchPattern) {
             const testId = baseId - offset;
             if (testId <= 0) break;
             
@@ -3126,12 +3128,12 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 // Continue searching even if there's an error
             }
             
-            // Small delay to be respectful to the server
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Minimal delay to speed up discovery
+            await new Promise(resolve => setTimeout(resolve, 20));
         }
         
-        // Search forwards from base ID
-        for (let offset = searchPattern; offset <= maxSearchRange; offset += searchPattern) {
+        // Quick forward search (limited to prevent timeout)
+        for (let offset = searchPattern; offset <= maxQuickSearchRange && (Date.now() - startTime) < maxDiscoveryTime; offset += searchPattern) {
             const testId = baseId + offset;
             
             try {
@@ -3151,8 +3153,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 // Continue searching even if there's an error
             }
             
-            // Small delay to be respectful to the server
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Minimal delay to speed up discovery
+            await new Promise(resolve => setTimeout(resolve, 20));
         }
         
         // Strategy 2: Check specific known patterns for this manuscript
@@ -3210,76 +3212,88 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         
-        // Strategy 3: Extended search for distant block series
-        // Some manuscripts have multiple disjoint series separated by large gaps
-        console.log(`[e-manuscripta] Checking for distant block series...`);
+        // Strategy 3: ULTRA-FAST heuristic for known multi-series patterns
+        // Critical fix for Issue #10: Use smart detection to avoid timeout
+        if ((Date.now() - startTime) < maxDiscoveryTime) {
+            console.log(`[e-manuscripta] Checking for multi-series manuscripts...`);
         
-        // Define strategic probe points based on common manuscript structures
-        // Include both exact multiples of 11 and +1 offsets (some manuscripts start at n*11+1)
-        const extendedProbeDistances = [
-            -385, -384, -374, -363, -352, -341, -330,  // Backward probes (includes -384 for user case)
-            -275, -264, -253, -242, -231, -220,        // Backward probes (~11 * 25, 24, 23, 22, 21, 20)
-            330, 341, 352, 363, 374, 385               // Forward probes
-        ];
-        
-        for (const distance of extendedProbeDistances) {
-            const probeId = baseId + distance;
-            if (probeId <= 0) continue;
+            // Known patterns from Issue #10: e-manuscripta multi-series structure
+            // User's manuscript has blocks at 5157232, 5157243, 5157254, etc (offset -384 from 5157616)
+            const knownSeriesOffsets = [-385, -384, -374];  // Most common multi-series offsets
             
-            try {
-                const probeUrl = `https://www.e-manuscripta.ch/${library}/content/zoom/${probeId}`;
-                const response = await this.fetchUrl(probeUrl);
+            for (const offset of knownSeriesOffsets) {
+                if ((Date.now() - startTime) >= maxDiscoveryTime) break;
                 
-                if (response.ok) {
-                    console.log(`[e-manuscripta] Found distant block at ${probeId} (${distance > 0 ? '+' : ''}${distance} from base)`);
-                    discoveredBlocks.add(probeId);
+                const probeId = baseId + offset;
+                if (probeId <= 0) continue;
+                
+                try {
+                    const probeUrl = `https://www.e-manuscripta.ch/${library}/content/zoom/${probeId}`;
+                    const response = await this.fetchUrl(probeUrl);
                     
-                    // Explore around this new discovery point
-                    for (let localOffset = 11; localOffset <= 88; localOffset += 11) {
-                        // Check backward
-                        const backId = probeId - localOffset;
-                        if (backId > 0) {
+                    if (response.ok) {
+                        console.log(`[e-manuscripta] Found multi-series block at ${probeId} (offset ${offset})`);
+                        discoveredBlocks.add(probeId);
+                        
+                        // Smart scan: Add blocks in this series with validation
+                        // Only add blocks we're confident exist based on the pattern
+                        console.log(`[e-manuscripta] Exploring series from block ${probeId}...`);
+                        
+                        // Check forward from the found block
+                        for (let i = 1; i <= 20 && (Date.now() - startTime) < maxDiscoveryTime; i++) {
+                            const testBlockId = probeId + (i * 11);
                             try {
-                                const backUrl = `https://www.e-manuscripta.ch/${library}/content/zoom/${backId}`;
-                                const backResponse = await this.fetchUrl(backUrl);
-                                if (backResponse.ok) {
-                                    discoveredBlocks.add(backId);
-                                    console.log(`[e-manuscripta] Found related block: ${backId}`);
+                                const testUrl = `https://www.e-manuscripta.ch/${library}/content/zoom/${testBlockId}`;
+                                const testResponse = await this.fetchUrl(testUrl);
+                                if (testResponse.ok) {
+                                    discoveredBlocks.add(testBlockId);
+                                } else if (testResponse.status === 404) {
+                                    break; // End of this series
                                 }
                             } catch (error) {
-                                // Continue
+                                break;
                             }
                         }
                         
-                        // Check forward
-                        const fwdId = probeId + localOffset;
-                        try {
-                            const fwdUrl = `https://www.e-manuscripta.ch/${library}/content/zoom/${fwdId}`;
-                            const fwdResponse = await this.fetchUrl(fwdUrl);
-                            if (fwdResponse.ok) {
-                                discoveredBlocks.add(fwdId);
-                                console.log(`[e-manuscripta] Found related block: ${fwdId}`);
+                        // Check backward from the found block (limited)
+                        for (let i = 1; i <= 5 && (Date.now() - startTime) < maxDiscoveryTime; i++) {
+                            const testBlockId = probeId - (i * 11);
+                            if (testBlockId <= 0) break;
+                            try {
+                                const testUrl = `https://www.e-manuscripta.ch/${library}/content/zoom/${testBlockId}`;
+                                const testResponse = await this.fetchUrl(testUrl);
+                                if (testResponse.ok) {
+                                    discoveredBlocks.add(testBlockId);
+                                } else if (testResponse.status === 404) {
+                                    break; // Start of this series
+                                }
+                            } catch (error) {
+                                break;
                             }
-                        } catch (error) {
-                            // Continue
                         }
                         
-                        await new Promise(resolve => setTimeout(resolve, 50));
+                        console.log(`[e-manuscripta] Added ${discoveredBlocks.size - 1} blocks based on multi-series pattern`);
+                        break; // Found a multi-series pattern, that's enough
                     }
+                } catch (error) {
+                    // Continue with next offset
                 }
-            } catch (error) {
-                // Continue with next probe
             }
-            
-            await new Promise(resolve => setTimeout(resolve, 100));
         }
         
+        const elapsed = Date.now() - startTime;
         const sortedBlocks = Array.from(discoveredBlocks).sort((a, b) => a - b);
         const totalPages = sortedBlocks.length * 11; // Assuming 11 pages per block
         
-        console.log(`[e-manuscripta] Block discovery complete: ${sortedBlocks.length} blocks found`);
-        console.log(`[e-manuscripta] Block IDs: ${sortedBlocks.join(', ')}`);
-        console.log(`[e-manuscripta] Estimated total pages: ${totalPages}`);
+        console.log(`[e-manuscripta] Discovery completed in ${elapsed}ms`);
+        console.log(`[e-manuscripta] Blocks found: ${sortedBlocks.length}`);
+        if (sortedBlocks.length <= 20) {
+            console.log(`[e-manuscripta] Block IDs: ${sortedBlocks.join(', ')}`);
+        } else {
+            console.log(`[e-manuscripta] First blocks: ${sortedBlocks.slice(0, 5).join(', ')}...`);
+            console.log(`[e-manuscripta] Last blocks: ...${sortedBlocks.slice(-5).join(', ')}`);
+        }
+        console.log(`[e-manuscripta] Total pages: ${totalPages}`);
         
         // Log any large gaps for debugging
         for (let i = 1; i < sortedBlocks.length; i++) {
