@@ -35,6 +35,22 @@ async function testManifest() { /* custom logic */ }
 - **SINGLE EXCEPTION:** `/handle-issues` command is AUTONOMOUS - seeks GitHub issue author approval instead
 - **NO AUTOMATIC BUMPS:** Keywords like "bump" do NOT authorize automatic version changes
 
+**🚨 CHANGELOG UPDATE - MANDATORY WITH EVERY VERSION BUMP 🚨**
+```javascript
+// package.json - MUST update when bumping version
+"changelog": [
+  "v{VERSION}: Brief title of changes",
+  "Major fix or feature 1 description",
+  "Major fix or feature 2 description",
+  "UI/UX improvements if any",
+  "Performance improvements if any"
+]
+```
+- **CRITICAL:** Changelog NOT updating = Telegram sends OLD version info
+- **ALWAYS:** Update to current version number
+- **ALWAYS:** Replace entire array with current version's changes
+- **NEVER:** Leave old version numbers in changelog
+
 **Version Bump Triggers (still require approval):**
 - Bug fixes affecting functionality
 - New features or improvements

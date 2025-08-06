@@ -3482,9 +3482,33 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     async getHeidelbergManifest(url) {
         console.log('[Heidelberg] Processing URL:', url);
         
-        // Determine if it's IIIF v2 or v3 based on URL
-        const isV3 = url.includes('/iiif3/');
-        const manifestUrl = url.includes('/manifest') ? url : url + '/manifest';
+        // Transform viewer URL to manifest URL if needed
+        let manifestUrl;
+        let isV3 = false;
+        
+        if (url.includes('/manifest')) {
+            // Already a manifest URL
+            manifestUrl = url;
+            isV3 = url.includes('/iiif3/');
+        } else if (url.includes('/iiif3/') || url.includes('/iiif/')) {
+            // IIIF URL without /manifest
+            manifestUrl = url + '/manifest';
+            isV3 = url.includes('/iiif3/');
+        } else {
+            // Viewer URL like https://digi.ub.uni-heidelberg.de/diglit/salVIII2
+            // Extract manuscript ID and construct manifest URL
+            const match = url.match(/\/diglit\/([^/?]+)/);
+            if (match) {
+                const manuscriptId = match[1];
+                // Default to IIIF v3 for better features
+                manifestUrl = `https://digi.ub.uni-heidelberg.de/diglit/iiif3/${manuscriptId}/manifest`;
+                isV3 = true;
+                console.log(`[Heidelberg] Transformed viewer URL to IIIF v3 manifest: ${manifestUrl}`);
+            } else {
+                // Fallback: try adding /manifest
+                manifestUrl = url + '/manifest';
+            }
+        }
         
         console.log(`[Heidelberg] Fetching ${isV3 ? 'IIIF v3' : 'IIIF v2'} manifest from: ${manifestUrl}`);
         
