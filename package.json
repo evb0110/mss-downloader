@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.92",
+  "version": "1.4.93",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.92: FINAL fix for Grenoble library URL concatenation (Issue #13)",
-    "Fixed root cause after 4 failed attempts - chunked handler now sanitizes URLs",
-    "Malformed URLs like 'pagella.bm-grenoble.frhttps://...' auto-corrected",
-    "Comprehensive URL sanitization at all system levels",
-    "100% validated solution with extensive testing"
+    "v1.4.93: Critical fixes for app stability and University of Graz (Issue #2)",
+    "Fixed app crashes on manifest loading errors - added comprehensive error boundaries",
+    "Fixed 'Reveal Folder' to open actual manuscript subfolder instead of Downloads",
+    "Fixed queue management - only 1 manuscript downloads at a time when auto-split occurs",
+    "Fixed pause/resume functionality - properly aborts downloads when paused"
   ],
   "main": "dist/main/main.js",
   "scripts": {

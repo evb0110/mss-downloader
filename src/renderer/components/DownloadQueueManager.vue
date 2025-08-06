@@ -464,9 +464,9 @@ https://digi.vatlib.it/..."
                     <a
                       class="manuscript-error-link"
                       style="cursor: pointer;"
+                      title="Click to open in browser"
                       @click.prevent="openInBrowser(group.parent.url)"
                       @contextmenu.prevent="showContextMenu($event, group.parent.url)"
-                      title="Click to open in browser"
                     >
                       {{ group.parent.url }}
                     </a>
@@ -476,9 +476,9 @@ https://digi.vatlib.it/..."
                       v-if="group.parent.status !== 'loading' && group.parent.url"
                       class="manuscript-title-link"
                       style="cursor: pointer;"
+                      title="Click to open in browser"
                       @click.prevent="openInBrowser(group.parent.url)"
                       @contextmenu.prevent="showContextMenu($event, group.parent.url)"
-                      title="Click to open in browser"
                     >
                       {{ group.parent.displayName }}
                     </a>
@@ -855,41 +855,75 @@ https://digi.vatlib.it/..."
     :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }"
     @click.stop
   >
-    <div class="context-menu-item" @click="copyLinkFromMenu">
+    <div
+      class="context-menu-item"
+      @click="copyLinkFromMenu"
+    >
       📋 Copy Link
     </div>
-    <div class="context-menu-item" @click="openLinkFromMenu">
+    <div
+      class="context-menu-item"
+      @click="openLinkFromMenu"
+    >
       🌐 Open in Browser
     </div>
   </div>
 
   <!-- Log Viewer Modal -->
-  <div v-if="showLogViewer" class="log-viewer-modal">
+  <div
+    v-if="showLogViewer"
+    class="log-viewer-modal"
+  >
     <div class="log-viewer-content">
       <div class="log-viewer-header">
         <h3>📋 Logs: {{ currentLogItem?.displayName || 'Download' }}</h3>
         <div class="log-viewer-actions">
-          <button @click="exportCurrentLogs" class="export-log-btn" title="Export logs to file">
+          <button
+            class="export-log-btn"
+            title="Export logs to file"
+            @click="exportCurrentLogs"
+          >
             💾 Export
           </button>
-          <button @click="clearCurrentLogs" class="clear-log-btn" title="Clear logs">
+          <button
+            class="clear-log-btn"
+            title="Clear logs"
+            @click="clearCurrentLogs"
+          >
             🗑️ Clear
           </button>
-          <button @click="closeLogViewer" class="close-log-btn" title="Close">
+          <button
+            class="close-log-btn"
+            title="Close"
+            @click="closeLogViewer"
+          >
             ✖
           </button>
         </div>
       </div>
       <div class="log-viewer-body">
-        <div v-if="currentLogs.length === 0" class="no-logs">
+        <div
+          v-if="currentLogs.length === 0"
+          class="no-logs"
+        >
           No logs available for this download yet.
         </div>
-        <div v-else class="log-entries">
-          <div v-for="(log, index) in currentLogs" :key="index" :class="['log-entry', `log-${log.level}`]">
+        <div
+          v-else
+          class="log-entries"
+        >
+          <div
+            v-for="(log, index) in currentLogs"
+            :key="index"
+            :class="['log-entry', `log-${log.level}`]"
+          >
             <span class="log-time">{{ formatLogTime(log.timestamp) }}</span>
             <span class="log-level">[{{ log.level.toUpperCase() }}]</span>
             <span class="log-message">{{ log.message }}</span>
-            <div v-if="log.details" class="log-details">
+            <div
+              v-if="log.details"
+              class="log-details"
+            >
               <pre>{{ JSON.stringify(log.details, null, 2) }}</pre>
             </div>
           </div>

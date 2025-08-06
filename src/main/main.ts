@@ -1003,9 +1003,52 @@ ipcMain.handle('get-cache-stats', async () => {
 ipcMain.handle('open-downloads-folder', async () => {
   const downloadsDir = app.getPath('downloads');
   
-  // Open the folder
-  await shell.openPath(downloadsDir);
+  // Try to find the most recent completed download to open its specific folder
+  if (enhancedDownloadQueue) {
+    const state = enhancedDownloadQueue.getState();
+    
+    // Find most recently completed item with output path
+    const completedItems = state.items
+      .filter((item: any) => item.status === 'completed' && item.outputPath)
+      .sort((a: any, b: any) => (b.completedAt || 0) - (a.completedAt || 0));
+    
+    if (completedItems.length > 0 && completedItems[0].outputPath) {
+      // Open the folder containing the specific file
+      shell.showItemInFolder(completedItems[0].outputPath);
+      return path.dirname(completedItems[0].outputPath);
+    }
+    
+    // If no completed items, check for any in-progress items to show their target folder
+    const inProgressItems = state.items
+      .filter((item: any) => item.status === 'downloading' && item.displayName);
+    
+    if (inProgressItems.length > 0) {
+      // Construct the expected output folder for the in-progress item
+      const sanitizedName = inProgressItems[0].displayName
+        .replace(/[<>:"/\\|?*\x00-\x1f]/g, '_')
+        .replace(/[\u00A0-\u9999]/g, '_')
+        .replace(/[^\w\s.-]/g, '_')
+        .replace(/\s+/g, '_')
+        .replace(/_{2,}/g, '_')
+        .replace(/^_|_$/g, '')
+        .replace(/\.+$/g, '')
+        .substring(0, 100) || 'manuscript';
+      
+      const targetDir = path.join(downloadsDir, sanitizedName);
+      
+      // Check if folder exists
+      try {
+        await (await import('fs/promises')).access(targetDir);
+        await shell.openPath(targetDir);
+        return targetDir;
+      } catch {
+        // Folder doesn't exist yet, fall back to downloads
+      }
+    }
+  }
   
+  // Fallback: open downloads folder
+  await shell.openPath(downloadsDir);
   return downloadsDir;
 });
 
@@ -1015,7 +1058,7 @@ ipcMain.handle('get-downloads-path', () => {
 
 // Logs folder handlers
 ipcMain.handle('open-logs-folder', async () => {
-  const { comprehensiveLogger } = require('./services/ComprehensiveLogger');
+  const { comprehensiveLogger } = await import('./services/ComprehensiveLogger');
   const logsDir = comprehensiveLogger.getLogsFolder();
   
   // Ensure folder exists
@@ -1029,13 +1072,13 @@ ipcMain.handle('open-logs-folder', async () => {
   return logsDir;
 });
 
-ipcMain.handle('get-logs-folder-path', () => {
-  const { comprehensiveLogger } = require('./services/ComprehensiveLogger');
+ipcMain.handle('get-logs-folder-path', async () => {
+  const { comprehensiveLogger } = await import('./services/ComprehensiveLogger');
   return comprehensiveLogger.getLogsFolder();
 });
 
 ipcMain.handle('export-logs-now', async () => {
-  const { comprehensiveLogger } = require('./services/ComprehensiveLogger');
+  const { comprehensiveLogger } = await import('./services/ComprehensiveLogger');
   const filepath = await comprehensiveLogger.exportLogs('json', true, false);
   shell.showItemInFolder(filepath);
   return filepath;

@@ -6917,8 +6917,14 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     async loadGrazManifest(grazUrl: string): Promise<ManuscriptManifest> {
+        let manifestUrl: string | undefined;
+        
         try {
             console.log(`Loading University of Graz manifest: ${grazUrl}`);
+            
+            // Add error logging to file for crash recovery
+            const crashLogPath = path.join(app.getPath('userData'), 'crash-recovery.log');
+            await fs.appendFile(crashLogPath, `\n[${new Date().toISOString()}] Loading Graz manifest: ${grazUrl}\n`).catch(() => {});
             
             // Extract manuscript ID from URL
             // URL patterns: 
@@ -7140,6 +7146,23 @@ export class EnhancedManuscriptDownloaderService {
             console.error(`[Graz] Error stack:`, error.stack);
             console.error(`[Graz] Original URL: ${grazUrl}`);
             console.error(`[Graz] Manifest URL attempted: ${manifestUrl || 'not constructed'}`);
+            
+            // Write error to crash log file to persist even if app crashes
+            try {
+                const crashLogPath = path.join(app.getPath('userData'), 'crash-recovery.log');
+                const errorDetails = `
+[${new Date().toISOString()}] Graz Manifest Error:
+URL: ${grazUrl}
+Manifest URL: ${manifestUrl || 'not constructed'}
+Error: ${error.message || 'Unknown error'}
+Code: ${error.code || 'N/A'}
+Stack: ${error.stack || 'No stack trace'}
+---
+`;
+                await fs.appendFile(crashLogPath, errorDetails).catch(() => {});
+            } catch (logErr) {
+                console.error('Failed to write crash log:', logErr);
+            }
             
             // Log to download logger for better debugging
             this.logger.logError('manifest_load_error', error, {
@@ -8301,14 +8324,14 @@ export class EnhancedManuscriptDownloaderService {
             console.log(`Loading e-manuscripta.ch manifest from: ${manuscriptaUrl}`);
             
             // Log for debugging Issue #10
-            const { comprehensiveLogger } = require('./ComprehensiveLogger');
+            const { comprehensiveLogger } = await import('./ComprehensiveLogger');
             comprehensiveLogger.logEManuscriptaDiscovery('load_manifest_start', {
                 originalUrl: manuscriptaUrl,
                 processedUrl: manuscriptaUrl
             });
             
             // Use SharedManifestLoaders for ULTRA-OPTIMIZED discovery
-            const { SharedManifestLoaders } = require('../../shared/SharedManifestLoaders');
+            const { SharedManifestLoaders } = await import('../../shared/SharedManifestLoaders');
             const loader = new SharedManifestLoaders();
             
             // Make comprehensiveLogger available globally for SharedManifestLoaders

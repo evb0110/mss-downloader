@@ -21,6 +21,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
     private queueFile: string;
     private manifestCache: ManifestCache;
     
+    // Add proper concurrency control
+    private activeDownloadCount: number = 0;
+    private maxConcurrentQueueItems: number = 1; // Only process 1 queue item at a time
+    private activeDownloadControllers: Map<string, AbortController> = new Map();
+    
     private constructor() {
         super();
         
@@ -526,10 +531,32 @@ export class EnhancedDownloadQueue extends EventEmitter {
     }
 
     pauseProcessing(): void {
+        console.log('Pausing queue processing...');
         this.state.isPaused = true;
+        
+        // Abort the main processing controller
         if (this.processingAbortController) {
             this.processingAbortController.abort();
         }
+        
+        // Abort all active download controllers
+        for (const [itemId, controller] of this.activeDownloadControllers) {
+            console.log(`Aborting download for item: ${itemId}`);
+            controller.abort();
+            
+            // Mark the item as paused instead of downloading
+            const item = this.state.items.find(i => i.id === itemId);
+            if (item && item.status === 'downloading') {
+                item.status = 'paused';
+                // Keep progress so we can resume later
+                console.log(`Item ${item.displayName} paused at ${item.progress?.current || 0}/${item.progress?.total || 0} pages`);
+            }
+        }
+        
+        // Clear the controllers map
+        this.activeDownloadControllers.clear();
+        this.activeDownloadCount = 0;
+        
         this.notifyListeners();
     }
 
@@ -571,6 +598,16 @@ export class EnhancedDownloadQueue extends EventEmitter {
 
         try {
             while (true) {
+                // Check if we can start a new download (enforce single item processing)
+                if (this.activeDownloadCount >= this.maxConcurrentQueueItems) {
+                    // Wait a bit before checking again
+                    await this.sleep(500);
+                    if (this.state.isPaused || !this.state.isProcessing) {
+                        break;
+                    }
+                    continue;
+                }
+                
                 const nextItem = this.state.items.find((item) => {
                     if (item.status === 'pending') {
                         return true;
@@ -590,15 +627,39 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 });
 
                 if (!nextItem) {
-                    break;
+                    // No more items to process
+                    if (this.activeDownloadCount === 0) {
+                        // All downloads complete
+                        break;
+                    }
+                    // Still have active downloads, wait for them
+                    await this.sleep(500);
+                    continue;
                 }
 
                 if (this.state.isPaused) {
                     break;
                 }
 
-                await this.processItem(nextItem);
+                // Increment active count BEFORE starting download
+                this.activeDownloadCount++;
+                console.log(`Starting download ${this.activeDownloadCount}/${this.maxConcurrentQueueItems}: ${nextItem.displayName}`);
+                
+                // Process item asynchronously (don't await here to allow proper queue management)
+                this.processItem(nextItem).finally(() => {
+                    this.activeDownloadCount--;
+                    console.log(`Completed download, active count now: ${this.activeDownloadCount}`);
+                    
+                    // Trigger queue processing again when slot opens
+                    if (!this.state.isPaused && this.state.isProcessing) {
+                        // Use setTimeout to avoid stack overflow
+                        setTimeout(() => this.processQueue(), 100);
+                    }
+                });
 
+                // Wait a bit before checking for next item
+                await this.sleep(100);
+                
                 // Pause between items if configured
                 if (this.state.globalSettings.pauseBetweenItems > 0) {
                     await this.sleep(this.state.globalSettings.pauseBetweenItems);
@@ -608,9 +669,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
             console.error('Queue processing error:', error.message);
         } finally {
             this.isProcessingQueue = false;
-            this.state.isProcessing = false;
-            this.state.currentItemId = undefined;
-            this.processingAbortController = null;
+            if (this.activeDownloadCount === 0) {
+                this.state.isProcessing = false;
+                this.state.currentItemId = undefined;
+                this.processingAbortController = null;
+            }
             this.notifyListeners();
         }
     }
@@ -627,7 +690,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
             stage: 'downloading',
         };
         
-        this.processingAbortController = new AbortController();
+        // Create abort controller for this specific item
+        const abortController = new AbortController();
+        this.activeDownloadControllers.set(item.id, abortController);
+        this.processingAbortController = abortController;
+        
         this.notifyListeners();
 
         // Calculate dynamic timeout based on file size and library
@@ -819,6 +886,14 @@ export class EnhancedDownloadQueue extends EventEmitter {
         } finally {
             // Clear timeout
             clearTimeout(timeoutId);
+            
+            // Clean up abort controller for this item
+            this.activeDownloadControllers.delete(item.id);
+            
+            // Reset processing abort controller if it was for this item
+            if (this.processingAbortController === abortController) {
+                this.processingAbortController = null;
+            }
         }
 
         this.saveToStorage();
