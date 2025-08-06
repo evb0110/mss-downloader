@@ -394,6 +394,7 @@ export class EnhancedManuscriptDownloaderService {
             name: 'University of Graz',
             example: 'https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538',
             description: 'University of Graz digital manuscript collection with IIIF support',
+            geoBlocked: true,
         },
         {
             name: 'Vatican Digital Library',

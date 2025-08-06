@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.95",
+  "version": "1.4.96",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.95: FINAL crash fix for University of Graz and geo-restrictions (Issue #2)",
-    "Added process-level error handlers to prevent uncaught exceptions",
-    "Fixed error serialization in IPC communication to prevent crashes",
-    "Enhanced error messages for geo-blocked libraries with user-friendly explanations",
-    "App now gracefully handles network failures instead of crashing completely"
+    "v1.4.96: Added geo-blocking badges for libraries with geographic restrictions",
+    "University of Graz now displays 'Geo-Restricted' badge to inform users about potential access limitations",
+    "Created extensible badge system for marking geo-blocked libraries",
+    "Added clear visual indicators and tooltips to improve user experience with restricted libraries",
+    "Documentation provided for adding geo-blocking badges to future libraries"
   ],
   "main": "dist/main/main.js",
   "scripts": {

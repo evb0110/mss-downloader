@@ -39,6 +39,7 @@ export interface LibraryInfo {
   example: string;
   description: string;
   status?: 'temporarily_unavailable' | 'operational';
+  geoBlocked?: boolean;
 }
 
 export interface ElectronAPI {

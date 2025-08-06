@@ -214,6 +214,13 @@
               >
                 Temporarily Unavailable
               </span>
+              <span 
+                v-if="library.geoBlocked" 
+                class="status-badge geo-blocked"
+                :title="'This library may not be accessible from all geographic regions due to IP restrictions'"
+              >
+                Geo-Restricted
+              </span>
             </h4>
             <p>{{ library.description }}</p>
             <div class="library-example">
@@ -734,6 +741,10 @@ const formatBytes = (bytes: number): string => {
 
 .status-badge.unavailable {
   background: #ef4444;
+  color: white;
+}
+.status-badge.geo-blocked {
+  background: #f59e0b;
   color: white;
 }
 
