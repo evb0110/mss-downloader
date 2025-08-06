@@ -653,6 +653,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('digital.ulb.hhu.de')) return 'hhu';
         if (url.includes('manuscrits.bordeaux.fr') || url.includes('selene.bordeaux.fr')) return 'bordeaux';
         if (url.includes('digital.bodleian.ox.ac.uk')) return 'bodleian';
+        if (url.includes('digi.ub.uni-heidelberg.de')) return 'heidelberg';
         
         return null;
     }
@@ -1677,6 +1678,9 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'bodleian':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('bodleian', originalUrl);
+                    break;
+                case 'heidelberg':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('heidelberg', originalUrl);
                     break;
                 default:
                     throw new Error(`Unsupported library: ${library}`);

@@ -1757,6 +1757,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             case 'norwegian':
             case 'nb':
                 return await this.getNorwegianManifest(url);
+            case 'heidelberg':
+                return await this.getHeidelbergManifest(url);
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }
@@ -3426,6 +3428,177 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         return {
             images,
             displayName
+        };
+    }
+
+    /**
+     * Heidelberg University Library handler
+     * Supports both IIIF v2 and v3 manifests
+     * 
+     * URL patterns:
+     * - IIIF v3: https://digi.ub.uni-heidelberg.de/diglit/iiif3/{manuscript_id}/manifest
+     * - IIIF v2: https://digi.ub.uni-heidelberg.de/diglit/iiif/{manuscript_id}/manifest
+     * 
+     * @param {string} url - The Heidelberg library URL
+     * @returns {Promise<Object>} Manifest object with images array
+     */
+    async getHeidelbergManifest(url) {
+        console.log('[Heidelberg] Processing URL:', url);
+        
+        // Determine if it's IIIF v2 or v3 based on URL
+        const isV3 = url.includes('/iiif3/');
+        const manifestUrl = url.includes('/manifest') ? url : url + '/manifest';
+        
+        console.log(`[Heidelberg] Fetching ${isV3 ? 'IIIF v3' : 'IIIF v2'} manifest from: ${manifestUrl}`);
+        
+        const response = await this.fetchWithRetry(manifestUrl);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch Heidelberg manifest: ${response.status}`);
+        }
+        
+        const manifest = await response.json();
+        const images = [];
+        
+        // Extract metadata
+        let displayName = 'Heidelberg Manuscript';
+        if (manifest.label) {
+            if (typeof manifest.label === 'object') {
+                // IIIF v3 label format (language map)
+                const labels = manifest.label.none || manifest.label.de || manifest.label.en || Object.values(manifest.label)[0];
+                displayName = Array.isArray(labels) ? labels[0] : labels;
+            } else {
+                // IIIF v2 label format (string)
+                displayName = manifest.label;
+            }
+        }
+        
+        console.log(`[Heidelberg] Manuscript: ${displayName}`);
+        
+        // Process based on IIIF version
+        if (isV3 || manifest.items) {
+            // IIIF v3 structure
+            console.log(`[Heidelberg] Processing IIIF v3 manifest with ${manifest.items?.length || 0} items`);
+            
+            if (manifest.items) {
+                for (let i = 0; i < manifest.items.length; i++) {
+                    const canvas = manifest.items[i];
+                    
+                    // Extract label for this page
+                    let pageLabel = `Page ${i + 1}`;
+                    if (canvas.label) {
+                        if (typeof canvas.label === 'object') {
+                            const labels = canvas.label.none || canvas.label.de || canvas.label.en || Object.values(canvas.label)[0];
+                            pageLabel = Array.isArray(labels) ? labels[0] : labels;
+                        } else {
+                            pageLabel = canvas.label;
+                        }
+                    }
+                    
+                    // Find annotation with image
+                    if (canvas.items && canvas.items[0] && canvas.items[0].items) {
+                        const annotation = canvas.items[0].items[0];
+                        if (annotation && annotation.body) {
+                            let imageUrl = null;
+                            
+                            // Direct image URL
+                            if (annotation.body.id) {
+                                imageUrl = annotation.body.id;
+                            }
+                            
+                            // Or use image service for maximum resolution
+                            if (annotation.body.service && annotation.body.service[0]) {
+                                const service = annotation.body.service[0];
+                                const serviceId = service.id || service['@id'];
+                                
+                                // Try different resolutions in order of preference
+                                // Heidelberg supports: full/max, full/full, full/4000, full/2000
+                                if (serviceId) {
+                                    // Use maximum available resolution
+                                    imageUrl = `${serviceId}/full/max/0/default.jpg`;
+                                }
+                            }
+                            
+                            if (imageUrl) {
+                                images.push({
+                                    url: imageUrl,
+                                    label: pageLabel
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (manifest.sequences) {
+            // IIIF v2 structure
+            const sequence = manifest.sequences[0];
+            if (sequence && sequence.canvases) {
+                console.log(`[Heidelberg] Processing IIIF v2 manifest with ${sequence.canvases.length} canvases`);
+                
+                for (let i = 0; i < sequence.canvases.length; i++) {
+                    const canvas = sequence.canvases[i];
+                    
+                    // Extract page label
+                    let pageLabel = canvas.label || `Page ${i + 1}`;
+                    
+                    if (canvas.images && canvas.images[0]) {
+                        const image = canvas.images[0];
+                        const resource = image.resource;
+                        
+                        if (resource) {
+                            let imageUrl = null;
+                            
+                            // Check for direct image URL
+                            if (resource['@id']) {
+                                imageUrl = resource['@id'];
+                            }
+                            
+                            // Or use image service for better quality
+                            if (resource.service) {
+                                const serviceId = resource.service['@id'];
+                                if (serviceId) {
+                                    // For IIIF v2, prefer using the service for maximum resolution
+                                    // Check if it's IIIF Image API v2
+                                    if (resource.service.profile && resource.service.profile.includes('http://iiif.io/api/image/2')) {
+                                        // Use IIIF Image API for maximum resolution
+                                        imageUrl = `${serviceId}/full/max/0/default.jpg`;
+                                    }
+                                }
+                            }
+                            
+                            if (imageUrl) {
+                                images.push({
+                                    url: imageUrl,
+                                    label: pageLabel
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        console.log(`[Heidelberg] Found ${images.length} pages`);
+        
+        if (images.length === 0) {
+            throw new Error('No images found in Heidelberg manifest');
+        }
+        
+        // Log sample URLs for debugging
+        if (images.length > 0) {
+            console.log(`[Heidelberg] First page URL: ${images[0].url}`);
+            console.log(`[Heidelberg] Last page URL: ${images[images.length - 1].url}`);
+        }
+        
+        return {
+            images,
+            displayName,
+            metadata: {
+                library: 'Heidelberg University Library',
+                manuscriptId: url.match(/\/([^/]+)\/manifest/)?.[1] || 'unknown',
+                iiifVersion: isV3 ? 3 : 2,
+                totalPages: images.length
+            },
+            type: 'iiif'
         };
     }
 
