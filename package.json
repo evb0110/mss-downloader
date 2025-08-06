@@ -1,6 +1,6 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.91",
+  "version": "1.4.92",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
     "v1.4.91: Critical fix for University of Graz library (Issue #2)",
