@@ -38,6 +38,7 @@ export interface LibraryInfo {
   name: string;
   example: string;
   description: string;
+  status?: 'temporarily_unavailable' | 'operational';
 }
 
 export interface ElectronAPI {

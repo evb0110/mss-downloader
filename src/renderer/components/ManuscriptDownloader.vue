@@ -200,12 +200,21 @@
             class="library-item"
             :class="{ 
               'library-warning': library.name.includes('⚠️'),
+              'library-unavailable': library.status === 'temporarily_unavailable',
               'exact-match': librarySearchQuery.trim() && index < searchResults.stats.exact,
               'partial-match': librarySearchQuery.trim() && index >= searchResults.stats.exact && index < searchResults.stats.exact + searchResults.stats.partial,
               'fuzzy-match': librarySearchQuery.trim() && index >= searchResults.stats.exact + searchResults.stats.partial
             }"
           >
-            <h4>{{ library.name }}</h4>
+            <h4>
+              {{ library.name }}
+              <span 
+                v-if="library.status === 'temporarily_unavailable'" 
+                class="status-badge unavailable"
+              >
+                Temporarily Unavailable
+              </span>
+            </h4>
             <p>{{ library.description }}</p>
             <div class="library-example">
               <strong>{{ $t('downloader.examples') }}:</strong>
@@ -705,6 +714,27 @@ const formatBytes = (bytes: number): string => {
 .library-item.fuzzy-match {
   border-left: 4px solid #7c3aed;
   background: rgba(124, 58, 237, 0.02);
+}
+
+.library-item.library-unavailable {
+  opacity: 0.7;
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.status-badge.unavailable {
+  background: #ef4444;
+  color: white;
 }
 
 .library-item.exact-match::before {

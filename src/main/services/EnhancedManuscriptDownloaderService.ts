@@ -273,6 +273,7 @@ export class EnhancedManuscriptDownloaderService {
             name: 'Grenoble Municipal Library',
             example: 'https://pagella.bm-grenoble.fr/ark:/12148/btv1b10663927k/f1.item.zoom',
             description: 'Bibliothèque municipale de Grenoble digital manuscripts via Gallica infrastructure',
+            status: 'temporarily_unavailable' as const,
         },
         {
             name: 'Internet Culturale',
