@@ -489,6 +489,8 @@ https://digi.vatlib.it/..."
                       class="manuscript-error-link"
                       style="cursor: pointer;"
                       @click.prevent="openInBrowser(group.parent.url)"
+                      @contextmenu.prevent="copyLinkToClipboard(group.parent.url)"
+                      :title="`Left click: Open in browser\nRight click: Copy link`"
                     >
                       {{ group.parent.url }}
                     </a>
@@ -499,6 +501,8 @@ https://digi.vatlib.it/..."
                       class="manuscript-title-link"
                       style="cursor: pointer;"
                       @click.prevent="openInBrowser(group.parent.url)"
+                      @contextmenu.prevent="copyLinkToClipboard(group.parent.url)"
+                      :title="`Left click: Open in browser\nRight click: Copy link`"
                     >
                       {{ group.parent.displayName }}
                     </a>
@@ -526,13 +530,6 @@ https://digi.vatlib.it/..."
                       class="concurrency-badge"
                     >
                       Concurrency: {{ group.parent.downloadOptions?.concurrentDownloads || 3 }}
-                    </span>
-                    <span
-                      v-if="group.parent.libraryOptimizations?.optimizationDescription"
-                      class="optimization-badge"
-                      :title="group.parent.libraryOptimizations.optimizationDescription"
-                    >
-                      ⚡ Optimized
                     </span>
                   </div>
                 </div>
@@ -2367,6 +2364,23 @@ async function openInBrowser(url: string) {
     }
 }
 
+async function copyLinkToClipboard(url: string) {
+    try {
+        await navigator.clipboard.writeText(url);
+        // Optional: Show a brief toast notification
+        console.log('Link copied to clipboard:', url);
+    } catch (error) {
+        console.error('Failed to copy link:', error);
+        // Fallback to older method if needed
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+    }
+}
+
 async function cleanupIndexedDBCache() {
     try {
         const confirmAction = async () => {
@@ -2846,6 +2860,48 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 }
 
 .reveal-folder-btn:disabled {
+    background: #adb5bd;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.reveal-logs-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.reveal-logs-btn:hover:not(:disabled) {
+    background: #5a6268;
+}
+
+.reveal-logs-btn:disabled {
+    background: #adb5bd;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.export-logs-btn {
+    background: #6610f2;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.export-logs-btn:hover:not(:disabled) {
+    background: #520dc2;
+}
+
+.export-logs-btn:disabled {
     background: #adb5bd;
     cursor: not-allowed;
     opacity: 0.6;

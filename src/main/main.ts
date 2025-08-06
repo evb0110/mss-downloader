@@ -1,6 +1,6 @@
 import { app, BrowserWindow, Menu, ipcMain, dialog, shell, session } from 'electron';
 import { join } from 'path';
-import { promises as fs } from 'fs';
+import { promises as fs, existsSync, mkdirSync } from 'fs';
 import os from 'os';
 import { ManuscriptDownloaderService } from './services/ManuscriptDownloaderService';
 import { ElectronImageCache } from './services/ElectronImageCache';
@@ -876,8 +876,8 @@ ipcMain.handle('open-logs-folder', async () => {
   const logsDir = comprehensiveLogger.getLogsFolder();
   
   // Ensure folder exists
-  if (!fs.existsSync(logsDir)) {
-    fs.mkdirSync(logsDir, { recursive: true });
+  if (!existsSync(logsDir)) {
+    mkdirSync(logsDir, { recursive: true });
   }
   
   // Open the folder
