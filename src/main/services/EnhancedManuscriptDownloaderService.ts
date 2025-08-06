@@ -8227,20 +8227,69 @@ export class EnhancedManuscriptDownloaderService {
 
     async loadEManuscriptaManifest(manuscriptaUrl: string): Promise<ManuscriptManifest> {
         try {
-            console.log(`Loading e-manuscripta.ch manifest from: ${manuscriptaUrl}`);
-            
-            // Extract manuscript ID and library from URL
-            // URL formats: 
-            // - https://www.e-manuscripta.ch/{library}/content/zoom/{id} (single page view)
-            // - https://www.e-manuscripta.ch/{library}/content/titleinfo/{id} (manuscript info page)
-            // - https://www.e-manuscripta.ch/{library}/content/thumbview/{id} (thumbnail view/block)
-            const urlPattern = /e-manuscripta\.ch\/([^/]+)\/content\/(zoom|titleinfo|thumbview)\/(\d+)/;
-            const urlMatch = manuscriptaUrl.match(urlPattern);
-            
-            if (!urlMatch) {
-                throw new Error('Invalid e-manuscripta.ch URL format. Expected: https://www.e-manuscripta.ch/{library}/content/{zoom|titleinfo|thumbview}/{id}');
+            // Ensure URL has protocol
+            if (!manuscriptaUrl.startsWith('http://') && !manuscriptaUrl.startsWith('https://')) {
+                manuscriptaUrl = 'https://www.' + manuscriptaUrl;
+            } else if (!manuscriptaUrl.includes('www.')) {
+                manuscriptaUrl = manuscriptaUrl.replace('https://', 'https://www.');
             }
             
+            console.log(`Loading e-manuscripta.ch manifest from: ${manuscriptaUrl}`);
+            
+            // Log for debugging Issue #10
+            const { comprehensiveLogger } = require('./ComprehensiveLogger');
+            comprehensiveLogger.logEManuscriptaDiscovery('load_manifest_start', {
+                originalUrl: manuscriptaUrl,
+                processedUrl: manuscriptaUrl
+            });
+            
+            // Use SharedManifestLoaders for ULTRA-OPTIMIZED discovery
+            const { SharedManifestLoaders } = require('../../shared/SharedManifestLoaders');
+            const loader = new SharedManifestLoaders();
+            
+            // Make comprehensiveLogger available globally for SharedManifestLoaders
+            (global as any).comprehensiveLogger = comprehensiveLogger;
+            
+            console.log('[e-manuscripta] Using SharedManifestLoaders with ULTRA-OPTIMIZED discovery');
+            const sharedResult = await loader.getEManuscriptaManifest(manuscriptaUrl);
+            
+            if (sharedResult.error) {
+                throw new Error(sharedResult.error);
+            }
+            
+            // Convert SharedManifestLoaders result to ManuscriptManifest format
+            const pageLinks = sharedResult.images.map((img: any) => img.url);
+            
+            const eManuscriptaManifest: ManuscriptManifest = {
+                pageLinks,
+                totalPages: pageLinks.length,
+                library: 'e_manuscripta',
+                displayName: sharedResult.displayName || `e-manuscripta manuscript`,
+                originalUrl: manuscriptaUrl,
+            };
+            
+            console.log(`[e-manuscripta] Manifest created with ${pageLinks.length} pages using ULTRA-OPTIMIZED discovery`);
+            comprehensiveLogger.logEManuscriptaDiscovery('load_manifest_complete', {
+                pagesFound: pageLinks.length,
+                displayName: eManuscriptaManifest.displayName
+            });
+            
+            return eManuscriptaManifest;
+            
+        } catch (error: any) {
+            console.error(`Failed to load e-manuscripta.ch manifest: ${error.message}`);
+            throw error;
+        }
+    }
+    
+    // OLD IMPLEMENTATION - KEPT FOR REFERENCE BUT NOT USED
+    private async loadEManuscriptaManifest_OLD(manuscriptaUrl: string): Promise<ManuscriptManifest> {
+        try {
+            const urlPattern = /e-manuscripta\.ch\/([^/]+)\/content\/(zoom|titleinfo|thumbview)\/(\d+)/;
+            const urlMatch = manuscriptaUrl.match(urlPattern);
+            if (!urlMatch) {
+                throw new Error('Invalid URL');
+            }
             const [, library, urlType, manuscriptId] = urlMatch;
             
             console.log(`e-manuscripta: Detected URL type: ${urlType}, library: ${library}, ID: ${manuscriptId}`);

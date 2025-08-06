@@ -121,6 +121,11 @@ const api = {
   showItemInFinder: (filePath: string) => ipcRenderer.invoke('show-item-in-finder', filePath),
   openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
   
+  // Logs management
+  openLogsFolder: () => ipcRenderer.invoke('open-logs-folder'),
+  getLogsFolderPath: () => ipcRenderer.invoke('get-logs-folder-path'),
+  exportLogsNow: () => ipcRenderer.invoke('export-logs-now'),
+  
   // Download logs
   downloadLogs: () => ipcRenderer.invoke('download-logs'),
 

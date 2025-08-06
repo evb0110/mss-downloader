@@ -430,6 +430,30 @@ https://digi.vatlib.it/..."
             >{{ getButtonContent('revealFolder', 'Reveal Folder').icon }}</span>
             <span v-else>{{ getButtonContent('revealFolder', 'Reveal Folder').text }}</span>
           </button>
+          <button
+            :class="getButtonClass('revealLogs', 'reveal-logs-btn')"
+            :disabled="isButtonDisabled('revealLogs')"
+            title="Open the Logs folder for debugging"
+            @click="revealLogsFolder"
+          >
+            <span
+              v-if="getButtonContent('revealLogs', 'Show Logs').icon"
+              class="btn-icon-only"
+            >{{ getButtonContent('revealLogs', 'Show Logs').icon }}</span>
+            <span v-else>{{ getButtonContent('revealLogs', 'Show Logs').text }}</span>
+          </button>
+          <button
+            :class="getButtonClass('exportLogs', 'export-logs-btn')"
+            :disabled="isButtonDisabled('exportLogs')"
+            title="Export current logs to file"
+            @click="exportLogs"
+          >
+            <span
+              v-if="getButtonContent('exportLogs', 'Export Logs').icon"
+              class="btn-icon-only"
+            >{{ getButtonContent('exportLogs', 'Export Logs').icon }}</span>
+            <span v-else>{{ getButtonContent('exportLogs', 'Export Logs').text }}</span>
+          </button>
         </div>
 
 
@@ -2372,6 +2396,33 @@ async function revealDownloadsFolder() {
             console.error('Failed to open downloads folder:', error);
             showAlert('Error', `Failed to open downloads folder: ${error.message}`);
             throw error; // Re-throw to prevent showing success state
+        }
+    });
+}
+
+async function revealLogsFolder() {
+    await performButtonAction('revealLogs', async () => {
+        try {
+            const folderPath = await window.electronAPI.openLogsFolder();
+            console.log('Opened Logs folder:', folderPath);
+        } catch (error: any) {
+            console.error('Failed to open Logs folder:', error);
+            showAlert('Error', `Failed to open Logs folder: ${error.message}`);
+            throw error;
+        }
+    });
+}
+
+async function exportLogs() {
+    await performButtonAction('exportLogs', async () => {
+        try {
+            const filepath = await window.electronAPI.exportLogsNow();
+            console.log('Exported logs to:', filepath);
+            showAlert('Success', `Logs exported successfully!`);
+        } catch (error: any) {
+            console.error('Failed to export logs:', error);
+            showAlert('Error', `Failed to export logs: ${error.message}`);
+            throw error;
         }
     });
 }

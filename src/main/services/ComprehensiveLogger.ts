@@ -60,9 +60,9 @@ export class ComprehensiveLogger {
     private currentLogFile: string;
     private logStream: fs.WriteStream | null = null;
     private rotationConfig: LogRotationConfig = {
-        maxFileSize: 10, // 10MB per file
-        maxFiles: 5,
-        compressOldLogs: true
+        maxFileSize: 50, // 50MB per file - increased for debugging
+        maxFiles: 100,  // Keep many more files for debugging
+        compressOldLogs: false  // Don't compress for easier access
     };
     
     // Performance metrics
@@ -528,6 +528,44 @@ export class ComprehensiveLogger {
         }
         
         return output;
+    }
+    
+    // Get logs folder path
+    getLogsFolder(): string {
+        return path.join(app.getPath('userData'), 'logs');
+    }
+    
+    // Get current log file path
+    getCurrentLogFile(): string {
+        return this.currentLogFile;
+    }
+    
+    // Get all log files
+    async getAllLogFiles(): Promise<string[]> {
+        const logsDir = this.getLogsFolder();
+        try {
+            const files = await fs.promises.readdir(logsDir);
+            return files
+                .filter(f => f.startsWith('mss-downloader-') && (f.endsWith('.log') || f.endsWith('.log.gz')))
+                .map(f => path.join(logsDir, f))
+                .sort((a, b) => b.localeCompare(a)); // Most recent first
+        } catch {
+            return [];
+        }
+    }
+    
+    // Enhanced logging for e-manuscripta debugging
+    logEManuscriptaDiscovery(phase: string, data: any) {
+        this.log({
+            level: 'debug',
+            category: 'manifest',
+            library: 'e-manuscripta',
+            details: {
+                phase,
+                ...data,
+                timestamp: new Date().toISOString()
+            }
+        });
     }
     
     // Cleanup

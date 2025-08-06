@@ -870,6 +870,34 @@ ipcMain.handle('get-downloads-path', () => {
   return app.getPath('downloads');
 });
 
+// Logs folder handlers
+ipcMain.handle('open-logs-folder', async () => {
+  const { comprehensiveLogger } = require('./services/ComprehensiveLogger');
+  const logsDir = comprehensiveLogger.getLogsFolder();
+  
+  // Ensure folder exists
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+  }
+  
+  // Open the folder
+  await shell.openPath(logsDir);
+  
+  return logsDir;
+});
+
+ipcMain.handle('get-logs-folder-path', () => {
+  const { comprehensiveLogger } = require('./services/ComprehensiveLogger');
+  return comprehensiveLogger.getLogsFolder();
+});
+
+ipcMain.handle('export-logs-now', async () => {
+  const { comprehensiveLogger } = require('./services/ComprehensiveLogger');
+  const filepath = await comprehensiveLogger.exportLogs('json', true, false);
+  shell.showItemInFolder(filepath);
+  return filepath;
+});
+
 ipcMain.handle('choose-save-directory', async () => {
   const result = await dialog.showOpenDialog(mainWindow!, {
     properties: ['openDirectory'],

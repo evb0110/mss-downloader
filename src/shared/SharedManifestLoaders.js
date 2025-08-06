@@ -3094,6 +3094,15 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     async discoverEManuscriptaBlocks(baseManuscriptId, library) {
         console.log(`[e-manuscripta] ULTRA-OPTIMIZED Discovery for manuscript ${baseManuscriptId} in library ${library}`);
         
+        // Enhanced logging for debugging
+        if (typeof window === 'undefined' && global.comprehensiveLogger) {
+            global.comprehensiveLogger.logEManuscriptaDiscovery('discovery_start', {
+                baseManuscriptId,
+                library,
+                method: 'ULTRA-OPTIMIZED'
+            });
+        }
+        
         const baseId = parseInt(baseManuscriptId);
         const discoveredBlocks = new Set([baseId]);
         const startTime = Date.now();
@@ -3287,6 +3296,20 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         console.log(`[e-manuscripta] Discovery completed in ${elapsed}ms`);
         console.log(`[e-manuscripta] Blocks found: ${sortedBlocks.length}`);
+        
+        // Enhanced logging for debugging
+        if (typeof window === 'undefined' && global.comprehensiveLogger) {
+            global.comprehensiveLogger.logEManuscriptaDiscovery('discovery_complete', {
+                baseManuscriptId,
+                library,
+                blocksFound: sortedBlocks.length,
+                totalPages,
+                elapsed,
+                blocks: sortedBlocks.length > 50 ? 
+                    `${sortedBlocks.slice(0, 10).join(',')}...${sortedBlocks.slice(-10).join(',')}` : 
+                    sortedBlocks.join(',')
+            });
+        }
         if (sortedBlocks.length <= 20) {
             console.log(`[e-manuscripta] Block IDs: ${sortedBlocks.join(', ')}`);
         } else {
