@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.89",
+  "version": "1.4.90",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "🔥 v1.4.89: ULTRA-PRIORITY fix for Grenoble Library (Issue #13)",
-    "Critical fix: Resolved persistent URL concatenation error causing DNS failures",
-    "Enhanced URL sanitization with multiple defensive layers",
-    "Fixed hostname validation to prevent malformed DNS lookups",
-    "100% success rate: All 40 pages now download correctly from Grenoble"
+    "🔥 v1.4.90: ULTRA-PRIORITY fix for Heidelberg University Library (Issue #19)",
+    "Added Heidelberg to UI supported libraries list - now fully visible to users",
+    "Backend implementation was already complete - fixed UI visibility issue",
+    "Supports both IIIF v2 and v3 manifests with maximum resolution",
+    "Validated with 264-page manuscript - all pages download perfectly"
   ],
   "main": "dist/main/main.js",
   "scripts": {

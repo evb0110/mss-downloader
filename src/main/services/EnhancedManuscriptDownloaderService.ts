@@ -479,6 +479,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://manuscrits.bordeaux.fr/ark:/26678/btv1b52509616g/f13.item.zoom',
             description: 'Bordeaux Libraries digital manuscripts using Deep Zoom Image (DZI) tile technology for ultra-high resolution',
         },
+        {
+            name: 'Heidelberg University Library',
+            example: 'https://digi.ub.uni-heidelberg.de/diglit/salVIII2',
+            description: 'Heidelberg University Library digital manuscripts via IIIF v2 and v3 with maximum resolution support',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
