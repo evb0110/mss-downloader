@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.96",
+  "version": "1.4.97",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.96: Added geo-blocking badges for libraries with geographic restrictions",
-    "University of Graz now displays 'Geo-Restricted' badge to inform users about potential access limitations",
-    "Created extensible badge system for marking geo-blocked libraries",
-    "Added clear visual indicators and tooltips to improve user experience with restricted libraries",
-    "Documentation provided for adding geo-blocking badges to future libraries"
+    "v1.4.97: 🎉 Grenoble library fully restored and confirmed working (Issue #13)",
+    "Removed 'Temporarily Unavailable' status from Grenoble Municipal Library",
+    "Confirmed Issue #13 was already fixed - URL sanitizer working perfectly",
+    "Grenoble manuscripts now load successfully (40+ pages per manuscript)",
+    "Comprehensive testing validates all library functions work correctly"
   ],
   "main": "dist/main/main.js",
   "scripts": {
