@@ -3,10 +3,11 @@
   "version": "1.4.87",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "🔥 ULTRA-PRIORITY FIX v1.4.83: Critical fix for Issue #13 - Grenoble URL concatenation error",
-    "Fixed persistent malformed URL error showing hostname concatenated with URL (pagella.bm-grenoble.frhttps://...)",
-    "Added comprehensive URL sanitization at multiple layers to prevent hostname+URL concatenation",
-    "Validated fix with exact user scenario - Grenoble library now works correctly even with malformed URLs"
+    "🔥 v1.4.87: Major e-manuscripta fix & complete logs system redesign",
+    "Fixed Issue #10: e-manuscripta.ch now shows 407+ pages instead of 11 (optimized block discovery)",
+    "New per-download logs system with beautiful dark-themed viewer modal",
+    "Added context menu for manuscript links, removed confusing UI elements",
+    "Significantly improved user experience with intuitive log access per download"
   ],
   "main": "dist/main/main.js",
   "scripts": {
