@@ -4,6 +4,7 @@
  */
 
 import type { ManuscriptManifest } from '../../shared/types';
+import { DownloadLogger } from './DownloadLogger';
 
 // Dynamic import for Node.js module in TypeScript
 const loadSharedManifestLoaders = async () => {
@@ -75,9 +76,37 @@ export class SharedManifestAdapter {
             }
 
             return manifest;
-        } catch (error) {
+        } catch (error: any) {
             console.error(`SharedManifestAdapter error for ${libraryId}:`, error);
-            throw error;
+            
+            // Create a safe, serializable error that won't crash IPC
+            const safeError = new Error(
+                `Failed to load ${libraryId} manifest: ${error?.message || 'Unknown error'}`
+            );
+            safeError.name = 'ManifestLoadError';
+            
+            // Add safe metadata without circular references
+            (safeError as any).library = libraryId;
+            (safeError as any).originalUrl = url;
+            (safeError as any).isManifestError = true;
+            
+            // Log the full error for debugging
+            const logger = DownloadLogger.getInstance();
+            logger.log({
+                level: 'error',
+                library: libraryId,
+                url,
+                message: `Manifest loading failed in SharedManifestAdapter`,
+                errorStack: error?.stack,
+                details: {
+                    errorMessage: error?.message,
+                    errorCode: error?.code,
+                    errorName: error?.name
+                }
+            });
+            
+            // Return safe error, not the original which might have circular refs
+            throw safeError;
         }
     }
 

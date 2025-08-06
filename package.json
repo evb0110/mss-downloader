@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.94",
+  "version": "1.4.95",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.94: Grenoble library status update (Issue #13)",
-    "Added 'Temporarily Unavailable' status badge for Grenoble library",
-    "Grenoble server is currently unreachable - DNS resolution issues",
-    "Visual indicator helps users understand the library is temporarily down",
-    "No functional changes to other libraries"
+    "v1.4.95: FINAL crash fix for University of Graz and geo-restrictions (Issue #2)",
+    "Added process-level error handlers to prevent uncaught exceptions",
+    "Fixed error serialization in IPC communication to prevent crashes",
+    "Enhanced error messages for geo-blocked libraries with user-friendly explanations",
+    "App now gracefully handles network failures instead of crashing completely"
   ],
   "main": "dist/main/main.js",
   "scripts": {

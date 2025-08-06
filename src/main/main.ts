@@ -375,6 +375,37 @@ async function cleanupTempFiles(): Promise<void> {
 // Disable autofill features that cause DevTools errors
 app.commandLine.appendSwitch('disable-features', 'Autofill');
 
+// Add process-level error handlers to prevent crashes
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  comprehensiveLogger.log({
+    level: 'error',
+    category: 'process',
+    errorMessage: error.message,
+    errorStack: error.stack,
+    details: {
+      type: 'uncaughtException',
+      fatal: true
+    }
+  });
+  // Don't exit - try to recover
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  comprehensiveLogger.log({
+    level: 'error',
+    category: 'process',
+    errorMessage: reason instanceof Error ? reason.message : String(reason),
+    errorStack: reason instanceof Error ? reason.stack : undefined,
+    details: {
+      type: 'unhandledRejection',
+      promise: String(promise)
+    }
+  });
+  // Don't exit - try to recover
+});
+
 app.whenReady().then(async () => {
   // CRITICAL: Check for version changes and wipe all caches if needed
   // This MUST happen before initializing any services to ensure clean state
@@ -585,7 +616,16 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
         originalUrl: url
       }
     });
-    throw error;
+    
+    // Create a safe error for IPC serialization
+    const safeError = new Error(error?.message || 'Failed to load manuscript');
+    safeError.name = error?.name || 'ManifestError';
+    
+    // Add safe metadata without circular references
+    (safeError as any).library = error?.library;
+    (safeError as any).isManifestError = true;
+    
+    throw safeError;
   }
 });
 
@@ -619,7 +659,13 @@ ipcMain.handle('get-manifest-chunk', async (_event, url: string, chunkIndex: num
         chunkIndex
       }
     });
-    throw error;
+    
+    // Create a safe error for IPC serialization
+    const safeError = new Error(error?.message || 'Failed to get manifest chunk');
+    safeError.name = error?.name || 'ManifestChunkError';
+    (safeError as any).chunkIndex = chunkIndex;
+    
+    throw safeError;
   }
 });
 
@@ -749,8 +795,16 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
       // Let the error pass through to the UI for captcha handling
       throw error;
     }
-    // Handle other errors normally
-    throw error;
+    
+    // Create a safe error for IPC serialization
+    const safeError = new Error(error?.message || 'Failed to load manuscript');
+    safeError.name = error?.name || 'ManifestError';
+    
+    // Add safe metadata without circular references
+    (safeError as any).library = error?.library;
+    (safeError as any).isManifestError = true;
+    
+    throw safeError;
   }
 });
 

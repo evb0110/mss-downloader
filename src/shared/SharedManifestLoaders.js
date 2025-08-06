@@ -1121,13 +1121,35 @@ class SharedManifestLoaders {
             };
             
         } catch (error) {
-            if (error.message.includes('timeout') || error.message.includes('ETIMEDOUT')) {
+            console.error('[Graz] Manifest loading failed:', error);
+            
+            // Handle different error scenarios gracefully
+            if (error.message && error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
                 throw new Error('University of Graz server is not responding. The manuscript may be too large or the server is experiencing high load. Please try again later.');
             }
-            if (error.message.includes('ENOMEM') || error.message.includes('heap out of memory')) {
+            
+            if (error.message && (error.message.includes('ENOMEM') || error.message.includes('heap out of memory'))) {
                 throw new Error('Out of memory while processing large Graz manuscript. The manuscript may be too large to process.');
             }
-            throw error;
+            
+            if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+                throw new Error('Cannot connect to University of Graz server. This may be due to network issues or geo-restrictions.');
+            }
+            
+            if (error.message && (error.message.includes('403') || error.message.includes('Forbidden'))) {
+                throw new Error('Access to University of Graz manuscript is restricted. This may be due to geo-blocking or institutional access requirements.');
+            }
+            
+            if (error.message && error.message.includes('404')) {
+                throw new Error('University of Graz manuscript not found. Please check the URL or try a different manuscript.');
+            }
+            
+            // Create a safe error for any other cases
+            const safeError = new Error(
+                `Failed to load University of Graz manifest: ${error.message || 'Unknown network or server error'}`
+            );
+            safeError.name = 'GrazManifestError';
+            throw safeError;
         }
     }
 
