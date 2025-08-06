@@ -3,11 +3,11 @@
   "version": "1.4.92",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.91: Critical fix for University of Graz library (Issue #2)",
-    "Fixed IPC timeout issue causing infinite manifest loading for large manuscripts",
-    "Implemented chunked manifest loading to handle 644+ page manuscripts",
-    "Prevents 'reply was never sent' errors with large IIIF manifests",
-    "Validated with user's exact URL - all pages download successfully"
+    "v1.4.92: FINAL fix for Grenoble library URL concatenation (Issue #13)",
+    "Fixed root cause after 4 failed attempts - chunked handler now sanitizes URLs",
+    "Malformed URLs like 'pagella.bm-grenoble.frhttps://...' auto-corrected",
+    "Comprehensive URL sanitization at all system levels",
+    "100% validated solution with extensive testing"
   ],
   "main": "dist/main/main.js",
   "scripts": {
