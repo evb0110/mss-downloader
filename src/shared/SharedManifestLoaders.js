@@ -228,10 +228,29 @@ class SharedManifestLoaders {
             const timeoutMs = this.getTimeoutForUrl(url);
             
             // ULTRA-DEFENSIVE: Final hostname validation before request
-            const hostname = urlObj.hostname;
-            if (hostname.includes('://')) {
-                console.error(`[CRITICAL] Hostname contains protocol: ${hostname}`);
-                reject(new Error(`Invalid hostname detected: ${hostname}`));
+            let hostname = urlObj.hostname;
+            
+            // CRITICAL FIX for Issue #13: Check for any URL-like patterns in hostname
+            if (hostname.includes('://') || hostname.includes('https') || hostname.includes('http')) {
+                console.error(`[CRITICAL] Hostname contains URL parts: ${hostname}`);
+                console.error(`[CRITICAL] Original URL was: ${url}`);
+                
+                // Try to extract clean hostname
+                const cleanMatch = hostname.match(/^([a-z0-9.-]+?)(?:https?|\/\/|$)/i);
+                if (cleanMatch && cleanMatch[1]) {
+                    hostname = cleanMatch[1];
+                    console.log(`[CRITICAL] Extracted clean hostname: ${hostname}`);
+                    urlObj.hostname = hostname; // Update the URL object
+                } else {
+                    reject(new Error(`Invalid hostname detected: ${hostname}. Cannot extract valid hostname from malformed URL.`));
+                    return;
+                }
+            }
+            
+            // Additional validation: hostname should be a valid domain
+            if (!/^[a-z0-9.-]+$/i.test(hostname) || hostname.length > 253) {
+                console.error(`[CRITICAL] Invalid hostname format: ${hostname}`);
+                reject(new Error(`Invalid hostname format: ${hostname}`));
                 return;
             }
             

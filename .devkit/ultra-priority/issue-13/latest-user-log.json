@@ -1,0 +1,24 @@
+{
+  "sessionStart": "2025-08-06T08:40:51.318Z",
+  "exportTime": "2025-08-06T08:42:10.458Z",
+  "totalLogs": 1,
+  "systemInfo": {
+    "platform": "win32",
+    "arch": "x64",
+    "nodeVersion": "v20.18.3",
+    "appVersion": "1.4.86"
+  },
+  "logs": [
+    {
+      "level": "info",
+      "library": "loading",
+      "url": "https://pagella.bm-grenoble.fr/ark:/12148/btv1b10663927k/f1.item.zoom",
+      "message": "Starting manifest load for queue item",
+      "details": {
+        "itemId": "ms_1754469665066_8r8rcwf49",
+        "displayName": "Loading manifest for https://pagella.bm-grenoble.fr/ark:/12148/btv1b106..."
+      },
+      "timestamp": "2025-08-06T08:41:05.070Z"
+    }
+  ]
+}

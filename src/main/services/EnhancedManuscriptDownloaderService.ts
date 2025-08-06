@@ -1062,7 +1062,39 @@ export class EnhancedManuscriptDownloaderService {
         const { URL } = await import('url');
         const dns = await import('dns').then(m => m.promises);
         
-        const urlObj = new URL(url);
+        // ULTRA-CRITICAL FIX for Issue #13: Additional defensive URL parsing
+        // Catch cases where hostname might be concatenated with URL
+        let urlObj;
+        try {
+            urlObj = new URL(url);
+            
+            // Double-check hostname doesn't contain URL parts
+            if (urlObj.hostname.includes('://') || urlObj.hostname.includes('https') || urlObj.hostname.includes('http')) {
+                console.error(`[CRITICAL] Malformed URL detected after URL parsing: hostname=${urlObj.hostname}, url=${url}`);
+                // Try to extract the real URL from the malformed string
+                const realUrlMatch = url.match(/(https?:\/\/[^\s]+)/);
+                if (realUrlMatch) {
+                    url = realUrlMatch[1];
+                    urlObj = new URL(url);
+                    console.log(`[CRITICAL] Recovered correct URL: ${url}`);
+                } else {
+                    throw new Error(`Cannot parse malformed URL: ${url}`);
+                }
+            }
+        } catch (urlError: any) {
+            console.error(`[CRITICAL] URL parsing failed for: ${url}`);
+            console.error(`[CRITICAL] Error: ${urlError.message}`);
+            
+            // Last resort: try to extract valid URL from error-prone string
+            const urlMatch = url.match(/(https?:\/\/[^\s]+)/);
+            if (urlMatch) {
+                url = urlMatch[1];
+                urlObj = new URL(url);
+                console.log(`[CRITICAL] Recovered URL from parsing error: ${url}`);
+            } else {
+                throw urlError;
+            }
+        }
         const library = this.detectLibraryFromUrl(url);
         const startTime = Date.now();
         
@@ -1117,11 +1149,29 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('pagella.bm-grenoble.fr')) {
             try {
                 // ULTRA-DEFENSIVE: Validate hostname before DNS lookup
-                const hostname = urlObj.hostname;
-                if (hostname.includes('://') || hostname.includes('https')) {
+                let hostname = urlObj.hostname;
+                
+                // CRITICAL FIX for Issue #13: Additional hostname validation
+                if (hostname.includes('://') || hostname.includes('https') || hostname.includes('http')) {
                     console.error(`[Grenoble] CRITICAL: Malformed hostname detected: ${hostname}`);
                     console.error(`[Grenoble] Full URL was: ${url}`);
-                    throw new Error(`Invalid hostname for DNS lookup: ${hostname}`);
+                    
+                    // Try to extract clean hostname
+                    const cleanMatch = hostname.match(/^([a-z0-9.-]+?)(?:https?|\/\/|$)/i);
+                    if (cleanMatch && cleanMatch[1]) {
+                        hostname = cleanMatch[1];
+                        console.log(`[Grenoble] Extracted clean hostname: ${hostname}`);
+                    } else {
+                        // Skip DNS resolution if hostname is invalid
+                        console.error(`[Grenoble] Cannot extract valid hostname, skipping DNS resolution`);
+                        return;
+                    }
+                }
+                
+                // Additional validation: hostname should not be too long or contain invalid chars
+                if (hostname.length > 253 || !/^[a-z0-9.-]+$/i.test(hostname)) {
+                    console.error(`[Grenoble] Invalid hostname format: ${hostname}`);
+                    return;
                 }
                 
                 // Pre-resolve DNS to avoid EAI_AGAIN errors
@@ -1130,8 +1180,17 @@ export class EnhancedManuscriptDownloaderService {
                 if (addresses.length > 0) {
                     console.log(`[Grenoble] Resolved to ${addresses[0]}`);
                 }
-            } catch (dnsError) {
-                console.warn(`[Grenoble] DNS resolution failed, proceeding anyway:`, dnsError);
+            } catch (dnsError: any) {
+                console.warn(`[Grenoble] DNS resolution failed, proceeding anyway:`, dnsError?.message || dnsError);
+                
+                // Log detailed error for debugging Issue #13
+                if (dnsError?.code === 'EAI_AGAIN' || dnsError?.code === 'ENOTFOUND') {
+                    console.error(`[Grenoble] DNS Error Details:`);
+                    console.error(`  - Error Code: ${dnsError.code}`);
+                    console.error(`  - Hostname attempted: ${urlObj.hostname}`);
+                    console.error(`  - Original URL: ${url}`);
+                    console.error(`  - Sanitized URL: ${this.sanitizeUrl(url)}`);
+                }
             }
         }
         
