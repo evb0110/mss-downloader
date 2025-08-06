@@ -658,7 +658,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('digital.ulb.hhu.de')) return 'hhu';
         if (url.includes('manuscrits.bordeaux.fr') || url.includes('selene.bordeaux.fr')) return 'bordeaux';
         if (url.includes('digital.bodleian.ox.ac.uk')) return 'bodleian';
-        if (url.includes('digi.ub.uni-heidelberg.de')) return 'heidelberg';
+        if (url.includes('digi.ub.uni-heidelberg.de') || url.includes('doi.org/10.11588/diglit')) return 'heidelberg';
         
         return null;
     }

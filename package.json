@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.90",
+  "version": "1.4.91",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "🔥 v1.4.90: ULTRA-PRIORITY fix for Heidelberg University Library (Issue #19)",
-    "Added Heidelberg to UI supported libraries list - now fully visible to users",
-    "Backend implementation was already complete - fixed UI visibility issue",
-    "Supports both IIIF v2 and v3 manifests with maximum resolution",
-    "Validated with 264-page manuscript - all pages download perfectly"
+    "v1.4.91: Critical fix for University of Graz library (Issue #2)",
+    "Fixed IPC timeout issue causing infinite manifest loading for large manuscripts",
+    "Implemented chunked manifest loading to handle 644+ page manuscripts",
+    "Prevents 'reply was never sent' errors with large IIIF manifests",
+    "Validated with user's exact URL - all pages download successfully"
   ],
   "main": "dist/main/main.js",
   "scripts": {

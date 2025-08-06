@@ -37,9 +37,74 @@ This command adapts the handle-issues workflow but with ULTRA-FOCUS on a SINGLE 
 /claude pick-issue
 ```
 
-## MANDATORY FIRST STEP: Autonomous Issue Selection & Deep Analysis
+## MANDATORY FIRST STEP: Duplicate Detection & Issue Selection
 
-### Step 1: Identify Target Issue - IMMEDIATE AUTONOMOUS START
+### Step 0: CRITICAL DUPLICATE PREVENTION CHECK
+```bash
+# 🚨 ULTRA-CRITICAL: Check if issue was already "fixed" in recent versions
+check_for_duplicate_fixes() {
+    local issue_num=$1
+    
+    echo "🔍 Checking for duplicate fixes of Issue #$issue_num..."
+    
+    # Use the issue state tracker if available
+    if [ -f ".devkit/scripts/issue-state-tracker.cjs" ]; then
+        echo "📊 Using Issue State Tracker for comprehensive analysis..."
+        node .devkit/scripts/issue-state-tracker.cjs check $issue_num
+        TRACKER_EXIT_CODE=$?
+        
+        if [ $TRACKER_EXIT_CODE -ne 0 ]; then
+            echo "⚠️  Issue State Tracker detected duplicate risk"
+        fi
+    fi
+    
+    # Also check recent commits for this issue
+    RECENT_FIXES=$(git log --oneline -30 --grep="Issue #$issue_num" 2>/dev/null || echo "")
+    
+    if [ ! -z "$RECENT_FIXES" ]; then
+        echo "⚠️  WARNING: Issue #$issue_num mentioned in recent commits:"
+        echo "$RECENT_FIXES"
+        
+        # Count how many times this issue was "fixed"
+        FIX_COUNT=$(echo "$RECENT_FIXES" | wc -l)
+        
+        if [ $FIX_COUNT -ge 2 ]; then
+            echo "🚨 DUPLICATE ALERT: Issue #$issue_num has been 'fixed' $FIX_COUNT times!"
+            echo "📊 This indicates previous fixes didn't solve the actual problem."
+            
+            # Check if user confirmed any fix worked
+            echo "Checking user responses..."
+            ISSUE_COMMENTS=$(gh api "repos/{owner}/{repo}/issues/$issue_num/comments" --jq '.[] | {user: .user.login, body: .body, created: .created_at}' 2>/dev/null || echo "")
+            
+            # Look for user confirmation or rejection
+            LAST_USER_COMMENT=$(echo "$ISSUE_COMMENTS" | grep -v '"user": "evb0110"' | tail -1)
+            
+            if echo "$LAST_USER_COMMENT" | grep -qE "(работает|works|fixed|спасибо|thanks|закрыт|closed)"; then
+                echo "✅ Issue appears resolved - user confirmed fix works"
+                echo "🛑 STOPPING: No need to fix again"
+                return 1  # Signal to stop
+            elif echo "$LAST_USER_COMMENT" | grep -qE "(не работает|not working|still|всё ещё|broken|библиотеки нет)"; then
+                echo "🔄 Previous fixes didn't work - user reported ongoing problems"
+                echo "📝 IMPORTANT: Must identify why $FIX_COUNT previous fixes failed"
+                echo "⚡ Proceeding with ULTRA-DEEP analysis to find real root cause"
+            else
+                echo "❓ User hasn't confirmed if fixes worked"
+                echo "📨 Should request user feedback before attempting another fix"
+            fi
+        fi
+        
+        # Analyze what was claimed to be fixed
+        echo "\n📋 Previous fix claims:"
+        git log --format="%h %s" --grep="Issue #$issue_num" -5
+    else
+        echo "✅ No recent fixes found for Issue #$issue_num - safe to proceed"
+    fi
+    
+    return 0  # Continue with fix
+}
+```
+
+### Step 1: Identify Target Issue with Duplicate Prevention
 ```bash
 # Create workspace
 mkdir -p .devkit/ultra-priority
@@ -52,20 +117,38 @@ if [[ "$1" =~ ^[0-9]+$ ]]; then
     # Issue number provided
     TARGET_ISSUE="$1"
     echo "🎯 Using specified issue #$TARGET_ISSUE"
+    
+    # CHECK FOR DUPLICATES
+    if ! check_for_duplicate_fixes $TARGET_ISSUE; then
+        echo "🛑 Stopping due to duplicate detection"
+        exit 0
+    fi
 elif [[ "$1" =~ github\.com/.*/issues/([0-9]+) ]]; then
     # Extract issue number from URL
     TARGET_ISSUE="${BASH_REMATCH[1]}"
     echo "🎯 Extracted issue #$TARGET_ISSUE from URL"
+    
+    # CHECK FOR DUPLICATES
+    if ! check_for_duplicate_fixes $TARGET_ISSUE; then
+        echo "🛑 Stopping due to duplicate detection"
+        exit 0
+    fi
 else
-    # AUTO-START: Pick best candidate immediately without waiting
+    # AUTO-START: Pick best candidate with duplicate prevention
     echo "🚀 AUTO-START: Analyzing all open issues to select best candidate..."
     
     # Get detailed issue data with comments
     gh issue list --state open --json number,title,author,createdAt --limit 100 > .devkit/issue-candidates.json
     
-    # Find issues where last comment is from author (not from MSS team)
+    # Find issues that haven't been repeatedly "fixed"
     BEST_ISSUE=""
     for issue_num in $(cat .devkit/issue-candidates.json | jq -r '.[].number'); do
+        # First check if this issue has duplicate fixes
+        DUPLICATE_COUNT=$(git log --oneline --grep="Issue #$issue_num" | wc -l)
+        if [ $DUPLICATE_COUNT -ge 2 ]; then
+            echo "  Skipping Issue #$issue_num (already 'fixed' $DUPLICATE_COUNT times)"
+            continue
+        fi
         # Get issue comments
         gh api "repos/{owner}/{repo}/issues/$issue_num/comments" --jq '.[].user.login' > .devkit/comment-authors-$issue_num.txt 2>/dev/null || continue
         
@@ -417,10 +500,54 @@ npm run build && test built    # Production build
 Команда MSS Downloader
 ```
 
+## Phase 4.5: USER VALIDATION REQUIREMENT
+
+### 🚨 CRITICAL: Verify Fix Before Version Bump
+```bash
+# DO NOT PROCEED TO VERSION BUMP WITHOUT USER CONFIRMATION
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📝 USER VALIDATION REQUIRED"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "The fix has been implemented and tested."
+echo "Before version bump, we need confirmation that it solves the actual problem."
+echo ""
+echo "Options:"
+echo "1. Post validation request to issue author"
+echo "2. If user is available, request immediate testing"
+echo "3. If confident, proceed with version bump (risky if duplicate pattern exists)"
+echo ""
+
+# Check if this issue has a history of failed fixes
+DUPLICATE_HISTORY=$(git log --oneline --grep="Issue #$TARGET_ISSUE" | wc -l)
+if [ $DUPLICATE_HISTORY -ge 1 ]; then
+    echo "⚠️  WARNING: This issue has been 'fixed' $DUPLICATE_HISTORY times before!"
+    echo "🚨 MANDATORY: Must get user confirmation before version bump"
+    echo ""
+    echo "Posting validation request to issue..."
+    
+    # Post comment requesting validation
+    gh issue comment $TARGET_ISSUE --body "@$(cat .devkit/target-issue.json | jq -r '.author.login')
+
+🔧 We've implemented a fix for your issue. Before releasing a new version, could you please test if it works?
+
+You can test with the development build or wait for the next release.
+
+Please confirm if the issue is resolved so we can close it properly.
+
+Thank you!"
+    
+    echo "⏸️  PAUSING: Waiting for user validation before version bump"
+    echo "📋 TODO: Check issue comments for user response before proceeding"
+    exit 0
+fi
+```
+
 ## Phase 5: AUTONOMOUS Version Bump
 
 ### Pre-bump Ultra-Checklist:
 - [ ] Issue selected and deeply analyzed
+- [ ] NO DUPLICATE FIXES detected (or explained why this is different)
 - [ ] Root cause identified with 100% confidence
 - [ ] Multiple solution approaches evaluated
 - [ ] Optimal solution implemented
@@ -431,21 +558,49 @@ npm run build && test built    # Production build
 - [ ] Memory usage optimal
 - [ ] Visual evidence generated
 - [ ] Comprehensive report written
+- [ ] USER VALIDATION obtained (if duplicate history exists)
 - [ ] npm run lint - ZERO errors
 - [ ] npm run build - SUCCESS
 
-### Version Bump with EMPHASIS:
+### Version Bump with DUPLICATE PREVENTION:
 ```bash
+# FINAL CHECK: Ensure we're not creating a duplicate fix
+FINAL_DUPLICATE_CHECK=$(git log --oneline --grep="Issue #$TARGET_ISSUE" | wc -l)
+if [ $FINAL_DUPLICATE_CHECK -ge 2 ]; then
+    echo "🚨 CRITICAL: This would be fix attempt #$(($FINAL_DUPLICATE_CHECK + 1)) for Issue #$TARGET_ISSUE"
+    echo "📊 Previous attempts:"
+    git log --oneline --grep="Issue #$TARGET_ISSUE"
+    echo ""
+    echo "❓ Are you SURE this fix is different and will work? (requires user validation)"
+    # Add extra context about why this fix is different
+fi
+
+# Record this fix attempt in the issue state tracker
+if [ -f ".devkit/scripts/issue-state-tracker.cjs" ]; then
+    echo "📝 Recording fix attempt in Issue State Tracker..."
+    node .devkit/scripts/issue-state-tracker.cjs record $TARGET_ISSUE $NEW_VERSION "$FIX_DESCRIPTION"
+fi
+
 # Update package.json with ULTRA-PRIORITY marker
-# In commit message, emphasize the critical nature
+# In commit message, emphasize the critical nature AND mention if this resolves previous failed attempts
 
 git add -A
-git commit -m "🔥 ULTRA-PRIORITY FIX v.X.X.X: Critical fix for Issue #$TARGET_ISSUE - $ISSUE_TITLE
+if [ $FINAL_DUPLICATE_CHECK -ge 1 ]; then
+    git commit -m "🔥 ULTRA-PRIORITY FIX v.X.X.X: FINAL fix for Issue #$TARGET_ISSUE - $ISSUE_TITLE
+
+- Previous $FINAL_DUPLICATE_CHECK attempts didn't solve the root cause
+- This fix addresses the ACTUAL problem: [specific root cause]
+- User validated that this solution works
+- COMPREHENSIVE VALIDATION completed
+- 100% confidence this resolves the issue permanently"
+else
+    git commit -m "🔥 ULTRA-PRIORITY FIX v.X.X.X: Critical fix for Issue #$TARGET_ISSUE - $ISSUE_TITLE
 
 - MAXIMUM RESOURCES allocated to this fix
-- DEEPEST ANALYSIS performed
+- DEEPEST ANALYSIS performed  
 - COMPREHENSIVE VALIDATION completed
 - 100% confidence in solution stability"
+fi
 
 git push origin main
 ```

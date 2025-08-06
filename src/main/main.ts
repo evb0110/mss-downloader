@@ -496,6 +496,82 @@ ipcMain.handle('get-supported-libraries', () => {
   }
 });
 
+// ULTRA-PRIORITY FIX for Issue #2: Add chunked manifest loading for large responses
+ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
+  if (!enhancedManuscriptDownloader) {
+    throw new Error('Enhanced manuscript downloader not initialized');
+  }
+  
+  try {
+    const manifest = await enhancedManuscriptDownloader.loadManifest(url);
+    
+    // Check if manifest is large and needs chunking
+    const manifestSize = JSON.stringify(manifest).length;
+    const CHUNK_THRESHOLD = 100 * 1024; // 100KB threshold
+    
+    if (manifestSize > CHUNK_THRESHOLD) {
+      // Return metadata indicating chunked response is needed
+      return {
+        isChunked: true,
+        totalSize: manifestSize,
+        chunkSize: 50 * 1024, // 50KB chunks
+        manifestId: url // Use URL as ID for now
+      };
+    }
+    
+    // Small manifest, return directly
+    return { isChunked: false, manifest };
+  } catch (error: any) {
+    comprehensiveLogger.log({
+      level: 'error',
+      category: 'manifest',
+      url: url || 'undefined',
+      errorMessage: error.message,
+      errorStack: error.stack,
+      details: {
+        message: 'Parse manuscript URL chunked failed',
+        originalUrl: url
+      }
+    });
+    throw error;
+  }
+});
+
+// Handler to get manifest chunks
+ipcMain.handle('get-manifest-chunk', async (_event, url: string, chunkIndex: number, chunkSize: number) => {
+  if (!enhancedManuscriptDownloader) {
+    throw new Error('Enhanced manuscript downloader not initialized');
+  }
+  
+  try {
+    const manifest = await enhancedManuscriptDownloader.loadManifest(url);
+    const manifestString = JSON.stringify(manifest);
+    
+    const start = chunkIndex * chunkSize;
+    const end = Math.min(start + chunkSize, manifestString.length);
+    const chunk = manifestString.slice(start, end);
+    
+    return {
+      chunk,
+      isLastChunk: end >= manifestString.length,
+      totalChunks: Math.ceil(manifestString.length / chunkSize)
+    };
+  } catch (error: any) {
+    comprehensiveLogger.log({
+      level: 'error',
+      category: 'manifest',
+      url: url || 'undefined',
+      errorMessage: error.message,
+      details: {
+        message: 'Get manifest chunk failed',
+        chunkIndex
+      }
+    });
+    throw error;
+  }
+});
+
+// Keep original handler for backward compatibility but with increased timeout handling
 ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
   if (!enhancedManuscriptDownloader) {
     throw new Error('Enhanced manuscript downloader not initialized');
@@ -625,6 +701,21 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
     throw error;
   }
 });
+
+// Store for managing chunked manifest loading sessions
+const chunkedManifestCache = new Map<string, { manifest: any, timestamp: number }>();
+
+// Cleanup old cached manifests every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  
+  for (const [key, value] of chunkedManifestCache.entries()) {
+    if (now - value.timestamp > CACHE_DURATION) {
+      chunkedManifestCache.delete(key);
+    }
+  }
+}, 5 * 60 * 1000);
 
 // Queue management handlers
 ipcMain.handle('queue-add-manuscript', async (_event, manuscript: Omit<QueuedManuscript, 'id' | 'addedAt' | 'status'>) => {

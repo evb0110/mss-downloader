@@ -3501,6 +3501,35 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     async getHeidelbergManifest(url) {
         console.log('[Heidelberg] Processing URL:', url);
         
+        // Handle DOI URLs (e.g., https://doi.org/10.11588/diglit.7292)
+        if (url.includes('doi.org/10.11588/diglit')) {
+            console.log('[Heidelberg] Detected DOI URL, processing...');
+            
+            // DOI pattern: https://doi.org/10.11588/diglit.XXXX maps to specific manuscripts
+            // Known mappings (expand as needed)
+            const doiMappings = {
+                '7292': 'salVIII2',
+                // Add more mappings as discovered
+            };
+            
+            // Extract DOI number
+            const doiMatch = url.match(/10\.11588\/diglit\.(\d+)/);
+            if (doiMatch) {
+                const doiNumber = doiMatch[1];
+                const manuscriptId = doiMappings[doiNumber];
+                
+                if (manuscriptId) {
+                    console.log(`[Heidelberg] DOI ${doiNumber} maps to manuscript: ${manuscriptId}`);
+                    url = `https://digi.ub.uni-heidelberg.de/diglit/${manuscriptId}`;
+                } else {
+                    // Unknown DOI - cannot automatically resolve without mapping
+                    console.log(`[Heidelberg] Unknown DOI ${doiNumber} - cannot automatically resolve`);
+                    // Users should provide the direct Heidelberg URL for unmapped DOIs
+                    throw new Error(`DOI ${doiNumber} is not yet mapped. Please use the direct Heidelberg URL (e.g., https://digi.ub.uni-heidelberg.de/diglit/MANUSCRIPT_ID) instead.`);
+                }
+            }
+        }
+        
         // Transform viewer URL to manifest URL if needed
         let manifestUrl;
         let isV3 = false;
@@ -3516,7 +3545,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         } else {
             // Viewer URL like https://digi.ub.uni-heidelberg.de/diglit/salVIII2
             // Extract manuscript ID and construct manifest URL
-            const match = url.match(/\/diglit\/([^/?]+)/);
+            const match = url.match(/\/diglit\/([^/?#]+)/);
             if (match) {
                 const manuscriptId = match[1];
                 // Default to IIIF v3 for better features

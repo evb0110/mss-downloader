@@ -31,7 +31,48 @@ const api = {
 
   // Old methods (keep for now, will remove if no longer needed by ManuscriptDownloader.vue)
   getSupportedLibraries: (): Promise<LibraryInfo[]> => ipcRenderer.invoke('get-supported-libraries'),
-  parseManuscriptUrl: (url: string): Promise<ManuscriptManifest> => ipcRenderer.invoke('parse-manuscript-url', url),
+  
+  // ULTRA-PRIORITY FIX for Issue #2: Enhanced manifest loading with chunking support for large manifests
+  parseManuscriptUrl: async (url: string): Promise<ManuscriptManifest> => {
+    try {
+      // First try the chunked handler which can handle both small and large manifests
+      const response = await ipcRenderer.invoke('parse-manuscript-url-chunked', url);
+      
+      if (!response.isChunked) {
+        // Small manifest, return directly
+        return response.manifest;
+      }
+      
+      // Large manifest needs chunking - fetch in chunks to avoid IPC timeout
+      const chunks: string[] = [];
+      let chunkIndex = 0;
+      let isComplete = false;
+      
+      while (!isComplete) {
+        const chunkData = await ipcRenderer.invoke('get-manifest-chunk', url, chunkIndex, response.chunkSize);
+        chunks.push(chunkData.chunk);
+        isComplete = chunkData.isLastChunk;
+        chunkIndex++;
+        
+        // Safety check to prevent infinite loops
+        if (chunkIndex > 1000) {
+          throw new Error('Too many chunks, possible infinite loop');
+        }
+      }
+      
+      // Reassemble the manifest from chunks
+      const manifestString = chunks.join('');
+      return JSON.parse(manifestString);
+      
+    } catch (error: any) {
+      // Fallback to original handler if chunked handler is not available (backward compatibility)
+      if (error.message?.includes('No handler registered') || error.message?.includes('is not a function')) {
+        console.log('Chunked handler not available, falling back to original handler');
+        return ipcRenderer.invoke('parse-manuscript-url', url);
+      }
+      throw error;
+    }
+  },
 
   onLanguageChanged: (callback: (language: string) => void) => {
     ipcRenderer.on('language-changed', (_, language) => callback(language));
