@@ -430,30 +430,6 @@ https://digi.vatlib.it/..."
             >{{ getButtonContent('revealFolder', 'Reveal Folder').icon }}</span>
             <span v-else>{{ getButtonContent('revealFolder', 'Reveal Folder').text }}</span>
           </button>
-          <button
-            :class="getButtonClass('revealLogs', 'reveal-logs-btn')"
-            :disabled="isButtonDisabled('revealLogs')"
-            title="Open the Logs folder for debugging"
-            @click="revealLogsFolder"
-          >
-            <span
-              v-if="getButtonContent('revealLogs', 'Show Logs').icon"
-              class="btn-icon-only"
-            >{{ getButtonContent('revealLogs', 'Show Logs').icon }}</span>
-            <span v-else>{{ getButtonContent('revealLogs', 'Show Logs').text }}</span>
-          </button>
-          <button
-            :class="getButtonClass('exportLogs', 'export-logs-btn')"
-            :disabled="isButtonDisabled('exportLogs')"
-            title="Export current logs to file"
-            @click="exportLogs"
-          >
-            <span
-              v-if="getButtonContent('exportLogs', 'Export Logs').icon"
-              class="btn-icon-only"
-            >{{ getButtonContent('exportLogs', 'Export Logs').icon }}</span>
-            <span v-else>{{ getButtonContent('exportLogs', 'Export Logs').text }}</span>
-          </button>
         </div>
 
 
@@ -595,12 +571,11 @@ https://digi.vatlib.it/..."
                     Restart
                   </button>
                   <button
-                    v-if="group.parent.status === 'failed'"
-                    class="download-logs-btn"
-                    title="Download error logs"
-                    @click="downloadLogs"
+                    class="view-logs-btn"
+                    :title="'View logs for this download'"
+                    @click="viewDownloadLogs(group.parent)"
                   >
-                    Download Logs
+                    📋 Logs
                   </button>
                   <button
                     v-if="canStartIndividualGroup(group)"
@@ -873,6 +848,40 @@ https://digi.vatlib.it/..."
     @close="closeAlertModal"
   />
 
+  <!-- Log Viewer Modal -->
+  <div v-if="showLogViewer" class="log-viewer-modal">
+    <div class="log-viewer-content">
+      <div class="log-viewer-header">
+        <h3>📋 Logs: {{ currentLogItem?.displayName || 'Download' }}</h3>
+        <div class="log-viewer-actions">
+          <button @click="exportCurrentLogs" class="export-log-btn" title="Export logs to file">
+            💾 Export
+          </button>
+          <button @click="clearCurrentLogs" class="clear-log-btn" title="Clear logs">
+            🗑️ Clear
+          </button>
+          <button @click="closeLogViewer" class="close-log-btn" title="Close">
+            ✖
+          </button>
+        </div>
+      </div>
+      <div class="log-viewer-body">
+        <div v-if="currentLogs.length === 0" class="no-logs">
+          No logs available for this download yet.
+        </div>
+        <div v-else class="log-entries">
+          <div v-for="(log, index) in currentLogs" :key="index" :class="['log-entry', `log-${log.level}`]">
+            <span class="log-time">{{ formatLogTime(log.timestamp) }}</span>
+            <span class="log-level">[{{ log.level.toUpperCase() }}]</span>
+            <span class="log-message">{{ log.message }}</span>
+            <div v-if="log.details" class="log-details">
+              <pre>{{ JSON.stringify(log.details, null, 2) }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Supported Libraries Modal -->
   <Modal
@@ -993,7 +1002,7 @@ https://digi.vatlib.it/..."
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watchEffect, onMounted } from 'vue';
+import { computed, nextTick, ref, watchEffect, onMounted, onUnmounted } from 'vue';
 import type { QueuedManuscript, QueueState, TStatus, TLibrary, TSimultaneousMode } from '../../shared/queueTypes';
 import type { LibraryInfo, ManuscriptManifest } from '../../shared/types';
 import Modal from './Modal.vue';
@@ -1082,7 +1091,61 @@ const showConfirmModal = ref(false);
 const showAlertModal = ref(false);
 const showSupportedLibrariesModal = ref(false);
 const showNegativeConverterModal = ref(false);
+
+// Log viewer state
+const showLogViewer = ref(false);
+const currentLogs = ref<any[]>([]);
+const currentLogItem = ref<any>(null);
+const downloadLogs = ref<Map<string, any[]>>(new Map());
 const showAddMoreDocumentsModal = ref(false);
+
+// Set up queue monitoring for logs
+let logMonitorInterval: NodeJS.Timeout | null = null;
+let previousStatuses = new Map<string, string>();
+
+onMounted(() => {
+    // Monitor queue items for status changes
+    const checkQueueChanges = () => {
+        queueItems.value.forEach(item => {
+            const prevStatus = previousStatuses.get(item.id);
+            if (prevStatus && prevStatus !== item.status) {
+                // Status changed, log it
+                if (item.status === 'loading') {
+                    addLogEntry(item.id, 'info', 'Loading manuscript manifest...');
+                } else if (item.status === 'pending') {
+                    addLogEntry(item.id, 'info', 'Waiting in queue');
+                } else if (item.status === 'downloading') {
+                    addLogEntry(item.id, 'info', 'Download started');
+                } else if (item.status === 'completed') {
+                    addLogEntry(item.id, 'info', '✅ Download completed successfully');
+                } else if (item.status === 'failed') {
+                    addLogEntry(item.id, 'error', `❌ Download failed: ${item.error || 'Unknown error'}`);
+                } else if (item.status === 'paused') {
+                    addLogEntry(item.id, 'info', 'Download paused');
+                }
+            }
+            previousStatuses.set(item.id, item.status);
+            
+            // Log progress updates
+            if (item.status === 'downloading' && item.progress) {
+                const progressPercent = Math.round((item.progress.downloaded / item.progress.total) * 100);
+                if (progressPercent % 25 === 0) { // Log at 25%, 50%, 75%, 100%
+                    addLogEntry(item.id, 'info', `Progress: ${progressPercent}% (${item.progress.downloaded}/${item.progress.total} pages)`);
+                }
+            }
+        });
+    };
+    
+    // Check for changes every second
+    logMonitorInterval = setInterval(checkQueueChanges, 1000);
+});
+
+onUnmounted(() => {
+    // Cleanup interval
+    if (logMonitorInterval) {
+        clearInterval(logMonitorInterval);
+    }
+});
 const confirmModal = ref({
     title: '',
     message: '',
@@ -2055,6 +2118,13 @@ async function processBulkUrls() {
 
 
 async function startQueue() {
+    // Log start for all pending items
+    queueItems.value.forEach(item => {
+        if (item.status === 'pending') {
+            addLogEntry(item.id, 'info', 'Download queued for processing');
+        }
+    });
+    
     await window.electronAPI.startQueueProcessing();
     hasUserStartedQueue.value = true;
 }
@@ -2292,18 +2362,7 @@ async function showItemInFinder(filePath: string) {
     }
 }
 
-async function downloadLogs() {
-    try {
-        const result = await window.electronAPI.downloadLogs();
-        if (result.success && result.filepath) {
-            await window.electronAPI.showItemInFinder(result.filepath);
-        } else {
-            showAlert('Error', `Failed to save logs: ${result.error || 'Unknown error'}`);
-        }
-    } catch (error: any) {
-        showAlert('Error', `Failed to download logs: ${error.message}`);
-    }
-}
+// Removed old downloadLogs function - replaced with per-download log viewer
 
 function getShowInFinderText(): string {
     // Detect platform - on macOS it's "Show in Finder", on Windows "Show in Explorer", on Linux "Show in File Manager"
@@ -2381,6 +2440,70 @@ async function copyLinkToClipboard(url: string) {
     }
 }
 
+// Log viewer functions
+function viewDownloadLogs(item: any) {
+    currentLogItem.value = item;
+    currentLogs.value = downloadLogs.value.get(item.id) || [];
+    showLogViewer.value = true;
+}
+
+function closeLogViewer() {
+    showLogViewer.value = false;
+    currentLogItem.value = null;
+    currentLogs.value = [];
+}
+
+function clearCurrentLogs() {
+    if (currentLogItem.value) {
+        downloadLogs.value.set(currentLogItem.value.id, []);
+        currentLogs.value = [];
+    }
+}
+
+async function exportCurrentLogs() {
+    if (!currentLogItem.value) return;
+    
+    const logs = downloadLogs.value.get(currentLogItem.value.id) || [];
+    const logText = logs.map(log => {
+        const time = new Date(log.timestamp).toISOString();
+        const level = log.level.toUpperCase().padEnd(5);
+        const details = log.details ? `\n  Details: ${JSON.stringify(log.details, null, 2)}` : '';
+        return `[${time}] [${level}] ${log.message}${details}`;
+    }).join('\n\n');
+    
+    const blob = new Blob([logText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `logs-${currentLogItem.value.displayName.replace(/[^a-z0-9]/gi, '_')}-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function formatLogTime(timestamp: string | number): string {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString();
+}
+
+// Capture log for a download
+function addLogEntry(itemId: string, level: string, message: string, details?: any) {
+    const logs = downloadLogs.value.get(itemId) || [];
+    logs.push({
+        timestamp: Date.now(),
+        level,
+        message,
+        details
+    });
+    downloadLogs.value.set(itemId, logs);
+    
+    // Update current view if this item is being viewed
+    if (currentLogItem.value?.id === itemId) {
+        currentLogs.value = logs;
+    }
+}
+
 async function cleanupIndexedDBCache() {
     try {
         const confirmAction = async () => {
@@ -2414,32 +2537,7 @@ async function revealDownloadsFolder() {
     });
 }
 
-async function revealLogsFolder() {
-    await performButtonAction('revealLogs', async () => {
-        try {
-            const folderPath = await window.electronAPI.openLogsFolder();
-            console.log('Opened Logs folder:', folderPath);
-        } catch (error: any) {
-            console.error('Failed to open Logs folder:', error);
-            showAlert('Error', `Failed to open Logs folder: ${error.message}`);
-            throw error;
-        }
-    });
-}
-
-async function exportLogs() {
-    await performButtonAction('exportLogs', async () => {
-        try {
-            const filepath = await window.electronAPI.exportLogsNow();
-            console.log('Exported logs to:', filepath);
-            showAlert('Success', `Logs exported successfully!`);
-        } catch (error: any) {
-            console.error('Failed to export logs:', error);
-            showAlert('Error', `Failed to export logs: ${error.message}`);
-            throw error;
-        }
-    });
-}
+// Removed old global logs functions - now using per-download logs
 
 // Queue settings management
 function updateQueueSettings() {
@@ -2905,6 +3003,194 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     background: #adb5bd;
     cursor: not-allowed;
     opacity: 0.6;
+}
+
+/* View logs button in queue items */
+.view-logs-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s;
+}
+
+.view-logs-btn:hover {
+    background: #5a6268;
+}
+
+/* Log viewer modal */
+.log-viewer-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.log-viewer-content {
+    background: #1e1e1e;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 900px;
+    height: 80%;
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.log-viewer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #333;
+    background: #2d2d2d;
+    border-radius: 8px 8px 0 0;
+}
+
+.log-viewer-header h3 {
+    margin: 0;
+    color: #fff;
+    font-size: 18px;
+}
+
+.log-viewer-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.log-viewer-actions button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.export-log-btn {
+    background: #28a745;
+    color: white;
+}
+
+.export-log-btn:hover {
+    background: #218838;
+}
+
+.clear-log-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.clear-log-btn:hover {
+    background: #c82333;
+}
+
+.close-log-btn {
+    background: #6c757d;
+    color: white;
+}
+
+.close-log-btn:hover {
+    background: #5a6268;
+}
+
+.log-viewer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px 20px;
+    background: #1a1a1a;
+}
+
+.no-logs {
+    color: #888;
+    text-align: center;
+    padding: 40px;
+    font-style: italic;
+}
+
+.log-entries {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 12px;
+}
+
+.log-entry {
+    margin-bottom: 8px;
+    padding: 8px;
+    border-radius: 4px;
+    background: #262626;
+    border-left: 3px solid #444;
+}
+
+.log-entry.log-error {
+    border-left-color: #dc3545;
+    background: #2a1f1f;
+}
+
+.log-entry.log-warn {
+    border-left-color: #ffc107;
+    background: #2a2519;
+}
+
+.log-entry.log-info {
+    border-left-color: #17a2b8;
+    background: #1a2328;
+}
+
+.log-entry.log-debug {
+    border-left-color: #6c757d;
+}
+
+.log-time {
+    color: #888;
+    margin-right: 10px;
+}
+
+.log-level {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.log-level:contains("ERROR") {
+    color: #dc3545;
+}
+
+.log-level:contains("WARN") {
+    color: #ffc107;
+}
+
+.log-level:contains("INFO") {
+    color: #17a2b8;
+}
+
+.log-level:contains("DEBUG") {
+    color: #6c757d;
+}
+
+.log-message {
+    color: #e0e0e0;
+}
+
+.log-details {
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px solid #333;
+}
+
+.log-details pre {
+    margin: 0;
+    color: #999;
+    font-size: 11px;
+    overflow-x: auto;
 }
 
 /* Button state styles */
