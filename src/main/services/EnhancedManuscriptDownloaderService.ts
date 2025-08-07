@@ -997,9 +997,9 @@ export class EnhancedManuscriptDownloaderService {
 
     /**
      * Specialized fetch for BNE domains using native HTTPS module
-     * This fixes Node.js v22.16.0 compatibility issues with fetch API and SSL bypass
+     * ULTRA-PRIORITY FIX for Issue #11: Reduced timeout for HEAD requests
      */
-    private async fetchBneWithHttps(url: string, options: { method?: string } = {}): Promise<Response> {
+    private async fetchBneWithHttps(url: string, options: { method?: string, timeout?: number } = {}): Promise<Response> {
         // ULTRA-PRIORITY FIX: Sanitize URL before any processing
         url = this.sanitizeUrl(url);
         
@@ -1048,10 +1048,12 @@ export class EnhancedManuscriptDownloaderService {
                 reject(error);
             });
             
-            // Using same timeout as fetchWithHTTPS for consistency
-            req.setTimeout(30000, () => {
+            // ULTRA-PRIORITY FIX: Shorter timeout for HEAD requests to prevent hanging
+            // HEAD requests should be quick, 5 seconds is enough
+            const timeoutMs = options.method === 'HEAD' ? 5000 : (options.timeout || 30000);
+            req.setTimeout(timeoutMs, () => {
                 req.destroy();
-                reject(new Error('Request timeout'));
+                reject(new Error(`BNE request timeout after ${timeoutMs}ms`));
             });
             
             req.end();
@@ -9810,24 +9812,27 @@ Stack: ${error.stack || 'No stack trace'}
 
     /**
      * Robust BNE manuscript discovery - optimized with parallel processing
-     * FIXED: Previous implementation was too slow with sequential HEAD requests
+     * ULTRA-PRIORITY FIX for Issue #11: Reduced page checking to prevent hanging
      */
     private async robustBneDiscovery(manuscriptId: string, originalUrl: string): Promise<ManuscriptManifest> {
         const discoveredPages: Array<{page: number, contentLength: string, contentType: string}> = [];
         const seenContentHashes = new Set<string>();
-        const maxPages = 500; // Increased limit since parallel is faster
-        const batchSize = 10; // Process 10 pages at once
         
-        console.log('BNE: Starting optimized parallel page discovery...');
+        // ULTRA-PRIORITY FIX: Reduced from 500 to 200 to prevent hanging on calculation
+        // Most manuscripts have <100 pages, checking 500 causes unnecessary delays
+        const maxPages = 200; 
+        const batchSize = 5; // Reduced from 10 to 5 for better timeout handling
         
-        // Create progress monitor for BNE discovery
+        console.log('BNE: Starting optimized parallel page discovery (Ultra-Priority Fix #11)...');
+        
+        // Create progress monitor for BNE discovery with shorter timeouts
         const progressMonitor = createProgressMonitor(
             'BNE page discovery',
             'bne',
             {
-                initialTimeout: 30000,
-                progressCheckInterval: 10000,
-                maxTimeout: 180000
+                initialTimeout: 15000,  // Reduced from 30000
+                progressCheckInterval: 5000,  // Reduced from 10000
+                maxTimeout: 60000  // Reduced from 180000 (1 minute instead of 3)
             }
         );
         
@@ -9889,14 +9894,25 @@ Stack: ${error.stack || 'No stack trace'}
                 }
             }
             
-            // Stop if no valid pages found in entire batch
-            if (validPagesInBatch === 0 && errorsInBatch >= batchSize / 2) {
-                console.log(`BNE: Stopping - no valid pages found in batch ${batchStart}-${batchEnd}`);
-                break;
+            // ULTRA-PRIORITY FIX: Improved early stop logic
+            // Stop if we get too many consecutive errors (indicates end of manuscript)
+            if (validPagesInBatch === 0) {
+                if (errorsInBatch >= batchSize / 2 || batchStart > 50) {
+                    // If we've already found pages and now hit errors, we've likely reached the end
+                    if (discoveredPages.length > 0) {
+                        console.log(`BNE: Reached end of manuscript at page ${batchStart - 1}`);
+                        break;
+                    }
+                    // If no pages found at all after checking 50+ pages, stop
+                    if (batchStart > 50) {
+                        console.log(`BNE: No valid pages found after checking ${batchStart} pages`);
+                        break;
+                    }
+                }
             }
             
-            // Progress update every 50 pages
-            if (discoveredPages.length > 0 && discoveredPages.length % 50 === 0) {
+            // Progress update every 20 pages (more frequent updates)
+            if (discoveredPages.length > 0 && discoveredPages.length % 20 === 0) {
                 console.log(`BNE: Discovered ${discoveredPages.length} valid pages so far...`);
             }
         }
