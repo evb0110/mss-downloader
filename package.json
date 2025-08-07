@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.100",
+  "version": "1.4.101",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.100: CRITICAL FIX for BNE hanging on calculation (Issue #11)",
-    "Fixed BNE manuscripts hanging during page discovery",
-    "Reduced page checking from 500 to 200 for faster response",
-    "Optimized HEAD request timeouts from 30s to 5s",
-    "Improved early stop detection for better performance"
+    "v1.4.101: Comprehensive geo-blocking indicators for restricted libraries (Issue #20)",
+    "Added geo-restriction badges for 10 libraries with geographic access limitations",
+    "Updated library descriptions with specific IP requirements and access notes",
+    "Improved user awareness of libraries requiring VPN or regional access",
+    "Created complete documentation of all geo-blocked libraries"
   ],
   "main": "dist/main/main.js",
   "scripts": {

@@ -187,7 +187,8 @@ export class EnhancedManuscriptDownloaderService {
         {
             name: 'BDL (Biblioteca Digitale Lombarda)',
             example: 'https://www.bdl.servizirl.it/bdl/bookreader/index.html?path=fe&cdOggetto=3903',
-            description: 'Biblioteca Digitale Lombarda digital manuscripts via IIIF',
+            description: 'Biblioteca Digitale Lombarda digital manuscripts via IIIF (Note: May require Italian IP for some collections)',
+            geoBlocked: true,
         },
         {
             name: 'Berlin State Library',
@@ -197,7 +198,8 @@ export class EnhancedManuscriptDownloaderService {
         {
             name: 'BNE (Biblioteca Nacional de España)',
             example: 'https://bdh-rd.bne.es/viewer.vm?id=0000007619&page=1',
-            description: 'Spanish National Library digital manuscript and historical document collection',
+            description: 'Spanish National Library digital manuscript and historical document collection (Note: Some content may require Spanish IP)',
+            geoBlocked: true,
         },
         {
             name: 'British Library',
@@ -262,7 +264,8 @@ export class EnhancedManuscriptDownloaderService {
         {
             name: 'Florence (ContentDM Plutei)',
             example: 'https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/',
-            description: 'Florence digital manuscripts collection via ContentDM with maximum resolution IIIF support (up to 6000px width)',
+            description: 'Florence digital manuscripts collection via ContentDM with maximum resolution IIIF support (Note: May require Italian IP)',
+            geoBlocked: true,
         },
         {
             name: 'Gallica (BnF)',
@@ -278,7 +281,8 @@ export class EnhancedManuscriptDownloaderService {
         {
             name: 'Internet Culturale',
             example: 'https://www.internetculturale.it/jmms/iccuviewer/iccu.jsp?id=oai%3Abncf.firenze.sbn.it%3A21%3AFI0098%3AManoscrittiInRete%3AB.R.231&mode=all&teca=Bncf',
-            description: 'Italian national digital heritage platform serving manuscripts from BNCF, Laurenziana, and other institutions',
+            description: 'Italian national digital heritage platform serving manuscripts from BNCF, Laurenziana, and other institutions (Note: Some collections may require Italian IP)',
+            geoBlocked: true,
         },
         {
             name: 'Karlsruhe BLB (Badische Landesbibliothek)',
@@ -369,7 +373,8 @@ export class EnhancedManuscriptDownloaderService {
         {
             name: 'Trinity College Cambridge',
             example: 'https://mss-cat.trin.cam.ac.uk/Manuscript/B.10.5/UV',
-            description: 'Trinity College Cambridge digital manuscripts',
+            description: 'Trinity College Cambridge digital manuscripts (Note: May have geographic restrictions)',
+            geoBlocked: true,
         },
         {
             name: 'University of Toronto (Fisher)',
@@ -435,7 +440,8 @@ export class EnhancedManuscriptDownloaderService {
         {
             name: 'Verona Library (NBM)',
             example: 'https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=15',
-            description: 'Nuova Biblioteca Manoscritta (Verona) manuscripts via IIIF',
+            description: 'Nuova Biblioteca Manoscritta (Verona) manuscripts via IIIF (Note: May require Italian IP for full access)',
+            geoBlocked: true,
         },
         {
             name: 'DIAMM (Digital Image Archive of Medieval Music)',
@@ -445,7 +451,8 @@ export class EnhancedManuscriptDownloaderService {
         {
             name: 'MDC Catalonia (Memòria Digital de Catalunya)',
             example: 'https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1',
-            description: 'Catalan digital manuscript collection with historical incunables via IIIF',
+            description: 'Catalan digital manuscript collection with historical incunables via IIIF (Note: May require Spanish/Catalan IP)',
+            geoBlocked: true,
         },
         {
             name: 'BVPB (Biblioteca Virtual del Patrimonio Bibliográfico)',
