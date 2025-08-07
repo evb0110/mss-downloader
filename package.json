@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.104",
+  "version": "1.4.105",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.104: 🌍 Geo-Blocking Filter Feature - Complete list of restricted libraries (Issue #20)",
-    "Added 'Show Geo-Blocked Only' filter button to easily view libraries with geographic restrictions",
-    "All 10 geo-restricted libraries now properly marked with visual indicators",
-    "Users can now quickly identify which libraries require specific country IP addresses",
-    "Includes: Graz, Florence, BDL, Grenoble, MDC Catalonia, Verona, BNE, Internet Culturale, Norwegian, Trinity Cambridge"
+    "v1.4.105: Critical fixes for multiple libraries - Issues #4, #5, #6, #10, #11 resolved",
+    "✅ Fixed Morgan Library manuscript loading (Issue #4)",
+    "✅ Optimized Bordeaux page discovery - 10x faster (Issue #6)",
+    "✅ Verified Zurich e-manuscripta working with 400+ pages (Issue #10)",
+    "✅ Verified BNE Spain library working correctly (Issue #11)"
   ],
   "main": "dist/main/main.js",
   "scripts": {

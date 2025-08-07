@@ -2915,27 +2915,41 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         console.log(`[Bordeaux] Detailed scan from ${detailedStart} to ${detailedEnd}...`);
         
-        for (let page = detailedStart; page <= detailedEnd; page++) {
-            const pageId = `${baseId}_${String(page).padStart(4, '0')}`;
-            const testUrl = `${baseUrl}/${pageId}_files/0/0_0.jpg`;
+        // Process pages in batches for faster discovery
+        const batchSize = 10;
+        for (let batchStart = detailedStart; batchStart <= detailedEnd; batchStart += batchSize) {
+            const batchEnd = Math.min(batchStart + batchSize - 1, detailedEnd);
             
-            try {
-                const response = await this.fetchUrl(testUrl);
-                if (response.ok) {
+            // Create promises for batch
+            const batchPromises = [];
+            for (let page = batchStart; page <= batchEnd; page++) {
+                const pageId = `${baseId}_${String(page).padStart(4, '0')}`;
+                const testUrl = `${baseUrl}/${pageId}_files/0/0_0.jpg`;
+                
+                batchPromises.push(
+                    this.fetchUrl(testUrl)
+                        .then(response => response.ok ? page : null)
+                        .catch(() => null)
+                );
+            }
+            
+            // Process batch results
+            const batchResults = await Promise.all(batchPromises);
+            for (const page of batchResults) {
+                if (page !== null) {
                     availablePages.push(page);
                 }
-            } catch (error) {
-                // Ignore errors during discovery
             }
             
-            // Progress indication for long scans
-            if (page % 10 === 0) {
-                console.log(`[Bordeaux] Scanned up to page ${page}... (${availablePages.length} found)`);
-            }
+            // Progress indication
+            console.log(`[Bordeaux] Scanned up to page ${batchEnd}... (${availablePages.length} found)`);
             
-            // Small delay to be respectful to the server
-            await new Promise(resolve => setTimeout(resolve, 25));
+            // Small delay between batches to be respectful to the server
+            await new Promise(resolve => setTimeout(resolve, 50));
         }
+        
+        // Sort pages in case they came back out of order
+        availablePages.sort((a, b) => a - b);
         
         const result = {
             firstPage: availablePages.length > 0 ? availablePages[0] : null,
