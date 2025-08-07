@@ -1373,11 +1373,11 @@ class SharedManifestLoaders {
             displayName = `Morgan ICA Manuscript ${manuscriptId}`;
         } else {
             // Main format - handle multiple patterns
-            // Pattern 1: New pattern /manuscript/76854
-            let mainMatch = url.match(/\/manuscript\/(\d+)/);
+            // Pattern 1: New pattern /manuscript/76854 or /manuscripts/76854 (ULTRA-PRIORITY FIX for Issue #4)
+            let mainMatch = url.match(/\/manuscripts?\/(\d+)/);
             if (mainMatch) {
                 manuscriptId = mainMatch[1];
-                console.log('[Morgan] Extracted manuscript ID from /manuscript/ URL:', manuscriptId);
+                console.log('[Morgan] Extracted manuscript ID from URL:', manuscriptId);
             } else {
                 // Pattern 2: Legacy pattern /collection/
                 mainMatch = url.match(/\/collection\/([^/]+)(?:\/(\d+))?(?:\/thumbs)?\/?/);
@@ -1386,7 +1386,7 @@ class SharedManifestLoaders {
                 }
             }
             
-            if (!manuscriptId) throw new Error('Invalid Morgan URL format. Expected patterns: /manuscript/XXXXX or /collection/XXXXX');
+            if (!manuscriptId) throw new Error('Invalid Morgan URL format. Expected patterns: /manuscript/XXXXX, /manuscripts/XXXXX, or /collection/XXXXX');
             baseUrl = 'https://www.themorgan.org';
             displayName = manuscriptId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
@@ -2996,7 +2996,17 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             const idParts = internalId.match(/(\d+)_(.+)/);
             publicId = idParts ? idParts[2] : internalId;
         } else {
-            throw new Error('Invalid Bordeaux URL format. Expected patterns: ?REPRODUCTION_ID=XXXXX, ark:/XXXXX/XXXXX, or direct selene.bordeaux.fr tile URL');
+            // ULTRA-PRIORITY FIX for Issue #6: Try to extract ID from selene/page URL
+            const selenePageMatch = url.match(/selene\/page\/([a-f0-9-]+)/);
+            if (selenePageMatch) {
+                publicId = selenePageMatch[1];
+                pageNum = 1;
+                console.log('[Bordeaux] Extracted page ID from selene/page URL:', publicId);
+                // These URLs typically need to be resolved to get the actual manuscript ID
+                // For now, use the page ID as the public ID
+            } else {
+                throw new Error('Invalid Bordeaux URL format. Expected patterns: ?REPRODUCTION_ID=XXXXX, ark:/XXXXX/XXXXX, /selene/page/XXXXX, or direct selene.bordeaux.fr tile URL');
+            }
         }
         
         console.log('[Bordeaux] Public ID:', publicId, 'Starting page:', pageNum, 'Internal ID:', internalId || 'unknown');
@@ -3481,10 +3491,24 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         console.log('[e-manuscripta] Processing URL:', url);
         
         // Extract manuscript ID from URL
-        // URL format: https://www.e-manuscripta.ch/{library}/content/zoom/{id}
-        const match = url.match(/e-manuscripta\.ch\/([^/]+)\/content\/(zoom|titleinfo|thumbview)\/(\d+)/);
+        // URL formats: 
+        // - https://www.e-manuscripta.ch/{library}/content/zoom/{id}
+        // - https://www.e-manuscripta.ch/{library}/doi/10.7891/e-manuscripta-{id}
+        let match = url.match(/e-manuscripta\.ch\/([^/]+)\/content\/(zoom|titleinfo|thumbview)\/(\d+)/);
+        
+        // ULTRA-PRIORITY FIX for Issue #10: Support DOI format URLs
         if (!match) {
-            throw new Error('Invalid e-manuscripta.ch URL format');
+            // Try DOI format
+            const doiMatch = url.match(/e-manuscripta\.ch\/([^/]+)\/doi\/[^/]+\/e-manuscripta-(\d+)/);
+            if (doiMatch) {
+                // Convert DOI match to standard format [full, library, viewType, manuscriptId]
+                match = [doiMatch[0], doiMatch[1], 'zoom', doiMatch[2]];
+                console.log('[e-manuscripta] Detected DOI format, extracted ID:', doiMatch[2]);
+            }
+        }
+        
+        if (!match) {
+            throw new Error('Invalid e-manuscripta.ch URL format. Expected patterns: /content/zoom/XXXXX or /doi/10.7891/e-manuscripta-XXXXX');
         }
         
         const [, library, viewType, manuscriptId] = match;

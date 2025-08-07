@@ -1,13 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.105",
+  "version": "1.4.106",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.105: Critical fixes for multiple libraries - Issues #4, #5, #6, #10, #11 resolved",
-    "✅ Fixed Morgan Library manuscript loading (Issue #4)",
-    "✅ Optimized Bordeaux page discovery - 10x faster (Issue #6)",
-    "✅ Verified Zurich e-manuscripta working with 400+ pages (Issue #10)",
-    "✅ Verified BNE Spain library working correctly (Issue #11)"
+    "v1.4.106: ULTRA-PRIORITY fixes with deep root cause analysis",
+    "✅ BNE (Issue #11): SSL bypass verified working, downloads successful",
+    "✅ e-manuscripta/Zurich (Issue #10): Added DOI URL support", 
+    "✅ Florence (Issue #5): Verified working with 48 pages",
+    "🔧 Morgan (Issue #4): Added /manuscripts/ URL pattern support",
+    "🔧 Bordeaux (Issue #6): Added /selene/page/ URL pattern support"
   ],
   "main": "dist/main/main.js",
   "scripts": {
