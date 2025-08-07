@@ -1,310 +1,297 @@
 #!/usr/bin/env node
 
 /**
- * Issue State Tracker - Prevents duplicate fixes and tracks issue resolution history
- * 
- * This script maintains a state file tracking:
- * - Which issues have been attempted
- * - How many times each issue was "fixed"
- * - Whether users confirmed fixes worked
- * - What the actual root causes were
- * 
- * This prevents the duplicate fix problem where multiple versions claim to fix the same issue
+ * Issue State Tracker
+ * Tracks validation state for GitHub issues to prevent premature closure
  */
 
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const STATE_FILE = path.join(__dirname, '../data/issue-state.json');
-const STATE_DIR = path.join(__dirname, '../data');
+const STATE_FILE = path.join(__dirname, '../data/issue-validation-state.json');
+const REPO = 'evb0110/mss-downloader';
+
+// Ensure data directory exists
+const dataDir = path.dirname(STATE_FILE);
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+
+// Load existing state
+let state = {
+  issues: {},
+  metadata: {
+    created: new Date().toISOString(),
+    lastUpdated: new Date().toISOString(),
+    version: '2.0.0' // v2 with proper validation tracking
+  }
+};
+
+if (fs.existsSync(STATE_FILE)) {
+  try {
+    state = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
+  } catch (e) {
+    console.log('⚠️  Could not load existing state, starting fresh');
+  }
+}
 
 class IssueStateTracker {
-    constructor() {
-        this.ensureStateFile();
-        this.state = this.loadState();
+  constructor() {
+    this.state = state;
+  }
+
+  /**
+   * Record a fix attempt for an issue
+   */
+  recordFixAttempt(issueNumber, version, description) {
+    if (!this.state.issues[issueNumber]) {
+      this.state.issues[issueNumber] = {
+        number: issueNumber,
+        firstSeen: new Date().toISOString(),
+        fixAttempts: [],
+        validationState: 'pending',
+        userValidated: null,
+        lastUserResponse: null
+      };
     }
 
-    ensureStateFile() {
-        if (!fs.existsSync(STATE_DIR)) {
-            fs.mkdirSync(STATE_DIR, { recursive: true });
-        }
+    const issue = this.state.issues[issueNumber];
+    issue.fixAttempts.push({
+      version,
+      date: new Date().toISOString(),
+      description,
+      userValidated: null
+    });
+
+    this.save();
+    console.log(`📝 Recorded fix attempt for Issue #${issueNumber} in v${version}`);
+  }
+
+  /**
+   * Update validation state based on user response
+   */
+  updateValidation(issueNumber, validated, userComment = null) {
+    const issue = this.state.issues[issueNumber];
+    if (!issue) {
+      console.log(`⚠️  No record of Issue #${issueNumber}`);
+      return;
+    }
+
+    issue.userValidated = validated;
+    issue.validationState = validated ? 'validated' : 'failed';
+    issue.lastUserResponse = {
+      date: new Date().toISOString(),
+      validated,
+      comment: userComment
+    };
+
+    // Update the latest fix attempt
+    if (issue.fixAttempts.length > 0) {
+      issue.fixAttempts[issue.fixAttempts.length - 1].userValidated = validated;
+    }
+
+    this.save();
+    console.log(`✅ Updated validation state for Issue #${issueNumber}: ${validated ? 'VALIDATED' : 'FAILED'}`);
+  }
+
+  /**
+   * Check if an issue can be closed
+   */
+  canClose(issueNumber) {
+    const issue = this.state.issues[issueNumber];
+    if (!issue) return false;
+
+    // Only close if explicitly validated by user
+    return issue.userValidated === true;
+  }
+
+  /**
+   * Check for duplicate fix attempts
+   */
+  checkDuplicateFixes(issueNumber) {
+    const issue = this.state.issues[issueNumber];
+    if (!issue) return { isDuplicate: false, attempts: 0 };
+
+    const attempts = issue.fixAttempts.length;
+    const unvalidated = issue.fixAttempts.filter(f => f.userValidated !== true).length;
+
+    return {
+      isDuplicate: attempts >= 2,
+      attempts,
+      unvalidated,
+      lastValidation: issue.userValidated,
+      requiresNewApproach: attempts >= 3 && !issue.userValidated
+    };
+  }
+
+  /**
+   * Generate report
+   */
+  generateReport() {
+    const report = {
+      totalIssues: Object.keys(this.state.issues).length,
+      validated: 0,
+      failed: 0,
+      pending: 0,
+      duplicateFixes: [],
+      requiresAttention: []
+    };
+
+    for (const [num, issue] of Object.entries(this.state.issues)) {
+      if (issue.userValidated === true) report.validated++;
+      else if (issue.userValidated === false) report.failed++;
+      else report.pending++;
+
+      if (issue.fixAttempts.length >= 2) {
+        report.duplicateFixes.push({
+          number: num,
+          attempts: issue.fixAttempts.length,
+          validated: issue.userValidated
+        });
+      }
+
+      if (issue.fixAttempts.length >= 3 && !issue.userValidated) {
+        report.requiresAttention.push({
+          number: num,
+          attempts: issue.fixAttempts.length,
+          reason: 'Multiple failed fix attempts'
+        });
+      }
+    }
+
+    return report;
+  }
+
+  /**
+   * Save state to file
+   */
+  save() {
+    this.state.metadata.lastUpdated = new Date().toISOString();
+    fs.writeFileSync(STATE_FILE, JSON.stringify(this.state, null, 2));
+  }
+
+  /**
+   * Sync with GitHub to update validation states
+   */
+  async syncWithGitHub() {
+    console.log('🔄 Syncing with GitHub...');
+    
+    try {
+      const issuesJson = execSync(
+        `gh issue list --repo ${REPO} --state all --json number,state,comments --limit 1000`,
+        { encoding: 'utf8' }
+      );
+      
+      const issues = JSON.parse(issuesJson);
+      
+      for (const ghIssue of issues) {
+        if (!this.state.issues[ghIssue.number]) continue;
         
-        if (!fs.existsSync(STATE_FILE)) {
-            const initialState = {
-                issues: {},
-                metadata: {
-                    created: new Date().toISOString(),
-                    lastUpdated: new Date().toISOString(),
-                    version: '1.0.0'
-                }
-            };
-            fs.writeFileSync(STATE_FILE, JSON.stringify(initialState, null, 2));
-        }
-    }
-
-    loadState() {
-        try {
-            return JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
-        } catch (error) {
-            console.error('❌ Error loading state:', error.message);
-            return { issues: {}, metadata: {} };
-        }
-    }
-
-    saveState() {
-        this.state.metadata.lastUpdated = new Date().toISOString();
-        fs.writeFileSync(STATE_FILE, JSON.stringify(this.state, null, 2));
-    }
-
-    /**
-     * Check if an issue has been attempted before
-     */
-    checkDuplicateRisk(issueNumber) {
-        const issue = this.state.issues[issueNumber];
+        const issue = this.state.issues[ghIssue.number];
         
-        if (!issue) {
-            console.log(`✅ Issue #${issueNumber}: No previous fix attempts`);
-            return { safe: true, attempts: 0 };
-        }
-
-        const attempts = issue.fixAttempts || [];
-        console.log(`⚠️  Issue #${issueNumber}: ${attempts.length} previous fix attempts`);
+        // Check latest comments for validation
+        const recentComments = ghIssue.comments.slice(-5); // Last 5 comments
         
-        if (attempts.length >= 2) {
-            console.log('🚨 HIGH DUPLICATE RISK - Multiple previous fixes!');
-            console.log('\nPrevious attempts:');
-            attempts.forEach(attempt => {
-                console.log(`  - v${attempt.version} (${attempt.date}): ${attempt.description}`);
-                if (attempt.userValidated === false) {
-                    console.log('    ❌ User reported this fix didn\'t work');
-                } else if (attempt.userValidated === true) {
-                    console.log('    ✅ User confirmed this fix worked');
-                }
-            });
-            
-            // Check if any fix was validated as working
-            const hasWorkingFix = attempts.some(a => a.userValidated === true);
-            if (hasWorkingFix) {
-                console.log('\n🛑 STOP: Issue already has a validated working fix!');
-                return { safe: false, attempts: attempts.length, reason: 'already_fixed' };
+        for (const comment of recentComments) {
+          const text = comment.body.toLowerCase();
+          
+          // Check for explicit validation
+          if (text.includes('всё работает') || text.includes('problem solved') || 
+              text.includes('it works') || text.includes('проблема решена')) {
+            if (!issue.userValidated) {
+              this.updateValidation(ghIssue.number, true, comment.body);
             }
-            
-            console.log('\n🔍 Previous fixes failed - need deeper analysis');
-            return { safe: 'caution', attempts: attempts.length, reason: 'multiple_failed_attempts' };
-        }
-        
-        return { safe: 'proceed_with_caution', attempts: attempts.length };
-    }
-
-    /**
-     * Record a new fix attempt
-     */
-    recordFixAttempt(issueNumber, version, description, rootCause = null) {
-        if (!this.state.issues[issueNumber]) {
-            this.state.issues[issueNumber] = {
-                number: issueNumber,
-                firstSeen: new Date().toISOString(),
-                fixAttempts: [],
-                status: 'in_progress'
-            };
-        }
-
-        const attempt = {
-            version,
-            date: new Date().toISOString(),
-            description,
-            rootCause,
-            userValidated: null,  // Unknown until user confirms
-            commitHash: this.getCurrentCommitHash()
-        };
-
-        this.state.issues[issueNumber].fixAttempts.push(attempt);
-        this.state.issues[issueNumber].lastAttempt = new Date().toISOString();
-        
-        this.saveState();
-        
-        console.log(`📝 Recorded fix attempt for Issue #${issueNumber} in v${version}`);
-    }
-
-    /**
-     * Update validation status based on user feedback
-     */
-    updateValidationStatus(issueNumber, version, validated) {
-        const issue = this.state.issues[issueNumber];
-        if (!issue) {
-            console.error(`❌ Issue #${issueNumber} not found in state`);
-            return;
-        }
-
-        const attempt = issue.fixAttempts.find(a => a.version === version);
-        if (!attempt) {
-            console.error(`❌ No fix attempt found for Issue #${issueNumber} v${version}`);
-            return;
-        }
-
-        attempt.userValidated = validated;
-        attempt.validatedDate = new Date().toISOString();
-        
-        if (validated) {
-            issue.status = 'resolved';
-            issue.resolvedVersion = version;
-            issue.resolvedDate = new Date().toISOString();
-            console.log(`✅ Issue #${issueNumber} marked as RESOLVED in v${version}`);
-        } else {
-            issue.status = 'needs_work';
-            console.log(`🔄 Issue #${issueNumber} still needs work after v${version}`);
-        }
-        
-        this.saveState();
-    }
-
-    /**
-     * Analyze patterns across all issues
-     */
-    analyzePatterns() {
-        const stats = {
-            totalIssues: Object.keys(this.state.issues).length,
-            resolvedIssues: 0,
-            duplicateFixIssues: 0,
-            totalFixAttempts: 0,
-            averageAttemptsPerIssue: 0,
-            worstOffenders: []
-        };
-
-        for (const [issueNum, issue] of Object.entries(this.state.issues)) {
-            const attempts = issue.fixAttempts.length;
-            stats.totalFixAttempts += attempts;
-            
-            if (issue.status === 'resolved') {
-                stats.resolvedIssues++;
+          } else if (text.includes('не работает') || text.includes('still broken') ||
+                     text.includes('not working') || text.includes('проблема остаётся')) {
+            if (issue.userValidated !== false) {
+              this.updateValidation(ghIssue.number, false, comment.body);
             }
-            
-            if (attempts >= 2) {
-                stats.duplicateFixIssues++;
-                stats.worstOffenders.push({
-                    issue: issueNum,
-                    attempts,
-                    versions: issue.fixAttempts.map(a => a.version)
-                });
-            }
-        }
-
-        stats.averageAttemptsPerIssue = stats.totalFixAttempts / stats.totalIssues;
-        stats.worstOffenders.sort((a, b) => b.attempts - a.attempts);
-
-        console.log('\n📊 ISSUE TRACKING STATISTICS');
-        console.log('─'.repeat(50));
-        console.log(`Total Issues Tracked: ${stats.totalIssues}`);
-        console.log(`Resolved Issues: ${stats.resolvedIssues}`);
-        console.log(`Issues with Duplicate Fixes: ${stats.duplicateFixIssues}`);
-        console.log(`Average Fix Attempts per Issue: ${stats.averageAttemptsPerIssue.toFixed(2)}`);
-        
-        if (stats.worstOffenders.length > 0) {
-            console.log('\n🚨 Issues with Most Duplicate Fixes:');
-            stats.worstOffenders.slice(0, 5).forEach(issue => {
-                console.log(`  Issue #${issue.issue}: ${issue.attempts} attempts (v${issue.versions.join(', v')})`);
-            });
+          }
         }
         
-        return stats;
+        // Update issue state
+        if (ghIssue.state === 'closed' && !issue.closedDate) {
+          issue.closedDate = new Date().toISOString();
+          issue.closedWithValidation = issue.userValidated === true;
+        }
+      }
+      
+      this.save();
+      console.log('✅ Sync complete');
+      
+    } catch (e) {
+      console.error('❌ Sync failed:', e.message);
     }
-
-    /**
-     * Get current git commit hash
-     */
-    getCurrentCommitHash() {
-        try {
-            return execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
-        } catch (error) {
-            return 'unknown';
-        }
-    }
-
-    /**
-     * Clean up old or resolved issues
-     */
-    cleanup(daysOld = 90) {
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - daysOld);
-        
-        let cleaned = 0;
-        
-        for (const [issueNum, issue] of Object.entries(this.state.issues)) {
-            if (issue.status === 'resolved' && issue.resolvedDate) {
-                const resolvedDate = new Date(issue.resolvedDate);
-                if (resolvedDate < cutoffDate) {
-                    delete this.state.issues[issueNum];
-                    cleaned++;
-                }
-            }
-        }
-        
-        if (cleaned > 0) {
-            this.saveState();
-            console.log(`🧹 Cleaned up ${cleaned} old resolved issues`);
-        }
-    }
+  }
 }
 
 // CLI Interface
-if (require.main === module) {
-    const tracker = new IssueStateTracker();
-    const args = process.argv.slice(2);
-    const command = args[0];
-    
-    switch (command) {
-        case 'check':
-            const issueNum = args[1];
-            if (!issueNum) {
-                console.error('Usage: issue-state-tracker check <issue-number>');
-                process.exit(1);
-            }
-            const result = tracker.checkDuplicateRisk(issueNum);
-            process.exit(result.safe === true ? 0 : 1);
-            break;
-            
-        case 'record':
-            const issue = args[1];
-            const version = args[2];
-            const description = args.slice(3).join(' ');
-            if (!issue || !version || !description) {
-                console.error('Usage: issue-state-tracker record <issue> <version> <description>');
-                process.exit(1);
-            }
-            tracker.recordFixAttempt(issue, version, description);
-            break;
-            
-        case 'validate':
-            const vIssue = args[1];
-            const vVersion = args[2];
-            const validated = args[3] === 'true';
-            if (!vIssue || !vVersion || args[3] === undefined) {
-                console.error('Usage: issue-state-tracker validate <issue> <version> <true|false>');
-                process.exit(1);
-            }
-            tracker.updateValidationStatus(vIssue, vVersion, validated);
-            break;
-            
-        case 'analyze':
-            tracker.analyzePatterns();
-            break;
-            
-        case 'cleanup':
-            const days = parseInt(args[1]) || 90;
-            tracker.cleanup(days);
-            break;
-            
-        default:
-            console.log('Issue State Tracker - Prevents duplicate fixes\n');
-            console.log('Commands:');
-            console.log('  check <issue>                    - Check if issue has duplicate fix risk');
-            console.log('  record <issue> <version> <desc>  - Record a new fix attempt');
-            console.log('  validate <issue> <version> <t/f> - Update validation status');
-            console.log('  analyze                          - Show patterns and statistics');
-            console.log('  cleanup [days]                   - Remove old resolved issues');
-            break;
-    }
-}
+const command = process.argv[2];
+const tracker = new IssueStateTracker();
 
-module.exports = IssueStateTracker;
+switch (command) {
+  case 'record':
+    const [issueNum, version, ...descParts] = process.argv.slice(3);
+    tracker.recordFixAttempt(issueNum, version, descParts.join(' '));
+    break;
+    
+  case 'validate':
+    const [issueToValidate, isValid] = process.argv.slice(3);
+    tracker.updateValidation(issueToValidate, isValid === 'true');
+    break;
+    
+  case 'check':
+    const issueToCheck = process.argv[3];
+    const result = tracker.checkDuplicateFixes(issueToCheck);
+    console.log(JSON.stringify(result, null, 2));
+    if (result.requiresNewApproach) {
+      console.log('⚠️  This issue requires a completely new approach!');
+      process.exit(1); // Signal to stop
+    }
+    break;
+    
+  case 'can-close':
+    const issueToClose = process.argv[3];
+    const canClose = tracker.canClose(issueToClose);
+    console.log(canClose ? 'YES' : 'NO');
+    process.exit(canClose ? 0 : 1);
+    break;
+    
+  case 'report':
+    const report = tracker.generateReport();
+    console.log('📊 Issue Validation Report');
+    console.log('='.repeat(40));
+    console.log(`Total Issues: ${report.totalIssues}`);
+    console.log(`✅ Validated: ${report.validated}`);
+    console.log(`❌ Failed: ${report.failed}`);
+    console.log(`⏳ Pending: ${report.pending}`);
+    
+    if (report.duplicateFixes.length > 0) {
+      console.log('\n🔄 Issues with Multiple Fix Attempts:');
+      for (const dup of report.duplicateFixes) {
+        console.log(`  - Issue #${dup.number}: ${dup.attempts} attempts (validated: ${dup.validated})`);
+      }
+    }
+    
+    if (report.requiresAttention.length > 0) {
+      console.log('\n⚠️  Issues Requiring Attention:');
+      for (const issue of report.requiresAttention) {
+        console.log(`  - Issue #${issue.number}: ${issue.reason}`);
+      }
+    }
+    break;
+    
+  case 'sync':
+    tracker.syncWithGitHub();
+    break;
+    
+  default:
+    console.log('Usage:');
+    console.log('  node issue-state-tracker.cjs record <issue> <version> <description>');
+    console.log('  node issue-state-tracker.cjs validate <issue> <true|false>');
+    console.log('  node issue-state-tracker.cjs check <issue>');
+    console.log('  node issue-state-tracker.cjs can-close <issue>');
+    console.log('  node issue-state-tracker.cjs report');
+    console.log('  node issue-state-tracker.cjs sync');
+}

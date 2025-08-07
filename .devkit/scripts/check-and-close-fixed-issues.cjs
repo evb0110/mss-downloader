@@ -26,16 +26,24 @@ if (fs.existsSync(DATA_FILE)) {
   }
 }
 
-// Keywords to detect fix confirmations
+// Keywords to detect EXPLICIT fix confirmations
+// MUST be clear positive confirmation, not just politeness
 const FIX_CONFIRMED_KEYWORDS = [
-  // Russian
-  'работает', 'исправлено', 'спасибо', 'теперь работает', 
-  'всё ок', 'проблема решена', 'успешно', 'отлично',
-  // English
-  'works', 'fixed', 'thanks', 'now works', 
-  'all good', 'problem solved', 'successfully', 'excellent', 'perfect',
-  // Emojis
-  '✅', '👍'
+  // Russian - explicit confirmations only
+  'всё работает', 'теперь работает', 'проблема решена', 
+  'исправлено', 'всё исправлено', 'работает отлично',
+  'работает корректно', 'успешно скачивает', 'всё ок',
+  // English - explicit confirmations only  
+  'it works', 'now works', 'problem solved', 'issue resolved',
+  'fixed successfully', 'working perfectly', 'all good now',
+  'successfully downloads', 'confirmed working',
+  // Clear confirmation emojis
+  '✅ работает', '✅ fixed', '👍 works'
+];
+
+// Politeness words that should NOT trigger closure
+const POLITENESS_KEYWORDS = [
+  'спасибо', 'thanks', 'благодарю', 'thank you'
 ];
 
 // Keywords to detect problem persistence
@@ -112,11 +120,20 @@ for (const issue of issues) {
     if (isAuthor && fixComment && new Date(comment.createdAt) > new Date(fixComment.createdAt)) {
       lastAuthorComment = comment;
       
-      // Check if author confirms fix
+      // Check if author confirms fix - require explicit confirmation
+      // Must have confirmation keyword AND not be contradicted by problem keywords
       for (const keyword of FIX_CONFIRMED_KEYWORDS) {
         if (commentText.includes(keyword)) {
-          authorConfirmedFix = true;
-          break;
+          // Check this isn't just politeness or partial success
+          const hasProblemKeyword = PROBLEM_PERSISTS_KEYWORDS.some(pk => commentText.includes(pk));
+          const isJustPoliteness = POLITENESS_KEYWORDS.some(pk => commentText.includes(pk)) && 
+                                   commentText.length < 50; // Short "thanks" messages
+          
+          if (!hasProblemKeyword && !isJustPoliteness) {
+            authorConfirmedFix = true;
+            console.log(`  ✓ Found explicit confirmation: "${keyword}"`);
+            break;
+          }
         }
       }
       
@@ -132,15 +149,19 @@ for (const issue of issues) {
   
   // Decide action based on findings
   if (authorConfirmedFix && !authorReportsProblem) {
-    // Author confirmed fix works
-    console.log(`✅ Author confirmed fix works!`);
+    // Author EXPLICITLY confirmed fix works
+    console.log(`✅ Author EXPLICITLY confirmed fix works!`);
+    
+    // Update validation state
+    issueData.userValidated = true;
+    issueData.validationDate = new Date().toISOString();
     
     // Close the issue with thank you message
     const closeMessage = `✅ Спасибо за подтверждение! Рад, что проблема решена.
 
 Thank you for confirming! Glad the issue is resolved.
 
-Closing this issue as fixed in version ${fixVersion || 'latest'}.`;
+Closing this issue as VALIDATED and fixed in version ${fixVersion || 'latest'}.`;
     
     try {
       execSync(`gh issue close ${issue.number} --repo ${REPO} --comment "${closeMessage}"`, 
@@ -157,6 +178,8 @@ Closing this issue as fixed in version ${fixVersion || 'latest'}.`;
     // Author says problem persists
     console.log(`⚠️  Author reports problem still exists`);
     issueData.status = 'problem_persists';
+    issueData.userValidated = false;
+    issueData.requiresNewFix = true;
     
   } else if (fixComment && !lastAuthorComment) {
     // Fix posted but no author response yet
@@ -164,28 +187,40 @@ Closing this issue as fixed in version ${fixVersion || 'latest'}.`;
     console.log(`⏳ Waiting for author response (${daysSinceFix} days)`);
     
     if (daysSinceFix >= AUTO_CLOSE_DAYS) {
-      // Auto-close after 7 days
-      console.log(`🔒 Auto-closing after ${AUTO_CLOSE_DAYS} days without response`);
+      // DO NOT auto-close - instead send a final reminder
+      console.log(`⏰ ${AUTO_CLOSE_DAYS} days passed - sending final reminder (NOT auto-closing)`);
       
-      const closeMessage = `🔒 Закрываю issue автоматически, так как не было ответа в течение ${AUTO_CLOSE_DAYS} дней после исправления.
+      if (!issueData.finalReminderSent) {
+        const reminderMessage = `🔔 **Последнее напоминание / Final Reminder**
 
-Если проблема всё ещё существует, пожалуйста, откройте новый issue.
+@${issue.author.login}, прошло ${AUTO_CLOSE_DAYS} дней с момента выпуска исправления в версии ${fixVersion || 'latest'}.
+
+**Пожалуйста, подтвердите статус:**
+- Если проблема решена, напишите "всё работает" или "problem solved"
+- Если проблема остаётся, опишите, что именно не работает
+
+Без вашего ответа мы не можем быть уверены, что проблема действительно решена.
 
 ---
 
-Closing automatically as there has been no response for ${AUTO_CLOSE_DAYS} days after the fix.
+It's been ${AUTO_CLOSE_DAYS} days since the fix was released in version ${fixVersion || 'latest'}.
 
-If the problem still exists, please open a new issue.`;
-      
-      try {
-        execSync(`gh issue close ${issue.number} --repo ${REPO} --comment "${closeMessage}"`, 
-          { encoding: 'utf8' });
-        console.log(`✅ Issue #${issue.number} auto-closed`);
-        closedCount++;
-        fixedIssues.push({ number: issue.number, title: issue.title, version: fixVersion, autoClosed: true });
-        issueData.status = 'auto_closed';
-      } catch (e) {
-        console.log(`❌ Failed to auto-close issue #${issue.number}: ${e.message}`);
+**Please confirm the status:**
+- If the issue is resolved, please write "it works" or "problem solved"
+- If the problem persists, please describe what's still not working
+
+Without your response, we cannot be sure the issue is truly resolved.`;
+        
+        try {
+          execSync(`gh issue comment ${issue.number} --repo ${REPO} --body "${reminderMessage}"`, 
+            { encoding: 'utf8' });
+          console.log(`✅ Final reminder sent (issue remains open)`);
+          issueData.finalReminderSent = new Date().toISOString();
+        } catch (e) {
+          console.log(`❌ Failed to send final reminder: ${e.message}`);
+        }
+      } else {
+        console.log(`  Final reminder already sent on ${issueData.finalReminderSent}`);
       }
       
     } else if (daysSinceFix >= FOLLOW_UP_DAYS && !issueData.followUpSent) {
@@ -232,14 +267,29 @@ console.log('='.repeat(61));
 console.log('📊 SUMMARY');
 console.log('='.repeat(61));
 console.log(`Total open issues checked: ${issues.length}`);
-console.log(`✅ Issues with confirmed fixes: ${fixedIssues.filter(i => !i.autoClosed).length}`);
-console.log(`🔒 Issues closed: ${closedCount}`);
+console.log(`✅ Issues with EXPLICIT confirmed fixes: ${fixedIssues.length}`);
+console.log(`🔒 Issues closed (with validation): ${closedCount}`);
+
+// Count validation states
+let validatedCount = 0;
+let awaitingValidationCount = 0;
+let problemPersistsCount = 0;
+
+for (const [num, data] of Object.entries(checkedIssues)) {
+  if (data.userValidated === true) validatedCount++;
+  else if (data.status === 'problem_persists') problemPersistsCount++;
+  else if (data.fixPosted) awaitingValidationCount++;
+}
+
+console.log(`\nValidation Status:`);
+console.log(`  ✅ Validated by users: ${validatedCount}`);
+console.log(`  ⏳ Awaiting validation: ${awaitingValidationCount}`);
+console.log(`  ⚠️  Problem persists: ${problemPersistsCount}`);
 
 if (fixedIssues.length > 0) {
-  console.log('\nFixed issues:');
+  console.log('\nValidated and closed issues:');
   for (const fixed of fixedIssues) {
-    const autoCloseLabel = fixed.autoClosed ? ' (auto-closed)' : '';
-    console.log(`- #${fixed.number}: ${fixed.title} (${fixed.version || 'latest'})${autoCloseLabel}`);
+    console.log(`- #${fixed.number}: ${fixed.title} (${fixed.version || 'latest'}) - USER VALIDATED`);
   }
 }
 

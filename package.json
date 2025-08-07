@@ -1,14 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.106",
+  "version": "1.4.107",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.106: ULTRA-PRIORITY fixes with deep root cause analysis",
-    "✅ BNE (Issue #11): SSL bypass verified working, downloads successful",
-    "✅ e-manuscripta/Zurich (Issue #10): Added DOI URL support", 
-    "✅ Florence (Issue #5): Verified working with 48 pages",
-    "🔧 Morgan (Issue #4): Added /manuscripts/ URL pattern support",
-    "🔧 Bordeaux (Issue #6): Added /selene/page/ URL pattern support"
+    "v1.4.107: Critical fix for manuscript ID bug affecting all libraries",
+    "🔧 Fixed: Manuscript IDs now included in folder names for all libraries",
+    "✅ Batch downloads no longer overwrite each other",
+    "✅ Each manuscript gets unique folder name with ID",
+    "📁 Affected libraries: Graz, Morgan, Heidelberg, Norwegian, HHU, Verona, e-manuscripta, and others"
   ],
   "main": "dist/main/main.js",
   "scripts": {

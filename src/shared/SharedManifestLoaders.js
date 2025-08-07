@@ -652,7 +652,13 @@ class SharedManifestLoaders {
             const images = [];
             
             // Extract manuscript label/title
-            const displayName = manifest.label || 'Verona Manuscript';
+            const manuscriptIdMatch = url.match(/\/([^/?#]+)(?:\?|#|$)/);
+            const manuscriptId = manuscriptIdMatch ? manuscriptIdMatch[1] : '';
+            let displayName = manifest.label || `Verona Manuscript ${manuscriptId}`;
+            // Include manuscript ID if not already present
+            if (manuscriptId && !displayName.includes(manuscriptId)) {
+                displayName = `${displayName} (${manuscriptId})`;
+            }
             console.log('[Verona] Manuscript:', displayName);
             
             // Parse IIIF v2 manifest structure
@@ -1019,12 +1025,18 @@ class SharedManifestLoaders {
             
             // Use streaming JSON parsing approach for large manifests
             const images = [];
-            let displayName = 'University of Graz Manuscript';
+            let displayName = `University of Graz Manuscript ${manuscriptId}`;
             
             // Parse manifest header for metadata
             const labelMatch = manifestText.match(/"label"\s*:\s*"([^"]+)"/);
             if (labelMatch) {
-                displayName = labelMatch[1];
+                // Include manuscript ID if not already present in label
+                const label = labelMatch[1];
+                if (!label.includes(manuscriptId)) {
+                    displayName = `${label} (${manuscriptId})`;
+                } else {
+                    displayName = label;
+                }
             }
             
             // Extract canvases using regex to avoid parsing entire JSON at once
@@ -1388,7 +1400,8 @@ class SharedManifestLoaders {
             
             if (!manuscriptId) throw new Error('Invalid Morgan URL format. Expected patterns: /manuscript/XXXXX, /manuscripts/XXXXX, or /collection/XXXXX');
             baseUrl = 'https://www.themorgan.org';
-            displayName = manuscriptId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            // Keep the manuscript ID in the display name for uniqueness
+            displayName = `Morgan Library ${manuscriptId}`;
         }
         
         // Fetch the collection page
@@ -1678,6 +1691,10 @@ class SharedManifestLoaders {
             
             const images = [];
             let displayName = manifest.label || `HHU Manuscript ${manuscriptId}`;
+            // Include manuscript ID if not already present in label
+            if (manifest.label && !manifest.label.includes(manuscriptId)) {
+                displayName = `${manifest.label} (${manuscriptId})`;
+            }
             
             // Extract images from IIIF v2 manifest
             if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
@@ -3585,7 +3602,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         }
         
         // Extract title
-        let displayName = `e-manuscripta ${manuscriptId}`;
+        let displayName = `e-manuscripta ${library} ${manuscriptId}`;
         const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
         if (titleMatch && titleMatch[1]) {
             displayName = titleMatch[1].trim();
@@ -3713,16 +3730,31 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const manifest = await response.json();
         const images = [];
         
+        // Extract manuscript ID from URL
+        const manuscriptIdMatch = url.match(/\/([^/?#]+)(?:\/manifest)?(?:\?|#|$)/);
+        const manuscriptId = manuscriptIdMatch ? manuscriptIdMatch[1].replace(/^(diglit|iiif3?)\//i, '') : '';
+        
         // Extract metadata
-        let displayName = 'Heidelberg Manuscript';
+        let displayName = `Heidelberg Manuscript ${manuscriptId}`;
         if (manifest.label) {
             if (typeof manifest.label === 'object') {
                 // IIIF v3 label format (language map)
                 const labels = manifest.label.none || manifest.label.de || manifest.label.en || Object.values(manifest.label)[0];
-                displayName = Array.isArray(labels) ? labels[0] : labels;
+                const label = Array.isArray(labels) ? labels[0] : labels;
+                // Include manuscript ID if not already present
+                if (manuscriptId && !label.includes(manuscriptId)) {
+                    displayName = `${label} (${manuscriptId})`;
+                } else {
+                    displayName = label;
+                }
             } else {
                 // IIIF v2 label format (string)
-                displayName = manifest.label;
+                // Include manuscript ID if not already present
+                if (manuscriptId && !manifest.label.includes(manuscriptId)) {
+                    displayName = `${manifest.label} (${manuscriptId})`;
+                } else {
+                    displayName = manifest.label;
+                }
             }
         }
         
@@ -3909,10 +3941,16 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const manifest = await response.json();
         const images = [];
         
-        // Extract metadata
-        let displayName = 'Norwegian Manuscript';
+        // Extract metadata  
+        // itemId is already extracted above
+        let displayName = `Norwegian Manuscript ${itemId}`;
         if (manifest.label) {
-            displayName = manifest.label;
+            // Include item ID if not already present
+            if (itemId && !manifest.label.includes(itemId)) {
+                displayName = `${manifest.label} (${itemId})`;
+            } else {
+                displayName = manifest.label;
+            }
         }
         
         // Process sequences (IIIF v2 structure)
@@ -3962,14 +4000,25 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      */
     parseNorwegianV3Manifest(manifest, itemId) {
         const images = [];
-        let displayName = 'Norwegian Manuscript';
+        let displayName = `Norwegian Manuscript ${itemId}`;
         
         if (manifest.label) {
             if (typeof manifest.label === 'object') {
                 const labels = manifest.label['no'] || manifest.label['nb'] || manifest.label['nn'] || manifest.label['en'] || Object.values(manifest.label)[0];
-                displayName = Array.isArray(labels) ? labels[0] : labels;
+                const label = Array.isArray(labels) ? labels[0] : labels;
+                // Include item ID if not already present
+                if (itemId && !label.includes(itemId)) {
+                    displayName = `${label} (${itemId})`;
+                } else {
+                    displayName = label;
+                }
             } else {
-                displayName = manifest.label;
+                // Include item ID if not already present
+                if (itemId && !manifest.label.includes(itemId)) {
+                    displayName = `${manifest.label} (${itemId})`;
+                } else {
+                    displayName = manifest.label;
+                }
             }
         }
         
