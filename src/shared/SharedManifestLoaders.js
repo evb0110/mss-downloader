@@ -1878,9 +1878,10 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     if (iiifResult.images.length === 1) {
                         console.log('[Florence] Only 1 image in IIIF manifest, checking for compound object...');
                         try {
-                            // Add timeout wrapper to prevent infinite loops (GitHub issue #5)
+                            // ULTRA-PRIORITY FIX: Increased timeout for enhanced detection
+                            // The new fast detection method needs less time but we allow 60s for large manuscripts
                             const timeoutPromise = new Promise((_, reject) => 
-                                setTimeout(() => reject(new Error('Compound object detection timeout after 30s')), 30000)
+                                setTimeout(() => reject(new Error('Compound object detection timeout after 60s')), 60000)
                             );
                             
                             const compoundResult = await Promise.race([
@@ -2578,7 +2579,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * Detect Florence compound object by analyzing page data
      */
     async detectFlorenceCompoundObject(itemId) {
-        console.log('[Florence] Detecting compound object for item:', itemId);
+        console.log('[Florence] ULTRA-ENHANCED compound object detection for item:', itemId);
         
         const pageUrl = `https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/${itemId}`;
         const pageResponse = await this.fetchWithRetry(pageUrl, {
@@ -2697,9 +2698,76 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             let validStart = -1;
             let validEnd = -1;
             
-            // Test first few IDs to find valid range
+            // ULTRA-PRIORITY FIX: Fast sequential ID detection
+            // First do a quick check to see if sequential IDs exist
+            const baseId = parseInt(itemId);
+            const quickCheckIds = [baseId, baseId + 1, baseId + 2, baseId + 3, baseId + 4];
+            let quickValidCount = 0;
+            
+            console.log('[Florence] Quick validation of sequential IDs...');
+            for (const testId of quickCheckIds) {
+                const testUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${testId}/info.json`;
+                try {
+                    const result = await new Promise((resolve) => {
+                        const req = https.request(testUrl, { method: 'HEAD', timeout: 3000 }, (res) => {
+                            resolve(res.statusCode === 200);
+                        });
+                        req.on('error', () => resolve(false));
+                        req.on('timeout', () => { req.destroy(); resolve(false); });
+                        req.end();
+                    });
+                    if (result) quickValidCount++;
+                } catch (e) {
+                    // Continue
+                }
+            }
+            
+            // If we found sequential IDs, scan the full range
+            if (quickValidCount >= 3) {
+                console.log(`[Florence] Found ${quickValidCount}/5 sequential IDs, scanning full range...`);
+                
+                // Scan up to 500 pages efficiently
+                let consecutiveFails = 0;
+                const maxConsecutiveFails = 3;
+                const maxPages = 500;
+                
+                for (let i = 0; i < maxPages && consecutiveFails < maxConsecutiveFails; i++) {
+                    const testId = baseId + i;
+                    const testUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${testId}/info.json`;
+                    
+                    try {
+                        const result = await new Promise((resolve) => {
+                            const req = https.request(testUrl, { method: 'HEAD', timeout: 3000 }, (res) => {
+                                resolve(res.statusCode === 200);
+                            });
+                            req.on('error', () => resolve(false));
+                            req.on('timeout', () => { req.destroy(); resolve(false); });
+                            req.end();
+                        });
+                        
+                        if (result) {
+                            consecutiveFails = 0;
+                            const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${testId}/full/max/0/default.jpg`;
+                            images.push({
+                                url: imageUrl,
+                                label: `Page ${i + 1}`
+                            });
+                        } else {
+                            consecutiveFails++;
+                        }
+                    } catch (e) {
+                        consecutiveFails++;
+                    }
+                }
+                
+                console.log(`[Florence] Sequential scan found ${images.length} pages`);
+                if (images.length > 0) {
+                    return { images };
+                }
+            }
+            
+            // Fallback to the original slower method if quick check failed
             for (let testId = startId; testId < startId + 50; testId++) {
-                // Check if we've exceeded the timeout
                 if (Date.now() - detectionStartTime > detectionTimeout) {
                     console.log('[Florence] Compound object detection timeout - returning current results');
                     break;
@@ -2723,14 +2791,12 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         if (validStart === -1) validStart = testId;
                         validEnd = testId;
                     } else if (validStart !== -1) {
-                        // Found a gap, stop here
                         break;
                     }
                 } catch (error) {
-                    // Continue testing
+                    // Continue
                 }
                 
-                // Small delay to avoid overwhelming the server
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
             
