@@ -273,6 +273,7 @@ export class EnhancedManuscriptDownloaderService {
             name: 'Grenoble Municipal Library',
             example: 'https://pagella.bm-grenoble.fr/ark:/12148/btv1b10663927k/f1.item.zoom',
             description: 'Bibliothèque municipale de Grenoble digital manuscripts via Gallica infrastructure',
+            geoBlocked: true,
         },
         {
             name: 'Internet Culturale',
@@ -313,6 +314,7 @@ export class EnhancedManuscriptDownloaderService {
             name: 'Norwegian National Library (nb.no)',
             example: 'https://www.nb.no/items/1ef274e1cff5ab191d974e96d09c4cc1?page=0',
             description: 'National Library of Norway digital manuscripts (Note: May require Norwegian IP for image access due to geo-restrictions)',
+            geoBlocked: true,
         },
         {
             name: 'Manuscripta.se',

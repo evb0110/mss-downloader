@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.98",
+  "version": "1.4.99",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.98: 🎉 COMPREHENSIVE verification - ALL reported GitHub issues confirmed resolved",
-    "Verified 9/10 open issues are fully working with production code testing",
-    "Цюрих: Fixed 'only 11 pages' issue - now correctly discovers 407 pages",
-    "BNE: Resolved hanging calculations - now loads 100 pages instantly",
-    "каталония: Timeout errors resolved - successfully loads 812 pages",
-    "All DNS, timeout, and page detection issues from reports are resolved"
+    "v1.4.99: Enhanced geo-blocking indicators for restricted libraries",
+    "Added geo-restriction badges for Norwegian National Library and Grenoble",
+    "Created comprehensive list of 7 geo-blocked libraries (Issue #20)",
+    "Improved user visibility of access restrictions with orange badges",
+    "Fixed unreachable code lint error in pdf-worker",
+    "Libraries with geo-blocking now clearly marked in the interface"
   ],
   "main": "dist/main/main.js",
   "scripts": {
