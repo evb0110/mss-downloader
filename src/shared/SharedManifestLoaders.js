@@ -1405,8 +1405,27 @@ class SharedManifestLoaders {
         try {
             const response = await this.fetchWithRetry(pageUrl);
             if (!response.ok) {
-                // Don't treat redirects as errors - they should be followed automatically by fetchWithRetry
-                if (response.status === 404) {
+                // Handle specific error cases but not redirects (301/302)
+                // Redirects should have been followed automatically by fetchWithRetry
+                // If we get here with a 301/302, it means the redirect failed
+                if (response.status === 301 || response.status === 302) {
+                    console.log(`[Morgan] Received ${response.status} redirect from ${pageUrl}`);
+                    // Try to follow redirect manually if location header exists
+                    if (response.headers && response.headers.location) {
+                        const redirectUrl = response.headers.location.startsWith('http') 
+                            ? response.headers.location 
+                            : new URL(response.headers.location, pageUrl).href;
+                        console.log(`[Morgan] Following redirect to: ${redirectUrl}`);
+                        const redirectResponse = await this.fetchWithRetry(redirectUrl);
+                        if (redirectResponse.ok) {
+                            const html = await redirectResponse.text();
+                            const images = [];
+                            return await this.processMorganHTML(html, url, baseUrl, manuscriptId, displayName, images);
+                        }
+                    }
+                    // If manual redirect didn't work, provide helpful error
+                    throw new Error(`Morgan page redirect (${response.status}) could not be followed. The manuscript may have moved. Try accessing it directly from themorgan.org.`);
+                } else if (response.status === 404) {
                     throw new Error(`Morgan page not found (404): ${pageUrl}. The manuscript may have been moved or removed.`);
                 } else if (response.status >= 500) {
                     throw new Error(`Morgan server error (${response.status}): The server is experiencing issues. Please try again later.`);
