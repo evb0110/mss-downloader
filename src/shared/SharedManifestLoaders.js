@@ -1423,21 +1423,51 @@ class SharedManifestLoaders {
                 // If we get here with a 301/302, it means the redirect failed
                 if (response.status === 301 || response.status === 302) {
                     console.log(`[Morgan] Received ${response.status} redirect from ${pageUrl}`);
-                    // Try to follow redirect manually if location header exists
+                    // ULTRA-PRIORITY FIX: Improved redirect handling for Issue #4
+                    // Always try to follow redirects, don't fail immediately
+                    let redirectUrl = null;
+                    
+                    // Try to get redirect URL from headers
                     if (response.headers && response.headers.location) {
-                        const redirectUrl = response.headers.location.startsWith('http') 
+                        redirectUrl = response.headers.location.startsWith('http') 
                             ? response.headers.location 
                             : new URL(response.headers.location, pageUrl).href;
+                    } else if (response.headers && response.headers.get) {
+                        // Try alternative header access method
+                        const location = response.headers.get('location');
+                        if (location) {
+                            redirectUrl = location.startsWith('http') 
+                                ? location 
+                                : new URL(location, pageUrl).href;
+                        }
+                    }
+                    
+                    if (redirectUrl) {
                         console.log(`[Morgan] Following redirect to: ${redirectUrl}`);
                         const redirectResponse = await this.fetchWithRetry(redirectUrl);
                         if (redirectResponse.ok) {
                             const html = await redirectResponse.text();
                             const images = [];
                             return await this.processMorganHTML(html, url, baseUrl, manuscriptId, displayName, images);
+                        } else {
+                            console.warn(`[Morgan] Redirect target returned ${redirectResponse.status}`);
                         }
                     }
-                    // If manual redirect didn't work, provide helpful error
-                    throw new Error(`Morgan page redirect (${response.status}) could not be followed. The manuscript may have moved. Try accessing it directly from themorgan.org.`);
+                    
+                    // If redirect failed, try the URL without /thumbs as fallback
+                    if (pageUrl.endsWith('/thumbs')) {
+                        const fallbackUrl = pageUrl.replace('/thumbs', '');
+                        console.log(`[Morgan] Trying fallback URL without /thumbs: ${fallbackUrl}`);
+                        const fallbackResponse = await this.fetchWithRetry(fallbackUrl);
+                        if (fallbackResponse.ok) {
+                            const html = await fallbackResponse.text();
+                            const images = [];
+                            return await this.processMorganHTML(html, url, baseUrl, manuscriptId, displayName, images);
+                        }
+                    }
+                    
+                    // If all redirect attempts failed, provide helpful error
+                    throw new Error(`Morgan redirect handling failed after multiple attempts. Please try the manuscript URL directly from themorgan.org without '/thumbs' suffix.`);
                 } else if (response.status === 404) {
                     throw new Error(`Morgan page not found (404): ${pageUrl}. The manuscript may have been moved or removed.`);
                 } else if (response.status >= 500) {
@@ -1543,31 +1573,56 @@ class SharedManifestLoaders {
             // These URLs often redirect or timeout, causing failures in Electron environment
             
             // Priority 1: High-res facsimile from individual pages
+            // ULTRA-PRIORITY FIX for Issue #4: Make page fetching fault-tolerant with timeout
+            // Previous implementation would fail entirely if any page timed out
             try {
                 const pageUrlRegex = new RegExp(`\\/collection\\/${manuscriptId}\\/(\\d+)`, 'g');
                 const pageMatches = [...html.matchAll(pageUrlRegex)];
                 const uniquePages = [...new Set(pageMatches.map(match => match[1]))];
                 
-                // Fetch all individual pages to get high-res URLs
-                for (let i = 0; i < uniquePages.length; i++) {
-                    const pageNum = uniquePages[i];
+                // Only fetch first few pages to avoid timeouts (was causing Issue #4)
+                const maxPagesToFetch = Math.min(uniquePages.length, 5);
+                console.log(`[Morgan] Found ${uniquePages.length} pages, fetching first ${maxPagesToFetch} for high-res URLs`);
+                
+                // Use Promise.allSettled to continue even if some pages fail
+                const pagePromises = uniquePages.slice(0, maxPagesToFetch).map(async (pageNum) => {
                     const individualPageUrl = `${baseUrl}/collection/${manuscriptId}/${pageNum}`;
                     
                     try {
-                        const pageResponse = await this.fetchWithRetry(individualPageUrl, {}, 1);
+                        // Add shorter timeout and only 1 retry to prevent hanging
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Page fetch timeout')), 5000)
+                        );
+                        
+                        const fetchPromise = this.fetchWithRetry(individualPageUrl, {}, 1);
+                        const pageResponse = await Promise.race([fetchPromise, timeoutPromise]);
+                        
                         if (pageResponse.ok) {
                             const pageContent = await pageResponse.text();
                             const facsimileMatch = pageContent.match(/\/sites\/default\/files\/facsimile\/[^"']+\.jpg/);
                             if (facsimileMatch) {
-                                imagesByPriority[1].push(`${baseUrl}${facsimileMatch[0]}`);
+                                return `${baseUrl}${facsimileMatch[0]}`;
                             }
                         }
                     } catch (error) {
-                        console.warn(`[Morgan] Failed to fetch page ${pageNum}:`, error.message);
+                        console.warn(`[Morgan] Page ${pageNum} fetch failed (non-critical):`, error.message);
+                        return null;
                     }
+                });
+                
+                const results = await Promise.allSettled(pagePromises);
+                results.forEach(result => {
+                    if (result.status === 'fulfilled' && result.value) {
+                        imagesByPriority[1].push(result.value);
+                    }
+                });
+                
+                if (imagesByPriority[1].length === 0) {
+                    console.log('[Morgan] No high-res images from individual pages (non-critical, using fallbacks)');
                 }
             } catch (error) {
-                console.warn('[Morgan] Error fetching individual pages:', error.message);
+                // Non-critical error - continue with other image sources
+                console.warn('[Morgan] Skipping individual page fetching (non-critical):', error.message);
             }
             
             // Priority 2: Direct full-size images
@@ -1592,7 +1647,11 @@ class SharedManifestLoaders {
                 imagesByPriority[4].push(`${baseUrl}${match}`);
             }
             
-            // Select images by priority
+            // ULTRA-PRIORITY FIX for Issue #4: Enhanced image selection
+            // If we don't have enough high-priority images, generate thumbnail URLs as fallback
+            let selectedImages = false;
+            
+            // First try to use high-priority images
             for (let priority = 0; priority <= 5; priority++) {
                 if (imagesByPriority[priority].length > 0) {
                     console.log(`[Morgan] Using priority ${priority} images: ${imagesByPriority[priority].length} found`);
@@ -1604,6 +1663,45 @@ class SharedManifestLoaders {
                     }
                     break;
                 }
+            }
+            
+            // ULTRA-PRIORITY FIX for Issue #4: Fallback to get all available pages
+            // If we have fewer images than page links found, generate URLs for all pages
+            const pageUrlRegex = new RegExp(`\\/collection\\/${manuscriptId}\\/(\\d+)`, 'g');
+            const pageMatches = [...html.matchAll(pageUrlRegex)];
+            const uniquePages = [...new Set(pageMatches.map(match => match[1]))];
+            
+            if (uniquePages.length > images.length) {
+                console.log(`[Morgan] Found ${uniquePages.length} pages but only ${images.length} high-res images`);
+                
+                // Sort page numbers numerically  
+                uniquePages.sort((a, b) => parseInt(a) - parseInt(b));
+                
+                // Add missing pages
+                const existingPageNumbers = new Set();
+                images.forEach(img => {
+                    const match = img.label.match(/Page (\d+)/);
+                    if (match) existingPageNumbers.add(match[1]);
+                });
+                
+                for (const pageNum of uniquePages) {
+                    if (!existingPageNumbers.has(pageNum)) {
+                        // Add thumbnail URL for missing page
+                        images.push({
+                            url: `${baseUrl}/sites/default/files/styles/morgan_hero_1x/public/images/collection/${manuscriptId}_${pageNum}.jpg`,
+                            label: `Page ${pageNum}`
+                        });
+                    }
+                }
+                
+                // Sort images by page number
+                images.sort((a, b) => {
+                    const aNum = parseInt(a.label.match(/\d+/)?.[0] || '0');
+                    const bNum = parseInt(b.label.match(/\d+/)?.[0] || '0');
+                    return aNum - bNum;
+                });
+                
+                console.log(`[Morgan] Total images after adding thumbnails: ${images.length}`);
             }
         }
         
