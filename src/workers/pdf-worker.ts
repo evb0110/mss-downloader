@@ -135,9 +135,6 @@ function initializePDF(): void {
         
         // PDF worker disabled - using main process instead
         throw new Error('PDF worker is disabled, using main process pdf-lib instead');
-        
-        pageCount = 0;
-        console.log('PDF initialized successfully');
     } catch (error: any) {
         console.error('Failed to initialize PDF:', error);
         log({

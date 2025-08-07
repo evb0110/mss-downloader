@@ -152,6 +152,22 @@
           </div>
         </div>
         
+        <!-- Geo-blocked Filter -->
+        <div class="filter-controls">
+          <button
+            class="geo-filter-button"
+            :class="{ active: showOnlyGeoBlocked }"
+            :title="showOnlyGeoBlocked ? 'Show all libraries' : 'Show only geo-restricted libraries'"
+            @click="showOnlyGeoBlocked = !showOnlyGeoBlocked"
+          >
+            <span class="filter-icon">🌍</span>
+            <span class="filter-text">
+              {{ showOnlyGeoBlocked ? 'Showing Geo-Blocked Only' : 'Show Geo-Blocked Only' }}
+            </span>
+            <span class="filter-count">({{ supportedLibraries.filter(lib => lib.geoBlocked).length }})</span>
+          </button>
+        </div>
+        
         <!-- Search Results Summary -->
         <div
           v-if="librarySearchQuery.trim()"
@@ -302,18 +318,25 @@ const currentLanguage = ref('en')
 const showCacheModal = ref(false)
 const cacheStats = ref<{ size: number; entries: number } | null>(null)
 const librarySearchQuery = ref('')
+const showOnlyGeoBlocked = ref(false)
 
 // Enhanced search with categorized results and verbose feedback
 const searchResults = computed(() => {
+  // First apply geo-blocked filter if active
+  let baseLibraries = showOnlyGeoBlocked.value 
+    ? supportedLibraries.value.filter(lib => lib.geoBlocked)
+    : [...supportedLibraries.value]
+  
   if (!librarySearchQuery.value.trim()) {
     return {
-      libraries: [...supportedLibraries.value].sort((a, b) => a.name.localeCompare(b.name)),
+      libraries: baseLibraries.sort((a, b) => a.name.localeCompare(b.name)),
       stats: {
-        total: supportedLibraries.value.length,
+        total: baseLibraries.length,
         exact: 0,
         partial: 0,
         fuzzy: 0,
-        query: ''
+        query: '',
+        geoBlocked: showOnlyGeoBlocked.value ? baseLibraries.length : 0
       }
     }
   }
@@ -323,7 +346,7 @@ const searchResults = computed(() => {
   const partialMatches: LibraryInfo[] = []
   const fuzzyMatches: LibraryInfo[] = []
   
-  supportedLibraries.value.forEach(library => {
+  baseLibraries.forEach(library => {
     const name = library.name.toLowerCase()
     const description = library.description.toLowerCase()
     const example = library.example.toLowerCase()
@@ -380,7 +403,8 @@ const searchResults = computed(() => {
       exact: exactMatches.length,
       partial: partialMatches.length,
       fuzzy: fuzzyMatches.length,
-      query: query
+      query: query,
+      geoBlocked: showOnlyGeoBlocked.value ? allMatches.length : 0
     }
   }
 })
@@ -651,7 +675,45 @@ const formatBytes = (bytes: number): string => {
 
 .library-search {
   position: relative;
+  margin-bottom: 1rem;
+}
+
+.filter-controls {
   margin-bottom: 1.5rem;
+}
+
+.geo-filter-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--background-color);
+  border: 2px solid var(--border-light);
+  border-radius: 8px;
+  color: var(--secondary-color);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--animation-timing);
+}
+
+.geo-filter-button:hover {
+  border-color: #f59e0b;
+  color: var(--text-color);
+}
+
+.geo-filter-button.active {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: white;
+}
+
+.filter-icon {
+  font-size: 1.1rem;
+}
+
+.filter-count {
+  opacity: 0.7;
+  font-size: 0.85rem;
 }
 
 .search-input {

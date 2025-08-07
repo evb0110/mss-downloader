@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.103",
+  "version": "1.4.104",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.103: 🔥 ULTRA-PRIORITY FIX for Florence Library compound object detection (Issue #5)",
-    "Fixed critical bug where Florence manuscripts only showed 1 page instead of all pages",
-    "Implemented ULTRA-FAST sequential ID detection for ContentDM manuscripts",
-    "Users can now download complete Florence manuscripts with all pages (22+ pages detected)",
-    "Performance improved: 3x faster page detection using optimized HEAD requests"
+    "v1.4.104: 🌍 Geo-Blocking Filter Feature - Complete list of restricted libraries (Issue #20)",
+    "Added 'Show Geo-Blocked Only' filter button to easily view libraries with geographic restrictions",
+    "All 10 geo-restricted libraries now properly marked with visual indicators",
+    "Users can now quickly identify which libraries require specific country IP addresses",
+    "Includes: Graz, Florence, BDL, Grenoble, MDC Catalonia, Verona, BNE, Internet Culturale, Norwegian, Trinity Cambridge"
   ],
   "main": "dist/main/main.js",
   "scripts": {
