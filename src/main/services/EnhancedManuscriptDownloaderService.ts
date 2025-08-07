@@ -4269,6 +4269,12 @@ export class EnhancedManuscriptDownloaderService {
             skipExisting = false,
             startPage,
             endPage,
+            // NEW: Accept pre-processed data from queue
+            pageLinks,
+            displayName,
+            library,
+            totalPages,
+            queueItem,
         } = options;
 
         const downloadStartTime = Date.now();
@@ -4277,10 +4283,35 @@ export class EnhancedManuscriptDownloaderService {
         let validImagePaths: string[] = [];
         
         try {
-            // Load manifest
+            // Use provided pageLinks if available, otherwise load manifest
             const manifestStartTime = Date.now();
-            manifest = await this.loadManifest(url);
-            const manifestLoadDuration = Date.now() - manifestStartTime;
+            let manifestLoadDuration = 0;
+            
+            if (pageLinks && Array.isArray(pageLinks) && pageLinks.length > 0) {
+                // Build manifest from pre-sliced data
+                manifest = {
+                    pageLinks: pageLinks,
+                    totalPages: totalPages || pageLinks.length,
+                    library: library || 'unknown',
+                    displayName: displayName || 'manuscript',
+                    originalUrl: url,
+                    // Preserve any special metadata from queueItem
+                    ...(queueItem?.partInfo ? { partInfo: queueItem.partInfo } : {}),
+                    ...(queueItem?.tileConfig ? { tileConfig: queueItem.tileConfig } : {}),
+                    ...(queueItem?.requiresTileProcessor ? { requiresTileProcessor: queueItem.requiresTileProcessor } : {}),
+                } as ManuscriptManifest;
+                console.log(`Using pre-sliced pageLinks for ${displayName}: ${pageLinks.length} pages`);
+                manifestLoadDuration = Date.now() - manifestStartTime; // Minimal time
+            } else {
+                // Existing behavior: load manifest from URL
+                manifest = await this.loadManifest(url);
+                manifestLoadDuration = Date.now() - manifestStartTime;
+            }
+            
+            // Validate special processor requirements
+            if ((manifest as any).requiresTileProcessor && !(manifest as any).tileConfig) {
+                throw new Error('Bordeaux manuscript requires tileConfig but none provided');
+            }
             
             // Log manifest loading completion
             const usingCachedManifest = await this.manifestCache.get(url) !== null;
@@ -4317,9 +4348,9 @@ export class EnhancedManuscriptDownloaderService {
                 .substring(0, 100) || 'manuscript';       // Limit to 100 characters with fallback
             
             // Calculate pages to download for splitting logic
-            // Fix for Manuscripta.at: Use startPageFromUrl from manifest if user didn't specify startPage
-            const actualStartPage = Math.max(1, startPage || manifest.startPageFromUrl || 1);
-            const actualEndPage = Math.min(manifest.totalPages, endPage || manifest.totalPages);
+            // When using pre-sliced pageLinks, pages are already selected
+            const actualStartPage = pageLinks ? 1 : Math.max(1, startPage || manifest.startPageFromUrl || 1);
+            const actualEndPage = pageLinks ? manifest.totalPages : Math.min(manifest.totalPages, endPage || manifest.totalPages);
             const totalPagesToDownload = actualEndPage - actualStartPage + 1;
             
             // Apply library-specific optimization settings early to get split threshold
@@ -4419,8 +4450,8 @@ export class EnhancedManuscriptDownloaderService {
             
             const downloadPage = async (pageIndex: number) => {
                 // Fix for Bordeaux and other libraries: map page index to manifest array index
-                // pageIndex is absolute (e.g., 5 for page 6), but manifest.pageLinks may start from 0
-                const manifestIndex = pageIndex - (actualStartPage - 1);
+                // When using pre-sliced pageLinks, index directly
+                const manifestIndex = pageLinks ? pageIndex : (pageIndex - (actualStartPage - 1));
                 
                 // Validate manifestIndex is within bounds
                 if (manifestIndex < 0 || manifestIndex >= manifest.pageLinks.length) {

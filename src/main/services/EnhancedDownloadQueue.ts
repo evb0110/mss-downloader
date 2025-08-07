@@ -770,6 +770,38 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 }
             }
 
+            // Pre-load manifest and slice pageLinks for parts
+            let pageLinksToPass = null;
+            let manifestMetadata = {};
+
+            if (item.isAutoPart && item.downloadOptions?.startPage && item.downloadOptions?.endPage) {
+                // For auto-split parts, we need to slice the pageLinks
+                console.log(`Processing auto-split part: ${item.displayName}`);
+                console.log(`Page range: ${item.downloadOptions.startPage}-${item.downloadOptions.endPage}`);
+                
+                // Load manifest once to get pageLinks
+                const fullManifest = await this.currentDownloader!.loadManifest(item.url);
+                
+                // Slice the pageLinks for this part
+                const startIdx = item.downloadOptions.startPage - 1;
+                const endIdx = item.downloadOptions.endPage;
+                pageLinksToPass = fullManifest.pageLinks.slice(startIdx, endIdx);
+                
+                console.log(`Sliced ${pageLinksToPass.length} pages from full manifest (${fullManifest.totalPages} total)`);
+                
+                // Preserve manifest metadata
+                manifestMetadata = {
+                    library: fullManifest.library,
+                    displayName: item.displayName,
+                    totalPages: pageLinksToPass.length,
+                    originalUrl: item.url,
+                    // Preserve special processing flags
+                    requiresTileProcessor: fullManifest.requiresTileProcessor,
+                    tileConfig: fullManifest.tileConfig,
+                    pageBlocks: fullManifest.pageBlocks,
+                };
+            }
+
             const result = await this.currentDownloader!.downloadManuscript(item.url, {
                 onProgress: (progress: any) => {
                     // Handle both simple progress (0-1) and detailed progress object
@@ -795,9 +827,16 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 maxConcurrent: item.libraryOptimizations?.maxConcurrentDownloads || 
                                this.state.globalSettings.concurrentDownloads,
                 skipExisting: false,
-                // Pass through download options for page range
-                startPage: item.downloadOptions?.startPage,
-                endPage: item.downloadOptions?.endPage,
+                // NEW: Pass pre-sliced pageLinks for parts
+                ...(pageLinksToPass ? {
+                    pageLinks: pageLinksToPass,
+                    ...manifestMetadata,
+                    // Don't pass startPage/endPage when using pre-sliced
+                } : {
+                    // Original behavior for non-parts
+                    startPage: item.downloadOptions?.startPage,
+                    endPage: item.downloadOptions?.endPage,
+                }),
                 // Pass the queue item for manual manifest data
                 queueItem: item,
             });
@@ -1721,6 +1760,38 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 }
             }
             
+            // Pre-load manifest and slice pageLinks for parts (also for legacy queue)
+            let pageLinksToPass = null;
+            let manifestMetadata = {};
+
+            if (item.isAutoPart && item.downloadOptions?.startPage && item.downloadOptions?.endPage) {
+                // For auto-split parts, we need to slice the pageLinks
+                console.log(`Processing auto-split part: ${item.displayName}`);
+                console.log(`Page range: ${item.downloadOptions.startPage}-${item.downloadOptions.endPage}`);
+                
+                // Load manifest once to get pageLinks
+                const fullManifest = await downloader.loadManifest(item.url);
+                
+                // Slice the pageLinks for this part
+                const startIdx = item.downloadOptions.startPage - 1;
+                const endIdx = item.downloadOptions.endPage;
+                pageLinksToPass = fullManifest.pageLinks.slice(startIdx, endIdx);
+                
+                console.log(`Sliced ${pageLinksToPass.length} pages from full manifest (${fullManifest.totalPages} total)`);
+                
+                // Preserve manifest metadata
+                manifestMetadata = {
+                    library: fullManifest.library,
+                    displayName: item.displayName,
+                    totalPages: pageLinksToPass.length,
+                    originalUrl: item.url,
+                    // Preserve special processing flags
+                    requiresTileProcessor: fullManifest.requiresTileProcessor,
+                    tileConfig: fullManifest.tileConfig,
+                    pageBlocks: fullManifest.pageBlocks,
+                };
+            }
+
             // Actually download the manuscript
             const result = await downloader.downloadManuscript(item.url, {
                 onProgress: (progress: any) => {
@@ -1747,9 +1818,16 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 maxConcurrent: item.libraryOptimizations?.maxConcurrentDownloads || 
                                this.state.globalSettings.concurrentDownloads,
                 skipExisting: false,
-                // Pass through download options for page range
-                startPage: item.downloadOptions?.startPage,
-                endPage: item.downloadOptions?.endPage,
+                // NEW: Pass pre-sliced pageLinks for parts
+                ...(pageLinksToPass ? {
+                    pageLinks: pageLinksToPass,
+                    ...manifestMetadata,
+                    // Don't pass startPage/endPage when using pre-sliced
+                } : {
+                    // Original behavior for non-parts
+                    startPage: item.downloadOptions?.startPage,
+                    endPage: item.downloadOptions?.endPage,
+                }),
                 // Pass the queue item for manual manifest data
                 queueItem: item,
             });
