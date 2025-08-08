@@ -786,6 +786,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 // Load manifest once to get pageLinks
                 const fullManifest = await this.currentDownloader!.loadManifest(item.url);
                 
+                // CRITICAL FIX: Ensure library is properly set on the item before proceeding
+                if (!item.library && fullManifest.library) {
+                    item.library = fullManifest.library as TLibrary;
+                }
+                
                 // Slice the pageLinks for this part
                 const startIdx = item.downloadOptions.startPage - 1;
                 const endIdx = item.downloadOptions.endPage;
@@ -793,9 +798,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 
                 console.log(`Sliced ${pageLinksToPass.length} pages from full manifest (${fullManifest.totalPages} total)`);
                 
-                // Preserve manifest metadata
+                // Preserve manifest metadata - ensure library is always defined
                 manifestMetadata = {
-                    library: fullManifest.library,
+                    library: fullManifest.library || item.library || this.detectLibraryFromUrl(item.url) || 'unknown',
                     displayName: item.displayName,
                     totalPages: pageLinksToPass.length,
                     originalUrl: item.url,
@@ -1779,6 +1784,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 // Load manifest once to get pageLinks
                 const fullManifest = await downloader.loadManifest(item.url);
                 
+                // CRITICAL FIX: Ensure library is properly set on the item before proceeding
+                if (!item.library && fullManifest.library) {
+                    item.library = fullManifest.library as TLibrary;
+                }
+                
                 // Slice the pageLinks for this part
                 const startIdx = item.downloadOptions.startPage - 1;
                 const endIdx = item.downloadOptions.endPage;
@@ -1786,9 +1796,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 
                 console.log(`Sliced ${pageLinksToPass.length} pages from full manifest (${fullManifest.totalPages} total)`);
                 
-                // Preserve manifest metadata
+                // Preserve manifest metadata - ensure library is always defined
                 manifestMetadata = {
-                    library: fullManifest.library,
+                    library: fullManifest.library || item.library || this.detectLibraryFromUrl(item.url) || 'unknown',
                     displayName: item.displayName,
                     totalPages: pageLinksToPass.length,
                     originalUrl: item.url,

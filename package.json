@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.114",
+  "version": "1.4.115",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.114: Enhanced manuscript naming and file organization improvements",
-    "Added intelligent manuscript ID extraction from URLs for better file naming",
-    "Implemented descriptive naming for auto-split parts with manuscript IDs",
-    "Created label utilities for handling generic and enhanced manuscript labels",
-    "Improved file naming sanitization and PDF merger organization"
+    "v1.4.115: CRITICAL FIX for Vatican Library custom page ranges",
+    "Fixed 'Cannot access library before initialization' error when using custom page ranges",
+    "Resolved Issue #21 - Vatican manuscripts with specific page ranges (e.g., 162-322) now download correctly",
+    "Enhanced library variable initialization in split manuscript processing",
+    "Improved handling of manuscript parts to prevent initialization errors"
   ],
   "main": "dist/main/main.js",
   "scripts": {
