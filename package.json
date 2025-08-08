@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.119",
+  "version": "1.4.120",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.119: Fixed geo-blocking labels disappearance issue",
-    "Normalized library data to ensure all libraries have explicit geoBlocked property",
-    "Added geo-blocking badges to DownloadQueueManager component",
-    "Fixed Electron window visibility in development mode",
-    "10 geo-restricted libraries now properly display 🌍 indicator"
+    "v1.4.120: CRITICAL FIX for Issue #11 - BNE hanging resolved",
+    "Fixed BNE (Biblioteca Nacional de España) hanging on calculation",
+    "Removed problematic custom loadBneManifest with 200 HEAD requests",
+    "Now uses SharedManifestAdapter - loads in 1.13s instead of hanging",
+    "User-reported issue 'висит на калькуляции' finally resolved after 5 previous attempts"
   ],
   "main": "dist/main/main.js",
   "scripts": {

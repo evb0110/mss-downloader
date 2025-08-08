@@ -1723,7 +1723,7 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadDiammManifest(originalUrl);
                     break;
                 case 'bne':
-                    manifest = await this.loadBneManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('bne', originalUrl);
                     break;
                 case 'mdc_catalonia':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('mdc_catalonia', originalUrl);
