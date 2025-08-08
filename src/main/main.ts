@@ -94,7 +94,16 @@ const isHeadless = process.argv.includes('--headless') ||
                    process.env.DISPLAY === ':99' || // Playwright test display
                    process.env.CI === 'true';
 
-const createWindow = () => {
+console.log('[DEBUG] Headless detection:', {
+  isHeadless,
+  argv: process.argv,
+  hasHeadlessFlag: process.argv.includes('--headless'),
+  NODE_ENV: process.env.NODE_ENV,
+  DISPLAY: process.env.DISPLAY,
+  CI: process.env.CI
+});
+
+const createWindow = async () => {
   const preloadPath = join(__dirname, '../preload/preload.js');
   
   mainWindow = new BrowserWindow({
@@ -205,19 +214,34 @@ const createWindow = () => {
   // Remove problematic event listeners for now
 
   if (isDev) {
-    mainWindow.loadURL('http://localhost:5173').catch(err => {
-      console.error('Error loading URL:', err);
+    // Simply try to load the default dev server URL
+    mainWindow.loadURL('http://localhost:5173').then(() => {
+      console.log('Successfully loaded dev server on port 5173');
+    }).catch(err => {
+      console.error('Error loading dev server:', err.message);
+      // Try other ports
+      const tryPorts = [5174, 5175, 5176, 5177];
+      for (const port of tryPorts) {
+        mainWindow.loadURL(`http://localhost:${port}`).then(() => {
+          console.log(`Successfully loaded dev server on port ${port}`);
+        }).catch(() => {
+          // Silent fail, try next
+        });
+      }
     });
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
 
   mainWindow.once('ready-to-show', () => {
-    // CRITICAL: Never show window during tests or headless mode
-    // This prevents browser windows from opening during Playwright tests
-    if (!isHeadless && process.env.NODE_ENV !== 'test') {
+    console.log('[DEBUG] Window ready-to-show event fired');
+    // Show window in development mode regardless of headless detection
+    if (isDev || (!isHeadless && process.env.NODE_ENV !== 'test')) {
+      console.log('[DEBUG] Showing window');
       mainWindow?.show();
       mainWindow?.maximize();
+    } else {
+      console.log('[DEBUG] NOT showing window - headless or test mode');
     }
   });
 
@@ -407,6 +431,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 app.whenReady().then(async () => {
+  console.log('[DEBUG] App ready, isHeadless =', isHeadless, 'NODE_ENV =', process.env.NODE_ENV);
   // CRITICAL: Check for version changes and wipe all caches if needed
   // This MUST happen before initializing any services to ensure clean state
   try {
@@ -446,12 +471,12 @@ app.whenReady().then(async () => {
     mainWindow?.webContents.send('queue-state-changed', state);
   });
   
-  createWindow();
+  await createWindow();
   createMenu();
 
-  app.on('activate', () => {
+  app.on('activate', async () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+      await createWindow();
     }
   });
 });
@@ -520,6 +545,9 @@ ipcMain.handle('get-supported-libraries', () => {
   
   try {
     const libraries = enhancedManuscriptDownloader.getSupportedLibraries();
+    // Debug: Log geo-blocked libraries count
+    const geoBlockedCount = libraries.filter(lib => lib.geoBlocked === true).length;
+    console.log(`[Main] Sending ${libraries.length} libraries, ${geoBlockedCount} geo-blocked`);
     return libraries;
   } catch (error) {
     console.error('Error calling getSupportedLibraries:', error);

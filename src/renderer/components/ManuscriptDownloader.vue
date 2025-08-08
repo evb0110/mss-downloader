@@ -436,6 +436,10 @@ onMounted(async () => {
     // Load supported libraries
     supportedLibraries.value = await window.electronAPI.getSupportedLibraries()
     console.log('Loaded supported libraries:', supportedLibraries.value);
+    // Debug: Log geo-blocked libraries
+    const geoBlockedLibs = supportedLibraries.value.filter(lib => lib.geoBlocked === true);
+    console.log(`[Renderer] Received ${supportedLibraries.value.length} libraries, ${geoBlockedLibs.length} geo-blocked:`, 
+                geoBlockedLibs.map(lib => lib.name));
     
     // Get current language
     currentLanguage.value = await window.electronAPI.getLanguage()

@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.118",
+  "version": "1.4.119",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.118: Electron compatibility layer and improved library loaders",
-    "Added ElectronCompat module for better cross-environment support",
-    "Enhanced Vatican Library loader to preserve manuscript IDs in filenames",
-    "Switched BDL to local manifest loader for improved reliability",
-    "Improved filename generation with manuscript ID extraction from URLs"
+    "v1.4.119: Fixed geo-blocking labels disappearance issue",
+    "Normalized library data to ensure all libraries have explicit geoBlocked property",
+    "Added geo-blocking badges to DownloadQueueManager component",
+    "Fixed Electron window visibility in development mode",
+    "10 geo-restricted libraries now properly display 🌍 indicator"
   ],
   "main": "dist/main/main.js",
   "scripts": {

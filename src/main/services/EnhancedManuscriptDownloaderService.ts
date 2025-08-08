@@ -498,7 +498,12 @@ export class EnhancedManuscriptDownloaderService {
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
-        return EnhancedManuscriptDownloaderService.SUPPORTED_LIBRARIES;
+        // Normalize library data to ensure all have explicit geoBlocked property
+        return EnhancedManuscriptDownloaderService.SUPPORTED_LIBRARIES.map(lib => ({
+            ...lib,
+            geoBlocked: lib.geoBlocked ?? false,  // Ensure boolean value, default to false
+            status: lib.status ?? 'operational'   // Ensure status is set
+        }));
     }
 
     /**

@@ -5,13 +5,20 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 
 ## 🚨 ABSOLUTE MANDATORY RULES - NO EXCEPTIONS 🚨
 
-### 1. PROCESS TERMINATION - ZERO TOLERANCE
+### 1. ELECTRON EXECUTION - ABSOLUTELY FORBIDDEN
+- **NEVER RUN ELECTRON DIRECTLY:** Do NOT execute `electron`, `npm run dev`, `npm run dev:headless` or ANY Electron commands
+- **USER RUNS THE APP:** The user will run the application themselves when needed
+- **NO BACKGROUND PROCESSES:** Never start Electron processes in background or foreground
+- **SINGLE INSTANCE LOCK:** Electron has single-instance lock - your processes block user's app!
+- **BUILD ONLY:** You may run `npm run build` but NEVER launch the app
+
+### 2. PROCESS TERMINATION - ZERO TOLERANCE
 - **KILLALL FORBIDDEN:** NEVER use `killall electron`, `killall node`, or ANY broad process termination
 - **PID-SAFE ONLY:** MUST use PID-safe commands (`npm run test:e2e:kill`)
 - **USER PERMISSION REQUIRED:** ALL process termination REQUIRES explicit user approval
 - **NO AUTOMATIC CLEANUP:** NEVER terminate processes for "cleanup" - EVER
 
-### 2. PRODUCTION CODE TESTING - CRITICAL
+### 3. PRODUCTION CODE TESTING - CRITICAL
 **From v1.4.49 failure - these rules prevent false fixes:**
 - **MUST test with production code** - Import actual src/ files, NO isolated scripts
 - **MUST use exact user URLs** - Copy from issues character-by-character 

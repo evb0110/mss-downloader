@@ -968,7 +968,7 @@ https://digi.vatlib.it/..."
             class="library-item"
           >
             <Spoiler
-              :title="library.name"
+              :title="library.geoBlocked ? library.name + ' 🌍' : library.name"
               :class="{ 'library-warning': library.name.includes('⚠️') }"
               class="library-content-spoiler"
             >
@@ -3507,6 +3507,13 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 
 .status-badge.status-failed {
     background: #dc3545;
+}
+
+.status-badge.geo-blocked {
+    background: #f59e0b;
+    color: white;
+    margin-left: 0.5rem;
+    font-size: 0.75rem;
 }
 
 .total-pages-badge {

@@ -114,7 +114,12 @@ export class ManuscriptDownloaderService {
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
-        return ManuscriptDownloaderService.SUPPORTED_LIBRARIES;
+        // Normalize library data to ensure all have explicit geoBlocked property
+        return ManuscriptDownloaderService.SUPPORTED_LIBRARIES.map(lib => ({
+            ...lib,
+            geoBlocked: lib.geoBlocked ?? false,  // Ensure boolean value, default to false
+            status: lib.status ?? 'operational'   // Ensure status is set
+        }));
     }
 
     async parseManuscriptUrl(url: string): Promise<ManuscriptManifest> {
