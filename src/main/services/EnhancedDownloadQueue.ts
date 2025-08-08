@@ -734,12 +734,13 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 
                 // Log the timeout to ensure it's captured
                 const logger = DownloadLogger.getInstance();
-                // Use the library variable already initialized above
+                // Re-compute library inside timeout to avoid closure issues
+                const timeoutLibrary = item.library || this.detectLibraryFromUrl(item.url) || 'unknown';
                 
-                logger.logTimeout(library, item.url, downloadTimeoutMs);
+                logger.logTimeout(timeoutLibrary, item.url, downloadTimeoutMs);
                 logger.log({
                     level: 'error',
-                    library,
+                    library: timeoutLibrary,
                     url: item.url,
                     message: `Download timeout after ${timeoutMinutes} minutes`,
                     details: {
@@ -748,7 +749,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                         totalPages: item.totalPages || 'unknown',
                         timeoutMinutes,
                         downloadTimeoutMs,
-                        libraryTimeoutMultiplier: libraryConfig.timeoutMultiplier || 1
+                        libraryTimeoutMultiplier: 1 // Use constant value to avoid referencing outer scope libraryConfig
                     }
                 });
                 
