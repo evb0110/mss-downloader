@@ -1,7 +1,7 @@
-import { app, dialog } from 'electron';
 import { join } from 'path';
 import { promises as fs } from 'fs';
 import { EnhancedPdfMerger } from './EnhancedPdfMerger';
+import { getAppPath, showSaveDialog } from './ElectronCompat';
 
 interface PdfMergerOptions {
     images: Buffer[];
@@ -59,9 +59,9 @@ export class ElectronPdfMerger {
                     }
                 }
                 
-                const result = await dialog.showSaveDialog({
+                const result = await showSaveDialog({
                     title: 'Save PDF',
-                    defaultPath: join(app.getPath('downloads'), defaultFilename),
+                    defaultPath: join(getAppPath('downloads'), defaultFilename),
                     filters: [
                         { name: 'PDF files', extensions: ['pdf'] }
                     ]

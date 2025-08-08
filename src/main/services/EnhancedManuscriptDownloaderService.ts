@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { app } from 'electron';
+import { getAppPath } from './ElectronCompat';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { ManifestCache } from './ManifestCache';
 import { configService } from './ConfigService';
@@ -1594,7 +1595,8 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadUnifrManifest(originalUrl);
                     break;
                 case 'vatlib':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('vatican', originalUrl);
+                    // Use local loader to ensure proper displayName (includes manuscript ID)
+                    manifest = await this.loadVatlibManifest(originalUrl);
                     break;
                 case 'cecilia':
                     manifest = await this.loadCeciliaManifest(originalUrl);
@@ -1687,9 +1689,8 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadModenaManifest(originalUrl);
                     break;
                 case 'bdl':
-                    // Use shared manifest loader (sync with validation)
-                    console.log('[BDL] Using shared manifest loader for consistent behavior');
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('bdl', originalUrl);
+                    // Use local manifest loader for robustness and to avoid proxy issues
+                    manifest = await this.loadBDLManifest(originalUrl);
                     break;
                 case 'europeana':
                     manifest = await this.loadEuropeanaManifest(originalUrl);
@@ -4261,6 +4262,34 @@ export class EnhancedManuscriptDownloaderService {
     /**
      * Download manuscript
      */
+    // Extract a stable manuscript identifier from common URL patterns
+    private extractManuscriptIdFromUrl(url: string): string | null {
+        try {
+            const ark = url.match(/ark:\/[^/]+\/([^/?#]+)/);
+            if (ark && ark[1]) return ark[1];
+
+            const viewSeg = url.match(/\/view\/(?:[A-Z_]+\.)?([^/?#]+)/i);
+            if (viewSeg && viewSeg[1]) return viewSeg[1];
+
+            const idParam = url.match(/[?&](?:id|PPN|manifest|path|item|record|obj|uuid)=([^&]+)/i);
+            if (idParam && idParam[1]) return decodeURIComponent(idParam[1]).replace(/[^A-Za-z0-9._-]+/g, '_');
+
+            const tail = url.match(/\/([A-Za-z0-9._-]{3,})\/?(?:[#?].*)?$/);
+            if (tail && tail[1]) return tail[1];
+        } catch {
+            // ignore
+        }
+        return null;
+    }
+
+    // Append the manuscript ID to the base name if not already present
+    private buildDescriptiveName(baseName: string, url: string): string {
+        const safeBase = (baseName || 'manuscript').replace(/[\s]+/g, '_');
+        const id = this.extractManuscriptIdFromUrl(url);
+        if (!id) return safeBase;
+        return safeBase.includes(id) ? safeBase : `${safeBase}__${id}`;
+    }
+
     async downloadManuscript(url: string, options: any = {}): Promise<any> {
         const {
             onProgress = () => {},
@@ -4331,14 +4360,15 @@ export class EnhancedManuscriptDownloaderService {
             onManifestLoaded(manifest);
             
             // Get internal cache directory for temporary images
-            const tempImagesDir = path.join(app.getPath('userData'), 'temp-images');
+            const tempImagesDir = path.join(getAppPath('userData'), 'temp-images');
             
             // Ensure temporary images directory exists
             await fs.mkdir(tempImagesDir, { recursive: true });
             
             // Generate filename using filesystem-safe sanitization
-            const sanitizedName = manifest.displayName
-                .replace(/[<>:"/\\|?*\x00-\x1f]/g, '_')  // Remove filesystem-unsafe and control characters
+            const nameWithId = this.buildDescriptiveName(manifest.displayName, url);
+            const sanitizedName = nameWithId
+                .replace(/[\u003c\u003e:"/\\|?*\x00-\x1f]/g, '_')  // Remove filesystem-unsafe and control characters
                 .replace(/[\u00A0-\u9999]/g, '_')         // Replace Unicode special characters that may cause Windows issues
                 .replace(/[^\w\s.-]/g, '_')               // Replace any remaining special characters except word chars, spaces, dots, hyphens
                 .replace(/\s+/g, '_')                     // Replace spaces with underscores
@@ -4381,7 +4411,7 @@ export class EnhancedManuscriptDownloaderService {
             let filepath: string;
             
             // Final PDF goes to Downloads folder - always create a subfolder for each manuscript
-            const downloadsDir = app.getPath('downloads');
+            const downloadsDir = getAppPath('downloads');
             await fs.mkdir(downloadsDir, { recursive: true });
             
             // Always create a subfolder with the manuscript base name (strip part/page suffixes)
@@ -6969,7 +6999,7 @@ export class EnhancedManuscriptDownloaderService {
             console.log(`Loading University of Graz manifest: ${grazUrl}`);
             
             // Add error logging to file for crash recovery
-            const crashLogPath = path.join(app.getPath('userData'), 'crash-recovery.log');
+            const crashLogPath = path.join(getAppPath('userData'), 'crash-recovery.log');
             await fs.appendFile(crashLogPath, `\n[${new Date().toISOString()}] Loading Graz manifest: ${grazUrl}\n`).catch(() => {});
             
             // Extract manuscript ID from URL
@@ -7195,7 +7225,7 @@ export class EnhancedManuscriptDownloaderService {
             
             // Write error to crash log file to persist even if app crashes
             try {
-                const crashLogPath = path.join(app.getPath('userData'), 'crash-recovery.log');
+                const crashLogPath = path.join(getAppPath('userData'), 'crash-recovery.log');
                 const errorDetails = `
 [${new Date().toISOString()}] Graz Manifest Error:
 URL: ${grazUrl}

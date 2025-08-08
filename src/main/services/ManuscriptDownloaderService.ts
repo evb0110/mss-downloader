@@ -17,6 +17,34 @@ export class ManuscriptDownloaderService {
         private pdfMerger: ElectronPdfMerger
     ) {}
 
+    // Extract a stable manuscript identifier from common URL patterns
+    private extractManuscriptIdFromUrl(url: string): string | null {
+        try {
+            const ark = url.match(/ark:\/[^/]+\/([^/?#]+)/);
+            if (ark && ark[1]) return ark[1];
+
+            const viewSeg = url.match(/\/view\/(?:[A-Z_]+\.)?([^/?#]+)/i);
+            if (viewSeg && viewSeg[1]) return viewSeg[1];
+
+            const idParam = url.match(/[?&](?:id|PPN|manifest|path|item|record|obj|uuid)=([^&]+)/i);
+            if (idParam && idParam[1]) return decodeURIComponent(idParam[1]).replace(/[^A-Za-z0-9._-]+/g, '_');
+
+            const tail = url.match(/\/([A-Za-z0-9._-]{3,})\/?(?:[#?].*)?$/);
+            if (tail && tail[1]) return tail[1];
+        } catch {
+            // ignore
+        }
+        return null;
+    }
+
+    // Append the manuscript ID to the base name if not already present
+    private buildDescriptiveName(baseName: string, url: string): string {
+        const safeBase = (baseName || 'manuscript').replace(/[\s]+/g, '_');
+        const id = this.extractManuscriptIdFromUrl(url);
+        if (!id) return safeBase;
+        return safeBase.includes(id) ? safeBase : `${safeBase}__${id}`;
+    }
+
     static readonly SUPPORTED_LIBRARIES: LibraryInfo[] = [
         {
             name: 'Gallica (BnF)',
@@ -126,9 +154,9 @@ export class ManuscriptDownloaderService {
             
             callbacks?.onStatusChange?.({ phase: 'processing', message: 'Creating PDF...' });
             
-            const pdfPath = await this.pdfMerger.createPDFFromImages({
+const pdfPath = await this.pdfMerger.createPDFFromImages({
                 images,
-                displayName: manifest.displayName,
+                displayName: this.buildDescriptiveName(manifest.displayName, url),
                 startPage: 1,
                 endPage: manifest.totalPages,
                 totalPages: manifest.totalPages,
@@ -921,8 +949,12 @@ export class ManuscriptDownloaderService {
                 .replace(/\s+/g, '_')                     // Replace spaces with underscores
                 .substring(0, 100) || 'manuscript';       // Limit to 100 characters with fallback
             
+            // Avoid duplicating existing part/page suffixes coming from queue item names
+            const baseForFilename = cleanName
+                .replace(/_Part_\d+.*$/i, '')
+                .replace(/_pages_\d+-\d+.*$/i, '');
             // Always include page numbers for clarity
-            const filename = `${cleanName}_pages_${options.startPage}-${options.endPage}.pdf`;
+            const filename = `${baseForFilename}_pages_${options.startPage}-${options.endPage}.pdf`;
             
             // Group all parts for the same manuscript into a single folder under Downloads
             const folderBase = cleanName

@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.116",
+  "version": "1.4.118",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.116: ULTRA-PRIORITY FIX for BDL (Biblioteca Digitale Lombarda)",
-    "Fixed Issue #9 - BDL manuscript URL parsing error resolved",
-    "Enhanced URL sanitization to handle all domain extensions (.it, .fr, .es, .de, etc.)",
-    "BDL manuscripts now load correctly with all 304 pages accessible",
-    "Comprehensive fix prevents URL concatenation errors for all libraries"
+    "v1.4.118: Electron compatibility layer and improved library loaders",
+    "Added ElectronCompat module for better cross-environment support",
+    "Enhanced Vatican Library loader to preserve manuscript IDs in filenames",
+    "Switched BDL to local manifest loader for improved reliability",
+    "Improved filename generation with manuscript ID extraction from URLs"
   ],
   "main": "dist/main/main.js",
   "scripts": {
