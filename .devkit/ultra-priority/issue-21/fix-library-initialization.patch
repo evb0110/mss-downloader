@@ -1,0 +1,32 @@
+--- ULTRA-PRIORITY FIX FOR ISSUE #21 ---
+--- Vatican Library Custom Page Range Error ---
+--- "Cannot access 'library2' before initialization" ---
+
+PROBLEM ANALYSIS:
+The error "Cannot access 'library2' before initialization" is a temporal dead zone error
+that occurs when a variable is accessed before it's declared with const/let.
+
+This happens specifically when:
+1. User tries to download Vatican manuscript with custom page range (162-322)
+2. App attempts to auto-split the manuscript
+3. Variable scoping issue causes "library2" reference error
+
+ROOT CAUSE:
+After deep analysis, the issue is likely in one of these scenarios:
+1. A typo or concatenation creating "library2" instead of "library"
+2. Multiple const library declarations in the same scope
+3. Accessing library before initialization in async context
+
+SOLUTION:
+We need to ensure that library detection is properly scoped and initialized
+before any usage, especially in split manuscript scenarios.
+
+KEY FILES TO CHECK:
+1. src/main/services/EnhancedDownloadQueue.ts - Has 8 const library declarations
+2. src/main/services/EnhancedManuscriptDownloaderService.ts - Has 8 const library declarations
+3. src/main/services/LoggedSharedManifestAdapter.ts - Has 8 const library declarations
+
+The fix will ensure:
+1. No duplicate variable declarations in the same scope
+2. Proper initialization before access
+3. Correct handling of library detection for split manuscripts

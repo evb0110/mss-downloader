@@ -1,0 +1,41 @@
+{
+  "timestamp": "2025-08-07T21:39:55.949Z",
+  "testType": "Core Fix Validation",
+  "summary": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "successRate": 100,
+    "canProceedToBump": true
+  },
+  "results": {
+    "passed": [
+      {
+        "name": "Graz University (247 pages)",
+        "parts": 3,
+        "totalPages": 247,
+        "coverage": 247
+      },
+      {
+        "name": "Vatican Manuscript (180 pages)",
+        "parts": 2,
+        "totalPages": 180,
+        "coverage": 180
+      },
+      {
+        "name": "Small Manuscript (50 pages)",
+        "split": false,
+        "size": 25
+      },
+      {
+        "name": "OLD vs NEW Behavior Comparison",
+        "oldBehavior": "All parts get full manifest (BROKEN)",
+        "newBehavior": "Each part gets correct slice (FIXED)",
+        "verified": true
+      }
+    ],
+    "failed": [],
+    "errors": []
+  },
+  "conclusion": "Core fix successfully resolves manuscript splitting duplicate pages bug"
+}

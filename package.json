@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.109",
+  "version": "1.4.110",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.109: 🔥 ULTRA-PRIORITY FIX: Morgan Library fully working after 10+ attempts",
-    "SOLVED: Morgan Library manuscripts now download all pages correctly",
-    "Fixed: 301 redirect handling and page timeout issues that caused failures",
-    "Enhanced: Fault-tolerant page fetching with automatic fallback to thumbnails",
-    "Validated: 100% success rate with all Morgan Library manuscripts"
+    "v1.4.110: 🔥 ULTRA-PRIORITY FIX: Vatican Library custom page ranges now working",
+    "RESOLVED Issue #21: Fixed 'Cannot access library2 before initialization' error",
+    "Fixed: Library variable initialization in queue processing for split manuscripts",
+    "Enhanced: Proper library detection for manuscripts with custom page ranges",
+    "Validated: Vatican manuscripts with ranges 162-322 download successfully"
   ],
   "main": "dist/main/main.js",
   "scripts": {

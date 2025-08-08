@@ -713,14 +713,17 @@ export class EnhancedDownloadQueue extends EventEmitter {
             timeoutMultiplier = Math.max(timeoutMultiplier, 3); // At least 45 minutes
         }
         
+        // Ensure library is properly initialized before use
+        const library = item.library || this.detectLibraryFromUrl(item.url) || 'unknown';
+        
         // Apply library-specific timeout multipliers from LibraryOptimizationService
-        const libraryConfig = LibraryOptimizationService.getOptimizationsForLibrary(item.library);
+        const libraryConfig = LibraryOptimizationService.getOptimizationsForLibrary(library as TLibrary);
         if (libraryConfig.timeoutMultiplier) {
             timeoutMultiplier *= libraryConfig.timeoutMultiplier;
         }
         
         const downloadTimeoutMs = baseTimeoutMinutes * timeoutMultiplier * 60 * 1000;
-        const libraryMultiplierInfo = libraryConfig.timeoutMultiplier ? ` [${item.library}: ${libraryConfig.timeoutMultiplier}x]` : '';
+        const libraryMultiplierInfo = libraryConfig.timeoutMultiplier ? ` [${library}: ${libraryConfig.timeoutMultiplier}x]` : '';
         console.log(`Setting timeout for ${item.displayName}: ${downloadTimeoutMs / (1000 * 60)} minutes (${item.totalPages || 'unknown'} pages)${libraryMultiplierInfo}`);
         
         // Set up timeout with proper cleanup
@@ -731,7 +734,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 
                 // Log the timeout to ensure it's captured
                 const logger = DownloadLogger.getInstance();
-                const library = item.library || this.detectLibraryFromUrl(item.url) || 'unknown';
+                // Use the library variable already initialized above
                 
                 logger.logTimeout(library, item.url, downloadTimeoutMs);
                 logger.log({
@@ -1722,14 +1725,17 @@ export class EnhancedDownloadQueue extends EventEmitter {
             timeoutMultiplier = Math.max(timeoutMultiplier, 3); // At least 45 minutes
         }
         
+        // Ensure library is properly initialized before use
+        const library = item.library || this.detectLibraryFromUrl(item.url) || 'unknown';
+        
         // Apply library-specific timeout multipliers from LibraryOptimizationService
-        const libraryConfig = LibraryOptimizationService.getOptimizationsForLibrary(item.library);
+        const libraryConfig = LibraryOptimizationService.getOptimizationsForLibrary(library as TLibrary);
         if (libraryConfig.timeoutMultiplier) {
             timeoutMultiplier *= libraryConfig.timeoutMultiplier;
         }
         
         const downloadTimeoutMs = baseTimeoutMinutes * timeoutMultiplier * 60 * 1000;
-        const libraryMultiplierInfo = libraryConfig.timeoutMultiplier ? ` [${item.library}: ${libraryConfig.timeoutMultiplier}x]` : '';
+        const libraryMultiplierInfo = libraryConfig.timeoutMultiplier ? ` [${library}: ${libraryConfig.timeoutMultiplier}x]` : '';
         console.log(`Setting timeout for ${item.displayName}: ${downloadTimeoutMs / (1000 * 60)} minutes (${item.totalPages || 'unknown'} pages)${libraryMultiplierInfo}`);
         
         // Set up timeout with proper cleanup

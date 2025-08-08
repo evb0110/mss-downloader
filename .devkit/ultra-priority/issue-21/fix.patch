@@ -1,0 +1,40 @@
+--- FIX FOR ISSUE #21: Vatican Library Custom Page Range Error ---
+--- Error: "Cannot access 'library2' before initialization" ---
+
+IDENTIFIED ROOT CAUSE:
+The error occurs in EnhancedDownloadQueue.ts when processing queue items with custom page ranges.
+The issue is that `item.library` might be undefined, and when passed to LibraryOptimizationService,
+it causes undefined behavior.
+
+Specifically, on lines 717 and 723 of EnhancedDownloadQueue.ts:
+- Line 717: LibraryOptimizationService.getOptimizationsForLibrary(item.library) 
+  - Passes potentially undefined value
+- Line 723: Template literal uses item.library directly without checking
+
+SOLUTION:
+Always ensure library is properly initialized before use.
+
+--- src/main/services/EnhancedDownloadQueue.ts
++++ src/main/services/EnhancedDownloadQueue.ts
+@@ -714,11 +714,13 @@
+         // Default timeout calculation
+         
++        // Ensure library is properly initialized
++        const library = item.library || this.detectLibraryFromUrl(item.url) || 'unknown';
++        
+         // Apply library-specific timeout multipliers from LibraryOptimizationService
+-        const libraryConfig = LibraryOptimizationService.getOptimizationsForLibrary(item.library);
++        const libraryConfig = LibraryOptimizationService.getOptimizationsForLibrary(library as TLibrary);
+         if (libraryConfig.timeoutMultiplier) {
+             timeoutMultiplier *= libraryConfig.timeoutMultiplier;
+         }
+         
+         const downloadTimeoutMs = baseTimeoutMinutes * timeoutMultiplier * 60 * 1000;
+-        const libraryMultiplierInfo = libraryConfig.timeoutMultiplier ? ` [${item.library}: ${libraryConfig.timeoutMultiplier}x]` : '';
++        const libraryMultiplierInfo = libraryConfig.timeoutMultiplier ? ` [${library}: ${libraryConfig.timeoutMultiplier}x]` : '';
+
+This ensures:
+1. Library is always properly initialized before use
+2. No undefined values are passed to LibraryOptimizationService
+3. Template literals always have valid values
+4. Consistent library detection throughout the processing
