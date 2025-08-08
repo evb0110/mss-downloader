@@ -462,7 +462,7 @@ export class DownloadQueue extends EventEmitter {
             const partItem: QueuedManuscript = {
                 ...firstPart,
                 id: partId,
-                displayName: `${originalDisplayName}_Part_${partNumber}_pages_${startPage}-${endPage}`,
+                displayName: `${this.buildDescriptiveName(originalDisplayName, firstPart.url)}_Part_${partNumber}_pages_${startPage}-${endPage}`,
                 status: 'pending',
                 parentId,
                 isAutoPart: true,
@@ -506,6 +506,35 @@ export class DownloadQueue extends EventEmitter {
         };
     }
     
+    private extractManuscriptIdFromUrl(url: string): string | null {
+        try {
+            // Common patterns: IIIF ark IDs, /view/{id}, numeric tail, id= query param
+            const ark = url.match(/ark:\/[^/]+\/([^/?#]+)/);
+            if (ark && ark[1]) return ark[1];
+
+            const viewSeg = url.match(/\/view\/(?:[A-Z_]+\.)?([^/?#]+)/i);
+            if (viewSeg && viewSeg[1]) return viewSeg[1];
+
+            const idParam = url.match(/[?&](?:id|PPN|manifest|path|item|record|obj|uuid)=([^&]+)/i);
+            if (idParam && idParam[1]) return decodeURIComponent(idParam[1]).replace(/[^A-Za-z0-9._-]+/g, '_');
+
+            const numericTail = url.match(/\/([A-Za-z0-9._-]{3,})\/?(?:[#?].*)?$/);
+            if (numericTail && numericTail[1]) return numericTail[1];
+        } catch {
+            // Ignore URL parsing errors
+        }
+        return null;
+    }
+
+    private buildDescriptiveName(baseName: string, url: string): string {
+        const safeBase = (baseName || 'manuscript').replace(/[\s]+/g, '_');
+        const id = this.extractManuscriptIdFromUrl(url);
+        if (!id) return safeBase;
+        // Avoid doubling the id if it is already present
+        if (safeBase.includes(id)) return safeBase;
+        return `${safeBase}__${id}`;
+    }
+
     private async processItem(item: QueuedManuscript): Promise<void> {
         this.state.currentItemId = item.id;
         item.status = 'downloading';
@@ -586,7 +615,7 @@ export class DownloadQueue extends EventEmitter {
             }
             
             await this.currentDownloader.downloadManuscriptPagesWithOptions(selectedPageLinks, {
-                displayName: manifest.displayName,
+                displayName: this.buildDescriptiveName(manifest.displayName, item.url),
                 startPage,
                 endPage,
                 totalPages: manifest.totalPages,
@@ -732,7 +761,7 @@ export class DownloadQueue extends EventEmitter {
             let lastPercentage = -1;
             
             await downloader.downloadManuscriptPagesWithOptions(selectedPageLinks, {
-                displayName: manifest.displayName,
+                displayName: this.buildDescriptiveName(manifest.displayName, item.url),
                 startPage,
                 endPage,
                 totalPages: manifest.totalPages,
@@ -993,7 +1022,7 @@ export class DownloadQueue extends EventEmitter {
             const partItem: QueuedManuscript = {
                 ...originalItem, // Copy all original properties
                 id: partId,
-                displayName: `${manifest.displayName}_Part_${partNumber}_pages_${startPage}-${endPage}`,
+                displayName: `${this.buildDescriptiveName(manifest.displayName, originalItem.url)}_Part_${partNumber}_pages_${startPage}-${endPage}`,
                 status: 'pending',
                 parentId: originalItem.id,
                 isAutoPart: true,

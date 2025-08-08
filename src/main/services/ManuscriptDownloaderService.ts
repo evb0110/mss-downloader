@@ -924,7 +924,12 @@ export class ManuscriptDownloaderService {
             // Always include page numbers for clarity
             const filename = `${cleanName}_pages_${options.startPage}-${options.endPage}.pdf`;
             
-            const outputPath = join(app.getPath('downloads'), filename);
+            // Group all parts for the same manuscript into a single folder under Downloads
+            const folderBase = cleanName
+                .replace(/_Part_\d+.*$/i, '')
+                .replace(/_pages_\d+-\d+.*$/i, '');
+            const targetDir = join(app.getPath('downloads'), folderBase || cleanName);
+            const outputPath = join(targetDir, filename);
             
             const pdfPath = await this.pdfMerger.createPDFFromImages({
                 images,

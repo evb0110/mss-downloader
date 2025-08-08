@@ -1025,19 +1025,22 @@ class SharedManifestLoaders {
             
             // Use streaming JSON parsing approach for large manifests
             const images = [];
-            let displayName = `University of Graz Manuscript ${manuscriptId}`;
+            
+            // Import label utilities (dynamic import to avoid require() lint error)
+            const labelUtils = await import('../shared/utils/labelUtils.js');
+            const { enhanceManuscriptLabel } = labelUtils;
             
             // Parse manifest header for metadata
             const labelMatch = manifestText.match(/"label"\s*:\s*"([^"]+)"/);
-            if (labelMatch) {
-                // Include manuscript ID if not already present in label
-                const label = labelMatch[1];
-                if (!label.includes(manuscriptId)) {
-                    displayName = `${label} (${manuscriptId})`;
-                } else {
-                    displayName = label;
-                }
-            }
+            const label = labelMatch ? labelMatch[1] : null;
+            
+            // Use smart label enhancement
+            const displayName = enhanceManuscriptLabel({
+                library: 'Graz',
+                manuscriptId: manuscriptId,
+                originalLabel: label,
+                includeLibraryName: true
+            });
             
             // Extract canvases using regex to avoid parsing entire JSON at once
             const canvasRegex = /"@id"\s*:\s*"([^"]*\/download\/webcache[^"]+)"/g;

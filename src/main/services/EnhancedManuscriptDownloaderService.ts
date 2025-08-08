@@ -4384,8 +4384,11 @@ export class EnhancedManuscriptDownloaderService {
             const downloadsDir = app.getPath('downloads');
             await fs.mkdir(downloadsDir, { recursive: true });
             
-            // Always create a subfolder with the manuscript name
-            const targetDir = path.join(downloadsDir, sanitizedName);
+            // Always create a subfolder with the manuscript base name (strip part/page suffixes)
+            const folderBase = sanitizedName
+                .replace(/_Part_\d+.*$/i, '')
+                .replace(/_pages_\d+-\d+.*$/i, '');
+            const targetDir = path.join(downloadsDir, folderBase || sanitizedName);
             await fs.mkdir(targetDir, { recursive: true });
             
             if (shouldSplit) {

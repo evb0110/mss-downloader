@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.113",
+  "version": "1.4.114",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.113: 🔥 CRITICAL FIX: Resolved 'library2' initialization error completely",
-    "Fixed: Variable name conflicts in downloadImageWithRetries and downloadManuscript",
-    "Fixed: Renamed conflicting 'library' variables to prevent transpilation errors",
-    "Affects: All libraries when using auto-split with page ranges",
-    "Validated: Build process now clean, no library2 conflicts remain"
+    "v1.4.114: Enhanced manuscript naming and file organization improvements",
+    "Added intelligent manuscript ID extraction from URLs for better file naming",
+    "Implemented descriptive naming for auto-split parts with manuscript IDs",
+    "Created label utilities for handling generic and enhanced manuscript labels",
+    "Improved file naming sanitization and PDF merger organization"
   ],
   "main": "dist/main/main.js",
   "scripts": {

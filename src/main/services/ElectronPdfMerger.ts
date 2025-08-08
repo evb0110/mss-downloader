@@ -80,14 +80,25 @@ export class ElectronPdfMerger {
             if (shouldSplit) {
                 // Create split PDFs with both part and page numbers
                 const baseName = displayName ? displayName
-                    .replace(/[<>:"/\\|?*]/g, '_')
+                    .replace(/[\u003c\u003e:"/\\|?*]/g, '_')
                     .replace(/\s+/g, '_')
                     .substring(0, 80) // Leave room for part/page suffixes
                     : 'Manuscript';
                 
                 const outputDir = finalOutputPath.substring(0, finalOutputPath.lastIndexOf('/'));
+                // Group all split parts into a dedicated subfolder to keep them together
+                // IMPORTANT: strip any existing part/page suffixes from the folder name to avoid creating one folder per part
+                const folderBase = baseName
+                    .replace(/_Part_\d+.*$/i, '')
+                    .replace(/_pages_\d+-\d+.*$/i, '');
+                const partsDir = join(outputDir, folderBase || baseName);
+                try {
+                    await fs.mkdir(partsDir, { recursive: true });
+                } catch (_) {
+                    // If directory creation fails, fallback to parent outputDir
+                }
                 
-                const result = await this.enhancedMerger.createSplitPDFs(images, baseName, outputDir, {
+                const result = await this.enhancedMerger.createSplitPDFs(images, baseName, partsDir || outputDir, {
                     maxPagesPerPart: maxPagesPerPart || 100,
                     startPage: startPage || 1,
                     onProgress: (progress: any) => {

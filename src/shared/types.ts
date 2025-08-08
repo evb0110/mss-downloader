@@ -32,6 +32,12 @@ export interface ManuscriptManifest {
   displayName: string;
   originalUrl: string;
   startPageFromUrl?: number; // Optional: page number specified in URL for range starting
+  partInfo?: {
+    partNumber: number;
+    totalParts: number;
+    originalDisplayName: string;
+    pageRange: { start: number; end: number };
+  };
 }
 
 export interface LibraryInfo {
