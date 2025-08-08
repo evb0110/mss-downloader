@@ -4130,16 +4130,16 @@ export class EnhancedManuscriptDownloaderService {
                 }
                 
                 // Check if library supports progressive backoff
-                const library = this.detectLibrary(url) as TLibrary;
-                const useProgressiveBackoff = library && 
-                    LibraryOptimizationService.getOptimizationsForLibrary(library).enableProgressiveBackoff;
+                const retryLibrary = this.detectLibrary(url) as TLibrary;
+                const useProgressiveBackoff = retryLibrary && 
+                    LibraryOptimizationService.getOptimizationsForLibrary(retryLibrary).enableProgressiveBackoff;
                     
                 const delay = useProgressiveBackoff 
                     ? LibraryOptimizationService.calculateProgressiveBackoff(attempt + 1)
                     : this.calculateRetryDelay(attempt);
                 
-                this.logger.logRetry(library || 'unknown', url, attempt + 2, delay);
-                console.log(`[downloadImageWithRetries] Will retry - Library: ${library}, Progressive backoff: ${useProgressiveBackoff}, Delay: ${delay}ms`);
+                this.logger.logRetry(retryLibrary || 'unknown', url, attempt + 2, delay);
+                console.log(`[downloadImageWithRetries] Will retry - Library: ${retryLibrary}, Progressive backoff: ${useProgressiveBackoff}, Delay: ${delay}ms`);
                 console.log(`Retrying ${url} (attempt ${attempt + 2}/${maxRetries + 1}) after ${delay}ms delay` + 
                            (useProgressiveBackoff ? ' (progressive backoff)' : ''));
                 
@@ -4356,12 +4356,12 @@ export class EnhancedManuscriptDownloaderService {
             // Apply library-specific optimization settings early to get split threshold
             // This must happen before determining split logic to respect user settings
             const globalMaxConcurrent = maxConcurrent || configService.get('maxConcurrentDownloads') || 3;
-            const library = manifest.library as TLibrary;
+            const manifestLibrary = manifest.library as TLibrary;
             const globalAutoSplitThresholdMB = Math.round((configService.get('autoSplitThreshold') || 314572800) / (1024 * 1024)); // Convert bytes to MB, default 300MB
             const optimizations = LibraryOptimizationService.applyOptimizations(
                 globalAutoSplitThresholdMB,
                 globalMaxConcurrent,
-                library
+                manifestLibrary
             );
             
             // Use library-specific or global split threshold

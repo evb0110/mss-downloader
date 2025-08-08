@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.112",
+  "version": "1.4.113",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.112: 🔥 FIX: Graz University page range 'library2' initialization error",
-    "Fixed: 'Cannot access library2 before initialization' error with page ranges",
-    "Fixed: Closure issue in timeout callbacks causing transpilation conflicts",
-    "Affects: Graz University and other libraries when using page ranges with auto-split",
-    "Validated: Page range selection now works without errors for large manuscripts"
+    "v1.4.113: 🔥 CRITICAL FIX: Resolved 'library2' initialization error completely",
+    "Fixed: Variable name conflicts in downloadImageWithRetries and downloadManuscript",
+    "Fixed: Renamed conflicting 'library' variables to prevent transpilation errors",
+    "Affects: All libraries when using auto-split with page ranges",
+    "Validated: Build process now clean, no library2 conflicts remain"
   ],
   "main": "dist/main/main.js",
   "scripts": {
