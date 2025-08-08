@@ -705,6 +705,9 @@ export class EnhancedManuscriptDownloaderService {
      * Fetch with automatic proxy fallback
      */
     async fetchWithProxyFallback(url: string, options: any = {}): Promise<Response> {
+        // ULTRA-PRIORITY FIX for Issue #9: Sanitize URL before any fetch operation
+        url = this.sanitizeUrl(url);
+        
         // For Norwegian content, try Norwegian-friendly proxies first
         const isNorwegianContent = url.includes('nb.no') || url.includes('api.nb.no');
         const proxiesToTry = isNorwegianContent ? this.NORWEGIAN_PROXIES : this.PROXY_SERVERS;
@@ -1557,6 +1560,9 @@ export class EnhancedManuscriptDownloaderService {
      * Load manifest for different library types
      */
     async loadManifest(originalUrl: string, progressCallback?: (current: number, total: number, message?: string) => void): Promise<ManuscriptManifest> {
+        // ULTRA-PRIORITY FIX for Issue #9: Sanitize URL at the earliest entry point
+        originalUrl = this.sanitizeUrl(originalUrl);
+        
         // Check cache first
         const cachedManifest = await this.manifestCache.get(originalUrl);
         if (cachedManifest) {
@@ -8014,6 +8020,9 @@ Stack: ${error.stack || 'No stack trace'}
      * Load BDL (Biblioteca Digitale Lombarda) manuscript manifest
      */
     async loadBDLManifest(bdlUrl: string): Promise<ManuscriptManifest> {
+        // ULTRA-PRIORITY FIX for Issue #9: Sanitize URL at entry point
+        bdlUrl = this.sanitizeUrl(bdlUrl);
+        
         try {
             console.log(`Loading BDL manuscript: ${bdlUrl}`);
             
