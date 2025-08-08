@@ -534,10 +534,12 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
   }
   
   try {
-    // ULTRA-PRIORITY FIX for Issue #13: Apply same URL sanitization as regular handler
+    // ULTRA-PRIORITY FIX for Issue #13 & #9: Enhanced URL sanitization for all TLDs
     if (url && typeof url === 'string') {
+      const originalUrl = url;
+      
       // Pattern 1: hostname directly concatenated with protocol (most common)
-      // Example: pagella.bm-grenoble.frhttps://pagella.bm-grenoble.fr/...
+      // Example: www.bdl.servizirl.ithttps://www.bdl.servizirl.it/...
       const concatenatedPattern = /^([a-z0-9.-]+)(https?:\/\/.+)$/i;
       const concatenatedMatch = url.match(concatenatedPattern);
       if (concatenatedMatch) {
@@ -550,25 +552,29 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
             message: 'DETECTED MALFORMED URL in chunked handler: hostname concatenated with URL',
             malformedUrl: url,
             extractedHostname: hostname,
-            extractedUrl: actualUrl
+            extractedUrl: actualUrl,
+            issue: 'Issue #9 BDL fix applied'
           }
         });
         url = actualUrl;
       }
-      // Check for .frhttps:// pattern (existing)
-      else if (url.includes('.frhttps://')) {
+      // Pattern 2: Any TLD followed by https:// (comprehensive fix for all domains)
+      // Handles .frhttps://, .ithttps://, .eshttps://, .dehttps://, etc.
+      else if (url.match(/\.(com|org|net|edu|gov|mil|int|eu|[a-z]{2,4})(https?:\/\/)/i)) {
         comprehensiveLogger.log({
           level: 'error',
           category: 'manifest',
           url,
           details: {
-            message: 'DETECTED MALFORMED URL in chunked handler: hostname concatenated with URL',
-            malformedUrl: url
+            message: 'DETECTED MALFORMED URL in chunked handler: TLD concatenated with protocol',
+            malformedUrl: url,
+            pattern: 'TLD+https pattern',
+            issue: 'Issue #9 BDL comprehensive fix'
           }
         });
         
         // Extract the correct URL from the malformed string
-        const match = url.match(/(https:\/\/.+)$/);
+        const match = url.match(/(https?:\/\/.+)$/);
         if (match) {
           const correctedUrl = match[1];
           comprehensiveLogger.log({
@@ -583,6 +589,13 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
           });
           url = correctedUrl;
         }
+      }
+      
+      // Log successful sanitization for debugging
+      if (originalUrl !== url) {
+        console.log(`[URL Sanitization] Fixed malformed URL for Issue #9:`);
+        console.log(`  Original: ${originalUrl}`);
+        console.log(`  Fixed: ${url}`);
       }
     }
     
@@ -676,10 +689,12 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
   }
   
   try {
-    // ULTRA-PRIORITY FIX: Comprehensive URL sanitization to prevent hostname concatenation
+    // ULTRA-PRIORITY FIX for Issue #9: Enhanced URL sanitization for all TLDs
     if (url && typeof url === 'string') {
+      const originalUrl = url;
+      
       // Pattern 1: hostname directly concatenated with protocol (most common)
-      // Example: pagella.bm-grenoble.frhttps://pagella.bm-grenoble.fr/...
+      // Example: www.bdl.servizirl.ithttps://www.bdl.servizirl.it/...
       const concatenatedPattern = /^([a-z0-9.-]+)(https?:\/\/.+)$/i;
       const concatenatedMatch = url.match(concatenatedPattern);
       if (concatenatedMatch) {
@@ -692,25 +707,29 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
             message: 'DETECTED MALFORMED URL: hostname concatenated with URL',
             malformedUrl: url,
             extractedHostname: hostname,
-            extractedUrl: actualUrl
+            extractedUrl: actualUrl,
+            issue: 'Issue #9 BDL fix applied'
           }
         });
         url = actualUrl;
       }
-      // Check for .frhttps:// pattern (existing)
-      else if (url.includes('.frhttps://')) {
+      // Pattern 2: Any TLD followed by https:// (comprehensive fix for all domains)
+      // Handles .frhttps://, .ithttps://, .eshttps://, .dehttps://, etc.
+      else if (url.match(/\.(com|org|net|edu|gov|mil|int|eu|[a-z]{2,4})(https?:\/\/)/i)) {
         comprehensiveLogger.log({
           level: 'error',
           category: 'manifest',
           url,
           details: {
-            message: 'DETECTED MALFORMED URL: hostname concatenated with URL',
-            malformedUrl: url
+            message: 'DETECTED MALFORMED URL: TLD concatenated with protocol',
+            malformedUrl: url,
+            pattern: 'TLD+https pattern',
+            issue: 'Issue #9 BDL comprehensive fix'
           }
         });
         
         // Extract the correct URL from the malformed string
-        const match = url.match(/(https:\/\/.+)$/);
+        const match = url.match(/(https?:\/\/.+)$/);
         if (match) {
           const correctedUrl = match[1];
           comprehensiveLogger.log({
@@ -725,6 +744,13 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
           });
           url = correctedUrl;
         }
+      }
+      
+      // Log successful sanitization for debugging
+      if (originalUrl !== url) {
+        console.log(`[URL Sanitization] Fixed malformed URL for Issue #9:`);
+        console.log(`  Original: ${originalUrl}`);
+        console.log(`  Fixed: ${url}`);
       }
       // NEW: Check for IP:PORThttps:// pattern
       else if (url.match(/\d+\.\d+\.\d+\.\d+:\d+https:\/\//)) {
