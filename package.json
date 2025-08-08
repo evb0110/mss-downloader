@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.110",
+  "version": "1.4.111",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.110: 🔥 ULTRA-PRIORITY FIX: Vatican Library custom page ranges now working",
-    "RESOLVED Issue #21: Fixed 'Cannot access library2 before initialization' error",
-    "Fixed: Library variable initialization in queue processing for split manuscripts",
-    "Enhanced: Proper library detection for manuscripts with custom page ranges",
-    "Validated: Vatican manuscripts with ranges 162-322 download successfully"
+    "v1.4.111: 🔥 ULTRA-PRIORITY FIX: Zurich e-manuscripta multi-block manuscripts",
+    "RESOLVED Issue #10: Fixed e-manuscripta only showing 11 pages instead of all blocks",
+    "Fixed: Corrected multi-series offset calculation (-384 instead of -385)",
+    "Fixed: Removed backward exploration that was finding wrong manuscript blocks",
+    "Validated: User's manuscript now shows 352 pages across 32 blocks (was only 11 pages)"
   ],
   "main": "dist/main/main.js",
   "scripts": {

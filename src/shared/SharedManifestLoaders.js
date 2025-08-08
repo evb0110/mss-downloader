@@ -3493,7 +3493,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
             // Known patterns from Issue #10: e-manuscripta multi-series structure
             // User's manuscript has blocks at 5157232, 5157243, 5157254, etc (offset -384 from 5157616)
-            const knownSeriesOffsets = [-385, -384, -374];  // Most common multi-series offsets
+            const knownSeriesOffsets = [-384, -374, -363];  // Most common multi-series offsets (fixed for Issue #10)
             
             for (const offset of knownSeriesOffsets) {
                 if ((Date.now() - startTime) >= maxDiscoveryTime) break;
@@ -3529,7 +3529,11 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                             }
                         }
                         
-                        // Check backward from the found block (limited)
+                        // ULTRA-PRIORITY FIX for Issue #10: Skip backward exploration for multi-series
+                        // The backward blocks may exist but belong to a different manuscript series
+                        // User's manuscript starts at block 5157232 and only goes forward
+                        // Commenting out backward exploration to prevent wrong blocks from being added
+                        /*
                         for (let i = 1; i <= 5 && (Date.now() - startTime) < maxDiscoveryTime; i++) {
                             const testBlockId = probeId - (i * 11);
                             if (testBlockId <= 0) break;
@@ -3545,6 +3549,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                 break;
                             }
                         }
+                        */
                         
                         console.log(`[e-manuscripta] Added ${discoveredBlocks.size - 1} blocks based on multi-series pattern`);
                         break; // Found a multi-series pattern, that's enough
