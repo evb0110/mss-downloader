@@ -3992,6 +3992,38 @@ export class EnhancedManuscriptDownloaderService {
         const startTime = Date.now();
         const library = this.detectLibrary(url) as TLibrary;
         
+        // CRITICAL FIX: Use ultra-reliable service for ALL BDL downloads
+        if (library === 'bdl' && configService.get('bdlUltraReliableMode') && attempt === 0) {
+            console.log(`🔄 [BDL Ultra] Intercepting BDL download: ${url}`);
+            comprehensiveLogger.log({
+                level: 'info',
+                category: 'bdl-ultra',
+                library: 'bdl',
+                url,
+                message: 'Using Ultra-Reliable BDL Service for download'
+            });
+            
+            const buffer = await this.ultraBDLService.ultraReliableDownload(
+                url,
+                0, // pageIndex not available here, use 0
+                {
+                    ultraReliableMode: configService.get('bdlUltraReliableMode'),
+                    maxRetries: configService.get('bdlMaxRetries'),
+                    maxQualityFallbacks: true,
+                    proxyHealthCheck: configService.get('bdlProxyHealthCheck'),
+                    persistentQueue: configService.get('bdlPersistentQueue'),
+                    pageVerificationSize: configService.get('bdlMinVerificationSize')
+                }
+            );
+            
+            if (!buffer) {
+                throw new Error('Ultra-reliable BDL download returned null');
+            }
+            
+            console.log(`✅ [BDL Ultra] Successfully downloaded ${buffer.length} bytes`);
+            return buffer;
+        }
+        
         // Only log on first attempt to avoid duplicates with fetchDirect
         if (attempt === 0) {
             this.logger.log({
@@ -4736,30 +4768,8 @@ export class EnhancedManuscriptDownloaderService {
                 } catch {
                     // Not present: fetch and write
                     try {
-                        let imageData: ArrayBuffer;
-                        
-                        // Use ultra-reliable service for BDL if enabled
-                        if (manifest.library === 'bdl' && configService.get('bdlUltraReliableMode')) {
-                            const buffer = await this.ultraBDLService.ultraReliableDownload(
-                                imageUrl,
-                                pageIndex,
-                                {
-                                    ultraReliableMode: configService.get('bdlUltraReliableMode'),
-                                    maxRetries: configService.get('bdlMaxRetries'),
-                                    maxQualityFallbacks: true,
-                                    proxyHealthCheck: configService.get('bdlProxyHealthCheck'),
-                                    persistentQueue: configService.get('bdlPersistentQueue'),
-                                    pageVerificationSize: configService.get('bdlMinVerificationSize')
-                                }
-                            );
-                            if (!buffer) {
-                                throw new Error('Ultra-reliable download failed');
-                            }
-                            imageData = buffer;
-                        } else {
-                            imageData = await this.downloadImageWithRetries(imageUrl);
-                        }
-                        
+                        // All BDL downloads now go through ultra-reliable service via downloadImageWithRetries
+                        const imageData = await this.downloadImageWithRetries(imageUrl);
                         const writePromise = fs.writeFile(imgPath, Buffer.from(imageData));
                         writePromises.push(writePromise);
                         // Only mark path if download succeeded

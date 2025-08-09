@@ -3,7 +3,7 @@ import path from 'path';
 import { configService } from './ConfigService';
 import { comprehensiveLogger } from './ComprehensiveLogger';
 import * as https from 'https';
-import fetch from 'node-fetch';
+// Using global fetch available in Node.js 18+
 
 interface ProxyHealth {
     url: string;
@@ -115,10 +115,14 @@ export class UltraReliableBDLService {
         
         try {
             const proxyUrl = `${proxy.url}${encodeURIComponent(testUrl)}`;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            
             const response = await fetch(proxyUrl, {
-                timeout: 10000,
+                signal: controller.signal,
                 headers: { 'User-Agent': 'Mozilla/5.0' }
             });
+            clearTimeout(timeoutId);
             
             if (response.ok) {
                 const responseTime = Date.now() - startTime;
@@ -206,8 +210,11 @@ export class UltraReliableBDLService {
         const modifiedUrl = url.replace(/\/full\/[^/]+\//, currentQuality);
         
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            
             const response = await fetch(modifiedUrl, {
-                timeout: 30000,
+                signal: controller.signal,
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                     'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
@@ -215,9 +222,11 @@ export class UltraReliableBDLService {
                     'Referer': 'https://www.bdl.servizirl.it/'
                 }
             });
+            clearTimeout(timeoutId);
             
             if (response.ok) {
-                const buffer = await response.buffer();
+                const arrayBuffer = await response.arrayBuffer();
+                const buffer = Buffer.from(arrayBuffer);
                 if (buffer.length > 1024) { // At least 1KB
                     return { buffer, quality: qualityLevel };
                 }
@@ -300,17 +309,22 @@ export class UltraReliableBDLService {
                     const proxyUrl = `${proxy.url}${encodeURIComponent(url)}`;
                     
                     const startTime = Date.now();
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 60000);
+                    
                     const response = await fetch(proxyUrl, {
-                        timeout: 60000,
+                        signal: controller.signal,
                         headers: {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                             'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
                             'Accept-Language': 'it-IT,it;q=0.9,en;q=0.8'
                         }
                     });
+                    clearTimeout(timeoutId);
                     
                     if (response.ok) {
-                        const buffer = await response.buffer();
+                        const arrayBuffer = await response.arrayBuffer();
+                        const buffer = Buffer.from(arrayBuffer);
                         const responseTime = Date.now() - startTime;
                         
                         // Update proxy health metrics
