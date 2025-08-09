@@ -137,12 +137,6 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     item.progress = undefined; // Clear progress data
                     item.eta = undefined; // Clear ETA
                 }
-                // Fix for manuscript splitting bug: reset stuck 'queued' items to 'pending'
-                if (item.status === 'queued') {
-                    item.status = 'pending';
-                    item.progress = undefined;
-                    item.eta = undefined;
-                }
                 // Also clean up any paused items that might have stale progress data
                 if (item.status === 'paused') {
                     item.progress = undefined;
@@ -1089,7 +1083,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     ...item,
                     id: partId,
                     displayName: `${item.displayName}_Part_${partNumber}_pages_${startPage}-${endPage}`,
-                    status: 'queued',
+                    status: 'pending',
                     parentId: item.id,
                     isAutoPart: true,
                     partInfo: {
@@ -1174,7 +1168,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 ...firstPart,
                 id: partId,
                 displayName: `${originalDisplayName}_Part_${partNumber}_pages_${startPage}-${endPage}`,
-                status: 'queued',
+                status: 'pending',
                 parentId,
                 isAutoPart: true,
                 partInfo: {
