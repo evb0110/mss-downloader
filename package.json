@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.121",
+  "version": "1.4.122",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.121: CRITICAL FIX for Issue #9 - BDL URL parsing error resolved",
-    "Fixed BDL (Biblioteca Digitale Lombarda) DNS error 'ENOTFOUND'",
-    "Added comprehensive URL sanitization to prevent hostname concatenation",
-    "BDL manuscripts now load successfully - 304 pages in 1.2 seconds",
-    "Issue resolved with only 2 previous attempts (most efficient fix)"
+    "v1.4.122: 🔥 CRITICAL FIX for Issue #11 - BNE hanging on calculation RESOLVED",
+    "ROOT CAUSE: DownloadQueue was using ManuscriptDownloaderService without BNE support",
+    "SOLUTION: Switched to EnhancedManuscriptDownloaderService with full BNE support",
+    "BNE manuscripts now download correctly without hanging",
+    "Fixed after 6 previous attempts by identifying the ACTUAL root cause"
   ],
   "main": "dist/main/main.js",
   "scripts": {

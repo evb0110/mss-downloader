@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { ManuscriptDownloaderService } from './ManuscriptDownloaderService';
+import { EnhancedManuscriptDownloaderService } from './EnhancedManuscriptDownloaderService';
 import { ElectronPdfMerger } from './ElectronPdfMerger';
 import { configService } from './ConfigService';
 import type { QueuedManuscript, QueueState, TStage, TLibrary, TSimultaneousMode } from '../../shared/queueTypes';
@@ -576,9 +576,9 @@ export class DownloadQueue extends EventEmitter {
         }, DOWNLOAD_TIMEOUT_MS);
         
         try {
-            this.currentDownloader = new ManuscriptDownloaderService(this.pdfMerger);
+            this.currentDownloader = new EnhancedManuscriptDownloaderService();
             
-            const manifest = await this.currentDownloader.parseManuscriptUrl(item.url);
+            const manifest = await this.currentDownloader.loadManifest(item.url);
             
             item.totalPages = manifest.totalPages;
             item.displayName = manifest.displayName;
@@ -614,27 +614,27 @@ export class DownloadQueue extends EventEmitter {
                 console.log(`Processing Manuscripta.se download with enhanced monitoring: ${item.displayName}`);
             }
             
-            await this.currentDownloader.downloadManuscriptPagesWithOptions(selectedPageLinks, {
-                displayName: this.buildDescriptiveName(manifest.displayName, item.url),
+            const result = await this.currentDownloader.downloadManuscript(item.url, {
                 startPage,
                 endPage,
-                totalPages: manifest.totalPages,
-                onProgress: (progress) => {
+                skipExisting: false,
+                onProgress: (progressData) => {
                     if (!this.state.isPaused && item.progress) {
                         const now = Date.now();
-                        const calculatedPercentage = Math.round((progress.downloadedPages / pageCount) * 100);
+                        const downloadedPages = progressData.completedPages || progressData.downloadedPages || 0;
+                        const calculatedPercentage = Math.round((downloadedPages / pageCount) * 100);
                         const shouldUpdate = (now - lastProgressUpdate > 500) || (calculatedPercentage !== lastPercentage);
 
                         if (shouldUpdate) {
-                            const actualCurrentPage = startPage + progress.downloadedPages - 1;
+                            const actualCurrentPage = startPage + downloadedPages - 1;
                             
                             // Special logging for Manuscripta.se to track progress
                             if (isManuscriptaSe) {
-                                console.log(`Manuscripta.se progress: ${progress.downloadedPages}/${pageCount} (${calculatedPercentage}%)`);
+                                console.log(`Manuscripta.se progress: ${downloadedPages}/${pageCount} (${calculatedPercentage}%)`);
                             }
                             
                             item.progress = {
-                                current: progress.downloadedPages,
+                                current: downloadedPages,
                                 total: pageCount,
                                 percentage: calculatedPercentage,
                                 eta: this.formatTime(progress.estimatedTimeRemaining || 0),
@@ -728,11 +728,11 @@ export class DownloadQueue extends EventEmitter {
             }
         }, DOWNLOAD_TIMEOUT_MS);
         
-        const downloader = new ManuscriptDownloaderService(this.pdfMerger);
+        const downloader = new EnhancedManuscriptDownloaderService();
         this.activeDownloaders.set(item.id, downloader);
         
         try {
-            const manifest = await downloader.parseManuscriptUrl(item.url);
+            const manifest = await downloader.loadManifest(item.url);
             
             item.totalPages = manifest.totalPages;
             item.displayName = manifest.displayName;
@@ -760,19 +760,19 @@ export class DownloadQueue extends EventEmitter {
             let lastProgressUpdate = 0;
             let lastPercentage = -1;
             
-            await downloader.downloadManuscriptPagesWithOptions(selectedPageLinks, {
-                displayName: this.buildDescriptiveName(manifest.displayName, item.url),
+            const result = await downloader.downloadManuscript(item.url, {
                 startPage,
                 endPage,
-                totalPages: manifest.totalPages,
-                onProgress: (progress) => {
+                skipExisting: false,
+                onProgress: (progressData) => {
                     if (!this.state.isPaused && item.progress) {
                         const now = Date.now();
-                        const calculatedPercentage = Math.round((progress.downloadedPages / pageCount) * 100);
+                        const downloadedPages = progressData.completedPages || progressData.downloadedPages || 0;
+                        const calculatedPercentage = Math.round((downloadedPages / pageCount) * 100);
                         const shouldUpdate = (now - lastProgressUpdate > 500) || (calculatedPercentage !== lastPercentage);
 
                         if (shouldUpdate) {
-                            const actualCurrentPage = startPage + progress.downloadedPages - 1;
+                            const actualCurrentPage = startPage + downloadedPages - 1;
                             item.progress = {
                                 current: progress.downloadedPages,
                                 total: pageCount,
