@@ -388,7 +388,7 @@ class SharedManifestLoaders {
     }
 
     /**
-     * BDL Servizirl - Fixed with double-slash IIIF pattern
+     * BDL Servizirl - Fixed duplicate pages and empty pages issue
      */
     async getBDLManifest(url) {
         const match = url.match(/BDL-OGGETTO-(\d+)/);
@@ -404,18 +404,28 @@ class SharedManifestLoaders {
         
         const data = await response.json();
         const images = [];
+        const seenMediaIds = new Set(); // Track unique media IDs to prevent duplicates
         
-        // Extract all pages with IIIF URLs
+        // Extract all pages with IIIF URLs, avoiding duplicates
         for (let i = 0; i < data.length; i++) {
             const page = data[i];
-            if (page.idMediaServer) {
-                const imageUrl = `https://www.bdl.servizirl.it/cantaloupe//iiif/2/${page.idMediaServer}/full/max/0/default.jpg`;
+            if (page.idMediaServer && !seenMediaIds.has(page.idMediaServer)) {
+                seenMediaIds.add(page.idMediaServer);
+                
+                // Use the cantaloupeUrl from API if available, otherwise use default
+                const baseUrl = page.cantaloupeUrl || 'https://www.bdl.servizirl.it/cantaloupe/';
+                // Ensure no double slashes in the path
+                const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+                const imageUrl = `${cleanBaseUrl}iiif/2/${page.idMediaServer}/full/max/0/default.jpg`;
+                
                 images.push({
                     url: imageUrl,
-                    label: `Page ${i + 1}`
+                    label: `Page ${images.length + 1}` // Use actual count, not loop index
                 });
             }
         }
+        
+        console.log(`[BDL] Loaded ${images.length} unique pages (removed ${data.length - images.length} duplicates)`);
         
         return { images };
     }
