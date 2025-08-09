@@ -1,1 +1,15 @@
-11
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔥 ULTRA-PRIORITY AUTONOMOUS MODE ACTIVATED 🔥
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AUTO-SELECTED: Issue #9 - BDL (Biblioteca Digitale Lombarda)
+Author: @textorhub
+Last user comment: 2025-08-08 (yesterday) - "много пустых страниц при скачивании"
+
+REASON FOR SELECTION:
+- Most recent user activity (yesterday)
+- Clear specific problem: empty pages when downloading
+- Has attachment with error logs
+- Fewer duplicate fix attempts than other issues
+
+PROCEEDING AUTONOMOUSLY - NO USER CONFIRMATION NEEDED

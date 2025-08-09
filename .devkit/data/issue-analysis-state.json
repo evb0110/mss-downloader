@@ -1,0 +1,13 @@
+{
+  "issues": {},
+  "lastAnalysis": {
+    "9": {
+      "timestamp": "2025-08-09T10:05:55.305Z",
+      "result": {
+        "shouldFix": false,
+        "reason": "Fix deployed 0.9h ago, waiting for user feedback",
+        "exitCode": 2
+      }
+    }
+  }
+}

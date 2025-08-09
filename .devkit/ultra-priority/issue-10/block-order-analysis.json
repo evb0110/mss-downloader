@@ -1,0 +1,187 @@
+{
+  "url": "https://www.e-manuscripta.ch/bau/content/zoom/5157616",
+  "totalImages": 275,
+  "blockOrder": [
+    {
+      "blockId": 5157232,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157243,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157254,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157265,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157276,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157287,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157298,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157309,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157320,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157331,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157342,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157353,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157364,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157375,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157386,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157397,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157408,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157419,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157430,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157441,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157452,
+      "pages": 11,
+      "type": "core"
+    },
+    {
+      "blockId": 5157627,
+      "pages": 11,
+      "type": "technical"
+    },
+    {
+      "blockId": 5157616,
+      "pages": 11,
+      "type": "technical"
+    },
+    {
+      "blockId": 5157615,
+      "pages": 11,
+      "type": "technical"
+    },
+    {
+      "blockId": 5157605,
+      "pages": 11,
+      "type": "core"
+    }
+  ],
+  "hasOrderingIssue": true,
+  "technicalBeforeCore": true,
+  "firstFiveImages": [
+    {
+      "url": "https://www.e-manuscripta.ch/bau/download/webcache/2000/5157232",
+      "label": "Page 1",
+      "blockId": 5157232
+    },
+    {
+      "url": "https://www.e-manuscripta.ch/bau/download/webcache/2000/5157233",
+      "label": "Page 2",
+      "blockId": 5157232
+    },
+    {
+      "url": "https://www.e-manuscripta.ch/bau/download/webcache/2000/5157234",
+      "label": "Page 3",
+      "blockId": 5157232
+    },
+    {
+      "url": "https://www.e-manuscripta.ch/bau/download/webcache/2000/5157235",
+      "label": "Page 4",
+      "blockId": 5157232
+    },
+    {
+      "url": "https://www.e-manuscripta.ch/bau/download/webcache/2000/5157236",
+      "label": "Page 5",
+      "blockId": 5157232
+    }
+  ],
+  "lastFiveImages": [
+    {
+      "url": "https://www.e-manuscripta.ch/bau/download/webcache/2000/5157611",
+      "label": "Page 271",
+      "blockId": 5157605
+    },
+    {
+      "url": "https://www.e-manuscripta.ch/bau/download/webcache/2000/5157612",
+      "label": "Page 272",
+      "blockId": 5157605
+    },
+    {
+      "url": "https://www.e-manuscripta.ch/bau/download/webcache/2000/5157613",
+      "label": "Page 273",
+      "blockId": 5157605
+    },
+    {
+      "url": "https://www.e-manuscripta.ch/bau/download/webcache/2000/5157614",
+      "label": "Page 274",
+      "blockId": 5157605
+    },
+    {
+      "url": "https://www.e-manuscripta.ch/bau/download/webcache/2000/5157615",
+      "label": "Page 275",
+      "blockId": 5157605
+    }
+  ]
+}

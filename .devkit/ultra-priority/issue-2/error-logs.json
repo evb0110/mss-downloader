@@ -1,0 +1,102 @@
+{
+  "sessionStart": "2025-08-02T10:40:32.463Z",
+  "exportTime": "2025-08-02T10:51:23.714Z",
+  "totalLogs": 8,
+  "systemInfo": {
+    "platform": "win32",
+    "arch": "x64",
+    "nodeVersion": "v20.18.3",
+    "appVersion": "1.4.61"
+  },
+  "logs": [
+    {
+      "level": "info",
+      "library": "system",
+      "message": "Starting download queue processing",
+      "details": {
+        "queueSize": 1,
+        "pendingItems": 1
+      },
+      "timestamp": "2025-08-02T10:40:35.759Z"
+    },
+    {
+      "level": "info",
+      "library": "bordeaux",
+      "url": "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+      "message": "Manifest loaded: 195 pages found (from cache)",
+      "duration": 0,
+      "details": {
+        "totalPages": 195,
+        "cached": true,
+        "displayName": "Bordeaux - 330636101_MS_0778"
+      },
+      "timestamp": "2025-08-02T10:40:36.256Z"
+    },
+    {
+      "level": "info",
+      "library": "loading",
+      "url": "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/",
+      "message": "Starting manifest load for queue item",
+      "details": {
+        "itemId": "ms_1754131410994_rpw8ymk2u",
+        "displayName": "Loading manifest for https://cdm21059.contentdm.oclc.org/digital/collec..."
+      },
+      "timestamp": "2025-08-02T10:43:30.999Z"
+    },
+    {
+      "level": "info",
+      "library": "loading",
+      "url": "https://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "message": "Starting manifest load for queue item",
+      "details": {
+        "itemId": "ms_1754131501880_21xwtnz9y",
+        "displayName": "Loading manifest for https://www.themorgan.org/collection/lindau-gospel..."
+      },
+      "timestamp": "2025-08-02T10:45:01.882Z"
+    },
+    {
+      "level": "info",
+      "library": "loading",
+      "url": "https://www.nuovabibliotecamanoscritta.it/Generale/BibliotecaDigitale/caricaVolumi.html?codice=15",
+      "message": "Starting manifest load for queue item",
+      "details": {
+        "itemId": "ms_1754131583657_llk6vqrv7",
+        "displayName": "Loading manifest for https://www.nuovabibliotecamanoscritta.it/Generale..."
+      },
+      "timestamp": "2025-08-02T10:46:23.658Z"
+    },
+    {
+      "level": "info",
+      "library": "verona",
+      "url": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/LXXXIX841.json",
+      "message": "Download started",
+      "details": {
+        "codiceDigital": "15",
+        "manifestUrl": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/LXXXIX841.json"
+      },
+      "timestamp": "2025-08-02T10:46:23.661Z"
+    },
+    {
+      "level": "info",
+      "library": "verona",
+      "url": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/LXXXIX841.json",
+      "message": "Download started",
+      "details": {
+        "codiceDigital": "15",
+        "manifestUrl": "https://nbm.regione.veneto.it/documenti/mirador_json/manifest/LXXXIX841.json"
+      },
+      "timestamp": "2025-08-02T10:46:23.672Z"
+    },
+    {
+      "level": "info",
+      "library": "loading",
+      "url": "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/5892688",
+      "message": "Starting manifest load for queue item",
+      "details": {
+        "itemId": "ms_1754131712283_zma88rkou",
+        "displayName": "Loading manifest for https://unipub.uni-graz.at/obvugrscript/content/ti..."
+      },
+      "timestamp": "2025-08-02T10:48:32.284Z"
+    }
+  ]
+}
