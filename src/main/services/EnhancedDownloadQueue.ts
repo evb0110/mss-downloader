@@ -143,6 +143,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     item.eta = undefined;
                 }
             });
+
+            // Recalculate library optimizations for all items using current settings and code
+            this.recalculateLibraryOptimizationsForAll();
             
         } catch {
             // Starting with empty queue
@@ -329,15 +332,15 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 item.library
             );
             
-            // Store optimization settings with the item
+            // Store optimization settings with the item (always include to allow caps to apply)
+            item.libraryOptimizations = {
+                autoSplitThresholdMB: optimizations.autoSplitThresholdMB,
+                maxConcurrentDownloads: optimizations.maxConcurrentDownloads,
+                timeoutMultiplier: optimizations.timeoutMultiplier,
+                enableProgressiveBackoff: optimizations.enableProgressiveBackoff,
+                optimizationDescription: optimizations.optimizationDescription
+            };
             if (LibraryOptimizationService.hasOptimizations(item.library)) {
-                item.libraryOptimizations = {
-                    autoSplitThresholdMB: optimizations.autoSplitThresholdMB,
-                    maxConcurrentDownloads: optimizations.maxConcurrentDownloads,
-                    timeoutMultiplier: optimizations.timeoutMultiplier,
-                    enableProgressiveBackoff: optimizations.enableProgressiveBackoff,
-                    optimizationDescription: optimizations.optimizationDescription
-                };
                 console.log(`Applied library optimizations for ${item.library}: ${optimizations.optimizationDescription}`);
             }
             
@@ -805,6 +808,14 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 };
             }
 
+            // Determine effective concurrency: prefer per-item override, then global, capped by library optimization
+            const perItemConcurrent = typeof item.downloadOptions?.concurrentDownloads === 'number'
+                ? item.downloadOptions?.concurrentDownloads
+                : undefined;
+            const baseConcurrent = perItemConcurrent || this.state.globalSettings.concurrentDownloads;
+            const libraryCap = item.libraryOptimizations?.maxConcurrentDownloads;
+            const effectiveConcurrent = libraryCap ? Math.min(baseConcurrent, libraryCap) : baseConcurrent;
+
             const result = await this.currentDownloader!.downloadManuscript(item.url, {
                 onProgress: (progress: any) => {
                     // Handle both simple progress (0-1) and detailed progress object
@@ -827,8 +838,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     item.library = manifest.library as TLibrary;
                     this.notifyListeners();
                 },
-                maxConcurrent: item.libraryOptimizations?.maxConcurrentDownloads || 
-                               this.state.globalSettings.concurrentDownloads,
+                maxConcurrent: effectiveConcurrent,
                 skipExisting: false,
                 // NEW: Pass pre-sliced pageLinks for parts
                 ...(pageLinksToPass ? {
@@ -990,6 +1000,63 @@ export class EnhancedDownloadQueue extends EventEmitter {
         
         // Recalculate splits for all existing items
         this.recalculateAutoSplits();
+    }
+
+    /**
+     * Update global concurrent downloads and propagate to items still using the old global value
+     */
+    updateGlobalConcurrentDownloads(newConcurrent: number): void {
+        const oldConcurrent = this.state.globalSettings.concurrentDownloads;
+        this.state.globalSettings.concurrentDownloads = newConcurrent;
+
+        // Propagate to items that haven't been manually customized (equal to old global)
+        for (const item of this.state.items) {
+            if (item.downloadOptions && item.downloadOptions.concurrentDownloads === oldConcurrent) {
+                if (['pending', 'queued', 'loading'].includes(item.status)) {
+                    item.downloadOptions.concurrentDownloads = newConcurrent;
+                }
+            }
+        }
+
+        this.saveToStorage();
+        this.notifyListeners();
+
+        // Also refresh library optimizations to reflect any caps with new global value
+        this.recalculateLibraryOptimizationsForAll();
+    }
+
+    private recalculateLibraryOptimizationsForAll(): void {
+        const globalThreshold = this.state.globalSettings.autoSplitThresholdMB;
+        const globalConcurrent = this.state.globalSettings.concurrentDownloads;
+        let changed = false;
+        for (const item of this.state.items) {
+            if (!item.library || item.library === 'loading') {
+                // Clear any stale optimizations for items without known library yet
+                if (item.libraryOptimizations) {
+                    delete item.libraryOptimizations.maxConcurrentDownloads;
+                    changed = true;
+                }
+                continue;
+            }
+            const opts = LibraryOptimizationService.applyOptimizations(
+                globalThreshold,
+                globalConcurrent,
+                item.library
+            );
+            const prev = JSON.stringify(item.libraryOptimizations || {});
+            item.libraryOptimizations = {
+                autoSplitThresholdMB: opts.autoSplitThresholdMB,
+                maxConcurrentDownloads: opts.maxConcurrentDownloads,
+                timeoutMultiplier: opts.timeoutMultiplier,
+                enableProgressiveBackoff: opts.enableProgressiveBackoff,
+                optimizationDescription: opts.optimizationDescription,
+            };
+            if (prev !== JSON.stringify(item.libraryOptimizations)) changed = true;
+        }
+        if (changed) {
+            this.saveToStorage();
+            this.notifyListeners();
+        }
     }
     
     private recalculateAutoSplits(): void {
@@ -1803,6 +1870,14 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 };
             }
 
+            // Determine effective concurrency: prefer per-item override, then global, capped by library optimization
+            const perItemConcurrent2 = typeof item.downloadOptions?.concurrentDownloads === 'number'
+                ? item.downloadOptions?.concurrentDownloads
+                : undefined;
+            const baseConcurrent2 = perItemConcurrent2 || this.state.globalSettings.concurrentDownloads;
+            const libraryCap2 = item.libraryOptimizations?.maxConcurrentDownloads;
+            const effectiveConcurrent2 = libraryCap2 ? Math.min(baseConcurrent2, libraryCap2) : baseConcurrent2;
+
             // Actually download the manuscript
             const result = await downloader.downloadManuscript(item.url, {
                 onProgress: (progress: any) => {
@@ -1826,8 +1901,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     item.library = manifest.library as TLibrary;
                     this.notifyListeners();
                 },
-                maxConcurrent: item.libraryOptimizations?.maxConcurrentDownloads || 
-                               this.state.globalSettings.concurrentDownloads,
+                maxConcurrent: effectiveConcurrent2,
                 skipExisting: false,
                 // NEW: Pass pre-sliced pageLinks for parts
                 ...(pageLinksToPass ? {

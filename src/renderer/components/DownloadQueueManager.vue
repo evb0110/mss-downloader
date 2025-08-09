@@ -118,17 +118,23 @@ https://digi.vatlib.it/..."
             </div>
 
             <div class="setting-group">
-              <label class="setting-label">
+              <label
+                class="setting-label"
+              >
                 Concurrent downloads: {{ queueSettings.maxConcurrentDownloads }}
+                <span
+                  v-if="effectiveConcurrencyNote"
+                  class="note"
+                >({{ effectiveConcurrencyNote }})</span>
               </label>
               <input
-                v-model="queueSettings.maxConcurrentDownloads"
+                v-model.number="queueSettings.maxConcurrentDownloads"
                 type="range"
                 min="1"
                 max="8"
                 step="1"
                 class="setting-range"
-                @input="updateQueueSettings"
+                @input="onConcurrencyChange"
               >
               <div class="range-labels">
                 <span>1</span>
@@ -174,17 +180,23 @@ https://digi.vatlib.it/..."
             </div>
 
             <div class="setting-group">
-              <label class="setting-label">
+              <label
+                class="setting-label"
+              >
                 Concurrent downloads: {{ queueSettings.maxConcurrentDownloads }}
+                <span
+                  v-if="effectiveConcurrencyNote"
+                  class="note"
+                >({{ effectiveConcurrencyNote }})</span>
               </label>
               <input
-                v-model="queueSettings.maxConcurrentDownloads"
+                v-model.number="queueSettings.maxConcurrentDownloads"
                 type="range"
                 min="1"
                 max="8"
                 step="1"
                 class="setting-range"
-                @input="updateQueueSettings"
+                @input="onConcurrencyChange"
               >
               <div class="range-labels">
                 <span>1</span>
@@ -504,8 +516,9 @@ https://digi.vatlib.it/..."
                     <span
                       v-if="group.parent.status !== 'failed'"
                       class="concurrency-badge"
+                      :title="concurrencyBadgeTitle(group.parent)"
                     >
-                      Concurrency: {{ group.parent.downloadOptions?.concurrentDownloads || 3 }}
+                      Concurrency: {{ effectiveItemConcurrency(group.parent) }}
                     </span>
                   </div>
                 </div>
@@ -1324,6 +1337,41 @@ watchEffect(() => {
         queueSettings.value.maxConcurrentDownloads = queueState.value.globalSettings.concurrentDownloads;
     }
 });
+
+// Show note if library optimizations cap concurrency below global setting
+const effectiveConcurrencyNote = computed(() => {
+  // Global picker should not warn if current front item is still "loading"
+  const items = queueItems.value;
+  if (!items || items.length === 0) return '';
+  // Prefer a ready item (not 'loading') so we have library optimizations applied
+  const candidate = items.find(i => i.status !== 'loading') || items[0];
+  // If candidate has no library optimizations yet, don't show a cap note
+  if (!candidate.libraryOptimizations || candidate.library === 'loading') return '';
+  const perItem = candidate.downloadOptions?.concurrentDownloads || queueSettings.value.maxConcurrentDownloads;
+  // Only show a note if the library explicitly defines a cap; if undefined, there's no cap
+  const cap = candidate.libraryOptimizations?.maxConcurrentDownloads;
+  if (typeof cap === 'number' && cap > 0 && perItem > cap) {
+    return `capped to ${cap} for ${candidate.library?.toUpperCase()}`;
+  }
+  return '';
+});
+
+// Persist global concurrency into config so new items adopt it
+let concurrencyDebounce: NodeJS.Timeout | null = null;
+function onConcurrencyChange() {
+  if (concurrencyDebounce) clearTimeout(concurrencyDebounce);
+  concurrencyDebounce = setTimeout(async () => {
+    try {
+      // Ensure number is sent to config
+      const value = Number(queueSettings.value.maxConcurrentDownloads) || 1;
+      await window.electronAPI.setConfig('maxConcurrentDownloads', value);
+      // Update local reflected state so new items get this value
+      queueState.value.globalSettings.concurrentDownloads = value;
+    } catch (e) {
+      console.error('Failed to update maxConcurrentDownloads config:', e);
+    }
+  }, 500);
+}
 
 // Bulk mode computed properties
 const queueItems = computed(() => queueState.value.items || []);
@@ -2292,6 +2340,25 @@ function startQueueItemEdit(item: QueuedManuscript) {
         endPage: item.downloadOptions?.endPage || item.totalPages,
         concurrentDownloads: item.downloadOptions?.concurrentDownloads || queueState.value.globalSettings?.concurrentDownloads || 3,
     };
+}
+
+// Compute effective concurrency for a queue item, factoring in possible library caps
+function effectiveItemConcurrency(item: QueuedManuscript): number {
+    const perItem = item.downloadOptions?.concurrentDownloads;
+    const globalVal = queueState.value.globalSettings?.concurrentDownloads || 3;
+    const base = perItem || globalVal;
+    const cap = item.libraryOptimizations?.maxConcurrentDownloads;
+    return cap ? Math.min(base, cap) : base;
+}
+
+function concurrencyBadgeTitle(item: QueuedManuscript): string {
+    const perItem = item.downloadOptions?.concurrentDownloads;
+    const globalVal = queueState.value.globalSettings?.concurrentDownloads || 3;
+    const cap = item.libraryOptimizations?.maxConcurrentDownloads;
+    if (cap && (perItem || globalVal) > cap) {
+        return `Capped to ${cap} by ${item.library?.toUpperCase()} optimizations`;
+    }
+    return `Item: ${perItem ?? 'default'}; Global: ${globalVal}`;
 }
 
 function cancelQueueItemEdit() {

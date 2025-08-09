@@ -148,10 +148,10 @@ export class LibraryOptimizationService {
             optimizationDescription: 'Modena Diocesan Archive optimizations: 3 concurrent downloads, Flash bypass via mobile interface'
         },
         'bdl': {
-            maxConcurrentDownloads: 2, // Reduced due to IIIF server instability
+            // Removed concurrency cap to respect user/global settings fully
             timeoutMultiplier: 2.5, // Extended timeout for unstable IIIF server
-            enableProgressiveBackoff: true, // Critical for handling connection failures
-            optimizationDescription: 'BDL optimizations: 2 concurrent downloads, extended timeouts, progressive backoff for IIIF server instability'
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'BDL optimizations: extended timeouts with progressive backoff'
         },
         'monte_cassino': {
             maxConcurrentDownloads: 3, // Monte Cassino IIIF service
@@ -282,14 +282,19 @@ export class LibraryOptimizationService {
     } {
         const libraryOpts = this.getOptimizationsForLibrary(library);
 
+        // Determine max concurrency override for this library only (do not echo global as a cap)
+        let libraryMaxConcurrent: number | undefined = undefined;
+        if (typeof libraryOpts.maxConcurrentDownloads === 'number' && libraryOpts.maxConcurrentDownloads > 0) {
+            if (globalMaxConcurrent && Number.isInteger(globalMaxConcurrent) && globalMaxConcurrent > 0) {
+                libraryMaxConcurrent = Math.min(libraryOpts.maxConcurrentDownloads, globalMaxConcurrent);
+            } else {
+                libraryMaxConcurrent = libraryOpts.maxConcurrentDownloads;
+            }
+        }
+
         return {
             autoSplitThresholdMB: libraryOpts.autoSplitThresholdMB || globalAutoSplitThresholdMB,
-            maxConcurrentDownloads: globalMaxConcurrent && Number.isInteger(globalMaxConcurrent) && globalMaxConcurrent > 0
-                ? Math.min(
-                    libraryOpts.maxConcurrentDownloads || globalMaxConcurrent,
-                    globalMaxConcurrent
-                )
-                : (libraryOpts.maxConcurrentDownloads || 3),
+            maxConcurrentDownloads: libraryMaxConcurrent,
             timeoutMultiplier: libraryOpts.timeoutMultiplier || 1.0,
             enableProgressiveBackoff: libraryOpts.enableProgressiveBackoff || false,
             optimizationDescription: libraryOpts.optimizationDescription

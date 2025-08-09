@@ -500,6 +500,15 @@ ipcMain.handle('config-set', (_event, key: string, value: any) => {
   configService.set(key as any, value);
   // Notify renderer of config changes
   mainWindow?.webContents.send('config-changed', key, value);
+
+  // If concurrency changed, propagate into queue so items inherit updated default
+  if (key === 'maxConcurrentDownloads') {
+    try {
+      enhancedDownloadQueue?.updateGlobalConcurrentDownloads(value);
+    } catch (e) {
+      console.warn('Failed to propagate maxConcurrentDownloads to queue:', (e as any)?.message);
+    }
+  }
 });
 
 ipcMain.handle('config-get-all', () => {

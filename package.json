@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.129",
+  "version": "1.4.130",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.129: CRITICAL FIX for University of Graz IPC timeout error (Issue #2)",
-    "Fixed 'reply was never sent' error that prevented Graz manuscripts from loading",
-    "Root cause: IPC handler was returning error objects instead of throwing them",
-    "Now properly throws errors for correct Electron IPC communication",
-    "Graz manuscripts (644+ pages) now load successfully without timeouts"
+    "v1.4.130: BDL concurrency and UI accuracy",
+    "Removed hidden BDL cap so downloads honor your chosen concurrency",
+    "Fixed concurrency type bug that fell back to 3; now strictly numeric",
+    "Queue and downloader now respect per-item and global concurrency correctly",
+    "UI badges and slider now show the effective value without misleading caps"
   ],
   "main": "dist/main/main.js",
   "scripts": {
