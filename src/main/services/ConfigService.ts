@@ -32,6 +32,14 @@ interface AppConfig {
     // UI settings
     language: string;
     theme: string;
+    
+    // BDL Ultra-Reliable Mode settings
+    bdlUltraReliableMode: boolean;
+    bdlMaxRetries: number; // -1 for unlimited
+    bdlMinVerificationSize: number; // Minimum bytes for valid image
+    bdlProxyHealthCheck: boolean;
+    bdlPostVerification: boolean;
+    bdlPersistentQueue: boolean;
 }
 
 const defaultConfig: AppConfig = {
@@ -61,7 +69,15 @@ const defaultConfig: AppConfig = {
 
     // UI settings
     language: 'en',
-    theme: 'system'
+    theme: 'system',
+    
+    // BDL Ultra-Reliable Mode settings
+    bdlUltraReliableMode: true, // Enabled by default for BDL
+    bdlMaxRetries: -1, // Unlimited retries by default
+    bdlMinVerificationSize: 10240, // 10KB minimum for valid image
+    bdlProxyHealthCheck: true, // Test proxies before use
+    bdlPostVerification: true, // Verify and re-download after initial pass
+    bdlPersistentQueue: true // Save failed pages for retry across sessions
 };
 
 export class ConfigService {

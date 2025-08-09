@@ -14,6 +14,7 @@ import { DirectTileProcessor } from './DirectTileProcessor';
 import { SharedManifestAdapter } from './SharedManifestAdapter';
 import { DownloadLogger } from './DownloadLogger';
 import { comprehensiveLogger } from './ComprehensiveLogger';
+import { UltraReliableBDLService } from './UltraReliableBDLService';
 import type { ManuscriptManifest, LibraryInfo } from '../../shared/types';
 import type { TLibrary } from '../../shared/queueTypes';
 import * as https from 'https';
@@ -29,6 +30,7 @@ export class EnhancedManuscriptDownloaderService {
     private directTileProcessor: DirectTileProcessor;
     private sharedManifestAdapter: SharedManifestAdapter;
     private logger: DownloadLogger;
+    private ultraBDLService: UltraReliableBDLService;
 
     constructor(manifestCache?: ManifestCache) {
         this.manifestCache = manifestCache || new ManifestCache();
@@ -38,6 +40,7 @@ export class EnhancedManuscriptDownloaderService {
         this.directTileProcessor = new DirectTileProcessor();
         this.sharedManifestAdapter = new SharedManifestAdapter(this.fetchWithHTTPS.bind(this));
         this.logger = DownloadLogger.getInstance();
+        this.ultraBDLService = UltraReliableBDLService.getInstance();
         // Clear potentially problematic cached manifests on startup
         this.manifestCache.clearProblematicUrls().catch(error => {
             console.warn('Failed to clear problematic cache entries:', (error as Error).message);
@@ -4733,7 +4736,30 @@ export class EnhancedManuscriptDownloaderService {
                 } catch {
                     // Not present: fetch and write
                     try {
-                        const imageData = await this.downloadImageWithRetries(imageUrl);
+                        let imageData: ArrayBuffer;
+                        
+                        // Use ultra-reliable service for BDL if enabled
+                        if (manifest.library === 'bdl' && configService.get('bdlUltraReliableMode')) {
+                            const buffer = await this.ultraBDLService.ultraReliableDownload(
+                                imageUrl,
+                                pageIndex,
+                                {
+                                    ultraReliableMode: configService.get('bdlUltraReliableMode'),
+                                    maxRetries: configService.get('bdlMaxRetries'),
+                                    maxQualityFallbacks: true,
+                                    proxyHealthCheck: configService.get('bdlProxyHealthCheck'),
+                                    persistentQueue: configService.get('bdlPersistentQueue'),
+                                    pageVerificationSize: configService.get('bdlMinVerificationSize')
+                                }
+                            );
+                            if (!buffer) {
+                                throw new Error('Ultra-reliable download failed');
+                            }
+                            imageData = buffer;
+                        } else {
+                            imageData = await this.downloadImageWithRetries(imageUrl);
+                        }
+                        
                         const writePromise = fs.writeFile(imgPath, Buffer.from(imageData));
                         writePromises.push(writePromise);
                         // Only mark path if download succeeded
@@ -4784,6 +4810,48 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             validImagePaths = imagePaths.filter(Boolean);
+            
+            // BDL Post-download verification and recovery
+            if (manifest.library === 'bdl' && configService.get('bdlPostVerification')) {
+                console.log('🔍 [BDL] Starting post-download verification and recovery...');
+                const pageUrls = manifest.pageLinks.slice(actualStartPage - 1, actualEndPage);
+                
+                // Verify and re-download any failed or small pages
+                const verifiedPaths = await this.ultraBDLService.verifyAndRedownload(
+                    completeImagePaths,
+                    pageUrls,
+                    {
+                        ultraReliableMode: configService.get('bdlUltraReliableMode'),
+                        maxRetries: configService.get('bdlMaxRetries'),
+                        maxQualityFallbacks: true,
+                        proxyHealthCheck: configService.get('bdlProxyHealthCheck'),
+                        persistentQueue: configService.get('bdlPersistentQueue'),
+                        pageVerificationSize: configService.get('bdlMinVerificationSize'),
+                        minDelayMs: 2000,
+                        maxDelayMs: 300000 // 5 minutes max
+                    }
+                );
+                
+                // Update arrays with verified paths
+                for (let i = 0; i < verifiedPaths.length; i++) {
+                    if (verifiedPaths[i]) {
+                        completeImagePaths[i] = verifiedPaths[i];
+                        if (!imagePaths[i]) {
+                            imagePaths[i] = verifiedPaths[i];
+                        }
+                    }
+                }
+                
+                // Recount valid paths
+                validImagePaths = imagePaths.filter(Boolean);
+                const recoveredCount = validImagePaths.length - failedPages.length;
+                if (recoveredCount > 0) {
+                    console.log(`✅ [BDL] Recovered ${recoveredCount} previously failed pages`);
+                }
+                
+                // Clear the retry queue for this manuscript
+                await this.ultraBDLService.clearRetryQueue(manifest.manuscriptId);
+            }
             
             if (validImagePaths.length === 0) {
                 throw new Error('No images were successfully downloaded');

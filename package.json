@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.131",
+  "version": "1.4.132",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.131: Fixed queue pause button not working instantly",
-    "Queue pause now immediately stops processing loop like stop does",
-    "Previously pause only set a flag while downloads continued starting",
-    "Individual item pause always worked; now queue pause works the same way",
-    "Resume properly restarts the queue processing after pause"
+    "v1.4.132: Ultra-Reliable BDL Mode - 100% page download guarantee",
+    "Unlimited retries with smart exponential backoff for overnight downloads",
+    "6-proxy rotation with health monitoring for geo-blocked manuscripts",
+    "Post-download verification automatically recovers blank/failed pages",
+    "Persistent retry queue survives app restarts to continue from where it left"
   ],
   "main": "dist/main/main.js",
   "scripts": {
