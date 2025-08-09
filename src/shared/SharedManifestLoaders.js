@@ -3787,7 +3787,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
 
     /**
      * e-manuscripta.ch - Swiss manuscript library
-     * Supports manuscripts from www.e-manuscripta.ch
+     * SIMPLIFIED VERSION: Extracts pages directly from HTML option tags
+     * Much faster and more accurate than complex block discovery
      */
     async getEManuscriptaManifest(url) {
         console.log('[e-manuscripta] Processing URL:', url);
@@ -3798,7 +3799,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         // - https://www.e-manuscripta.ch/{library}/doi/10.7891/e-manuscripta-{id}
         let match = url.match(/e-manuscripta\.ch\/([^/]+)\/content\/(zoom|titleinfo|thumbview)\/(\d+)/);
         
-        // ULTRA-PRIORITY FIX for Issue #10: Support DOI format URLs
+        // Support DOI format URLs
         if (!match) {
             // Try DOI format
             const doiMatch = url.match(/e-manuscripta\.ch\/([^/]+)\/doi\/[^/]+\/e-manuscripta-(\d+)/);
@@ -3816,75 +3817,50 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const [, library, viewType, manuscriptId] = match;
         console.log(`[e-manuscripta] Library: ${library}, View: ${viewType}, ID: ${manuscriptId}`);
         
-        const images = [];
+        // Initialize cookie storage for this request
+        const cookies = new Map();
         
-        // Fetch the viewer page to extract page count
-        const response = await this.fetchWithRetry(url);
+        // Helper to create cookie header
+        const getCookieHeader = () => {
+            const cookieArray = [];
+            for (const [name, value] of cookies) {
+                cookieArray.push(`${name}=${value}`);
+            }
+            return cookieArray.join('; ');
+        };
+        
+        // First fetch - might get JavaScript verification page
+        let response = await this.fetchWithRetry(url);
         if (!response.ok) {
             throw new Error(`Failed to fetch e-manuscripta page: ${response.status}`);
         }
         
-        const html = await response.text();
+        let html = await response.text();
         
-        // Extract page count from dropdown or other elements
-        let totalPages = 11; // Default to user-reported issue
-        
-        // Method 1: Look for goToPage dropdown with proper structure
-        const selectMatch = html.match(/<select[^>]*(?:id|name)=['"]?goToPage[^>]*>([\s\S]*?)<\/select>/i);
-        if (selectMatch) {
-            const selectContent = selectMatch[1];
-            const optionMatches = Array.from(selectContent.matchAll(/<option[^>]*>([^<]+)<\/option>/g));
-            if (optionMatches.length > 0) {
-                // The last option typically contains the highest page number
-                const lastOption = optionMatches[optionMatches.length - 1][1];
-                const pageNum = parseInt(lastOption.match(/\d+/)?.[0] || '0');
-                if (pageNum > 0) {
-                    totalPages = pageNum;
-                    console.log(`[e-manuscripta] Found ${totalPages} pages from dropdown`);
-                }
-            }
-        }
-        
-        // Method 2: Look for JavaScript variables or data attributes
-        if (totalPages === 11) {
-            // Try to find totalPages or similar variables in JavaScript
-            const jsVarMatches = [
-                html.match(/totalPages['":\s]+(\d+)/),
-                html.match(/pageCount['":\s]+(\d+)/),
-                html.match(/lastPage['":\s]+(\d+)/),
-                html.match(/numPages['":\s]+(\d+)/)
-            ];
+        // Check if we got JavaScript verification page
+        if (html.includes('js_enabled') && html.includes('js_check_beacon')) {
+            console.log('[e-manuscripta] Handling JavaScript verification...');
             
-            for (const match of jsVarMatches) {
-                if (match && match[1]) {
-                    const pages = parseInt(match[1]);
-                    if (pages > totalPages) {
-                        totalPages = pages;
-                        console.log(`[e-manuscripta] Found ${totalPages} pages from JavaScript variable`);
-                        break;
-                    }
-                }
+            // Set the required cookie
+            cookies.set('js_enabled', '1');
+            
+            // Fetch again with cookie
+            const urlObj = new URL(url);
+            const headers = {
+                'Cookie': getCookieHeader(),
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+            };
+            
+            response = await this.fetchWithRetry(url, { headers });
+            if (!response.ok) {
+                throw new Error(`Failed to fetch e-manuscripta page with cookies: ${response.status}`);
             }
+            
+            html = await response.text();
         }
         
-        // Method 3: Try to discover page structure from navigation links
-        if (totalPages === 11) {
-            // Look for patterns like "Page X of Y" or similar
-            const pageOfMatch = html.match(/(?:page|seite)\s+\d+\s+(?:of|von)\s+(\d+)/i);
-            if (pageOfMatch) {
-                totalPages = parseInt(pageOfMatch[1]);
-                console.log(`[e-manuscripta] Found ${totalPages} pages from page indicator`);
-            }
-        }
-        
-        // Method 4: Advanced block discovery for e-manuscripta manuscripts
-        console.log(`[e-manuscripta] Attempting advanced block discovery for manuscript ${manuscriptId}`);
-        const blockDiscovery = await this.discoverEManuscriptaBlocks(manuscriptId, library);
-        
-        if (blockDiscovery.blocks.length > 1) {
-            totalPages = blockDiscovery.totalPages;
-            console.log(`[e-manuscripta] Advanced discovery found ${blockDiscovery.blocks.length} blocks with ${totalPages} total pages`);
-        }
+        console.log(`[e-manuscripta] Fetched ${html.length} bytes of HTML`);
         
         // Extract title
         let displayName = `e-manuscripta ${library} ${manuscriptId}`;
@@ -3893,40 +3869,56 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             displayName = titleMatch[1].trim();
         }
         
-        // Generate page references across all discovered blocks
-        // If we have block discovery data, use it to create proper block/page mappings
-        if (blockDiscovery && blockDiscovery.blocks.length > 1) {
-            console.log(`[e-manuscripta] Generating pages for ${blockDiscovery.blocks.length} blocks`);
+        // SIMPLIFIED APPROACH: Extract all pages directly from option tags
+        // Pattern: <option value="5157223">[3] </option>
+        const optionPattern = /<option\s+value="(\d+)"[^>]*>\[(\d+)\]\s*<\/option>/g;
+        const pagesByNumber = new Map(); // Use Map to handle duplicates
+        
+        let optMatch;
+        while ((optMatch = optionPattern.exec(html)) !== null) {
+            const pageId = optMatch[1];
+            const pageNumber = parseInt(optMatch[2]);
             
-            let globalPageNum = 1;
-            for (const blockId of blockDiscovery.blocks) {
-                // Each block typically has 11 pages
-                for (let pageInBlock = 1; pageInBlock <= 11; pageInBlock++) {
-                    // Generate actual download URL for e-manuscripta
-                    // Calculate the actual page ID: blockId + (pageInBlock - 1)
-                    const pageId = blockId + (pageInBlock - 1);
-                    images.push({
-                        url: `https://www.e-manuscripta.ch/${library}/download/webcache/2000/${pageId}`,
-                        label: `Page ${globalPageNum}`,
-                        blockId: blockId,
-                        pageInBlock: pageInBlock
-                    });
-                    globalPageNum++;
-                }
-            }
-        } else {
-            // Fallback to original method for single-block manuscripts
-            for (let i = 1; i <= Math.min(totalPages, 500); i++) { // Reasonable limit
-                // Generate actual download URL
-                const pageId = parseInt(manuscriptId) + (i - 1);
-                images.push({
-                    url: `https://www.e-manuscripta.ch/${library}/download/webcache/2000/${pageId}`,
-                    label: `Page ${i}`
+            // Keep first occurrence of each page number
+            if (!pagesByNumber.has(pageNumber)) {
+                pagesByNumber.set(pageNumber, {
+                    id: pageId,
+                    number: pageNumber,
+                    url: `https://www.e-manuscripta.ch/${library}/download/webcache/2000/${pageId}`
                 });
             }
         }
         
-        console.log(`[e-manuscripta] Successfully extracted ${images.length} pages`);
+        // Convert to sorted array
+        const pages = Array.from(pagesByNumber.values()).sort((a, b) => a.number - b.number);
+        
+        console.log(`[e-manuscripta] Found ${pages.length} unique pages from HTML option tags`);
+        
+        // If we found pages from option tags, use them (much more accurate)
+        const images = [];
+        if (pages.length > 0) {
+            // Use the pages extracted from option tags
+            for (const page of pages) {
+                images.push({
+                    url: page.url,
+                    label: `Page ${page.number}`,
+                    blockId: page.id
+                });
+            }
+            console.log(`[e-manuscripta] Successfully extracted ${images.length} pages using simplified method`);
+        } else {
+            // Fallback: If no option tags found, generate basic pages
+            console.log('[e-manuscripta] No option tags found, using fallback method');
+            const fallbackPages = 11; // Default fallback
+            for (let i = 1; i <= fallbackPages; i++) {
+                const pageId = parseInt(manuscriptId) + (i - 1);
+                images.push({
+                    url: `https://www.e-manuscripta.ch/${library}/download/webcache/2000/${pageId}`,
+                    label: `Page ${i}`,
+                    blockId: pageId
+                });
+            }
+        }
         
         return {
             images,
