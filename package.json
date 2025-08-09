@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.130",
+  "version": "1.4.131",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.130: BDL concurrency and UI accuracy",
-    "Removed hidden BDL cap so downloads honor your chosen concurrency",
-    "Fixed concurrency type bug that fell back to 3; now strictly numeric",
-    "Queue and downloader now respect per-item and global concurrency correctly",
-    "UI badges and slider now show the effective value without misleading caps"
+    "v1.4.131: Fixed queue pause button not working instantly",
+    "Queue pause now immediately stops processing loop like stop does",
+    "Previously pause only set a flag while downloads continued starting",
+    "Individual item pause always worked; now queue pause works the same way",
+    "Resume properly restarts the queue processing after pause"
   ],
   "main": "dist/main/main.js",
   "scripts": {

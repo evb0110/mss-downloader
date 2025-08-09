@@ -531,6 +531,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
         console.log('Pausing queue processing...');
         this.state.isPaused = true;
         
+        // CRITICAL: Stop the processing loop to prevent new downloads from starting
+        this.isProcessingQueue = false;
+        
         // Abort the main processing controller
         if (this.processingAbortController) {
             this.processingAbortController.abort();
@@ -560,11 +563,12 @@ export class EnhancedDownloadQueue extends EventEmitter {
     resumeProcessing(): void {
         if (!this.state.isProcessing) return;
         
+        console.log('Resuming queue processing...');
         this.state.isPaused = false;
-        // Only start processing if not already processing
-        if (!this.isProcessingQueue) {
-            this.processQueue();
-        }
+        
+        // Restart the queue processing since we stopped it on pause
+        // The processQueue method will handle checking isProcessingQueue
+        this.processQueue();
     }
 
     stopProcessing(): void {
