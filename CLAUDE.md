@@ -39,7 +39,7 @@ async function testManifest() { /* custom logic */ }
 ### 3. VERSION CONTROL - EXPLICIT APPROVAL MANDATORY
 **Version Bump Requirements:**
 - **USER APPROVAL MANDATORY:** NEVER bump without explicit "approved"/"proceed"/"bump version"
-- **SINGLE EXCEPTION:** `/handle-issues` command is AUTONOMOUS - seeks GitHub issue author approval instead
+- **SINGLE EXCEPTION:** `/handle-issues` command is AUTONOMOUS - bumps after all fixes complete
 - **NO AUTOMATIC BUMPS:** Keywords like "bump" do NOT authorize automatic version changes
 
 **🚨 CHANGELOG UPDATE - MANDATORY WITH EVERY VERSION BUMP 🚨**
@@ -102,6 +102,8 @@ async function testManifest() { /* custom logic */ }
 ├── docs/           # Documentation ONLY
 ├── reports/        # Generated reports ONLY
 ├── tasks/          # Todo management ONLY
+├── orchestrator/   # Handle-issues workflow ONLY
+├── commands/       # Claude command scripts ONLY
 └── artifacts/      # Temporary files ONLY
 ```
 
@@ -145,7 +147,73 @@ async function testManifest() { /* custom logic */ }
 - `npm run dev` - ONLY when user requests UI
 - `npm run dev:headless` - ONLY for explicit validation
 
-## Agent Management
+## 🎭 Handle-Issues Command v4.0 - Orchestrated Sequential Resolution
+
+The `/handle-issues` command uses **Orchestrated Sequential Ultra-Resolution**.
+
+### How Claude Should Respond to /handle-issues
+
+When the user runs `/handle-issues`, Claude should:
+
+1. **Check for ORCHESTRATED_MODE signal**
+   - If present: Use sequential processing
+   - If absent: Fall back to old parallel mode
+
+2. **Process Issues SEQUENTIALLY**
+   ```
+   For each issue:
+   - Create dedicated workspace
+   - Think DEEPLY about root cause
+   - Implement ROBUST solution
+   - Validate EXHAUSTIVELY
+   - Document changes
+   ```
+
+3. **NO PARALLELIZATION**
+   - One issue at a time
+   - Full attention to each
+   - No rushing
+
+4. **Consolidated Release**
+   - After ALL issues fixed
+   - Single version bump
+   - Comprehensive changelog
+
+### Expected Todos Structure
+```
+☐ Orchestrated Issue Resolution
+  ☐ Analyze Issue #X
+    ☐ Understand root cause
+    ☐ Design solution
+    ☐ Implement fix
+    ☐ Validate thoroughly
+  ☐ Analyze Issue #Y
+    ☐ Understand root cause
+    ☐ Design solution
+    ☐ Implement fix
+    ☐ Validate thoroughly
+  ☐ Consolidated Release
+    ☐ Combine all fixes
+    ☐ Create changelog
+    ☐ Bump version
+    ☐ Push to main
+```
+
+### Files and Paths
+- **Command Script**: `.devkit/commands/handle-issues.sh`
+- **Orchestrator**: `.devkit/scripts/orchestrated-issue-resolver.cjs`
+- **Issue Analyzer**: `.devkit/scripts/enhanced-issue-analyzer.cjs`
+- **Reports**: `.devkit/orchestrator/fix-report.json`
+- **Agent Workspaces**: `.devkit/orchestrator/agent-{issue-number}/`
+
+### Key Principles
+- **Quality Over Speed**: No time limits
+- **Sequential Processing**: No conflicts
+- **Deep Thinking**: Understand root causes
+- **Exhaustive Validation**: 100% confidence
+- **Single Release**: User-friendly
+
+## Agent Management (Legacy - for other workflows)
 - Default: 5 parallel agents (user can specify)
 - Split work into phases for different agents
 - Agents write large findings to `.devkit/` subfolders
@@ -163,6 +231,7 @@ async function testManifest() { /* custom logic */ }
 - **Testing:** `TESTING.md`
 - **Telegram Bot:** `.devkit/docs/telegram-bot-workflow-documentation.md`
 - **Active Todos:** `.devkit/tasks/TODOS.md`
+- **Handle-Issues v4:** `.devkit/docs/handle-issues-v4-orchestrated.md`
 
 ## Core Principles
 - Do what's asked - nothing more, nothing less
