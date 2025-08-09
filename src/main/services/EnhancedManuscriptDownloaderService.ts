@@ -1676,7 +1676,50 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadInternetCulturaleManifest(originalUrl);
                     break;
                 case 'graz':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('graz', originalUrl);
+                    // ULTRA-PRIORITY FIX for Issue #2: Add timeout wrapper for Windows stability
+                    try {
+                        const timeoutPromise = new Promise<ManuscriptManifest>((_, reject) => {
+                            setTimeout(() => {
+                                reject(new Error('Graz manifest loading timeout. Please try again.'));
+                            }, 60000); // 1 minute timeout for Graz
+                        });
+                        
+                        const manifestPromise = this.sharedManifestAdapter.getManifestForLibrary('graz', originalUrl);
+                        manifest = await Promise.race([manifestPromise, timeoutPromise]);
+                    } catch (error: any) {
+                        // Log error and try direct approach
+                        console.error('[Graz] Adapter failed, trying direct approach:', error.message);
+                        
+                        // Try direct IIIF manifest loading as fallback
+                        const match = originalUrl.match(/\/([0-9]+)(?:\/|$)/);
+                        if (match) {
+                            const manuscriptId = match[1];
+                            const iiifUrl = `https://unipub.uni-graz.at/i3f/v20/${manuscriptId}/manifest`;
+                            
+                            const response = await this.fetchWithHTTPS(iiifUrl);
+                            const iiifManifest = JSON.parse(response);
+                            
+                            const pageLinks: string[] = [];
+                            if (iiifManifest.sequences?.[0]?.canvases) {
+                                for (const canvas of iiifManifest.sequences[0].canvases) {
+                                    const imageUrl = canvas.images?.[0]?.resource?.['@id'] || '';
+                                    if (imageUrl) {
+                                        pageLinks.push(imageUrl);
+                                    }
+                                }
+                            }
+                            
+                            manifest = {
+                                pageLinks,
+                                totalPages: pageLinks.length,
+                                library: 'graz',
+                                displayName: `Graz MS ${manuscriptId}`,
+                                originalUrl
+                            };
+                        } else {
+                            throw error;
+                        }
+                    }
                     break;
                 case 'gams':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('gams', originalUrl);

@@ -712,11 +712,12 @@ ipcMain.handle('get-manifest-chunk', async (_event, url: string, chunkIndex: num
 
 // Keep original handler for backward compatibility but with increased timeout handling
 ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
-  if (!enhancedManuscriptDownloader) {
-    throw new Error('Enhanced manuscript downloader not initialized');
-  }
-  
+  // ULTRA-PRIORITY FIX for Issue #2: Ensure reply is ALWAYS sent
   try {
+    if (!enhancedManuscriptDownloader) {
+      throw new Error('Enhanced manuscript downloader not initialized');
+    }
+    
     // ULTRA-PRIORITY FIX for Issue #9: Enhanced URL sanitization for all TLDs
     if (url && typeof url === 'string') {
       const originalUrl = url;
@@ -828,37 +829,54 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
       throw new Error(`Invalid URL parameter: expected string, got ${typeof url} (${url})`);
     }
     
-    return await enhancedManuscriptDownloader.loadManifest(url);
+    // ULTRA-PRIORITY FIX for Issue #2: Add timeout wrapper for Windows IPC stability
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error(`Manifest loading timeout for ${url}. The server may be slow or the manifest is very large. Please try again.`));
+      }, 120000); // 2 minute timeout
+    });
+    
+    const manifestPromise = enhancedManuscriptDownloader.loadManifest(url);
+    
+    // Race between manifest loading and timeout
+    const result = await Promise.race([manifestPromise, timeoutPromise]);
+    return result;
   } catch (error: any) {
-    // Enhanced error logging with URL context
+    // ULTRA-PRIORITY FIX for Issue #2: Enhanced error handling to ensure reply is sent
     comprehensiveLogger.log({
       level: 'error',
       category: 'manifest',
       url: url || 'undefined',
-      errorMessage: error.message,
-      errorStack: error.stack,
+      errorMessage: error?.message || 'Unknown error',
+      errorStack: error?.stack,
       details: {
         message: 'Parse manuscript URL failed',
         originalUrl: url,
-        urlType: typeof url
+        urlType: typeof url,
+        errorType: error?.constructor?.name,
+        platform: process.platform
       }
     });
     
     // Check if this is a captcha error that should be handled by the UI
-    if (error.message?.startsWith('CAPTCHA_REQUIRED:')) {
+    if (error?.message?.startsWith('CAPTCHA_REQUIRED:')) {
       // Let the error pass through to the UI for captcha handling
       throw error;
     }
     
-    // Create a safe error for IPC serialization
-    const safeError = new Error(error?.message || 'Failed to load manuscript');
-    safeError.name = error?.name || 'ManifestError';
+    // ULTRA-PRIORITY FIX for Issue #2: Create a guaranteed serializable error
+    const errorMessage = error?.message || 'Failed to load manuscript';
+    const safeError = {
+      message: errorMessage,
+      name: error?.name || 'ManifestError',
+      library: error?.library,
+      isManifestError: true,
+      url: url,
+      platform: process.platform
+    };
     
-    // Add safe metadata without circular references
-    (safeError as any).library = error?.library;
-    (safeError as any).isManifestError = true;
-    
-    throw safeError;
+    // Return error object instead of throwing to ensure reply is sent
+    return { error: safeError };
   }
 });
 
