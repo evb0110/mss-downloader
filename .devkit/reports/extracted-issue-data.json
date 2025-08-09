@@ -1,0 +1,286 @@
+[
+  {
+    "number": 2,
+    "title": "грац",
+    "body": "![Image](https://github.com/user-attachments/assets/b227ba31-4771-4077-9d94-028e652cd71d)\n![Image](https://github.com/user-attachments/assets/cf6ad185-5cc9-4750-8072-eb1687594346)\n\nошибка во время добавления манифеста",
+    "urls": [
+      "https://github.com/user-attachments/assets/b227ba31-4771-4077-9d94-028e652cd71d",
+      "https://github.com/user-attachments/assets/cf6ad185-5cc9-4750-8072-eb1687594346",
+      "https://gist.githubusercontent.com/evb0110/6ffe318f00bc97a9282561b136486658/raw/page_1.jpg",
+      "https://gist.githubusercontent.com/evb0110/897a161a2f2a92151935b3e2f8c88e48/raw/page_150.jpg",
+      "https://gist.githubusercontent.com/evb0110/81060a3476616dade5bbc8d0b2915e96/raw/page_299.jpg",
+      "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538`",
+      "https://gams.uni-graz.at/context:corema.a1`",
+      "https://unipub.uni-graz.at/...",
+      "https://gams.uni-graz.at/...",
+      "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/{ID}",
+      "https://unipub.uni-graz.at/viewer/image/{ID}/{PAGE}/",
+      "https://gams.uni-graz.at/context:{ID}",
+      "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/5892688",
+      "https://github.com/user-attachments/files/21558317/mss-downloader-logs-2025-08-02T10-51-23-701Z.json",
+      "https://gams.uni-graz.at/o:gzc.1605/sdef:TEI/get`",
+      "https://unipub.uni-graz.at/",
+      "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/5892688`:",
+      "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/6568472",
+      "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/6840185"
+    ],
+    "totalComments": 53,
+    "lastUserComment": {
+      "body": "у этого урл не видит манифест и выдает ошибку\nhttps://unipub.uni-graz.at/obvugrscript/content/titleinfo/6568472\nError invoking remote method 'parse-manuscript-url-chunked': ManifestLoadError: Failed to load graz manifest: Failed to load University of Graz manifest: Failed to fetch Graz manifest: 500 Internal Server Errorhttps://unipub.uni-graz.at/obvugrscript/content/titleinfo/6568472\n\nа у этого урл все работает\nhttps://unipub.uni-graz.at/obvugrscript/content/titleinfo/6840185\n\nнадо перепроверить тот, что не работает",
+      "createdAt": "2025-08-08T20:58:12Z",
+      "author": "textorhub"
+    },
+    "errorMessages": [
+      "в чем причина javascript error?",
+      "висит и не может закачать манифест",
+      "javascript error такая же ",
+      "Graz manifest parsing errors for large manuscripts have been resolved.",
+      "- Added specific error detection for 503/504 errors",
+      "- Improved error messages for different failure scenarios",
+      "The fix is now available in version 1.4.43. Large Graz manuscripts should now process without memory or parsing errors.",
+      "те же ошибки, не работает",
+      "не работает, бесконечно грузит манифест",
+      "javascript error",
+      "Error invoking remote method 'parse-manuscript-url': reply was never senthttps://unipub.uni-graz.at/obvugrscript/content/titleinfo/5892688",
+      "The \"reply was never sent\" error might be specific to certain manuscripts or network conditions. I've enhanced the timeout handling and error messages in v1.4.62.",
+      "For Graz manifest errors:",
+      "3. If you get manifest errors, the new logging will capture detailed parsing information",
+      "- Error context with full stack traces",
+      "висит на загрузке манифеста, потом происходит удвоение окна самой программы",
+      "бесконечно грузит манифест, потом сообщение Unexpected error",
+      "Unexpected error, программа схлопывается",
+      "The problem was **NOT** with the manifest loading logic itself, but with Electron's IPC (Inter-Process Communication) timing out when transferring large data. The Graz manifest is 448KB with 644 pages, which exceeds the IPC channel's timeout threshold, causing the \"reply was never sent\" error you experienced.",
+      "unexpected error, программа сама закрылась",
+      "Error invoking remote method 'parse-manuscript-url-chunked': ManifestLoadError: Failed to load graz manifest: Failed to load University of Graz manifest: Failed to fetch Graz manifest: 500 Internal Server Errorhttps://unipub.uni-graz.at/obvugrscript/content/titleinfo/6568472",
+      "надо перепроверить тот, что не работает"
+    ]
+  },
+  {
+    "number": 4,
+    "title": "морган",
+    "body": "Error invoking remote method 'parse-manuscript-url': ReferenceError: imagesByPriority is not definedhttps://www.themorgan.org/collection/lindau-gospels/thumbs\nFailed\n\n[mss-downloader-logs-2025-07-27T09-35-06-593Z.json](https://github.com/user-attachments/files/21453101/mss-downloader-logs-2025-07-27T09-35-06-593Z.json)",
+    "urls": [
+      "https://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "https://github.com/user-attachments/files/21453101/mss-downloader-logs-2025-07-27T09-35-06-593Z.json",
+      "https://github.com/user-attachments/files/21487677/mss-downloader-logs-2025-07-29T11-28-42-995Z.json",
+      "https://host.themorgan.org/facsimile/m1/default.asp?id=2&width=100%25&height=100%25&iframe=true",
+      "https://github.com/user-attachments/files/21489321/mss-downloader-logs-2025-07-29T12-57-32-534Z.json",
+      "https://www.themorgan.org/collection/lindau-gospels/thumbshttps://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "https://github.com/user-attachments/files/21498484/mss-downloader-logs-2025-07-29T23-10-05-435Z.json",
+      "https://www.themorgan.org/collection/lindau-gospels/thumbs`",
+      "https://github.com/user-attachments/files/21511687/mss-downloader-logs-2025-07-30T14-23-06-313Z.json",
+      "https://github.com/user-attachments/files/21538001/mss-downloader-logs-2025-07-31T21-40-15-945Z.json",
+      "https://github.com/user-attachments/files/21551408/mss-downloader-logs-2025-08-01T16-04-38-020Z.json",
+      "https://www.themorgan.org/...`",
+      "https://github.com/user-attachments/files/21585163/mss-downloader-logs-2025-08-04T21-55-33-347Z.json",
+      "https://github.com/user-attachments/files/21603079/mss-downloader-logs-2025-08-05T15-34-20-304Z.json",
+      "https://github.com/user-attachments/files/21641842/logs-Failed_to_load__https___www_themorgan_org_collection_lindau_gospel___-1754522324425.txt",
+      "https://github.com/user-attachments/files/21662252/logs-Failed_to_load__https___www_themorgan_org_collection_lindau_gospel___-1754559108671.txt",
+      "https://github.com/user-attachments/files/21666293/logs-Failed_to_load__https___www_themorgan_org_collection_lindau_gospel___-1754573389440.txt",
+      "https://host.themorgan.org/facsimile/m1/default.asp?id=1&width=100%25&height=100%25&iframe=true",
+      "https://host.themorgan.org/facsimile/m1/default.asp?id=225&width=100%25&height=100%25&iframe=true",
+      "https://host.themorgan.org/facsimile/m1/default.asp?id=231&width=100%25&height=100%25&iframe=true"
+    ],
+    "totalComments": 53,
+    "lastUserComment": {
+      "body": "видит только 16 страниц, а всего их 231 \nищи тут\nhttps://host.themorgan.org/facsimile/m1/default.asp?id=1&width=100%25&height=100%25&iframe=true\nhttps://host.themorgan.org/facsimile/m1/default.asp?id=225&width=100%25&height=100%25&iframe=true\nhttps://host.themorgan.org/facsimile/m1/default.asp?id=231&width=100%25&height=100%25&iframe=true\n",
+      "createdAt": "2025-08-07T23:18:48Z",
+      "author": "textorhub"
+    },
+    "errorMessages": [
+      "Error invoking remote method 'parse-manuscript-url': ReferenceError: imagesByPriority is not definedhttps://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "Issue #4 (морган) - Morgan Library ReferenceError: ИСПРАВЛЕНО",
+      "- Ошибка: ReferenceError: imagesByPriority is not defined",
+      "- Ошибка ReferenceError больше не должна возникать",
+      "Morgan Library ReferenceError and page extraction issues have been resolved.",
+      "- Fixed ReferenceError: imagesByPriority is not defined",
+      "Error invoking remote method 'parse-manuscript-url': Error: Failed to fetch Morgan page: 301https://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "Error invoking remote method 'parse-manuscript-url': Error: Morgan page redirected (301). The manuscript may have moved or the URL format may have changed. Try accessing the manuscript directly through themorgan.org and use the updated URL.https://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "Error invoking remote method 'parse-manuscript-url': Error: Failed to fetch Morgan page: 301https://www.themorgan.org/collection/lindau-gospels/thumbshttps://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "Error invoking remote method 'parse-manuscript-url': Error: Morgan page redirect failed: 301 redirecting to unknown location. The URL may be outdated or the redirect chain is too long.https://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "те же ошибки, не работает",
+      "- Ошибка \"ReferenceError: imagesByPriority is not defined\" больше не воспроизводится",
+      "Error invoking remote method 'parse-manuscript-url': Error: Failed to fetch Morgan page: 301 for URL: https://www.themorgan.org/collection/lindau-gospels/thumbshttps://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "Error invoking remote method 'parse-manuscript-url': Error: Failed to fetch Morgan page: 301 for URL: https://www.themorgan.org/collection/lindau-gospels/thumbshttps://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "та же ошибка, не работает",
+      "- ReferenceError больше не возникает",
+      "Fixed the redirect handling and error messages for Morgan Library:",
+      "- Enhanced error messages for better debugging",
+      "The error \"imagesByPriority is not defined\" should now be resolved.",
+      "For Morgan Library 'imagesByPriority is not defined' error:",
+      "3. If you get the reference error, the new logging will capture the exact code flow",
+      "- JavaScript errors with full stack traces",
+      "**The 'imagesByPriority is not defined' error should now have better diagnostics:**",
+      "1. ✅ **Enhanced error tracking** - Version 1.4.67+ captures all JavaScript errors with full context",
+      "2. ✅ **Better debugging** - Version 1.4.68 adds comprehensive error logging",
+      "3. 🔍 **Variable scope tracking** - The logs will show exactly where the error occurs",
+      "- If the error persists, export logs in 'Readable' format",
+      "Ошибка \"ReferenceError: imagesByPriority is not defined\" указывает на проблему в коде обработки Morgan Library.",
+      "Error invoking remote method 'parse-manuscript-url': Error: Socket timeouthttps://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "Error invoking remote method 'parse-manuscript-url': Error: Failed to fetch Morgan page: 301 for URL: https://www.themorgan.org/collection/lindau-gospels/thumbshttps://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "Error invoking remote method 'parse-manuscript-url-chunked': ManifestLoadError: Failed to load morgan manifest: Morgan page redirect (301) could not be followed. The manuscript may have moved. Try accessing it directly from themorgan.org.https://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "Error invoking remote method 'parse-manuscript-url-chunked': ManifestLoadError: Failed to load morgan manifest: Morgan page redirect (301) could not be followed. The manuscript may have moved. Try accessing it directly from themorgan.org.https://www.themorgan.org/collection/lindau-gospels/thumbs"
+    ]
+  },
+  {
+    "number": 5,
+    "title": "Флоренция",
+    "body": "Error invoking remote method 'parse-manuscript-url': Error: connect ETIMEDOUT 193.240.184.109:443https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/\nFailed\n\n[mss-downloader-logs-2025-07-27T23-35-55-696Z.json](https://github.com/user-attachments/files/21456759/mss-downloader-logs-2025-07-27T23-35-55-696Z.json)",
+    "urls": [
+      "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/",
+      "https://github.com/user-attachments/files/21456759/mss-downloader-logs-2025-07-27T23-35-55-696Z.json",
+      "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/`",
+      "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317539/`",
+      "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/174871/`",
+      "https://github.com/user-attachments/files/21551377/mss-downloader-logs-2025-08-01T16-03-01-520Z.json",
+      "https://cdm21059.contentdm.oclc.org/iiif/info/plutei/317539/manifest.json",
+      "https://cdm21059.contentdm.oclc.org/digital/iiif/plutei/317223/full/full/0/default.jpg"
+    ],
+    "totalComments": 43,
+    "lastUserComment": {
+      "body": "по-прежнему манифест при загрузке отражает только одну страницу из 316\nhttps://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/\n\nпроверить еще раз\nhttps://cdm21059.contentdm.oclc.org/iiif/info/plutei/317539/manifest.json\nhttps://cdm21059.contentdm.oclc.org/digital/iiif/plutei/317223/full/full/0/default.jpg\n",
+      "createdAt": "2025-08-07T13:28:55Z",
+      "author": "textorhub"
+    },
+    "errorMessages": [
+      "Error invoking remote method 'parse-manuscript-url': Error: connect ETIMEDOUT 193.240.184.109:443https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/",
+      "- Added proper error handling with user-friendly messages",
+      "висит на загрузке манифеста",
+      "не работает, ошибки те же",
+      "те же ошибки, не работает",
+      "Error invoking remote method 'parse-manuscript-url': reply was never senthttps://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/",
+      "не работает",
+      "javascript error",
+      "Added 30-second timeout protection to prevent infinite loops during compound object detection. This should resolve the \"reply was never sent\" errors and infinite manifest loading.",
+      "3. If you get ETIMEDOUT errors, the new logging will capture full network details",
+      "висит на загрузке манифеста",
+      "та же ошибка, Unexpected error, потом программа сама схлопывается"
+    ]
+  },
+  {
+    "number": 6,
+    "title": "Бордо",
+    "body": "необходимо добавить новую библиотеку\n\nhttps://selene.bordeaux.fr/ark:/27705/330636101_MS_0778\n\nhttps://selene.bordeaux.fr/in/dz/330636101_MS0778_0009_files/0/0_0.jpg\n\nhttps://selene.bordeaux.fr/ark:/27705/330636101_MS_0778/v0001.simple.selectedTab=thumbnail.hidesidebar\n\nнеобходимо учесть zoom, картинки с высоким разрешением собираются из кусков",
+    "urls": [
+      "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+      "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0009_files/0/0_0.jpg",
+      "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778/v0001.simple.selectedTab=thumbnail.hidesidebar",
+      "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+      "https://github.com/user-attachments/files/21487466/mss-downloader-logs-2025-07-29T11-15-25-388Z.json",
+      "https://github.com/user-attachments/files/21488951/mss-downloader-logs-2025-07-29T12-47-26-760Z.json",
+      "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778`",
+      "https://selene.bordeaux.fr/ark:/27705/*`",
+      "https://github.com/user-attachments/files/21511632/mss-downloader-logs-2025-07-30T14-20-07-227Z.json",
+      "https://github.com/user-attachments/files/21585126/mss-downloader-logs-2025-08-04T21-52-35-330Z.json",
+      "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0006_files/0/0_0.jpg"
+    ],
+    "totalComments": 36,
+    "lastUserComment": {
+      "body": "# GitHub Issue #6 Response (Russian)\n\n🔥 **РЕШЕНИЕ С МАКСИМАЛЬНЫМ ПРИОРИТЕТОМ** 🔥\n\nУважаемый @textorhub,\n\nВаша проблема была обработана с **МАКСИМАЛЬНЫМ приоритетом** и **ГЛУБОЧАЙШИМ анализом**.\n\n## 📊 Результаты ультра-анализа:\n\nОтличная новость! Библиотека Бордо (selene.bordeaux.fr) **УЖЕ ПОЛНОСТЬЮ РЕАЛИЗОВАНА** и работает в MSS Downloader!\n\n### ✅ Что было проверено:\n\n1. **Ваш точный URL**: https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778\n   - ✅ Успешно обработан\n   - ✅ Найдено 195 страниц (с 6 по 200)\n   \n2. **Поддержка Deep Zoom (тайлы)**:\n   - ✅ Полностью работает\n   - ✅ Поддерживается до 13 уровня зума\n   - ✅ Автоматическая сборка из фрагментов (до 100 тайлов на страницу)\n\n3. **Тестовая загрузка**:\n   - ✅ Страница 6: загружена успешно\n   - ✅ Страница 9: загружена успешно (ваш пример)\n   - ✅ Страница 100: загружена успешно\n   - ✅ Все страницы имеют разное содержимое\n\n## 🔍 Почему может казаться, что не работает:\n\n1. **Нумерация страниц**: Эта рукопись начинается со страницы 6, а не с 1\n2. **Время загрузки**: Высокое разрешение (zoom 13) требует загрузки 100+ тайлов на страницу, что может занять время\n3. **Интерфейс**: Возможно, Bordeaux не сразу виден в списке библиотек\n\n## 📥 Как использовать:\n\n1. Откройте MSS Downloader\n2. Вставьте URL: `https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778`\n3. Библиотека будет автоматически определена как \"Bordeaux\"\n4. Нажмите \"Скачать\" - будут загружены страницы 6-200\n\n## 🎯 Рекомендации:\n\n- Для быстрой загрузки используйте средний уровень качества\n- Для максимального качества будьте готовы к более длительной загрузке (сборка из 100+ фрагментов на страницу)\n\n## 📊 Доказательства работы:\n\nЯ протестировал вашу точную ссылку и успешно загрузил страницы. Прилагаю образцы:\n- [Страница 6 - титульный лист]\n- [Страница 100 - рукописный текст]\n\n**Библиотека Бордо полностью функциональна в текущей версии!**\n\nПожалуйста, попробуйте ещё раз. Если у вас возникнут проблемы, пожалуйста, сообщите:\n1. Какую версию MSS Downloader вы используете\n2. Какая конкретная ошибка появляется\n3. Скриншот окна программы\n\nС уважением,\nКоманда MSS Downloader\n\n---\n\n## English Summary:\n\nThe Bordeaux library is **already fully implemented and working**! \n- Successfully tested with your exact URL\n- Found and downloaded 195 pages (6-200)\n- Deep Zoom tiles fully supported (up to zoom level 13)\n- No fix needed - the library is operational",
+      "createdAt": "2025-08-09T07:15:05Z",
+      "author": "evb0110"
+    },
+    "errorMessages": [
+      "Error invoking remote method 'parse-manuscript-url': Error: Unsupported library for URL: https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+      "Error invoking remote method 'parse-manuscript-url': Error: Unsupported library: bordeauxhttps://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+      "Error invoking remote method 'parse-manuscript-url': TypeError: Cannot read properties of undefined (reading 'map')https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+      "видит только 50 страниц, должно быть больше, закачка не работает",
+      "висит на калькуляции",
+      "висит на калькуляции",
+      "## 🔍 Почему может казаться, что не работает:"
+    ]
+  },
+  {
+    "number": 9,
+    "title": "BDL",
+    "body": "Error invoking remote method 'parse-manuscript-url': Error: getaddrinfo ENOTFOUND www.bdl.servizirl.ithttps://www.bdl.servizirl.it/vufind/Record/BDL-OGGETTO-3903\n\n[mss-downloader-logs-2025-07-31T22-17-20-533Z.json](https://github.com/user-attachments/files/21538489/mss-downloader-logs-2025-07-31T22-17-20-533Z.json)",
+    "urls": [
+      "https://www.bdl.servizirl.it/vufind/Record/BDL-OGGETTO-3903",
+      "https://github.com/user-attachments/files/21538489/mss-downloader-logs-2025-07-31T22-17-20-533Z.json",
+      "https://github.com/user-attachments/files/21551331/mss-downloader-logs-2025-08-01T15-58-53-534Z.json",
+      "https://...`",
+      "https://github.com/user-attachments/files/21555567/mss-downloader-logs-2025-08-01T23-32-12-152Z.json",
+      "https://github.com/user-attachments/files/21558262/mss-downloader-logs-2025-08-02T10-38-40-818Z.json",
+      "https://github.com/user-attachments/files/21602984/mss-downloader-logs-2025-08-05T15-29-05-529Z.json",
+      "https://www.bdl.servizirl.it`",
+      "https://...",
+      "https://...\""
+    ],
+    "totalComments": 20,
+    "lastUserComment": {
+      "body": "🎉 **Fix Released in v1.4.124**\n\n@textorhub\n\nYour issue has been resolved with ULTRA-PRIORITY treatment and is now available in version 1.4.124.\n\n## What was fixed:\nThe root cause was a missing implementation - the system was trying to call a non-existent `loadBDLManifest()` method. This has been fixed by routing BDL URLs to the working SharedManifestAdapter implementation.\n\n## Validation completed:\n✅ Tested with your exact URL: https://www.bdl.servizirl.it/vufind/Record/BDL-OGGETTO-3903\n✅ Downloaded and validated 302 pages successfully\n✅ Created 17.8MB PDF with all pages present\n✅ Verified NO empty pages - all images are 1.4-2.6MB high-resolution\n✅ Malformed URL \"www.bdl.servizirl.ithttps://...\" now corrected automatically\n✅ All other libraries tested - no regressions\n\n## Technical details:\n- Previous error \"getaddrinfo ENOTFOUND www.bdl.servizirl.ithttps://...\" is now fixed\n- URL sanitization working correctly\n- All 302 pages load with proper IIIF URLs from Cantaloupe server\n\nThe new version should be available for download shortly. The application will auto-update, or you can download it manually from the releases page.\n\nThank you for your patience\\! This was fix attempt #5 for this issue, but ultra-deep analysis finally identified the actual root cause.\n\n*This fix was deployed autonomously after passing comprehensive validation tests.*",
+      "createdAt": "2025-08-09T09:12:44Z",
+      "author": "evb0110"
+    },
+    "errorMessages": [
+      "Error invoking remote method 'parse-manuscript-url': Error: getaddrinfo ENOTFOUND www.bdl.servizirl.ithttps://www.bdl.servizirl.it/vufind/Record/BDL-OGGETTO-3903",
+      "Error invoking remote method 'parse-manuscript-url': Error: getaddrinfo ENOTFOUND www.bdl.servizirl.ithttps://www.bdl.servizirl.it/vufind/Record/BDL-OGGETTO-3903",
+      "Error invoking remote method 'parse-manuscript-url': Error: getaddrinfo ENOTFOUND www.bdl.servizirl.ithttps://www.bdl.servizirl.it/vufind/Record/BDL-OGGETTO-3903",
+      "Error invoking remote method 'parse-manuscript-url': Error: getaddrinfo ENOTFOUND www.bdl.servizirl.ithttps://www.bdl.servizirl.it/vufind/Record/BDL-OGGETTO-3903",
+      "3. If you get DNS errors, the new logging will capture full network context",
+      "Error invoking remote method 'parse-manuscript-url': Error: getaddrinfo ENOTFOUND www.bdl.servizirl.ithttps://www.bdl.servizirl.it/vufind/Record/BDL-OGGETTO-3903",
+      "The URL parsing error that caused `getaddrinfo ENOTFOUND www.bdl.servizirl.ithttps://www.bdl.servizirl.it` has been completely resolved. The root cause was URL concatenation during parsing, which has been fixed with enhanced sanitization patterns.",
+      "The malformed URL concatenation error (www.bdl.servizirl.ithttps://...) that was causing DNS lookup failures has been completely resolved. The issue was that URL sanitization wasn't being applied at all entry points, particularly in the fetchWithProxyFallback method used by BDL.",
+      "- Previous error \"getaddrinfo ENOTFOUND www.bdl.servizirl.ithttps://...\" is now fixed"
+    ]
+  },
+  {
+    "number": 10,
+    "title": "Цюрих",
+    "body": "видит только 11 страниц\nhttps://www.e-manuscripta.ch/bau/content/zoom/5157616\n\nна самом деле страниц больше, но они выложены блоками\nhttps://www.e-manuscripta.ch/bau/content/zoom/5157232\nhttps://www.e-manuscripta.ch/bau/content/zoom/5157243\nhttps://www.e-manuscripta.ch/bau/content/zoom/5157254\nhttps://www.e-manuscripta.ch/bau/content/zoom/5157265\nhttps://www.e-manuscripta.ch/bau/content/zoom/5157276\nи так далее\nhttps://www.e-manuscripta.ch/bau/content/zoom/5157617\n",
+    "urls": [
+      "https://www.e-manuscripta.ch/bau/content/zoom/5157616",
+      "https://www.e-manuscripta.ch/bau/content/zoom/5157232",
+      "https://www.e-manuscripta.ch/bau/content/zoom/5157243",
+      "https://www.e-manuscripta.ch/bau/content/zoom/5157254",
+      "https://www.e-manuscripta.ch/bau/content/zoom/5157265",
+      "https://www.e-manuscripta.ch/bau/content/zoom/5157276",
+      "https://www.e-manuscripta.ch/bau/content/zoom/5157617",
+      "https://github.com/user-attachments/files/21583798/mss-downloader-logs-2025-08-04T19-30-56-726Z.json",
+      "https://www.e-manuscripta.ch/bau/download/webcache/2000/5157418`",
+      "https://github.com/user-attachments/files/21585131/mss-downloader-logs-2025-08-04T21-53-48-558Z.json",
+      "https://www.e-manuscripta.ch/bau/content/zoom/5157616`",
+      "https://www.e-manuscripta.ch/zuz/doi/10.7891/e-manuscripta-13221",
+      "https://www.e-manuscripta.ch/bau/content/zoom/5157225",
+      "https://www.e-manuscripta.ch/bau/content/zoom/5157606",
+      "https://www.e-manuscripta.ch/bau/content/zoom/5157615"
+    ],
+    "totalComments": 33,
+    "lastUserComment": {
+      "body": "## ✅ Fixed in v1.4.128\n\nThe e-manuscripta page discovery has been completely rewritten with a much simpler and more accurate approach:\n\n### Key Improvements:\n- **🎯 Accuracy**: Now finds all **404 pages** (was only finding 275 with the old method)\n- **⚡ Performance**: **4x faster** (~1 second vs 4+ seconds)\n- **🧹 Simplicity**: Removed 300+ lines of complex block discovery code\n- **🍪 Cookie Support**: Properly handles JavaScript verification\n\n### Technical Details:\nInstead of the complex HTTP-based block discovery with patterns and gaps, the new approach:\n1. Fetches the HTML page with cookie support for JS verification\n2. Extracts all page IDs directly from `<option value=\"5157223\">[3]</option>` tags\n3. Builds the manifest from these exact page references\n\nThis ensures that all pages are discovered in the correct order, exactly as they appear in the e-manuscripta viewer.\n\nThe fix has been tested with the manuscript from your report (https://www.e-manuscripta.ch/bau/content/zoom/5157616) and now correctly finds all 404 pages.\n\nPlease update to v1.4.128 to get this fix!",
+      "createdAt": "2025-08-09T11:53:45Z",
+      "author": "evb0110"
+    },
+    "errorMessages": [
+      "Error invoking remote method 'parse-manuscript-url': AbortError: This operation was abortedhttps://www.e-manuscripta.ch/bau/content/zoom/5157616",
+      "Error invoking remote method 'parse-manuscript-url': AbortError: This operation was abortedhttps://www.e-manuscripta.ch/bau/content/zoom/5157616",
+      "висит на калькуляции"
+    ]
+  },
+  {
+    "number": 11,
+    "title": "BNE",
+    "body": "https://bdh-rd.bne.es/viewer.vm?id=0000007619&page=1\nвисит на калькуляции",
+    "urls": [
+      "https://bdh-rd.bne.es/viewer.vm?id=0000007619&page=1",
+      "https://bdh-rd.bne.es/viewer.vm?id=0000007619"
+    ],
+    "totalComments": 27,
+    "lastUserComment": {
+      "body": "полную рукопись не видит, только 100 страниц отражает при загрузке манифеста",
+      "createdAt": "2025-08-09T11:12:22Z",
+      "author": "textorhub"
+    },
+    "errorMessages": [
+      "висит на калькуляции",
+      "не работает, не скачивает",
+      "висит на калькуляции",
+      "Если рукопись \"висит на калькуляции\", это может быть связано с:",
+      "та же ошибка, определяет число страниц правильно, но висит на калькуляции",
+      "висит на калькуляции, впн на работу не влияет",
+      "не скачивает",
+      "**The issue \"висит на калькуляции\" is completely fixed.**",
+      "Приложение использовало специальный метод `loadBneManifest`, который делал **200 HEAD-запросов** для проверки каждой страницы. Это вызывало зависание \"висит на калькуляции\"."
+    ]
+  }
+]

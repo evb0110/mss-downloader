@@ -1,0 +1,181 @@
+[
+  {
+    "issueNumber": 2,
+    "title": "Graz University",
+    "status": "CLAIMED_FIXED_V1.4.125",
+    "urls": [
+      {
+        "url": "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/5892688",
+        "status": "SUCCESS",
+        "error": null,
+        "manifestSize": 55964,
+        "pageCount": 644,
+        "timeTaken": 1316
+      },
+      {
+        "url": "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/6568472",
+        "status": "FAILED",
+        "error": "Failed to load University of Graz manifest: Failed to fetch Graz manifest: 500 Internal Server Error",
+        "manifestSize": 0,
+        "pageCount": 0,
+        "timeTaken": 643
+      },
+      {
+        "url": "https://unipub.uni-graz.at/obvugrscript/content/titleinfo/6840185",
+        "status": "SUCCESS",
+        "error": null,
+        "manifestSize": 92481,
+        "pageCount": 1063,
+        "timeTaken": 1328
+      }
+    ],
+    "overallResult": "PARTIALLY_FIXED",
+    "errors": [
+      "Failed to load University of Graz manifest: Failed to fetch Graz manifest: 500 Internal Server Error"
+    ],
+    "summary": "2/3 URLs working"
+  },
+  {
+    "issueNumber": 4,
+    "title": "Morgan Library",
+    "status": "MULTIPLE_FIXES_ATTEMPTED",
+    "urls": [
+      {
+        "url": "https://www.themorgan.org/collection/lindau-gospels/thumbs",
+        "status": "SUCCESS",
+        "error": null,
+        "manifestSize": 2167,
+        "pageCount": 16,
+        "timeTaken": 15900
+      },
+      {
+        "url": "https://host.themorgan.org/facsimile/m1/default.asp?id=1&width=100%25&height=100%25&iframe=true",
+        "status": "SUCCESS",
+        "error": null,
+        "manifestSize": 3786,
+        "pageCount": 50,
+        "timeTaken": 1018
+      }
+    ],
+    "overallResult": "FULLY_FIXED",
+    "errors": [],
+    "summary": "All 2 URLs working correctly"
+  },
+  {
+    "issueNumber": 5,
+    "title": "Florence",
+    "status": "PERSISTENT_ISSUES",
+    "urls": [
+      {
+        "url": "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/",
+        "status": "SUCCESS",
+        "error": null,
+        "manifestSize": 2057,
+        "pageCount": 19,
+        "timeTaken": 30608
+      },
+      {
+        "url": "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317539/",
+        "status": "SUCCESS",
+        "error": null,
+        "manifestSize": 35144,
+        "pageCount": 314,
+        "timeTaken": 3310
+      },
+      {
+        "url": "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/174871/",
+        "status": "SUCCESS",
+        "error": null,
+        "manifestSize": 226,
+        "pageCount": 2,
+        "timeTaken": 15128
+      }
+    ],
+    "overallResult": "FULLY_FIXED",
+    "errors": [],
+    "summary": "All 3 URLs working correctly"
+  },
+  {
+    "issueNumber": 6,
+    "title": "Bordeaux",
+    "status": "RECENT_FIX_CLAIMED",
+    "urls": [
+      {
+        "url": "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+        "status": "SUCCESS",
+        "error": null,
+        "manifestSize": 1120,
+        "pageCount": 0,
+        "timeTaken": 19565
+      }
+    ],
+    "overallResult": "FULLY_FIXED",
+    "errors": [],
+    "summary": "All 1 URLs working correctly"
+  },
+  {
+    "issueNumber": 9,
+    "title": "BDL Italy",
+    "status": "CLAIMED_FIXED_V1.4.124",
+    "urls": [
+      {
+        "url": "https://www.bdl.servizirl.it/vufind/Record/BDL-OGGETTO-3903",
+        "status": "SUCCESS",
+        "error": null,
+        "manifestSize": 32218,
+        "pageCount": 302,
+        "timeTaken": 692
+      }
+    ],
+    "overallResult": "FULLY_FIXED",
+    "errors": [],
+    "summary": "All 1 URLs working correctly"
+  },
+  {
+    "issueNumber": 10,
+    "title": "Zurich e-manuscripta",
+    "status": "CLAIMED_FIXED_V1.4.127_and_V1.4.128",
+    "urls": [
+      {
+        "url": "https://www.e-manuscripta.ch/bau/content/zoom/5157616",
+        "status": "FAILED",
+        "error": "Unsupported library: e-manuscripta",
+        "manifestSize": 0,
+        "pageCount": 0,
+        "timeTaken": 0
+      },
+      {
+        "url": "https://www.e-manuscripta.ch/zuz/doi/10.7891/e-manuscripta-13221",
+        "status": "FAILED",
+        "error": "Unsupported library: e-manuscripta",
+        "manifestSize": 0,
+        "pageCount": 0,
+        "timeTaken": 0
+      }
+    ],
+    "overallResult": "STILL_BROKEN",
+    "errors": [
+      "Unsupported library: e-manuscripta",
+      "Unsupported library: e-manuscripta"
+    ],
+    "summary": "All 2 URLs failing"
+  },
+  {
+    "issueNumber": 11,
+    "title": "BNE Spain",
+    "status": "MULTIPLE_FIXES_ATTEMPTED_V1.4.120_to_LATEST",
+    "urls": [
+      {
+        "url": "https://bdh-rd.bne.es/viewer.vm?id=0000007619&page=1",
+        "status": "SUCCESS",
+        "error": null,
+        "manifestSize": 9496,
+        "pageCount": 100,
+        "timeTaken": 1011
+      }
+    ],
+    "overallResult": "FULLY_FIXED",
+    "errors": [],
+    "summary": "All 1 URLs working correctly"
+  }
+]

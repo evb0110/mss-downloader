@@ -68,18 +68,9 @@ const api = {
       // Fallback to original handler if chunked handler is not available (backward compatibility)
       if (error.message?.includes('No handler registered') || error.message?.includes('is not a function')) {
         console.log('Chunked handler not available, falling back to original handler');
-        const result = await ipcRenderer.invoke('parse-manuscript-url', url);
-        
-        // ULTRA-PRIORITY FIX for Issue #2: Handle error response format
-        if (result && typeof result === 'object' && 'error' in result) {
-          const err = new Error(result.error.message);
-          err.name = result.error.name;
-          (err as any).library = result.error.library;
-          (err as any).isManifestError = result.error.isManifestError;
-          throw err;
-        }
-        
-        return result;
+        // ULTRA-PRIORITY FIX for Issue #2: Original handler now properly throws errors
+        // No need for error object handling - IPC will properly serialize thrown errors
+        return await ipcRenderer.invoke('parse-manuscript-url', url);
       }
       throw error;
     }

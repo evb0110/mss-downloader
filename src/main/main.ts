@@ -864,19 +864,19 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
       throw error;
     }
     
-    // ULTRA-PRIORITY FIX for Issue #2: Create a guaranteed serializable error
+    // ULTRA-PRIORITY FIX for Issue #2: Create and throw a guaranteed serializable error
+    // The error MUST be thrown (not returned) for proper IPC communication
     const errorMessage = error?.message || 'Failed to load manuscript';
-    const safeError = {
-      message: errorMessage,
-      name: error?.name || 'ManifestError',
-      library: error?.library,
-      isManifestError: true,
-      url: url,
-      platform: process.platform
-    };
+    const safeError = new Error(errorMessage);
+    safeError.name = error?.name || 'ManifestError';
+    (safeError as any).library = error?.library;
+    (safeError as any).isManifestError = true;
+    (safeError as any).url = url;
+    (safeError as any).platform = process.platform;
     
-    // Return error object instead of throwing to ensure reply is sent
-    return { error: safeError };
+    // CRITICAL FIX for Issue #2: Throw the error to ensure IPC reply is sent properly
+    // Returning { error: safeError } causes "reply was never sent" in renderer
+    throw safeError;
   }
 });
 

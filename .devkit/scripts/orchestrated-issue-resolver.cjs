@@ -80,20 +80,31 @@ class OrchestratedResolver {
             
             const issues = JSON.parse(issuesJson);
             const fixable = [];
+            const skipped = [];
+            
+            console.log(`\n📋 Analyzing ${issues.length} open issues...\n`);
             
             for (const issue of issues) {
                 const analysis = await this.analyzeIssue(issue);
                 
+                const issueInfo = {
+                    number: issue.number,
+                    title: issue.title,
+                    author: issue.user?.login || 'unknown',
+                    priority: analysis.priority,
+                    analysis
+                };
+                
                 if (analysis.shouldFix) {
-                    fixable.push({
-                        number: issue.number,
-                        title: issue.title,
-                        author: issue.user?.login || 'unknown',
-                        priority: analysis.priority,
-                        analysis
-                    });
+                    fixable.push(issueInfo);
+                    console.log(`✅ Issue #${issue.number} (${issue.title}): NEEDS FIX - ${analysis.reason}`);
+                } else {
+                    skipped.push(issueInfo);
+                    console.log(`⏭️  Issue #${issue.number} (${issue.title}): SKIP - ${analysis.reason}`);
                 }
             }
+            
+            console.log(`\n📊 Summary: ${fixable.length} issues need fixing, ${skipped.length} will be skipped\n`);
             
             // Sort by priority
             fixable.sort((a, b) => b.priority - a.priority);
@@ -128,8 +139,9 @@ class OrchestratedResolver {
                 comments = [];
             }
             
-            // Check fix attempts
+            // Check fix attempts from recent commits
             const fixAttempts = this.getFixAttempts(issue.number);
+            const recentFix = this.checkRecentFix(issue.number);
             
             // Find last comments
             const issueAuthor = issue.user?.login || 'unknown';
@@ -144,22 +156,37 @@ class OrchestratedResolver {
             let priority = 50;
             let reason = '';
             
-            if (!lastAuthorComment) {
-                // No feedback from author
-                shouldFix = false;
-                reason = 'No author feedback';
-            } else if (lastBotComment && new Date(lastBotComment.date) > new Date(lastAuthorComment.date)) {
-                // Bot responded after author
-                const hoursSince = (Date.now() - new Date(lastBotComment.date)) / (1000 * 60 * 60);
-                if (hoursSince < 24) {
+            // CRITICAL: Check if there's a recent fix in commits with no author response
+            if (recentFix && recentFix.hoursSince < 72) {
+                // Check if there's any author comment after the fix commit time
+                const hasAuthorResponseAfterFix = authorComments.some(c => 
+                    new Date(c.date) > new Date(recentFix.date)
+                );
+                
+                if (!hasAuthorResponseAfterFix) {
+                    // Recent fix exists, no author response yet - DON'T FIX
                     shouldFix = false;
-                    reason = `Recently fixed ${hoursSince.toFixed(1)}h ago`;
-                } else {
-                    shouldFix = false;
-                    reason = `No author response for ${hoursSince.toFixed(0)}h`;
+                    reason = `Recently fixed in ${recentFix.version} (${recentFix.hoursSince.toFixed(0)}h ago), awaiting author confirmation`;
+                    return { shouldFix, priority, reason, fixAttempts };
                 }
-            } else {
-                // Author commented after bot
+            }
+            
+            if (!lastAuthorComment && !comments.length) {
+                // No comments at all on the issue
+                shouldFix = true;
+                reason = 'New issue needs attention';
+                priority = 80;
+            } else if (!lastAuthorComment) {
+                // Only bot comments exist
+                shouldFix = false;
+                reason = 'No author feedback yet';
+            } else if (lastBotComment && new Date(lastBotComment.date) > new Date(lastAuthorComment.date)) {
+                // Bot responded after author's last comment
+                const hoursSince = (Date.now() - new Date(lastBotComment.date)) / (1000 * 60 * 60);
+                shouldFix = false;
+                reason = `Fix posted ${hoursSince.toFixed(0)}h ago, awaiting author response`;
+            } else if (lastAuthorComment) {
+                // Author commented after bot (or no bot comment)
                 const text = lastAuthorComment.body.toLowerCase();
                 
                 // Check for problem indicators
@@ -172,16 +199,21 @@ class OrchestratedResolver {
                         reason = `Too many attempts (${fixAttempts})`;
                     } else {
                         shouldFix = true;
-                        reason = 'User reports problems';
+                        reason = 'User reports problems after fix';
                         priority = this.calculatePriority(issue, fixAttempts);
                     }
                 } else if (isResolved) {
                     shouldFix = false;
                     reason = 'User confirmed resolved';
                 } else {
-                    shouldFix = false;
-                    reason = 'Status unclear';
+                    // Unclear status but author did comment
+                    shouldFix = true;
+                    reason = 'Author responded, needs investigation';
+                    priority = 60;
                 }
+            } else {
+                shouldFix = false;
+                reason = 'Unable to determine status';
             }
             
             return {
@@ -197,6 +229,38 @@ class OrchestratedResolver {
                 priority: 0,
                 reason: 'Analysis failed'
             };
+        }
+    }
+    
+    /**
+     * Check if there's a recent fix in git commits
+     */
+    checkRecentFix(issueNumber) {
+        try {
+            // Get commits mentioning this issue from the last week
+            const log = execSync(
+                `git log --since="1 week ago" --grep="Issue #${issueNumber}" --pretty=format:"%H|%ai|%s" | head -1`,
+                { encoding: 'utf8' }
+            );
+            
+            if (!log.trim()) return null;
+            
+            const [hash, date, message] = log.trim().split('|');
+            const hoursSince = (Date.now() - new Date(date)) / (1000 * 60 * 60);
+            
+            // Extract version from commit message
+            const versionMatch = message.match(/v(\d+\.\d+\.\d+)/);
+            const version = versionMatch ? versionMatch[1] : 'unknown';
+            
+            return {
+                hash,
+                date,
+                message,
+                version,
+                hoursSince
+            };
+        } catch {
+            return null;
         }
     }
     

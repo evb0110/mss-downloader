@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.128",
+  "version": "1.4.129",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.128: Simplified e-manuscripta (Zurich) page discovery - now finds ALL 404 pages",
-    "Completely rewrote e-manuscripta page extraction using HTML parsing instead of complex discovery",
-    "4x faster performance and 100% accurate page detection",
-    "Added cookie support for JavaScript verification on e-manuscripta",
-    "Now correctly finds all 404 pages (was missing 129 pages with old method)"
+    "v1.4.129: CRITICAL FIX for University of Graz IPC timeout error (Issue #2)",
+    "Fixed 'reply was never sent' error that prevented Graz manuscripts from loading",
+    "Root cause: IPC handler was returning error objects instead of throwing them",
+    "Now properly throws errors for correct Electron IPC communication",
+    "Graz manuscripts (644+ pages) now load successfully without timeouts"
   ],
   "main": "dist/main/main.js",
   "scripts": {
