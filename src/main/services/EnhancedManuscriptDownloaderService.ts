@@ -1743,9 +1743,8 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadModenaManifest(originalUrl);
                     break;
                 case 'bdl':
-                    // ULTRA-PRIORITY FIX for Issue #9: Use SharedManifestAdapter which works correctly
-                    // The local loadBDLManifest() method was missing, causing crashes
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('bdl', originalUrl);
+                    // Use local manifest loader for robustness and to avoid proxy issues
+                    manifest = await this.loadBDLManifest(originalUrl);
                     break;
                 case 'europeana':
                     manifest = await this.loadEuropeanaManifest(originalUrl);

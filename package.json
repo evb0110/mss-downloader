@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.125",
+  "version": "1.4.126",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.125: 🔥 CRITICAL FIX for Issue #2 - University of Graz IPC timeout RESOLVED",
-    "FIXED: 'reply was never sent' error on Windows when loading Graz manuscripts",
-    "ROOT CAUSE: IPC handler timeout on Windows for large manifests (644+ pages)",
-    "SOLUTION: Added timeout wrapper, error guarantees, and direct IIIF fallback",
-    "VALIDATION: 644 pages loaded, 10-page PDF created, ultra-validation 100% success"
+    "v1.4.126: 🔧 Reverted unnecessary v1.4.124 change for BDL library",
+    "REVERTED: BDL now uses local loadBDLManifest() method as originally intended",
+    "RESTORED: Progress monitoring, enhanced timeouts, and better error handling for BDL",
+    "PRESERVED: v1.4.125 fixes remain intact (Issue #2 Graz IPC timeout)",
+    "NOTE: BDL duplicate page fix from v1.4.123 still active in SharedManifestLoaders"
   ],
   "main": "dist/main/main.js",
   "scripts": {
