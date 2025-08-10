@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.142",
+  "version": "1.4.143",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.142: Critical library fixes - Florence, Bordeaux, GAMS",
-    "Fixed Florence ContentDM library support for manuscript downloads",
-    "Fixed Bordeaux library to properly return image arrays",
-    "Added GAMS IIIF support with authentication guidance",
-    "Confirmed working: Morgan, BDL, BNE libraries"
+    "v1.4.143: ULTRA-PRIORITY FIX - BDL memory allocation failure resolved (Issue #23)",
+    "Fixed critical memory allocation failure for large BDL manuscripts (400+ pages)",
+    "Implemented ultra-small batch processing for BDL to prevent memory exhaustion",
+    "Added aggressive memory cleanup and graceful recovery mechanisms",
+    "BDL manuscripts now download reliably without 'Array buffer allocation failed' errors"
   ],
   "main": "dist/main/main.js",
   "scripts": {

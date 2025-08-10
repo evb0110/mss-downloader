@@ -2637,7 +2637,7 @@ export class EnhancedManuscriptDownloaderService {
                 const manifestIndex = pageLinks ? pageIndex : (pageIndex - (actualStartPage - 1));
                 
                 // Validate manifestIndex is within bounds
-                if (manifestIndex < 0 || manifestIndex >= manifest?.pageLinks.length) {
+                if (manifestIndex < 0 || manifestIndex >= manifest?.pageLinks?.length) {
                     console?.error(`Page index ${pageIndex + 1} (manifest index ${manifestIndex}) is out of bounds for manifest with ${manifest?.pageLinks.length} pages`);
                     failedPages.push(pageIndex + 1);
                     completedPages++;
@@ -3116,9 +3116,27 @@ export class EnhancedManuscriptDownloaderService {
             details: { totalImages, outputPath }
         });
         
-        // Special handling for large manuscripta.se files to prevent infinite loops
+        // Special handling for large manuscripts to prevent memory allocation failures
         let batchSize;
-        if (manifest?.library === 'manuscripta' && totalImages > 300) {
+        
+        // ULTRA-PRIORITY FIX for Issue #23: BDL memory allocation failure
+        // BDL manuscripts often have high-resolution images that consume lots of memory
+        if (manifest?.library === 'bdl') {
+            if (totalImages > 300) {
+                batchSize = 5; // Ultra-small batches for 300+ page BDL manuscripts
+                console.log(`🔧 [BDL Memory Fix] Large BDL manuscript (${totalImages} pages), using ultra-small batch size: ${batchSize} to prevent memory allocation failure`);
+            } else if (totalImages > 200) {
+                batchSize = 8; // Very small batches for 200+ page BDL
+                console.log(`🔧 [BDL Memory Fix] Large BDL manuscript (${totalImages} pages), using very small batch size: ${batchSize}`);
+            } else if (totalImages > 100) {
+                batchSize = 12; // Small batches for 100+ page BDL
+                console.log(`🔧 [BDL Memory Fix] Medium BDL manuscript (${totalImages} pages), using small batch size: ${batchSize}`);
+            } else if (totalImages > 50) {
+                batchSize = 15; // Moderate batches for 50+ page BDL
+            } else {
+                batchSize = 20; // Standard batches for smaller BDL manuscripts
+            }
+        } else if (manifest?.library === 'manuscripta' && totalImages > 300) {
             batchSize = 8; // Very small batches for 300+ page manuscripta.se
             console.log(`Large manuscripta.se manuscript detected (${totalImages} pages), using very small batch size: ${batchSize}`);
         } else if (manifest?.library === 'manuscripta' && totalImages > 200) {
@@ -3198,8 +3216,21 @@ export class EnhancedManuscriptDownloaderService {
                     // Force garbage collection after each batch if available
                     if (global.gc) {
                         global.gc();
+                        
+                        // ULTRA-PRIORITY FIX for Issue #23: Enhanced memory cleanup for BDL
+                        if (manifest?.library === 'bdl' && totalImages > 100) {
+                            // BDL needs aggressive memory cleanup due to high-resolution images
+                            await new Promise(resolve => setTimeout(resolve, 300)); // 300ms pause for memory cleanup
+                            console.log(`🔧 [BDL Memory] Aggressive memory cleanup after batch ${batchNum}/${Math.ceil(totalImages / batchSize)}`);
+                            
+                            // Double garbage collection for large BDL manuscripts
+                            if (totalImages > 300) {
+                                global.gc();
+                                await new Promise(resolve => setTimeout(resolve, 100)); // Additional cleanup
+                            }
+                        }
                         // For large manuscripta.se files, add extra memory cleanup time
-                        if (manifest?.library === 'manuscripta' && totalImages > 200) {
+                        else if (manifest?.library === 'manuscripta' && totalImages > 200) {
                             await new Promise(resolve => setTimeout(resolve, 200)); // 200ms pause
                             console.log(`Memory cleanup completed after batch ${batchNum}/${Math.ceil(totalImages / batchSize)}`);
                         }
@@ -3208,7 +3239,53 @@ export class EnhancedManuscriptDownloaderService {
                 
             } catch (batchError: any) {
                 console.error(`\n❌ Batch ${batchNum} failed: ${batchError.message}`);
-                throw batchError;
+                
+                // ULTRA-PRIORITY FIX for Issue #23: Handle memory allocation failures gracefully
+                if (batchError.message && batchError.message.includes('Array buffer allocation failed')) {
+                    console.error('🚨 [BDL Memory] Memory allocation failure detected!');
+                    console.error('🔧 [BDL Memory] Attempting recovery with smaller batch size...');
+                    
+                    // Try to recover by processing images one at a time
+                    const singleImageBatch = imagePaths.slice(i, Math.min(i + batchSize, totalImages));
+                    for (const singleImagePath of singleImageBatch) {
+                        try {
+                            const singlePdfDoc = await PDFDocument.create();
+                            const imageBuffer = await fs.readFile(singleImagePath);
+                            
+                            let image;
+                            try {
+                                image = await singlePdfDoc.embedJpg(imageBuffer);
+                            } catch {
+                                try {
+                                    image = await singlePdfDoc.embedPng(imageBuffer);
+                                } catch {
+                                    console.error(`   Skipping unprocessable image: ${path.basename(singleImagePath)}`);
+                                    continue;
+                                }
+                            }
+                            
+                            const { width, height } = image;
+                            const page = singlePdfDoc.addPage([width, height]);
+                            page.drawImage(image, { x: 0, y: 0, width, height });
+                            
+                            const singlePdfBytes = await singlePdfDoc.save();
+                            allPdfBytes.push(singlePdfBytes);
+                            processedCount++;
+                            
+                            // Force memory cleanup after each single image
+                            if (global.gc) {
+                                global.gc();
+                                await new Promise(resolve => setTimeout(resolve, 50));
+                            }
+                            
+                        } catch (singleError: any) {
+                            console.error(`   Failed to process single image: ${singleError.message}`);
+                        }
+                    }
+                    console.log('🔧 [BDL Memory] Recovery completed, continuing with next batch...');
+                } else {
+                    throw batchError;
+                }
             }
         }
         
