@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.133",
+  "version": "1.4.134",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.133: CRITICAL FIX - BDL Ultra Mode now intercepts ALL downloads",
-    "Fixed integration: Ultra-reliable service now handles EVERY BDL page",
-    "Previously only worked for specific code path; now catches all BDL URLs",
-    "Removed duplicate code and fixed fetch API compatibility",
-    "BDL downloads should now have 100% success rate with unlimited retries"
+    "v1.4.134: ULTRA-AGGRESSIVE BDL Fix - NEVER give up on ANY page",
+    "Removed ALL conditions that could cause BDL downloads to fail",
+    "Forces INFINITE retries for EVERY BDL page until success",
+    "Added JPEG validation - rejects corrupt/small images and retries",
+    "If unlimited mode somehow exits, it recursively restarts itself"
   ],
   "main": "dist/main/main.js",
   "scripts": {

@@ -273,10 +273,14 @@ export class UltraReliableBDLService {
             await Promise.all(this.proxyServers.map(p => this.testProxyHealth(p)));
         }
         
+        console.log(`[BDL Ultra] Starting ultra-reliable download with maxRetries=${maxRetries}`);
+        
         while (maxRetries === -1 || attempt < maxRetries) {
             attempt++;
             queueItem.attemptCount = attempt;
             queueItem.lastAttempt = Date.now();
+            
+            console.log(`[BDL Ultra] Attempt ${attempt}/${maxRetries === -1 ? '∞' : maxRetries} for ${url.substring(0, 80)}...`);
             
             comprehensiveLogger.log({
                 level: 'info',
@@ -387,8 +391,16 @@ export class UltraReliableBDLService {
             await new Promise(resolve => setTimeout(resolve, delay));
         }
         
+        // This point should NEVER be reached if maxRetries === -1
+        if (maxRetries === -1) {
+            console.error(`[BDL Ultra] CRITICAL ERROR: Unlimited mode exited loop! This should never happen!`);
+            console.error(`[BDL Ultra] Forcing continuation...`);
+            // Force retry forever - recursive call
+            return this.ultraReliableDownload(url, pageIndex, options);
+        }
+        
         // Final failure (only if not unlimited mode)
-        console.error(`[BDL Ultra] FINAL FAILURE: Page ${pageIndex} after ${attempt} attempts`);
+        console.error(`[BDL Ultra] FINAL FAILURE: Page ${pageIndex} after ${attempt} attempts (limited mode)`);
         return null;
     }
     

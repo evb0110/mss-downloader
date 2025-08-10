@@ -1990,36 +1990,85 @@ export class EnhancedManuscriptDownloaderService {
         const startTime = Date.now();
         const library = this.detectLibrary(url) as TLibrary;
         
-        // CRITICAL FIX: Use ultra-reliable service for ALL BDL downloads
-        if (library === 'bdl' && configService.get('bdlUltraReliableMode') && attempt === 0) {
-            console.log(`🔄 [BDL Ultra] Intercepting BDL download: ${url}`);
+        // Debug logging for BDL detection
+        if (url.includes('bdl.servizirl.it')) {
+            console.log(`🔍 [BDL Detection] URL contains 'bdl.servizirl.it': ${url}`);
+            console.log(`🔍 [BDL Detection] detectLibrary returned: '${library}'`);
+            if (library !== 'bdl') {
+                console.error(`❌ [BDL Detection] CRITICAL: Library detection FAILED! Expected 'bdl', got '${library}'`);
+            }
+        }
+        
+        // CRITICAL FIX v2: Intercept ALL BDL downloads, regardless of attempt number
+        // Also check URL directly in case detectLibrary fails
+        if (library === 'bdl' || url.includes('bdl.servizirl.it')) {
+            console.log(`🔄 [BDL Ultra] Intercepting BDL download (attempt ${attempt}): ${url}`);
+            
+            // Force ultra-reliable mode for BDL - ignore config
+            const ultraMode = true; // Force enabled
+            const maxRetries = -1; // Force unlimited
+            
+            console.log(`🔥 [BDL Ultra] FORCED ULTRA MODE - Will retry forever until success`);
             comprehensiveLogger.log({
                 level: 'info',
                 category: 'bdl-ultra',
                 library: 'bdl',
                 url,
-                message: 'Using Ultra-Reliable BDL Service for download'
+                message: `Using Ultra-Reliable BDL Service (attempt ${attempt}, forced unlimited retries)`,
+                details: {
+                    attempt,
+                    forcedMode: true,
+                    maxRetries: -1
+                }
             });
             
-            const buffer = await this.ultraBDLService.ultraReliableDownload(
-                url,
-                0, // pageIndex not available here, use 0
-                {
-                    ultraReliableMode: configService.get('bdlUltraReliableMode'),
-                    maxRetries: configService.get('bdlMaxRetries'),
-                    maxQualityFallbacks: true,
-                    proxyHealthCheck: configService.get('bdlProxyHealthCheck'),
-                    persistentQueue: configService.get('bdlPersistentQueue'),
-                    pageVerificationSize: configService.get('bdlMinVerificationSize')
-                }
-            );
+            // Keep trying until we get a valid image
+            let validBuffer: Buffer | null = null;
+            let ultraAttempt = 0;
             
-            if (!buffer) {
-                throw new Error('Ultra-reliable BDL download returned null');
+            while (!validBuffer) {
+                ultraAttempt++;
+                console.log(`🔁 [BDL Ultra] Ultra-attempt ${ultraAttempt} for ${url.substring(0, 100)}...`);
+                
+                const buffer = await this.ultraBDLService.ultraReliableDownload(
+                    url,
+                    attempt, // Use actual attempt number as page index hint
+                    {
+                        ultraReliableMode: true, // Force enabled
+                        maxRetries: -1, // Force unlimited
+                        maxQualityFallbacks: true,
+                        proxyHealthCheck: ultraAttempt % 5 === 0, // Check every 5 attempts
+                        persistentQueue: true,
+                        pageVerificationSize: 10240, // 10KB minimum
+                        minDelayMs: 2000,
+                        maxDelayMs: 60000 // 1 minute max between attempts
+                    }
+                );
+                
+                // Validate the buffer
+                if (buffer && buffer.length >= 10240) { // At least 10KB
+                    // Check for JPEG signature
+                    if (buffer[0] === 0xFF && buffer[1] === 0xD8) {
+                        validBuffer = buffer;
+                        console.log(`✅ [BDL Ultra] SUCCESS after ${ultraAttempt} ultra-attempts: ${buffer.length} bytes (valid JPEG)`);
+                    } else {
+                        console.warn(`⚠️ [BDL Ultra] Got ${buffer.length} bytes but not valid JPEG, retrying...`);
+                    }
+                } else {
+                    const size = buffer ? buffer.length : 0;
+                    console.warn(`⚠️ [BDL Ultra] Got only ${size} bytes (need 10KB+), retrying...`);
+                }
+                
+                // If we didn't get a valid buffer, wait before retrying
+                if (!validBuffer) {
+                    const delay = Math.min(5000 * ultraAttempt, 60000); // Progressive delay up to 1 minute
+                    console.log(`⏳ [BDL Ultra] Waiting ${delay}ms before ultra-attempt ${ultraAttempt + 1}...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
             }
             
-            console.log(`✅ [BDL Ultra] Successfully downloaded ${buffer.length} bytes`);
-            return buffer;
+            console.log(`✅ [BDL Ultra] FINAL SUCCESS: Downloaded ${validBuffer.length} bytes after ${ultraAttempt} attempts`);
+            return validBuffer;
         }
         
         // Only log on first attempt to avoid duplicates with fetchDirect
