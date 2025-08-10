@@ -1751,107 +1751,107 @@ export class EnhancedManuscriptDownloaderService {
         try {
             switch (library) {
                 case 'nypl':
-                    manifest = await this.useLoaderOrFallback('nypl', originalUrl, this.loadNyplManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('nypl', originalUrl);
                     break;
                 case 'morgan':
-                    manifest = await this.useLoaderOrFallback('morgan', originalUrl, this.loadMorganManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('morgan', originalUrl);
                     break;
                 case 'gallica':
-                    manifest = await this.useLoaderOrFallback('gallica', originalUrl, this.loadGallicaManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('gallica', originalUrl);
                     break;
                 case 'grenoble':
-                    manifest = await this.useLoaderOrFallback('grenoble', originalUrl, this.loadGrenobleManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('grenoble', originalUrl);
                     break;
                 case 'karlsruhe':
-                    manifest = await this.useLoaderOrFallback('karlsruhe', originalUrl, this.loadKarlsruheManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('karlsruhe', originalUrl);
                     break;
                 case 'manchester':
-                    manifest = await this.useLoaderOrFallback('manchester', originalUrl, this.loadManchesterManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('manchester', originalUrl);
                     break;
                 case 'munich':
-                    manifest = await this.useLoaderOrFallback('munich', originalUrl, this.loadMunichManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('munich', originalUrl);
                     break;
                 case 'norwegian':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('norwegian', originalUrl);
                     break;
                 case 'unifr':
-                    manifest = await this.useLoaderOrFallback('unifr', originalUrl, this.loadUnifrManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('unifr', originalUrl);
                     break;
                 case 'vatlib':
-                    // Use local loader to ensure proper displayName (includes manuscript ID)
-                    manifest = await this.loadVatlibManifest(originalUrl);
+                    // Use shared loader for Vatican Library
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('vatican', originalUrl);
                     break;
                 case 'cecilia':
-                    manifest = await this.useLoaderOrFallback('cecilia', originalUrl, this.loadCeciliaManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('cecilia', originalUrl);
                     break;
                 case 'irht':
-                    manifest = await this.useLoaderOrFallback('irht', originalUrl, this.loadIrhtManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('irht', originalUrl);
                     break;
                 case 'loc':
-                    manifest = await this.useLoaderOrFallback('loc', originalUrl, this.loadLocManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('loc', originalUrl);
                     break;
                 case 'dijon':
-                    manifest = await this.useLoaderOrFallback('dijon', originalUrl, this.loadDijonManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('dijon', originalUrl);
                     break;
                 case 'laon':
-                    manifest = await this.useLoaderOrFallback('laon', originalUrl, this.loadLaonManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('laon', originalUrl);
                     break;
                 case 'durham':
-                    manifest = await this.useLoaderOrFallback('durham', originalUrl, this.loadDurhamManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('durham', originalUrl);
                     break;
                 case 'sharedcanvas':
-                    manifest = await this.useLoaderOrFallback('sharedcanvas', originalUrl, this.loadSharedCanvasManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('sharedcanvas', originalUrl);
                     break;
                 case 'saint_omer':
-                    manifest = await this.loadSaintOmerManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('saint_omer', originalUrl);
                     break;
                 case 'ugent':
-                    manifest = await this.useLoaderOrFallback('ugent', originalUrl, this.loadUgentManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('ugent', originalUrl);
                     break;
                 case 'bl':
-                    manifest = await this.useLoaderOrFallback('bl', originalUrl, this.loadBLManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('bl', originalUrl);
                     break;
                 case 'florus':
-                    manifest = await this.useLoaderOrFallback('florus', originalUrl, this.loadFlorusManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('florus', originalUrl);
                     break;
                 case 'unicatt':
-                    manifest = await this.useLoaderOrFallback('unicatt', originalUrl, this.loadUnicattManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('unicatt', originalUrl);
                     break;
                 case 'cudl':
-                    manifest = await this.useLoaderOrFallback('cudl', originalUrl, this.loadCudlManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('cudl', originalUrl);
                     break;
                 case 'trinity_cam':
-                    manifest = await this.useLoaderOrFallback('trinity_cam', originalUrl, this.loadTrinityCamManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('trinity_cam', originalUrl);
                     break;
                 case 'toronto':
-                    manifest = await this.useLoaderOrFallback('toronto', originalUrl, this.loadTorontoManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('toronto', originalUrl);
                     break;
                 case 'isos':
-                    manifest = await this.useLoaderOrFallback('isos', originalUrl, this.loadIsosManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('isos', originalUrl);
                     break;
                 case 'mira':
-                    manifest = await this.useLoaderOrFallback('mira', originalUrl, this.loadMiraManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('mira', originalUrl);
                     break;
                 case 'orleans':
-                    manifest = await this.useLoaderOrFallback('orleans', originalUrl, this.loadOrleansManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('orleans', originalUrl);
                     break;
                 case 'rbme':
-                    manifest = await this.useLoaderOrFallback('rbme', originalUrl, this.loadRbmeManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('rbme', originalUrl);
                     break;
                 case 'parker':
-                    manifest = await this.useLoaderOrFallback('parker', originalUrl, this.loadParkerManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('parker', originalUrl);
                     break;
                 case 'manuscripta':
-                    manifest = await this.useLoaderOrFallback('manuscripta', originalUrl, this.loadManuscriptaManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('manuscripta', originalUrl);
                     break;
                 case 'internet_culturale':
-                    manifest = await this.loadInternetCulturaleManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('internet_culturale', originalUrl);
                     break;
                 case 'graz':
-                    manifest = await this.useLoaderOrFallback('graz', originalUrl, this.loadGrazManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('graz', originalUrl);
                     break;
                 case 'hhu':
-                    manifest = await this.useLoaderOrFallback('hhu', originalUrl, this.loadHhuManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('hhu', originalUrl);
                     break;
                 case 'bordeaux':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('bordeaux', originalUrl);
@@ -1861,92 +1861,93 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'heidelberg':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('heidelberg', originalUrl);
-                    break;                case 'bdl':
-                    manifest = await this.useLoaderOrFallback('bdl', originalUrl, this.loadBDLManifest);
+                    break;
+                case 'bdl':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('bdl', originalUrl);
                     break;
                 case 'berlin':
-                    manifest = await this.useLoaderOrFallback('berlin', originalUrl, this.loadBerlinManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('berlin', originalUrl);
                     break;
                 case 'bne':
-                    manifest = await this.useLoaderOrFallback('bne', originalUrl, this.loadBneManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('bne', originalUrl);
                     break;
                 case 'vatican':
-                    manifest = await this.useLoaderOrFallback('vatican', originalUrl, this.loadVatlibManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('vatican', originalUrl);
                     break;
                 case 'cambridge':
-                    manifest = await this.useLoaderOrFallback('cambridge', originalUrl, this.loadCambridgeManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('cambridge', originalUrl);
                     break;
                 case 'cologne':
-                    manifest = await this.useLoaderOrFallback('cologne', originalUrl, this.loadCologneManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('cologne', originalUrl);
                     break;
                 case 'czech':
-                    manifest = await this.useLoaderOrFallback('czech', originalUrl, this.loadCzechManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('czech', originalUrl);
                     break;
                 case 'emanuscripta':
-                    manifest = await this.useLoaderOrFallback('emanuscripta', originalUrl, this.loadEManuscriptaManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('emanuscripta', originalUrl);
                     break;
                 case 'florence':
-                    manifest = await this.useLoaderOrFallback('florence', originalUrl, this.loadFlorenceManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('florence', originalUrl);
                     break;
                 case 'internetculturale':
-                    manifest = await this.useLoaderOrFallback('internetculturale', originalUrl, this.loadInternetCulturaleManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('internetculturale', originalUrl);
                     break;
                 case 'modena':
-                    manifest = await this.useLoaderOrFallback('modena', originalUrl, this.loadModenaManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('modena', originalUrl);
                     break;
                 case 'rome':
-                    manifest = await this.useLoaderOrFallback('rome', originalUrl, this.loadRomeManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('rome', originalUrl);
                     break;
                 case 'saintomer':
-                    manifest = await this.useLoaderOrFallback('saintomer', originalUrl, this.loadSaintOmerManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('saintomer', originalUrl);
                     break;
                 case 'fulda':
-                    manifest = await this.useLoaderOrFallback('fulda', originalUrl, this.loadFuldaManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('fulda', originalUrl);
                     break;
                 case 'vienna':
-                    manifest = await this.useLoaderOrFallback('vienna', originalUrl, this.loadViennaManuscriptaManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('vienna', originalUrl);
                     break;
                 case 'bvpb':
-                    manifest = await this.useLoaderOrFallback('bvpb', originalUrl, this.loadBvpbManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('bvpb', originalUrl);
                     break;
                 case 'europeana':
-                    manifest = await this.useLoaderOrFallback('europeana', originalUrl, this.loadEuropeanaManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('europeana', originalUrl);
                     break;
                 case 'montecassino':
-                    manifest = await this.useLoaderOrFallback('montecassino', originalUrl, this.loadMonteCassinoManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('montecassino', originalUrl);
                     break;
                 case 'vallicelliana':
-                    manifest = await this.useLoaderOrFallback('vallicelliana', originalUrl, this.loadVallicellianManifest);
+                    manifest = await this.loadVallicellianManifest(originalUrl);
                     break;
                 case 'omnesvallicelliana':
-                    manifest = await this.useLoaderOrFallback('omnesvallicelliana', originalUrl, this.loadOmnesVallicellianManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('omnesvallicelliana', originalUrl);
                     break;
                 case 'verona':
-                    manifest = await this.useLoaderOrFallback('verona', originalUrl, this.loadVeronaManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('verona', originalUrl);
                     break;
                 case 'diamm':
-                    manifest = await this.useLoaderOrFallback('diamm', originalUrl, this.loadDiammManifest);
+                    manifest = await this.loadDiammSpecificManifest(originalUrl);
                     break;
                 case 'mdc':
-                    manifest = await this.useLoaderOrFallback('mdc', originalUrl, this.loadMdcCataloniaManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('mdc', originalUrl);
                     break;
                 case 'onb':
-                    manifest = await this.useLoaderOrFallback('onb', originalUrl, this.loadOnbManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('onb', originalUrl);
                     break;
                 case 'rouen':
-                    manifest = await this.useLoaderOrFallback('rouen', originalUrl, this.loadRouenManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('rouen', originalUrl);
                     break;
                 case 'freiburg':
-                    manifest = await this.useLoaderOrFallback('freiburg', originalUrl, this.loadFreiburgManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('freiburg', originalUrl);
                     break;
                 case 'wolfenbuettel':
-                    manifest = await this.useLoaderOrFallback('wolfenbuettel', originalUrl, this.loadWolfenbuettelManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('wolfenbuettel', originalUrl);
                     break;
                 case 'gams':
-                    manifest = await this.useLoaderOrFallback('gams', originalUrl, this.loadGAMSManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('gams', originalUrl);
                     break;
                 case 'iccu':
-                    manifest = await this.useLoaderOrFallback('iccu', originalUrl, this.loadIccuApiManifest);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('iccu', originalUrl);
                     break;
                 case 'generic_iiif':
                     manifest = await this.useLoaderOrFallback('generic_iiif', originalUrl, this.loadIIIFManifest);
