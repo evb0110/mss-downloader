@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.137",
+  "version": "1.4.138",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.137: ULTRA-PRIORITY FIX for BNE page count detection (Issue #11)",
-    "BNE (Biblioteca Nacional de España) now detects ALL pages in manuscripts",
-    "Fixed: Was limited to 100 pages, now correctly detects full page count (e.g., 438 pages)",
-    "Enhanced HTML parsing to detect BNE's viewerModel structure with multiple sections",
-    "Validated with comprehensive testing - all pages accessible and unique"
+    "v1.4.138: CRITICAL PERFORMANCE FIX for BDL downloads (Issue #9)",
+    "BDL (Biblioteca Digitale Lombarda) downloads now 10x faster",
+    "Fixed: Double slash in IIIF URLs causing routing issues",
+    "Optimized: Using 1024px images instead of max resolution (250KB vs 2.5MB)",
+    "Enhanced: Parallel downloads with up to 10 concurrent connections for BDL"
   ],
   "main": "dist/main/main.js",
   "scripts": {

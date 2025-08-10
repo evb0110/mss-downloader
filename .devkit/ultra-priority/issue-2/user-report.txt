@@ -1,3 +1,0 @@
-Error invoking remote method 'parse-manuscript-url': reply was never senthttps://unipub.uni-graz.at/obvugrscript/content/titleinfo/5892688
-
-[mss-downloader-logs-2025-08-02T10-51-23-701Z.json](https://github.com/user-attachments/files/21558317/mss-downloader-logs-2025-08-02T10-51-23-701Z.json)

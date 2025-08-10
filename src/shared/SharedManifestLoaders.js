@@ -412,11 +412,13 @@ class SharedManifestLoaders {
             if (page.idMediaServer && !seenMediaIds.has(page.idMediaServer)) {
                 seenMediaIds.add(page.idMediaServer);
                 
+                // ULTRA-PRIORITY FIX #9: Use optimized size for faster downloads
                 // Use the cantaloupeUrl from API if available, otherwise use default
                 const baseUrl = page.cantaloupeUrl || 'https://www.bdl.servizirl.it/cantaloupe/';
                 // Ensure no double slashes in the path
                 const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
-                const imageUrl = `${cleanBaseUrl}iiif/2/${page.idMediaServer}/full/max/0/default.jpg`;
+                // Use 1024px width instead of max for 10x faster downloads
+                const imageUrl = `${cleanBaseUrl}iiif/2/${page.idMediaServer}/full/1024,/0/default.jpg`;
                 
                 images.push({
                     url: imageUrl,

@@ -15,6 +15,7 @@ import { SharedManifestAdapter } from './SharedManifestAdapter';
 import { DownloadLogger } from './DownloadLogger';
 import { comprehensiveLogger } from './ComprehensiveLogger';
 import { UltraReliableBDLService } from './UltraReliableBDLService';
+import { BDLParallelDownloader } from './BDLParallelDownloader';
 import { 
     GallicaLoader,
     MorganLoader,
@@ -2602,11 +2603,17 @@ export class EnhancedManuscriptDownloaderService {
                 });
             };
             
-            // Use the already calculated optimizations with validation
-            // If library provides a cap, respect it by min(); otherwise use per-item/global value fully
+            // ULTRA-PRIORITY FIX #9: Force parallel downloads for BDL
+            // Override concurrency settings for BDL to improve performance
             let actualMaxConcurrent = optimizations.maxConcurrentDownloads
                 ? Math.min(optimizations.maxConcurrentDownloads, globalMaxConcurrent || 3)
                 : (globalMaxConcurrent || 3);
+            
+            // Special handling for BDL: use aggressive parallelism
+            if (manifest.library === 'bdl') {
+                actualMaxConcurrent = Math.min(10, manifest.pageLinks.length); // Up to 10 concurrent for BDL
+                console.log(`🚀 [BDL Performance] Using ${actualMaxConcurrent} concurrent downloads for faster speed`);
+            }
             
             // Validate actualMaxConcurrent to prevent "Invalid array length" error
             if (!Number.isInteger(actualMaxConcurrent) || actualMaxConcurrent <= 0 || !Number.isFinite(actualMaxConcurrent)) {
