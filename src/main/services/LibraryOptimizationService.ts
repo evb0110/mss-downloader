@@ -126,8 +126,8 @@ export class LibraryOptimizationService {
         },
         'berlin': {
             maxConcurrentDownloads: 3, // German State Library server, moderate limits
-            timeoutMultiplier: 1.5, // Increased timeout for IIIF manifest processing
-            optimizationDescription: 'Berlin State Library optimizations: 3 concurrent downloads, extended timeouts for IIIF manifest processing'
+            timeoutMultiplier: 3.0, // Much longer timeout - Berlin manifests are very slow
+            optimizationDescription: 'Berlin State Library optimizations: 3 concurrent downloads, 3x timeout for slow IIIF manifests'
         },
         'loc': {
             maxConcurrentDownloads: 4, // Reduced from 8 for stability - prevents server throttling and hanging

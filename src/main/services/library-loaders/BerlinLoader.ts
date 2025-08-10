@@ -30,11 +30,34 @@ export class BerlinLoader extends BaseLibraryLoader {
                 const manifestUrl = `https://content.staatsbibliothek-berlin.de/dc/${fullPpn}/manifest`;
                 console.log('Fetching Berlin manifest from:', manifestUrl);
                 
-                const manifestResponse = await this.deps.fetchDirect(manifestUrl, {
-                    headers: {
-                        'Accept': 'application/json'
+                // Add retry logic for Berlin manifests
+                let manifestResponse;
+                let fetchAttempt = 0;
+                const maxAttempts = 3;
+                
+                while (fetchAttempt < maxAttempts) {
+                    fetchAttempt++;
+                    try {
+                        console.log(`Berlin: Fetching manifest (attempt ${fetchAttempt}/${maxAttempts})...`);
+                        manifestResponse = await this.deps.fetchDirect(manifestUrl, {
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        }, fetchAttempt); // Pass attempt number for timeout calculation
+                        
+                        if (manifestResponse.ok) {
+                            break;
+                        }
+                        console.warn(`Berlin: HTTP ${manifestResponse.status}, retrying...`);
+                    } catch (error: any) {
+                        console.error(`Berlin: Attempt ${fetchAttempt} failed: ${error.message}`);
+                        if (fetchAttempt >= maxAttempts) {
+                            throw new Error(`Failed to fetch Berlin manifest: ${error.message}`);
+                        }
+                        // Wait before retry
+                        await new Promise(resolve => setTimeout(resolve, 2000 * fetchAttempt));
                     }
-                });
+                }
                 
                 if (!manifestResponse.ok) {
                     throw new Error(`Failed to load Berlin IIIF manifest: HTTP ${manifestResponse.status}`);
