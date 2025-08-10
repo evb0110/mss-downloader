@@ -1,0 +1,66 @@
+{
+  "issue_2_graz_unipub": {
+    "success": true,
+    "issue": "#2",
+    "title": "грац (University of Graz - UniPub)",
+    "pageCount": 0,
+    "loadTime": "1.01",
+    "manifest": "✓",
+    "error": null
+  },
+  "issue_2_graz_gams": {
+    "success": false,
+    "issue": "#2",
+    "title": "грац (University of Graz - GAMS)",
+    "pageCount": 0,
+    "loadTime": 0,
+    "manifest": "✗",
+    "error": "Could not extract context identifier from GAMS URL. Please ensure the URL contains a context parameter like \"context:rbas.ms.P0008s11\"",
+    "reproduced": null
+  },
+  "issue_4_morgan": {
+    "success": true,
+    "issue": "#4",
+    "title": "морган (Morgan Library)",
+    "pageCount": 0,
+    "loadTime": "2.17",
+    "manifest": "✓",
+    "error": null
+  },
+  "issue_5_florence": {
+    "success": true,
+    "issue": "#5",
+    "title": "Флоренция (Florence)",
+    "pageCount": 0,
+    "loadTime": "26.08",
+    "manifest": "✓",
+    "error": null
+  },
+  "issue_6_bordeaux": {
+    "success": true,
+    "issue": "#6",
+    "title": "Бордо (Bordeaux)",
+    "pageCount": 0,
+    "loadTime": "14.33",
+    "manifest": "✓",
+    "error": null
+  },
+  "issue_11_bne": {
+    "success": true,
+    "issue": "#11",
+    "title": "BNE (Biblioteca Nacional de España)",
+    "pageCount": 0,
+    "loadTime": "1.12",
+    "manifest": "✓",
+    "error": null
+  },
+  "issue_23_bdl": {
+    "success": true,
+    "issue": "#23",
+    "title": "BDL II (Biblioteca Digitale Lombarda)",
+    "pageCount": 0,
+    "loadTime": "0.92",
+    "manifest": "✓",
+    "error": null
+  }
+}

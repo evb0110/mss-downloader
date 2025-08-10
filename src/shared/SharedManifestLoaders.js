@@ -1908,6 +1908,58 @@ class SharedManifestLoaders {
     async getGAMSManifest(url) {
         console.log('[GAMS] Processing URL:', url);
         
+        // Handle direct object URLs like: https://gams.uni-graz.at/o:gzc.1605/sdef:TEI/get
+        if (url.includes('/o:') || url.includes('/context:')) {
+            const objectMatch = url.match(/\/(o:[^/]+|context:[^/]+)/);
+            if (objectMatch) {
+                const objectId = objectMatch[1];
+                console.log('[GAMS] Detected object ID:', objectId);
+                
+                // Convert to IIIF manifest URL
+                const manifestUrl = `https://gams.uni-graz.at/archive/objects/${objectId}/methods/sdef:IIIF/manifest`;
+                console.log('[GAMS] Trying IIIF manifest URL:', manifestUrl);
+                
+                try {
+                    const response = await this.fetchWithRetry(manifestUrl, {}, 1);
+                    if (response.ok) {
+                        const manifest = await response.json();
+                        
+                        // Process IIIF manifest directly
+                        if (!manifest.sequences || !manifest.sequences[0] || !manifest.sequences[0].canvases) {
+                            throw new Error('Invalid GAMS IIIF manifest structure');
+                        }
+                        
+                        const canvases = manifest.sequences[0].canvases;
+                        console.log(`[GAMS] Found ${canvases.length} canvases in IIIF manifest`);
+                        
+                        // Extract images from IIIF manifest
+                        const images = canvases.map((canvas, index) => {
+                            const image = canvas.images?.[0]?.resource;
+                            if (!image) {
+                                console.warn(`[GAMS] No image found for canvas ${index + 1}`);
+                                return null;
+                            }
+                            
+                            return {
+                                url: image['@id'] || image.id,
+                                label: canvas.label || `Page ${index + 1}`,
+                                width: image.width || canvas.width,
+                                height: image.height || canvas.height
+                            };
+                        }).filter(img => img !== null);
+                        
+                        console.log(`[GAMS] Successfully extracted ${images.length} images from IIIF manifest`);
+                        return images;
+                    }
+                } catch (error) {
+                    console.log('[GAMS] IIIF manifest failed:', error.message);
+                }
+                
+                // Fallback: return error indicating GAMS TEI format not supported
+                throw new Error('GAMS TEI/XML format is not yet supported. Please use the IIIF manifest URL instead.');
+            }
+        }
+        
         // Check if this is a IIIF manifest URL
         if (url.includes('/sdef:IIIF/manifest') || url.includes('/IIIF/manifest')) {
             console.log('[GAMS] Detected IIIF manifest URL');

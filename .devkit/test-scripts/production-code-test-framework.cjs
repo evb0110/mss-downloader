@@ -9,15 +9,12 @@ const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process');
 
-// Load ALL issues from our comprehensive fetch
-const allIssues = JSON.parse(fs.readFileSync('.devkit/all-open-issues.json'));
-
-// Build test configuration with EXACT user URLs from ALL GitHub issues
-const USER_REPORTED_URLS = {
-    issue_2: {
+// Test cases with EXACT URLs from GitHub issues
+const TEST_CASES = {
+    issue_2_graz_unipub: {
         issue: '#2',
-        title: 'грац (Graz University)',
-        userUrl: 'https://gams.uni-graz.at/archive/objects/o:szd.2728/sdef:IIIF/manifest',
+        title: 'грац (University of Graz - UniPub)',
+        url: 'https://unipub.uni-graz.at/obvugrscript/content/titleinfo/5892688',
         userError: 'ошибка во время добавления манифеста',
         expectedBehavior: 'Should load Graz University IIIF manifest'
     },

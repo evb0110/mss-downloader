@@ -1,0 +1,56 @@
+{
+  "issue_2_graz": {
+    "success": false,
+    "issue": "#2",
+    "title": "грац (Graz)",
+    "pagesDownloaded": 0,
+    "pdfSize": 0,
+    "imageCount": 0,
+    "error": "No image URLs extracted from manifest"
+  },
+  "issue_4_morgan": {
+    "success": false,
+    "issue": "#4",
+    "title": "морган (Morgan)",
+    "pagesDownloaded": 0,
+    "pdfSize": 0,
+    "imageCount": 0,
+    "error": "No image URLs extracted from manifest"
+  },
+  "issue_5_florence": {
+    "success": false,
+    "issue": "#5",
+    "title": "Флоренция (Florence)",
+    "pagesDownloaded": 0,
+    "pdfSize": 0,
+    "imageCount": 0,
+    "error": "No image URLs extracted from manifest"
+  },
+  "issue_6_bordeaux": {
+    "success": false,
+    "issue": "#6",
+    "title": "Бордо (Bordeaux)",
+    "pagesDownloaded": 0,
+    "pdfSize": 0,
+    "imageCount": 0,
+    "error": "No image URLs extracted from manifest"
+  },
+  "issue_11_bne": {
+    "success": false,
+    "issue": "#11",
+    "title": "BNE",
+    "pagesDownloaded": 0,
+    "pdfSize": 0,
+    "imageCount": 0,
+    "error": "No image URLs extracted from manifest"
+  },
+  "issue_23_bdl": {
+    "success": false,
+    "issue": "#23",
+    "title": "BDL II",
+    "pagesDownloaded": 0,
+    "pdfSize": 0,
+    "imageCount": 0,
+    "error": "No image URLs extracted from manifest"
+  }
+}

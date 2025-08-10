@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-08-10T17:33:27.181Z",
+  "timestamp": "2025-08-10T21:44:59.716Z",
   "totalErrors": 119,
   "categories": {
     "implicitAny": {
@@ -724,7 +724,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 3223,
+      "line": 3300,
       "column": 24,
       "code": "TS2339",
       "message": "Property 'writeFileWithVerification' does not exist on type 'EnhancedManuscriptDownloaderService'.",
@@ -732,7 +732,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 3242,
+      "line": 3319,
       "column": 24,
       "code": "TS2339",
       "message": "Property 'writeFileWithVerification' does not exist on type 'EnhancedManuscriptDownloaderService'.",
@@ -740,7 +740,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 3575,
+      "line": 3652,
       "column": 19,
       "code": "TS6133",
       "message": "'extractFlorusImageUrls' is declared but its value is never read.",
@@ -748,7 +748,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 3917,
+      "line": 3994,
       "column": 19,
       "code": "TS6133",
       "message": "'handleEManuscriptaTitleInfo' is declared but its value is never read.",
@@ -756,7 +756,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 4020,
+      "line": 4097,
       "column": 35,
       "code": "TS2339",
       "message": "Property 'parseEManuscriptaDropdown' does not exist on type 'EnhancedManuscriptDownloaderService'.",
@@ -764,7 +764,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 4025,
+      "line": 4102,
       "column": 39,
       "code": "TS2339",
       "message": "Property 'parseEManuscriptaJSConfig' does not exist on type 'EnhancedManuscriptDownloaderService'.",
@@ -772,7 +772,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 4124,
+      "line": 4201,
       "column": 19,
       "code": "TS6133",
       "message": "'validateManifestCompleteness' is declared but its value is never read.",
@@ -780,7 +780,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 4291,
+      "line": 4368,
       "column": 19,
       "code": "TS6133",
       "message": "'robustBneDiscovery' is declared but its value is never read.",
@@ -788,7 +788,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 4313,
+      "line": 4390,
       "column": 15,
       "code": "TS6133",
       "message": "'controller' is declared but its value is never read.",
