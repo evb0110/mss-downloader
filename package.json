@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.134",
+  "version": "1.4.135",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.134: ULTRA-AGGRESSIVE BDL Fix - NEVER give up on ANY page",
-    "Removed ALL conditions that could cause BDL downloads to fail",
-    "Forces INFINITE retries for EVERY BDL page until success",
-    "Added JPEG validation - rejects corrupt/small images and retries",
-    "If unlimited mode somehow exits, it recursively restarts itself"
+    "v1.4.135: Fixed Berlin State Library timeout issues",
+    "Increased Berlin timeout from 45s to 90s for slow IIIF manifests",
+    "Added 3-attempt retry logic with progressive backoff for Berlin",
+    "Berlin manifests now have proper error handling and recovery",
+    "BDL ultra-aggressive mode continues to retry forever until success"
   ],
   "main": "dist/main/main.js",
   "scripts": {
