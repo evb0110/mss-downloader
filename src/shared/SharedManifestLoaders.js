@@ -2577,6 +2577,21 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         if (!match) throw new Error('Invalid Vatican Library URL');
         
         const manuscriptId = match[1];
+        
+        // Extract cleaner manuscript name according to patterns:
+        // MSS_Vat.lat.7172 -> Vat.lat.7172
+        // bav_pal_lat_243 -> Pal.lat.243
+        // MSS_Reg.lat.15 -> Reg.lat.15
+        let displayName = manuscriptId;
+        if (manuscriptId.startsWith('MSS_')) {
+            displayName = manuscriptId.substring(4);
+        } else if (manuscriptId.startsWith('bav_')) {
+            // Convert bav_pal_lat_243 to Pal.lat.243
+            displayName = manuscriptId.substring(4)
+                .replace(/^([a-z])/, (match) => match.toUpperCase())
+                .replace(/_/g, '.');
+        }
+        
         const manifestUrl = `https://digi.vatlib.it/iiif/${manuscriptId}/manifest.json`;
         
         const response = await this.fetchWithRetry(manifestUrl);
@@ -2615,6 +2630,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         return { 
             images,
             label: manifest.label || manuscriptId,
+            displayName: displayName,  // Return the properly formatted manuscript ID
             metadata: manifest.metadata || []
         };
     }

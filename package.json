@@ -1,13 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.140",
+  "version": "1.4.141",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.140: Bordeaux Library - Fixed progress bar stuck at 0% during tile downloads",
-    "Progress now updates smoothly as tiles download (shows: Downloading tiles: X/Y)",
-    "Fixed issue where progress bar stayed at 0% despite tiles being downloaded",
-    "Added incremental progress reporting for DirectTileProcessor operations",
-    "Improved user experience for Bordeaux manuscript downloads"
+    "v1.4.141: Vatican manuscript naming fixed",
+    "Fixed Vatican folders showing generic 'Vatican manuscript' names",
+    "Now properly extracts manuscript IDs (Vat.lat.7172, Pal.lat.243, etc.)",
+    "Restores individual manuscript identification for proper organization"
   ],
   "main": "dist/main/main.js",
   "scripts": {
