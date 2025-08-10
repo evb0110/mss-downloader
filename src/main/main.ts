@@ -838,11 +838,30 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
       throw new Error(`Invalid URL parameter: expected string, got ${typeof url} (${url})`);
     }
     
-    // ULTRA-PRIORITY FIX for Issue #2: Add timeout wrapper for Windows IPC stability
+    // ULTRA-PRIORITY FIX for Issue #2: Enhanced timeout handling for Graz on Windows
+    // Graz manifests are huge (400-600+ pages) and need special handling
+    const isGrazUrl = url.includes('uni-graz.at');
+    const timeoutMs = isGrazUrl ? 300000 : 120000; // 5 minutes for Graz, 2 minutes for others
+    
+    // Log timeout configuration for debugging
+    if (isGrazUrl) {
+      comprehensiveLogger.log({
+        level: 'info',
+        category: 'manifest',
+        url,
+        details: {
+          message: 'Using extended timeout for Graz manifest',
+          timeout: timeoutMs,
+          platform: process.platform,
+          issue: 'Issue #2 fix applied'
+        }
+      });
+    }
+    
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => {
         reject(new Error(`Manifest loading timeout for ${url}. The server may be slow or the manifest is very large. Please try again.`));
-      }, 120000); // 2 minute timeout
+      }, timeoutMs);
     });
     
     const manifestPromise = enhancedManuscriptDownloader.loadManifest(url);

@@ -93,11 +93,14 @@ export class GrazLoader extends BaseLibraryLoader {
                 let response: Response;
                 let manifestData: any;
                 try {
-                    console.log(`[Graz] Starting manifest fetch with 5 minute timeout...`);
-                    // FIXED: Use fetchWithHTTPS for Graz to handle SSL and timeout issues better
+                    console.log(`[Graz] Starting manifest fetch with extended timeout for Issue #2...`);
+                    // ULTRA-PRIORITY FIX for Issue #2: Extended timeout for Windows IPC stability
+                    const isWindows = process.platform === 'win32';
+                    const timeout = isWindows ? 600000 : 300000; // 10 minutes for Windows, 5 for others
+                    
                     response = await this.deps.fetchWithHTTPS(manifestUrl, { 
                         headers,
-                        timeout: 300000 // 5 minutes timeout for manifest
+                        timeout // Dynamic timeout based on platform
                     });
                     
                     if (!response.ok) {

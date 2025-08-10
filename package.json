@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.135",
+  "version": "1.4.136",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.135: Fixed Berlin State Library timeout issues",
-    "Increased Berlin timeout from 45s to 90s for slow IIIF manifests",
-    "Added 3-attempt retry logic with progressive backoff for Berlin",
-    "Berlin manifests now have proper error handling and recovery",
-    "BDL ultra-aggressive mode continues to retry forever until success"
+    "v1.4.136: CRITICAL FIX for University of Graz IPC timeout (Issue #2)",
+    "Fixed 'reply was never sent' error that prevented Graz downloads on Windows",
+    "Extended IPC timeout to 5 minutes for Graz URLs (10 minutes on Windows)",
+    "Added platform-specific timeout handling for large manifests",
+    "Graz manifests with 600+ pages now load reliably without timeouts"
   ],
   "main": "dist/main/main.js",
   "scripts": {
