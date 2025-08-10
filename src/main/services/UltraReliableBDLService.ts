@@ -63,9 +63,9 @@ export class UltraReliableBDLService {
     private queueFilePath: string;
     
     constructor() {
-        const appPath = process.platform === 'darwin' 
-            ? path.join(process.env.HOME!, 'Library', 'Application Support', 'mss-downloader')
-            : path.join(process.env.APPDATA || process.env.HOME!, 'mss-downloader');
+        // Use project root directory for the retry queue file
+        // This ensures the file is always accessible during development
+        const appPath = process.cwd();
         
         this.queueFilePath = path.join(appPath, 'bdl-retry-queue.json');
         this.loadRetryQueue();

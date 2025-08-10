@@ -1,0 +1,1227 @@
+{
+  "analysis_metadata": {
+    "file_path": "/home/evb/WebstormProjects/mss-downloader/src/main/services/EnhancedManuscriptDownloaderService.ts",
+    "total_lines": 11639,
+    "analysis_date": "2025-08-09",
+    "analysis_purpose": "Module boundary identification for safe refactoring"
+  },
+  
+  "class_overview": {
+    "class_name": "EnhancedManuscriptDownloaderService",
+    "line_range": [25, 11639],
+    "instance_variables": [
+      "manifestCache: ManifestCache",
+      "zifProcessor: ZifImageProcessor", 
+      "dziProcessor: DziImageProcessor",
+      "tileEngineService: TileEngineService",
+      "directTileProcessor: DirectTileProcessor",
+      "sharedManifestAdapter: SharedManifestAdapter",
+      "logger: DownloadLogger",
+      "ultraBDLService: UltraReliableBDLService"
+    ],
+    "constants": [
+      "SUPPORTED_LIBRARIES",
+      "PROXY_SERVERS", 
+      "NORWEGIAN_PROXIES",
+      "MIN_VALID_IMAGE_SIZE_BYTES"
+    ]
+  },
+
+  "method_inventory": {
+    "constructor_and_initialization": [
+      {
+        "name": "constructor",
+        "line_range": [35, 54],
+        "visibility": "public",
+        "async": false,
+        "dependencies": ["clearFlorenceCacheOnStartup", "clearGrazCacheOnStartup"]
+      },
+      {
+        "name": "clearFlorenceCacheOnStartup", 
+        "line_range": [60, 86],
+        "visibility": "private",
+        "async": true,
+        "dependencies": ["manifestCache.clearDomain", "comprehensiveLogger.log"]
+      },
+      {
+        "name": "clearGrazCacheOnStartup",
+        "line_range": [92, 120], 
+        "visibility": "private",
+        "async": true,
+        "dependencies": ["manifestCache.clearDomain", "comprehensiveLogger.log"]
+      }
+    ],
+
+    "utility_and_core_functionality": [
+      {
+        "name": "sanitizeUrl",
+        "line_range": [126, 188],
+        "visibility": "private", 
+        "async": false,
+        "purpose": "URL validation and malformed URL fixing",
+        "dependencies": ["comprehensiveLogger.log"]
+      },
+      {
+        "name": "getSupportedLibraries",
+        "line_range": [503, 510],
+        "visibility": "public",
+        "async": false,
+        "dependencies": []
+      },
+      {
+        "name": "calculateRetryDelay",
+        "line_range": [515, 520],
+        "visibility": "public", 
+        "async": false,
+        "dependencies": ["configService.get"]
+      },
+      {
+        "name": "formatETA",
+        "line_range": [525, 539],
+        "visibility": "public",
+        "async": false,
+        "dependencies": []
+      },
+      {
+        "name": "sleep", 
+        "line_range": [544, 546],
+        "visibility": "public",
+        "async": true,
+        "dependencies": []
+      },
+      {
+        "name": "detectLibrary",
+        "line_range": [612, 683],
+        "visibility": "public",
+        "async": false,
+        "purpose": "Library type detection from URL patterns",
+        "dependencies": []
+      },
+      {
+        "name": "detectLibraryFromUrl",
+        "line_range": [11597, 11638],
+        "visibility": "private",
+        "async": false,
+        "purpose": "Alternative library detection method",
+        "dependencies": []
+      }
+    ],
+
+    "http_and_networking": [
+      {
+        "name": "fetchWithProxyFallback",
+        "line_range": [710, 770],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Proxy-enabled HTTP fetching with fallbacks",
+        "dependencies": ["sanitizeUrl", "configService.get"]
+      },
+      {
+        "name": "fetchDirect", 
+        "line_range": [775, 1562],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Direct HTTP fetching with library-specific optimizations",
+        "dependencies": ["sanitizeUrl", "detectLibrary", "LibraryOptimizationService.getTimeoutForLibrary", "logger.logDownloadStart", "logger.logTimeout", "fetchWithHTTPS", "fetchBneWithHttps"]
+      },
+      {
+        "name": "fetchBneWithHttps",
+        "line_range": [1021, 1085],
+        "visibility": "private",
+        "async": true,
+        "purpose": "BNE-specific HTTPS fetching with SSL bypass", 
+        "dependencies": []
+      },
+      {
+        "name": "fetchWithHTTPS",
+        "line_range": [1086, 1562],
+        "visibility": "private", 
+        "async": true,
+        "purpose": "HTTPS fetching with DNS resolution and SSL handling",
+        "dependencies": []
+      }
+    ],
+
+    "validation_and_processing": [
+      {
+        "name": "validateInternetCulturaleImage",
+        "line_range": [551, 607],
+        "visibility": "private",
+        "async": true,
+        "purpose": "Internet Culturale specific image validation",
+        "dependencies": []
+      }
+    ],
+
+    "manifest_loading_orchestrator": [
+      {
+        "name": "loadManifest",
+        "line_range": [1565, 1853],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Main manifest loading orchestrator - routes to library-specific loaders",
+        "dependencies": ["detectLibrary", "manifestCache.get", "manifestCache.set", "ultraBDLService.downloadManuscript", "sharedManifestAdapter.loadManifest", "loadIIIFManifest", "loadMorganManifest", "loadNyplManifest", "loadGallicaManifest", "loadGrenobleManifest", "loadKarlsruheManifest", "loadManchesterManifest", "loadMunichManifest", "loadVatlibManifest", "loadDurhamManifest", "loadUgentManifest", "loadBLManifest", "loadUnifrManifest", "loadCeciliaManifest", "loadIrhtManifest", "loadLocManifest", "loadDijonManifest", "loadLaonManifest", "loadSharedCanvasManifest", "loadSaintOmerManifest", "loadTorontoManifest", "loadFlorusManifest", "loadUnicattManifest", "loadCudlManifest", "loadTrinityCamManifest", "loadIsosManifest", "loadMiraManifest", "loadOrleansManifest", "loadRbmeManifest", "loadParkerManifest", "loadManuscriptaManifest", "loadInternetCulturaleManifest", "loadGrazManifest", "loadCologneManifest", "loadViennaManuscriptaManifest", "loadRomeManifest", "loadBerlinManifest", "loadCzechManifest", "loadModenaManifest", "loadBDLManifest", "loadEuropeanaManifest", "loadEManuscriptaManifest", "loadMonteCassinoManifest", "loadVallicellianManifest", "loadOmnesVallicellianManifest", "loadIccuApiManifest", "loadVeronaManifest", "loadDiammManifest", "loadBneManifest", "loadMdcCataloniaManifest", "loadBvpbManifest", "loadFlorenceManifest", "loadOnbManifest", "loadRouenManifest", "loadFreiburgManifest", "loadFuldaManifest", "loadWolfenbuettelManifest", "loadHhuManifest", "loadGAMSManifest"]
+      }
+    ],
+
+    "library_specific_manifest_loaders": [
+      {
+        "name": "loadMorganManifest",
+        "line_range": [1854, 2257],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Morgan Library manuscript loading",
+        "dependencies": ["fetchDirect", "sleep"]
+      },
+      {
+        "name": "loadNyplManifest", 
+        "line_range": [2258, 2404],
+        "visibility": "public",
+        "async": true,
+        "purpose": "New York Public Library manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadGallicaManifest",
+        "line_range": [2405, 2544],
+        "visibility": "public", 
+        "async": true,
+        "purpose": "Gallica (BnF) manifest loading", 
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadGrenobleManifest",
+        "line_range": [2545, 2623],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Grenoble Municipal Library manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadKarlsruheManifest",
+        "line_range": [2624, 2747],
+        "visibility": "public", 
+        "async": true,
+        "purpose": "Karlsruhe BLB manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadManchesterManifest",
+        "line_range": [2748, 2835],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Manchester Digital Collections manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadMunichManifest",
+        "line_range": [2836, 2924],
+        "visibility": "public",
+        "async": true, 
+        "purpose": "Munich Digital Collections manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadIIIFManifest",
+        "line_range": [2925, 3055],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Generic IIIF manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadVatlibManifest",
+        "line_range": [3056, 3130],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Vatican Digital Library manifest loading", 
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadDurhamManifest",
+        "line_range": [3131, 3153],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Durham University manifest loading",
+        "dependencies": ["loadIIIFManifest"]
+      },
+      {
+        "name": "loadUgentManifest",
+        "line_range": [3154, 3172],
+        "visibility": "public", 
+        "async": true,
+        "purpose": "UGent Library manifest loading",
+        "dependencies": ["loadIIIFManifest"]
+      },
+      {
+        "name": "loadBLManifest",
+        "line_range": [3173, 3203], 
+        "visibility": "public",
+        "async": true,
+        "purpose": "British Library manifest loading",
+        "dependencies": ["loadIIIFManifest"]
+      },
+      {
+        "name": "loadUnifrManifest",
+        "line_range": [3204, 3271],
+        "visibility": "public",
+        "async": true,
+        "purpose": "e-codices (Unifr) manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadCeciliaManifest",
+        "line_range": [3272, 3366],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Cecilia (Grand Albigeois) manifest loading", 
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadIrhtManifest",
+        "line_range": [3367, 3451],
+        "visibility": "public",
+        "async": true,
+        "purpose": "IRHT (CNRS) manifest loading",
+        "dependencies": ["fetchDirect", "sleep"]
+      },
+      {
+        "name": "loadLocManifest", 
+        "line_range": [3452, 3637],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Library of Congress manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadDijonManifest",
+        "line_range": [3638, 3671],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Dijon Patrimoine manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadLaonManifest",
+        "line_range": [3672, 3729], 
+        "visibility": "public",
+        "async": true,
+        "purpose": "Laon Bibliothèque manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadSharedCanvasManifest",
+        "line_range": [3730, 3741],
+        "visibility": "public",
+        "async": true,
+        "purpose": "SharedCanvas manifest loading",
+        "dependencies": ["loadIIIFManifest"]
+      },
+      {
+        "name": "loadSaintOmerManifest",
+        "line_range": [3742, 3835],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Saint-Omer Municipal Library manifest loading", 
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadTorontoManifest",
+        "line_range": [3836, 3990],
+        "visibility": "public", 
+        "async": true,
+        "purpose": "University of Toronto manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadFlorusManifest",
+        "line_range": [5500, 5732],
+        "visibility": "public",
+        "async": true, 
+        "purpose": "Florus (BM Lyon) manuscript loading",
+        "dependencies": ["fetchDirect", "extractFlorusImageUrls"]
+      },
+      {
+        "name": "loadUnicattManifest",
+        "line_range": [5733, 5883],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Unicatt (Ambrosiana) manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadCudlManifest", 
+        "line_range": [5884, 5931],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Cambridge University Digital Library manifest loading",
+        "dependencies": ["loadIIIFManifest"]
+      },
+      {
+        "name": "loadTrinityCamManifest",
+        "line_range": [5932, 6034],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Trinity College Cambridge manifest loading", 
+        "dependencies": ["loadIIIFManifest"]
+      },
+      {
+        "name": "loadIsosManifest",
+        "line_range": [6035, 6085],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Dublin ISOS (DIAS) manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadMiraManifest",
+        "line_range": [6086, 6170],
+        "visibility": "public", 
+        "async": true,
+        "purpose": "Dublin MIRA manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadOrleansManifest",
+        "line_range": [6171, 6531],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Orléans Médiathèques (Aurelia) manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadRbmeManifest",
+        "line_range": [6532, 6683],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Real Biblioteca del Monasterio de El Escorial manifest loading",
+        "dependencies": ["loadIIIFManifest"]
+      },
+      {
+        "name": "loadParkerManifest",
+        "line_range": [6684, 6780],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Stanford Parker Library manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadManuscriptaManifest",
+        "line_range": [6781, 6936],
+        "visibility": "public", 
+        "async": true,
+        "purpose": "Manuscripta.se manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadInternetCulturaleManifest",
+        "line_range": [6937, 7132],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Internet Culturale manifest loading",
+        "dependencies": ["fetchDirect", "validateInternetCulturaleImage"]
+      },
+      {
+        "name": "loadGrazManifest",
+        "line_range": [7133, 7418], 
+        "visibility": "public",
+        "async": true,
+        "purpose": "University of Graz manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadCologneManifest",
+        "line_range": [7419, 7553],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Cologne Dom Library manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadViennaManuscriptaManifest",
+        "line_range": [7554, 7708],
+        "visibility": "public",
+        "async": true, 
+        "purpose": "Vienna Manuscripta.at manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadRomeManifest",
+        "line_range": [7709, 7835],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Rome National Library (BNCR) manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadBerlinManifest",
+        "line_range": [7836, 7925],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Berlin State Library manifest loading",
+        "dependencies": ["loadIIIFManifest"]
+      },
+      {
+        "name": "loadCzechManifest",
+        "line_range": [7926, 8003], 
+        "visibility": "public",
+        "async": true,
+        "purpose": "Czech Digital Library (VKOL) manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadModenaManifest",
+        "line_range": [8004, 8148],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Modena Diocesan Archive manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadBDLManifest",
+        "line_range": [8149, 8318],
+        "visibility": "public", 
+        "async": true,
+        "purpose": "BDL (Biblioteca Digitale Lombarda) manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadEuropeanaManifest",
+        "line_range": [8319, 8447],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Europeana Collections manifest loading",
+        "dependencies": ["fetchDirect", "loadGenericIIIFManifest"]
+      },
+      {
+        "name": "loadGenericIIIFManifest",
+        "line_range": [8448, 8531],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Generic IIIF manifest loader for various libraries", 
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadEManuscriptaManifest",
+        "line_range": [8532, 8589],
+        "visibility": "public",
+        "async": true,
+        "purpose": "e-manuscripta.ch manifest loading",
+        "dependencies": ["handleEManuscriptaTitleInfo", "handleEManuscriptaThumbView"]
+      },
+      {
+        "name": "loadMonteCassinoManifest",
+        "line_range": [9126, 9250],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Monte-Cassino (OMNES) manifest loading",
+        "dependencies": ["loadGenericIIIFManifest"]
+      },
+      {
+        "name": "loadVallicellianManifest",
+        "line_range": [9251, 9351], 
+        "visibility": "public",
+        "async": true,
+        "purpose": "Vallicelliana Library manifest loading",
+        "dependencies": ["loadGenericIIIFManifest"]
+      },
+      {
+        "name": "loadOmnesVallicellianManifest",
+        "line_range": [9518, 9596],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Omnes Vallicelliana manifest loading",
+        "dependencies": ["loadGenericIIIFManifest"]
+      },
+      {
+        "name": "loadIccuApiManifest",
+        "line_range": [9597, 9665],
+        "visibility": "public",
+        "async": true,
+        "purpose": "ICCU API manifest loading",
+        "dependencies": ["loadGenericIIIFManifest"]
+      },
+      {
+        "name": "loadVeronaManifest",
+        "line_range": [9666, 9859],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Verona Library (NBM) manifest loading", 
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadDiammManifest", 
+        "line_range": [9860, 9900],
+        "visibility": "public",
+        "async": true,
+        "purpose": "DIAMM manifest loading orchestrator",
+        "dependencies": ["loadDiammSpecificManifest"]
+      },
+      {
+        "name": "loadDiammSpecificManifest",
+        "line_range": [9901, 10004],
+        "visibility": "public",
+        "async": true,
+        "purpose": "DIAMM specific manifest loading implementation",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadBneManifest",
+        "line_range": [10005, 10166],
+        "visibility": "public",
+        "async": true,
+        "purpose": "BNE (Biblioteca Nacional de España) manifest loading",
+        "dependencies": ["fetchDirect", "robustBneDiscovery"]
+      },
+      {
+        "name": "loadMdcCataloniaManifest",
+        "line_range": [10167, 10340],
+        "visibility": "public",
+        "async": true,
+        "purpose": "MDC Catalonia manifest loading", 
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadBvpbManifest",
+        "line_range": [10341, 10458],
+        "visibility": "public",
+        "async": true,
+        "purpose": "BVPB manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadFlorenceManifest",
+        "line_range": [10459, 10589],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Florence (ContentDM Plutei) manifest loading", 
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadOnbManifest",
+        "line_range": [10590, 10688],
+        "visibility": "public",
+        "async": true,
+        "purpose": "ONB (Austrian National Library) manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadRouenManifest",
+        "line_range": [10689, 10878],
+        "visibility": "public", 
+        "async": true,
+        "purpose": "Rouen Municipal Library manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadFreiburgManifest",
+        "line_range": [10879, 11056],
+        "visibility": "public",
+        "async": true,
+        "purpose": "University of Freiburg manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadFuldaManifest",
+        "line_range": [11057, 11146],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Fulda University of Applied Sciences manifest loading",
+        "dependencies": ["loadIIIFManifest"]
+      },
+      {
+        "name": "loadWolfenbuettelManifest",
+        "line_range": [11147, 11311],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Wolfenbüttel Digital Library (HAB) manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadHhuManifest",
+        "line_range": [11312, 11494],
+        "visibility": "public", 
+        "async": true,
+        "purpose": "HHU Düsseldorf manifest loading",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadGAMSManifest",
+        "line_range": [11499, 11595],
+        "visibility": "public",
+        "async": true,
+        "purpose": "GAMS (University of Graz) manifest loading",
+        "dependencies": ["fetchDirect"]
+      }
+    ],
+
+    "private_manifest_helpers": [
+      {
+        "name": "extractFlorusImageUrls",
+        "line_range": [5546, 5732],
+        "visibility": "private",
+        "async": true,
+        "purpose": "Florus-specific image URL extraction",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "loadEManuscriptaManifest_OLD",
+        "line_range": [8590, 8688],
+        "visibility": "private", 
+        "async": true,
+        "purpose": "Legacy e-manuscripta loading method",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "parseEManuscriptaDropdown",
+        "line_range": [8689, 8737],
+        "visibility": "private",
+        "async": true,
+        "purpose": "Parse e-manuscripta dropdown menus",
+        "dependencies": []
+      },
+      {
+        "name": "parseEManuscriptaJSConfig", 
+        "line_range": [8738, 8763],
+        "visibility": "private",
+        "async": true,
+        "purpose": "Parse e-manuscripta JavaScript configuration",
+        "dependencies": []
+      },
+      {
+        "name": "parseEManuscriptaDeepHTML",
+        "line_range": [8764, 8807],
+        "visibility": "private",
+        "async": true,
+        "purpose": "Deep HTML parsing for e-manuscripta",
+        "dependencies": []
+      },
+      {
+        "name": "discoverEManuscriptaURLPattern",
+        "line_range": [8808, 8890],
+        "visibility": "private",
+        "async": true,
+        "purpose": "Discover URL patterns in e-manuscripta",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "validateEManuscriptaURLs",
+        "line_range": [8891, 8918],
+        "visibility": "private",
+        "async": true,
+        "purpose": "Validate e-manuscripta URLs",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "handleEManuscriptaTitleInfo",
+        "line_range": [8919, 8998],
+        "visibility": "private", 
+        "async": true,
+        "purpose": "Handle e-manuscripta title info pages",
+        "dependencies": ["fetchDirect", "parseEManuscriptaDropdown", "parseEManuscriptaJSConfig", "parseEManuscriptaDeepHTML", "discoverEManuscriptaURLPattern"]
+      },
+      {
+        "name": "handleEManuscriptaThumbView",
+        "line_range": [8999, 9084],
+        "visibility": "private",
+        "async": true,
+        "purpose": "Handle e-manuscripta thumb view pages",
+        "dependencies": ["fetchDirect", "extractAllThumbviewBlocksFromStructure"]
+      },
+      {
+        "name": "extractAllThumbviewBlocksFromStructure",
+        "line_range": [9085, 9125],
+        "visibility": "private",
+        "async": true,
+        "purpose": "Extract thumbview blocks from structure HTML",
+        "dependencies": ["fetchDirect"]
+      },
+      {
+        "name": "validateManifestCompleteness",
+        "line_range": [9352, 9394], 
+        "visibility": "private",
+        "async": true,
+        "purpose": "Validate manifest completeness",
+        "dependencies": []
+      },
+      {
+        "name": "extractPhysicalDescription",
+        "line_range": [9395, 9417],
+        "visibility": "private",
+        "async": false,
+        "purpose": "Extract physical description from manifest data",
+        "dependencies": ["getMetadataText"]
+      },
+      {
+        "name": "extractCNMDIdentifier",
+        "line_range": [9418, 9442],
+        "visibility": "private",
+        "async": false,
+        "purpose": "Extract CNMD identifier from manifest data",
+        "dependencies": ["getMetadataText"]
+      },
+      {
+        "name": "extractManuscriptTitle",
+        "line_range": [9443, 9465],
+        "visibility": "private", 
+        "async": false,
+        "purpose": "Extract manuscript title from manifest data",
+        "dependencies": ["getMetadataText"]
+      },
+      {
+        "name": "parseExpectedFolioCount",
+        "line_range": [9466, 9493],
+        "visibility": "private",
+        "async": false,
+        "purpose": "Parse expected folio count from description",
+        "dependencies": []
+      },
+      {
+        "name": "getMetadataText",
+        "line_range": [9494, 9517],
+        "visibility": "private",
+        "async": false,
+        "purpose": "Get text from metadata value",
+        "dependencies": []
+      },
+      {
+        "name": "robustBneDiscovery",
+        "line_range": [10029, 10166],
+        "visibility": "private",
+        "async": true,
+        "purpose": "Robust BNE manuscript discovery",
+        "dependencies": ["fetchDirect"]
+      }
+    ],
+
+    "image_downloading": [
+      {
+        "name": "downloadImageWithRetries", 
+        "line_range": [3991, 4265],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Download images with retry logic and quality fallbacks",
+        "dependencies": ["fetchDirect", "calculateRetryDelay", "sleep", "validateInternetCulturaleImage"]
+      },
+      {
+        "name": "downloadAndProcessZifFile",
+        "line_range": [4266, 4307],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Download and process ZIF (compressed image) files",
+        "dependencies": ["zifProcessor.processZifFile", "downloadImageWithRetries", "calculateRetryDelay", "sleep"]
+      },
+      {
+        "name": "downloadAndProcessDziFile",
+        "line_range": [4308, 4354],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Download and process DZI (Deep Zoom Image) files",
+        "dependencies": ["dziProcessor.processDziFile", "downloadImageWithRetries", "calculateRetryDelay", "sleep"]
+      }
+    ],
+
+    "orchestration_and_workflow": [
+      {
+        "name": "extractManuscriptIdFromUrl",
+        "line_range": [4355, 4374],
+        "visibility": "private",
+        "async": false,
+        "purpose": "Extract manuscript ID from URL for naming",
+        "dependencies": []
+      },
+      {
+        "name": "buildDescriptiveName", 
+        "line_range": [4375, 4381],
+        "visibility": "private",
+        "async": false,
+        "purpose": "Build descriptive filename from base name and URL",
+        "dependencies": ["extractManuscriptIdFromUrl"]
+      },
+      {
+        "name": "downloadManuscript",
+        "line_range": [4382, 5030],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Main manuscript download orchestrator",
+        "dependencies": ["loadManifest", "LibraryOptimizationService.getOptimization", "createProgressMonitor", "buildDescriptiveName", "tileEngineService.downloadTiles", "directTileProcessor.processDirectTile", "downloadImageWithRetries", "downloadAndProcessZifFile", "downloadAndProcessDziFile", "fetchDirect", "convertImagesToPDF", "convertImagesToPDFWithBlanks", "writeFileWithVerification"]
+      }
+    ],
+
+    "pdf_conversion": [
+      {
+        "name": "convertImagesToPDF",
+        "line_range": [5031, 5181],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Convert image files to PDF format",
+        "dependencies": ["fs.stat"]
+      },
+      {
+        "name": "convertImagesToPDFWithBlanks", 
+        "line_range": [5182, 5499],
+        "visibility": "public",
+        "async": true,
+        "purpose": "Convert images to PDF with blank page handling",
+        "dependencies": ["fs.stat"]
+      }
+    ],
+
+    "utility_helpers": [
+      {
+        "name": "writeFileWithVerification",
+        "line_range": [8283, 8318],
+        "visibility": "private",
+        "async": true,
+        "purpose": "Write file with integrity verification",
+        "dependencies": ["fs.writeFile", "fs.readFile"]
+      }
+    ]
+  },
+
+  "dependency_analysis": {
+    "external_dependencies": {
+      "core_nodejs": ["fs", "path", "https"],
+      "electron": ["app"],
+      "libraries": ["PDFDocument", "rgb", "JSDOM"],
+      "internal_services": [
+        "ManifestCache",
+        "ConfigService", 
+        "LibraryOptimizationService",
+        "IntelligentProgressMonitor",
+        "ZifImageProcessor",
+        "DziImageProcessor", 
+        "TileEngineService",
+        "DirectTileProcessor",
+        "SharedManifestAdapter",
+        "DownloadLogger",
+        "ComprehensiveLogger",
+        "UltraReliableBDLService"
+      ]
+    },
+    "internal_method_calls": {
+      "high_centrality_methods": [
+        "fetchDirect",
+        "loadManifest", 
+        "downloadImageWithRetries",
+        "detectLibrary",
+        "sanitizeUrl"
+      ],
+      "method_call_frequency": {
+        "fetchDirect": 89,
+        "loadManifest": 1,
+        "downloadImageWithRetries": 3,
+        "sanitizeUrl": 2,
+        "detectLibrary": 1,
+        "sleep": 5,
+        "calculateRetryDelay": 3
+      }
+    }
+  },
+
+  "proposed_module_boundaries": {
+    "core_utilities": {
+      "purpose": "Core utility functions and helpers",
+      "line_range": [126, 683],
+      "estimated_lines": 557,
+      "methods": [
+        "sanitizeUrl",
+        "getSupportedLibraries", 
+        "calculateRetryDelay",
+        "formatETA",
+        "sleep",
+        "detectLibrary",
+        "detectLibraryFromUrl"
+      ],
+      "risk_level": "LOW",
+      "dependencies": ["configService", "comprehensiveLogger"],
+      "rationale": "Self-contained utility functions with minimal dependencies"
+    },
+    
+    "http_networking": {
+      "purpose": "HTTP/HTTPS networking and request handling",
+      "line_range": [710, 1562],
+      "estimated_lines": 852,
+      "methods": [
+        "fetchWithProxyFallback",
+        "fetchDirect", 
+        "fetchBneWithHttps",
+        "fetchWithHTTPS"
+      ],
+      "risk_level": "HIGH",
+      "dependencies": ["sanitizeUrl", "detectLibrary", "LibraryOptimizationService", "logger"],
+      "rationale": "Complex networking logic with library-specific handling - high coupling"
+    },
+    
+    "validation_processing": {
+      "purpose": "Image and data validation",
+      "line_range": [551, 607],
+      "estimated_lines": 56,
+      "methods": [
+        "validateInternetCulturaleImage"
+      ],
+      "risk_level": "LOW", 
+      "dependencies": [],
+      "rationale": "Isolated validation logic, easily extractable"
+    },
+
+    "manifest_orchestrator": {
+      "purpose": "Main manifest loading coordination",
+      "line_range": [1565, 1853],
+      "estimated_lines": 288,
+      "methods": [
+        "loadManifest"
+      ],
+      "risk_level": "VERY_HIGH",
+      "dependencies": ["ALL_LIBRARY_LOADERS", "detectLibrary", "manifestCache", "ultraBDLService", "sharedManifestAdapter"],
+      "rationale": "Central orchestrator - would require major interface changes"
+    },
+
+    "iiif_standard_loaders": {
+      "purpose": "Standard IIIF manifest loaders",
+      "line_range": [2925, 4000],
+      "estimated_lines": 1075,
+      "methods": [
+        "loadIIIFManifest",
+        "loadVatlibManifest", 
+        "loadDurhamManifest",
+        "loadUgentManifest",
+        "loadBLManifest",
+        "loadManchesterManifest",
+        "loadMunichManifest",
+        "loadSaintOmerManifest",
+        "loadTorontoManifest",
+        "loadGrenobleManifest",
+        "loadKarlsruheManifest"
+      ],
+      "risk_level": "MEDIUM",
+      "dependencies": ["fetchDirect", "loadIIIFManifest"],
+      "rationale": "Standard IIIF implementations, similar patterns"
+    },
+
+    "custom_library_loaders_group1": {
+      "purpose": "Custom implementation library loaders (Group 1)",
+      "line_range": [1854, 2924],
+      "estimated_lines": 1070,
+      "methods": [
+        "loadMorganManifest",
+        "loadNyplManifest",
+        "loadGallicaManifest"
+      ],
+      "risk_level": "MEDIUM",
+      "dependencies": ["fetchDirect", "sleep"],
+      "rationale": "Complex custom implementations, could be grouped"
+    },
+
+    "custom_library_loaders_group2": {
+      "purpose": "Custom implementation library loaders (Group 2)",
+      "line_range": [3272, 5732],
+      "estimated_lines": 2460,
+      "methods": [
+        "loadCeciliaManifest",
+        "loadIrhtManifest", 
+        "loadLocManifest",
+        "loadDijonManifest",
+        "loadLaonManifest",
+        "loadSharedCanvasManifest",
+        "loadUnifrManifest",
+        "loadFlorusManifest",
+        "extractFlorusImageUrls"
+      ],
+      "risk_level": "MEDIUM",
+      "dependencies": ["fetchDirect", "sleep"],
+      "rationale": "Complex custom implementations, second group"
+    },
+
+    "italian_library_loaders": {
+      "purpose": "Italian library specific loaders",
+      "line_range": [5733, 8318],
+      "estimated_lines": 2585,
+      "methods": [
+        "loadUnicattManifest",
+        "loadInternetCulturaleManifest",
+        "loadRomeManifest", 
+        "loadBDLManifest",
+        "loadEuropeanaManifest",
+        "loadMonteCassinoManifest",
+        "loadVallicellianManifest",
+        "loadOmnesVallicellianManifest",
+        "loadIccuApiManifest",
+        "loadVeronaManifest",
+        "loadFlorenceManifest"
+      ],
+      "risk_level": "MEDIUM",
+      "dependencies": ["fetchDirect", "validateInternetCulturaleImage", "loadGenericIIIFManifest"],
+      "rationale": "Italian libraries have similar requirements and geo-blocking"
+    },
+
+    "german_austrian_loaders": {
+      "purpose": "German and Austrian library loaders",
+      "line_range": [7133, 11595],
+      "estimated_lines": 4462,
+      "methods": [
+        "loadGrazManifest",
+        "loadCologneManifest", 
+        "loadViennaManuscriptaManifest",
+        "loadBerlinManifest",
+        "loadFreiburgManifest",
+        "loadFuldaManifest",
+        "loadWolfenbuettelManifest",
+        "loadHhuManifest",
+        "loadGAMSManifest",
+        "loadOnbManifest"
+      ],
+      "risk_level": "MEDIUM",
+      "dependencies": ["fetchDirect", "loadIIIFManifest"],
+      "rationale": "Regional grouping with similar technical requirements"
+    },
+
+    "swiss_manuscripta_loaders": {
+      "purpose": "Swiss and e-manuscripta specialized loaders", 
+      "line_range": [8532, 9125],
+      "estimated_lines": 593,
+      "methods": [
+        "loadEManuscriptaManifest",
+        "loadEManuscriptaManifest_OLD",
+        "parseEManuscriptaDropdown",
+        "parseEManuscriptaJSConfig",
+        "parseEManuscriptaDeepHTML", 
+        "discoverEManuscriptaURLPattern",
+        "validateEManuscriptaURLs",
+        "handleEManuscriptaTitleInfo",
+        "handleEManuscriptaThumbView",
+        "extractAllThumbviewBlocksFromStructure"
+      ],
+      "risk_level": "HIGH", 
+      "dependencies": ["fetchDirect"],
+      "rationale": "Highly specialized and complex e-manuscripta logic"
+    },
+
+    "specialized_library_helpers": {
+      "purpose": "Specialized helper methods for complex libraries",
+      "line_range": [9352, 10028],
+      "estimated_lines": 676,
+      "methods": [
+        "validateManifestCompleteness",
+        "extractPhysicalDescription",
+        "extractCNMDIdentifier", 
+        "extractManuscriptTitle",
+        "parseExpectedFolioCount",
+        "getMetadataText",
+        "robustBneDiscovery"
+      ],
+      "risk_level": "LOW",
+      "dependencies": ["fetchDirect", "getMetadataText"],
+      "rationale": "Helper methods with clear functional boundaries"
+    },
+
+    "image_download_processing": {
+      "purpose": "Image downloading and processing",
+      "line_range": [3991, 4354],
+      "estimated_lines": 363,
+      "methods": [
+        "downloadImageWithRetries",
+        "downloadAndProcessZifFile", 
+        "downloadAndProcessDziFile"
+      ],
+      "risk_level": "MEDIUM",
+      "dependencies": ["fetchDirect", "calculateRetryDelay", "sleep", "validateInternetCulturaleImage", "zifProcessor", "dziProcessor"],
+      "rationale": "Image handling logic, moderately coupled"
+    },
+
+    "manuscript_orchestration": {
+      "purpose": "Main manuscript download workflow",
+      "line_range": [4355, 5030],
+      "estimated_lines": 675,
+      "methods": [
+        "extractManuscriptIdFromUrl",
+        "buildDescriptiveName",
+        "downloadManuscript"
+      ],
+      "risk_level": "VERY_HIGH",
+      "dependencies": ["ALL_SERVICES", "loadManifest", "downloadImageWithRetries", "convertImagesToPDF"],
+      "rationale": "Central orchestration logic - highest coupling"
+    },
+
+    "pdf_conversion": {
+      "purpose": "PDF creation and conversion",
+      "line_range": [5031, 5499],
+      "estimated_lines": 468,
+      "methods": [
+        "convertImagesToPDF",
+        "convertImagesToPDFWithBlanks"
+      ],
+      "risk_level": "LOW",
+      "dependencies": ["fs"],
+      "rationale": "Self-contained PDF conversion logic"
+    }
+  },
+
+  "refactoring_recommendations": {
+    "immediate_safe_extractions": [
+      "core_utilities",
+      "validation_processing", 
+      "pdf_conversion",
+      "specialized_library_helpers"
+    ],
+    "medium_risk_extractions": [
+      "iiif_standard_loaders",
+      "image_download_processing"
+    ],
+    "high_risk_extractions": [
+      "custom_library_loaders_group1",
+      "custom_library_loaders_group2", 
+      "italian_library_loaders",
+      "german_austrian_loaders",
+      "swiss_manuscripta_loaders"
+    ],
+    "avoid_for_now": [
+      "http_networking",
+      "manifest_orchestrator",
+      "manuscript_orchestration"
+    ],
+    
+    "breaking_change_risks": {
+      "method_signature_changes": [
+        "loadManifest",
+        "downloadManuscript",
+        "fetchDirect"
+      ],
+      "this_binding_issues": [
+        "All async methods that call other class methods",
+        "Methods that access instance variables"
+      ],
+      "circular_dependency_risks": [
+        "manifest_orchestrator <-> library_loaders",
+        "manuscript_orchestration <-> image_download_processing"
+      ]
+    },
+
+    "suggested_approach": {
+      "phase_1": "Extract pure utility functions (core_utilities, pdf_conversion)",
+      "phase_2": "Extract validation and helper methods",
+      "phase_3": "Group library loaders by region/type with careful interface design",
+      "phase_4": "Consider service injection pattern for high-coupling components"
+    }
+  },
+
+  "architectural_observations": {
+    "patterns_identified": [
+      "God Object Anti-pattern - Single class with 80+ methods",
+      "Long Method - Several methods over 200 lines",
+      "Feature Envy - Heavy dependence on external services",
+      "Duplicate Code - Similar IIIF parsing patterns across loaders"
+    ],
+    "coupling_issues": [
+      "High coupling between networking and library-specific logic",
+      "Orchestrator methods depend on ALL library loaders",
+      "Shared state through instance variables creates tight coupling"
+    ],
+    "positive_aspects": [
+      "Clear method naming and purpose documentation", 
+      "Consistent error handling patterns",
+      "Good separation between download and PDF conversion logic",
+      "Library-specific optimizations are well isolated"
+    ]
+  }
+}
