@@ -2676,10 +2676,30 @@ export class EnhancedManuscriptDownloaderService {
                             const pageNum = tileConfig.startPage + pageIndex;
                             console.log(`[Bordeaux] Processing page ${pageNum} using DirectTileProcessor`);
                             
+                            // Create a progress callback for tile downloads
+                            const tileProgressCallback = (tilesDownloaded: number, totalTiles: number) => {
+                                // Calculate sub-progress within this page
+                                const pageProgress = tilesDownloaded / totalTiles;
+                                const overallProgress = (completedPages + pageProgress) / totalPagesToDownload;
+                                
+                                const elapsed = (Date.now() - startTime) / 1000;
+                                const rate = (completedPages + pageProgress) / elapsed;
+                                const eta = rate > 0 ? (totalPagesToDownload - completedPages - pageProgress) / rate : 0;
+                                
+                                onProgress({
+                                    progress: overallProgress,
+                                    completedPages: completedPages,
+                                    totalPages: totalPagesToDownload,
+                                    eta: this.formatETA(eta),
+                                    details: `Downloading tiles: ${tilesDownloaded}/${totalTiles}`
+                                });
+                            };
+                            
                             const result = await this.directTileProcessor.processPage(
                                 tileConfig.baseId,
                                 pageNum,
-                                imgPath
+                                imgPath,
+                                tileProgressCallback
                             );
                             
                             if (result.success) {
@@ -2687,6 +2707,7 @@ export class EnhancedManuscriptDownloaderService {
                         const relativeIndex = pageIndex - (actualStartPage - 1);
                         imagePaths[relativeIndex] = imgPath;
                                 completedPages++;
+                                updateProgress();
                                 console.log(`[Bordeaux] Successfully processed page ${pageNum}`);
                             } else {
                                 console.error(`[Bordeaux] Failed to process page ${pageNum}: ${result.error}`);
@@ -2698,7 +2719,6 @@ export class EnhancedManuscriptDownloaderService {
                         }
                     }
                     
-                    updateProgress();
                     return;
                 }
                 

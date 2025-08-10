@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.139",
+  "version": "1.4.140",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.139: Vatican Library fix - All library loaders restored after refactor",
-    "Fixed critical bug: 'this.loadVatlibManifest is not a function' error",
-    "Restored functionality for 50+ libraries broken by incomplete refactor",
-    "All libraries now use unified SharedManifestLoaders implementation",
-    "Vatican Library, BNE, Munich, and all other loaders working again"
+    "v1.4.140: Bordeaux Library - Fixed progress bar stuck at 0% during tile downloads",
+    "Progress now updates smoothly as tiles download (shows: Downloading tiles: X/Y)",
+    "Fixed issue where progress bar stayed at 0% despite tiles being downloaded",
+    "Added incremental progress reporting for DirectTileProcessor operations",
+    "Improved user experience for Bordeaux manuscript downloads"
   ],
   "main": "dist/main/main.js",
   "scripts": {

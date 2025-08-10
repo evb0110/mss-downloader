@@ -195,7 +195,7 @@ export class DirectTileProcessor {
     /**
      * Download tiles with existence checking
      */
-    private async downloadTiles(tiles: Tile[]): Promise<Tile[]> {
+    private async downloadTiles(tiles: Tile[], onProgress?: (downloaded: number, total: number) => void): Promise<Tile[]> {
         const batchSize = 5;
         const downloadedTiles: Tile[] = [];
         
@@ -215,6 +215,11 @@ export class DirectTileProcessor {
                         
                         if (validTiles % 10 === 0) {
                             console.log(`[DirectTile] Downloaded ${validTiles} tiles...`);
+                        }
+                        
+                        // Report progress if callback provided
+                        if (onProgress) {
+                            onProgress(validTiles, tiles.length);
                         }
                         
                         return tile;
@@ -312,7 +317,7 @@ export class DirectTileProcessor {
     /**
      * Process a tiled image without DZI metadata
      */
-    async processTiledImage(baseUrl: string, existingTileInfo?: TileInfo): Promise<Buffer> {
+    async processTiledImage(baseUrl: string, existingTileInfo?: TileInfo, onProgress?: (downloaded: number, total: number) => void): Promise<Buffer> {
         console.log('[DirectTile] Processing tiled image:', baseUrl);
         
         // Use provided tile info or probe structure
@@ -322,7 +327,7 @@ export class DirectTileProcessor {
         const tiles = this.getTilesForLevel(tileInfo, tileInfo.maxLevel);
         
         // Download tiles
-        const downloadedTiles = await this.downloadTiles(tiles);
+        const downloadedTiles = await this.downloadTiles(tiles, onProgress);
         
         if (downloadedTiles.length === 0) {
             throw new Error('No valid tiles found');
@@ -358,7 +363,7 @@ export class DirectTileProcessor {
      * Process a single page for Bordeaux-style tiled manuscripts
      * Used by EnhancedManuscriptDownloaderService for individual page processing
      */
-    async processPage(baseId: string, pageNum: number, outputPath: string): Promise<{ success: boolean; error?: string }> {
+    async processPage(baseId: string, pageNum: number, outputPath: string, onProgress?: (downloaded: number, total: number) => void): Promise<{ success: boolean; error?: string }> {
         try {
             console.log(`[DirectTile] Processing Bordeaux page ${pageNum} with base ID: ${baseId}`);
             
@@ -398,7 +403,7 @@ export class DirectTileProcessor {
                 if (foundFormat) {
                     console.log(`[DirectTile] Found working format: ${foundFormat}`);
                     const altTileBaseUrl = `https://selene.bordeaux.fr/in/dz/${foundFormat}`;
-                    const imageBuffer = await this.processTiledImage(altTileBaseUrl);
+                    const imageBuffer = await this.processTiledImage(altTileBaseUrl, undefined, onProgress);
                     await fs.writeFile(outputPath, imageBuffer);
                     console.log(`[DirectTile] Successfully saved page ${pageNum} to ${outputPath} using alternative format`);
                     return { success: true };
@@ -408,7 +413,7 @@ export class DirectTileProcessor {
             }
             
             // Process the tiled image using the original format
-            const imageBuffer = await this.processTiledImage(tileBaseUrl);
+            const imageBuffer = await this.processTiledImage(tileBaseUrl, undefined, onProgress);
             
             // Save to output path
             await fs.writeFile(outputPath, imageBuffer);
