@@ -1,0 +1,36 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // All strict checks
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    
+    // Additional strictness
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitOverride": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    
+    // Error on unused code
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    
+    // Additional safety
+    "forceConsistentCasingInFileNames": true,
+    "noEmitOnError": true,
+    
+    // Method typing improvements (fixes loadVatlibManifest issue)
+    "strictBindCallApply": true,
+    "useUnknownInCatchVariables": true
+  }
+}

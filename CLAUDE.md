@@ -121,12 +121,21 @@ async function testManifest() { /* custom logic */ }
 - **PWD CHECK:** If files "missing", IMMEDIATELY run `pwd` to verify location
 
 ### 7. PRE-PUSH QUALITY GATES - NO EXCEPTIONS
-**MUST run before EVERY push:**
-1. `npm run lint` - MUST pass with zero errors
-2. `npm run build` - MUST complete successfully
-3. Fix ALL errors before commit/push
-4. Verify GitHub Actions build success
-5. If build fails: fix, commit, push fixes, verify telegram notifications sent
+**MUST run before EVERY commit:**
+1. `npm run precommit` - Type safety check (MANDATORY)
+2. `npm run lint` - MUST pass with zero errors
+3. `npm run build` - MUST complete successfully (includes type checking)
+
+**Type Safety Requirements (NEW):**
+- **NEVER commit with type errors** - Causes runtime failures like `loadVatlibManifest is not a function`
+- **Run `npm run precommit` BEFORE EVERY commit** - Catches method reference errors
+- **If type errors exist:** Run `npm run typefix` for auto-fix, then verify with `npm run typecheck`
+- **Build now includes type checking** - Will fail if types are wrong
+
+**After push:**
+1. Verify GitHub Actions build success
+2. Check telegram notifications sent
+3. If build fails: fix, commit, push fixes
 
 ### 8. OUTPUT DISCIPLINE - MINIMAL VERBOSITY
 - **NEVER display:** Raw tool outputs, full file contents, verbose logs
