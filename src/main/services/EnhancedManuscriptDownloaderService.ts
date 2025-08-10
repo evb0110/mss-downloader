@@ -2637,15 +2637,15 @@ export class EnhancedManuscriptDownloaderService {
                 const manifestIndex = pageLinks ? pageIndex : (pageIndex - (actualStartPage - 1));
                 
                 // Validate manifestIndex is within bounds
-                if (manifestIndex < 0 || manifestIndex >= manifest.pageLinks.length) {
-                    console.error(`Page index ${pageIndex + 1} (manifest index ${manifestIndex}) is out of bounds for manifest with ${manifest.pageLinks.length} pages`);
+                if (manifestIndex < 0 || manifestIndex >= manifest?.pageLinks.length) {
+                    console?.error(`Page index ${pageIndex + 1} (manifest index ${manifestIndex}) is out of bounds for manifest with ${manifest?.pageLinks.length} pages`);
                     failedPages.push(pageIndex + 1);
                     completedPages++;
                     updateProgress();
                     return;
                 }
                 
-                let imageUrl = manifest.pageLinks[manifestIndex];
+                let imageUrl = manifest?.pageLinks[manifestIndex];
                 
                 // Skip placeholder URLs (empty strings) used for missing pages
                 if (!imageUrl || imageUrl === '') {

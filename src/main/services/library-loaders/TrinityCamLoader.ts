@@ -26,10 +26,10 @@ export class TrinityCamLoader extends BaseLibraryLoader {
                     'trinity',
                     { initialTimeout: 60000, maxTimeout: 360000, progressCheckInterval: 20000 },
                     {
-                        onInitialTimeoutReached: (state) => {
+                        onInitialTimeoutReached: (state: any) => {
                             console.log(`[Trinity] ${state.statusMessage}`);
                         },
-                        onStuckDetected: (state) => {
+                        onStuckDetected: (state: any) => {
                             console.warn(`[Trinity] ${state.statusMessage}`);
                         }
                     }

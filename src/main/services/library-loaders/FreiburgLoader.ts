@@ -92,7 +92,7 @@ export class FreiburgLoader extends BaseLibraryLoader {
                 const allLinks = thumbsDom.window.document.querySelectorAll('a[href*="/diglit/"]');
                 
                 const uniquePages = new Set<string>();
-                allLinks.forEach(link => {
+                allLinks.forEach((link: any) => {
                     const href = link.getAttribute('href');
                     if (href) {
                         const pageMatch = href.match(/\/diglit\/[^/]+\/(\d{4})/);
@@ -153,7 +153,7 @@ export class FreiburgLoader extends BaseLibraryLoader {
                     });
                     
                     const batchResults = await Promise.all(batchPromises);
-                    pageLinks.push(...batchResults.filter((url): url is string => url !== null));
+                    pageLinks.push(...batchResults.filter((url: any): url is string => url !== null));
                     
                     // Progress logging
                     if (i % 50 === 0) {

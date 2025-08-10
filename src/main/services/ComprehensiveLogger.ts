@@ -5,7 +5,7 @@ import * as os from 'os';
 import { gzipSync, gunzipSync } from 'zlib';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
-export type LogCategory = 'network' | 'file' | 'manifest' | 'download' | 'pdf' | 'system' | 'renderer' | 'worker' | 'queue';
+export type LogCategory = 'network' | 'file' | 'manifest' | 'download' | 'pdf' | 'system' | 'renderer' | 'worker' | 'queue' | 'process' | 'bdl-parallel' | 'url-sanitizer';
 
 export interface LogContext {
     // System context

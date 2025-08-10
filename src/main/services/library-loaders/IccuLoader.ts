@@ -62,7 +62,7 @@ export class IccuLoader extends BaseLibraryLoader {
                 console.log(`Display name: ${displayName}`);
                 
                 // Load the manifest using the vallicelliana handler (since it's a DAM URL)
-                const manifest = await this.deps.loadVallicellianManifest(manifestUrl);
+                const manifest = await this?.deps.loadVallicellianManifest(manifestUrl);
                 
                 // Update the display name with the API-provided title
                 manifest.displayName = displayName;

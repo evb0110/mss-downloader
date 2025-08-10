@@ -31,7 +31,7 @@ export class RbmeLoader extends BaseLibraryLoader {
                     'rbme',
                     { initialTimeout: 30000, maxTimeout: 120000 },
                     {
-                        onStuckDetected: (state) => {
+                        onStuckDetected: (state: any) => {
                             console.warn(`[RBME] ${state.statusMessage} - Item: ${itemId}`);
                         }
                     }
@@ -84,7 +84,7 @@ export class RbmeLoader extends BaseLibraryLoader {
                     'rbme',
                     { initialTimeout: 30000, maxTimeout: 120000 },
                     {
-                        onStuckDetected: (state) => {
+                        onStuckDetected: (state: any) => {
                             console.warn(`[RBME] ${state.statusMessage} - URL: ${manifestUrl}`);
                         }
                     }

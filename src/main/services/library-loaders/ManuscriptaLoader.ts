@@ -31,13 +31,13 @@ export class ManuscriptaLoader extends BaseLibraryLoader {
                     'manuscripta',
                     { initialTimeout: 60000, maxTimeout: 300000, progressCheckInterval: 15000 },
                     {
-                        onInitialTimeoutReached: (state) => {
+                        onInitialTimeoutReached: (state: any) => {
                             console.log(`[Manuscripta.se] ${state.statusMessage}`);
                         },
-                        onStuckDetected: (state) => {
+                        onStuckDetected: (state: any) => {
                             console.warn(`[Manuscripta.se] ${state.statusMessage} - ID: ${manuscriptId}`);
                         },
-                        onTimeout: (state) => {
+                        onTimeout: (state: any) => {
                             console.error(`[Manuscripta.se] ${state.statusMessage} - ID: ${manuscriptId}`);
                         }
                     }

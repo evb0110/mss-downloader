@@ -40,7 +40,7 @@ export class EuropeanaLoader extends BaseLibraryLoader {
                                             console.log(`Europeana: Found external IIIF manifest: ${manifestUrl}`);
                                             
                                             // Load the external IIIF manifest
-                                            const externalManifest = await this.deps.loadGenericIIIFManifest(manifestUrl, europeanaUrl, recordData.object?.proxies?.[0]?.dcTitle?.def?.[0] || `Europeana_${recordId}`);
+                                            const externalManifest = await this?.deps.loadGenericIIIFManifest(manifestUrl, europeanaUrl, recordData?.object?.proxies?.[0]?.dcTitle?.def?.[0] || `Europeana_${recordId}`);
                                             console.log(`Europeana: Successfully loaded external manifest with ${externalManifest.totalPages} pages`);
                                             return externalManifest;
                                         }

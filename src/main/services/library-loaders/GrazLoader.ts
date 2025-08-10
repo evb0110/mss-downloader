@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { BaseLibraryLoader, type LoaderDependencies } from './types';
 import type { ManuscriptManifest } from '../../../shared/types';
 
@@ -72,16 +74,16 @@ export class GrazLoader extends BaseLibraryLoader {
                         minProgressThreshold: 0.01   // Any progress is good progress
                     },
                     {
-                        onInitialTimeoutReached: (state) => {
+                        onInitialTimeoutReached: (state: any) => {
                             console.log(`[Graz] ${state.statusMessage}`);
                         },
-                        onStuckDetected: (state) => {
+                        onStuckDetected: (state: any) => {
                             console.warn(`[Graz] ${state.statusMessage}`);
                         },
-                        onProgressResumed: (state) => {
+                        onProgressResumed: (state: any) => {
                             console.log(`[Graz] ${state.statusMessage}`);
                         },
-                        onTimeout: (state) => {
+                        onTimeout: (state: any) => {
                             console.error(`[Graz] ${state.statusMessage}`);
                         }
                     }

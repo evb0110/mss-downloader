@@ -35,7 +35,7 @@ export class DiammLoader extends BaseLibraryLoader {
                 }
                 
                 // Load the IIIF manifest using DIAMM-specific processing for maximum resolution
-                const manifest = await this.deps.loadDiammSpecificManifest(manifestUrl);
+                const manifest = await this?.deps.loadDiammSpecificManifest(manifestUrl);
                 
                 // Override library type to ensure correct identification
                 manifest.library = 'diamm';

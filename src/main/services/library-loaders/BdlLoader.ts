@@ -55,7 +55,7 @@ export class BdlLoader extends BaseLibraryLoader {
                     'bdl',
                     { initialTimeout: 30000, maxTimeout: 90000 },
                     {
-                        onStuckDetected: (state) => {
+                        onStuckDetected: (state: any) => {
                             console.warn(`[BDL] ${state.statusMessage}`);
                         }
                     }

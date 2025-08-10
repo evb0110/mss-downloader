@@ -618,7 +618,7 @@ export class DownloadQueue extends EventEmitter {
                 startPage,
                 endPage,
                 skipExisting: false,
-                onProgress: (progressData) => {
+                onProgress: (progressData: any) => {
                     if (!this.state.isPaused && item.progress) {
                         const now = Date.now();
                         const downloadedPages = progressData.completedPages || progressData.downloadedPages || 0;
@@ -648,10 +648,10 @@ export class DownloadQueue extends EventEmitter {
                         }
                     }
                 },
-                onStatusChange: (_status) => {
+                onStatusChange: (_status: any) => {
                     // Not used for queue items directly
                 },
-                onError: (error) => {
+                onError: (error: any) => {
                     throw new Error(error);
                 },
             });
@@ -764,7 +764,7 @@ export class DownloadQueue extends EventEmitter {
                 startPage,
                 endPage,
                 skipExisting: false,
-                onProgress: (progressData) => {
+                onProgress: (progressData: any) => {
                     if (!this.state.isPaused && item.progress) {
                         const now = Date.now();
                         const downloadedPages = progressData.completedPages || progressData.downloadedPages || 0;
@@ -788,10 +788,10 @@ export class DownloadQueue extends EventEmitter {
                         }
                     }
                 },
-                onStatusChange: (_status) => {
+                onStatusChange: (_status: any) => {
                     // Not used for queue items directly
                 },
-                onError: (error) => {
+                onError: (error: any) => {
                     throw new Error(error);
                 },
             });

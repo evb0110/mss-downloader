@@ -222,7 +222,7 @@ const createWindow = async () => {
       // Try other ports
       const tryPorts = [5174, 5175, 5176, 5177];
       for (const port of tryPorts) {
-        mainWindow.loadURL(`http://localhost:${port}`).then(() => {
+        mainWindow?.loadURL(`http://localhost:${port}`).then(() => {
           console.log(`Successfully loaded dev server on port ${port}`);
         }).catch(() => {
           // Silent fail, try next
@@ -404,7 +404,7 @@ process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
   comprehensiveLogger.log({
     level: 'error',
-    category: 'process',
+    category: 'system',
     errorMessage: error.message,
     errorStack: error.stack,
     details: {

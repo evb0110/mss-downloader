@@ -59,11 +59,11 @@ export class BerlinLoader extends BaseLibraryLoader {
                     }
                 }
                 
-                if (!manifestResponse.ok) {
-                    throw new Error(`Failed to load Berlin IIIF manifest: HTTP ${manifestResponse.status}`);
+                if (!manifestResponse?.ok) {
+                    throw new Error(`Failed to load Berlin IIIF manifest: HTTP ${manifestResponse?.status}`);
                 }
                 
-                const manifestData = await manifestResponse.json();
+                const manifestData = await manifestResponse?.json();
                 
                 // Extract metadata
                 const title = manifestData.label || `Berlin Manuscript ${ppnNumber}`;
