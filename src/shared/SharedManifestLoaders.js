@@ -1908,7 +1908,115 @@ class SharedManifestLoaders {
     async getGAMSManifest(url) {
         console.log('[GAMS] Processing URL:', url);
         
-        // Extract GAMS context identifier
+        // Check if this is a IIIF manifest URL
+        if (url.includes('/sdef:IIIF/manifest') || url.includes('/IIIF/manifest')) {
+            console.log('[GAMS] Detected IIIF manifest URL');
+            
+            // Extract the object ID from the URL
+            const objectMatch = url.match(/objects\/([^/]+)/);
+            if (!objectMatch) {
+                throw new Error('Could not extract object ID from GAMS IIIF URL');
+            }
+            const objectId = objectMatch[1];
+            console.log('[GAMS] Object ID:', objectId);
+            
+            // Try to access the viewer page to get images directly
+            // GAMS IIIF manifests often require authentication, so we use an alternative approach
+            const viewerUrl = `https://gams.uni-graz.at/archive/objects/${objectId}/methods/sdef:IIIF/get`;
+            console.log('[GAMS] Trying viewer URL:', viewerUrl);
+            
+            try {
+                // First, try the IIIF manifest (might work for public objects)
+                const response = await this.fetchWithRetry(url, {}, 1);
+                
+                if (response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('json')) {
+                        const manifest = await response.json();
+                        
+                        if (!manifest.sequences || !manifest.sequences[0] || !manifest.sequences[0].canvases) {
+                            throw new Error('Invalid IIIF manifest structure');
+                        }
+                
+                const canvases = manifest.sequences[0].canvases;
+                console.log(`[GAMS] Found ${canvases.length} canvases in IIIF manifest`);
+                
+                // Extract images from IIIF manifest
+                const images = canvases.map((canvas, index) => {
+                    // Get the image resource
+                    const image = canvas.images?.[0]?.resource;
+                    if (!image) {
+                        console.warn(`[GAMS] No image found for canvas ${index + 1}`);
+                        return null;
+                    }
+                    
+                    // Use the full quality image URL
+                    const imageUrl = image['@id'] || image.id;
+                    
+                    return {
+                        url: imageUrl,
+                        label: canvas.label || `Page ${index + 1}`
+                    };
+                }).filter(img => img !== null);
+                
+                        console.log(`[GAMS] Successfully extracted ${images.length} images from IIIF manifest`);
+                        return { images };
+                    }
+                }
+                
+                // If we get here, the manifest requires authentication or is not available
+                console.log('[GAMS] IIIF manifest requires authentication, trying alternative approach');
+                
+                // Alternative approach: Generate image URLs based on the object ID
+                // GAMS objects often follow a pattern for image access
+                const images = [];
+                
+                // Try to generate up to 300 pages (we'll stop when we hit 404s)
+                for (let page = 1; page <= 300; page++) {
+                    // GAMS image URL pattern
+                    const imageUrl = `https://gams.uni-graz.at/archive/objects/${objectId}/datastreams/IMAGE.${page}/content`;
+                    
+                    // Test if the page exists
+                    try {
+                        const testResponse = await this.fetchWithRetry(imageUrl, { method: 'HEAD' }, 1);
+                        if (testResponse.ok) {
+                            images.push({
+                                url: imageUrl,
+                                label: `Page ${page}`
+                            });
+                        } else {
+                            // Stop when we hit a 404
+                            if (testResponse.status === 404 && images.length > 0) {
+                                break;
+                            }
+                        }
+                    } catch (testError) {
+                        // Stop on error if we already have some pages
+                        if (images.length > 0) {
+                            break;
+                        }
+                    }
+                    
+                    // Stop after finding 10 consecutive missing pages
+                    if (page > 10 && images.length === 0) {
+                        break;
+                    }
+                }
+                
+                if (images.length > 0) {
+                    console.log(`[GAMS] Found ${images.length} images using alternative approach`);
+                    return { images };
+                }
+                
+                throw new Error(`GAMS manuscript "${objectId}" requires authentication. This is a protected collection at the University of Graz that requires institutional login. Please try:\n1. Using a public manuscript from unipub.uni-graz.at instead\n2. Accessing the manuscript directly through the GAMS website with your credentials\n3. Contacting the University of Graz library for access permissions`);
+                
+            } catch (error) {
+                console.error('[GAMS] Failed to process GAMS manuscript:', error);
+                throw new Error(`Failed to load GAMS manuscript: ${error.message}`);
+            }
+        }
+        
+        // Extract GAMS context identifier for non-IIIF URLs
         const contextMatch = url.match(/context:([^/?]+)/);
         if (!contextMatch) {
             throw new Error('Could not extract context identifier from GAMS URL. Please ensure the URL contains a context parameter like "context:rbas.ms.P0008s11"');
@@ -1953,6 +2061,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             case 'gams':
                 return await this.getGAMSManifest(url);
             case 'florence':
+            case 'contentdm':  // ContentDM is the Florence library system
                 return await this.getFlorenceManifest(url);
             case 'grenoble':
                 return await this.getGrenobleManifest(url);
@@ -3268,23 +3377,37 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         console.log(`[Bordeaux] Discovered ${pageCount} pages, starting from page ${startPage}`);
         
-        // Return manifest structure that will be processed by the tile processor
+        // Generate the images array based on discovered pages
+        const images = [];
+        for (let i = startPage; i < startPage + pageCount && i <= pageDiscovery.lastPage; i++) {
+            // Format the page number with leading zeros (4 digits)
+            const paddedPage = String(i).padStart(4, '0');
+            const imageUrl = `https://selene.bordeaux.fr/in/dz/${baseId}_${paddedPage}_files/13/0_0.jpg`;
+            images.push({
+                url: imageUrl,
+                label: `Page ${i}`
+            });
+        }
+        
+        console.log(`[Bordeaux] Generated ${images.length} image URLs`);
+        
+        // Return standard images array for compatibility
         return { 
+            images: images,
+            displayName: `Bordeaux - ${publicId}`,
+            // Keep tile processor info for backward compatibility
             type: 'bordeaux_tiles',
             baseId: baseId,
             publicId: publicId,
             startPage: startPage,
             pageCount: pageCount,
             tileBaseUrl: 'https://selene.bordeaux.fr/in/dz',
-            displayName: `Bordeaux - ${publicId}`,
-            // This signals to the download service to use the tile processor
             requiresTileProcessor: true,
             tileConfig: {
                 baseId: baseId,
                 startPage: startPage,
                 pageCount: pageCount,
                 tileBaseUrl: 'https://selene.bordeaux.fr/in/dz',
-                // Store discovered page range for the tile processor
                 pageRange: pageDiscovery
             }
         };

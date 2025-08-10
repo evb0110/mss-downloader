@@ -1,131 +1,33 @@
 {
-  "timestamp": "2025-08-10T14:15:49.712Z",
-  "totalErrors": 152,
+  "timestamp": "2025-08-10T17:33:27.181Z",
+  "totalErrors": 119,
   "categories": {
     "implicitAny": {
-      "count": 20,
-      "percentage": "100.0%",
-      "errors": [
-        {
-          "file": "src/main/services/DownloadQueue.ts",
-          "line": 621,
-          "column": 30,
-          "code": "TS7006",
-          "message": "Parameter 'progressData' implicitly has an 'any' type.",
-          "severity": "error"
-        },
-        {
-          "file": "src/main/services/DownloadQueue.ts",
-          "line": 651,
-          "column": 34,
-          "code": "TS7006",
-          "message": "Parameter '_status' implicitly has an 'any' type.",
-          "severity": "error"
-        },
-        {
-          "file": "src/main/services/DownloadQueue.ts",
-          "line": 654,
-          "column": 27,
-          "code": "TS7006",
-          "message": "Parameter 'error' implicitly has an 'any' type.",
-          "severity": "error"
-        },
-        {
-          "file": "src/main/services/DownloadQueue.ts",
-          "line": 767,
-          "column": 30,
-          "code": "TS7006",
-          "message": "Parameter 'progressData' implicitly has an 'any' type.",
-          "severity": "error"
-        },
-        {
-          "file": "src/main/services/DownloadQueue.ts",
-          "line": 791,
-          "column": 34,
-          "code": "TS7006",
-          "message": "Parameter '_status' implicitly has an 'any' type.",
-          "severity": "error"
-        }
-      ]
+      "count": 0,
+      "percentage": "NaN%",
+      "errors": []
     },
     "possiblyNull": {
-      "count": 7,
+      "count": 1,
       "percentage": "100.0%",
       "errors": [
-        {
-          "file": "src/main/main.ts",
-          "line": 225,
-          "column": 9,
-          "code": "TS18047",
-          "message": "'mainWindow' is possibly 'null'.",
-          "severity": "error"
-        },
         {
           "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
           "line": 2640,
           "column": 59,
           "code": "TS18048",
-          "message": "'manifest' is possibly 'undefined'.",
-          "severity": "error"
-        },
-        {
-          "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-          "line": 2641,
-          "column": 135,
-          "code": "TS18048",
-          "message": "'manifest' is possibly 'undefined'.",
-          "severity": "error"
-        },
-        {
-          "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-          "line": 2648,
-          "column": 32,
-          "code": "TS18048",
-          "message": "'manifest' is possibly 'undefined'.",
-          "severity": "error"
-        },
-        {
-          "file": "src/main/services/library-loaders/BerlinLoader.ts",
-          "line": 62,
-          "column": 22,
-          "code": "TS18048",
-          "message": "'manifestResponse' is possibly 'undefined'.",
+          "message": "'manifest.pageLinks.length' is possibly 'undefined'.",
           "severity": "error"
         }
       ]
     },
     "possiblyUndefined": {
-      "count": 3,
-      "percentage": "100.0%",
-      "errors": [
-        {
-          "file": "src/main/services/library-loaders/DiammLoader.ts",
-          "line": 38,
-          "column": 40,
-          "code": "TS2532",
-          "message": "Object is possibly 'undefined'.",
-          "severity": "error"
-        },
-        {
-          "file": "src/main/services/library-loaders/EuropeanaLoader.ts",
-          "line": 43,
-          "column": 76,
-          "code": "TS2532",
-          "message": "Object is possibly 'undefined'.",
-          "severity": "error"
-        },
-        {
-          "file": "src/main/services/library-loaders/IccuLoader.ts",
-          "line": 65,
-          "column": 40,
-          "code": "TS2532",
-          "message": "Object is possibly 'undefined'.",
-          "severity": "error"
-        }
-      ]
+      "count": 0,
+      "percentage": "NaN%",
+      "errors": []
     },
     "propertyDoesNotExist": {
-      "count": 30,
+      "count": 32,
       "percentage": "100.0%",
       "errors": [
         {
@@ -171,7 +73,7 @@
       ]
     },
     "cannotFind": {
-      "count": 19,
+      "count": 15,
       "percentage": "100.0%",
       "errors": [
         {
@@ -217,53 +119,53 @@
       ]
     },
     "typeAssignment": {
-      "count": 11,
+      "count": 6,
       "percentage": "100.0%",
       "errors": [
         {
-          "file": "src/main/main.ts",
-          "line": 407,
-          "column": 5,
-          "code": "TS2322",
-          "message": "Type '\"process\"' is not assignable to type 'LogCategory | undefined'.",
-          "severity": "error"
-        },
-        {
-          "file": "src/main/main.ts",
-          "line": 422,
-          "column": 5,
-          "code": "TS2322",
-          "message": "Type '\"process\"' is not assignable to type 'LogCategory | undefined'.",
-          "severity": "error"
-        },
-        {
-          "file": "src/main/services/BDLParallelDownloader.ts",
-          "line": 147,
-          "column": 17,
-          "code": "TS2322",
-          "message": "Type '\"bdl-parallel\"' is not assignable to type 'LogCategory | undefined'.",
-          "severity": "error"
-        },
-        {
           "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-          "line": 292,
-          "column": 17,
-          "code": "TS2322",
-          "message": "Type '\"url-sanitizer\"' is not assignable to type 'LogCategory | undefined'.",
-          "severity": "error"
-        },
-        {
-          "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-          "line": 326,
+          "line": 1365,
           "column": 25,
           "code": "TS2322",
-          "message": "Type '\"url-sanitizer\"' is not assignable to type 'LogCategory | undefined'.",
+          "message": "Type 'undefined' is not assignable to type 'Response'.",
+          "severity": "error"
+        },
+        {
+          "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+          "line": 1372,
+          "column": 21,
+          "code": "TS2322",
+          "message": "Type 'undefined' is not assignable to type 'Response'.",
+          "severity": "error"
+        },
+        {
+          "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+          "line": 2016,
+          "column": 17,
+          "code": "TS2322",
+          "message": "Type '\"bdl-ultra\"' is not assignable to type 'LogCategory | undefined'.",
+          "severity": "error"
+        },
+        {
+          "file": "src/main/services/LibraryOptimizationService.ts",
+          "line": 297,
+          "column": 13,
+          "code": "TS2322",
+          "message": "Type 'number | undefined' is not assignable to type 'number'.",
+          "severity": "error"
+        },
+        {
+          "file": "src/main/services/UltraReliableBDLService.ts",
+          "line": 287,
+          "column": 17,
+          "code": "TS2322",
+          "message": "Type '\"bdl-ultra\"' is not assignable to type 'LogCategory | undefined'.",
           "severity": "error"
         }
       ]
     },
     "argumentCount": {
-      "count": 14,
+      "count": 16,
       "percentage": "100.0%",
       "errors": [
         {
@@ -293,17 +195,17 @@
         {
           "file": "src/main/services/library-loaders/EuropeanaLoader.ts",
           "line": 43,
-          "column": 123,
+          "column": 124,
           "code": "TS2554",
           "message": "Expected 1 arguments, but got 3.",
           "severity": "error"
         },
         {
           "file": "src/main/services/library-loaders/GrazLoader.ts",
-          "line": 67,
-          "column": 21,
+          "line": 23,
+          "column": 26,
           "code": "TS2554",
-          "message": "Expected 1 arguments, but got 4.",
+          "message": "Expected 3-4 arguments, but got 2.",
           "severity": "error"
         }
       ]
@@ -355,7 +257,7 @@
       ]
     },
     "other": {
-      "count": 22,
+      "count": 23,
       "percentage": "100.0%",
       "errors": [
         {
@@ -364,6 +266,14 @@
           "column": 76,
           "code": "TS18046",
           "message": "'error' is of type 'unknown'.",
+          "severity": "error"
+        },
+        {
+          "file": "src/main/services/BDLParallelDownloader.ts",
+          "line": 150,
+          "column": 17,
+          "code": "TS2353",
+          "message": "Object literal may only specify known properties, and 'message' does not exist in type 'Partial<LogContext>'.",
           "severity": "error"
         },
         {
@@ -389,14 +299,6 @@
           "code": "TS18046",
           "message": "'error' is of type 'unknown'.",
           "severity": "error"
-        },
-        {
-          "file": "src/main/services/DirectTileProcessor.ts",
-          "line": 354,
-          "column": 80,
-          "code": "TS18046",
-          "message": "'error' is of type 'unknown'.",
-          "severity": "error"
         }
       ]
     }
@@ -404,19 +306,19 @@
   "topProblematicFiles": [
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "count": 28
-    },
-    {
-      "file": "src/main/services/DownloadQueue.ts",
-      "count": 14
-    },
-    {
-      "file": "src/main/services/library-loaders/GrazLoader.ts",
-      "count": 13
+      "count": 24
     },
     {
       "file": "src/main/services/EnhancedDownloadQueue.ts",
       "count": 9
+    },
+    {
+      "file": "src/main/services/library-loaders/GrazLoader.ts",
+      "count": 9
+    },
+    {
+      "file": "src/main/services/DownloadQueue.ts",
+      "count": 8
     },
     {
       "file": "src/renderer/services/PdfRendererService.ts",
@@ -431,43 +333,19 @@
       "count": 5
     },
     {
-      "file": "src/main/services/library-loaders/FreiburgLoader.ts",
-      "count": 5
-    },
-    {
-      "file": "src/main/main.ts",
+      "file": "src/renderer/main.ts",
       "count": 4
     },
     {
-      "file": "src/main/services/library-loaders/BerlinLoader.ts",
-      "count": 4
+      "file": "src/main/services/BDLParallelDownloader.ts",
+      "count": 3
+    },
+    {
+      "file": "src/main/services/ComprehensiveLogger.ts",
+      "count": 3
     }
   ],
   "allErrors": [
-    {
-      "file": "src/main/main.ts",
-      "line": 225,
-      "column": 9,
-      "code": "TS18047",
-      "message": "'mainWindow' is possibly 'null'.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/main.ts",
-      "line": 407,
-      "column": 5,
-      "code": "TS2322",
-      "message": "Type '\"process\"' is not assignable to type 'LogCategory | undefined'.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/main.ts",
-      "line": 422,
-      "column": 5,
-      "code": "TS2322",
-      "message": "Type '\"process\"' is not assignable to type 'LogCategory | undefined'.",
-      "severity": "error"
-    },
     {
       "file": "src/main/main.ts",
       "line": 1236,
@@ -486,10 +364,10 @@
     },
     {
       "file": "src/main/services/BDLParallelDownloader.ts",
-      "line": 147,
+      "line": 150,
       "column": 17,
-      "code": "TS2322",
-      "message": "Type '\"bdl-parallel\"' is not assignable to type 'LogCategory | undefined'.",
+      "code": "TS2353",
+      "message": "Object literal may only specify known properties, and 'message' does not exist in type 'Partial<LogContext>'.",
       "severity": "error"
     },
     {
@@ -582,14 +460,6 @@
     },
     {
       "file": "src/main/services/DownloadQueue.ts",
-      "line": 621,
-      "column": 30,
-      "code": "TS7006",
-      "message": "Parameter 'progressData' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/DownloadQueue.ts",
       "line": 640,
       "column": 54,
       "code": "TS2304",
@@ -598,34 +468,10 @@
     },
     {
       "file": "src/main/services/DownloadQueue.ts",
-      "line": 651,
-      "column": 34,
-      "code": "TS7006",
-      "message": "Parameter '_status' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/DownloadQueue.ts",
-      "line": 654,
-      "column": 27,
-      "code": "TS7006",
-      "message": "Parameter 'error' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/DownloadQueue.ts",
       "line": 763,
       "column": 19,
       "code": "TS6133",
       "message": "'result' is declared but its value is never read.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/DownloadQueue.ts",
-      "line": 767,
-      "column": 30,
-      "code": "TS7006",
-      "message": "Parameter 'progressData' implicitly has an 'any' type.",
       "severity": "error"
     },
     {
@@ -642,22 +488,6 @@
       "column": 54,
       "code": "TS2304",
       "message": "Cannot find name 'progress'.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/DownloadQueue.ts",
-      "line": 791,
-      "column": 34,
-      "code": "TS7006",
-      "message": "Parameter '_status' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/DownloadQueue.ts",
-      "line": 794,
-      "column": 27,
-      "code": "TS7006",
-      "message": "Parameter 'error' implicitly has an 'any' type.",
       "severity": "error"
     },
     {
@@ -798,22 +628,6 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 292,
-      "column": 17,
-      "code": "TS2322",
-      "message": "Type '\"url-sanitizer\"' is not assignable to type 'LogCategory | undefined'.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 326,
-      "column": 25,
-      "code": "TS2322",
-      "message": "Type '\"url-sanitizer\"' is not assignable to type 'LogCategory | undefined'.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
       "line": 1297,
       "column": 15,
       "code": "TS6133",
@@ -897,23 +711,7 @@
       "line": 2640,
       "column": 59,
       "code": "TS18048",
-      "message": "'manifest' is possibly 'undefined'.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 2641,
-      "column": 135,
-      "code": "TS18048",
-      "message": "'manifest' is possibly 'undefined'.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 2648,
-      "column": 32,
-      "code": "TS18048",
-      "message": "'manifest' is possibly 'undefined'.",
+      "message": "'manifest.pageLinks.length' is possibly 'undefined'.",
       "severity": "error"
     },
     {
@@ -1085,43 +883,11 @@
       "severity": "error"
     },
     {
-      "file": "src/main/services/library-loaders/BdlLoader.ts",
-      "line": 58,
-      "column": 43,
-      "code": "TS7006",
-      "message": "Parameter 'state' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
       "file": "src/main/services/library-loaders/BerlinLoader.ts",
       "line": 46,
       "column": 28,
       "code": "TS2554",
       "message": "Expected 1-2 arguments, but got 3.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/BerlinLoader.ts",
-      "line": 62,
-      "column": 22,
-      "code": "TS18048",
-      "message": "'manifestResponse' is possibly 'undefined'.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/BerlinLoader.ts",
-      "line": 63,
-      "column": 82,
-      "code": "TS18048",
-      "message": "'manifestResponse' is possibly 'undefined'.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/BerlinLoader.ts",
-      "line": 66,
-      "column": 44,
-      "code": "TS18048",
-      "message": "'manifestResponse' is possibly 'undefined'.",
       "severity": "error"
     },
     {
@@ -1138,14 +904,6 @@
       "column": 24,
       "code": "TS2722",
       "message": "Cannot invoke an object which is possibly 'undefined'.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/DiammLoader.ts",
-      "line": 38,
-      "column": 40,
-      "code": "TS2532",
-      "message": "Object is possibly 'undefined'.",
       "severity": "error"
     },
     {
@@ -1184,14 +942,6 @@
       "file": "src/main/services/library-loaders/EuropeanaLoader.ts",
       "line": 43,
       "column": 76,
-      "code": "TS2532",
-      "message": "Object is possibly 'undefined'.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/EuropeanaLoader.ts",
-      "line": 43,
-      "column": 76,
       "code": "TS2722",
       "message": "Cannot invoke an object which is possibly 'undefined'.",
       "severity": "error"
@@ -1199,7 +949,7 @@
     {
       "file": "src/main/services/library-loaders/EuropeanaLoader.ts",
       "line": 43,
-      "column": 123,
+      "column": 124,
       "code": "TS2554",
       "message": "Expected 1 arguments, but got 3.",
       "severity": "error"
@@ -1230,14 +980,6 @@
     },
     {
       "file": "src/main/services/library-loaders/FreiburgLoader.ts",
-      "line": 95,
-      "column": 34,
-      "code": "TS7006",
-      "message": "Parameter 'link' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/FreiburgLoader.ts",
       "line": 133,
       "column": 53,
       "code": "TS2552",
@@ -1245,24 +987,8 @@
       "severity": "error"
     },
     {
-      "file": "src/main/services/library-loaders/FreiburgLoader.ts",
-      "line": 156,
-      "column": 60,
-      "code": "TS7006",
-      "message": "Parameter 'url' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
       "file": "src/main/services/library-loaders/GrazLoader.ts",
-      "line": 20,
-      "column": 38,
-      "code": "TS2304",
-      "message": "Cannot find name 'path'.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/GrazLoader.ts",
-      "line": 20,
+      "line": 22,
       "column": 48,
       "code": "TS2304",
       "message": "Cannot find name 'getAppPath'.",
@@ -1270,15 +996,23 @@
     },
     {
       "file": "src/main/services/library-loaders/GrazLoader.ts",
-      "line": 21,
-      "column": 23,
-      "code": "TS2304",
-      "message": "Cannot find name 'fs'.",
+      "line": 23,
+      "column": 26,
+      "code": "TS2554",
+      "message": "Expected 3-4 arguments, but got 2.",
       "severity": "error"
     },
     {
       "file": "src/main/services/library-loaders/GrazLoader.ts",
-      "line": 67,
+      "line": 23,
+      "column": 122,
+      "code": "TS2339",
+      "message": "Property 'catch' does not exist on type 'void'.",
+      "severity": "error"
+    },
+    {
+      "file": "src/main/services/library-loaders/GrazLoader.ts",
+      "line": 69,
       "column": 21,
       "code": "TS2554",
       "message": "Expected 1 arguments, but got 4.",
@@ -1286,39 +1020,7 @@
     },
     {
       "file": "src/main/services/library-loaders/GrazLoader.ts",
-      "line": 75,
-      "column": 51,
-      "code": "TS7006",
-      "message": "Parameter 'state' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/GrazLoader.ts",
-      "line": 78,
-      "column": 43,
-      "code": "TS7006",
-      "message": "Parameter 'state' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/GrazLoader.ts",
-      "line": 81,
-      "column": 45,
-      "code": "TS7006",
-      "message": "Parameter 'state' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/GrazLoader.ts",
-      "line": 84,
-      "column": 37,
-      "code": "TS7006",
-      "message": "Parameter 'state' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/GrazLoader.ts",
-      "line": 90,
+      "line": 92,
       "column": 23,
       "code": "TS6133",
       "message": "'controller' is declared but its value is never read.",
@@ -1326,15 +1028,7 @@
     },
     {
       "file": "src/main/services/library-loaders/GrazLoader.ts",
-      "line": 249,
-      "column": 42,
-      "code": "TS2304",
-      "message": "Cannot find name 'path'.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/GrazLoader.ts",
-      "line": 249,
+      "line": 251,
       "column": 52,
       "code": "TS2304",
       "message": "Cannot find name 'getAppPath'.",
@@ -1342,15 +1036,23 @@
     },
     {
       "file": "src/main/services/library-loaders/GrazLoader.ts",
-      "line": 259,
-      "column": 27,
-      "code": "TS2304",
-      "message": "Cannot find name 'fs'.",
+      "line": 261,
+      "column": 30,
+      "code": "TS2554",
+      "message": "Expected 3-4 arguments, but got 2.",
       "severity": "error"
     },
     {
       "file": "src/main/services/library-loaders/GrazLoader.ts",
-      "line": 265,
+      "line": 261,
+      "column": 69,
+      "code": "TS2339",
+      "message": "Property 'catch' does not exist on type 'void'.",
+      "severity": "error"
+    },
+    {
+      "file": "src/main/services/library-loaders/GrazLoader.ts",
+      "line": 267,
       "column": 34,
       "code": "TS2339",
       "message": "Property 'logError' does not exist on type 'DownloadLogger'.",
@@ -1362,14 +1064,6 @@
       "column": 38,
       "code": "TS2554",
       "message": "Expected 4 arguments, but got 3.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/IccuLoader.ts",
-      "line": 65,
-      "column": 40,
-      "code": "TS2532",
-      "message": "Object is possibly 'undefined'.",
       "severity": "error"
     },
     {
@@ -1437,30 +1131,6 @@
       "severity": "error"
     },
     {
-      "file": "src/main/services/library-loaders/ManuscriptaLoader.ts",
-      "line": 34,
-      "column": 51,
-      "code": "TS7006",
-      "message": "Parameter 'state' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/ManuscriptaLoader.ts",
-      "line": 37,
-      "column": 43,
-      "code": "TS7006",
-      "message": "Parameter 'state' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/ManuscriptaLoader.ts",
-      "line": 40,
-      "column": 37,
-      "code": "TS7006",
-      "message": "Parameter 'state' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
       "file": "src/main/services/library-loaders/MunichLoader.ts",
       "line": 48,
       "column": 21,
@@ -1478,26 +1148,10 @@
     },
     {
       "file": "src/main/services/library-loaders/RbmeLoader.ts",
-      "line": 34,
-      "column": 43,
-      "code": "TS7006",
-      "message": "Parameter 'state' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/RbmeLoader.ts",
       "line": 84,
       "column": 21,
       "code": "TS2554",
       "message": "Expected 1 arguments, but got 4.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/RbmeLoader.ts",
-      "line": 87,
-      "column": 43,
-      "code": "TS7006",
-      "message": "Parameter 'state' implicitly has an 'any' type.",
       "severity": "error"
     },
     {
@@ -1514,22 +1168,6 @@
       "column": 21,
       "code": "TS2554",
       "message": "Expected 1 arguments, but got 4.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/TrinityCamLoader.ts",
-      "line": 29,
-      "column": 51,
-      "code": "TS7006",
-      "message": "Parameter 'state' implicitly has an 'any' type.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/TrinityCamLoader.ts",
-      "line": 32,
-      "column": 43,
-      "code": "TS7006",
-      "message": "Parameter 'state' implicitly has an 'any' type.",
       "severity": "error"
     },
     {
