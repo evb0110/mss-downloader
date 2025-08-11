@@ -36,11 +36,13 @@ const loaders = new SharedManifestLoaders();
 async function testManifest() { /* custom logic */ }
 ```
 
-### 3. VERSION CONTROL - EXPLICIT APPROVAL MANDATORY
+### 3. VERSION CONTROL - COMPLETE WORKFLOW MANDATORY
 **Version Bump Requirements:**
-- **USER APPROVAL MANDATORY:** NEVER bump without explicit "approved"/"proceed"/"bump version"
-- **SINGLE EXCEPTION:** `/handle-issues` command is AUTONOMOUS - bumps after all fixes complete
-- **NO AUTOMATIC BUMPS:** Keywords like "bump" do NOT authorize automatic version changes
+- **USER APPROVAL:** When user says "bump", "bump version", "release", or "approved" → Execute FULL workflow
+- **FULL WORKFLOW MANDATORY:** Version bump → Commit → Push → Verify GitHub Actions → Check Telegram
+- **NEVER bump without pushing:** Phantom versions break the workflow and confuse everyone
+- **SINGLE EXCEPTION:** User explicitly says "bump locally" or "don't push yet" 
+- **AUTONOMOUS:** `/handle-issues` command handles everything automatically
 
 **🚨 CHANGELOG UPDATE - MANDATORY WITH EVERY VERSION BUMP 🚨**
 ```javascript
@@ -58,23 +60,34 @@ async function testManifest() { /* custom logic */ }
 - **ALWAYS:** Replace entire array with current version's changes
 - **NEVER:** Leave old version numbers in changelog
 
-**Version Bump Triggers (still require approval):**
+**Version Bump Triggers (execute immediately when user approves):**
 - Bug fixes affecting functionality
 - New features or improvements
 - Library additions/fixes
 - Performance improvements
-- When user explicitly says "bump"
+- When user explicitly says "bump", "release", or "approved"
+
+**Complete Version Bump Workflow (MANDATORY):**
+1. Update package.json version number
+2. Update changelog with clear user benefits
+3. Run `npm run precommit` for type safety
+4. Commit with descriptive message
+5. **Push to GitHub immediately**
+6. Monitor `gh run list` for build status
+7. Verify Telegram notification sent
+8. Report success/failure to user
 
 **NOT Version Bump Triggers:**
-- Documentation changes
+- Documentation changes (unless requested)
 - Telegram bot fixes
 - Code refactoring without behavior changes
 
-### 4. COMMIT STRATEGY - TRACK YOUR CHANGES
+### 4. COMMIT & PUSH STRATEGY - COMPLETE THE WORKFLOW
 - **FORBIDDEN:** `git add .` or similar broad adds
 - **MUST track:** ALL your specific changes for parallel work safety
+- **WORKFLOW:** After version bump → Commit → Push immediately → Verify build
+- **VERIFICATION:** Monitor GitHub Actions (gh run list) and confirm Telegram sent
 - **FALLBACK:** If Bash fails, create Node.js script (.cjs) with `child_process.execSync()`
-- **VERIFICATION:** After version bump, MUST verify GitHub Actions build and telegram notifications
 
 ### 5. LIBRARY VALIDATION PROTOCOL - 100% SUCCESS REQUIRED
 **MANDATORY Steps (except in `/handle-issues` workflow):**
@@ -90,7 +103,7 @@ async function testManifest() { /* custom logic */ }
    - NO "Preview non disponibile" or auth errors
    - Rate result: ["failed", "something not ok", "ok"]
 6. **USER VALIDATION FOLDER:** Create SINGLE clean `.devkit/validation/READY-FOR-USER/` with ONLY final PDFs
-7. **WAIT FOR USER APPROVAL** before ANY version bump
+7. **VERSION BUMP:** User saying "bump" or "approved" IS the approval - execute full workflow immediately
 
 ### 6. FILE ORGANIZATION - ZERO ROOT CLUTTER
 **MANDATORY Structure:**
