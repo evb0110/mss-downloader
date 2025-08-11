@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.152",
+  "version": "1.4.153",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (62+ libraries worldwide)",
   "changelog": [
-    "v1.4.152: EMERGENCY - Added visible diagnostics for silent failures",
-    "Includes EMERGENCY-FIX-RUN-THIS.bat for force-starting the app",
-    "Shows diagnostic window when app fails to start",
-    "Logs all startup phases to help diagnose issues",
-    "Force-kills processes and cleans all locks before starting"
+    "v1.4.153: CRITICAL FIX - Fixed app startup crash",
+    "Fixed missing createProgressMonitor import causing immediate crash",
+    "App now starts properly without 'createProgressMonitor is not defined' error",
+    "Restores normal functionality for all manuscript downloads",
+    "Eliminates the need for emergency startup scripts"
   ],
   "main": "dist/main/main.js",
   "scripts": {

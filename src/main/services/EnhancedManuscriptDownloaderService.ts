@@ -13,6 +13,7 @@ import { SharedManifestAdapter } from './SharedManifestAdapter';
 import { DownloadLogger } from './DownloadLogger';
 import { comprehensiveLogger } from './ComprehensiveLogger';
 import { UltraReliableBDLService } from './UltraReliableBDLService';
+import { createProgressMonitor } from './IntelligentProgressMonitor';
 import {
     GallicaLoader,
     MorganLoader,

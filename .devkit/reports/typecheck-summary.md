@@ -1,6 +1,6 @@
 # TypeScript Type Check Report
 
-**Generated:** 11/08/2025, 15:18:11
+**Generated:** 11/08/2025, 17:32:38
 
 ## 📊 Summary
 
@@ -12,17 +12,17 @@
 |----------|-------|------------|-------------|
 | possiblyNull | 1 | 100.0% | Values that might be null or undefined |
 | propertyDoesNotExist | 27 | 100.0% | Properties that don't exist on types |
-| cannotFind | 16 | 100.0% | Cannot find name (missing imports/declarations) |
+| cannotFind | 15 | 100.0% | Cannot find name (missing imports/declarations) |
 | typeAssignment | 7 | 100.0% | Type assignment/compatibility errors |
 | argumentCount | 16 | 100.0% | Wrong number of arguments |
 | unusedVariable | 22 | 100.0% | Unused variables or parameters |
-| other | 26 | 100.0% | Other TypeScript errors |
+| other | 27 | 100.0% | Other TypeScript errors |
 
 ### Top Problematic Files
 
 | File | Error Count |
 |------|-------------|
-| src/main/services/EnhancedManuscriptDownloaderService.ts | 20 |
+| src/main/services/EnhancedManuscriptDownloaderService.ts | 19 |
 | src/main/services/EnhancedDownloadQueue.ts | 9 |
 | src/main/services/library-loaders/GrazLoader.ts | 9 |
 | src/main/services/DownloadQueue.ts | 8 |
