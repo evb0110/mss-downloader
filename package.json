@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.151",
+  "version": "1.4.152",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (62+ libraries worldwide)",
   "changelog": [
-    "v1.4.151: CRITICAL - Fixed zombie processes preventing app startup",
-    "Aggressive cleanup of ALL old MSS-Downloader processes on startup",
-    "Fixes issue where 3+ background processes block new launch",
-    "Installer now properly kills all previous instances",
-    "Windows: Force-kills zombies by multiple methods"
+    "v1.4.152: EMERGENCY - Added visible diagnostics for silent failures",
+    "Includes EMERGENCY-FIX-RUN-THIS.bat for force-starting the app",
+    "Shows diagnostic window when app fails to start",
+    "Logs all startup phases to help diagnose issues",
+    "Force-kills processes and cleans all locks before starting"
   ],
   "main": "dist/main/main.js",
   "scripts": {

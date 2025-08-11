@@ -21,6 +21,10 @@ const WindowsDefenderFix = require('./defenderFix');
 // Process Manager - v1.4.151
 const ProcessManager = require('./processManager');
 
+// Startup Diagnostics - v1.4.152
+const StartupDiagnostics = require('./startupDiagnostics');
+const diagnostics = new StartupDiagnostics();
+
 // __dirname is available in CommonJS
 
 const isDev = (process.env.NODE_ENV === 'development' || !app.isPackaged) && process.env.NODE_ENV !== 'test';
@@ -163,9 +167,12 @@ console.log('[DEBUG] Headless detection:', {
 });
 
 const createWindow = async () => {
-  const preloadPath = join(__dirname, '../preload/preload.js');
+  diagnostics.recordStartupPhase('createWindow');
   
-  mainWindow = new BrowserWindow({
+  try {
+    const preloadPath = join(__dirname, '../preload/preload.js');
+    
+    mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     webPreferences: {
@@ -293,6 +300,7 @@ const createWindow = async () => {
   }
 
   mainWindow.once('ready-to-show', () => {
+    diagnostics.recordStartupPhase('window-ready-to-show');
     console.log('[DEBUG] Window ready-to-show event fired');
     // Show window in development mode regardless of headless detection
     if (isDev || (!isHeadless && process.env.NODE_ENV !== 'test')) {
@@ -307,6 +315,19 @@ const createWindow = async () => {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+  
+  } catch (error) {
+    console.error('CRITICAL: Failed to create window:', error);
+    diagnostics.log(`Window creation failed: ${error.message || error}`, 'error');
+    
+    // Show diagnostic window on failure
+    await diagnostics.showStartupError(error);
+    
+    // Try to show at least diagnostic window
+    if (!mainWindow) {
+      await diagnostics.showDiagnosticWindow();
+    }
+  }
 };
 
 const createMenu = () => {
@@ -490,6 +511,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 app.whenReady().then(async () => {
+  diagnostics.recordStartupPhase('app.whenReady');
   console.log('[DEBUG] App ready, isHeadless =', isHeadless, 'NODE_ENV =', process.env.NODE_ENV);
   
   // Windows Defender Fix - v1.4.133
