@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.148",
+  "version": "1.4.149",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (62+ libraries worldwide)",
   "changelog": [
-    "v1.4.148: Added Oberösterreichische Landesbibliothek (Linz) support - Issue #25",
-    "New library: Full IIIF v2 support for Austrian State Library in Linz",
-    "Supports 500+ digitized manuscripts from medieval to modern periods",
-    "Maximum resolution downloads with automatic quality optimization",
-    "Tested with manuscripts 116, 254, 279, 1194 - all working perfectly"
+    "v1.4.149: CRITICAL Windows Defender Fix - Prevents app quarantine",
+    "Fixes aggressive Windows Defender behavior that quarantines the app",
+    "Automatic exclusions added on first run (with user permission)",
+    "Manual PowerShell script included for immediate fix",
+    "Resolves sudden app deletion and forced restarts"
   ],
   "main": "dist/main/main.js",
   "scripts": {

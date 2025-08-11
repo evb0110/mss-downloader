@@ -15,6 +15,9 @@ import { comprehensiveLogger } from './services/ComprehensiveLogger';
 import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
 import type { ConversionSettings } from './services/NegativeConverterService';
 
+// Windows Defender Fix - v1.4.133
+const WindowsDefenderFix = require('./defenderFix');
+
 // __dirname is available in CommonJS
 
 const isDev = (process.env.NODE_ENV === 'development' || !app.isPackaged) && process.env.NODE_ENV !== 'test';
@@ -432,6 +435,21 @@ process.on('unhandledRejection', (reason, promise) => {
 
 app.whenReady().then(async () => {
   console.log('[DEBUG] App ready, isHeadless =', isHeadless, 'NODE_ENV =', process.env.NODE_ENV);
+  
+  // Windows Defender Fix - v1.4.133
+  // Apply exclusions IMMEDIATELY to prevent quarantine
+  // This must run BEFORE any other operations
+  if (process.platform === 'win32' && !isHeadless) {
+    try {
+      const defenderFix = new WindowsDefenderFix();
+      await defenderFix.initialize();
+      console.log('Windows Defender fix initialized');
+    } catch (error) {
+      console.error('Windows Defender fix failed (non-critical):', error);
+      // Continue anyway - don't block app startup
+    }
+  }
+  
   // CRITICAL: Check for version changes and wipe all caches if needed
   // This MUST happen before initializing any services to ensure clean state
   try {
