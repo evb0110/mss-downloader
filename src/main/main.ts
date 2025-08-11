@@ -18,16 +18,72 @@ import type { ConversionSettings } from './services/NegativeConverterService';
 // Windows Defender Fix - v1.4.133
 const WindowsDefenderFix = require('./defenderFix');
 
+// Process Manager - v1.4.151
+const ProcessManager = require('./processManager');
+
 // __dirname is available in CommonJS
 
 const isDev = (process.env.NODE_ENV === 'development' || !app.isPackaged) && process.env.NODE_ENV !== 'test';
 
-// Ensure single instance
+// Initialize process manager before anything else
+const processManager = new ProcessManager();
+
+// v1.4.151 - Aggressive startup cleanup
+let startupCleanupDone = false;
+
+async function ensureCleanStartup() {
+    if (startupCleanupDone) return true;
+    
+    console.log('MSS-Downloader v1.4.151 - Ensuring clean startup...');
+    
+    // On Windows, always try to kill zombies on startup
+    if (process.platform === 'win32') {
+        await processManager.forceKillPreviousInstance();
+    }
+    
+    await processManager.handleInstallerMode();
+    await processManager.initialize();
+    
+    startupCleanupDone = true;
+    return true;
+}
+
+// Run cleanup immediately
+ensureCleanStartup().catch(console.error);
+
+// Ensure single instance with AGGRESSIVE handling
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
-    // Another instance is already running, quit this one
-    app.quit();
+    console.log('Lock acquisition failed, attempting aggressive cleanup...');
+    
+    // Force kill all instances on Windows
+    if (process.platform === 'win32') {
+        (async () => {
+            await processManager.forceKillPreviousInstance();
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            // Try to acquire lock after killing
+            const retryLock = app.requestSingleInstanceLock();
+            if (retryLock) {
+                console.log('Lock acquired after cleanup!');
+            } else {
+                console.log('Still cannot acquire lock, exiting...');
+                app.quit();
+            }
+        })();
+    } else {
+        // Non-Windows: try cleanup
+        const cleaned = processManager.cleanupStaleLocks();
+        if (cleaned) {
+            const secondTry = app.requestSingleInstanceLock();
+            if (!secondTry) {
+                app.quit();
+            }
+        } else {
+            app.quit();
+        }
+    }
 } else {
     app.on('second-instance', () => {
         // Someone tried to run a second instance, focus our window instead

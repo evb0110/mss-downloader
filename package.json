@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.150",
+  "version": "1.4.151",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (62+ libraries worldwide)",
   "changelog": [
-    "v1.4.150: HOTFIX - Windows Defender auto-fix encoding error resolved",
-    "Fixed PowerShell execution failure with encoding/character issues",
-    "Simplified to manual script generation with clear instructions",
-    "No more error dialogs - provides guided manual fix instead",
-    "Script opens directly in Explorer for easy execution"
+    "v1.4.151: CRITICAL - Fixed zombie processes preventing app startup",
+    "Aggressive cleanup of ALL old MSS-Downloader processes on startup",
+    "Fixes issue where 3+ background processes block new launch",
+    "Installer now properly kills all previous instances",
+    "Windows: Force-kills zombies by multiple methods"
   ],
   "main": "dist/main/main.js",
   "scripts": {
