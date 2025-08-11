@@ -15,79 +15,16 @@ import { comprehensiveLogger } from './services/ComprehensiveLogger';
 import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
 import type { ConversionSettings } from './services/NegativeConverterService';
 
-// Windows Defender Fix - v1.4.133
-const WindowsDefenderFix = require('./defenderFix');
-
-// Process Manager - v1.4.151
-const ProcessManager = require('./processManager');
-
-// Startup Diagnostics - v1.4.152
-const StartupDiagnostics = require('./startupDiagnostics');
-const diagnostics = new StartupDiagnostics();
-
 // __dirname is available in CommonJS
 
 const isDev = (process.env.NODE_ENV === 'development' || !app.isPackaged) && process.env.NODE_ENV !== 'test';
 
-// Initialize process manager before anything else
-const processManager = new ProcessManager();
-
-// v1.4.151 - Aggressive startup cleanup
-let startupCleanupDone = false;
-
-async function ensureCleanStartup() {
-    if (startupCleanupDone) return true;
-    
-    console.log('MSS-Downloader v1.4.151 - Ensuring clean startup...');
-    
-    // On Windows, always try to kill zombies on startup
-    if (process.platform === 'win32') {
-        await processManager.forceKillPreviousInstance();
-    }
-    
-    await processManager.handleInstallerMode();
-    await processManager.initialize();
-    
-    startupCleanupDone = true;
-    return true;
-}
-
-// Run cleanup immediately
-ensureCleanStartup().catch(console.error);
-
-// Ensure single instance with AGGRESSIVE handling
+// Ensure single instance - simple and reliable
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
-    console.log('Lock acquisition failed, attempting aggressive cleanup...');
-    
-    // Force kill all instances on Windows
-    if (process.platform === 'win32') {
-        (async () => {
-            await processManager.forceKillPreviousInstance();
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            
-            // Try to acquire lock after killing
-            const retryLock = app.requestSingleInstanceLock();
-            if (retryLock) {
-                console.log('Lock acquired after cleanup!');
-            } else {
-                console.log('Still cannot acquire lock, exiting...');
-                app.quit();
-            }
-        })();
-    } else {
-        // Non-Windows: try cleanup
-        const cleaned = processManager.cleanupStaleLocks();
-        if (cleaned) {
-            const secondTry = app.requestSingleInstanceLock();
-            if (!secondTry) {
-                app.quit();
-            }
-        } else {
-            app.quit();
-        }
-    }
+    console.log('Another instance is already running');
+    app.quit();
 } else {
     app.on('second-instance', () => {
         // Someone tried to run a second instance, focus our window instead
@@ -167,7 +104,7 @@ console.log('[DEBUG] Headless detection:', {
 });
 
 const createWindow = async () => {
-  diagnostics.recordStartupPhase('createWindow');
+  // Creating main window
   
   try {
     const preloadPath = join(__dirname, '../preload/preload.js');
@@ -300,7 +237,7 @@ const createWindow = async () => {
   }
 
   mainWindow.once('ready-to-show', () => {
-    diagnostics.recordStartupPhase('window-ready-to-show');
+    // Window ready to show
     console.log('[DEBUG] Window ready-to-show event fired');
     // Show window in development mode regardless of headless detection
     if (isDev || (!isHeadless && process.env.NODE_ENV !== 'test')) {
@@ -318,15 +255,6 @@ const createWindow = async () => {
   
   } catch (error) {
     console.error('CRITICAL: Failed to create window:', error);
-    diagnostics.log(`Window creation failed: ${error.message || error}`, 'error');
-    
-    // Show diagnostic window on failure
-    await diagnostics.showStartupError(error);
-    
-    // Try to show at least diagnostic window
-    if (!mainWindow) {
-      await diagnostics.showDiagnosticWindow();
-    }
   }
 };
 
@@ -511,22 +439,12 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 app.whenReady().then(async () => {
-  diagnostics.recordStartupPhase('app.whenReady');
+  console.log('[INFO] Startup phase: app.whenReady');
   console.log('[DEBUG] App ready, isHeadless =', isHeadless, 'NODE_ENV =', process.env.NODE_ENV);
   
   // Windows Defender Fix - v1.4.133
   // Apply exclusions IMMEDIATELY to prevent quarantine
-  // This must run BEFORE any other operations
-  if (process.platform === 'win32' && !isHeadless) {
-    try {
-      const defenderFix = new WindowsDefenderFix();
-      await defenderFix.initialize();
-      console.log('Windows Defender fix initialized');
-    } catch (error) {
-      console.error('Windows Defender fix failed (non-critical):', error);
-      // Continue anyway - don't block app startup
-    }
-  }
+  // Windows-specific initialization removed for stability
   
   // CRITICAL: Check for version changes and wipe all caches if needed
   // This MUST happen before initializing any services to ensure clean state
