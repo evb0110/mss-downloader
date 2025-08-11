@@ -1,6 +1,6 @@
 {
-  "timestamp": "2025-08-11T06:48:27.967Z",
-  "totalErrors": 119,
+  "timestamp": "2025-08-11T12:18:11.148Z",
+  "totalErrors": 115,
   "categories": {
     "implicitAny": {
       "count": 0,
@@ -13,7 +13,7 @@
       "errors": [
         {
           "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-          "line": 2640,
+          "line": 2579,
           "column": 59,
           "code": "TS18048",
           "message": "'manifest.pageLinks.length' is possibly 'undefined'.",
@@ -27,7 +27,7 @@
       "errors": []
     },
     "propertyDoesNotExist": {
-      "count": 32,
+      "count": 27,
       "percentage": "100.0%",
       "errors": [
         {
@@ -73,7 +73,7 @@
       ]
     },
     "cannotFind": {
-      "count": 15,
+      "count": 16,
       "percentage": "100.0%",
       "errors": [
         {
@@ -119,12 +119,12 @@
       ]
     },
     "typeAssignment": {
-      "count": 6,
+      "count": 7,
       "percentage": "100.0%",
       "errors": [
         {
           "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-          "line": 1365,
+          "line": 1304,
           "column": 25,
           "code": "TS2322",
           "message": "Type 'undefined' is not assignable to type 'Response'.",
@@ -132,7 +132,7 @@
         },
         {
           "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-          "line": 1372,
+          "line": 1311,
           "column": 21,
           "code": "TS2322",
           "message": "Type 'undefined' is not assignable to type 'Response'.",
@@ -140,7 +140,7 @@
         },
         {
           "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-          "line": 2016,
+          "line": 1955,
           "column": 17,
           "code": "TS2322",
           "message": "Type '\"bdl-ultra\"' is not assignable to type 'LogCategory | undefined'.",
@@ -170,7 +170,7 @@
       "errors": [
         {
           "file": "src/main/main.ts",
-          "line": 1236,
+          "line": 1254,
           "column": 65,
           "code": "TS2554",
           "message": "Expected 0-1 arguments, but got 3.",
@@ -211,7 +211,7 @@
       ]
     },
     "unusedVariable": {
-      "count": 26,
+      "count": 22,
       "percentage": "100.0%",
       "errors": [
         {
@@ -257,7 +257,7 @@
       ]
     },
     "other": {
-      "count": 23,
+      "count": 26,
       "percentage": "100.0%",
       "errors": [
         {
@@ -306,7 +306,7 @@
   "topProblematicFiles": [
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "count": 24
+      "count": 20
     },
     {
       "file": "src/main/services/EnhancedDownloadQueue.ts",
@@ -333,22 +333,22 @@
       "count": 5
     },
     {
+      "file": "src/main/services/library-loaders/LinzLoader.ts",
+      "count": 4
+    },
+    {
       "file": "src/renderer/main.ts",
       "count": 4
     },
     {
       "file": "src/main/services/BDLParallelDownloader.ts",
       "count": 3
-    },
-    {
-      "file": "src/main/services/ComprehensiveLogger.ts",
-      "count": 3
     }
   ],
   "allErrors": [
     {
       "file": "src/main/main.ts",
-      "line": 1236,
+      "line": 1254,
       "column": 65,
       "code": "TS2554",
       "message": "Expected 0-1 arguments, but got 3.",
@@ -604,31 +604,15 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 3,
-      "column": 1,
-      "code": "TS6133",
-      "message": "'app' is declared but its value is never read.",
+      "line": 121,
+      "column": 36,
+      "code": "TS2304",
+      "message": "Cannot find name 'createProgressMonitor'.",
       "severity": "error"
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 18,
-      "column": 1,
-      "code": "TS6133",
-      "message": "'BDLParallelDownloader' is declared but its value is never read.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 85,
-      "column": 1,
-      "code": "TS6133",
-      "message": "'JSDOM' is declared but its value is never read.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 1297,
+      "line": 1236,
       "column": 15,
       "code": "TS6133",
       "message": "'startTime' is declared but its value is never read.",
@@ -636,7 +620,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 1365,
+      "line": 1304,
       "column": 25,
       "code": "TS2322",
       "message": "Type 'undefined' is not assignable to type 'Response'.",
@@ -644,7 +628,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 1372,
+      "line": 1311,
       "column": 21,
       "code": "TS2322",
       "message": "Type 'undefined' is not assignable to type 'Response'.",
@@ -652,7 +636,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 1695,
+      "line": 1634,
       "column": 58,
       "code": "TS2304",
       "message": "Cannot find name 'timeout'.",
@@ -660,7 +644,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 1699,
+      "line": 1638,
       "column": 58,
       "code": "TS2304",
       "message": "Cannot find name 'timeout'.",
@@ -668,7 +652,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 1707,
+      "line": 1646,
       "column": 58,
       "code": "TS2304",
       "message": "Cannot find name 'timeout'.",
@@ -676,7 +660,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 1734,
+      "line": 1673,
       "column": 45,
       "code": "TS6133",
       "message": "'progressCallback' is declared but its value is never read.",
@@ -684,7 +668,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 2010,
+      "line": 1949,
       "column": 19,
       "code": "TS6133",
       "message": "'ultraMode' is declared but its value is never read.",
@@ -692,7 +676,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 2011,
+      "line": 1950,
       "column": 19,
       "code": "TS6133",
       "message": "'maxRetries' is declared but its value is never read.",
@@ -700,7 +684,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 2016,
+      "line": 1955,
       "column": 17,
       "code": "TS2322",
       "message": "Type '\"bdl-ultra\"' is not assignable to type 'LogCategory | undefined'.",
@@ -708,7 +692,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 2640,
+      "line": 2579,
       "column": 59,
       "code": "TS18048",
       "message": "'manifest.pageLinks.length' is possibly 'undefined'.",
@@ -716,7 +700,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 2938,
+      "line": 2877,
       "column": 69,
       "code": "TS2339",
       "message": "Property 'manuscriptId' does not exist on type 'ManuscriptManifest'.",
@@ -724,7 +708,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 3300,
+      "line": 3239,
       "column": 24,
       "code": "TS2339",
       "message": "Property 'writeFileWithVerification' does not exist on type 'EnhancedManuscriptDownloaderService'.",
@@ -732,7 +716,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 3319,
+      "line": 3258,
       "column": 24,
       "code": "TS2339",
       "message": "Property 'writeFileWithVerification' does not exist on type 'EnhancedManuscriptDownloaderService'.",
@@ -740,7 +724,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 3652,
+      "line": 3591,
       "column": 19,
       "code": "TS6133",
       "message": "'extractFlorusImageUrls' is declared but its value is never read.",
@@ -748,7 +732,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 3994,
+      "line": 3933,
       "column": 19,
       "code": "TS6133",
       "message": "'handleEManuscriptaTitleInfo' is declared but its value is never read.",
@@ -756,7 +740,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 4097,
+      "line": 4036,
       "column": 35,
       "code": "TS2339",
       "message": "Property 'parseEManuscriptaDropdown' does not exist on type 'EnhancedManuscriptDownloaderService'.",
@@ -764,7 +748,7 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 4102,
+      "line": 4041,
       "column": 39,
       "code": "TS2339",
       "message": "Property 'parseEManuscriptaJSConfig' does not exist on type 'EnhancedManuscriptDownloaderService'.",
@@ -772,26 +756,10 @@
     },
     {
       "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 4201,
+      "line": 4140,
       "column": 19,
       "code": "TS6133",
       "message": "'validateManifestCompleteness' is declared but its value is never read.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 4368,
-      "column": 19,
-      "code": "TS6133",
-      "message": "'robustBneDiscovery' is declared but its value is never read.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
-      "line": 4390,
-      "column": 15,
-      "code": "TS6133",
-      "message": "'controller' is declared but its value is never read.",
       "severity": "error"
     },
     {
@@ -891,14 +859,6 @@
       "severity": "error"
     },
     {
-      "file": "src/main/services/library-loaders/BneLoader.ts",
-      "line": 26,
-      "column": 29,
-      "code": "TS2339",
-      "message": "Property 'robustBneDiscovery' does not exist on type 'BneLoader'.",
-      "severity": "error"
-    },
-    {
       "file": "src/main/services/library-loaders/BritishLibraryLoader.ts",
       "line": 37,
       "column": 24,
@@ -956,10 +916,10 @@
     },
     {
       "file": "src/main/services/library-loaders/FlorusLoader.ts",
-      "line": 35,
-      "column": 46,
-      "code": "TS2339",
-      "message": "Property 'extractFlorusImageUrls' does not exist on type 'FlorusLoader'.",
+      "line": 84,
+      "column": 19,
+      "code": "TS6133",
+      "message": "'basePath' is declared but its value is never read.",
       "severity": "error"
     },
     {
@@ -1083,19 +1043,35 @@
       "severity": "error"
     },
     {
-      "file": "src/main/services/library-loaders/IrhtLoader.ts",
-      "line": 81,
-      "column": 108,
-      "code": "TS2339",
-      "message": "Property 'calculateRetryDelay' does not exist on type 'IrhtLoader'.",
+      "file": "src/main/services/library-loaders/LinzLoader.ts",
+      "line": 45,
+      "column": 91,
+      "code": "TS2454",
+      "message": "Variable 'manuscriptId' is used before being assigned.",
       "severity": "error"
     },
     {
-      "file": "src/main/services/library-loaders/IrhtLoader.ts",
-      "line": 82,
-      "column": 52,
-      "code": "TS2339",
-      "message": "Property 'calculateRetryDelay' does not exist on type 'IrhtLoader'.",
+      "file": "src/main/services/library-loaders/LinzLoader.ts",
+      "line": 58,
+      "column": 55,
+      "code": "TS2454",
+      "message": "Variable 'manuscriptId' is used before being assigned.",
+      "severity": "error"
+    },
+    {
+      "file": "src/main/services/library-loaders/LinzLoader.ts",
+      "line": 66,
+      "column": 64,
+      "code": "TS2454",
+      "message": "Variable 'manuscriptId' is used before being assigned.",
+      "severity": "error"
+    },
+    {
+      "file": "src/main/services/library-loaders/LinzLoader.ts",
+      "line": 121,
+      "column": 17,
+      "code": "TS2322",
+      "message": "Type '\"linz\"' is not assignable to type '\"manuscripta\" | \"nypl\" | \"morgan\" | \"gallica\" | \"grenoble\" | \"karlsruhe\" | \"manchester\" | \"munich\" | \"unifr\" | \"e_manuscripta\" | \"vatlib\" | \"cecilia\" | \"irht\" | \"loc\" | \"dijon\" | ... 44 more ... | \"bordeaux\"'.",
       "severity": "error"
     },
     {
@@ -1176,14 +1152,6 @@
       "column": 24,
       "code": "TS2722",
       "message": "Cannot invoke an object which is possibly 'undefined'.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/services/library-loaders/VallicellianLoader.ts",
-      "line": 95,
-      "column": 28,
-      "code": "TS2339",
-      "message": "Property 'validateManifestCompleteness' does not exist on type 'VallicellianLoader'.",
       "severity": "error"
     },
     {
