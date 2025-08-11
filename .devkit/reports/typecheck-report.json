@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-08-10T21:44:59.716Z",
+  "timestamp": "2025-08-11T06:48:27.967Z",
   "totalErrors": 119,
   "categories": {
     "implicitAny": {
@@ -580,7 +580,7 @@
     },
     {
       "file": "src/main/services/EnhancedDownloadQueue.ts",
-      "line": 1871,
+      "line": 1950,
       "column": 57,
       "code": "TS2339",
       "message": "Property 'requiresTileProcessor' does not exist on type 'ManuscriptManifest'.",
@@ -588,7 +588,7 @@
     },
     {
       "file": "src/main/services/EnhancedDownloadQueue.ts",
-      "line": 1872,
+      "line": 1951,
       "column": 46,
       "code": "TS2339",
       "message": "Property 'tileConfig' does not exist on type 'ManuscriptManifest'.",
@@ -596,7 +596,7 @@
     },
     {
       "file": "src/main/services/EnhancedDownloadQueue.ts",
-      "line": 1873,
+      "line": 1952,
       "column": 46,
       "code": "TS2339",
       "message": "Property 'pageBlocks' does not exist on type 'ManuscriptManifest'.",

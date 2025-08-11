@@ -1288,7 +1288,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
             }
             
             // For Florus, Orleans, Internet Culturale, Manuscripta, Graz, Cologne, Rome, NYPL, Czech, Modena, and Morgan - skip first page download and use estimated size calculation
-            if (manifest.library === 'florus' || manifest.library === 'orleans' || manifest.library === 'internet_culturale' || manifest.library === 'manuscripta' || manifest.library === 'graz' || manifest.library === 'cologne' || manifest.library === 'rome' || manifest.library === 'nypl' || manifest.library === 'czech' || manifest.library === 'modena' || manifest.library === 'bdl' || manifest.library === 'morgan') {
+            // BDL removed from this list to enable proper multi-page sampling for size estimation
+            if (manifest.library === 'florus' || manifest.library === 'orleans' || manifest.library === 'internet_culturale' || manifest.library === 'manuscripta' || manifest.library === 'graz' || manifest.library === 'cologne' || manifest.library === 'rome' || manifest.library === 'nypl' || manifest.library === 'czech' || manifest.library === 'modena' || manifest.library === 'morgan') {
                 console.log(`${manifest.library} manuscript detected, using estimated size calculation (bypassing first page download)`);
                 // Estimate based on typical manuscript page size
                 const avgPageSizeMB = manifest.library === 'orleans' ? 0.6 : 
@@ -1300,9 +1301,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                                     manifest.library === 'nypl' ? 1.2 :
                                     manifest.library === 'czech' ? 0.5 :
                                     manifest.library === 'modena' ? 0.4 :
-                                    manifest.library === 'bdl' ? 0.5 :
                                     manifest.library === 'morgan' ? 5.0 : // Morgan .zif files reduced estimate (5MB per stitched image)
-                                    0.4; // 600KB for Orleans IIIF, 800KB for Internet Culturale IIIF, 700KB for Manuscripta IIIF, 800KB for Graz IIIF, 500KB for Cologne webcache, 300KB for Rome, 1.2MB for NYPL IIIF, 500KB for Czech, 400KB for Modena mobile, 500KB for BDL IIIF, 5MB for Morgan .zif, 400KB for Florus
+                                    0.4; // 600KB for Orleans IIIF, 800KB for Internet Culturale IIIF, 700KB for Manuscripta IIIF, 800KB for Graz IIIF, 500KB for Cologne webcache, 300KB for Rome, 1.2MB for NYPL IIIF, 500KB for Czech, 400KB for Modena mobile, 5MB for Morgan .zif, 400KB for Florus
                 const estimatedTotalSizeMB = avgPageSizeMB * manifest.totalPages;
                 item.estimatedSizeMB = estimatedTotalSizeMB;
                 
@@ -1322,13 +1322,92 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 return false;
             }
             
-            // Download first page to get actual size estimation
-            const firstPageUrl = manifest.pageLinks[0];
-            if (!firstPageUrl) return false;
+            // For BDL and similar libraries with variable page sizes, use multi-page sampling
+            let estimatedTotalSizeMB: number;
             
-            const firstPageBuffer = await this.downloadSinglePage(firstPageUrl);
-            const firstPageSizeMB = firstPageBuffer.length / (1024 * 1024);
-            const estimatedTotalSizeMB = firstPageSizeMB * manifest.totalPages;
+            if (manifest.library === 'bdl' || manifest.library === 'vatican' || manifest.library === 'bne') {
+                // Multi-page sampling for more accurate size estimation
+                console.log(`[${manifest.library}] Using multi-page sampling for accurate size estimation`);
+                
+                const totalPages = manifest.totalPages;
+                const samplesToTake = Math.min(10, totalPages); // Sample up to 10 pages
+                const sampleIndices: number[] = [];
+                
+                // Always include first page
+                sampleIndices.push(0);
+                
+                // Add evenly distributed samples through the manuscript
+                if (totalPages > 1) {
+                    const step = Math.floor(totalPages / samplesToTake);
+                    for (let i = 1; i < samplesToTake - 1; i++) {
+                        sampleIndices.push(Math.min(i * step, totalPages - 2));
+                    }
+                    // Always include last page
+                    sampleIndices.push(totalPages - 1);
+                }
+                
+                // Remove duplicates and sort
+                const uniqueIndices = [...new Set(sampleIndices)].sort((a, b) => a - b);
+                
+                console.log(`[${manifest.library}] Sampling ${uniqueIndices.length} pages from total ${totalPages}`);
+                const pageSizes: number[] = [];
+                
+                // Download sample pages
+                for (const index of uniqueIndices) {
+                    try {
+                        const pageUrl = manifest.pageLinks[index];
+                        if (!pageUrl) continue;
+                        
+                        const buffer = await this.downloadSinglePage(pageUrl);
+                        const sizeMB = buffer.length / (1024 * 1024);
+                        pageSizes.push(sizeMB);
+                        console.log(`[${manifest.library}] Page ${index + 1}: ${sizeMB.toFixed(2)} MB`);
+                    } catch (error) {
+                        console.warn(`[${manifest.library}] Failed to sample page ${index + 1}, continuing...`);
+                    }
+                }
+                
+                if (pageSizes.length === 0) {
+                    console.error(`[${manifest.library}] Failed to sample any pages, using fallback estimate`);
+                    estimatedTotalSizeMB = 0.8 * totalPages; // Fallback to 0.8 MB per page
+                } else {
+                    // Calculate robust average excluding outliers
+                    const sortedSizes = [...pageSizes].sort((a, b) => a - b);
+                    let avgSize: number;
+                    
+                    if (sortedSizes.length >= 3) {
+                        // Remove outliers using IQR method
+                        const q1Index = Math.floor(sortedSizes.length * 0.25);
+                        const q3Index = Math.floor(sortedSizes.length * 0.75);
+                        const q1 = sortedSizes[q1Index];
+                        const q3 = sortedSizes[q3Index];
+                        const iqr = q3 - q1;
+                        const lowerBound = q1 - 1.5 * iqr;
+                        const upperBound = q3 + 1.5 * iqr;
+                        
+                        const filteredSizes = pageSizes.filter(size => size >= lowerBound && size <= upperBound);
+                        avgSize = filteredSizes.reduce((a, b) => a + b, 0) / filteredSizes.length;
+                        
+                        console.log(`[${manifest.library}] Robust average (excluded ${pageSizes.length - filteredSizes.length} outliers): ${avgSize.toFixed(2)} MB per page`);
+                    } else {
+                        // Too few samples, use simple average
+                        avgSize = pageSizes.reduce((a, b) => a + b, 0) / pageSizes.length;
+                        console.log(`[${manifest.library}] Simple average: ${avgSize.toFixed(2)} MB per page`);
+                    }
+                    
+                    // Add 10% buffer for safety
+                    estimatedTotalSizeMB = avgSize * totalPages * 1.1;
+                    console.log(`[${manifest.library}] Estimated total size: ${estimatedTotalSizeMB.toFixed(1)} MB (with 10% buffer)`);
+                }
+            } else {
+                // Original single-page estimation for other libraries
+                const firstPageUrl = manifest.pageLinks[0];
+                if (!firstPageUrl) return false;
+                
+                const firstPageBuffer = await this.downloadSinglePage(firstPageUrl);
+                const firstPageSizeMB = firstPageBuffer.length / (1024 * 1024);
+                estimatedTotalSizeMB = firstPageSizeMB * manifest.totalPages;
+            }
             
             // Store the estimated size for future recalculations
             item.estimatedSizeMB = estimatedTotalSizeMB;

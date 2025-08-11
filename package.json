@@ -1,15 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.144",
+  "version": "1.4.145",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
   "changelog": [
-    "v1.4.144: GitHub Issues Resolution - 6 critical issues fixed",
-    "Fixed Graz University (Issue #2) - Both UniPub and GAMS URLs now supported",
-    "Fixed Morgan Library (Issue #4) - No more imagesByPriority errors",
-    "Fixed Florence (Issue #5) - ETIMEDOUT errors resolved",
-    "Fixed Bordeaux (Issue #6) - Library support implemented",
-    "Fixed BNE (Issue #11) - No more hanging on calculation",
-    "Fixed BDL II (Issue #23) - Memory allocation issues resolved"
+    "v1.4.145: Fixed BDL size estimation accuracy (Issue #24)",
+    "Implemented multi-page sampling for accurate size calculation",
+    "BDL manuscripts now correctly split when exceeding size threshold",
+    "Robust average calculation with outlier removal prevents underestimation",
+    "10% safety buffer added to prevent memory issues during PDF merging"
   ],
   "main": "dist/main/main.js",
   "scripts": {
