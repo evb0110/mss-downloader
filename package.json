@@ -1,13 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.154",
-  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (62+ libraries worldwide)",
+  "version": "1.4.155",
+  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (63+ libraries worldwide)",
   "changelog": [
-    "v1.4.154: WINDOWS FIX - Removed all problematic security features",
-    "Removed Windows Defender auto-fix that triggered security warnings",
-    "Removed Process Manager that was blocked by Windows",
-    "Removed Startup Diagnostics that caused installation failures",
-    "Returns to stable v1.4.145 behavior - clean and safe for Windows"
+    "v1.4.155: Fixed ALL 6 open GitHub issues - Critical library support improvements",
+    "Added Upper Austrian State Library (Linz) support - Issue #2 and #25 resolved",
+    "Fixed Morgan Library manifest structure - Issue #4 resolved",
+    "Fixed Florence/BMLonline ContentDM support - Issue #5 resolved",
+    "Fixed Bordeaux Municipal Library manifest - Issue #6 resolved",
+    "Fixed Spanish National Library (BNE) manifest - Issue #11 resolved"
   ],
   "main": "dist/main/main.js",
   "scripts": {

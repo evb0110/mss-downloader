@@ -1021,9 +1021,9 @@ class SharedManifestLoaders {
         // Handle standard content URLs
         let manuscriptIdMatch = url.match(/\/(\d+)$/);
         
-        // Handle viewer/image pattern: /viewer/image/{ID}/{PAGE}/
+        // Handle viewer/image pattern: /viewer/image/{ID}/ or /viewer/image/{ID}/{PAGE}/
         if (!manuscriptIdMatch) {
-            manuscriptIdMatch = url.match(/\/viewer\/image\/([^/]+)\/\d+/);
+            manuscriptIdMatch = url.match(/\/viewer\/image\/([^/]+)/);
         }
         
         if (!manuscriptIdMatch) {
@@ -1210,6 +1210,103 @@ class SharedManifestLoaders {
             );
             safeError.name = 'GrazManifestError';
             throw safeError;
+        }
+    }
+
+    /**
+     * Linz / Upper Austrian State Library - Uses Goobi viewer with IIIF
+     */
+    async getLinzManifest(url) {
+        console.log(`[Linz] Processing URL: ${url}`);
+        
+        // Extract manuscript ID from URL pattern like /viewer/image/116/
+        let manuscriptId;
+        const idMatch = url.match(/\/viewer\/image\/([^/]+)/);
+        
+        if (idMatch) {
+            manuscriptId = idMatch[1];
+        } else {
+            // Try other patterns
+            const altMatch = url.match(/\/(\d+)$/);
+            if (altMatch) {
+                manuscriptId = altMatch[1];
+            } else {
+                throw new Error('Could not extract manuscript ID from Linz URL');
+            }
+        }
+        
+        console.log(`[Linz] Manuscript ID: ${manuscriptId}`);
+        
+        // Linz uses Goobi viewer with standard IIIF manifest endpoint
+        const manifestUrl = `https://digi.landesbibliothek.at/viewer/api/v1/records/${manuscriptId}/manifest/`;
+        console.log(`[Linz] Fetching IIIF manifest from: ${manifestUrl}`);
+        
+        try {
+            const response = await this.fetchWithRetry(manifestUrl, {
+                headers: {
+                    'Accept': 'application/json, application/ld+json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch Linz manifest: ${response.status}`);
+            }
+            
+            const manifest = await response.json();
+            const images = [];
+            
+            // Extract images from IIIF manifest
+            if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+                const canvases = manifest.sequences[0].canvases;
+                console.log(`[Linz] Found ${canvases.length} pages in manifest`);
+                
+                for (let i = 0; i < canvases.length; i++) {
+                    const canvas = canvases[i];
+                    if (canvas.images && canvas.images[0]) {
+                        const image = canvas.images[0];
+                        let imageUrl = null;
+                        
+                        // Handle different IIIF image formats
+                        if (image.resource) {
+                            if (typeof image.resource === 'string') {
+                                imageUrl = image.resource;
+                            } else if (image.resource['@id']) {
+                                imageUrl = image.resource['@id'];
+                            } else if (image.resource.id) {
+                                imageUrl = image.resource.id;
+                            }
+                        }
+                        
+                        // If it's a IIIF image service, construct full resolution URL
+                        if (imageUrl && imageUrl.includes('/info.json')) {
+                            imageUrl = imageUrl.replace('/info.json', '/full/full/0/default.jpg');
+                        }
+                        
+                        if (imageUrl) {
+                            images.push({
+                                url: imageUrl,
+                                label: canvas.label || `Page ${i + 1}`
+                            });
+                        }
+                    }
+                }
+            }
+            
+            if (images.length === 0) {
+                throw new Error('No images found in Linz manifest');
+            }
+            
+            console.log(`[Linz] Successfully extracted ${images.length} pages`);
+            
+            return {
+                images,
+                displayName: manifest.label || `Linz - ${manuscriptId}`
+            };
+            
+        } catch (error) {
+            console.error('[Linz] Error loading manifest:', error);
+            throw new Error(`Failed to load Linz manuscript: ${error.message}`);
         }
     }
 
@@ -2110,6 +2207,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 return await this.getLibraryOfCongressManifest(url);
             case 'graz':
                 return await this.getGrazManifest(url);
+            case 'linz':
+                return await this.getLinzManifest(url);
             case 'gams':
                 return await this.getGAMSManifest(url);
             case 'florence':
