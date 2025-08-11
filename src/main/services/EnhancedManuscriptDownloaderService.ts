@@ -1,12 +1,10 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { app } from 'electron';
 import { getAppPath } from './ElectronCompat';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { ManifestCache } from './ManifestCache';
 import { configService } from './ConfigService';
 import { LibraryOptimizationService } from './LibraryOptimizationService';
-import { createProgressMonitor } from './IntelligentProgressMonitor';
 import { ZifImageProcessor } from './ZifImageProcessor';
 import { DziImageProcessor } from './DziImageProcessor';
 import { TileEngineService } from './tile-engine/TileEngineService';
@@ -15,8 +13,7 @@ import { SharedManifestAdapter } from './SharedManifestAdapter';
 import { DownloadLogger } from './DownloadLogger';
 import { comprehensiveLogger } from './ComprehensiveLogger';
 import { UltraReliableBDLService } from './UltraReliableBDLService';
-import { BDLParallelDownloader } from './BDLParallelDownloader';
-import { 
+import {
     GallicaLoader,
     MorganLoader,
     NyplLoader,
@@ -75,14 +72,13 @@ import {
     WolfenbuettelLoader,
     HhuLoader,
     GamsLoader,
+    LinzLoader,
     GenericIiifLoader,
-    type LoaderDependencies, 
-    type LibraryLoader 
+    type LoaderDependencies,
+    type LibraryLoader
 } from './library-loaders';
 import type { ManuscriptManifest, LibraryInfo } from '../../shared/types';
 import type { TLibrary } from '../../shared/queueTypes';
-import * as https from 'https';
-import { JSDOM } from 'jsdom';
 
 const MIN_VALID_IMAGE_SIZE_BYTES = 1024; // 1KB heuristic
 
@@ -106,7 +102,7 @@ export class EnhancedManuscriptDownloaderService {
         this.sharedManifestAdapter = new SharedManifestAdapter(this.fetchWithHTTPS.bind(this));
         this.logger = DownloadLogger.getInstance();
         this.ultraBDLService = UltraReliableBDLService.getInstance();
-        
+
         // Initialize library loaders with dependencies
         const loaderDeps: LoaderDependencies = {
             fetchDirect: this.fetchDirect.bind(this),
@@ -130,7 +126,7 @@ export class EnhancedManuscriptDownloaderService {
             loadVallicellianManifest: this.loadVallicellianManifest?.bind(this),
             loadDiammSpecificManifest: this.loadDiammSpecificManifest?.bind(this)
         };
-        
+
         // Initialize the loader map
         this.libraryLoaders = new Map();
         this.libraryLoaders.set('gallica', new GallicaLoader(loaderDeps));
@@ -191,16 +187,17 @@ export class EnhancedManuscriptDownloaderService {
         this.libraryLoaders.set('wolfenbuettel', new WolfenbuettelLoader(loaderDeps));
         this.libraryLoaders.set('hhu', new HhuLoader(loaderDeps));
         this.libraryLoaders.set('gams', new GamsLoader(loaderDeps));
+        this.libraryLoaders.set('linz', new LinzLoader(loaderDeps));
         this.libraryLoaders.set('generic_iiif', new GenericIiifLoader(loaderDeps));
-        
+
         // Clear potentially problematic cached manifests on startup
         this.manifestCache.clearProblematicUrls().catch(error => {
             console.warn('Failed to clear problematic cache entries:', (error as Error).message);
         });
-        
+
         // Force clear Florence cache to ensure users get v1.4.47+ ultra-simple implementation
         this.clearFlorenceCacheOnStartup();
-        
+
         // Clear Graz cache to resolve persistent issues reported by users
         this.clearGrazCacheOnStartup();
     }
@@ -277,7 +274,7 @@ export class EnhancedManuscriptDownloaderService {
      */
     private sanitizeUrl(url: string): string {
         if (!url || typeof url !== 'string') return url;
-        
+
         // Pattern 1: hostname directly concatenated with protocol (most common)
         // Example: pagella.bm-grenoble.frhttps://pagella.bm-grenoble.fr/...
         const concatenatedPattern = /^([a-z0-9.-]+)(https?:\/\/.+)$/i;
@@ -299,7 +296,7 @@ export class EnhancedManuscriptDownloaderService {
                     fixedUrl: actualUrl
                 }
             });
-            
+
             // Verify the extracted URL is valid
             try {
                 new URL(actualUrl);
@@ -309,13 +306,13 @@ export class EnhancedManuscriptDownloaderService {
                 console.error('[URL SANITIZER] Extracted URL is still invalid:', (e as Error).message);
             }
         }
-        
+
         // Pattern 2: Check for any domain+protocol patterns
         const domainPatterns = [
             /\.(fr|com|org|edu|net|it|es|at|uk|de|ch)(https?:\/\/)/i,
             /^[^:/\s]+\.[^:/\s]+(https?:\/\/)/i
         ];
-        
+
         for (const pattern of domainPatterns) {
             if (pattern.test(url)) {
                 const protocolMatch = url.match(/(https?:\/\/.+)$/);
@@ -335,7 +332,7 @@ export class EnhancedManuscriptDownloaderService {
                 }
             }
         }
-        
+
         return url;
     }
 
@@ -650,6 +647,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://digi.ub.uni-heidelberg.de/diglit/salVIII2',
             description: 'Heidelberg University Library digital manuscripts via IIIF v2 and v3 with maximum resolution support',
         },
+        {
+            name: 'Oberösterreichische Landesbibliothek (Linz)',
+            example: 'https://digi.landesbibliothek.at/viewer/image/116/',
+            description: 'Upper Austrian State Library (Linz) digital manuscripts via IIIF v2, featuring 500+ historical manuscripts from medieval to modern periods',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -676,11 +678,11 @@ export class EnhancedManuscriptDownloaderService {
      */
     formatETA(etaSeconds: number): string {
         if (!etaSeconds || !isFinite(etaSeconds)) return 'calculating...';
-        
+
         const hours = Math.floor(etaSeconds / 3600);
         const minutes = Math.floor((etaSeconds % 3600) / 60);
         const seconds = Math.floor(etaSeconds % 60);
-        
+
         if (hours > 0) {
             return `${hours}h ${minutes}m`;
         } else if (minutes > 0) {
@@ -696,13 +698,13 @@ export class EnhancedManuscriptDownloaderService {
     async sleep(ms: number): Promise<void> {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
-    
+
     /**
      * Helper to use extracted library loader or fallback to original method
      */
     private async useLoaderOrFallback(
-        libraryKey: string, 
-        url: string, 
+        libraryKey: string,
+        url: string,
         fallbackMethod: (url: string) => Promise<ManuscriptManifest>
     ): Promise<ManuscriptManifest> {
         const loader = this.libraryLoaders.get(libraryKey);
@@ -720,15 +722,15 @@ export class EnhancedManuscriptDownloaderService {
     private async validateInternetCulturaleImage(buffer: ArrayBuffer, url: string): Promise<void> {
         // Check for the specific "Preview non disponibile" error page by content, not just size
         // Error pages contain specific text, while legitimate small images are just compressed manuscripts
-        
+
         try {
             // Convert buffer to text to check for error messages
             const textContent = new TextDecoder('utf-8', { fatal: false }).decode(buffer);
-            
+
             // Check for actual error text content (case-insensitive)
             const errorTexts = [
                 'preview non disponibile',
-                'Preview non disponibile', 
+                'Preview non disponibile',
                 'PREVIEW NON DISPONIBILE',
                 'anteprima non disponibile',
                 'Anteprima non disponibile',
@@ -737,11 +739,11 @@ export class EnhancedManuscriptDownloaderService {
                 'errore',
                 'error'
             ];
-            
-            const hasErrorText = errorTexts.some(errorText => 
+
+            const hasErrorText = errorTexts.some(errorText =>
                 textContent.toLowerCase().includes(errorText.toLowerCase())
             );
-            
+
             if (hasErrorText) {
                 throw new Error(
                     `Internet Culturale authentication error: received error page with text "${errorTexts.find(t => textContent.toLowerCase().includes(t.toLowerCase()))}" instead of manuscript image. ` +
@@ -749,26 +751,26 @@ export class EnhancedManuscriptDownloaderService {
                     `URL: ${url}`
                 );
             }
-            
+
             // Validate JPEG structure
             const bytes = new Uint8Array(buffer);
             const isValidJpeg = bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xD8;
-            
+
             if (!isValidJpeg) {
                 throw new Error(`Invalid JPEG format received from Internet Culturale: ${url}`);
             }
-            
+
             // Log small but valid images for monitoring (some manuscripts have legitimately small images)
             if (buffer.byteLength < 40000) {
                 console.log(`Internet Culturale: Small but valid image (${buffer.byteLength} bytes): ${url}`);
             }
-            
+
         } catch (decodingError) {
             // If text decoding fails, it's likely a binary image (which is good)
             // Just verify it's a valid JPEG
             const bytes = new Uint8Array(buffer);
             const isValidJpeg = bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xD8;
-            
+
             if (!isValidJpeg) {
                 throw new Error(`Invalid JPEG format received from Internet Culturale: ${url}`);
             }
@@ -783,7 +785,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('digitalcollections.tcd.ie')) {
             throw new Error('Trinity College Dublin is not currently supported due to aggressive captcha protection. Please download manuscripts manually through their website.');
         }
-        
+
         if (url.includes('digitalcollections.nypl.org')) return 'nypl';
         if (url.includes('themorgan.org')) return 'morgan';
         if (url.includes('gallica.bnf.fr')) return 'gallica';
@@ -847,7 +849,8 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('manuscrits.bordeaux.fr') || url.includes('selene.bordeaux.fr')) return 'bordeaux';
         if (url.includes('digital.bodleian.ox.ac.uk')) return 'bodleian';
         if (url.includes('digi.ub.uni-heidelberg.de') || url.includes('doi.org/10.11588/diglit')) return 'heidelberg';
-        
+        if (url.includes('digi.landesbibliothek.at')) return 'linz';
+
         return null;
     }
 
@@ -859,7 +862,7 @@ export class EnhancedManuscriptDownloaderService {
         'https://cors-anywhere.herokuapp.com/',
         'https://proxy.cors.sh/',
     ];
-    
+
     /**
      * Norwegian proxy for geo-restricted content (requires Norwegian IP)
      * Using proxy services that might have Norwegian exit nodes
@@ -879,14 +882,14 @@ export class EnhancedManuscriptDownloaderService {
     async fetchWithProxyFallback(url: string, options: any = {}): Promise<Response> {
         // ULTRA-PRIORITY FIX for Issue #9: Sanitize URL before any fetch operation
         url = this.sanitizeUrl(url);
-        
+
         // For Norwegian content, try Norwegian-friendly proxies first
         const isNorwegianContent = url.includes('nb.no') || url.includes('api.nb.no');
         const proxiesToTry = isNorwegianContent ? this.NORWEGIAN_PROXIES : this.PROXY_SERVERS;
-        
+
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), configService.get('requestTimeout') || 30000);
-        
+
         const fetchOptions = {
             ...options,
             signal: controller.signal,
@@ -895,34 +898,34 @@ export class EnhancedManuscriptDownloaderService {
                 ...options.headers
             }
         };
-        
+
         try {
             // Try direct access first
             const response = await fetch(url, fetchOptions);
             clearTimeout(timeoutId);
-            
+
             if (response.ok || response.status < 500) {
                 return response;
             }
-            
+
             throw new Error(`HTTP ${response.status}`);
         } catch (directError: any) {
             clearTimeout(timeoutId);
-            
+
             // If direct access fails, try proxy servers
             for (const proxy of proxiesToTry) {
                 try {
                     const proxyController = new AbortController();
                     const proxyTimeoutId = setTimeout(() => proxyController.abort(), configService.get('requestTimeout') || 30000);
-                    
+
                     const proxyUrl = `${proxy}${encodeURIComponent(url)}`;
                     const proxyResponse = await fetch(proxyUrl, {
                         ...fetchOptions,
                         signal: proxyController.signal
                     });
-                    
+
                     clearTimeout(proxyTimeoutId);
-                    
+
                     if (proxyResponse.ok) {
                         console.log(`Successfully fetched ${url} via proxy: ${proxy}`);
                         return proxyResponse;
@@ -932,7 +935,7 @@ export class EnhancedManuscriptDownloaderService {
                     continue;
                 }
             }
-            
+
             // All proxies failed, throw original error
             throw directError;
         }
@@ -943,18 +946,18 @@ export class EnhancedManuscriptDownloaderService {
      */
     async fetchDirect(url: string, options: any = {}, attempt: number = 1): Promise<Response> {
         const startTime = Date.now();
-        
+
         // Always create our own controller for library-specific timeouts
         const controller = new AbortController();
-        
+
         // Detect library and apply optimized timeout
         const library = this.detectLibrary(url) as TLibrary;
         // CRITICAL FIX: Ensure baseTimeout is never undefined to prevent NaN timeout
         const baseTimeout = configService.get('requestTimeout') || 30000; // Default to 30 seconds if undefined
-        const timeout = library ? 
+        const timeout = library ?
             LibraryOptimizationService.getTimeoutForLibrary(baseTimeout, library, attempt) :
             baseTimeout;
-        
+
         this.logger.logDownloadStart(library || 'unknown', url, { attempt, method: 'fetchDirect' });
         this.logger.log({
             level: 'debug',
@@ -963,7 +966,7 @@ export class EnhancedManuscriptDownloaderService {
             message: `Library detected: ${library || 'unknown'}, timeout: ${timeout}ms (base: ${baseTimeout}ms)`,
             details: { library, timeout, baseTimeout, attempt }
         });
-        
+
         // CRITICAL FIX: Always apply library-specific timeout, even with external signals
         // This ensures Graz and other libraries get their proper extended timeouts
         const timeoutId = setTimeout(() => {
@@ -972,7 +975,7 @@ export class EnhancedManuscriptDownloaderService {
             console.error(`[fetchDirect] TIMEOUT: Request timed out after ${elapsed}ms (configured timeout: ${timeout}ms) for ${library || 'unknown'} library: ${url}`);
             controller.abort();
         }, timeout);
-        
+
         // Chain external signal if provided
         const externalSignal = options.signal;
         if (externalSignal) {
@@ -981,19 +984,19 @@ export class EnhancedManuscriptDownloaderService {
                 controller.abort();
             };
             externalSignal.addEventListener('abort', abortListener);
-            
+
             // Clean up listener when our controller aborts
             controller.signal.addEventListener('abort', () => {
                 externalSignal.removeEventListener('abort', abortListener);
             });
         }
-        
+
         // Special headers for ISOS to avoid 403 Forbidden errors
         let headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
             ...options.headers
         };
-        
+
         if (url.includes('isos.dias.ie')) {
             headers = {
                 ...headers,
@@ -1006,7 +1009,7 @@ export class EnhancedManuscriptDownloaderService {
                 'Sec-Fetch-Site': 'same-origin'
             };
         }
-        
+
         // Special headers for Cambridge CUDL to avoid 403 Forbidden errors
         if (url.includes('cudl.lib.cam.ac.uk')) {
             headers = {
@@ -1018,7 +1021,7 @@ export class EnhancedManuscriptDownloaderService {
                 'Connection': 'keep-alive'
             };
         }
-        
+
         // Special headers for Orleans IIIF to avoid timeout/hanging issues
         if (url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr')) {
             headers = {
@@ -1033,7 +1036,7 @@ export class EnhancedManuscriptDownloaderService {
                 'Sec-Fetch-Site': 'cross-site'
             };
         }
-        
+
         // Special headers for Stanford Parker Library IIIF to avoid HTTP 406 errors
         if (url.includes('stacks.stanford.edu') || url.includes('dms-data.stanford.edu')) {
             headers = {
@@ -1041,7 +1044,7 @@ export class EnhancedManuscriptDownloaderService {
                 'Accept': '*/*'
             };
         }
-        
+
         // Special headers for Internet Culturale to improve performance
         if (url.includes('internetculturale.it')) {
             headers = {
@@ -1053,7 +1056,7 @@ export class EnhancedManuscriptDownloaderService {
                 'Connection': 'keep-alive'
             };
         }
-        
+
         // Special headers for University of Graz to improve IIIF compatibility
         if (url.includes('unipub.uni-graz.at')) {
             headers = {
@@ -1065,18 +1068,18 @@ export class EnhancedManuscriptDownloaderService {
                 'Connection': 'keep-alive'
             };
         }
-        
+
         // Special headers for Rouen Municipal Library to ensure session management
         if (url.includes('rotomagus.fr')) {
             // Extract manuscript ID and page number for proper referer
             const arkMatch = url.match(/ark:\/12148\/([^/?\s]+)/);
             const pageMatch = url.match(/f(\d+)\./);
-            
+
             if (arkMatch && pageMatch) {
                 const manuscriptId = arkMatch[1];
                 const pageNumber = pageMatch[1];
                 const refererUrl = `https://www.rotomagus.fr/ark:/12148/${manuscriptId}/f${pageNumber}.item.zoom`;
-                
+
                 headers = {
                     ...headers,
                     'Referer': refererUrl,
@@ -1095,7 +1098,7 @@ export class EnhancedManuscriptDownloaderService {
                 };
             }
         }
-        
+
         try {
             // SSL-tolerant fetching for Verona domains with certificate hostname mismatch
             const fetchOptions: any = {
@@ -1103,10 +1106,10 @@ export class EnhancedManuscriptDownloaderService {
                 signal: controller.signal,
                 headers
             };
-            
+
             // Verona, Grenoble, Graz, MDC Catalonia, and Florence domains benefit from full HTTPS module bypass for better reliability
-            if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') || 
-                url.includes('pagella.bm-grenoble.fr') || url.includes('unipub.uni-graz.at') || 
+            if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') ||
+                url.includes('pagella.bm-grenoble.fr') || url.includes('unipub.uni-graz.at') ||
                 url.includes('mdc.csuc.cat') || url.includes('cdm21059.contentdm.oclc.org')) {
                 try {
                     const response = await this.fetchWithHTTPS(url, { ...fetchOptions, timeout });
@@ -1114,10 +1117,10 @@ export class EnhancedManuscriptDownloaderService {
                     return response;
                 } catch (httpsError: any) {
                     // For Verona, if main site fails, try IIIF server directly
-                    if ((url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) && 
+                    if ((url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) &&
                         (httpsError.code === 'ETIMEDOUT' || httpsError.code === 'ECONNREFUSED')) {
                         console.warn(`[Verona] Primary connection failed with ${httpsError.code}, attempting IIIF server fallback`);
-                        
+
                         // If it's the main site, try the IIIF server
                         if (url.includes('nuovabibliotecamanoscritta.it')) {
                             const altUrl = url.replace('www.nuovabibliotecamanoscritta.it', 'nbm.regione.veneto.it');
@@ -1129,7 +1132,7 @@ export class EnhancedManuscriptDownloaderService {
                     throw httpsError;
                 }
             }
-            
+
             // BNE domains use SSL bypass approach
             if (url.includes('bdh-rd.bne.es')) {
                 if (typeof process !== 'undefined' && process.versions?.node) {
@@ -1139,114 +1142,50 @@ export class EnhancedManuscriptDownloaderService {
                     });
                 }
             }
-            
+
             const response = await fetch(url, fetchOptions);
             if (timeoutId) clearTimeout(timeoutId);
-            
+
             const elapsed = Date.now() - startTime;
-            
+
             // Log response headers for debugging
             const responseHeaders: Record<string, string> = {};
             response.headers.forEach((value, key) => {
                 responseHeaders[key] = value;
             });
-            
+
             this.logger.log({
                 level: 'info',
                 library: library || 'unknown',
                 url,
                 message: `Response received - Status: ${response.status}, Time: ${elapsed}ms`,
                 duration: elapsed,
-                details: { 
-                    status: response.status, 
+                details: {
+                    status: response.status,
                     statusText: response.statusText,
                     headers: responseHeaders,
                     attempt
                 }
             });
-            
+
             if (response.ok) {
                 const contentLength = response.headers.get('content-length');
                 const size = contentLength ? parseInt(contentLength, 10) : 0;
                 this.logger.logDownloadComplete(library || 'unknown', url, elapsed, size);
             }
-            
+
             return response;
         } catch (error: any) {
             if (timeoutId) clearTimeout(timeoutId);
-            
+
             const elapsed = Date.now() - startTime;
             this.logger.logDownloadError(library || 'unknown', url, error, attempt);
             console.error(`[fetchDirect] ERROR after ${elapsed}ms for ${url}:`, error);
-            
+
             throw error;
         }
     }
 
-    /**
-     * Specialized fetch for BNE domains using native HTTPS module
-     * ULTRA-PRIORITY FIX for Issue #11: Reduced timeout for HEAD requests
-     */
-    private async fetchBneWithHttps(url: string, options: { method?: string, timeout?: number } = {}): Promise<Response> {
-        // ULTRA-PRIORITY FIX: Sanitize URL before any processing
-        url = this.sanitizeUrl(url);
-        
-        return new Promise((resolve, reject) => {
-            const urlObj = new URL(url);
-            const requestOptions = {
-                hostname: urlObj.hostname,
-                port: urlObj.port || 443,
-                path: urlObj.pathname + urlObj.search,
-                method: options.method || 'GET',
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                    'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-                    'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
-                    'Cache-Control': 'no-cache',
-                    'Connection': 'keep-alive'
-                },
-                rejectUnauthorized: false
-            };
-
-            const req = https.request(requestOptions, (res) => {
-                const chunks: Buffer[] = [];
-                
-                res.on('data', (chunk) => {
-                    chunks.push(chunk);
-                });
-                
-                res.on('end', () => {
-                    const body = Buffer.concat(chunks);
-                    const response = new Response(body, {
-                        status: res.statusCode || 200,
-                        statusText: res.statusMessage || 'OK',
-                        headers: Object.fromEntries(
-                            Object.entries(res.headers).map(([key, value]) => [
-                                key,
-                                Array.isArray(value) ? value.join(', ') : value || ''
-                            ])
-                        )
-                    });
-                    
-                    resolve(response);
-                });
-            });
-            
-            req.on('error', (error) => {
-                reject(error);
-            });
-            
-            // ULTRA-PRIORITY FIX: Shorter timeout for HEAD requests to prevent hanging
-            // HEAD requests should be quick, 5 seconds is enough
-            const timeoutMs = options.method === 'HEAD' ? 5000 : (options.timeout || 30000);
-            req.setTimeout(timeoutMs, () => {
-                req.destroy();
-                reject(new Error(`BNE request timeout after ${timeoutMs}ms`));
-            });
-            
-            req.end();
-        });
-    }
 
     /**
      * Specialized fetch for Verona domains using native HTTPS module
@@ -1255,17 +1194,17 @@ export class EnhancedManuscriptDownloaderService {
     private async fetchWithHTTPS(url: string, options: any = {}): Promise<Response> {
         // ULTRA-PRIORITY FIX: Sanitize URL before any processing
         url = this.sanitizeUrl(url);
-        
+
         const https = await import('https');
         const { URL } = await import('url');
         const dns = await import('dns').then(m => m.promises);
-        
+
         // ULTRA-CRITICAL FIX for Issue #13: Additional defensive URL parsing
         // Catch cases where hostname might be concatenated with URL
         let urlObj;
         try {
             urlObj = new URL(url);
-            
+
             // Double-check hostname doesn't contain URL parts
             if (urlObj.hostname.includes('://') || urlObj.hostname.includes('https') || urlObj.hostname.includes('http')) {
                 console.error(`[CRITICAL] Malformed URL detected after URL parsing: hostname=${urlObj.hostname}, url=${url}`);
@@ -1282,7 +1221,7 @@ export class EnhancedManuscriptDownloaderService {
         } catch (urlError: any) {
             console.error(`[CRITICAL] URL parsing failed for: ${url}`);
             console.error(`[CRITICAL] Error: ${urlError.message}`);
-            
+
             // Last resort: try to extract valid URL from error-prone string
             const urlMatch = url.match(/(https?:\/\/[^\s]+)/);
             if (urlMatch) {
@@ -1295,14 +1234,14 @@ export class EnhancedManuscriptDownloaderService {
         }
         const library = this.detectLibraryFromUrl(url);
         const startTime = Date.now();
-        
+
         comprehensiveLogger.logNetworkRequest(url, {
             method: options.method || 'GET',
             headers: options.headers,
             library,
             timeout: options.timeout
         });
-        
+
         // Special handling for Graz to resolve ETIMEDOUT issues
         if (url.includes('unipub.uni-graz.at')) {
             const dnsStartTime = Date.now();
@@ -1342,18 +1281,18 @@ export class EnhancedManuscriptDownloaderService {
                 });
             }
         }
-        
+
         // Special handling for Grenoble to resolve DNS issues
         if (url.includes('pagella.bm-grenoble.fr')) {
             try {
                 // ULTRA-DEFENSIVE: Validate hostname before DNS lookup
                 let hostname = urlObj.hostname;
-                
+
                 // CRITICAL FIX for Issue #13: Additional hostname validation
                 if (hostname.includes('://') || hostname.includes('https') || hostname.includes('http')) {
                     console.error(`[Grenoble] CRITICAL: Malformed hostname detected: ${hostname}`);
                     console.error(`[Grenoble] Full URL was: ${url}`);
-                    
+
                     // Try to extract clean hostname
                     const cleanMatch = hostname.match(/^([a-z0-9.-]+?)(?:https?|\/\/|$)/i);
                     if (cleanMatch && cleanMatch[1]) {
@@ -1365,13 +1304,13 @@ export class EnhancedManuscriptDownloaderService {
                         return;
                     }
                 }
-                
+
                 // Additional validation: hostname should not be too long or contain invalid chars
                 if (hostname.length > 253 || !/^[a-z0-9.-]+$/i.test(hostname)) {
                     console.error(`[Grenoble] Invalid hostname format: ${hostname}`);
                     return;
                 }
-                
+
                 // Pre-resolve DNS to avoid EAI_AGAIN errors
                 console.log(`[Grenoble] Pre-resolving DNS for ${hostname}`);
                 const addresses = await dns.resolve4(hostname);
@@ -1380,7 +1319,7 @@ export class EnhancedManuscriptDownloaderService {
                 }
             } catch (dnsError: any) {
                 console.warn(`[Grenoble] DNS resolution failed, proceeding anyway:`, dnsError?.message || dnsError);
-                
+
                 // Log detailed error for debugging Issue #13
                 if (dnsError?.code === 'EAI_AGAIN' || dnsError?.code === 'ENOTFOUND') {
                     console.error(`[Grenoble] DNS Error Details:`);
@@ -1391,7 +1330,7 @@ export class EnhancedManuscriptDownloaderService {
                 }
             }
         }
-        
+
         // Special handling for Florence to resolve ETIMEDOUT issues
         if (url.includes('cdm21059.contentdm.oclc.org')) {
             try {
@@ -1405,7 +1344,7 @@ export class EnhancedManuscriptDownloaderService {
                 console.warn(`[Florence] DNS resolution failed, proceeding anyway:`, dnsError);
             }
         }
-        
+
         // Special handling for Verona to resolve ETIMEDOUT issues
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
             try {
@@ -1419,7 +1358,7 @@ export class EnhancedManuscriptDownloaderService {
                 console.warn(`[Verona] DNS resolution failed, proceeding anyway:`, dnsError);
             }
         }
-        
+
         // Special handling for MDC Catalonia to resolve timeout issues
         if (url.includes('mdc.csuc.cat')) {
             const dnsStartTime = Date.now();
@@ -1459,10 +1398,10 @@ export class EnhancedManuscriptDownloaderService {
                 });
             }
         }
-        
+
         // Create agent with connection pooling for Graz, Florence, and Verona
         const agent = (url.includes('unipub.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org') ||
-                      url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 
+                      url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ?
             new https.Agent({
                 keepAlive: true,
                 keepAliveMsecs: 1000,
@@ -1471,7 +1410,7 @@ export class EnhancedManuscriptDownloaderService {
                 timeout: 120000,
                 rejectUnauthorized: false
             }) : undefined;
-        
+
         // ULTRA-DEFENSIVE: Final hostname validation
         const hostname = urlObj.hostname;
         if (hostname.includes('://') || hostname.includes('https')) {
@@ -1490,7 +1429,7 @@ export class EnhancedManuscriptDownloaderService {
             });
             throw error;
         }
-        
+
         const requestOptions = {
             hostname: hostname,
             port: urlObj.port || 443,
@@ -1507,41 +1446,41 @@ export class EnhancedManuscriptDownloaderService {
             },
             rejectUnauthorized: false,
             // Add extended socket timeout for Graz and Verona
-            timeout: options.timeout || (url.includes('unipub.uni-graz.at') ? 120000 : 
+            timeout: options.timeout || (url.includes('unipub.uni-graz.at') ? 120000 :
                     (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 60000 : 30000),
             // Use connection pooling agent for Graz
             agent: agent
         };
-        
+
         // Implement retry logic for connection timeouts
-        const maxRetries = url.includes('unipub.uni-graz.at') ? 5 : 
+        const maxRetries = url.includes('unipub.uni-graz.at') ? 5 :
                          (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 3 : 1;
         let retryCount = 0;
         const overallStartTime = Date.now(); // Track total time from first attempt
-        
+
         const attemptRequest = (): Promise<Response> => {
             return new Promise((resolve, reject) => {
                 const attemptStartTime = Date.now();
                 console.log(`[fetchWithHTTPS] Attempt ${retryCount + 1}/${maxRetries} for ${urlObj.hostname}`);
-                
+
                 const req = https.request(requestOptions, (res) => {
                 const chunks: Buffer[] = [];
                 let lastDataTime = Date.now();
                 let totalBytes = 0;
                 let progressTimer: NodeJS.Timeout;
-                
+
                 // Smart timeout: Monitor if data is still flowing
                 const PROGRESS_CHECK_INTERVAL = 10000; // Check every 10 seconds
                 const STALL_TIMEOUT = 30000; // Timeout if no data for 30 seconds
                 const initialTimeout = options.timeout || 30000;
-                
+
                 // Clear any existing timeout
                 const clearProgressTimer = () => {
                     if (progressTimer) {
                         clearTimeout(progressTimer);
                     }
                 };
-                
+
                 // Setup progress monitoring
                 const setupProgressMonitor = () => {
                     clearProgressTimer();
@@ -1572,7 +1511,7 @@ export class EnhancedManuscriptDownloaderService {
                         }
                     }, PROGRESS_CHECK_INTERVAL);
                 };
-                
+
                 // Initial timeout for connection establishment
                 const connectionTimer = setTimeout(() => {
                     if (totalBytes === 0) {
@@ -1586,32 +1525,32 @@ export class EnhancedManuscriptDownloaderService {
                         reject(timeoutError);
                     }
                 }, initialTimeout);
-                
+
                 res.on('data', (chunk) => {
                     chunks.push(chunk);
                     totalBytes += chunk.length;
                     lastDataTime = Date.now();
-                    
+
                     // Clear connection timer once we start receiving data
                     if (totalBytes === chunk.length) {
                         clearTimeout(connectionTimer);
                         setupProgressMonitor();
                     }
                 });
-                
+
                 res.on('end', async () => {
                     clearTimeout(connectionTimer);
                     clearProgressTimer();
-                    
+
                     let body = Buffer.concat(chunks);
                     const responseHeaders = new Headers();
-                    
+
                     console.log(`[fetchWithHTTPS] Download complete: ${totalBytes} bytes in ${Math.round((Date.now() - lastDataTime + STALL_TIMEOUT) / 1000)}s`);
-                    
+
                     Object.entries(res.headers).forEach(([key, value]) => {
                         responseHeaders.set(key, Array.isArray(value) ? value.join(', ') : value || '');
                     });
-                    
+
                     // Handle content decompression
                     const contentEncoding = res.headers['content-encoding'];
                     if (contentEncoding) {
@@ -1631,13 +1570,13 @@ export class EnhancedManuscriptDownloaderService {
                             // Continue with compressed body if decompression fails
                         }
                     }
-                    
+
                     const response = new Response(body, {
                         status: res.statusCode || 200,
                         statusText: res.statusMessage || 'OK',
                         headers: responseHeaders
                     });
-                    
+
                     comprehensiveLogger.logNetworkResponse(url, {
                         statusCode: res.statusCode || 200,
                         headers: Object.fromEntries(responseHeaders.entries()),
@@ -1645,46 +1584,46 @@ export class EnhancedManuscriptDownloaderService {
                         bytesReceived: totalBytes,
                         library
                     });
-                    
+
                     resolve(response);
                 });
-                
+
                 res.on('error', (error) => {
                     clearTimeout(connectionTimer);
                     clearProgressTimer();
                     reject(error);
                 });
             });
-            
+
             req.on('error', (error: any) => {
                 const attemptDuration = Date.now() - attemptStartTime;
                 console.log(`[fetchWithHTTPS] Request error after ${attemptDuration}ms:`, error.code, error.message);
-                
+
                 comprehensiveLogger.logNetworkError(url, error, {
                     library,
                     attemptNumber: retryCount + 1,
                     duration: attemptDuration
                 });
-                
+
                 // Handle connection timeouts with retry for Graz, Florence, Verona, and MDC Catalonia
-                if ((url.includes('unipub.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org') || 
+                if ((url.includes('unipub.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org') ||
                      url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') ||
-                     url.includes('mdc.csuc.cat')) && 
-                    (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || 
-                     error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || 
+                     url.includes('mdc.csuc.cat')) &&
+                    (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' ||
+                     error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' ||
                      error.code === 'ENETUNREACH' || error.code === 'EHOSTUNREACH' ||
-                     error.code === 'EPIPE' || error.code === 'ECONNABORTED') && 
+                     error.code === 'EPIPE' || error.code === 'ECONNABORTED') &&
                     retryCount < maxRetries - 1) {
-                    
+
                     retryCount++;
                     // More aggressive exponential backoff: 2s, 4s, 8s, 16s, 32s (max 30s)
                     const backoffDelay = Math.min(1000 * Math.pow(2, retryCount), 30000);
-                    const libraryName = url.includes('unipub.uni-graz.at') ? 'Graz' : 
+                    const libraryName = url.includes('unipub.uni-graz.at') ? 'Graz' :
                                       url.includes('cdm21059.contentdm.oclc.org') ? 'Florence' :
                                       url.includes('mdc.csuc.cat') ? 'MDC Catalonia' :
                                       (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 'Verona' : 'Unknown';
                     console.log(`[${libraryName}] Connection failed with ${error.code}, retry ${retryCount}/${maxRetries - 1} in ${backoffDelay}ms...`);
-                    
+
                     setTimeout(() => {
                         attemptRequest().then(resolve).catch(reject);
                     }, backoffDelay);
@@ -1711,7 +1650,7 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
             });
-            
+
             // Add connection timeout handling
             req.on('timeout', () => {
                 console.log(`[fetchWithHTTPS] Socket timeout for ${urlObj.hostname}`);
@@ -1720,11 +1659,11 @@ export class EnhancedManuscriptDownloaderService {
                 timeoutError.code = 'ETIMEDOUT';
                 req.emit('error', timeoutError);
             });
-            
+
             req.end();
         });
     };
-    
+
     return attemptRequest();
     }
 
@@ -1734,20 +1673,20 @@ export class EnhancedManuscriptDownloaderService {
     async loadManifest(originalUrl: string, progressCallback?: (current: number, total: number, message?: string) => void): Promise<ManuscriptManifest> {
         // ULTRA-PRIORITY FIX for Issue #9: Sanitize URL at the earliest entry point
         originalUrl = this.sanitizeUrl(originalUrl);
-        
+
         // Check cache first
         const cachedManifest = await this.manifestCache.get(originalUrl);
         if (cachedManifest) {
             return cachedManifest;
         }
-        
+
         const library = this.detectLibrary(originalUrl);
         if (!library) {
             throw new Error(`Unsupported library for URL: ${originalUrl}`);
         }
 
         let manifest: ManuscriptManifest;
-        
+
         try {
             switch (library) {
                 case 'nypl':
@@ -1956,31 +1895,31 @@ export class EnhancedManuscriptDownloaderService {
                 default:
                     throw new Error(`Unsupported library: ${library}`);
             }
-            
+
             manifest.library = library as any;
             manifest.originalUrl = originalUrl;
-            
+
             // Cache the manifest
             await this.manifestCache.set(originalUrl, manifest);
-            
+
             return manifest;
-            
+
         } catch (error: any) {
             console.error(`Failed to load manifest: ${(error as Error).message}`);
-            
+
             // Enhanced error handling for specific network issues
             if (error.code === 'ETIMEDOUT' && originalUrl.includes('unipub.uni-graz.at')) {
                 throw new Error(`University of Graz connection timeout. The server is not responding - this may be due to high load or network issues. Please try again later or check if the manuscript is accessible through the Graz website.`);
             }
-            
+
             if (error.code === 'ECONNRESET' && originalUrl.includes('unipub.uni-graz.at')) {
                 throw new Error(`University of Graz connection was reset. The server closed the connection unexpectedly. Please try again in a few moments.`);
             }
-            
+
             if (error.message?.includes('timeout') && originalUrl.includes('unipub.uni-graz.at')) {
                 throw new Error(`University of Graz request timed out. Large manuscripts may take longer to load - please try again with patience, as the system allows extended timeouts for Graz manuscripts.`);
             }
-            
+
             throw error;
         }
     }
@@ -1991,7 +1930,7 @@ export class EnhancedManuscriptDownloaderService {
     async downloadImageWithRetries(url: string, attempt = 0): Promise<ArrayBuffer> {
         const startTime = Date.now();
         const library = this.detectLibrary(url) as TLibrary;
-        
+
         // Debug logging for BDL detection
         if (url.includes('bdl.servizirl.it')) {
             console.log(`🔍 [BDL Detection] URL contains 'bdl.servizirl.it': ${url}`);
@@ -2000,16 +1939,16 @@ export class EnhancedManuscriptDownloaderService {
                 console.error(`❌ [BDL Detection] CRITICAL: Library detection FAILED! Expected 'bdl', got '${library}'`);
             }
         }
-        
+
         // CRITICAL FIX v2: Intercept ALL BDL downloads, regardless of attempt number
         // Also check URL directly in case detectLibrary fails
         if (library === 'bdl' || url.includes('bdl.servizirl.it')) {
             console.log(`🔄 [BDL Ultra] Intercepting BDL download (attempt ${attempt}): ${url}`);
-            
+
             // Force ultra-reliable mode for BDL - ignore config
             const ultraMode = true; // Force enabled
             const maxRetries = -1; // Force unlimited
-            
+
             console.log(`🔥 [BDL Ultra] FORCED ULTRA MODE - Will retry forever until success`);
             comprehensiveLogger.log({
                 level: 'info',
@@ -2023,15 +1962,15 @@ export class EnhancedManuscriptDownloaderService {
                     maxRetries: -1
                 }
             });
-            
+
             // Keep trying until we get a valid image
             let validBuffer: Buffer | null = null;
             let ultraAttempt = 0;
-            
+
             while (!validBuffer) {
                 ultraAttempt++;
                 console.log(`🔁 [BDL Ultra] Ultra-attempt ${ultraAttempt} for ${url.substring(0, 100)}...`);
-                
+
                 const buffer = await this.ultraBDLService.ultraReliableDownload(
                     url,
                     attempt, // Use actual attempt number as page index hint
@@ -2046,7 +1985,7 @@ export class EnhancedManuscriptDownloaderService {
                         maxDelayMs: 60000 // 1 minute max between attempts
                     }
                 );
-                
+
                 // Validate the buffer
                 if (buffer && buffer.length >= 10240) { // At least 10KB
                     // Check for JPEG signature
@@ -2060,7 +1999,7 @@ export class EnhancedManuscriptDownloaderService {
                     const size = buffer ? buffer.length : 0;
                     console.warn(`⚠️ [BDL Ultra] Got only ${size} bytes (need 10KB+), retrying...`);
                 }
-                
+
                 // If we didn't get a valid buffer, wait before retrying
                 if (!validBuffer) {
                     const delay = Math.min(5000 * ultraAttempt, 60000); // Progressive delay up to 1 minute
@@ -2068,11 +2007,11 @@ export class EnhancedManuscriptDownloaderService {
                     await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
-            
+
             console.log(`✅ [BDL Ultra] FINAL SUCCESS: Downloaded ${validBuffer.length} bytes after ${ultraAttempt} attempts`);
             return validBuffer;
         }
-        
+
         // Only log on first attempt to avoid duplicates with fetchDirect
         if (attempt === 0) {
             this.logger.log({
@@ -2083,34 +2022,34 @@ export class EnhancedManuscriptDownloaderService {
                 attemptNumber: attempt + 1
             });
         }
-        
+
         try {
             if (url.endsWith('.zif')) {
                 return this.downloadAndProcessZifFile(url, attempt);
             }
-            
+
             if (url.endsWith('.dzi')) {
                 return this.downloadAndProcessDziFile(url, attempt);
             }
-            
+
             // Use proxy fallback for libraries with connection issues or when direct access fails
             // Note: Internet Culturale removed from proxy list to fix authentication issues
             // BDL added due to IIIF server instability (60% connection failures)
             // University of Graz removed from proxy list to use library-specific timeout multiplier (2.0x)
             // Special handling for Norwegian content that may be geo-blocked
             const isNorwegianContent = url.includes('nb.no') || url.includes('api.nb.no');
-            
+
             // For Norwegian content, always try proxy fallback due to geo-blocking
             if (isNorwegianContent && attempt === 0) {
                 console.log('[Norwegian] Detected nb.no content - will use proxy fallback for geo-blocked images');
             }
-            
-            const needsProxyFallback = url.includes('digitallibrary.unicatt.it') || 
-                                     url.includes('mediatheques.orleans.fr') || 
+
+            const needsProxyFallback = url.includes('digitallibrary.unicatt.it') ||
+                                     url.includes('mediatheques.orleans.fr') ||
                                      url.includes('aurelia.orleans.fr') ||
-                                     isNorwegianContent ||  // Always use proxy for Norwegian content 
+                                     isNorwegianContent ||  // Always use proxy for Norwegian content
                                      url.includes('bdl.servizirl.it');
-            
+
             this.logger.log({
                 level: 'debug',
                 library: library || 'unknown',
@@ -2118,13 +2057,13 @@ export class EnhancedManuscriptDownloaderService {
                 message: `Proxy fallback needed: ${needsProxyFallback}`,
                 details: { needsProxyFallback, attempt: attempt + 1 }
             });
-            
+
             let response: Response;
             try {
                 response = needsProxyFallback
                     ? await this.fetchWithProxyFallback(url)
                     : await this.fetchDirect(url, {}, attempt + 1); // Pass attempt number for timeout calculation
-                
+
                 // MDC Catalonia: If 1000px resolution fails, try full resolution fallback
                 if (url.includes('mdc.csuc.cat') && !response.ok && url.includes('/full/1000,/')) {
                     console.log(`MDC Catalonia: 1000px resolution failed (${response.status}), trying full resolution fallback`);
@@ -2136,34 +2075,34 @@ export class EnhancedManuscriptDownloaderService {
             } catch (fetchError: any) {
                 // Enhanced error handling for BNC Roma infrastructure failures
                 if (url.includes('digitale.bnc.roma.sbn.it')) {
-                    if (fetchError.name === 'AbortError' || fetchError.code === 'ECONNRESET' || 
-                        fetchError.code === 'ENOTFOUND' || fetchError.code === 'ECONNREFUSED' || 
+                    if (fetchError.name === 'AbortError' || fetchError.code === 'ECONNRESET' ||
+                        fetchError.code === 'ENOTFOUND' || fetchError.code === 'ECONNREFUSED' ||
                         fetchError.code === 'ETIMEDOUT' || fetchError.code === 'ENETUNREACH' ||
                         fetchError.message.includes('timeout') || fetchError.message.includes('ENETUNREACH')) {
                         throw new Error(`BNC Roma infrastructure failure: Cannot reach digitale.bnc.roma.sbn.it server. This appears to be a network infrastructure issue. Check www.bncrm.beniculturali.it for announcements or try again later.`);
                     }
                 }
-                
+
                 // Enhanced error handling for MDC Catalonia network issues
                 if (url.includes('mdc.csuc.cat')) {
-                    const isNetworkError = fetchError.name === 'AbortError' || 
-                                         fetchError.code === 'ECONNRESET' || 
-                                         fetchError.code === 'ENOTFOUND' || 
-                                         fetchError.code === 'ECONNREFUSED' || 
-                                         fetchError.code === 'ETIMEDOUT' || 
+                    const isNetworkError = fetchError.name === 'AbortError' ||
+                                         fetchError.code === 'ECONNRESET' ||
+                                         fetchError.code === 'ENOTFOUND' ||
+                                         fetchError.code === 'ECONNREFUSED' ||
+                                         fetchError.code === 'ETIMEDOUT' ||
                                          fetchError.code === 'ENETUNREACH' ||
-                                         fetchError.message.includes('timeout') || 
+                                         fetchError.message.includes('timeout') ||
                                          fetchError.message.includes('ECONNREFUSED') ||
                                          fetchError.message.includes('ENETUNREACH');
-                    
+
                     if (isNetworkError) {
                         throw new Error(`MDC Catalonia network issue (attempt ${attempt}): Cannot reach mdc.csuc.cat servers. This appears to be a temporary connectivity issue. The server may be experiencing high load or network problems. Please try again later.`);
                     }
                 }
-                
+
                 throw fetchError;
             }
-            
+
             if (!response.ok) {
                 this.logger.log({
                     level: 'error',
@@ -2173,7 +2112,7 @@ export class EnhancedManuscriptDownloaderService {
                     attemptNumber: attempt + 1,
                     details: { status: response.status, statusText: response.statusText }
                 });
-                
+
                 // Enhanced error messages for BNC Roma HTTP errors
                 if (url.includes('digitale.bnc.roma.sbn.it')) {
                     if (response.status === 500) {
@@ -2186,7 +2125,7 @@ export class EnhancedManuscriptDownloaderService {
                         throw new Error(`BNC Roma server error (HTTP ${response.status}): The image server is experiencing technical difficulties.`);
                     }
                 }
-                
+
                 // Enhanced error messages for MDC Catalonia HTTP errors
                 if (url.includes('mdc.csuc.cat')) {
                     if (response.status === 500) {
@@ -2203,7 +2142,7 @@ export class EnhancedManuscriptDownloaderService {
                         throw new Error(`MDC Catalonia server error (HTTP ${response.status}): The mdc.csuc.cat server is experiencing technical difficulties.`);
                     }
                 }
-                
+
                 // Enhanced error handling for Norwegian National Library geo-blocking
                 if (url.includes('nb.no') && response.status === 403) {
                     const errorBody = await response.text().catch(() => '');
@@ -2213,13 +2152,13 @@ export class EnhancedManuscriptDownloaderService {
                         throw new Error(`Norwegian National Library access denied (HTTP 403): Access to this manuscript may be restricted. This could be due to:\n1. Geographic IP restrictions (Norwegian IP required)\n2. Authentication requirements\n3. Copyright or access restrictions\n\nPlease verify the manuscript's access policy at nb.no`);
                     }
                 }
-                
+
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-            
+
             const buffer = await response.arrayBuffer();
             const elapsed = Date.now() - startTime;
-            
+
             this.logger.log({
                 level: 'info',
                 library: library || 'unknown',
@@ -2228,7 +2167,7 @@ export class EnhancedManuscriptDownloaderService {
                 duration: elapsed,
                 details: { size: buffer.byteLength, speedMbps: (buffer.byteLength / elapsed / 1024).toFixed(2) }
             });
-            
+
             if (buffer.byteLength < MIN_VALID_IMAGE_SIZE_BYTES) {
                 this.logger.log({
                     level: 'error',
@@ -2239,53 +2178,53 @@ export class EnhancedManuscriptDownloaderService {
                 });
                 throw new Error(`Image too small: ${buffer.byteLength} bytes`);
             }
-            
+
             // Special validation for Internet Culturale to detect authentication error pages
             if (url.includes('internetculturale.it')) {
                 await this.validateInternetCulturaleImage(buffer, url);
             }
-            
+
             return buffer;
-            
+
         } catch (error: any) {
             const elapsed = Date.now() - startTime;
             this.logger.logDownloadError(library || 'unknown', url, error, attempt + 1);
             console.error(`[downloadImageWithRetries] Error after ${elapsed}ms:`, error.message);
-            
+
             const maxRetries = configService.get('maxRetries');
             if (attempt < maxRetries) {
                 // BDL Quality Fallback: Try lower quality before retrying same quality
                 if (url.includes('bdl.servizirl.it') && (url.includes('/full/max/') || url.includes('/full/full/'))) {
                     const qualityFallbacks = ['/full/2048,/', '/full/1024,/', '/full/512,/'];
-                    const currentQuality = (url.includes('/full/max/') || url.includes('/full/full/')) ? 0 : 
-                                         url.includes('/full/2048,') ? 1 : 
+                    const currentQuality = (url.includes('/full/max/') || url.includes('/full/full/')) ? 0 :
+                                         url.includes('/full/2048,') ? 1 :
                                          url.includes('/full/1024,') ? 2 : 3;
-                    
+
                     if (currentQuality < qualityFallbacks.length) {
                         const fallbackUrl = url.replace(/\/full\/[^/]+\//, qualityFallbacks[currentQuality]);
                         console.log(`BDL quality fallback: ${url} -> ${fallbackUrl}`);
                         return this.downloadImageWithRetries(fallbackUrl, attempt);
                     }
                 }
-                
+
                 // Check if library supports progressive backoff
                 const retryLibrary = this.detectLibrary(url) as TLibrary;
-                const useProgressiveBackoff = retryLibrary && 
+                const useProgressiveBackoff = retryLibrary &&
                     LibraryOptimizationService.getOptimizationsForLibrary(retryLibrary).enableProgressiveBackoff;
-                    
-                const delay = useProgressiveBackoff 
+
+                const delay = useProgressiveBackoff
                     ? LibraryOptimizationService.calculateProgressiveBackoff(attempt + 1)
                     : this.calculateRetryDelay(attempt);
-                
+
                 this.logger.logRetry(retryLibrary || 'unknown', url, attempt + 2, delay);
                 console.log(`[downloadImageWithRetries] Will retry - Library: ${retryLibrary}, Progressive backoff: ${useProgressiveBackoff}, Delay: ${delay}ms`);
-                console.log(`Retrying ${url} (attempt ${attempt + 2}/${maxRetries + 1}) after ${delay}ms delay` + 
+                console.log(`Retrying ${url} (attempt ${attempt + 2}/${maxRetries + 1}) after ${delay}ms delay` +
                            (useProgressiveBackoff ? ' (progressive backoff)' : ''));
-                
+
                 await this.sleep(delay);
                 return this.downloadImageWithRetries(url, attempt + 1);
             }
-            
+
             const totalTime = Date.now() - startTime;
             this.logger.log({
                 level: 'error',
@@ -2298,7 +2237,7 @@ export class EnhancedManuscriptDownloaderService {
             });
             console.error(`[downloadImageWithRetries] FINAL FAILURE after ${maxRetries + 1} attempts for ${url}`);
             console.error(`[downloadImageWithRetries] Total time spent: ${totalTime}ms`);
-            
+
             // Enhanced error message for BNC Roma failures
             if (url.includes('digitale.bnc.roma.sbn.it')) {
                 if ((error as Error).message.includes('BNC Roma infrastructure failure')) {
@@ -2307,7 +2246,7 @@ export class EnhancedManuscriptDownloaderService {
                     throw new Error(`BNC Roma persistent server errors: Multiple server errors encountered after ${maxRetries} attempts. The digital library may be experiencing technical difficulties. Please try again later or contact BNC Roma support.`);
                 }
             }
-            
+
             throw new Error(`Failed after ${maxRetries} attempts: ${(error as Error).message}`);
         }
     }
@@ -2316,40 +2255,40 @@ export class EnhancedManuscriptDownloaderService {
         // Calculate timeout based on attempt number (more time for retries)
         const baseTimeout = 300000; // 5 minutes base
         const timeoutMs = baseTimeout + (attempt * 120000); // +2 minutes per retry
-        
+
         try {
             console.log(`Processing ZIF file: ${url} (attempt ${attempt + 1})`);
-            
+
             // Use the dedicated ZIF processor with timeout protection
             const representativeImageBuffer = await this.zifProcessor.processZifFile(url);
-            
+
             console.log(`ZIF processed successfully: ${(representativeImageBuffer.length / 1024 / 1024).toFixed(2)} MB high-quality image`);
-            
+
             // Convert Buffer to ArrayBuffer for compatibility
             const arrayBuffer = new ArrayBuffer(representativeImageBuffer.length);
             const view = new Uint8Array(arrayBuffer);
             view.set(representativeImageBuffer);
-            
+
             return arrayBuffer;
-            
+
         } catch (error: any) {
             const maxRetries = configService.get('maxRetries');
             if (attempt < maxRetries) {
                 const isTimeoutError = (error as Error).message.includes('timeout') || (error as Error).message.includes('timed out');
                 const delay = isTimeoutError ? this.calculateRetryDelay(attempt) * 2 : this.calculateRetryDelay(attempt);
-                
+
                 console.log(`ZIF processing failed (attempt ${attempt + 1}/${maxRetries}): ${(error as Error).message}${isTimeoutError ? ' [TIMEOUT]' : ''}`);
                 console.log(`Retrying ZIF processing in ${delay / 1000}s with ${timeoutMs / 1000}s timeout...`);
-                
+
                 await this.sleep(delay);
                 return this.downloadAndProcessZifFile(url, attempt + 1);
             }
-            
+
             // Provide more specific error message for timeout issues
             if ((error as Error).message.includes('timeout') || (error as Error).message.includes('timed out')) {
                 throw new Error(`ZIF processing timed out after ${maxRetries + 1} attempts. This manuscript may be very large or the server may be overloaded. Please try again later.`);
             }
-            
+
             throw new Error(`Failed to process ZIF file after ${maxRetries + 1} attempts: ${(error as Error).message}`);
         }
     }
@@ -2358,40 +2297,40 @@ export class EnhancedManuscriptDownloaderService {
         // Calculate timeout based on attempt number (more time for retries)
         const baseTimeout = 300000; // 5 minutes base
         const timeoutMs = baseTimeout + (attempt * 120000); // +2 minutes per retry
-        
+
         try {
             console.log(`Processing DZI file: ${url} (attempt ${attempt + 1})`);
-            
+
             // Use the dedicated DZI processor with timeout protection
             const representativeImageBuffer = await this.dziProcessor.processDziImage(url);
-            
+
             console.log(`DZI processed successfully: ${(representativeImageBuffer.length / 1024 / 1024).toFixed(2)} MB high-quality image`);
-            
+
             // Convert Buffer to ArrayBuffer for compatibility
             const arrayBuffer = new ArrayBuffer(representativeImageBuffer.length);
             const view = new Uint8Array(arrayBuffer);
             view.set(representativeImageBuffer);
-            
+
             return arrayBuffer;
-            
+
         } catch (error: any) {
             const maxRetries = configService.get('maxRetries');
             if (attempt < maxRetries) {
                 const isTimeoutError = (error as Error).message.includes('timeout') || (error as Error).message.includes('timed out');
                 const delay = isTimeoutError ? this.calculateRetryDelay(attempt) * 2 : this.calculateRetryDelay(attempt);
-                
+
                 console.log(`DZI processing failed (attempt ${attempt + 1}/${maxRetries}): ${(error as Error).message}${isTimeoutError ? ' [TIMEOUT]' : ''}`);
                 console.log(`Retrying DZI processing in ${delay / 1000}s with ${timeoutMs / 1000}s timeout...`);
-                
+
                 await this.sleep(delay);
                 return this.downloadAndProcessDziFile(url, attempt + 1);
             }
-            
+
             // Provide more specific error message for timeout issues
             if ((error as Error).message.includes('timeout') || (error as Error).message.includes('timed out')) {
                 throw new Error(`DZI processing timed out after ${maxRetries + 1} attempts. This manuscript may be very large or the server may be overloaded. Please try again later.`);
             }
-            
+
             throw new Error(`Failed to process DZI file after ${maxRetries + 1} attempts: ${(error as Error).message}`);
         }
     }
@@ -2448,12 +2387,12 @@ export class EnhancedManuscriptDownloaderService {
         let manifest: ManuscriptManifest | undefined;
         let filepath: string | undefined;
         let validImagePaths: string[] = [];
-        
+
         try {
             // Use provided pageLinks if available, otherwise load manifest
             const manifestStartTime = Date.now();
             let manifestLoadDuration = 0;
-            
+
             if (pageLinks && Array.isArray(pageLinks) && pageLinks.length > 0) {
                 // Build manifest from pre-sliced data
                 manifest = {
@@ -2474,12 +2413,12 @@ export class EnhancedManuscriptDownloaderService {
                 manifest = await this.loadManifest(url);
                 manifestLoadDuration = Date.now() - manifestStartTime;
             }
-            
+
             // Validate special processor requirements
             if ((manifest as any).requiresTileProcessor && !(manifest as any).tileConfig) {
                 throw new Error('Bordeaux manuscript requires tileConfig but none provided');
             }
-            
+
             // Log manifest loading completion
             const usingCachedManifest = await this.manifestCache.get(url) !== null;
             this.logger.log({
@@ -2494,15 +2433,15 @@ export class EnhancedManuscriptDownloaderService {
                     displayName: manifest.displayName
                 }
             });
-            
+
             onManifestLoaded(manifest);
-            
+
             // Get internal cache directory for temporary images
             const tempImagesDir = path.join(getAppPath('userData'), 'temp-images');
-            
+
             // Ensure temporary images directory exists
             await fs.mkdir(tempImagesDir, { recursive: true });
-            
+
             // Generate filename using filesystem-safe sanitization
             const nameWithId = this.buildDescriptiveName(manifest.displayName, url);
             const sanitizedName = nameWithId
@@ -2514,13 +2453,13 @@ export class EnhancedManuscriptDownloaderService {
                 .replace(/^_|_$/g, '')                    // Remove leading/trailing underscores
                 .replace(/\.+$/g, '')                     // Remove trailing periods (Windows compatibility)
                 .substring(0, 100) || 'manuscript';       // Limit to 100 characters with fallback
-            
+
             // Calculate pages to download for splitting logic
             // When using pre-sliced pageLinks, pages are already selected
             const actualStartPage = pageLinks ? 1 : Math.max(1, startPage || manifest.startPageFromUrl || 1);
             const actualEndPage = pageLinks ? manifest.totalPages : Math.min(manifest.totalPages, endPage || manifest.totalPages);
             const totalPagesToDownload = actualEndPage - actualStartPage + 1;
-            
+
             // Apply library-specific optimization settings early to get split threshold
             // This must happen before determining split logic to respect user settings
             const parsedMax = typeof maxConcurrent === 'string' ? parseInt(maxConcurrent as any, 10) : maxConcurrent;
@@ -2534,34 +2473,34 @@ export class EnhancedManuscriptDownloaderService {
                 globalMaxConcurrent,
                 manifestLibrary
             );
-            
+
             // Use library-specific or global split threshold
             // This respects user's configured split size (30MB, 100MB, etc)
             const autoSplitThresholdMB = optimizations.autoSplitThresholdMB;
-            
+
             // Estimate average page size (conservative estimate: 500KB per page for high-quality images)
             // This is based on typical manuscript page sizes at high resolution
             const estimatedTotalSizeMB = (totalPagesToDownload * 0.5);
-            
+
             // Determine if we need to split the PDF based on estimated size
             // Fixed: Was hardcoded to 1000 pages, now uses actual MB threshold
             const shouldSplit = estimatedTotalSizeMB > autoSplitThresholdMB;
             const maxPagesPerPart = Math.ceil((autoSplitThresholdMB * 2) / 1); // Pages per part based on threshold (assuming ~0.5MB per page)
-            
+
             let filename: string;
             let filepath: string;
-            
+
             // Final PDF goes to Downloads folder - always create a subfolder for each manuscript
             const downloadsDir = getAppPath('downloads');
             await fs.mkdir(downloadsDir, { recursive: true });
-            
+
             // Always create a subfolder with the manuscript base name (strip part/page suffixes)
             const folderBase = sanitizedName
                 .replace(/_Part_\d+.*$/i, '')
                 .replace(/_pages_\d+-\d+.*$/i, '');
             const targetDir = path.join(downloadsDir, folderBase || sanitizedName);
             await fs.mkdir(targetDir, { recursive: true });
-            
+
             if (shouldSplit) {
                 const partNumber = String(1).padStart(2, '0');
                 filename = `${sanitizedName}_part_${partNumber}_pages_${actualStartPage}-${actualEndPage}.pdf`;
@@ -2571,7 +2510,7 @@ export class EnhancedManuscriptDownloaderService {
                 filename = `${sanitizedName}_pages_${actualStartPage}-${actualEndPage}.pdf`;
                 filepath = path.join(targetDir, filename);
             }
-            
+
             // Check if file exists
             if (skipExisting) {
                 try {
@@ -2581,61 +2520,61 @@ export class EnhancedManuscriptDownloaderService {
                     // File doesn't exist, continue with download
                 }
             }
-            
+
             // Page range already calculated above for filename generation
-            
-            
+
+
             const imagePaths: string[] = [];
             const failedPages: number[] = [];
             const writePromises: Promise<void>[] = [];
             const startTime = Date.now();
             let completedPages = 0;
-            
+
             const updateProgress = () => {
                 const progress = completedPages / totalPagesToDownload;
                 const elapsed = (Date.now() - startTime) / 1000;
                 const rate = completedPages / elapsed;
                 const eta = rate > 0 ? (totalPagesToDownload - completedPages) / rate : 0;
-                onProgress({ 
-                    progress, 
-                    completedPages, 
-                    totalPages: totalPagesToDownload, 
-                    eta: this.formatETA(eta) 
+                onProgress({
+                    progress,
+                    completedPages,
+                    totalPages: totalPagesToDownload,
+                    eta: this.formatETA(eta)
                 });
             };
-            
+
             // ULTRA-PRIORITY FIX #9: Force parallel downloads for BDL
             // Override concurrency settings for BDL to improve performance
             let actualMaxConcurrent = optimizations.maxConcurrentDownloads
                 ? Math.min(optimizations.maxConcurrentDownloads, globalMaxConcurrent || 3)
                 : (globalMaxConcurrent || 3);
-            
+
             // Special handling for BDL: use aggressive parallelism
             if (manifest.library === 'bdl') {
                 actualMaxConcurrent = Math.min(10, manifest.pageLinks.length); // Up to 10 concurrent for BDL
                 console.log(`🚀 [BDL Performance] Using ${actualMaxConcurrent} concurrent downloads for faster speed`);
             }
-            
+
             // Validate actualMaxConcurrent to prevent "Invalid array length" error
             if (!Number.isInteger(actualMaxConcurrent) || actualMaxConcurrent <= 0 || !Number.isFinite(actualMaxConcurrent)) {
                 console.warn(`Invalid maxConcurrentDownloads value: ${actualMaxConcurrent} (type: ${typeof actualMaxConcurrent}). Using default: 3`);
                 actualMaxConcurrent = 3;
             }
-            
+
             // Log optimization info for debugging
             if (optimizations.optimizationDescription) {
                 console.log(`Applying ${library} optimizations: ${optimizations.optimizationDescription}`);
                 console.log(`Using ${actualMaxConcurrent} concurrent downloads (global: ${globalMaxConcurrent})`);
             }
-            
+
             const semaphore = new Array(actualMaxConcurrent).fill(null);
             let nextPageIndex = actualStartPage - 1; // Convert to 0-based index
-            
+
             const downloadPage = async (pageIndex: number) => {
                 // Fix for Bordeaux and other libraries: map page index to manifest array index
                 // When using pre-sliced pageLinks, index directly
                 const manifestIndex = pageLinks ? pageIndex : (pageIndex - (actualStartPage - 1));
-                
+
                 // Validate manifestIndex is within bounds
                 if (manifestIndex < 0 || manifestIndex >= manifest?.pageLinks?.length) {
                     console?.error(`Page index ${pageIndex + 1} (manifest index ${manifestIndex}) is out of bounds for manifest with ${manifest?.pageLinks.length} pages`);
@@ -2644,9 +2583,9 @@ export class EnhancedManuscriptDownloaderService {
                     updateProgress();
                     return;
                 }
-                
+
                 let imageUrl = manifest?.pageLinks[manifestIndex];
-                
+
                 // Skip placeholder URLs (empty strings) used for missing pages
                 if (!imageUrl || imageUrl === '') {
                     console.warn(`Skipping missing page ${pageIndex + 1}`);
@@ -2654,12 +2593,12 @@ export class EnhancedManuscriptDownloaderService {
                     updateProgress();
                     return;
                 }
-                
+
                 // Check if this manifest requires the DirectTileProcessor (Bordeaux)
                 if ((manifest as any).requiresTileProcessor && (manifest as any).tileConfig) {
                     const imgFile = `${sanitizedName}_page_${pageIndex + 1}.jpg`;
                     const imgPath = path.join(tempImagesDir, imgFile);
-                    
+
                     try {
                         // Skip if already downloaded
                         await fs.access(imgPath);
@@ -2675,17 +2614,17 @@ export class EnhancedManuscriptDownloaderService {
                             const tileConfig = (manifest as any).tileConfig;
                             const pageNum = tileConfig.startPage + pageIndex;
                             console.log(`[Bordeaux] Processing page ${pageNum} using DirectTileProcessor`);
-                            
+
                             // Create a progress callback for tile downloads
                             const tileProgressCallback = (tilesDownloaded: number, totalTiles: number) => {
                                 // Calculate sub-progress within this page
                                 const pageProgress = tilesDownloaded / totalTiles;
                                 const overallProgress = (completedPages + pageProgress) / totalPagesToDownload;
-                                
+
                                 const elapsed = (Date.now() - startTime) / 1000;
                                 const rate = (completedPages + pageProgress) / elapsed;
                                 const eta = rate > 0 ? (totalPagesToDownload - completedPages - pageProgress) / rate : 0;
-                                
+
                                 onProgress({
                                     progress: overallProgress,
                                     completedPages: completedPages,
@@ -2694,14 +2633,14 @@ export class EnhancedManuscriptDownloaderService {
                                     details: `Downloading tiles: ${tilesDownloaded}/${totalTiles}`
                                 });
                             };
-                            
+
                             const result = await this.directTileProcessor.processPage(
                                 tileConfig.baseId,
                                 pageNum,
                                 imgPath,
                                 tileProgressCallback
                             );
-                            
+
                             if (result.success) {
                                 // Store in array using relative index for proper array management
                         const relativeIndex = pageIndex - (actualStartPage - 1);
@@ -2718,16 +2657,16 @@ export class EnhancedManuscriptDownloaderService {
                             failedPages.push(pageIndex + 1);
                         }
                     }
-                    
+
                     return;
                 }
-                
+
                 // Check if this is a tile-based system
                 const isTileBased = await this.tileEngineService.isTileBasedUrl(imageUrl);
                 if (isTileBased) {
                     const imgFile = `${sanitizedName}_page_${pageIndex + 1}.jpg`;
                     const imgPath = path.join(tempImagesDir, imgFile);
-                    
+
                     try {
                         // Skip if already downloaded
                         await fs.access(imgPath);
@@ -2741,7 +2680,7 @@ export class EnhancedManuscriptDownloaderService {
                         // Not present: download using tile engine
                         try {
                             console.log(`Downloading tile-based page ${pageIndex + 1} from ${imageUrl}`);
-                            
+
                             const tileCallbacks = this.tileEngineService.createProgressCallback(
                                 (progress) => {
                                     // Update progress with tile download info
@@ -2749,25 +2688,25 @@ export class EnhancedManuscriptDownloaderService {
                                     const elapsed = (Date.now() - startTime) / 1000;
                                     const rate = tileProgress / elapsed;
                                     const eta = rate > 0 ? (totalPagesToDownload - tileProgress) / rate : 0;
-                                    
-                                    onProgress({ 
-                                        progress: tileProgress / totalPagesToDownload, 
-                                        completedPages: Math.floor(tileProgress), 
-                                        totalPages: totalPagesToDownload, 
-                                        eta: this.formatETA(eta) 
+
+                                    onProgress({
+                                        progress: tileProgress / totalPagesToDownload,
+                                        completedPages: Math.floor(tileProgress),
+                                        totalPages: totalPagesToDownload,
+                                        eta: this.formatETA(eta)
                                     });
                                 },
                                 (status) => {
                                     console.log(`Tile download status: ${status.phase} - ${status.message}`);
                                 }
                             );
-                            
+
                             const result = await this.tileEngineService.downloadTilesAndStitch(
                                 imageUrl,
                                 imgPath,
                                 tileCallbacks
                             );
-                            
+
                             if (result.success) {
                                 // Store in array using relative index for proper array management
                         const relativeIndex = pageIndex - (actualStartPage - 1);
@@ -2783,11 +2722,11 @@ export class EnhancedManuscriptDownloaderService {
                             failedPages.push(pageIndex + 1);
                         }
                     }
-                    
+
                     updateProgress();
                     return;
                 }
-                
+
                 // Handle lazy-loaded Florus pages
                 if (imageUrl.startsWith('FLORUS_LAZY:')) {
                     const parts = imageUrl.split(':');
@@ -2795,17 +2734,17 @@ export class EnhancedManuscriptDownloaderService {
                     const pageNum = parseInt(parts[2]);
                     const basePath = parts.slice(3).join(':'); // Rejoin in case basePath contains colons
                     console.log(`Fetching lazy-loaded page ${pageNum} for ${cote}`);
-                    
+
                     try {
                         const pageUrl = `https://florus.bm-lyon.fr/visualisation.php?cote=${cote}&vue=${pageNum}`;
                         const pageResponse = await this.fetchDirect(pageUrl);
-                        
+
                         if (pageResponse.ok) {
                             const pageHtml = await pageResponse.text();
                             const pageImageMatch = pageHtml.match(/FIF=([^&\s'"]+)/) ||
                                                   pageHtml.match(/image\s*:\s*'([^']+)'/) ||
                                                   pageHtml.match(/image\s*:\s*"([^"]+)"/);
-                            
+
                             if (pageImageMatch) {
                                 const imagePath = pageImageMatch[1];
                                 const filename = imagePath.substring(imagePath.lastIndexOf('/') + 1);
@@ -2830,10 +2769,10 @@ export class EnhancedManuscriptDownloaderService {
                         return;
                     }
                 }
-                
+
                 const imgFile = `${sanitizedName}_page_${pageIndex + 1}.jpg`;
                 const imgPath = path.join(tempImagesDir, imgFile);
-                
+
                 try {
                     // Skip if already downloaded
                     await fs.access(imgPath);
@@ -2862,7 +2801,7 @@ export class EnhancedManuscriptDownloaderService {
                 }
                 updateProgress();
             };
-            
+
             // Download pages with proper concurrency control
             // Each element in semaphore array represents a worker that downloads pages
             await Promise.all(semaphore.map(async () => {
@@ -2875,32 +2814,32 @@ export class EnhancedManuscriptDownloaderService {
                     await downloadPage(idx);
                 }
             }));
-            
+
             // Wait for all file writes to complete before processing
             await Promise.all(writePromises);
-            
+
             // Ensure final progress update
-            onProgress({ 
-                progress: 1.0, 
-                completedPages: totalPagesToDownload, 
-                totalPages: totalPagesToDownload, 
-                eta: '0s' 
+            onProgress({
+                progress: 1.0,
+                completedPages: totalPagesToDownload,
+                totalPages: totalPagesToDownload,
+                eta: '0s'
             });
-            
+
             // Create complete array with placeholders for failed pages - only for the requested page range
             const completeImagePaths: (string | null)[] = [];
             for (let i = 0; i < totalPagesToDownload; i++) {
                 // imagePaths uses relative indexing now, so just use i directly
                 completeImagePaths[i] = imagePaths[i] || null;
             }
-            
+
             validImagePaths = imagePaths.filter(Boolean);
-            
+
             // BDL Post-download verification and recovery
             if (manifest.library === 'bdl' && configService.get('bdlPostVerification')) {
                 console.log('🔍 [BDL] Starting post-download verification and recovery...');
                 const pageUrls = manifest.pageLinks.slice(actualStartPage - 1, actualEndPage);
-                
+
                 // Verify and re-download any failed or small pages
                 const verifiedPaths = await this.ultraBDLService.verifyAndRedownload(
                     completeImagePaths,
@@ -2916,7 +2855,7 @@ export class EnhancedManuscriptDownloaderService {
                         maxDelayMs: 300000 // 5 minutes max
                     }
                 );
-                
+
                 // Update arrays with verified paths
                 for (let i = 0; i < verifiedPaths.length; i++) {
                     if (verifiedPaths[i]) {
@@ -2926,61 +2865,61 @@ export class EnhancedManuscriptDownloaderService {
                         }
                     }
                 }
-                
+
                 // Recount valid paths
                 validImagePaths = imagePaths.filter(Boolean);
                 const recoveredCount = validImagePaths.length - failedPages.length;
                 if (recoveredCount > 0) {
                     console.log(`✅ [BDL] Recovered ${recoveredCount} previously failed pages`);
                 }
-                
+
                 // Clear the retry queue for this manuscript
                 await this.ultraBDLService.clearRetryQueue(manifest.manuscriptId);
             }
-            
+
             if (validImagePaths.length === 0) {
                 throw new Error('No images were successfully downloaded');
             }
-            
+
             // Enhanced validation for manuscripta.se to prevent infinite loops
             if (manifest.library === 'manuscripta') {
                 const successRate = validImagePaths.length / totalPagesToDownload;
                 const minSuccessRate = 0.8; // At least 80% success rate required
-                
+
                 if (successRate < minSuccessRate) {
                     throw new Error(`Manuscripta.se download had low success rate: ${Math.round(successRate * 100)}% (${validImagePaths.length}/${totalPagesToDownload} pages). Minimum ${Math.round(minSuccessRate * 100)}% required to prevent infinite loops.`);
                 }
-                
+
                 console.log(`✅ Manuscripta.se validation passed: ${Math.round(successRate * 100)}% success rate (${validImagePaths.length}/${totalPagesToDownload} pages)`);
             }
-            
+
             validImagePaths.sort((a, b) => {
                 const aNum = parseInt(a.match(/_page_(\d+)\.jpg$/)![1], 10);
                 const bNum = parseInt(b.match(/_page_(\d+)\.jpg$/)![1], 10);
                 return aNum - bNum;
             });
-            
+
             // Log PDF creation start
             this.logger.logPdfCreationStart(
                 manifest.library || 'unknown',
                 completeImagePaths.length,
                 targetDir
             );
-            
+
             if (shouldSplit) {
                 // Split into multiple PDFs like barsky.club
                 const totalParts = Math.ceil(completeImagePaths.length / maxPagesPerPart);
                 const createdFiles: string[] = [];
-                
+
                 for (let partIndex = 0; partIndex < totalParts; partIndex++) {
                     const startIdx = partIndex * maxPagesPerPart;
                     const endIdx = Math.min(startIdx + maxPagesPerPart, completeImagePaths.length);
                     const partImages = completeImagePaths.slice(startIdx, endIdx);
-                    
+
                     const partNumber = String(partIndex + 1).padStart(2, '0');
                     const partFilename = `${sanitizedName}_part_${partNumber}.pdf`;
                     const partFilepath = path.join(targetDir, partFilename);
-                    
+
                     const partStartPage = actualStartPage + startIdx;
                     try {
                         await this.convertImagesToPDFWithBlanks(partImages, partFilepath, partStartPage, manifest);
@@ -2995,17 +2934,17 @@ export class EnhancedManuscriptDownloaderService {
                         throw new Error(`PDF creation failed for part ${partNumber}: ${pdfError.message}`);
                     }
                 }
-                
-                
+
+
                 // Clean up temporary images
                 for (const p of validImagePaths) {
-                    try { 
-                        await fs.unlink(p); 
+                    try {
+                        await fs.unlink(p);
                     } catch {
                         // Ignore file deletion errors
                     }
                 }
-                
+
                 // Log manuscript download complete with all files
                 const downloadDuration = Date.now() - downloadStartTime;
                 this.logger.logManuscriptDownloadComplete(
@@ -3015,12 +2954,12 @@ export class EnhancedManuscriptDownloaderService {
                     createdFiles,
                     downloadDuration
                 );
-                
-                return { 
-                    success: true, 
+
+                return {
+                    success: true,
                     filepath: createdFiles[0], // Return first part as primary
                     splitFiles: createdFiles,
-                    totalPages: validImagePaths.length, 
+                    totalPages: validImagePaths.length,
                     failedPages: manifest.totalPages - validImagePaths.length,
                     partsCreated: totalParts
                 };
@@ -3036,21 +2975,21 @@ export class EnhancedManuscriptDownloaderService {
                     });
                     throw new Error(`PDF creation failed: ${pdfError.message}`);
                 }
-                
+
                 // Clean up temporary images
                 for (const p of validImagePaths) {
-                    try { 
-                        await fs.unlink(p); 
+                    try {
+                        await fs.unlink(p);
                     } catch {
                         // Ignore file deletion errors
                     }
                 }
-                
+
                 const failedPagesCount = failedPages.length;
-                const statusMessage = failedPagesCount > 0 
+                const statusMessage = failedPagesCount > 0
                     ? `${failedPagesCount} of ${manifest.totalPages} pages couldn't be downloaded`
                     : undefined;
-                
+
                 // Log manuscript download complete
                 const downloadDuration = Date.now() - downloadStartTime;
                 this.logger.logManuscriptDownloadComplete(
@@ -3060,25 +2999,25 @@ export class EnhancedManuscriptDownloaderService {
                     [filepath],
                     downloadDuration
                 );
-                
-                return { 
-                    success: true, 
-                    filepath, 
+
+                return {
+                    success: true,
+                    filepath,
                     totalPages: manifest.totalPages, // Total pages including blanks
                     failedPages: failedPagesCount,
-                    statusMessage 
+                    statusMessage
                 };
             }
-            
+
         } catch (error: any) {
             console.error(`❌ Download failed: ${(error as Error).message}`);
-            
+
             // Log manuscript download failed with better stage detection
             let failedStage = 'unknown';
             if (!manifest) {
                 failedStage = 'manifest_loading';
-            } else if (error.message?.includes('convertImagesToPDF') || 
-                      error.message?.includes('PDF') || 
+            } else if (error.message?.includes('convertImagesToPDF') ||
+                      error.message?.includes('PDF') ||
                       error.message?.includes('memory') ||
                       error.message?.includes('No pages created') ||
                       validImagePaths && validImagePaths.length > 0 && !filepath) {
@@ -3088,14 +3027,14 @@ export class EnhancedManuscriptDownloaderService {
             } else {
                 failedStage = 'processing';
             }
-            
+
             this.logger.logManuscriptDownloadFailed(
                 manifest?.library || this.detectLibrary(url) || 'unknown',
                 url,
                 error as Error,
                 failedStage
             );
-            
+
             throw error;
         }
     }
@@ -3107,7 +3046,7 @@ export class EnhancedManuscriptDownloaderService {
         const startTime = Date.now();
         const totalImages = imagePaths.length;
         const maxMemoryMB = 1024; // 1GB memory limit
-        
+
         // Log PDF conversion start
         this.logger.log({
             level: 'info',
@@ -3115,10 +3054,10 @@ export class EnhancedManuscriptDownloaderService {
             message: `Starting PDF conversion with ${totalImages} images`,
             details: { totalImages, outputPath }
         });
-        
+
         // Special handling for large manuscripts to prevent memory allocation failures
         let batchSize;
-        
+
         // ULTRA-PRIORITY FIX for Issue #23: BDL memory allocation failure
         // BDL manuscripts often have high-resolution images that consume lots of memory
         if (manifest?.library === 'bdl') {
@@ -3147,33 +3086,33 @@ export class EnhancedManuscriptDownloaderService {
         } else {
             batchSize = Math.min(50, Math.max(10, Math.floor(maxMemoryMB / 20))); // Adaptive batch size
         }
-        
+
         const allPdfBytes: Uint8Array[] = [];
         let processedCount = 0;
-        
+
         // Process images in batches to manage memory
         for (let i = 0; i < totalImages; i += batchSize) {
             const batch = imagePaths.slice(i, Math.min(i + batchSize, totalImages));
             const batchNum = Math.floor(i / batchSize) + 1;
             // const totalBatches = Math.ceil(totalImages / batchSize);
-            
+
             try {
                 const batchPdfDoc = await PDFDocument.create();
                 let validImagesInBatch = 0;
-                
+
                 for (const imagePath of batch) {
                     try {
                         // Check if file exists and is accessible
                         await fs.access(imagePath);
                         const stats = await fs.stat(imagePath);
-                        
+
                         if (stats.size < MIN_VALID_IMAGE_SIZE_BYTES) {
                             continue;
                         }
-                        
+
                         // Read original image without any processing
                         const imageBuffer = await fs.readFile(imagePath);
-                        
+
                         // Embed image in PDF
                         let image;
                         try {
@@ -3187,10 +3126,10 @@ export class EnhancedManuscriptDownloaderService {
                                 continue;
                             }
                         }
-                        
+
                         // Add page with original image dimensions
                         const { width, height } = image;
-                        
+
                         const page = batchPdfDoc.addPage([width, height]);
                         page.drawImage(image, {
                             x: 0,
@@ -3198,31 +3137,31 @@ export class EnhancedManuscriptDownloaderService {
                             width,
                             height,
                         });
-                        
+
                         validImagesInBatch++;
                         processedCount++;
-                        
+
                     } catch (error: any) {
                         console.error(`\n❌ Failed to process ${path.basename(imagePath)}: ${(error as Error).message}`);
                         continue;
                     }
                 }
-                
+
                 if (validImagesInBatch > 0) {
                     // Save batch PDF
                     const batchPdfBytes = await batchPdfDoc.save();
                     allPdfBytes.push(batchPdfBytes);
-                    
+
                     // Force garbage collection after each batch if available
                     if (global.gc) {
                         global.gc();
-                        
+
                         // ULTRA-PRIORITY FIX for Issue #23: Enhanced memory cleanup for BDL
                         if (manifest?.library === 'bdl' && totalImages > 100) {
                             // BDL needs aggressive memory cleanup due to high-resolution images
                             await new Promise(resolve => setTimeout(resolve, 300)); // 300ms pause for memory cleanup
                             console.log(`🔧 [BDL Memory] Aggressive memory cleanup after batch ${batchNum}/${Math.ceil(totalImages / batchSize)}`);
-                            
+
                             // Double garbage collection for large BDL manuscripts
                             if (totalImages > 300) {
                                 global.gc();
@@ -3236,22 +3175,22 @@ export class EnhancedManuscriptDownloaderService {
                         }
                     }
                 }
-                
+
             } catch (batchError: any) {
                 console.error(`\n❌ Batch ${batchNum} failed: ${batchError.message}`);
-                
+
                 // ULTRA-PRIORITY FIX for Issue #23: Handle memory allocation failures gracefully
                 if (batchError.message && batchError.message.includes('Array buffer allocation failed')) {
                     console.error('🚨 [BDL Memory] Memory allocation failure detected!');
                     console.error('🔧 [BDL Memory] Attempting recovery with smaller batch size...');
-                    
+
                     // Try to recover by processing images one at a time
                     const singleImageBatch = imagePaths.slice(i, Math.min(i + batchSize, totalImages));
                     for (const singleImagePath of singleImageBatch) {
                         try {
                             const singlePdfDoc = await PDFDocument.create();
                             const imageBuffer = await fs.readFile(singleImagePath);
-                            
+
                             let image;
                             try {
                                 image = await singlePdfDoc.embedJpg(imageBuffer);
@@ -3263,21 +3202,21 @@ export class EnhancedManuscriptDownloaderService {
                                     continue;
                                 }
                             }
-                            
+
                             const { width, height } = image;
                             const page = singlePdfDoc.addPage([width, height]);
                             page.drawImage(image, { x: 0, y: 0, width, height });
-                            
+
                             const singlePdfBytes = await singlePdfDoc.save();
                             allPdfBytes.push(singlePdfBytes);
                             processedCount++;
-                            
+
                             // Force memory cleanup after each single image
                             if (global.gc) {
                                 global.gc();
                                 await new Promise(resolve => setTimeout(resolve, 50));
                             }
-                            
+
                         } catch (singleError: any) {
                             console.error(`   Failed to process single image: ${singleError.message}`);
                         }
@@ -3288,36 +3227,36 @@ export class EnhancedManuscriptDownloaderService {
                 }
             }
         }
-        
+
         if (allPdfBytes.length === 0) {
             throw new Error('No valid images were processed into PDF');
         }
-        
+
         // Merge all batch PDFs into final PDF
-        
+
         if (allPdfBytes.length === 1) {
             // Single batch, just write it
             await this.writeFileWithVerification(outputPath, Buffer.from(allPdfBytes[0]));
         } else {
             // Multiple batches, merge them
             const finalPdfDoc = await PDFDocument.create();
-            
+
             for (let i = 0; i < allPdfBytes.length; i++) {
                 try {
                     const batchPdf = await PDFDocument.load(allPdfBytes[i]);
                     const pageIndices = batchPdf.getPageIndices();
                     const copiedPages = await finalPdfDoc.copyPages(batchPdf, pageIndices);
-                    
+
                     copiedPages.forEach((page) => finalPdfDoc.addPage(page));
                 } catch (mergeError: any) {
                     console.error(`\n❌ Failed to merge batch ${i + 1}: ${mergeError.message}`);
                     throw mergeError;
                 }
             }
-            
+
             const finalPdfBytes = await finalPdfDoc.save();
             await this.writeFileWithVerification(outputPath, Buffer.from(finalPdfBytes));
-            
+
             // Log PDF creation complete
             const duration = Date.now() - startTime;
             const stats = await fs.stat(outputPath);
@@ -3328,14 +3267,14 @@ export class EnhancedManuscriptDownloaderService {
                 duration
             );
         }
-        
+
     }
 
     async convertImagesToPDFWithBlanks(imagePaths: (string | null)[], outputPath: string, startPageNumber: number = 1, manifest?: any): Promise<void> {
         const startTime = Date.now();
         const totalImages = imagePaths.length;
         const maxMemoryMB = 1024;
-        
+
         // Log PDF conversion start
         this.logger.log({
             level: 'info',
@@ -3343,7 +3282,7 @@ export class EnhancedManuscriptDownloaderService {
             message: `Starting PDF conversion with ${totalImages} images (with blanks for failed pages)`,
             details: { totalImages, outputPath, startPageNumber }
         });
-        
+
         // Special handling for large manuscripta.se files to prevent infinite loops
         let batchSize;
         if (manifest?.library === 'manuscripta' && totalImages > 300) {
@@ -3357,125 +3296,125 @@ export class EnhancedManuscriptDownloaderService {
         } else {
             batchSize = Math.min(50, Math.max(10, Math.floor(maxMemoryMB / 20)));
         }
-        
+
         const allPdfBytes: Uint8Array[] = [];
         let processedCount = 0;
-        
+
         for (let i = 0; i < totalImages; i += batchSize) {
             const batch = imagePaths.slice(i, Math.min(i + batchSize, totalImages));
-            
+
             try {
                 const batchPdfDoc = await PDFDocument.create();
                 let pagesInBatch = 0;
-                
+
                 for (let j = 0; j < batch.length; j++) {
                     const imagePath = batch[j];
                     const pageNumber = startPageNumber + i + j;
-                    
+
                     if (imagePath === null) {
                         // Create informative page for missing image
                         const page = batchPdfDoc.addPage([595, 842]); // A4 size
                         const { height } = page.getSize();
-                        
+
                         page.drawText(`Page ${pageNumber} - Download Failed`, {
                             x: 50,
                             y: height - 100,
                             size: 18,
                             color: rgb(0.6, 0.2, 0.2),
                         });
-                        
+
                         page.drawText('This page could not be downloaded after multiple attempts.', {
                             x: 50,
                             y: height - 140,
                             size: 12,
                             color: rgb(0.4, 0.4, 0.4),
                         });
-                        
+
                         page.drawText('Possible causes:', {
                             x: 50,
                             y: height - 170,
                             size: 11,
                             color: rgb(0.3, 0.3, 0.3),
                         });
-                        
+
                         page.drawText('• Server temporarily unavailable', {
                             x: 70,
                             y: height - 190,
                             size: 10,
                             color: rgb(0.3, 0.3, 0.3),
                         });
-                        
+
                         page.drawText('• Network connectivity issues', {
                             x: 70,
                             y: height - 205,
                             size: 10,
                             color: rgb(0.3, 0.3, 0.3),
                         });
-                        
+
                         page.drawText('• Image file corrupted or missing from source', {
                             x: 70,
                             y: height - 220,
                             size: 10,
                             color: rgb(0.3, 0.3, 0.3),
                         });
-                        
+
                         page.drawText('You may try downloading this manuscript again later.', {
                             x: 50,
                             y: height - 250,
                             size: 10,
                             color: rgb(0.5, 0.5, 0.5),
                         });
-                        
+
                         pagesInBatch++;
                         processedCount++;
                         continue;
                     }
-                    
+
                     // Process valid image (same logic as original function)
                     try {
                         await fs.access(imagePath);
                         const stats = await fs.stat(imagePath);
-                        
+
                         if (stats.size < MIN_VALID_IMAGE_SIZE_BYTES) {
                             // Create informative page for corrupted/small image
                             const page = batchPdfDoc.addPage([595, 842]);
                             const { height } = page.getSize();
-                            
+
                             page.drawText(`Page ${pageNumber} - File Corrupted`, {
                                 x: 50,
                                 y: height - 100,
                                 size: 18,
                                 color: rgb(0.6, 0.2, 0.2),
                             });
-                            
+
                             page.drawText(`Image file was too small (${stats.size} bytes) or corrupted.`, {
                                 x: 50,
                                 y: height - 140,
                                 size: 12,
                                 color: rgb(0.4, 0.4, 0.4),
                             });
-                            
+
                             page.drawText('The server provided an invalid or incomplete image file.', {
                                 x: 50,
                                 y: height - 170,
                                 size: 11,
                                 color: rgb(0.3, 0.3, 0.3),
                             });
-                            
+
                             page.drawText('You may try downloading this manuscript again later.', {
                                 x: 50,
                                 y: height - 200,
                                 size: 10,
                                 color: rgb(0.5, 0.5, 0.5),
                             });
-                            
+
                             pagesInBatch++;
                             processedCount++;
                             continue;
                         }
-                        
+
                         const imageBuffer = await fs.readFile(imagePath);
-                        
+
                         let image;
                         try {
                             image = await batchPdfDoc.embedJpg(imageBuffer);
@@ -3486,41 +3425,41 @@ export class EnhancedManuscriptDownloaderService {
                                 // Create informative page for embed failure
                                 const page = batchPdfDoc.addPage([595, 842]);
                                 const { height } = page.getSize();
-                                
+
                                 page.drawText(`Page ${pageNumber} - Format Error`, {
                                     x: 50,
                                     y: height - 100,
                                     size: 18,
                                     color: rgb(0.6, 0.2, 0.2),
                                 });
-                                
+
                                 page.drawText('Image format not supported by PDF generator.', {
                                     x: 50,
                                     y: height - 140,
                                     size: 12,
                                     color: rgb(0.4, 0.4, 0.4),
                                 });
-                                
+
                                 page.drawText('The image file exists but uses an unsupported format.', {
                                     x: 50,
                                     y: height - 170,
                                     size: 11,
                                     color: rgb(0.3, 0.3, 0.3),
                                 });
-                                
+
                                 page.drawText('Please report this issue if it affects many pages.', {
                                     x: 50,
                                     y: height - 200,
                                     size: 10,
                                     color: rgb(0.5, 0.5, 0.5),
                                 });
-                                
+
                                 pagesInBatch++;
                                 processedCount++;
                                 continue;
                             }
                         }
-                        
+
                         const { width, height } = image;
                         const page = batchPdfDoc.addPage([width, height]);
                         page.drawImage(image, {
@@ -3529,36 +3468,36 @@ export class EnhancedManuscriptDownloaderService {
                             width,
                             height,
                         });
-                        
+
                         pagesInBatch++;
                         processedCount++;
-                        
+
                     } catch (error: any) {
                         // Create informative page for any other errors
                         const page = batchPdfDoc.addPage([595, 842]);
                         const { height } = page.getSize();
-                        
+
                         page.drawText(`Page ${pageNumber} - Processing Error`, {
                             x: 50,
                             y: height - 100,
                             size: 18,
                             color: rgb(0.6, 0.2, 0.2),
                         });
-                        
+
                         page.drawText('An unexpected error occurred while processing this page.', {
                             x: 50,
                             y: height - 140,
                             size: 12,
                             color: rgb(0.4, 0.4, 0.4),
                         });
-                        
+
                         page.drawText('Error details:', {
                             x: 50,
                             y: height - 170,
                             size: 11,
                             color: rgb(0.3, 0.3, 0.3),
                         });
-                        
+
                         const errorMsg = (error as Error).message || 'Unknown error occurred';
                         const truncatedError = errorMsg.length > 60 ? errorMsg.substring(0, 60) + '...' : errorMsg;
                         page.drawText(truncatedError, {
@@ -3567,23 +3506,23 @@ export class EnhancedManuscriptDownloaderService {
                             size: 9,
                             color: rgb(0.2, 0.2, 0.2),
                         });
-                        
+
                         page.drawText('Please report this error if it affects many pages.', {
                             x: 50,
                             y: height - 220,
                             size: 10,
                             color: rgb(0.5, 0.5, 0.5),
                         });
-                        
+
                         pagesInBatch++;
                         processedCount++;
                     }
                 }
-                
+
                 if (pagesInBatch > 0) {
                     const batchPdfBytes = await batchPdfDoc.save();
                     allPdfBytes.push(batchPdfBytes);
-                    
+
                     // Log batch progress
                     const batchNum = Math.floor(i / batchSize) + 1;
                     const totalBatches = Math.ceil(totalImages / batchSize);
@@ -3591,15 +3530,15 @@ export class EnhancedManuscriptDownloaderService {
                         level: 'debug',
                         library: manifest?.library || 'unknown',
                         message: `PDF batch ${batchNum}/${totalBatches} processed: ${pagesInBatch} pages`,
-                        details: { 
-                            batchNum, 
-                            totalBatches, 
+                        details: {
+                            batchNum,
+                            totalBatches,
                             pagesInBatch,
                             processedCount,
                             totalImages
                         }
                     });
-                    
+
                     // Force garbage collection after each batch if available
                     if (global.gc) {
                         global.gc();
@@ -3612,32 +3551,32 @@ export class EnhancedManuscriptDownloaderService {
                         }
                     }
                 }
-                
+
             } catch (batchError: any) {
                 console.error(`Error processing batch ${Math.floor(i / batchSize) + 1}:`, batchError.message);
             }
         }
-        
+
         if (allPdfBytes.length === 0) {
             throw new Error('No pages were processed into PDF');
         }
-        
+
         if (allPdfBytes.length === 1) {
             await fs.writeFile(outputPath, allPdfBytes[0]);
         } else {
             const finalPdfDoc = await PDFDocument.create();
-            
+
             for (const pdfBytes of allPdfBytes) {
                 const pdfDoc = await PDFDocument.load(pdfBytes);
                 const pageIndices = pdfDoc.getPageIndices();
                 const pages = await finalPdfDoc.copyPages(pdfDoc, pageIndices);
                 pages.forEach((page) => finalPdfDoc.addPage(page));
             }
-            
+
             const finalPdfBytes = await finalPdfDoc.save();
             await fs.writeFile(outputPath, finalPdfBytes);
         }
-        
+
         // Log PDF creation complete
         const duration = Date.now() - startTime;
         const stats = await fs.stat(outputPath);
@@ -3651,42 +3590,42 @@ export class EnhancedManuscriptDownloaderService {
 
     private async extractFlorusImageUrls(html: string, cote: string, currentVue: number): Promise<string[]> {
         console.log('Extracting Florus URLs for manuscript:', cote);
-        
+
         // Extract the image path from current page to understand the pattern
         const imagePathMatch = html.match(/FIF=([^&\s'"]+)/) ||
                               html.match(/image\s*:\s*'([^']+)'/) ||
                               html.match(/image\s*:\s*"([^"]+)"/);
-        
+
         if (!imagePathMatch) {
             throw new Error('Could not find image path pattern in Florus page');
         }
-        
+
         const currentImagePath = imagePathMatch[1];
         console.log('Current image path:', currentImagePath);
-        
+
         // Extract the base path and manuscript ID
         // Example: /var/www/florus/web/ms/B693836101_MS0425/B693836101_MS0425_129_62V.JPG.tif
         const pathParts = currentImagePath.match(/(.+\/)([^/]+)\.JPG\.tif$/);
         if (!pathParts) {
             throw new Error('Could not parse Florus image path structure');
         }
-        
+
         const basePath = pathParts[1];
         const filenameParts = pathParts[2].match(/^(.+?)_(\d+)_(.+)$/);
         if (!filenameParts) {
             throw new Error('Could not parse Florus filename structure');
         }
-        
+
         // Find the total number of pages from navigation
         let maxPage = currentVue + 20; // Conservative fallback
-        
+
         // Look for naviguer() function calls in the HTML
         const navNumbers = [...html.matchAll(/naviguer\((\d+)\)/g)]
             .map(match => parseInt(match[1]))
             .filter(num => !isNaN(num) && num > 0);
-        
+
         console.log(`Found ${navNumbers.length} navigation numbers:`, navNumbers);
-        
+
         if (navNumbers.length > 0) {
             maxPage = Math.max(...navNumbers);
             console.log(`Maximum page from navigation: ${maxPage}`);
@@ -3698,12 +3637,12 @@ export class EnhancedManuscriptDownloaderService {
                 /onclick=["']naviguer\((\d+)\)/g,
                 /naviguerSelect.*?value=["'](\d+)/g
             ];
-            
+
             for (const pattern of altPatterns) {
                 const altNumbers = [...html.matchAll(pattern)]
                     .map(match => parseInt(match[1]))
                     .filter(num => !isNaN(num) && num > 0);
-                    
+
                 if (altNumbers.length > 0) {
                     maxPage = Math.max(...altNumbers);
                     console.log(`Found ${altNumbers.length} pages using alternative pattern, max: ${maxPage}`);
@@ -3711,27 +3650,27 @@ export class EnhancedManuscriptDownloaderService {
                 }
             }
         }
-        
+
         console.log(`Final detected page count: ${maxPage} pages for Florus manuscript`);
-        
+
         const imageUrls: string[] = [];
         const serverUrl = 'https://florus.bm-lyon.fr/fcgi-bin/iipsrv.fcgi';
-        
+
         // Batch fetch all pages to build complete URL list
         const batchSize = 10; // Process 10 pages concurrently
         const pageToFilename = new Map<number, string>();
-        
+
         // For very large manuscripts, limit initial manifest loading to avoid timeouts
         const maxPagesToFetch = maxPage > 100 ? 50 : maxPage;
         console.log(`Fetching ${maxPagesToFetch} of ${maxPage} pages for initial manifest...`);
-        
+
         // Process pages in batches for better performance
         for (let batchStart = 1; batchStart <= maxPagesToFetch; batchStart += batchSize) {
             const batchEnd = Math.min(batchStart + batchSize - 1, maxPagesToFetch);
             const batchPromises: Promise<void>[] = [];
-            
+
             console.log(`Processing batch: pages ${batchStart} to ${batchEnd}`);
-            
+
             for (let pageNum = batchStart; pageNum <= batchEnd; pageNum++) {
                 const promise = (async () => {
                     let retries = 3;
@@ -3739,13 +3678,13 @@ export class EnhancedManuscriptDownloaderService {
                         try {
                             const pageUrl = `https://florus.bm-lyon.fr/visualisation.php?cote=${cote}&vue=${pageNum}`;
                             const pageResponse = await this.fetchDirect(pageUrl);
-                            
+
                             if (pageResponse.ok) {
                                 const pageHtml = await pageResponse.text();
                                 const pageImageMatch = pageHtml.match(/FIF=([^&\s'"]+)/) ||
                                                       pageHtml.match(/image\s*:\s*'([^']+)'/) ||
                                                       pageHtml.match(/image\s*:\s*"([^"]+)"/);
-                                
+
                                 if (pageImageMatch) {
                                     const imagePath = pageImageMatch[1];
                                     const filename = imagePath.substring(imagePath.lastIndexOf('/') + 1);
@@ -3777,10 +3716,10 @@ export class EnhancedManuscriptDownloaderService {
                         }
                     }
                 })();
-                
+
                 batchPromises.push(promise);
             }
-            
+
             // Wait for current batch to complete before starting next
             try {
                 await Promise.all(batchPromises);
@@ -3789,22 +3728,22 @@ export class EnhancedManuscriptDownloaderService {
                 console.error(`Error in batch ${batchStart}-${batchEnd}:`, batchError);
                 // Continue with next batch even if current batch has errors
             }
-            
+
             // Add a longer delay between batches to avoid overwhelming the server
             if (batchEnd < maxPagesToFetch) {
                 console.log(`Waiting 500ms before next batch...`);
                 await new Promise(resolve => setTimeout(resolve, 500)); // Increased delay for Lyon library
             }
         }
-        
+
         console.log(`Successfully fetched ${pageToFilename.size} pages out of ${maxPagesToFetch} attempted (${maxPage} total)`);
-        
+
         // Log some sample filenames to debug
         if (pageToFilename.size > 0) {
             const sampleEntries = Array.from(pageToFilename.entries()).slice(0, 5);
             console.log('Sample page mappings:', sampleEntries);
         }
-        
+
         // Build the complete list of image URLs in order
         for (let pageNum = 1; pageNum <= maxPage; pageNum++) {
             const filename = pageToFilename.get(pageNum);
@@ -3823,14 +3762,14 @@ export class EnhancedManuscriptDownloaderService {
                 imageUrls.push(lazyUrl);
             }
         }
-        
+
         // Filter out empty URLs but keep track of actual count
         const validUrls = imageUrls.filter(url => url !== '');
-        
+
         if (validUrls.length === 0) {
             throw new Error('Could not extract any valid image URLs from Florus manuscript');
         }
-        
+
         console.log(`Returning ${validUrls.length} valid URLs out of ${maxPage} total pages`);
         console.log(`First few URLs:`, imageUrls.slice(0, 3).filter(url => url !== ''));
         return imageUrls; // Return all URLs including placeholders to maintain correct indexing
@@ -3856,7 +3795,7 @@ export class EnhancedManuscriptDownloaderService {
                     return Array.from(html.matchAll(numericPattern));
                 },
             ];
-            
+
             for (let i = 0; i < approaches.length; i++) {
                 try {
                     const matches = approaches[i]();
@@ -3872,7 +3811,7 @@ export class EnhancedManuscriptDownloaderService {
                     console.warn(`e-manuscripta: Deep HTML approach ${i + 1} failed: ${(error as Error).message}`);
                 }
             }
-            
+
             return [];
         } catch (error: any) {
             console.warn(`e-manuscripta: Deep HTML parsing failed: ${(error as Error).message}`);
@@ -3885,14 +3824,14 @@ export class EnhancedManuscriptDownloaderService {
             console.log('e-manuscripta: Attempting URL pattern discovery');
             const baseIdNum = parseInt(baseId, 10);
             const testUrls: string[] = [];
-            
+
             // Test sequential IDs around the base ID (Agent 2 found this pattern works)
             for (let i = 0; i < 10; i++) {
                 testUrls.push(`https://www.e-manuscripta.ch/${library}/download/webcache/128/${baseIdNum + i}`);
             }
-            
+
             const validPages: Array<{pageId: string, pageNumber: number}> = [];
-            
+
             // Test URLs to see which ones return valid images
             for (let i = 0; i < testUrls.length; i++) {
                 try {
@@ -3912,24 +3851,24 @@ export class EnhancedManuscriptDownloaderService {
                     console.log(`e-manuscripta: URL test failed at page ${i + 1}: ${(error as Error).message}`);
                     break;
                 }
-                
+
                 // Small delay to be respectful
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
-            
+
             if (validPages.length > 0) {
                 console.log(`e-manuscripta: URL pattern discovery found ${validPages.length} valid pages`);
-                
+
                 // Extend the pattern to find all pages
                 let pageCount = validPages.length;
                 const maxPages = 1000; // Reasonable limit
-                
+
                 // Continue testing until we find the end
                 for (let i = pageCount; i < maxPages; i++) {
                     try {
                         const testUrl = `https://www.e-manuscripta.ch/${library}/download/webcache/128/${baseIdNum + i}`;
                         const testResponse = await this.fetchDirect(testUrl);
-                        
+
                         if (testResponse.ok && testResponse.headers.get('content-type')?.includes('image')) {
                             validPages.push({
                                 pageId: (baseIdNum + i).toString(),
@@ -3944,18 +3883,18 @@ export class EnhancedManuscriptDownloaderService {
                         console.log(`e-manuscripta: Pattern discovery ended at page ${i + 1}: ${(error as Error).message}`);
                         break;
                     }
-                    
+
                     // Progress logging
                     if ((i + 1) % 10 === 0) {
                         console.log(`e-manuscripta: Discovered ${i + 1} pages so far...`);
                     }
-                    
+
                     await new Promise(resolve => setTimeout(resolve, 50));
                 }
-                
+
                 return validPages;
             }
-            
+
             return [];
         } catch (error: any) {
             console.warn(`e-manuscripta: URL pattern discovery failed: ${(error as Error).message}`);
@@ -3966,21 +3905,21 @@ export class EnhancedManuscriptDownloaderService {
     private async validateEManuscriptaURLs(testUrls: string[]): Promise<void> {
         try {
             console.log(`e-manuscripta: Validating ${testUrls.length} sample URLs`);
-            
+
             for (let i = 0; i < testUrls.length; i++) {
                 const response = await this.fetchDirect(testUrls[i]);
                 if (!response.ok) {
                     throw new Error(`Validation failed for URL ${i + 1}: HTTP ${response.status}`);
                 }
-                
+
                 const contentType = response.headers.get('content-type');
                 if (!contentType?.includes('image')) {
                     throw new Error(`Validation failed for URL ${i + 1}: Not an image (${contentType})`);
                 }
-                
+
                 console.log(`e-manuscripta: Validated URL ${i + 1}/${testUrls.length}`);
             }
-            
+
             console.log('e-manuscripta: All sample URLs validated successfully');
         } catch (error: any) {
             console.error(`e-manuscripta: URL validation failed: ${(error as Error).message}`);
@@ -3994,22 +3933,22 @@ export class EnhancedManuscriptDownloaderService {
     private async handleEManuscriptaTitleInfo(titleinfoUrl: string, library: string, manuscriptId: string): Promise<ManuscriptManifest> {
         try {
             console.log(`e-manuscripta: Processing titleinfo URL for multi-block manuscript`);
-            
+
             // Fetch the titleinfo page for title extraction
             const titleinfoResponse = await this.fetchDirect(titleinfoUrl);
             if (!titleinfoResponse.ok) {
                 throw new Error(`Failed to fetch titleinfo page: HTTP ${titleinfoResponse.status}`);
             }
-            
+
             const titleinfoHtml = await titleinfoResponse.text();
-            
+
             // Extract title/manuscript name from the titleinfo page
             let displayName = `e-manuscripta ${manuscriptId}`;
             const titleMatch = titleinfoHtml.match(/<title[^>]*>([^<]+)<\/title>/i);
             if (titleMatch && titleMatch[1] && !titleMatch[1].includes('e-manuscripta.ch')) {
                 displayName = titleMatch[1].trim();
             }
-            
+
             // ENHANCED: Fetch structure page to find ALL manuscript blocks
             console.log(`e-manuscripta: Fetching structure page to discover all manuscript blocks`);
             const structureUrl = `https://www.e-manuscripta.ch/${library}/content/structure/${manuscriptId}`;
@@ -4017,43 +3956,43 @@ export class EnhancedManuscriptDownloaderService {
             if (!structureResponse.ok) {
                 throw new Error(`Failed to fetch structure page: HTTP ${structureResponse.status}`);
             }
-            
+
             const structureHtml = await structureResponse.text();
-            
+
             // Extract all thumbview block URLs from the structure page (enhanced method)
             const thumbviewUrls = await this.extractAllThumbviewBlocksFromStructure(structureHtml, library);
-            
+
             if (thumbviewUrls.length === 0) {
                 throw new Error('No thumbview blocks found in structure page');
             }
-            
+
             console.log(`e-manuscripta: Found ${thumbviewUrls.length} thumbview blocks in structure page`);
-            
+
             // Process each thumbview block and aggregate all pages
             const allPageLinks: string[] = [];
             let totalPagesCount = 0;
-            
+
             for (let i = 0; i < thumbviewUrls.length; i++) {
                 const thumbviewUrl = thumbviewUrls[i];
                 console.log(`e-manuscripta: Processing block ${i + 1}/${thumbviewUrls.length}: ${thumbviewUrl}`);
-                
+
                 try {
                     const blockManifest = await this.handleEManuscriptaThumbView(thumbviewUrl, library, thumbviewUrl.split('/').pop()!);
                     allPageLinks.push(...blockManifest.pageLinks);
                     totalPagesCount += blockManifest.totalPages;
-                    
+
                     console.log(`e-manuscripta: Block ${i + 1} contributed ${blockManifest.totalPages} pages`);
                 } catch (error: any) {
                     console.warn(`e-manuscripta: Failed to process block ${i + 1}: ${(error as Error).message}`);
                 }
             }
-            
+
             if (allPageLinks.length === 0) {
                 throw new Error('No pages found in any thumbview blocks');
             }
-            
+
             console.log(`e-manuscripta: Successfully aggregated ${allPageLinks.length} pages from ${thumbviewUrls.length} blocks`);
-            
+
             return {
                 pageLinks: allPageLinks,
                 totalPages: allPageLinks.length,
@@ -4061,7 +4000,7 @@ export class EnhancedManuscriptDownloaderService {
                 displayName: `${displayName} (${thumbviewUrls.length} blocks)`,
                 originalUrl: titleinfoUrl,
             };
-            
+
         } catch (error: any) {
             console.error(`e-manuscripta: titleinfo processing failed: ${(error as Error).message}`);
             throw error;
@@ -4074,46 +4013,46 @@ export class EnhancedManuscriptDownloaderService {
     private async handleEManuscriptaThumbView(thumbviewUrl: string, library: string, blockId: string): Promise<ManuscriptManifest> {
         try {
             console.log(`e-manuscripta: Processing thumbview block: ${blockId}`);
-            
+
             // Fetch the thumbview page
             const response = await this.fetchDirect(thumbviewUrl);
             if (!response.ok) {
                 throw new Error(`Failed to fetch thumbview page: HTTP ${response.status}`);
             }
-            
+
             const html = await response.text();
-            
+
             // Extract title/manuscript name from the page
             let displayName = `e-manuscripta ${blockId}`;
             const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
             if (titleMatch && titleMatch[1] && !titleMatch[1].includes('e-manuscripta.ch')) {
                 displayName = titleMatch[1].trim();
             }
-            
+
             // Use existing parsing methods to extract page data
             let pageData: Array<{pageId: string, pageNumber: number}> = [];
-            
+
             // METHOD 1: Parse goToPage dropdown (most reliable)
             pageData = await this.parseEManuscriptaDropdown(html);
-            
+
             if (pageData.length === 0) {
                 // METHOD 2: Parse JavaScript configuration data
                 console.log(`e-manuscripta: Block ${blockId} - Trying JavaScript config extraction`);
                 pageData = await this.parseEManuscriptaJSConfig(html);
             }
-            
+
             if (pageData.length === 0) {
                 // METHOD 3: Deep HTML analysis with multiple patterns
                 console.log(`e-manuscripta: Block ${blockId} - Trying deep HTML pattern analysis`);
                 pageData = await this.parseEManuscriptaDeepHTML(html);
             }
-            
+
             if (pageData.length === 0) {
                 // METHOD 4: URL pattern discovery using current page as base
                 console.log(`e-manuscripta: Block ${blockId} - Trying URL pattern discovery`);
                 pageData = await this.discoverEManuscriptaURLPattern(blockId, library);
             }
-            
+
             if (pageData.length === 0) {
                 console.warn(`e-manuscripta: Block ${blockId} - No pages found, skipping`);
                 return {
@@ -4124,22 +4063,22 @@ export class EnhancedManuscriptDownloaderService {
                     originalUrl: thumbviewUrl,
                 };
             }
-            
+
             // Sort by page number to ensure correct order
             pageData.sort((a, b) => a.pageNumber - b.pageNumber);
-            
+
             console.log(`e-manuscripta: Block ${blockId} - Found ${pageData.length} pages`);
-            
+
             // Generate page links using the optimal URL pattern
-            const pageLinks: string[] = pageData.map(page => 
+            const pageLinks: string[] = pageData.map(page =>
                 `https://www.e-manuscripta.ch/${library}/download/webcache/0/${page.pageId}`
             );
-            
+
             // Validate that URLs actually work by testing first few pages
             if (pageLinks.length > 0) {
                 await this.validateEManuscriptaURLs(pageLinks.slice(0, Math.min(3, pageLinks.length)));
             }
-            
+
             return {
                 pageLinks,
                 totalPages: pageLinks.length,
@@ -4147,7 +4086,7 @@ export class EnhancedManuscriptDownloaderService {
                 displayName,
                 originalUrl: thumbviewUrl,
             };
-            
+
         } catch (error: any) {
             console.error(`e-manuscripta: thumbview processing failed: ${(error as Error).message}`);
             throw error;
@@ -4159,7 +4098,7 @@ export class EnhancedManuscriptDownloaderService {
      */
     private async extractAllThumbviewBlocksFromStructure(structureHtml: string, library: string): Promise<string[]> {
         console.log(`e-manuscripta: Extracting all thumbview blocks from structure page`);
-        
+
         // Extract all zoom IDs from structure page links
         const zoomPattern = /href="\/[^"]*\/content\/zoom\/(\d+)"/g;
         const zoomIds: string[] = [];
@@ -4167,14 +4106,14 @@ export class EnhancedManuscriptDownloaderService {
         while ((match = zoomPattern.exec(structureHtml)) !== null) {
             zoomIds.push(match[1]);
         }
-        
+
         // Remove duplicates and sort by ID
         const uniqueZoomIds = [...new Set(zoomIds)].sort((a, b) => parseInt(a) - parseInt(b));
         console.log(`e-manuscripta: Found ${uniqueZoomIds.length} unique zoom IDs in structure`);
-        
+
         // Test each zoom ID to see which ones have valid thumbview blocks
         const validThumbviewUrls: string[] = [];
-        
+
         for (const zoomId of uniqueZoomIds) {
             const thumbviewUrl = `https://www.e-manuscripta.ch/${library}/content/thumbview/${zoomId}`;
             try {
@@ -4189,7 +4128,7 @@ export class EnhancedManuscriptDownloaderService {
                 console.log(`e-manuscripta: ✗ Block ${zoomId} - Error: ${(error as Error).message} (skipping)`);
             }
         }
-        
+
         console.log(`e-manuscripta: Validated ${validThumbviewUrls.length} out of ${uniqueZoomIds.length} potential blocks`);
         return validThumbviewUrls;
     }
@@ -4199,34 +4138,34 @@ export class EnhancedManuscriptDownloaderService {
      * Detects incomplete manifests and provides helpful error messages
      */
     private async validateManifestCompleteness(
-        manifestData: any, 
-        pageLinks: string[], 
+        manifestData: any,
+        pageLinks: string[],
         originalUrl: string
     ): Promise<void> {
         // Extract manuscript metadata
         const physicalDesc = this.extractPhysicalDescription(manifestData);
         const cnmdId = this.extractCNMDIdentifier(manifestData);
         const manuscriptTitle = this.extractManuscriptTitle(manifestData);
-        
+
         // Parse expected folio count from physical description
         const expectedFolios = this.parseExpectedFolioCount(physicalDesc);
-        
+
         console.log(`Manifest validation: Found ${pageLinks.length} pages, expected ~${expectedFolios} folios`);
         console.log(`Physical description: ${physicalDesc}`);
         console.log(`CNMD ID: ${cnmdId}`);
-        
+
         // CRITICAL: Detect severely incomplete manuscripts (less than 10% of expected)
         if (expectedFolios > 0 && pageLinks.length < expectedFolios * 0.1) {
             const incompleteError = `INCOMPLETE MANUSCRIPT DETECTED\n\nThis manifest contains only ${pageLinks.length} pages, but the metadata indicates the complete manuscript should have approximately ${expectedFolios} folios.\n\nManuscript: ${manuscriptTitle}\nCNMD ID: ${cnmdId}\nPhysical Description: ${physicalDesc}\nCurrent URL: ${originalUrl}\n\nSOLUTIONS:\n1. This may be a partial/folio-level manifest. Look for a collection-level manifest.\n2. Try searching for the complete manuscript using the CNMD ID: ${cnmdId}\n3. Visit the library's main catalog: https://manus.iccu.sbn.it/cnmd/${cnmdId}\n4. Contact the library directly for the complete digital manuscript.\n\nThis error prevents downloading an incomplete manuscript that would mislead users.`;
-            
+
             throw new Error(incompleteError);
         }
-        
+
         // Warn for moderately incomplete manuscripts (less than 50% of expected)
         if (expectedFolios > 0 && pageLinks.length < expectedFolios * 0.5) {
             console.warn(`WARNING: This manifest may be incomplete. Found ${pageLinks.length} pages but expected ~${expectedFolios} folios based on metadata. Proceeding with download, but the manuscript may be partial.`);
         }
-        
+
         // Standard single-page warning for when no metadata is available
         if (pageLinks.length === 1 && expectedFolios === 0) {
             const label = this.extractManuscriptTitle(manifestData);
@@ -4245,19 +4184,19 @@ export class EnhancedManuscriptDownloaderService {
         if (!manifestData.metadata || !Array.isArray(manifestData.metadata)) {
             return '';
         }
-        
+
         for (const meta of manifestData.metadata) {
             if (meta.label && meta.value) {
                 const labelText = this.getMetadataText(meta.label);
                 const valueText = this.getMetadataText(meta.value);
-                
-                if (labelText.toLowerCase().includes('fisica') || 
+
+                if (labelText.toLowerCase().includes('fisica') ||
                     labelText.toLowerCase().includes('physical')) {
                     return valueText;
                 }
             }
         }
-        
+
         return '';
     }
 
@@ -4268,12 +4207,12 @@ export class EnhancedManuscriptDownloaderService {
         if (!manifestData.metadata || !Array.isArray(manifestData.metadata)) {
             return '';
         }
-        
+
         for (const meta of manifestData.metadata) {
             if (meta.label && meta.value) {
                 const labelText = this.getMetadataText(meta.label);
                 const valueText = this.getMetadataText(meta.value);
-                
+
                 if (labelText.toLowerCase().includes('identificativo') ||
                     labelText.toLowerCase().includes('identifier')) {
                     if (valueText.includes('CNMD')) {
@@ -4282,7 +4221,7 @@ export class EnhancedManuscriptDownloaderService {
                 }
             }
         }
-        
+
         return '';
     }
 
@@ -4293,19 +4232,19 @@ export class EnhancedManuscriptDownloaderService {
         if (manifestData.label) {
             return this.getMetadataText(manifestData.label);
         }
-        
+
         if (manifestData.metadata) {
             for (const meta of manifestData.metadata) {
                 if (meta.label && meta.value) {
                     const labelText = this.getMetadataText(meta.label);
-                    if (labelText.toLowerCase().includes('titolo') || 
+                    if (labelText.toLowerCase().includes('titolo') ||
                         labelText.toLowerCase().includes('title')) {
                         return this.getMetadataText(meta.value);
                     }
                 }
             }
         }
-        
+
         return 'Unknown Manuscript';
     }
 
@@ -4314,7 +4253,7 @@ export class EnhancedManuscriptDownloaderService {
      */
     private parseExpectedFolioCount(physicalDesc: string): number {
         if (!physicalDesc) return 0;
-        
+
         // Look for patterns like "cc. IV + 148 + I" or "ff. 123" or "carte 156"
         const patterns = [
             /cc\.\s*(?:[IVX]+\s*\+\s*)?(\d+)(?:\s*\+\s*[IVX]+)?/i,  // cc. IV + 148 + I
@@ -4323,7 +4262,7 @@ export class EnhancedManuscriptDownloaderService {
             /folios?\s*(\d+)/i,                                       // folio 123
             /(\d+)\s*(?:cc|ff|carte|folios?)/i                       // 123 cc
         ];
-        
+
         for (const pattern of patterns) {
             const match = physicalDesc.match(pattern);
             if (match) {
@@ -4333,7 +4272,7 @@ export class EnhancedManuscriptDownloaderService {
                 }
             }
         }
-        
+
         return 0;
     }
 
@@ -4344,160 +4283,24 @@ export class EnhancedManuscriptDownloaderService {
         if (typeof value === 'string') {
             return value;
         }
-        
+
         if (Array.isArray(value)) {
             return value.map(v => this.getMetadataText(v)).join(', ');
         }
-        
+
         if (value && typeof value === 'object') {
             // Handle language maps
             if (value.it) return this.getMetadataText(value.it);
             if (value.en) return this.getMetadataText(value.en);
             if (value['@value']) return value['@value'];
-            
+
             return JSON.stringify(value);
         }
-        
+
         return String(value || '');
     }
 
-    /**
-     * Robust BNE manuscript discovery - optimized with parallel processing
-     * ULTRA-PRIORITY FIX for Issue #11: Reduced page checking to prevent hanging
-     */
-    private async robustBneDiscovery(manuscriptId: string, originalUrl: string): Promise<ManuscriptManifest> {
-        const discoveredPages: Array<{page: number, contentLength: string, contentType: string}> = [];
-        const seenContentHashes = new Set<string>();
-        
-        // ULTRA-PRIORITY FIX: Reduced from 500 to 200 to prevent hanging on calculation
-        // Most manuscripts have <100 pages, checking 500 causes unnecessary delays
-        const maxPages = 200; 
-        const batchSize = 5; // Reduced from 10 to 5 for better timeout handling
-        
-        console.log('BNE: Starting optimized parallel page discovery (Ultra-Priority Fix #11)...');
-        
-        // Create progress monitor for BNE discovery with shorter timeouts
-        const progressMonitor = createProgressMonitor(
-            'BNE page discovery',
-            'bne',
-            {
-                initialTimeout: 15000,  // Reduced from 30000
-                progressCheckInterval: 5000,  // Reduced from 10000
-                maxTimeout: 60000  // Reduced from 180000 (1 minute instead of 3)
-            }
-        );
-        
-        const controller = progressMonitor.start();
-        
-        try {
-        
-        for (let batchStart = 1; batchStart <= maxPages; batchStart += batchSize) {
-            const batchEnd = Math.min(batchStart + batchSize - 1, maxPages);
-            
-            // Show progress more frequently for better UX
-            if (batchStart % 20 === 1) {
-                console.log(`BNE: Processing pages ${batchStart}-${batchEnd}...`);
-            }
-            
-            // Update progress monitor
-            progressMonitor.updateProgress(batchStart, maxPages, `Checking pages ${batchStart}-${batchEnd}...`);
-            
-            // Create promises for batch
-            const batchPromises: Promise<{page: number, response: Response | null, error: any}>[] = [];
-            for (let page = batchStart; page <= batchEnd; page++) {
-                const testUrl = `https://bdh-rd.bne.es/pdf.raw?query=id:${manuscriptId}&page=${page}&pdf=true`;
-                batchPromises.push(
-                    this.fetchBneWithHttps(testUrl, { method: 'HEAD' })
-                        .then(response => ({ page, response, error: null }))
-                        .catch(error => ({ page, response: null, error }))
-                );
-            }
-            
-            // Wait for all in batch
-            const batchResults = await Promise.all(batchPromises);
-            
-            // Process results and check for stop conditions
-            let validPagesInBatch = 0;
-            let errorsInBatch = 0;
-            
-            for (const result of batchResults) {
-                if (result.error) {
-                    errorsInBatch++;
-                } else if (result.response && result.response.ok) {
-                    const contentLength = result.response.headers.get('content-length');
-                    const contentType = result.response.headers.get('content-type');
-                    
-                    if (contentLength && parseInt(contentLength) > 1000) {
-                        const contentHash = `${contentType}-${contentLength}`;
-                        
-                        if (!seenContentHashes.has(contentHash)) {
-                            seenContentHashes.add(contentHash);
-                            discoveredPages.push({
-                                page: result.page,
-                                contentLength: contentLength || '0',
-                                contentType: contentType || 'application/pdf'
-                            });
-                            validPagesInBatch++;
-                        }
-                    }
-                } else if (result.response && result.response.status === 404) {
-                    errorsInBatch++;
-                }
-            }
-            
-            // ULTRA-PRIORITY FIX: Improved early stop logic
-            // Stop if we get too many consecutive errors (indicates end of manuscript)
-            if (validPagesInBatch === 0) {
-                if (errorsInBatch >= batchSize / 2 || batchStart > 50) {
-                    // If we've already found pages and now hit errors, we've likely reached the end
-                    if (discoveredPages.length > 0) {
-                        console.log(`BNE: Reached end of manuscript at page ${batchStart - 1}`);
-                        break;
-                    }
-                    // If no pages found at all after checking 50+ pages, stop
-                    if (batchStart > 50) {
-                        console.log(`BNE: No valid pages found after checking ${batchStart} pages`);
-                        break;
-                    }
-                }
-            }
-            
-            // Progress update every 20 pages (more frequent updates)
-            if (discoveredPages.length > 0 && discoveredPages.length % 20 === 0) {
-                console.log(`BNE: Discovered ${discoveredPages.length} valid pages so far...`);
-            }
-        }
-        
-        if (discoveredPages.length === 0) {
-            throw new Error('No valid pages found for this BNE manuscript');
-        }
-        
-        // Sort pages by page number
-        discoveredPages.sort((a, b) => a.page - b.page);
-        
-        // Generate page links using optimal format for maximum resolution
-        const pageLinks = discoveredPages.map(page => 
-            `https://bdh-rd.bne.es/pdf.raw?query=id:${manuscriptId}&page=${page.page}&pdf=true`
-        );
-        
-        console.log(`BNE optimized discovery completed: ${discoveredPages.length} pages found`);
-        
-        progressMonitor.complete();
-        
-        return {
-            pageLinks,
-            totalPages: discoveredPages.length,
-            library: 'bne',
-            displayName: `BNE Manuscript ${manuscriptId}`,
-            originalUrl: originalUrl,
-        };
-        
-        } catch (error: any) {
-            progressMonitor.abort();
-            throw error;
-        }
-    }
-    
+
     private detectLibraryFromUrl(url: string): string {
         // Map of domain patterns to library names
         const libraryPatterns = [
@@ -4531,13 +4334,13 @@ export class EnhancedManuscriptDownloaderService {
             { pattern: /pagella\.bm-grenoble\.fr/, name: 'Grenoble' },
             { pattern: /rotomagus\.fr/, name: 'Rouen' }
         ];
-        
+
         for (const { pattern, name } of libraryPatterns) {
             if (pattern.test(url)) {
                 return name;
             }
         }
-        
+
         return 'Unknown';
     }
 
@@ -4550,11 +4353,11 @@ export class EnhancedManuscriptDownloaderService {
         }
         throw new Error('IIIF loader not available');
     }
-    
+
     private async loadGenericIIIFManifest(url: string): Promise<ManuscriptManifest> {
         return this.loadIIIFManifest(url);
     }
-    
+
     private async loadVallicellianManifest(url: string): Promise<ManuscriptManifest> {
         const loader = this.libraryLoaders.get('vallicelliana');
         if (loader) {
@@ -4562,7 +4365,7 @@ export class EnhancedManuscriptDownloaderService {
         }
         throw new Error('Vallicelliana loader not available');
     }
-    
+
     private async loadDiammSpecificManifest(url: string): Promise<ManuscriptManifest> {
         const loader = this.libraryLoaders.get('diamm');
         if (loader) {

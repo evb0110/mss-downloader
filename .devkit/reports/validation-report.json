@@ -1,0 +1,804 @@
+{
+  "timestamp": "2025-08-11T07:13:59.003Z",
+  "issues": [],
+  "typeScriptErrors": [
+    {
+      "file": "src/main/main.ts",
+      "line": 1236,
+      "column": 65,
+      "code": "TS2554",
+      "message": "Expected 0-1 arguments, but got 3."
+    },
+    {
+      "file": "src/main/services/BDLParallelDownloader.ts",
+      "line": 100,
+      "column": 76,
+      "code": "TS18046",
+      "message": "'error' is of type 'unknown'."
+    },
+    {
+      "file": "src/main/services/BDLParallelDownloader.ts",
+      "line": 150,
+      "column": 17,
+      "code": "TS2353",
+      "message": "Object literal may only specify known properties, and 'message' does not exist in type 'Partial<LogContext>'."
+    },
+    {
+      "file": "src/main/services/BDLParallelDownloader.ts",
+      "line": 207,
+      "column": 21,
+      "code": "TS6133",
+      "message": "'pageIndex' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/ComprehensiveLogger.ts",
+      "line": 5,
+      "column": 20,
+      "code": "TS6133",
+      "message": "'gunzipSync' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/ComprehensiveLogger.ts",
+      "line": 60,
+      "column": 13,
+      "code": "TS2564",
+      "message": "Property 'currentLogFile' has no initializer and is not definitely assigned in the constructor."
+    },
+    {
+      "file": "src/main/services/ComprehensiveLogger.ts",
+      "line": 429,
+      "column": 35,
+      "code": "TS6133",
+      "message": "'filePath' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/DirectTileProcessor.ts",
+      "line": 231,
+      "column": 102,
+      "code": "TS18046",
+      "message": "'error' is of type 'unknown'."
+    },
+    {
+      "file": "src/main/services/DirectTileProcessor.ts",
+      "line": 294,
+      "column": 101,
+      "code": "TS18046",
+      "message": "'error' is of type 'unknown'."
+    },
+    {
+      "file": "src/main/services/DirectTileProcessor.ts",
+      "line": 354,
+      "column": 80,
+      "code": "TS18046",
+      "message": "'error' is of type 'unknown'."
+    },
+    {
+      "file": "src/main/services/DownloadQueue.ts",
+      "line": 11,
+      "column": 32,
+      "code": "TS2304",
+      "message": "Cannot find name 'ManuscriptDownloaderService'."
+    },
+    {
+      "file": "src/main/services/DownloadQueue.ts",
+      "line": 12,
+      "column": 44,
+      "code": "TS2304",
+      "message": "Cannot find name 'ManuscriptDownloaderService'."
+    },
+    {
+      "file": "src/main/services/DownloadQueue.ts",
+      "line": 14,
+      "column": 13,
+      "code": "TS6133",
+      "message": "'pdfMerger' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/DownloadQueue.ts",
+      "line": 617,
+      "column": 19,
+      "code": "TS6133",
+      "message": "'result' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/DownloadQueue.ts",
+      "line": 640,
+      "column": 54,
+      "code": "TS2304",
+      "message": "Cannot find name 'progress'."
+    },
+    {
+      "file": "src/main/services/DownloadQueue.ts",
+      "line": 763,
+      "column": 19,
+      "code": "TS6133",
+      "message": "'result' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/DownloadQueue.ts",
+      "line": 777,
+      "column": 42,
+      "code": "TS2304",
+      "message": "Cannot find name 'progress'."
+    },
+    {
+      "file": "src/main/services/DownloadQueue.ts",
+      "line": 780,
+      "column": 54,
+      "code": "TS2304",
+      "message": "Cannot find name 'progress'."
+    },
+    {
+      "file": "src/main/services/DziImageProcessor.ts",
+      "line": 1,
+      "column": 1,
+      "code": "TS6133",
+      "message": "'fs' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/DziImageProcessor.ts",
+      "line": 104,
+      "column": 15,
+      "code": "TS6133",
+      "message": "'scale' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/DziImageProcessor.ts",
+      "line": 165,
+      "column": 96,
+      "code": "TS18046",
+      "message": "'error' is of type 'unknown'."
+    },
+    {
+      "file": "src/main/services/DziImageProcessor.ts",
+      "line": 231,
+      "column": 74,
+      "code": "TS18046",
+      "message": "'error' is of type 'unknown'."
+    },
+    {
+      "file": "src/main/services/DziImageProcessor.ts",
+      "line": 295,
+      "column": 73,
+      "code": "TS18046",
+      "message": "'error' is of type 'unknown'."
+    },
+    {
+      "file": "src/main/services/EnhancedDownloadQueue.ts",
+      "line": 357,
+      "column": 30,
+      "code": "TS2304",
+      "message": "Cannot find name 'loadingStartTime'."
+    },
+    {
+      "file": "src/main/services/EnhancedDownloadQueue.ts",
+      "line": 552,
+      "column": 82,
+      "code": "TS2339",
+      "message": "Property 'current' does not exist on type 'number | { current: number; total: number; percentage: number; eta: string; stage: TStage; actualCurrentPage?: number | undefined; }'."
+    },
+    {
+      "file": "src/main/services/EnhancedDownloadQueue.ts",
+      "line": 552,
+      "column": 113,
+      "code": "TS2339",
+      "message": "Property 'total' does not exist on type 'number | { current: number; total: number; percentage: number; eta: string; stage: TStage; actualCurrentPage?: number | undefined; }'."
+    },
+    {
+      "file": "src/main/services/EnhancedDownloadQueue.ts",
+      "line": 809,
+      "column": 57,
+      "code": "TS2339",
+      "message": "Property 'requiresTileProcessor' does not exist on type 'ManuscriptManifest'."
+    },
+    {
+      "file": "src/main/services/EnhancedDownloadQueue.ts",
+      "line": 810,
+      "column": 46,
+      "code": "TS2339",
+      "message": "Property 'tileConfig' does not exist on type 'ManuscriptManifest'."
+    },
+    {
+      "file": "src/main/services/EnhancedDownloadQueue.ts",
+      "line": 811,
+      "column": 46,
+      "code": "TS2339",
+      "message": "Property 'pageBlocks' does not exist on type 'ManuscriptManifest'."
+    },
+    {
+      "file": "src/main/services/EnhancedDownloadQueue.ts",
+      "line": 1950,
+      "column": 57,
+      "code": "TS2339",
+      "message": "Property 'requiresTileProcessor' does not exist on type 'ManuscriptManifest'."
+    },
+    {
+      "file": "src/main/services/EnhancedDownloadQueue.ts",
+      "line": 1951,
+      "column": 46,
+      "code": "TS2339",
+      "message": "Property 'tileConfig' does not exist on type 'ManuscriptManifest'."
+    },
+    {
+      "file": "src/main/services/EnhancedDownloadQueue.ts",
+      "line": 1952,
+      "column": 46,
+      "code": "TS2339",
+      "message": "Property 'pageBlocks' does not exist on type 'ManuscriptManifest'."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 120,
+      "column": 36,
+      "code": "TS2304",
+      "message": "Cannot find name 'createProgressMonitor'."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 1228,
+      "column": 15,
+      "code": "TS6133",
+      "message": "'startTime' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 1296,
+      "column": 25,
+      "code": "TS2322",
+      "message": "Type 'undefined' is not assignable to type 'Response'."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 1303,
+      "column": 21,
+      "code": "TS2322",
+      "message": "Type 'undefined' is not assignable to type 'Response'."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 1626,
+      "column": 58,
+      "code": "TS2304",
+      "message": "Cannot find name 'timeout'."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 1630,
+      "column": 58,
+      "code": "TS2304",
+      "message": "Cannot find name 'timeout'."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 1638,
+      "column": 58,
+      "code": "TS2304",
+      "message": "Cannot find name 'timeout'."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 1665,
+      "column": 45,
+      "code": "TS6133",
+      "message": "'progressCallback' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 1941,
+      "column": 19,
+      "code": "TS6133",
+      "message": "'ultraMode' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 1942,
+      "column": 19,
+      "code": "TS6133",
+      "message": "'maxRetries' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 1947,
+      "column": 17,
+      "code": "TS2322",
+      "message": "Type '\"bdl-ultra\"' is not assignable to type 'LogCategory | undefined'."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 2571,
+      "column": 59,
+      "code": "TS18048",
+      "message": "'manifest.pageLinks.length' is possibly 'undefined'."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 2869,
+      "column": 69,
+      "code": "TS2339",
+      "message": "Property 'manuscriptId' does not exist on type 'ManuscriptManifest'."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 3231,
+      "column": 24,
+      "code": "TS2339",
+      "message": "Property 'writeFileWithVerification' does not exist on type 'EnhancedManuscriptDownloaderService'."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 3250,
+      "column": 24,
+      "code": "TS2339",
+      "message": "Property 'writeFileWithVerification' does not exist on type 'EnhancedManuscriptDownloaderService'."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 3583,
+      "column": 19,
+      "code": "TS6133",
+      "message": "'extractFlorusImageUrls' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 3925,
+      "column": 19,
+      "code": "TS6133",
+      "message": "'handleEManuscriptaTitleInfo' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 4028,
+      "column": 35,
+      "code": "TS2339",
+      "message": "Property 'parseEManuscriptaDropdown' does not exist on type 'EnhancedManuscriptDownloaderService'."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 4033,
+      "column": 39,
+      "code": "TS2339",
+      "message": "Property 'parseEManuscriptaJSConfig' does not exist on type 'EnhancedManuscriptDownloaderService'."
+    },
+    {
+      "file": "src/main/services/EnhancedManuscriptDownloaderService.ts",
+      "line": 4132,
+      "column": 19,
+      "code": "TS6133",
+      "message": "'validateManifestCompleteness' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/LibraryOptimizationService.ts",
+      "line": 94,
+      "column": 9,
+      "code": "TS2353",
+      "message": "Object literal may only specify known properties, and ''bodleian'' does not exist in type 'Record<TLibrary, LibraryOptimizationSettings>'."
+    },
+    {
+      "file": "src/main/services/LibraryOptimizationService.ts",
+      "line": 297,
+      "column": 13,
+      "code": "TS2322",
+      "message": "Type 'number | undefined' is not assignable to type 'number'."
+    },
+    {
+      "file": "src/main/services/LoggedSharedManifestAdapter.ts",
+      "line": 1,
+      "column": 39,
+      "code": "TS7016",
+      "message": "Could not find a declaration file for module '../../shared/SharedManifestLoaders'. '/home/evb/WebstormProjects/mss-downloader/src/shared/SharedManifestLoaders.js' implicitly has an 'any' type."
+    },
+    {
+      "file": "src/main/services/SharedManifestAdapter.ts",
+      "line": 11,
+      "column": 52,
+      "code": "TS7016",
+      "message": "Could not find a declaration file for module '../../shared/SharedManifestLoaders.js'. '/home/evb/WebstormProjects/mss-downloader/src/shared/SharedManifestLoaders.js' implicitly has an 'any' type."
+    },
+    {
+      "file": "src/main/services/UltraReliableBDLService.ts",
+      "line": 3,
+      "column": 1,
+      "code": "TS6133",
+      "message": "'configService' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/UltraReliableBDLService.ts",
+      "line": 5,
+      "column": 1,
+      "code": "TS6133",
+      "message": "'https' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/UltraReliableBDLService.ts",
+      "line": 235,
+      "column": 74,
+      "code": "TS18046",
+      "message": "'error' is of type 'unknown'."
+    },
+    {
+      "file": "src/main/services/UltraReliableBDLService.ts",
+      "line": 287,
+      "column": 17,
+      "code": "TS2322",
+      "message": "Type '\"bdl-ultra\"' is not assignable to type 'LogCategory | undefined'."
+    },
+    {
+      "file": "src/main/services/UltraReliableBDLService.ts",
+      "line": 380,
+      "column": 21,
+      "code": "TS2322",
+      "message": "Type '\"bdl-ultra\"' is not assignable to type 'LogCategory | undefined'."
+    },
+    {
+      "file": "src/main/services/UltraReliableBDLService.ts",
+      "line": 474,
+      "column": 25,
+      "code": "TS6133",
+      "message": "'key' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/library-loaders/BdlLoader.ts",
+      "line": 55,
+      "column": 21,
+      "code": "TS2554",
+      "message": "Expected 1 arguments, but got 4."
+    },
+    {
+      "file": "src/main/services/library-loaders/BerlinLoader.ts",
+      "line": 46,
+      "column": 28,
+      "code": "TS2554",
+      "message": "Expected 1-2 arguments, but got 3."
+    },
+    {
+      "file": "src/main/services/library-loaders/BritishLibraryLoader.ts",
+      "line": 37,
+      "column": 24,
+      "code": "TS2722",
+      "message": "Cannot invoke an object which is possibly 'undefined'."
+    },
+    {
+      "file": "src/main/services/library-loaders/DiammLoader.ts",
+      "line": 38,
+      "column": 40,
+      "code": "TS2722",
+      "message": "Cannot invoke an object which is possibly 'undefined'."
+    },
+    {
+      "file": "src/main/services/library-loaders/DurhamLoader.ts",
+      "line": 32,
+      "column": 20,
+      "code": "TS2722",
+      "message": "Cannot invoke an object which is possibly 'undefined'."
+    },
+    {
+      "file": "src/main/services/library-loaders/EManuscriptaLoader.ts",
+      "line": 25,
+      "column": 62,
+      "code": "TS2307",
+      "message": "Cannot find module './ComprehensiveLogger' or its corresponding type declarations."
+    },
+    {
+      "file": "src/main/services/library-loaders/EManuscriptaLoader.ts",
+      "line": 32,
+      "column": 64,
+      "code": "TS2307",
+      "message": "Cannot find module '../../shared/SharedManifestLoaders' or its corresponding type declarations."
+    },
+    {
+      "file": "src/main/services/library-loaders/EuropeanaLoader.ts",
+      "line": 43,
+      "column": 76,
+      "code": "TS2722",
+      "message": "Cannot invoke an object which is possibly 'undefined'."
+    },
+    {
+      "file": "src/main/services/library-loaders/EuropeanaLoader.ts",
+      "line": 43,
+      "column": 124,
+      "code": "TS2554",
+      "message": "Expected 1 arguments, but got 3."
+    },
+    {
+      "file": "src/main/services/library-loaders/FlorusLoader.ts",
+      "line": 35,
+      "column": 46,
+      "code": "TS2339",
+      "message": "Property 'extractFlorusImageUrls' does not exist on type 'FlorusLoader'."
+    },
+    {
+      "file": "src/main/services/library-loaders/FreiburgLoader.ts",
+      "line": 49,
+      "column": 33,
+      "code": "TS2552",
+      "message": "Cannot find name 'JSDOM'. Did you mean 'dom'?"
+    },
+    {
+      "file": "src/main/services/library-loaders/FreiburgLoader.ts",
+      "line": 91,
+      "column": 39,
+      "code": "TS2552",
+      "message": "Cannot find name 'JSDOM'. Did you mean 'dom'?"
+    },
+    {
+      "file": "src/main/services/library-loaders/FreiburgLoader.ts",
+      "line": 133,
+      "column": 53,
+      "code": "TS2552",
+      "message": "Cannot find name 'JSDOM'. Did you mean 'dom'?"
+    },
+    {
+      "file": "src/main/services/library-loaders/GrazLoader.ts",
+      "line": 22,
+      "column": 48,
+      "code": "TS2304",
+      "message": "Cannot find name 'getAppPath'."
+    },
+    {
+      "file": "src/main/services/library-loaders/GrazLoader.ts",
+      "line": 23,
+      "column": 26,
+      "code": "TS2554",
+      "message": "Expected 3-4 arguments, but got 2."
+    },
+    {
+      "file": "src/main/services/library-loaders/GrazLoader.ts",
+      "line": 23,
+      "column": 122,
+      "code": "TS2339",
+      "message": "Property 'catch' does not exist on type 'void'."
+    },
+    {
+      "file": "src/main/services/library-loaders/GrazLoader.ts",
+      "line": 69,
+      "column": 21,
+      "code": "TS2554",
+      "message": "Expected 1 arguments, but got 4."
+    },
+    {
+      "file": "src/main/services/library-loaders/GrazLoader.ts",
+      "line": 92,
+      "column": 23,
+      "code": "TS6133",
+      "message": "'controller' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/library-loaders/GrazLoader.ts",
+      "line": 251,
+      "column": 52,
+      "code": "TS2304",
+      "message": "Cannot find name 'getAppPath'."
+    },
+    {
+      "file": "src/main/services/library-loaders/GrazLoader.ts",
+      "line": 261,
+      "column": 30,
+      "code": "TS2554",
+      "message": "Expected 3-4 arguments, but got 2."
+    },
+    {
+      "file": "src/main/services/library-loaders/GrazLoader.ts",
+      "line": 261,
+      "column": 69,
+      "code": "TS2339",
+      "message": "Property 'catch' does not exist on type 'void'."
+    },
+    {
+      "file": "src/main/services/library-loaders/GrazLoader.ts",
+      "line": 267,
+      "column": 34,
+      "code": "TS2339",
+      "message": "Property 'logError' does not exist on type 'DownloadLogger'."
+    },
+    {
+      "file": "src/main/services/library-loaders/HhuLoader.ts",
+      "line": 155,
+      "column": 38,
+      "code": "TS2554",
+      "message": "Expected 4 arguments, but got 3."
+    },
+    {
+      "file": "src/main/services/library-loaders/IccuLoader.ts",
+      "line": 65,
+      "column": 40,
+      "code": "TS2722",
+      "message": "Cannot invoke an object which is possibly 'undefined'."
+    },
+    {
+      "file": "src/main/services/library-loaders/IrhtLoader.ts",
+      "line": 24,
+      "column": 75,
+      "code": "TS2554",
+      "message": "Expected 1-2 arguments, but got 3."
+    },
+    {
+      "file": "src/main/services/library-loaders/IrhtLoader.ts",
+      "line": 81,
+      "column": 108,
+      "code": "TS2339",
+      "message": "Property 'calculateRetryDelay' does not exist on type 'IrhtLoader'."
+    },
+    {
+      "file": "src/main/services/library-loaders/IrhtLoader.ts",
+      "line": 82,
+      "column": 52,
+      "code": "TS2339",
+      "message": "Property 'calculateRetryDelay' does not exist on type 'IrhtLoader'."
+    },
+    {
+      "file": "src/main/services/library-loaders/LocLoader.ts",
+      "line": 25,
+      "column": 17,
+      "code": "TS2554",
+      "message": "Expected 1 arguments, but got 3."
+    },
+    {
+      "file": "src/main/services/library-loaders/LocLoader.ts",
+      "line": 80,
+      "column": 79,
+      "code": "TS2554",
+      "message": "Expected 1-2 arguments, but got 4."
+    },
+    {
+      "file": "src/main/services/library-loaders/LocLoader.ts",
+      "line": 187,
+      "column": 34,
+      "code": "TS2304",
+      "message": "Cannot find name 'manifestUrl'."
+    },
+    {
+      "file": "src/main/services/library-loaders/ManuscriptaLoader.ts",
+      "line": 31,
+      "column": 21,
+      "code": "TS2554",
+      "message": "Expected 1 arguments, but got 4."
+    },
+    {
+      "file": "src/main/services/library-loaders/MunichLoader.ts",
+      "line": 48,
+      "column": 21,
+      "code": "TS6133",
+      "message": "'totalPages' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/library-loaders/RbmeLoader.ts",
+      "line": 31,
+      "column": 21,
+      "code": "TS2554",
+      "message": "Expected 1 arguments, but got 4."
+    },
+    {
+      "file": "src/main/services/library-loaders/RbmeLoader.ts",
+      "line": 84,
+      "column": 21,
+      "code": "TS2554",
+      "message": "Expected 1 arguments, but got 4."
+    },
+    {
+      "file": "src/main/services/library-loaders/SharedCanvasLoader.ts",
+      "line": 18,
+      "column": 20,
+      "code": "TS2722",
+      "message": "Cannot invoke an object which is possibly 'undefined'."
+    },
+    {
+      "file": "src/main/services/library-loaders/TrinityCamLoader.ts",
+      "line": 26,
+      "column": 21,
+      "code": "TS2554",
+      "message": "Expected 1 arguments, but got 4."
+    },
+    {
+      "file": "src/main/services/library-loaders/UgentLoader.ts",
+      "line": 25,
+      "column": 24,
+      "code": "TS2722",
+      "message": "Cannot invoke an object which is possibly 'undefined'."
+    },
+    {
+      "file": "src/main/services/library-loaders/VallicellianLoader.ts",
+      "line": 95,
+      "column": 28,
+      "code": "TS2339",
+      "message": "Property 'validateManifestCompleteness' does not exist on type 'VallicellianLoader'."
+    },
+    {
+      "file": "src/main/services/library-loaders/VeronaLoader.ts",
+      "line": 167,
+      "column": 34,
+      "code": "TS2554",
+      "message": "Expected 4 arguments, but got 3."
+    },
+    {
+      "file": "src/main/services/library-loaders/ViennaManuscriptaLoader.ts",
+      "line": 97,
+      "column": 40,
+      "code": "TS6133",
+      "message": "'num2' is declared but its value is never read."
+    },
+    {
+      "file": "src/main/services/library-loaders/types.ts",
+      "line": 69,
+      "column": 13,
+      "code": "TS2353",
+      "message": "Object literal may only specify known properties, and 'title' does not exist in type 'ManuscriptManifest'."
+    },
+    {
+      "file": "src/renderer/main.ts",
+      "line": 20,
+      "column": 27,
+      "code": "TS2339",
+      "message": "Property 'logRendererError' does not exist on type 'ElectronAPI'."
+    },
+    {
+      "file": "src/renderer/main.ts",
+      "line": 21,
+      "column": 24,
+      "code": "TS2339",
+      "message": "Property 'logRendererError' does not exist on type 'ElectronAPI'."
+    },
+    {
+      "file": "src/renderer/main.ts",
+      "line": 34,
+      "column": 27,
+      "code": "TS2339",
+      "message": "Property 'logRendererError' does not exist on type 'ElectronAPI'."
+    },
+    {
+      "file": "src/renderer/main.ts",
+      "line": 35,
+      "column": 24,
+      "code": "TS2339",
+      "message": "Property 'logRendererError' does not exist on type 'ElectronAPI'."
+    },
+    {
+      "file": "src/renderer/services/PdfRendererService.ts",
+      "line": 11,
+      "column": 32,
+      "code": "TS2339",
+      "message": "Property 'updateRenderingProgress' does not exist on type 'ElectronAPI'."
+    },
+    {
+      "file": "src/renderer/services/PdfRendererService.ts",
+      "line": 101,
+      "column": 34,
+      "code": "TS2339",
+      "message": "Property 'saveImageFile' does not exist on type 'ElectronAPI'."
+    },
+    {
+      "file": "src/renderer/services/PdfRendererService.ts",
+      "line": 143,
+      "column": 34,
+      "code": "TS2339",
+      "message": "Property 'updateRenderingProgress' does not exist on type 'ElectronAPI'."
+    },
+    {
+      "file": "src/renderer/services/PdfRendererService.ts",
+      "line": 180,
+      "column": 32,
+      "code": "TS2339",
+      "message": "Property 'saveImageFile' does not exist on type 'ElectronAPI'."
+    },
+    {
+      "file": "src/renderer/services/PdfRendererService.ts",
+      "line": 225,
+      "column": 34,
+      "code": "TS2339",
+      "message": "Property 'updateRenderingProgress' does not exist on type 'ElectronAPI'."
+    },
+    {
+      "file": "src/renderer/services/PdfRendererService.ts",
+      "line": 269,
+      "column": 34,
+      "code": "TS2339",
+      "message": "Property 'saveImageFile' does not exist on type 'ElectronAPI'."
+    },
+    {
+      "file": "src/renderer/services/PdfRendererService.ts",
+      "line": 350,
+      "column": 34,
+      "code": "TS2339",
+      "message": "Property 'saveImageFile' does not exist on type 'ElectronAPI'."
+    }
+  ]
+}

@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.145",
-  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (61+ libraries worldwide)",
+  "version": "1.4.148",
+  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (62+ libraries worldwide)",
   "changelog": [
-    "v1.4.145: Fixed BDL size estimation accuracy (Issue #24)",
-    "Implemented multi-page sampling for accurate size calculation",
-    "BDL manuscripts now correctly split when exceeding size threshold",
-    "Robust average calculation with outlier removal prevents underestimation",
-    "10% safety buffer added to prevent memory issues during PDF merging"
+    "v1.4.148: Added Oberösterreichische Landesbibliothek (Linz) support - Issue #25",
+    "New library: Full IIIF v2 support for Austrian State Library in Linz",
+    "Supports 500+ digitized manuscripts from medieval to modern periods",
+    "Maximum resolution downloads with automatic quality optimization",
+    "Tested with manuscripts 116, 254, 279, 1194 - all working perfectly"
   ],
   "main": "dist/main/main.js",
   "scripts": {
@@ -27,6 +27,8 @@
     "typecheck:silent": "tsc --noEmit || true",
     "typecheck:watch": "tsc --noEmit --watch",
     "typecheck:report": "node .devkit/workflows/typecheck-report.cjs",
+    "validate": "node .devkit/scripts/validate-codebase.cjs",
+    "validate:fix": "npm run typefix && npm run lint:fix",
     "typefix": "node .devkit/workflows/auto-typefix.cjs",
     "precommit": "bash .devkit/commands/pre-commit-check.sh",
     "prebuild": "npm run typecheck:silent",

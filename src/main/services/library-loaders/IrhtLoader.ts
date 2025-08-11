@@ -78,8 +78,9 @@ export class IrhtLoader extends BaseLibraryLoader {
                     
                     // Only retry for server errors (5xx), not client errors (4xx)
                     if ((error as Error).message.includes('500') && attempt < 3) {
-                        console.warn(`IRHT attempt ${attempt} failed with server error, retrying in ${this.calculateRetryDelay(attempt)}ms...`);
-                        await this.deps.sleep(this.calculateRetryDelay(attempt));
+                        const retryDelay = this.calculateRetryDelay(attempt);
+                        console.warn(`IRHT attempt ${attempt} failed with server error, retrying in ${retryDelay}ms...`);
+                        await this.deps.sleep(retryDelay);
                         continue;
                     } else {
                         // Don't retry for client errors or final attempt
@@ -89,5 +90,15 @@ export class IrhtLoader extends BaseLibraryLoader {
             }
             
             throw new Error(`Failed to load IRHT manuscript after 3 attempts: ${lastError.message}`);
+        }
+        
+        /**
+         * Calculate retry delay with exponential backoff
+         */
+        private calculateRetryDelay(attempt: number): number {
+            const baseDelay = 1000; // 1 second
+            const maxDelay = 10000; // 10 seconds max
+            // Exponential backoff: 1s, 2s, 4s, 8s, capped at 10s
+            return Math.min(baseDelay * Math.pow(2, attempt - 1), maxDelay);
         }
 }
