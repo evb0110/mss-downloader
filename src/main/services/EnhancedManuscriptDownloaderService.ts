@@ -1968,6 +1968,9 @@ export class EnhancedManuscriptDownloaderService {
                 case 'mdc':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('mdc', originalUrl);
                     break;
+                case 'mdc_catalonia':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('mdc_catalonia', originalUrl);
+                    break;
                 case 'onb':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('onb', originalUrl);
                     break;

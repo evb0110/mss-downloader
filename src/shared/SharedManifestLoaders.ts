@@ -4,8 +4,8 @@
  * SINGLE SOURCE OF TRUTH for all manuscript library integrations
  */
 
-import * as https from 'https';
-import * as http from 'http';
+import type * as https from 'https';
+import type * as http from 'http';
 
 import type {
     ManuscriptImage,

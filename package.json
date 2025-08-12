@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.173",
-  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (63+ libraries worldwide)",
+  "version": "1.4.174",
+  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (64+ libraries worldwide)",
   "changelog": [
-    "v1.4.173: Fixed BNE Infinity bug & reduced TypeScript errors",
-    "BNE loader: Replaced broken binary search with exponential + binary search",
-    "Fixed 33+ TypeScript errors across library loaders and services",
-    "Added proper null checks and type guards for safer code",
-    "Improved IIIF manifest handling and ElectronAPI interface"
+    "v1.4.174: Added CSUC MDC Catalonia library support",
+    "New library: Full support for Consortium of University Services of Catalonia (CSUC) digital collections",
+    "Successfully downloads manuscripts from mdc.csuc.cat with high-quality IIIF images",
+    "Tested with 266-page incunable manuscript - all pages download perfectly",
+    "Now supports 64 digital libraries worldwide"
   ],
   "main": "dist/main/main.js",
   "scripts": {
