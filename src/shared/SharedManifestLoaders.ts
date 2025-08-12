@@ -440,7 +440,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * BDL Servizirl - Fixed duplicate pages and empty pages issue
      */
-    async getBDLManifest(url: string): Promise<{ images: ManuscriptImage[] }> {
+    async getBDLManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string }> {
         // Support multiple URL formats:
         // 1. BDL-OGGETTO-12345 (old format)
         // 2. cdOggetto=3903 (new format from bookreader URL)
@@ -495,7 +495,20 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         
         console.log(`[BDL] Loaded ${images.length} unique pages (removed ${data.length - images.length} duplicates)`);
         
-        return { images };
+        // Try to extract library/collection from URL path parameter (e.g., path=fe, path=bo)
+        let libraryCode = '';
+        const pathMatch = url.match(/path=([a-z]+)/i);
+        if (pathMatch) {
+            libraryCode = pathMatch[1].toUpperCase();
+        }
+        
+        // Create a meaningful display name using the object ID and library code
+        const displayName = libraryCode ? `BDL ${libraryCode} ${objectId}` : `BDL ${objectId}`;
+        
+        return { 
+            images,
+            displayName 
+        };
     }
 
     /**

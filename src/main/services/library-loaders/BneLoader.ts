@@ -53,11 +53,11 @@ export class BneLoader extends BaseLibraryLoader {
     }
 
     /**
-     * Smart page discovery using binary search - dramatically faster than checking every page
-     * This typically requires only 10-15 HEAD requests instead of 200+
+     * Smart page discovery using exponential search + binary search
+     * This works with manuscripts of any size without needing a fixed upper limit
      */
     private async smartPageDiscovery(manuscriptId: string): Promise<number> {
-        console.log('BNE: Using smart binary search for page discovery...');
+        console.log('BNE: Using smart exponential + binary search for page discovery...');
 
         // First, check if page 1 exists
         const page1Exists = await this.checkPageExists(manuscriptId, 1);
@@ -65,11 +65,38 @@ export class BneLoader extends BaseLibraryLoader {
             throw new Error('Page 1 does not exist - invalid manuscript ID');
         }
 
-        // Binary search for the last valid page
-        let low = 1;
-        let high = Infinity; // Max pages to check
-        let lastValidPage = 1;
-        let checksPerformed = 0;
+        let checksPerformed = 1;
+
+        // Phase 1: Exponential search to find upper bound
+        let upperBound = 1;
+        let exponentialPage = 1;
+        
+        console.log('BNE: Phase 1 - Finding upper bound with exponential search...');
+        while (true) {
+            exponentialPage = upperBound * 2;
+            const exists = await this.checkPageExists(manuscriptId, exponentialPage);
+            checksPerformed++;
+            
+            if (exists) {
+                upperBound = exponentialPage;
+                console.log(`BNE: Page ${exponentialPage} exists, doubling to check ${exponentialPage * 2}...`);
+            } else {
+                console.log(`BNE: Page ${exponentialPage} doesn't exist, found upper bound`);
+                break;
+            }
+            
+            // Safety check for extremely large manuscripts
+            if (exponentialPage > 100000) {
+                console.warn('BNE: Manuscript appears to have over 100,000 pages, stopping search');
+                break;
+            }
+        }
+
+        // Phase 2: Binary search between upperBound/2 and upperBound
+        console.log(`BNE: Phase 2 - Binary search between ${upperBound} and ${exponentialPage}...`);
+        let low = upperBound;
+        let high = exponentialPage;
+        let lastValidPage = upperBound; // We know upperBound exists
 
         while (low <= high) {
             const mid = Math.floor((low + high) / 2);
@@ -83,13 +110,13 @@ export class BneLoader extends BaseLibraryLoader {
                 high = mid - 1;
             }
 
-            // Progress indicator for large manuscripts
+            // Progress indicator
             if (checksPerformed % 5 === 0) {
                 console.log(`BNE: Narrowing page range [${low}-${high}], found ${lastValidPage} pages so far...`);
             }
         }
 
-        console.log(`BNE: Found ${lastValidPage} total pages using only ${checksPerformed} checks (95% faster!)`);
+        console.log(`BNE: Found ${lastValidPage} total pages using only ${checksPerformed} checks`);
         return lastValidPage;
     }
 
@@ -125,26 +152,10 @@ export class BneLoader extends BaseLibraryLoader {
             }
 
             return false;
-        } catch (error) {
+        } catch {
             // Network errors mean page doesn't exist
             return false;
         }
     }
 
-    /**
-     * Fast mode alternative - skip discovery and use a reasonable default
-     * This can be used when speed is critical and exact page count isn't needed
-     */
-    private getFastModePages(manuscriptId: string, defaultPages: number = 100): string[] {
-        console.log(`BNE: Fast mode - generating ${defaultPages} pages without discovery`);
-        const pageLinks: string[] = [];
-
-        for (let page = 1; page <= defaultPages; page++) {
-            pageLinks.push(
-                `https://bdh-rd.bne.es/pdf.raw?query=id:%22${manuscriptId}%22&page=${page}&view=main&lang=es`
-            );
-        }
-
-        return pageLinks;
-    }
 }

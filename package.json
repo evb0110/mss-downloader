@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.170",
+  "version": "1.4.171",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (63+ libraries worldwide)",
   "changelog": [
-    "v1.4.170: Fixed BDL PDF handling - no more libpng errors",
-    "BDL now properly detects and handles PDF pages when available",
-    "Automatic PDF detection for any library serving .pdf files",
-    "Fixed 'QImage::pixel: coordinate out of range' errors",
-    "BDL manuscripts download reliably with PDF or IIIF fallback"
+    "v1.4.171: Fixed BDL generic manuscript naming",
+    "BDL now shows meaningful names like 'BDL FE 3903' instead of 'bdl Manuscript'",
+    "Extracts library code from path parameter (FE, BO, etc)",
+    "Object ID included in display name for easy identification",
+    "Folder names now match the manuscript being downloaded"
   ],
   "main": "dist/main/main.js",
   "scripts": {
