@@ -3,7 +3,7 @@ import http from 'http';
 import { URL } from 'url';
 import { app } from 'electron';
 import { join } from 'path';
-import { ElectronPdfMerger } from './ElectronPdfMerger';
+import type { ElectronPdfMerger } from './ElectronPdfMerger';
 import type { ManuscriptManifest, LibraryInfo, DownloadProgress, DownloadCallbacks } from '../../shared/types';
 
 const MAX_IMAGE_FETCH_RETRIES = 2;

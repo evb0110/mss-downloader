@@ -1,8 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { configService } from './ConfigService';
 import { comprehensiveLogger } from './ComprehensiveLogger';
-import * as https from 'https';
 // Using global fetch available in Node.js 18+
 
 interface ProxyHealth {

@@ -1,4 +1,3 @@
-import { promises as fs } from 'fs';
 import https from 'https';
 import http from 'http';
 import { URL } from 'url';
@@ -101,7 +100,7 @@ export class DziImageProcessor {
      */
     private getTilesForLevel(metadata: DziMetadata, level: number, baseUrl: string): TileInfo[] {
         const tiles: TileInfo[] = [];
-        const scale = Math.pow(2, level);
+        // const scale = Math.pow(2, level);
         
         // Calculate dimensions at this level
         const levelWidth = Math.ceil(metadata.width / Math.pow(2, this.calculateMaxLevel(metadata.width, metadata.height) - level));

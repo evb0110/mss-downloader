@@ -95,7 +95,7 @@ export class DirectTileProcessor {
                     console.log(`[DirectTile] Found max level: ${level}`);
                     break;
                 }
-            } catch (error) {
+            } catch {
                 // Continue searching
             }
         }

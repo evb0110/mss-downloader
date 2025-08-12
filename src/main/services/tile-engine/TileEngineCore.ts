@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
 import { spawn } from 'child_process';
-import {
+import type {
   ITileAdapter,
   TileEngineConfig,
   TileEngineResult,

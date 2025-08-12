@@ -1362,7 +1362,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                         const sizeMB = buffer.length / (1024 * 1024);
                         pageSizes.push(sizeMB);
                         console.log(`[${manifest.library}] Page ${index + 1}: ${sizeMB.toFixed(2)} MB`);
-                    } catch (error) {
+                    } catch {
                         console.warn(`[${manifest.library}] Failed to sample page ${index + 1}, continuing...`);
                     }
                 }

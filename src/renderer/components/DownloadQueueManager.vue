@@ -1171,7 +1171,7 @@ const contextMenu = ref({
 
 // Set up queue monitoring for logs
 let logMonitorInterval: NodeJS.Timeout | null = null;
-let previousStatuses = new Map<string, string>();
+const previousStatuses = new Map<string, string>();
 
 onMounted(() => {
     // Monitor queue items for status changes

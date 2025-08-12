@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { EnhancedManuscriptDownloaderService } from './EnhancedManuscriptDownloaderService';
-import { ElectronPdfMerger } from './ElectronPdfMerger';
+import type { ElectronPdfMerger } from './ElectronPdfMerger';
 import { configService } from './ConfigService';
 import type { QueuedManuscript, QueueState, TStage, TLibrary, TSimultaneousMode } from '../../shared/queueTypes';
 import Store from 'electron-store';
@@ -614,7 +614,7 @@ export class DownloadQueue extends EventEmitter {
                 console.log(`Processing Manuscripta.se download with enhanced monitoring: ${item.displayName}`);
             }
             
-            const result = await this.currentDownloader.downloadManuscript(item.url, {
+            await this.currentDownloader.downloadManuscript(item.url, {
                 startPage,
                 endPage,
                 skipExisting: false,
@@ -760,7 +760,7 @@ export class DownloadQueue extends EventEmitter {
             let lastProgressUpdate = 0;
             let lastPercentage = -1;
             
-            const result = await downloader.downloadManuscript(item.url, {
+            await downloader.downloadManuscript(item.url, {
                 startPage,
                 endPage,
                 skipExisting: false,

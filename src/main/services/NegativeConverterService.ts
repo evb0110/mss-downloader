@@ -146,7 +146,7 @@ export class NegativeConverterService {
       let actualPageCount: number;
       try {
         actualPageCount = await waitForRendererCompletion();
-      } catch (error) {
+      } catch {
         
         // Fallback to file checking - count both .png and .jpg files
         try {

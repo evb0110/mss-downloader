@@ -204,7 +204,7 @@ export class BDLParallelDownloader extends EventEmitter {
     abort(): void {
         console.log(`[BDL Parallel] Aborting ${this.activeDownloads.size} active downloads`);
         
-        for (const [pageIndex, controller] of this.activeDownloads) {
+        for (const [_pageIndex, controller] of this.activeDownloads) {
             controller.abort();
         }
         

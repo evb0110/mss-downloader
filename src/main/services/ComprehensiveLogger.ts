@@ -2,7 +2,7 @@ import { app } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { gzipSync, gunzipSync } from 'zlib';
+import { gzipSync } from 'zlib';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 export type LogCategory = 'network' | 'file' | 'manifest' | 'download' | 'pdf' | 'system' | 'renderer' | 'worker' | 'queue' | 'process' | 'bdl-parallel' | 'url-sanitizer';
@@ -156,7 +156,7 @@ export class ComprehensiveLogger {
             if (fileSizeMB >= this.rotationConfig.maxFileSize) {
                 await this.rotateLog();
             }
-        } catch (error) {
+        } catch {
             // Ignore stat errors
         }
     }
@@ -426,7 +426,7 @@ export class ComprehensiveLogger {
     
     // Helper methods
     
-    private getAvailableDiskSpace(filePath: string): number | undefined {
+    private getAvailableDiskSpace(_filePath: string): number | undefined {
         try {
             // Note: statfs is not available in standard Node.js fs module
             // This is a placeholder - actual disk space checking would require

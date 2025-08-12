@@ -323,7 +323,7 @@ const showOnlyGeoBlocked = ref(false)
 // Enhanced search with categorized results and verbose feedback
 const searchResults = computed(() => {
   // First apply geo-blocked filter if active
-  let baseLibraries = showOnlyGeoBlocked.value 
+  const baseLibraries = showOnlyGeoBlocked.value 
     ? supportedLibraries.value.filter(lib => lib.geoBlocked)
     : [...supportedLibraries.value]
   

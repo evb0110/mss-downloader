@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { app } from 'electron';
 import { TileEngineCore } from './TileEngineCore';
-import {
+import type {
   TileEngineConfig,
   TileEngineResult,
   TileDownloadCallbacks,

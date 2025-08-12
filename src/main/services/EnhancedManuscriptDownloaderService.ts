@@ -861,7 +861,7 @@ export class EnhancedManuscriptDownloaderService {
                 console.log(`Internet Culturale: Small but valid image (${buffer.byteLength} bytes): ${url}`);
             }
 
-        } catch (decodingError) {
+        } catch {
             // If text decoding fails, it's likely a binary image (which is good)
             // Just verify it's a valid JPEG
             const bytes = new Uint8Array(buffer);
@@ -1332,7 +1332,6 @@ export class EnhancedManuscriptDownloaderService {
             }
         }
         const library = this.detectLibraryFromUrl(url);
-        const startTime = Date.now();
 
         comprehensiveLogger.logNetworkRequest(url, {
             method: options.method || 'GET',
@@ -1769,7 +1768,7 @@ export class EnhancedManuscriptDownloaderService {
     /**
      * Load manifest for different library types
      */
-    async loadManifest(originalUrl: string, progressCallback?: (current: number, total: number, message?: string) => void): Promise<ManuscriptManifest> {
+    async loadManifest(originalUrl: string, _progressCallback?: (current: number, total: number, message?: string) => void): Promise<ManuscriptManifest> {
         // ULTRA-PRIORITY FIX for Issue #9: Sanitize URL at the earliest entry point
         originalUrl = this.sanitizeUrl(originalUrl);
 
@@ -2045,8 +2044,8 @@ export class EnhancedManuscriptDownloaderService {
             console.log(`🔄 [BDL Ultra] Intercepting BDL download (attempt ${attempt}): ${url}`);
 
             // Force ultra-reliable mode for BDL - ignore config
-            const ultraMode = true; // Force enabled
-            const maxRetries = -1; // Force unlimited
+            // const ultraMode = true; // Force enabled
+            // const maxRetries = -1; // Force unlimited
 
             console.log(`🔥 [BDL Ultra] FORCED ULTRA MODE - Will retry forever until success`);
             comprehensiveLogger.log({
@@ -3239,7 +3238,7 @@ export class EnhancedManuscriptDownloaderService {
         }
 
         const allPdfBytes: Uint8Array[] = [];
-        let processedCount = 0;
+        // let processedCount = 0;
 
         // Process images in batches to manage memory
         for (let i = 0; i < totalImages; i += batchSize) {
@@ -3273,7 +3272,7 @@ export class EnhancedManuscriptDownloaderService {
                             try {
                                 // Fallback to PNG
                                 image = await batchPdfDoc.embedPng(imageBuffer);
-                            } catch (embedError: any) {
+                            } catch {
                                 continue;
                             }
                         }
@@ -3290,7 +3289,7 @@ export class EnhancedManuscriptDownloaderService {
                         });
 
                         validImagesInBatch++;
-                        processedCount++;
+                        // processedCount++;
 
                     } catch (error: any) {
                         console.error(`\n❌ Failed to process ${path.basename(imagePath)}: ${(error as Error).message}`);
@@ -3360,7 +3359,7 @@ export class EnhancedManuscriptDownloaderService {
 
                             const singlePdfBytes = await singlePdfDoc.save();
                             allPdfBytes.push(singlePdfBytes);
-                            processedCount++;
+                            // processedCount++;
 
                             // Force memory cleanup after each single image
                             if (global.gc) {
@@ -3572,7 +3571,7 @@ export class EnhancedManuscriptDownloaderService {
                         } catch {
                             try {
                                 image = await batchPdfDoc.embedPng(imageBuffer);
-                            } catch (embedError: any) {
+                            } catch {
                                 // Create informative page for embed failure
                                 const page = batchPdfDoc.addPage([595, 842]);
                                 const { height } = page.getSize();
@@ -4263,7 +4262,7 @@ export class EnhancedManuscriptDownloaderService {
 
             // Process each thumbview block and aggregate all pages
             const allPageLinks: string[] = [];
-            let totalPagesCount = 0;
+            // let totalPagesCount = 0;
 
             for (let i = 0; i < thumbviewUrls.length; i++) {
                 const thumbviewUrl = thumbviewUrls[i];
@@ -4272,7 +4271,7 @@ export class EnhancedManuscriptDownloaderService {
                 try {
                     const blockManifest = await this.handleEManuscriptaThumbView(thumbviewUrl, library, thumbviewUrl.split('/').pop()!);
                     allPageLinks.push(...blockManifest.pageLinks);
-                    totalPagesCount += blockManifest.totalPages;
+                    // totalPagesCount += blockManifest.totalPages;
 
                     console.log(`e-manuscripta: Block ${i + 1} contributed ${blockManifest.totalPages} pages`);
                 } catch (error: any) {
