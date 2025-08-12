@@ -6,11 +6,8 @@
 import type { ManuscriptManifest } from '../../shared/types';
 import { DownloadLogger } from './DownloadLogger';
 
-// Dynamic import for Node.js module in TypeScript
-const loadSharedManifestLoaders = async () => {
-    const { SharedManifestLoaders } = await import('../../shared/SharedManifestLoaders');
-    return SharedManifestLoaders;
-};
+// Import TypeScript version
+import { SharedManifestLoaders } from '../../shared/SharedManifestLoaders';
 
 export class SharedManifestAdapter {
     private sharedLoaders: any;
@@ -22,7 +19,6 @@ export class SharedManifestAdapter {
 
     private async initializeSharedLoaders() {
         if (!this.sharedLoaders) {
-            const SharedManifestLoaders = await loadSharedManifestLoaders();
             this.sharedLoaders = new SharedManifestLoaders(this.electronFetch);
         }
     }
