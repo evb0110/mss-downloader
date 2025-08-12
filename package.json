@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.171",
+  "version": "1.4.172",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (63+ libraries worldwide)",
   "changelog": [
-    "v1.4.171: Fixed BDL generic manuscript naming",
-    "BDL now shows meaningful names like 'BDL FE 3903' instead of 'bdl Manuscript'",
-    "Extracts library code from path parameter (FE, BO, etc)",
-    "Object ID included in display name for easy identification",
-    "Folder names now match the manuscript being downloaded"
+    "v1.4.172: Fixed BNE loader Infinity page detection issue",
+    "Replaced broken binary search with exponential + binary search algorithm",
+    "BNE can now handle manuscripts of any size without math errors",
+    "Page discovery uses minimal HTTP requests (logarithmic complexity)",
+    "Added safety limit at 100,000 pages to prevent infinite loops"
   ],
   "main": "dist/main/main.js",
   "scripts": {
