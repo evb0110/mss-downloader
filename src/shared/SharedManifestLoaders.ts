@@ -163,7 +163,8 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 console.log(`[URL SANITIZER] Fixed URL: ${actualUrl}`);
                 return actualUrl;
             } catch (e: unknown) {
-                console.error('[URL SANITIZER] Extracted URL is still invalid:', e.message);
+                const errorMessage = e instanceof Error ? e.message : String(e);
+                console.error('[URL SANITIZER] Extracted URL is still invalid:', errorMessage);
             }
         }
         
@@ -248,7 +249,8 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 };
                 
             } catch (error: unknown) {
-                if (error.name === 'AbortError') {
+                const errorName = error && typeof error === 'object' && 'name' in error ? (error as any).name : undefined;
+                if (errorName === 'AbortError') {
                     throw new Error(`Request timeout for ${url}`);
                 }
                 throw error;
@@ -439,8 +441,14 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
      * BDL Servizirl - Fixed duplicate pages and empty pages issue
      */
     async getBDLManifest(url: string): Promise<{ images: ManuscriptImage[] }> {
-        const match = url.match(/BDL-OGGETTO-(\d+)/);
-        if (!match) throw new Error('Invalid BDL URL');
+        // Support multiple URL formats:
+        // 1. BDL-OGGETTO-12345 (old format)
+        // 2. cdOggetto=3903 (new format from bookreader URL)
+        let match = url.match(/BDL-OGGETTO-(\d+)/);
+        if (!match) {
+            match = url.match(/cdOggetto=(\d+)/);
+        }
+        if (!match) throw new Error('Invalid BDL URL - no object ID found');
         
         const objectId = match[1];
         
@@ -492,8 +500,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             if (!isHealthy) {
                 console.warn('[Verona] Health check failed, but continuing with enhanced retries...');
             }
-        } catch (error) {
-            console.warn('[Verona] Health check error, but continuing:', error.message);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.warn('[Verona] Health check error, but continuing:', errorMessage);
         }
         
         // Check if this is a direct IIIF manifest URL
@@ -531,9 +540,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 console.log('[Verona] Discovered manifest URL:', manifestUrl);
                 return await this.fetchVeronaIIIFManifest(manifestUrl);
             }
-        } catch (error) {
-            console.warn('[Verona] Manifest URL discovery failed:', error.message);
-            if (error.message.includes('timeout') || error.message.includes('ETIMEDOUT')) {
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.warn('[Verona] Manifest URL discovery failed:', errorMessage);
+            if (errorMessage.includes('timeout') || errorMessage.includes('ETIMEDOUT')) {
                 throw new Error('Verona server is not responding during manifest discovery. The server may be experiencing high load. Please try again in 10-15 minutes.');
             }
         }
@@ -557,7 +567,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * Discover Verona manifest URL from HTML page
      */
-    async discoverVeronaManifestUrl(pageUrl: string, _codice: string) {
+    async discoverVeronaManifestUrl(pageUrl: string, _codice: string): Promise<string | null> {
         console.log('[Verona] Attempting to discover manifest URL from page');
         
         try {
@@ -606,7 +616,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 }
             }
             
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('[Verona] Error discovering manifest URL:', error);
         }
         
@@ -616,7 +626,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * Check Verona server health before attempting operations
      */
-    async checkVeronaServerHealth() {
+    async checkVeronaServerHealth(): Promise<boolean> {
         console.log('[Verona] Performing server health check...');
         
         const healthCheckUrls = [
@@ -637,8 +647,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                     console.log(`[Verona] Server health check passed for ${healthUrl}`);
                     return true;
                 }
-            } catch (error) {
-                console.log(`[Verona] Health check failed for ${healthUrl}: ${error.message}`);
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                console.log(`[Verona] Health check failed for ${healthUrl}: ${errorMessage}`);
                 continue;
             }
         }
@@ -650,7 +661,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * Fetch and parse Verona IIIF manifest with enhanced timeout handling
      */
-    async fetchVeronaIIIFManifest(manifestUrl: string) {
+    async fetchVeronaIIIFManifest(manifestUrl: string): Promise<{ images: ManuscriptImage[]; displayName: string }> {
         console.log('[Verona] Fetching IIIF manifest from:', manifestUrl);
         
         // Enhanced timeout strategy with multiple layers
@@ -704,9 +715,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 const parseTime = Date.now() - parseStartTime;
                 console.log(`[Verona] Manifest parsed in ${parseTime}ms`);
                 
-            } catch (parseError) {
-                console.error('[Verona] JSON parse error:', parseError.message);
-                throw new Error(`Failed to parse Verona manifest: ${parseError.message}. The server may have returned invalid data.`);
+            } catch (parseError: unknown) {
+                const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
+                console.error('[Verona] JSON parse error:', errorMessage);
+                throw new Error(`Failed to parse Verona manifest: ${errorMessage}. The server may have returned invalid data.`);
             }
             
             const images: ManuscriptImage[] = [];
@@ -778,15 +790,17 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 displayName: `Verona - ${displayName}`
             };
             
-        } catch (error) {
+        } catch (error: unknown) {
             const elapsed = Math.round((Date.now() - startTime) / 1000);
-            console.error(`[Verona] Manifest fetch failed after ${elapsed}s:`, error.message);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            const errorCode = error && typeof error === 'object' && 'code' in error ? (error as any).code : undefined;
+            console.error(`[Verona] Manifest fetch failed after ${elapsed}s:`, errorMessage);
             
-            if (error.message.includes('timeout') || error.message.includes('ETIMEDOUT')) {
+            if (errorMessage.includes('timeout') || errorMessage.includes('ETIMEDOUT')) {
                 throw new Error(`Verona server timeout after ${elapsed} seconds. The server may be experiencing heavy load or network issues. Please try again in 15-20 minutes. If this is a large manuscript, consider trying during off-peak hours.`);
-            } else if (error.code === 'ENOTFOUND') {
+            } else if (errorCode === 'ENOTFOUND') {
                 throw new Error('Cannot connect to Verona server. Please check your internet connection and try again.');
-            } else if (error.code === 'ECONNRESET' || error.code === 'ECONNREFUSED') {
+            } else if (errorCode === 'ECONNRESET' || errorCode === 'ECONNREFUSED') {
                 throw new Error('Connection to Verona server was reset. The server may be restarting or experiencing technical difficulties.');
             }
             
@@ -1213,9 +1227,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                             canvases[i] = null;
                         }
                     }
-                } catch (parseError) {
-                    console.error('[Graz] JSON parse error:', parseError.message);
-                    throw new Error(`Failed to parse Graz manifest: ${parseError.message}`);
+                } catch (parseError: unknown) {
+                    const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
+                    console.error('[Graz] JSON parse error:', errorMessage);
+                    throw new Error(`Failed to parse Graz manifest: ${errorMessage}`);
                 }
             }
             
@@ -1239,15 +1254,15 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 throw new Error('University of Graz server is not responding. The manuscript may be too large or the server is experiencing high load. Please try again later.');
             }
             
-            if (error.message && (error.message.includes('ENOMEM') || error.message.includes('heap out of memory'))) {
+            if (errorMessage && (errorMessage.includes('ENOMEM') || errorMessage.includes('heap out of memory'))) {
                 throw new Error('Out of memory while processing large Graz manuscript. The manuscript may be too large to process.');
             }
             
-            if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+            if (errorCode === 'ENOTFOUND' || errorCode === 'ECONNREFUSED') {
                 throw new Error('Cannot connect to University of Graz server. This may be due to network issues or geo-restrictions.');
             }
             
-            if (error.message && (error.message.includes('403') || error.message.includes('Forbidden'))) {
+            if (errorMessage && (errorMessage.includes('403') || errorMessage.includes('Forbidden'))) {
                 throw new Error('Access to University of Graz manuscript is restricted. This may be due to geo-blocking or institutional access requirements.');
             }
             
@@ -1389,8 +1404,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 const safeJsonParse = `JSON.parse("${jsonParseMatch[1]}")`;
                 initialState = eval(safeJsonParse);
                 
-            } catch (parseError) {
-                throw new Error(`Failed to parse JSON.parse format: ${parseError.message}`);
+            } catch (parseError: unknown) {
+                const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
+                throw new Error(`Failed to parse JSON.parse format: ${errorMessage}`);
             }
         } else {
             // Try direct object assignment pattern
@@ -1398,8 +1414,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             if (directMatch) {
                 try {
                     initialState = JSON.parse(directMatch[1]);
-                } catch (parseError) {
-                    throw new Error(`Failed to parse direct object format: ${parseError.message}`);
+                } catch (parseError: unknown) {
+                    const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
+                    throw new Error(`Failed to parse direct object format: ${errorMessage}`);
                 }
             } else {
                 throw new Error('Could not find IIIF data in __INITIAL_STATE__');
@@ -1690,7 +1707,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         }
     }
     
-    async processMorganHTML(html: string, url: string, baseUrl: string, manuscriptId: string, displayName: string, images: ManuscriptImage[]) {
+    async processMorganHTML(html: string, url: string, baseUrl: string, manuscriptId: string, displayName: string, images: ManuscriptImage[]): Promise<{ images: ManuscriptImage[]; displayName: string }> {
         if (url.includes('ica.themorgan.org')) {
             // ICA format - extract image URLs with better pattern matching
             // Look for full image URLs or icaimages paths
@@ -1804,8 +1821,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                                 return `${baseUrl}${facsimileMatch[0]}`;
                             }
                         }
-                    } catch (error) {
-                        console.warn(`[Morgan] Page ${pageNum} fetch failed (non-critical):`, error.message);
+                    } catch (error: unknown) {
+                        const errorMessage = error instanceof Error ? error.message : String(error);
+                        console.warn(`[Morgan] Page ${pageNum} fetch failed (non-critical):`, errorMessage);
                         return null;
                     }
                 });
@@ -1820,9 +1838,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 if (imagesByPriority[1].length === 0) {
                     console.log('[Morgan] No high-res images from individual pages (non-critical, using fallbacks)');
                 }
-            } catch (error) {
+            } catch (error: unknown) {
                 // Non-critical error - continue with other image sources
-                console.warn('[Morgan] Skipping individual page fetching (non-critical):', error.message);
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                console.warn('[Morgan] Skipping individual page fetching (non-critical):', errorMessage);
             }
             
             // Priority 2: Direct full-size images
@@ -1980,10 +1999,11 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             let manifest;
             try {
                 manifest = JSON.parse(manifestText);
-            } catch (parseError) {
-                console.error('[HHU] JSON parse error:', parseError.message);
+            } catch (parseError: unknown) {
+                const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
+                console.error('[HHU] JSON parse error:', errorMessage);
                 console.error('[HHU] Response text (first 500 chars):', manifestText.substring(0, 500));
-                throw new Error(`Failed to parse HHU manifest JSON: ${parseError.message}`);
+                throw new Error(`Failed to parse HHU manifest JSON: ${errorMessage}`);
             }
             
             const images: ManuscriptImage[] = [];
@@ -2044,8 +2064,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 displayName
             };
             
-        } catch (error) {
-            if (error.message.includes('timeout')) {
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            if (errorMessage.includes('timeout')) {
                 throw new Error('HHU server request timed out. Please try again later.');
             }
             throw error;
@@ -2102,8 +2123,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                         console.log(`[GAMS] Successfully extracted ${images.length} images from IIIF manifest`);
                         return images;
                     }
-                } catch (error) {
-                    console.log('[GAMS] IIIF manifest failed:', error.message);
+                } catch (error: unknown) {
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    console.log('[GAMS] IIIF manifest failed:', errorMessage);
                 }
                 
                 // Fallback: return error indicating GAMS TEI format not supported
@@ -2213,9 +2235,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 
                 throw new Error(`GAMS manuscript "${objectId}" requires authentication. This is a protected collection at the University of Graz that requires institutional login. Please try:\n1. Using a public manuscript from unipub.uni-graz.at instead\n2. Accessing the manuscript directly through the GAMS website with your credentials\n3. Contacting the University of Graz library for access permissions`);
                 
-            } catch (error) {
+            } catch (error: unknown) {
                 console.error('[GAMS] Failed to process GAMS manuscript:', error);
-                throw new Error(`Failed to load GAMS manuscript: ${error.message}`);
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                throw new Error(`Failed to load GAMS manuscript: ${errorMessage}`);
             }
         }
         
@@ -2243,7 +2266,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Get manifest for any library
      */
-    async getManifestForLibrary(libraryId: string, url: string) {
+    async getManifestForLibrary(libraryId: string, url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[] | BneViewerInfo> {
         switch (libraryId) {
             case 'bdl':
                 return await this.getBDLManifest(url);
@@ -2370,8 +2393,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                 console.log(`[Florence] Found compound object with ${compoundResult.images.length} pages`);
                                 return compoundResult;
                             }
-                        } catch (compoundError) {
-                            console.log('[Florence] Compound object detection failed:', compoundError.message);
+                        } catch (compoundError: unknown) {
+                            const errorMessage = compoundError instanceof Error ? compoundError.message : String(compoundError);
+                            console.log('[Florence] Compound object detection failed:', errorMessage);
                             // Continue with IIIF result even if compound detection fails
                         }
                     }
@@ -2379,8 +2403,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     return iiifResult;
                 }
             }
-        } catch (manifestError) {
-            console.log('[Florence] IIIF manifest not available:', manifestError.message);
+        } catch (manifestError: unknown) {
+            const errorMessage = manifestError instanceof Error ? manifestError.message : String(manifestError);
+            console.log('[Florence] IIIF manifest not available:', errorMessage);
         }
         
         // Strategy 2: Try ContentDM compound object detection with HTML scraping
@@ -2464,8 +2489,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     return { images };
                 }
             }
-        } catch (htmlError) {
-            console.log('[Florence] HTML scraping failed:', htmlError.message);
+        } catch (htmlError: unknown) {
+            const errorMessage = htmlError instanceof Error ? htmlError.message : String(htmlError);
+            console.log('[Florence] HTML scraping failed:', errorMessage);
         }
         
         // Strategy 3: Fallback to direct IIIF URL with validation
@@ -2492,8 +2518,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             } else {
                 throw new Error(`IIIF URL validation failed: ${headResponse.status}`);
             }
-        } catch (directError) {
-            console.error('[Florence] Direct URL validation failed:', directError.message);
+        } catch (directError: unknown) {
+            const errorMessage = directError instanceof Error ? directError.message : String(directError);
+            console.error('[Florence] Direct URL validation failed:', errorMessage);
         }
         
         // Strategy 4: Last resort - return base URL without validation
@@ -2956,7 +2983,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * Morgan Library Facsimile URL processor - handles direct ASP facsimile pages
      * Supports the pattern: host.themorgan.org/facsimile/m1/default.asp?id=X
      */
-    async processMorganFacsimileUrl(url: string) {
+    async processMorganFacsimileUrl(url: string): Promise<{ images: ManuscriptImage[]; displayName: string }> {
         console.log('[Morgan] Processing facsimile URL:', url);
         
         // Extract ID from URL
@@ -3065,16 +3092,17 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 displayName: `Morgan Library Manuscript ${manuscriptId} (Facsimile)`
             };
             
-        } catch (error) {
-            console.error('[Morgan] Facsimile processing error:', error.message);
-            throw new Error(`Failed to process Morgan facsimile URL: ${error.message}`);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error('[Morgan] Facsimile processing error:', errorMessage);
+            throw new Error(`Failed to process Morgan facsimile URL: ${errorMessage}`);
         }
     }
 
     /**
      * Detect Florence compound object by analyzing page data
      */
-    async detectFlorenceCompoundObject(itemId: string) {
+    async detectFlorenceCompoundObject(itemId: string): Promise<{ images: ManuscriptImage[] }> {
         console.log('[Florence] ULTRA-ENHANCED compound object detection for item:', itemId);
         
         const pageUrl = `https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/${itemId}`;
@@ -3146,8 +3174,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         }
                     }
                 }
-            } catch (parentError) {
-                console.log('[Florence] Failed to fetch parent page:', parentError.message);
+            } catch (parentError: unknown) {
+                const errorMessage = parentError instanceof Error ? parentError.message : String(parentError);
+                console.log('[Florence] Failed to fetch parent page:', errorMessage);
             }
         } else {
             // Fallback: look for children directly in current page
@@ -3362,7 +3391,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Discover the actual page range for a Bordeaux manuscript by testing tile availability
      */
-    async discoverBordeauxPageRange(baseId: number) {
+    async discoverBordeauxPageRange(baseId: number): Promise<{ firstPage: number | null; lastPage: number | null; totalPages: number; availablePages: number[] }> {
         console.log(`[Bordeaux] Discovering page range for baseId: ${baseId}`);
         
         const baseUrl = 'https://selene.bordeaux.fr/in/dz';
@@ -3534,13 +3563,15 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                     console.log('[Bordeaux] Found internal tile ID:', internalId);
                                 }
                             }
-                        } catch (error) {
-                            console.log('[Bordeaux] Could not fetch iframe content:', error.message);
+                        } catch (error: unknown) {
+                            const errorMessage = error instanceof Error ? error.message : String(error);
+                            console.log('[Bordeaux] Could not fetch iframe content:', errorMessage);
                         }
                     }
                 }
-            } catch (error) {
-                console.log('[Bordeaux] Could not fetch main page:', error.message);
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                console.log('[Bordeaux] Could not fetch main page:', errorMessage);
             }
         }
         
@@ -3640,7 +3671,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Parse Bordeaux IIIF manifest if available
      */
-    async parseBordeauxIIIFManifest(manifest: IIIFManifest, manuscriptId: string) {
+    async parseBordeauxIIIFManifest(manifest: IIIFManifest, manuscriptId: string): Promise<{ images: ManuscriptImage[]; displayName: string }> {
         const images: ManuscriptImage[] = [];
         
         if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
@@ -3767,7 +3798,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * Discover all blocks for an e-manuscripta manuscript
      * Many e-manuscripta manuscripts are split into multiple blocks with sequential IDs
      */
-    async discoverEManuscriptaBlocks(baseManuscriptId: string, library: string) {
+    async discoverEManuscriptaBlocks(baseManuscriptId: string, library: string): Promise<{ blocks: number[]; totalPages: number; baseId: number }> {
         console.log(`[e-manuscripta] ULTRA-OPTIMIZED Discovery for manuscript ${baseManuscriptId} in library ${library}`);
         
         // Enhanced logging for debugging
@@ -3864,7 +3895,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                             foundWithPattern = true;
                             console.log(`[e-manuscripta] Found block with pattern +${pattern}: ${testId}`);
                         }
-                    } catch (error) {
+                    } catch (error: unknown) {
                         // Ignore errors
                     }
                     
@@ -3886,7 +3917,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                             } else if (response.status === 404) {
                                 break; // End of manuscript
                             }
-                        } catch (error) {
+                        } catch (error: unknown) {
                             // Continue
                         }
                         
@@ -3935,7 +3966,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                 } else if (testResponse.status === 404) {
                                     break; // End of this series
                                 }
-                            } catch (error) {
+                            } catch (error: unknown) {
                                 break;
                             }
                         }
@@ -3956,7 +3987,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                 } else if (testResponse.status === 404) {
                                     break; // Start of this series
                                 }
-                            } catch (error) {
+                            } catch (error: unknown) {
                                 break;
                             }
                         }
@@ -3965,7 +3996,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         console.log(`[e-manuscripta] Added ${discoveredBlocks.size - 1} blocks based on multi-series pattern`);
                         break; // Found a multi-series pattern, that's enough
                     }
-                } catch (error) {
+                } catch (error: unknown) {
                     // Continue with next offset
                 }
             }
@@ -4099,7 +4130,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                             console.log(`[e-manuscripta] Found missing technical block 5157615`);
                             technicalBlocks.push(5157615);
                         }
-                    } catch (e) {
+                    } catch (e: unknown) {
                         // Ignore if not found
                     }
                 }

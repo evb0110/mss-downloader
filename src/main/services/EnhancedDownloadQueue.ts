@@ -276,13 +276,15 @@ export class EnhancedDownloadQueue extends EventEmitter {
             details: { itemId: item.id, displayName: item.displayName }
         });
         
+        // Define loadingStartTime before try block so it's available in catch
+        const loadingStartTime = Date.now();
+        
         try {
             // Set status to loading before manifest loading starts
             item.status = 'loading';
             this.notifyListeners();
             
             let hasShownProgress = false;
-            const loadingStartTime = Date.now();
             
             // Create progress callback that updates the item
             const progressCallback = (current: number, total: number, _message?: string) => {
