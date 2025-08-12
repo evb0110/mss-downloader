@@ -1837,7 +1837,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             
             // ULTRA-PRIORITY FIX for Issue #4: Enhanced image selection
             // If we don't have enough high-priority images, generate thumbnail URLs as fallback
-            let selectedImages = false;
+            const selectedImages = false;
             
             // First try to use high-priority images
             for (let priority = 0; priority <= 5; priority++) {
@@ -3169,8 +3169,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             const currentId = parseInt(itemId);
             
             // Find the starting ID - usually it's lower than the current ID
-            let startId = Math.min(parentId, currentId) + 1; // Start from parent + 1
-            let maxPages = 300; // Reasonable limit for a manuscript
+            const startId = Math.min(parentId, currentId) + 1; // Start from parent + 1
+            const maxPages = 300; // Reasonable limit for a manuscript
             
             console.log(`[Florence] Generating URLs from ${startId} for up to ${maxPages} pages`);
             
@@ -3567,7 +3567,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const pageDiscovery = await this.discoverBordeauxPageRange(baseId);
         
         let startPage = pageNum || pageDiscovery.firstPage || 1;
-        let pageCount = pageDiscovery.totalPages;
+        const pageCount = pageDiscovery.totalPages;
         
         // If user specified a specific page, respect it but use discovered total count
         if (pageNum && pageDiscovery.totalPages > 0) {
@@ -4486,7 +4486,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     const canvas = sequence.canvases[i];
                     
                     // Extract page label
-                    let pageLabel = canvas.label || `Page ${i + 1}`;
+                    const pageLabel = canvas.label || `Page ${i + 1}`;
                     
                     if (canvas.images && canvas.images[0]) {
                         const image = canvas.images[0];

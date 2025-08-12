@@ -1,17 +1,9 @@
-#!/usr/bin/env bun
-
 // Windows code signing configuration
 import { execSync } from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import path from 'path';
 
-interface BuildContext {
-  electronPlatformName: string;
-  appOutDir: string;
-  [key: string]: any;
-}
-
-export default async function signWindows(context: BuildContext): Promise<void> {
+export default async function signWindows(context) {
   const { electronPlatformName, appOutDir } = context;
   if (electronPlatformName !== 'win32') return;
   
@@ -25,15 +17,15 @@ export default async function signWindows(context: BuildContext): Promise<void> 
   try {
     await createSelfSignedCertificate();
     console.log('✅ Using self-signed certificate for development builds');
-  } catch (error: any) {
+  } catch (error) {
     console.log('⚠️  Building without code signature. This may trigger Windows SmartScreen warnings.');
     console.log('   Users will need to click "More info" > "Run anyway" to bypass the warning.');
     console.log('   To eliminate warnings, consider purchasing a code signing certificate.');
   }
 }
 
-async function createSelfSignedCertificate(): Promise<void> {
-  const certPath: string = path.join(process.cwd(), 'dev-cert.p12');
+async function createSelfSignedCertificate() {
+  const certPath = path.join(process.cwd(), 'dev-cert.p12');
   
   // Skip if certificate already exists
   if (fs.existsSync(certPath)) {
@@ -44,7 +36,7 @@ async function createSelfSignedCertificate(): Promise<void> {
   
   // Check if we have PowerShell available for certificate creation
   try {
-    const powershellScript: string = `
+    const powershellScript = `
 $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=Abba Ababus Manuscripts" -KeyAlgorithm RSA -KeyLength 2048 -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider" -KeyExportPolicy Exportable -KeyUsage DigitalSignature -CertStoreLocation Cert:\\CurrentUser\\My
 $password = ConvertTo-SecureString -String "dev123" -Force -AsPlainText
 Export-PfxCertificate -cert "Cert:\\CurrentUser\\My\\$($cert.Thumbprint)" -FilePath "${certPath}" -Password $password
@@ -60,7 +52,7 @@ Export-PfxCertificate -cert "Cert:\\CurrentUser\\My\\$($cert.Thumbprint)" -FileP
         console.log('✅ Self-signed certificate created for development');
       }
     }
-  } catch (error: any) {
+  } catch (error) {
     // Fallback: just inform about the issue
     throw new Error('Cannot create self-signed certificate');
   }

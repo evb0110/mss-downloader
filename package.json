@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.163",
+  "version": "1.4.164",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (63+ libraries worldwide)",
   "changelog": [
-    "v1.4.163: Complete TypeScript migration - entire codebase now in TypeScript",
-    "Converted all JavaScript files to TypeScript with proper type safety",
-    "SharedManifestLoaders fully typed with comprehensive interfaces",
-    "Build scripts properly configured (esbuild stays JS as required)",
-    "All telegram-bot, devkit, and test scripts now TypeScript"
+    "v1.4.164: Fixed build - sign-windows must stay as JavaScript",
+    "Electron-builder requires JavaScript for sign scripts, not TypeScript",
+    "All other conversions successful - codebase 99% TypeScript",
+    "Build scripts properly maintained (esbuild.js, sign-windows.js)",
+    "SharedManifestLoaders and all app code fully typed"
   ],
   "main": "dist/main/main.js",
   "scripts": {
@@ -152,7 +152,7 @@
       "publisherName": "Abba Ababus Manuscripts",
       "verifyUpdateCodeSignature": false,
       "requestedExecutionLevel": "asInvoker",
-      "sign": "./sign-windows.ts"
+      "sign": "./sign-windows.js"
     },
     "mac": {
       "target": "dmg",
