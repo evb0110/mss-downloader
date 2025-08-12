@@ -83,6 +83,101 @@ import type { TLibrary } from '../../shared/queueTypes';
 
 const MIN_VALID_IMAGE_SIZE_BYTES = 1024; // 1KB heuristic
 
+interface FileTypeInfo {
+    extension: string;
+    mimeType: string;
+    isImage: boolean;
+}
+
+interface DownloadResult {
+    buffer: ArrayBuffer;
+    fileType: FileTypeInfo;
+}
+
+/**
+ * Detects file type from content-type header and/or buffer content
+ * Returns appropriate file extension and metadata
+ */
+function detectFileType(contentType: string | null, buffer: ArrayBuffer): FileTypeInfo {
+    // First, try to detect from content-type header
+    if (contentType) {
+        const normalizedType = contentType.toLowerCase().trim();
+        
+        // PDF files
+        if (normalizedType.includes('application/pdf') || normalizedType.includes('pdf')) {
+            return { extension: 'pdf', mimeType: 'application/pdf', isImage: false };
+        }
+        
+        // Image files from content-type
+        if (normalizedType.includes('image/jpeg') || normalizedType.includes('jpeg')) {
+            return { extension: 'jpg', mimeType: 'image/jpeg', isImage: true };
+        }
+        if (normalizedType.includes('image/png') || normalizedType.includes('png')) {
+            return { extension: 'png', mimeType: 'image/png', isImage: true };
+        }
+        if (normalizedType.includes('image/tiff') || normalizedType.includes('tiff')) {
+            return { extension: 'tiff', mimeType: 'image/tiff', isImage: true };
+        }
+        if (normalizedType.includes('image/gif') || normalizedType.includes('gif')) {
+            return { extension: 'gif', mimeType: 'image/gif', isImage: true };
+        }
+        if (normalizedType.includes('image/webp') || normalizedType.includes('webp')) {
+            return { extension: 'webp', mimeType: 'image/webp', isImage: true };
+        }
+        if (normalizedType.includes('image/')) {
+            // Generic image type - default to jpg
+            return { extension: 'jpg', mimeType: 'image/jpeg', isImage: true };
+        }
+    }
+    
+    // Fallback: detect from buffer content (magic numbers)
+    const uint8Array = new Uint8Array(buffer);
+    if (uint8Array.length >= 4) {
+        // PDF magic number: %PDF
+        if (uint8Array[0] === 0x25 && uint8Array[1] === 0x50 && 
+            uint8Array[2] === 0x44 && uint8Array[3] === 0x46) {
+            return { extension: 'pdf', mimeType: 'application/pdf', isImage: false };
+        }
+        
+        // JPEG magic number: FF D8 FF
+        if (uint8Array[0] === 0xFF && uint8Array[1] === 0xD8 && uint8Array[2] === 0xFF) {
+            return { extension: 'jpg', mimeType: 'image/jpeg', isImage: true };
+        }
+        
+        // PNG magic number: 89 50 4E 47
+        if (uint8Array[0] === 0x89 && uint8Array[1] === 0x50 && 
+            uint8Array[2] === 0x4E && uint8Array[3] === 0x47) {
+            return { extension: 'png', mimeType: 'image/png', isImage: true };
+        }
+        
+        // TIFF magic numbers: II 2A 00 (little endian) or MM 00 2A (big endian)
+        if ((uint8Array[0] === 0x49 && uint8Array[1] === 0x49 && 
+             uint8Array[2] === 0x2A && uint8Array[3] === 0x00) ||
+            (uint8Array[0] === 0x4D && uint8Array[1] === 0x4D && 
+             uint8Array[2] === 0x00 && uint8Array[3] === 0x2A)) {
+            return { extension: 'tiff', mimeType: 'image/tiff', isImage: true };
+        }
+        
+        // GIF magic number: GIF87a or GIF89a
+        if (uint8Array[0] === 0x47 && uint8Array[1] === 0x49 && uint8Array[2] === 0x46) {
+            return { extension: 'gif', mimeType: 'image/gif', isImage: true };
+        }
+    }
+    
+    // Check for WebP magic number (need at least 12 bytes): RIFF....WEBP
+    if (uint8Array.length >= 12) {
+        if (uint8Array[0] === 0x52 && uint8Array[1] === 0x49 && 
+            uint8Array[2] === 0x46 && uint8Array[3] === 0x46 &&
+            uint8Array[8] === 0x57 && uint8Array[9] === 0x45 && 
+            uint8Array[10] === 0x42 && uint8Array[11] === 0x50) {
+            return { extension: 'webp', mimeType: 'image/webp', isImage: true };
+        }
+    }
+    
+    // Default fallback: assume JPEG image
+    return { extension: 'jpg', mimeType: 'image/jpeg', isImage: true };
+}
+
 export class EnhancedManuscriptDownloaderService {
     private manifestCache: ManifestCache;
     private zifProcessor: ZifImageProcessor;
@@ -1070,6 +1165,18 @@ export class EnhancedManuscriptDownloaderService {
             };
         }
 
+        // Special headers for BNE to ensure PDF downloads work properly
+        if (url.includes('bdh-rd.bne.es')) {
+            headers = {
+                ...headers,
+                'Referer': 'https://bdh-rd.bne.es/',
+                'Accept': 'application/pdf,*/*',
+                'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive'
+            };
+        }
+
         // Special headers for Rouen Municipal Library to ensure session management
         if (url.includes('rotomagus.fr')) {
             // Extract manuscript ID and page number for proper referer
@@ -1108,10 +1215,11 @@ export class EnhancedManuscriptDownloaderService {
                 headers
             };
 
-            // Verona, Grenoble, Graz, MDC Catalonia, and Florence domains benefit from full HTTPS module bypass for better reliability
+            // Verona, Grenoble, Graz, MDC Catalonia, Florence, and BNE domains benefit from full HTTPS module bypass for better reliability
             if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') ||
                 url.includes('pagella.bm-grenoble.fr') || url.includes('unipub.uni-graz.at') ||
-                url.includes('mdc.csuc.cat') || url.includes('cdm21059.contentdm.oclc.org')) {
+                url.includes('mdc.csuc.cat') || url.includes('cdm21059.contentdm.oclc.org') ||
+                url.includes('bdh-rd.bne.es')) {
                 try {
                     const response = await this.fetchWithHTTPS(url, { ...fetchOptions, timeout });
                     if (timeoutId) clearTimeout(timeoutId);
@@ -1131,16 +1239,6 @@ export class EnhancedManuscriptDownloaderService {
                         }
                     }
                     throw httpsError;
-                }
-            }
-
-            // BNE domains use SSL bypass approach
-            if (url.includes('bdh-rd.bne.es')) {
-                if (typeof process !== 'undefined' && process.versions?.node) {
-                    const { Agent } = await import('https');
-                    fetchOptions.agent = new Agent({
-                        rejectUnauthorized: false
-                    });
                 }
             }
 
@@ -1809,7 +1907,7 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('berlin', originalUrl);
                     break;
                 case 'bne':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('bne', originalUrl);
+                    manifest = await this.loadBneManifest(originalUrl);
                     break;
                 case 'vatican':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('vatican', originalUrl);
@@ -1928,7 +2026,7 @@ export class EnhancedManuscriptDownloaderService {
     /**
      * Download image with retries and proxy fallback
      */
-    async downloadImageWithRetries(url: string, attempt = 0): Promise<ArrayBuffer> {
+    async downloadImageWithRetries(url: string, attempt = 0): Promise<DownloadResult> {
         const startTime = Date.now();
         const library = this.detectLibrary(url) as TLibrary;
 
@@ -2010,7 +2108,9 @@ export class EnhancedManuscriptDownloaderService {
             }
 
             console.log(`✅ [BDL Ultra] FINAL SUCCESS: Downloaded ${validBuffer.length} bytes after ${ultraAttempt} attempts`);
-            return validBuffer;
+            // Detect file type for BDL ultra service results
+            const fileType = detectFileType(null, validBuffer); // BDL typically returns images, but detect anyway
+            return { buffer: validBuffer, fileType };
         }
 
         // Only log on first attempt to avoid duplicates with fetchDirect
@@ -2185,7 +2285,23 @@ export class EnhancedManuscriptDownloaderService {
                 await this.validateInternetCulturaleImage(buffer, url);
             }
 
-            return buffer;
+            // Detect file type from response headers and buffer content
+            const contentType = response.headers.get('content-type');
+            const fileType = detectFileType(contentType, buffer);
+            
+            this.logger.log({
+                level: 'debug',
+                library: library || 'unknown',
+                url,
+                message: `File type detected: ${fileType.extension} (${fileType.mimeType})`,
+                details: { 
+                    detectedExtension: fileType.extension, 
+                    isImage: fileType.isImage, 
+                    contentTypeHeader: contentType 
+                }
+            });
+
+            return { buffer, fileType };
 
         } catch (error: any) {
             const elapsed = Date.now() - startTime;
@@ -2771,34 +2887,48 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
 
-                const imgFile = `${sanitizedName}_page_${pageIndex + 1}.jpg`;
-                const imgPath = path.join(tempImagesDir, imgFile);
-
                 try {
-                    // Skip if already downloaded
-                    await fs.access(imgPath);
-                    // Mark path for skipped file
-                    imagePaths[pageIndex] = imgPath;
-                    completedPages++; // Count cached files as completed
-                } catch {
-                    // Not present: fetch and write
+                    // Download first to determine actual file type
+                    const downloadResult = await this.downloadImageWithRetries(imageUrl);
+                    const { buffer, fileType } = downloadResult;
+                    
+                    // Create filename with correct extension based on detected file type
+                    const imgFile = `${sanitizedName}_page_${pageIndex + 1}.${fileType.extension}`;
+                    const imgPath = path.join(tempImagesDir, imgFile);
+                    
+                    // Check if file with correct extension already exists
+                    let fileExists = false;
                     try {
-                        // All BDL downloads now go through ultra-reliable service via downloadImageWithRetries
-                        const imageData = await this.downloadImageWithRetries(imageUrl);
-                        const writePromise = fs.writeFile(imgPath, Buffer.from(imageData));
+                        await fs.access(imgPath);
+                        fileExists = true;
+                    } catch {
+                        // File doesn't exist, we'll write it
+                        fileExists = false;
+                    }
+                    
+                    if (fileExists) {
+                        // File already exists with correct extension - mark path for skipped file
+                        imagePaths[pageIndex] = imgPath;
+                        completedPages++; // Count cached files as completed
+                        console.log(`📋 Skipped existing file: ${imgFile} (${fileType.extension.toUpperCase()})`);
+                    } else {
+                        // Write the file with detected extension
+                        const writePromise = fs.writeFile(imgPath, Buffer.from(buffer));
                         writePromises.push(writePromise);
-                        // Only mark path if download succeeded
+                        
                         // Store in array using relative index for proper array management
                         const relativeIndex = pageIndex - (actualStartPage - 1);
                         imagePaths[relativeIndex] = imgPath;
                         completedPages++; // Only increment on successful download
-                    } catch (error: any) {
-                        console.error(`\n❌ Failed to download page ${pageIndex + 1}: ${(error as Error).message}`);
-                        // Track failed page
-                        failedPages.push(pageIndex + 1);
-                        // Don't mark path for failed downloads
-                        // Don't increment completedPages for failures
+                        
+                        console.log(`💾 Downloaded: ${imgFile} (${fileType.extension.toUpperCase()}, ${fileType.mimeType})`);
                     }
+                } catch (error: any) {
+                    console.error(`\n❌ Failed to download page ${pageIndex + 1}: ${(error as Error).message}`);
+                    // Track failed page
+                    failedPages.push(pageIndex + 1);
+                    // Don't mark path for failed downloads
+                    // Don't increment completedPages for failures
                 }
                 updateProgress();
             };
@@ -2923,7 +3053,12 @@ export class EnhancedManuscriptDownloaderService {
 
                     const partStartPage = actualStartPage + startIdx;
                     try {
-                        await this.convertImagesToPDFWithBlanks(partImages, partFilepath, partStartPage, manifest);
+                        // BNE provides PDFs, not images - use PDF merger instead
+                        if (manifest?.library === 'bne') {
+                            await this.mergePDFPages(partImages, partFilepath, partStartPage, manifest);
+                        } else {
+                            await this.convertImagesToPDFWithBlanks(partImages, partFilepath, partStartPage, manifest);
+                        }
                         createdFiles.push(partFilepath);
                     } catch (pdfError: any) {
                         console.error(`Failed to create PDF part ${partNumber}: ${pdfError.message}`);
@@ -2967,7 +3102,12 @@ export class EnhancedManuscriptDownloaderService {
             } else {
                 // Single PDF
                 try {
-                    await this.convertImagesToPDFWithBlanks(completeImagePaths, filepath, actualStartPage, manifest);
+                    // BNE provides PDFs, not images - use PDF merger instead
+                    if (manifest?.library === 'bne') {
+                        await this.mergePDFPages(completeImagePaths, filepath, actualStartPage, manifest);
+                    } else {
+                        await this.convertImagesToPDFWithBlanks(completeImagePaths, filepath, actualStartPage, manifest);
+                    }
                 } catch (pdfError: any) {
                     console.error(`Failed to create PDF: ${pdfError.message}`);
                     this.logger.logPdfCreationError(manifest.library || 'unknown', pdfError, {
@@ -3587,6 +3727,148 @@ export class EnhancedManuscriptDownloaderService {
             stats.size,
             duration
         );
+    }
+
+    /**
+     * Merge PDF pages for libraries that provide PDFs instead of images (like BNE)
+     */
+    async mergePDFPages(pdfPaths: (string | null)[], outputPath: string, startPageNumber: number = 1, manifest?: any): Promise<void> {
+        const startTime = Date.now();
+        const totalPages = pdfPaths.length;
+
+        // Log PDF merge start
+        this.logger.log({
+            level: 'info',
+            library: manifest?.library || 'unknown',
+            message: `Starting PDF merge with ${totalPages} PDF pages`,
+            details: { totalPages, outputPath, startPageNumber }
+        });
+
+        try {
+            const finalPdfDoc = await PDFDocument.create();
+            finalPdfDoc.setTitle(manifest?.displayName || 'Merged Manuscript');
+            finalPdfDoc.setAuthor('Manuscript Downloader');
+            finalPdfDoc.setSubject('Downloaded manuscript');
+            finalPdfDoc.setCreator('Electron Manuscript Downloader');
+
+            let processedCount = 0;
+            let skippedCount = 0;
+
+            for (let i = 0; i < pdfPaths.length; i++) {
+                const pdfPath = pdfPaths[i];
+                const pageNumber = startPageNumber + i;
+
+                if (pdfPath === null) {
+                    // Create blank page for missing PDF
+                    const page = finalPdfDoc.addPage([595, 842]); // A4 size
+                    const { height } = page.getSize();
+
+                    page.drawText(`Page ${pageNumber} - Download Failed`, {
+                        x: 50,
+                        y: height - 100,
+                        size: 18,
+                        color: rgb(0.6, 0.2, 0.2),
+                    });
+
+                    page.drawText('This page could not be downloaded after multiple attempts.', {
+                        x: 50,
+                        y: height - 140,
+                        size: 12,
+                        color: rgb(0.4, 0.4, 0.4),
+                    });
+
+                    skippedCount++;
+                    processedCount++;
+                    continue;
+                }
+
+                try {
+                    // Read PDF file and merge its pages
+                    const pdfBuffer = await fs.readFile(pdfPath);
+                    
+                    // Check if it's actually a PDF
+                    const header = pdfBuffer.slice(0, 5).toString();
+                    if (header !== '%PDF-') {
+                        console.error(`File ${pdfPath} is not a valid PDF (header: ${header})`);
+                        
+                        // Create error page
+                        const page = finalPdfDoc.addPage([595, 842]);
+                        const { height } = page.getSize();
+
+                        page.drawText(`Page ${pageNumber} - Invalid PDF`, {
+                            x: 50,
+                            y: height - 100,
+                            size: 18,
+                            color: rgb(0.6, 0.2, 0.2),
+                        });
+
+                        page.drawText('Downloaded file is not a valid PDF document.', {
+                            x: 50,
+                            y: height - 140,
+                            size: 12,
+                            color: rgb(0.4, 0.4, 0.4),
+                        });
+
+                        skippedCount++;
+                        processedCount++;
+                        continue;
+                    }
+
+                    const sourcePdfDoc = await PDFDocument.load(pdfBuffer);
+                    const pageIndices = sourcePdfDoc.getPageIndices();
+                    const copiedPages = await finalPdfDoc.copyPages(sourcePdfDoc, pageIndices);
+                    
+                    copiedPages.forEach((page) => finalPdfDoc.addPage(page));
+                    processedCount++;
+
+                } catch (error: any) {
+                    console.error(`Failed to merge PDF page ${pageNumber}: ${error.message}`);
+                    
+                    // Create error page
+                    const page = finalPdfDoc.addPage([595, 842]);
+                    const { height } = page.getSize();
+
+                    page.drawText(`Page ${pageNumber} - Merge Error`, {
+                        x: 50,
+                        y: height - 100,
+                        size: 18,
+                        color: rgb(0.6, 0.2, 0.2),
+                    });
+
+                    page.drawText(`Error: ${error.message}`, {
+                        x: 50,
+                        y: height - 140,
+                        size: 12,
+                        color: rgb(0.4, 0.4, 0.4),
+                    });
+
+                    skippedCount++;
+                    processedCount++;
+                }
+            }
+
+            // Save the final merged PDF
+            const pdfBytes = await finalPdfDoc.save();
+            await fs.writeFile(outputPath, pdfBytes);
+
+            const stats = await fs.stat(outputPath);
+            const duration = Date.now() - startTime;
+
+            console.log(`✅ Successfully merged ${processedCount - skippedCount} PDF pages (${skippedCount} failed) in ${duration}ms`);
+            console.log(`   Output: ${outputPath} (${(stats.size / 1024 / 1024).toFixed(2)} MB)`);
+
+            // Log successful PDF creation
+            this.logger.logPdfCreationComplete(
+                manifest?.library || 'unknown',
+                outputPath,
+                stats.size,
+                duration
+            );
+
+        } catch (error: any) {
+            console.error(`Failed to merge PDFs: ${error.message}`);
+            throw new Error(`PDF merge failed: ${error.message}`);
+        }
     }
 
     private async extractFlorusImageUrls(html: string, cote: string, currentVue: number): Promise<string[]> {
@@ -4373,5 +4655,13 @@ export class EnhancedManuscriptDownloaderService {
             return loader.loadManifest(url);
         }
         throw new Error('DIAMM loader not available');
+    }
+
+    private async loadBneManifest(url: string): Promise<ManuscriptManifest> {
+        const loader = this.libraryLoaders.get('bne');
+        if (loader) {
+            return loader.loadManifest(url);
+        }
+        throw new Error('BNE loader not available');
     }
 }
