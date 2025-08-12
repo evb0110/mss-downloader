@@ -8,7 +8,7 @@ import { DownloadLogger } from './DownloadLogger';
 
 // Dynamic import for Node.js module in TypeScript
 const loadSharedManifestLoaders = async () => {
-    const { SharedManifestLoaders } = await import('../../shared/SharedManifestLoaders.js');
+    const { SharedManifestLoaders } = await import('../../shared/SharedManifestLoaders');
     return SharedManifestLoaders;
 };
 
