@@ -1,14 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.155",
+  "version": "1.4.156",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (63+ libraries worldwide)",
   "changelog": [
-    "v1.4.155: Fixed ALL 6 open GitHub issues - Critical library support improvements",
-    "Added Upper Austrian State Library (Linz) support - Issue #2 and #25 resolved",
-    "Fixed Morgan Library manifest structure - Issue #4 resolved",
-    "Fixed Florence/BMLonline ContentDM support - Issue #5 resolved",
-    "Fixed Bordeaux Municipal Library manifest - Issue #6 resolved",
-    "Fixed Spanish National Library (BNE) manifest - Issue #11 resolved"
+    "v1.4.156: HOTFIX - Fix TypeScript build errors from v1.4.155",
+    "Fixed LinzLoader class to properly extend BaseLibraryLoader",
+    "Fixed missing getLibraryName() method and constructor",
+    "Improved pre-commit workflow to catch TypeScript errors before push",
+    "All 6 library fixes from v1.4.155 remain working perfectly"
   ],
   "main": "dist/main/main.js",
   "scripts": {

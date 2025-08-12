@@ -1,7 +1,15 @@
-import { LibraryLoader } from './LibraryLoader';
-import { ManuscriptManifest } from './types';
+import { BaseLibraryLoader, type LoaderDependencies } from './types';
+import type { ManuscriptManifest } from '../../../shared/types';
 
-export class LinzLoader extends LibraryLoader {
+export class LinzLoader extends BaseLibraryLoader {
+    constructor(deps: LoaderDependencies) {
+        super(deps);
+    }
+    
+    getLibraryName(): string {
+        return 'linz';
+    }
+    
     async loadManifest(url: string): Promise<ManuscriptManifest> {
         console.log('[LinzLoader] Processing URL:', url);
         

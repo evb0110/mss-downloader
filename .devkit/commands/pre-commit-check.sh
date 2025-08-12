@@ -27,11 +27,19 @@ ALL_CHECKS_PASSED=true
 
 # 1. Type Check
 echo -e "\n📋 Type Checking..."
-if npx tsc --noEmit 2>/dev/null; then
+# Run type check and capture errors
+TSC_OUTPUT=$(npx tsc --noEmit 2>&1)
+TSC_EXIT_CODE=$?
+
+if [ $TSC_EXIT_CODE -eq 0 ]; then
     print_status 0 "Type check passed"
 else
     print_status 1 "Type check failed"
-    echo "   Run 'npm run typecheck:report' for details"
+    # Show first 10 errors
+    echo "$TSC_OUTPUT" | head -20
+    echo "   ..."
+    echo "   Total errors: $(echo "$TSC_OUTPUT" | grep -c 'error TS')"
+    echo "   Run 'npm run typecheck' for full details"
     ALL_CHECKS_PASSED=false
 fi
 

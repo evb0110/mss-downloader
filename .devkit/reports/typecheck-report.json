@@ -1,6 +1,6 @@
 {
-  "timestamp": "2025-08-11T14:32:38.336Z",
-  "totalErrors": 115,
+  "timestamp": "2025-08-11T22:34:58.304Z",
+  "totalErrors": 114,
   "categories": {
     "implicitAny": {
       "count": 0,
@@ -170,7 +170,7 @@
       "errors": [
         {
           "file": "src/main/main.ts",
-          "line": 1332,
+          "line": 1250,
           "column": 65,
           "code": "TS2554",
           "message": "Expected 0-1 arguments, but got 3.",
@@ -257,17 +257,9 @@
       ]
     },
     "other": {
-      "count": 27,
+      "count": 26,
       "percentage": "100.0%",
       "errors": [
-        {
-          "file": "src/main/main.ts",
-          "line": 321,
-          "column": 48,
-          "code": "TS18046",
-          "message": "'error' is of type 'unknown'.",
-          "severity": "error"
-        },
         {
           "file": "src/main/services/BDLParallelDownloader.ts",
           "line": 100,
@@ -296,6 +288,14 @@
           "file": "src/main/services/DirectTileProcessor.ts",
           "line": 231,
           "column": 102,
+          "code": "TS18046",
+          "message": "'error' is of type 'unknown'.",
+          "severity": "error"
+        },
+        {
+          "file": "src/main/services/DirectTileProcessor.ts",
+          "line": 294,
+          "column": 101,
           "code": "TS18046",
           "message": "'error' is of type 'unknown'.",
           "severity": "error"
@@ -348,15 +348,7 @@
   "allErrors": [
     {
       "file": "src/main/main.ts",
-      "line": 321,
-      "column": 48,
-      "code": "TS18046",
-      "message": "'error' is of type 'unknown'.",
-      "severity": "error"
-    },
-    {
-      "file": "src/main/main.ts",
-      "line": 1332,
+      "line": 1250,
       "column": 65,
       "code": "TS2554",
       "message": "Expected 0-1 arguments, but got 3.",
