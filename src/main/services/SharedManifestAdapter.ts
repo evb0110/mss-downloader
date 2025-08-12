@@ -6,8 +6,17 @@
 import type { ManuscriptManifest } from '../../shared/types';
 import { DownloadLogger } from './DownloadLogger';
 
-// Import TypeScript version
-import { SharedManifestLoaders } from '../../shared/SharedManifestLoaders';
+// Dynamic import for TypeScript module
+const loadSharedManifestLoaders = async () => {
+    // Try .ts first for development, fall back to .js for production
+    try {
+        const module = await import('../../shared/SharedManifestLoaders.ts');
+        return module.SharedManifestLoaders;
+    } catch (e) {
+        const module = await import('../../shared/SharedManifestLoaders.js');
+        return module.SharedManifestLoaders;
+    }
+};
 
 export class SharedManifestAdapter {
     private sharedLoaders: any;
@@ -19,6 +28,7 @@ export class SharedManifestAdapter {
 
     private async initializeSharedLoaders() {
         if (!this.sharedLoaders) {
+            const SharedManifestLoaders = await loadSharedManifestLoaders();
             this.sharedLoaders = new SharedManifestLoaders(this.electronFetch);
         }
     }

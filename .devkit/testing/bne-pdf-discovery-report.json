@@ -1,0 +1,134 @@
+[
+  {
+    "id": "0000007619",
+    "name": "Original Example",
+    "pagesFound": [
+      {
+        "page": 1,
+        "contentLength": 211995,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 2,
+        "contentLength": 487073,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 3,
+        "contentLength": 494150,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 4,
+        "contentLength": 171324,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 5,
+        "contentLength": 149172,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 10,
+        "contentLength": 295552,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 20,
+        "contentLength": 281522,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 50,
+        "contentLength": 319128,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 100,
+        "contentLength": 356558,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 200,
+        "contentLength": 425433,
+        "contentType": "application/pdf"
+      }
+    ],
+    "urlPattern": "https://bdh-rd.bne.es/pdf.raw?query=id:%220000007619%22&page={PAGE}&view=main&lang=es",
+    "errors": [],
+    "pdfValidated": true
+  },
+  {
+    "id": "0000001234",
+    "name": "Test MS 1234",
+    "pagesFound": [
+      {
+        "page": 1,
+        "contentLength": 1185894,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 2,
+        "contentLength": 657141,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 3,
+        "contentLength": 675050,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 4,
+        "contentLength": 681331,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 5,
+        "contentLength": 748891,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 10,
+        "contentLength": 924416,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 20,
+        "contentLength": 934527,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 50,
+        "contentLength": 881973,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 100,
+        "contentLength": 950504,
+        "contentType": "application/pdf"
+      },
+      {
+        "page": 200,
+        "contentLength": 925134,
+        "contentType": "application/pdf"
+      }
+    ],
+    "urlPattern": "https://bdh-rd.bne.es/pdf.raw?query=id:%220000001234%22&page={PAGE}&view=main&lang=es",
+    "errors": [],
+    "pdfValidated": true
+  },
+  {
+    "id": "0000012345",
+    "name": "Test MS 12345",
+    "pagesFound": [],
+    "urlPattern": null,
+    "errors": []
+  },
+  {
+    "id": "0000000001",
+    "name": "Test MS 1",
+    "pagesFound": [],
+    "urlPattern": null,
+    "errors": []
+  }
+]

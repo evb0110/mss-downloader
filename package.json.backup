@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.162",
+  "version": "1.4.157",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (63+ libraries worldwide)",
   "changelog": [
-    "v1.4.162: Fixed all TypeScript errors - builds working again",
-    "Properly typed SharedManifestLoaders with full IIIF support",
-    "Fixed 50+ TypeScript errors preventing compilation",
-    "BNE 8x concurrent downloads fully operational",
-    "All library loaders now type-safe and production-ready"
+    "v1.4.157: HOTFIX - Fix Bordeaux manuscripts stuck on first page",
+    "Fixed Bordeaux loader for manuscripts that start at page 6 instead of page 1",
+    "Added mapping for ARK URL v2b3306361012 to correct manuscript ID",
+    "Enhanced page discovery to detect non-continuous page ranges",
+    "Now properly downloads all 195 pages of Bordeaux manuscript 330636101_MS_0778"
   ],
   "main": "dist/main/main.js",
   "scripts": {
@@ -44,8 +44,6 @@
     "dist:win": "npm run build && electron-builder --win --x64 --arm64",
     "dist:win:x64": "npm run build && electron-builder --win --x64",
     "dist:win:arm": "npm run build && electron-builder --win --arm64",
-    "dist:win:x64:hotfix": "npm run build:unsafe && electron-builder --win --x64",
-    "dist:win:arm:hotfix": "npm run build:unsafe && electron-builder --win --arm64",
     "dist:win:arm:clean": "node scripts/build-arm64-clean.cjs",
     "dist:mac": "npm run build && electron-builder --mac",
     "dist:linux": "npm run build && electron-builder --linux",
@@ -79,7 +77,9 @@
     "vue": "^3.4.38",
     "vue-i18n": "^11.1.3"
   },
-  "optionalDependencies": {},
+  "optionalDependencies": {
+    "canvas": "^3.1.2"
+  },
   "devDependencies": {
     "@playwright/test": "^1.53.0",
     "@types/jimp": "^0.2.1",

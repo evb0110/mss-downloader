@@ -7,9 +7,18 @@
   "scripts": {
     "build": "tsc",
     "start": "npm run build && node dist/bot.js",
+    "start:bun": "bun run src/bot.ts",
+    "start-multiplatform": "bun run src/start-multiplatform-bot.ts",
     "send-build": "npm run build && node dist/send-build.js",
+    "send-build:bun": "bun run src/send-build.ts",
     "send-multiplatform-build": "npm run build && node dist/send-multiplatform-build.js",
+    "send-multiplatform-build:bun": "bun run src/send-multiplatform-build.ts",
+    "debug:bun": "bun run src/debug-bot-issue.ts",
+    "fix:bun": "bun run src/fix-bot-issues.ts",
+    "test-subscribe:bun": "bun run src/test-subscribe-response.ts",
+    "verify-formatting:bun": "bun run src/verify-formatting.ts",
     "dev": "tsc --watch & nodemon --exec \"node dist/bot.js\" --watch dist",
+    "dev:bun": "bun --watch src/bot.ts",
     "test": "npm run build && node --test dist/**/*.test.js",
     "clean": "rm -rf dist"
   },
