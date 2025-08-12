@@ -75,7 +75,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         for (let i = 0; i < retries; i++) {
             try {
                 return await this.fetchUrl(url, options);
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.log(`[SharedManifestLoaders] Attempt ${i + 1}/${retries} failed for ${url}: ${error.message}`);
                 if (error.code) console.log(`[SharedManifestLoaders] Error code: ${error.code}`);
                 
@@ -159,7 +159,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 new URL(actualUrl);
                 console.log(`[URL SANITIZER] Fixed URL: ${actualUrl}`);
                 return actualUrl;
-            } catch (e: any) {
+            } catch (e: unknown) {
                 console.error('[URL SANITIZER] Extracted URL is still invalid:', e.message);
             }
         }
@@ -238,13 +238,13 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                     ok: response.ok,
                     status: response.status,
                     statusText: response.statusText,
-                    headers: response.headers as any,
+                    headers: response.headers,
                     buffer: () => response.arrayBuffer().then(ab => Buffer.from(ab)),
                     text: () => response.text(),
                     json: () => response.json()
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 if (error.name === 'AbortError') {
                     throw new Error(`Request timeout for ${url}`);
                 }
@@ -262,7 +262,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             let urlObj: URL;
             try {
                 urlObj = new URL(url);
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('[SharedManifestLoaders] Invalid URL after sanitization:', url);
                 reject(new Error(`Invalid URL: ${url}. Original error: ${error.message}`));
                 return;
@@ -297,7 +297,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 return;
             }
             
-            const requestOptions: any = {
+            const requestOptions: https.RequestOptions = {
                 hostname: hostname,
                 path: urlObj.pathname + urlObj.search,
                 method: options.method || 'GET',
@@ -321,7 +321,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 }
             }
 
-            const req = https.request(requestOptions, (res: any) => {
+            const req = https.request(requestOptions, (res: http.IncomingMessage) => {
                 if (res.statusCode >= 300 && res.statusCode < 400) {
                     if (res.headers.location) {
                         let redirectUrl: string;
@@ -390,11 +390,11 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 });
             });
 
-            req.on('error', (error: any) => {
+            req.on('error', (error: unknown) => {
                 // CRITICAL FIX: Clean error to prevent URL malformation
                 // Node.js ETIMEDOUT errors contain address/port that can get concatenated with URLs
                 if (error.code === 'ETIMEDOUT') {
-                    const cleanError: any = new Error(`Connection timeout: ${error.message}`);
+                    const cleanError = new Error(`Connection timeout: ${error instanceof Error ? error.message : 'Unknown error'}`);
                     cleanError.code = error.code;
                     cleanError.originalUrl = url;
                     // Store network details separately to prevent concatenation
@@ -445,7 +445,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const response = await this.fetchWithRetry(apiUrl);
         if (!response.ok) throw new Error(`Failed to fetch BDL API: ${response.status}`);
         
-        const data = await response.json() as any[];
+        const data: Array<Record<string, unknown>> = await response.json();
         const images: ManuscriptImage[] = [];
         const seenMediaIds = new Set<string>(); // Track unique media IDs to prevent duplicates
         
@@ -552,7 +552,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * Discover Verona manifest URL from HTML page
      */
-    async discoverVeronaManifestUrl(pageUrl: any, codice: any) {
+    async discoverVeronaManifestUrl(pageUrl: string, codice: string) {
         console.log('[Verona] Attempting to discover manifest URL from page');
         
         try {
@@ -645,7 +645,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * Fetch and parse Verona IIIF manifest with enhanced timeout handling
      */
-    async fetchVeronaIIIFManifest(manifestUrl: any) {
+    async fetchVeronaIIIFManifest(manifestUrl: string) {
         console.log('[Verona] Fetching IIIF manifest from:', manifestUrl);
         
         // Enhanced timeout strategy with multiple layers
@@ -664,10 +664,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             console.log('[Verona] Starting manifest fetch with enhanced timeout handling...');
             
             // Use fetchWithRetry which already has Verona-specific retry logic
-            const response = await Promise.race([
+            const response: FetchResponse = await Promise.race([
                 this.fetchWithRetry(manifestUrl),
                 adaptiveTimeoutPromise
-            ]) as FetchResponse;
+            ]);
             
             if (!response.ok) {
                 if (response.status === 404) {
@@ -992,7 +992,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const response = await this.fetchWithRetry(manifestUrl);
         if (!response.ok) throw new Error(`Failed to fetch Karlsruhe manifest: ${response.status} ${response.statusText}`);
         
-        const manifest = await response.json() as IIIFManifest;
+        const manifest: IIIFManifest = await response.json();
         const images: ManuscriptImage[] = [];
         
         if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
@@ -1029,7 +1029,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const response = await this.fetchWithRetry(manifestUrl);
         if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
         
-        const manifest = await response.json() as IIIFManifest;
+        const manifest: IIIFManifest = await response.json();
         const images: ManuscriptImage[] = [];
         
         if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
@@ -1167,7 +1167,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             if (images.length === 0) {
                 console.log('[Graz] Falling back to JSON parsing...');
                 try {
-                    const manifest = JSON.parse(manifestText) as IIIFManifest;
+                    const manifest: IIIFManifest = JSON.parse(manifestText);
                     if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
                         const canvases = manifest.sequences[0].canvases;
                         console.log(`[Graz] Found ${canvases.length} pages in manifest`);
@@ -1295,7 +1295,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 throw new Error(`Failed to fetch Linz manifest: ${response.status}`);
             }
             
-            const manifest = await response.json() as IIIFManifest;
+            const manifest: IIIFManifest = await response.json();
             const images: ManuscriptImage[] = [];
             
             // Extract images from IIIF manifest
@@ -1622,9 +1622,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                                 ? location 
                                 : new URL(location, pageUrl).href;
                         }
-                    } else if (response.headers && (response.headers as any).location) {
+                    } else if (response.headers && 'location' in response.headers) {
                         // Fallback for headers as plain object
-                        const location = (response.headers as any).location;
+                        const headers: Record<string, string> = response.headers as Record<string, string>;
+                        const location = headers.location;
                         redirectUrl = location.startsWith('http') 
                             ? location 
                             : new URL(location, pageUrl).href;
@@ -1678,7 +1679,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         }
     }
     
-    async processMorganHTML(html: any, url: any, baseUrl: any, manuscriptId: any, displayName: any, images: any[]) {
+    async processMorganHTML(html: string, url: string, baseUrl: string, manuscriptId: string, displayName: string, images: ManuscriptImage[]) {
         if (url.includes('ica.themorgan.org')) {
             // ICA format - extract image URLs with better pattern matching
             // Look for full image URLs or icaimages paths
@@ -1783,7 +1784,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                         );
                         
                         const fetchPromise = this.fetchWithRetry(individualPageUrl, {}, 1);
-                        const pageResponse = await Promise.race([fetchPromise, timeoutPromise]) as FetchResponse;
+                        const pageResponse: FetchResponse = await Promise.race([fetchPromise, timeoutPromise]);
                         
                         if (pageResponse.ok) {
                             const pageContent = await pageResponse.text();
@@ -1837,7 +1838,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             
             // ULTRA-PRIORITY FIX for Issue #4: Enhanced image selection
             // If we don't have enough high-priority images, generate thumbnail URLs as fallback
-            const selectedImages = false;
             
             // First try to use high-priority images
             for (let priority = 0; priority <= 5; priority++) {
@@ -1867,7 +1867,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 
                 // Add missing pages
                 const existingPageNumbers = new Set();
-                images.forEach((img: any) => {
+                images.forEach((img: ManuscriptImage) => {
                     const match = img.label.match(/Page (\d+)/);
                     if (match) existingPageNumbers.add(match[1]);
                 });
@@ -1883,7 +1883,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 }
                 
                 // Sort images by page number
-                images.sort((a: any, b: any) => {
+                images.sort((a: ManuscriptImage, b: ManuscriptImage) => {
                     const aNum = parseInt(a.label.match(/\d+/)?.[0] || '0');
                     const bNum = parseInt(b.label.match(/\d+/)?.[0] || '0');
                     return aNum - bNum;
@@ -2062,7 +2062,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 try {
                     const response = await this.fetchWithRetry(manifestUrl, {}, 1);
                     if (response.ok) {
-                        const manifest = await response.json() as IIIFManifest;
+                        const manifest: IIIFManifest = await response.json();
                         
                         // Process IIIF manifest directly
                         if (!manifest.sequences || !manifest.sequences[0] || !manifest.sequences[0].canvases) {
@@ -2073,7 +2073,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                         console.log(`[GAMS] Found ${canvases.length} canvases in IIIF manifest`);
                         
                         // Extract images from IIIF manifest
-                        const images = canvases.map((canvas: any, index: number) => {
+                        const images = canvases.map((canvas: IIIFCanvas, index: number) => {
                             const image = canvas.images?.[0]?.resource;
                             if (!image) {
                                 console.warn(`[GAMS] No image found for canvas ${index + 1}`);
@@ -2086,7 +2086,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                                 width: image.width || canvas.width,
                                 height: image.height || canvas.height
                             };
-                        }).filter((img: any) => img !== null);
+                        }).filter((img: ManuscriptImage | null): img is ManuscriptImage => img !== null);
                         
                         console.log(`[GAMS] Successfully extracted ${images.length} images from IIIF manifest`);
                         return images;
@@ -2124,7 +2124,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 if (response.ok) {
                     const contentType = response.headers.get('content-type');
                     if (contentType && contentType.includes('json')) {
-                        const manifest = await response.json() as IIIFManifest;
+                        const manifest: IIIFManifest = await response.json();
                         
                         if (!manifest.sequences || !manifest.sequences[0] || !manifest.sequences[0].canvases) {
                             throw new Error('Invalid IIIF manifest structure');
@@ -2134,7 +2134,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 console.log(`[GAMS] Found ${canvases.length} canvases in IIIF manifest`);
                 
                 // Extract images from IIIF manifest
-                const images = canvases.map((canvas: any, index: number) => {
+                const images = canvases.map((canvas: IIIFCanvas, index: number) => {
                     // Get the image resource
                     const image = canvas.images?.[0]?.resource;
                     if (!image) {
@@ -2149,7 +2149,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                         url: imageUrl,
                         label: this.localizedStringToString(canvas.label) || `Page ${index + 1}`
                     };
-                }).filter((img: any) => img !== null);
+                }).filter((img: ManuscriptImage | null): img is ManuscriptImage => img !== null);
                 
                         console.log(`[GAMS] Successfully extracted ${images.length} images from IIIF manifest`);
                         return { images };
@@ -2232,7 +2232,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Get manifest for any library
      */
-    async getManifestForLibrary(libraryId: any, url: any) {
+    async getManifestForLibrary(libraryId: string, url: string) {
         switch (libraryId) {
             case 'bdl':
                 return await this.getBDLManifest(url);
@@ -2350,10 +2350,10 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                 setTimeout(() => reject(new Error('Compound object detection timeout after 60s')), 60000)
                             );
                             
-                            const compoundResult = await Promise.race([
+                            const compoundResult: { images: ManuscriptImage[] } = await Promise.race([
                                 this.detectFlorenceCompoundObject(itemId),
                                 timeoutPromise
-                            ]) as { images: ManuscriptImage[] };
+                            ]);
                             
                             if (compoundResult.images.length > 1) {
                                 console.log(`[Florence] Found compound object with ${compoundResult.images.length} pages`);
@@ -2498,7 +2498,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Parse Florence IIIF manifest structure
      */
-    parseFlorenceIIIFManifest(manifest: any, itemId: any) {
+    parseFlorenceIIIFManifest(manifest: IIIFManifest, itemId: string) {
         const images: ManuscriptImage[] = [];
         
         // Handle IIIF v2 manifest
@@ -2574,7 +2574,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const response = await this.fetchWithRetry(manifestUrl);
         if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
         
-        const manifest = await response.json() as IIIFManifest;
+        const manifest: IIIFManifest = await response.json();
         const images: ManuscriptImage[] = [];
         
         // Process IIIF v2 manifest
@@ -2627,7 +2627,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const response = await this.fetchWithRetry(manifestUrl);
         if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
         
-        const manifest = await response.json() as IIIFManifest;
+        const manifest: IIIFManifest = await response.json();
         const images: ManuscriptImage[] = [];
         
         // Process IIIF v2 manifest
@@ -2665,7 +2665,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * Munich Digital Collections (Digitale Sammlungen)
      * Standard IIIF v2 implementation with reliable image service
      */
-    async getMunichManifest(url: string): Promise<{ images: ManuscriptImage[], type?: string, manifest?: any, metadata?: any, displayName?: string } | ManuscriptImage[]> {
+    async getMunichManifest(url: string): Promise<{ images: ManuscriptImage[], type?: string, manifest?: IIIFManifest, metadata?: MetadataItem[], displayName?: string } | ManuscriptImage[]> {
         console.log('[Munich] Processing URL:', url);
         
         // Extract manuscript ID from viewer URL
@@ -2685,7 +2685,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             throw new Error(`Failed to fetch Munich manifest: ${response.status}`);
         }
         
-        const manifest = await response.json() as IIIFManifest;
+        const manifest: IIIFManifest = await response.json();
         const images: ManuscriptImage[] = [];
         
         // Process IIIF v2 manifest
@@ -2732,7 +2732,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             displayTitle = `BSB Clm ${parseInt(clmNumber, 10)}`;
         } else if (manifest.metadata) {
             // Try to find shelf mark in metadata
-            const shelfMarkEntry = manifest.metadata.find((m: any) => 
+            const shelfMarkEntry = manifest.metadata?.find((m: MetadataItem) => 
                 m.label === 'Signatur' || 
                 m.label === 'Shelf mark' || 
                 m.label === 'Call Number'
@@ -2808,7 +2808,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const response = await this.fetchWithRetry(manifestUrl);
         if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
         
-        const manifest = await response.json() as IIIFManifest;
+        const manifest: IIIFManifest = await response.json();
         const images: ManuscriptImage[] = [];
         
         // Handle IIIF v3
@@ -2877,7 +2877,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * Supports manuscripts from digi.vatlib.it
      * Uses standard IIIF with maximum resolution available
      */
-    async getVaticanManifest(url: string): Promise<{ images: ManuscriptImage[], label?: string, displayName?: string, metadata?: any } | ManuscriptImage[]> {
+    async getVaticanManifest(url: string): Promise<{ images: ManuscriptImage[], label?: string, displayName?: string, metadata?: MetadataItem[] } | ManuscriptImage[]> {
         // Extract manuscript ID from URL
         const match = url.match(/view\/([^/?]+)/);
         if (!match) throw new Error('Invalid Vatican Library URL');
@@ -2903,7 +2903,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const response = await this.fetchWithRetry(manifestUrl);
         if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
         
-        const manifest = await response.json() as IIIFManifest;
+        const manifest: IIIFManifest = await response.json();
         const images: ManuscriptImage[] = [];
         
         // Get all canvases from the manifest
@@ -2945,7 +2945,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * Morgan Library Facsimile URL processor - handles direct ASP facsimile pages
      * Supports the pattern: host.themorgan.org/facsimile/m1/default.asp?id=X
      */
-    async processMorganFacsimileUrl(url: any) {
+    async processMorganFacsimileUrl(url: string) {
         console.log('[Morgan] Processing facsimile URL:', url);
         
         // Extract ID from URL
@@ -3063,7 +3063,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Detect Florence compound object by analyzing page data
      */
-    async detectFlorenceCompoundObject(itemId: any) {
+    async detectFlorenceCompoundObject(itemId: string) {
         console.log('[Florence] ULTRA-ENHANCED compound object detection for item:', itemId);
         
         const pageUrl = `https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/${itemId}`;
@@ -3194,7 +3194,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 const testUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${testId}/info.json`;
                 try {
                     const result = await new Promise((resolve) => {
-                        const req = https.request(testUrl, { method: 'HEAD', timeout: 3000 }, (res: any) => {
+                        const req = https.request(testUrl, { method: 'HEAD', timeout: 3000 }, (res: http.IncomingMessage) => {
                             resolve(res.statusCode === 200);
                         });
                         req.on('error', () => resolve(false));
@@ -3222,7 +3222,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     
                     try {
                         const result = await new Promise((resolve) => {
-                            const req = https.request(testUrl, { method: 'HEAD', timeout: 3000 }, (res: any) => {
+                            const req = https.request(testUrl, { method: 'HEAD', timeout: 3000 }, (res: http.IncomingMessage) => {
                                 resolve(res.statusCode === 200);
                             });
                             req.on('error', () => resolve(false));
@@ -3262,7 +3262,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 
                 try {
                     const testResult = await new Promise<{ success: boolean }>((resolve) => {
-                        const req = https.get(testUrl, (response: any) => {
+                        const req = https.get(testUrl, (response: http.IncomingMessage) => {
                             resolve({ success: response.statusCode === 200 });
                         });
                         req.on('error', () => resolve({ success: false }));
@@ -3351,7 +3351,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Discover the actual page range for a Bordeaux manuscript by testing tile availability
      */
-    async discoverBordeauxPageRange(baseId: any) {
+    async discoverBordeauxPageRange(baseId: number) {
         console.log(`[Bordeaux] Discovering page range for baseId: ${baseId}`);
         
         const baseUrl = 'https://selene.bordeaux.fr/in/dz';
@@ -3451,7 +3451,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Bordeaux - Fixed with proper tile processor integration
      */
-    async getBordeauxManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string, type?: string, baseId?: number, publicId?: string, startPage?: number, pageCount?: number, tileBaseUrl?: string, requiresTileProcessor?: boolean, tileConfig?: any, pageBlocks?: any } | ManuscriptImage[]> {
+    async getBordeauxManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string, type?: string, baseId?: number, publicId?: string, startPage?: number, pageCount?: number, tileBaseUrl?: string, requiresTileProcessor?: boolean, tileConfig?: Record<string, unknown>, pageBlocks?: Record<string, unknown> } | ManuscriptImage[]> {
         console.log('[Bordeaux] Processing URL:', url);
         
         // Handle both public URLs and direct tile URLs
@@ -3629,7 +3629,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Parse Bordeaux IIIF manifest if available
      */
-    async parseBordeauxIIIFManifest(manifest: any, manuscriptId: any) {
+    async parseBordeauxIIIFManifest(manifest: IIIFManifest, manuscriptId: string) {
         const images: ManuscriptImage[] = [];
         
         if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
@@ -3683,7 +3683,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const response = await this.fetchWithRetry(manifestUrl);
         if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
         
-        const manifest = await response.json() as IIIFManifest;
+        const manifest: IIIFManifest = await response.json();
         const images: ManuscriptImage[] = [];
         
         // Process IIIF v2 manifest
@@ -3756,7 +3756,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * Discover all blocks for an e-manuscripta manuscript
      * Many e-manuscripta manuscripts are split into multiple blocks with sequential IDs
      */
-    async discoverEManuscriptaBlocks(baseManuscriptId: any, library: any) {
+    async discoverEManuscriptaBlocks(baseManuscriptId: string, library: string) {
         console.log(`[e-manuscripta] ULTRA-OPTIMIZED Discovery for manuscript ${baseManuscriptId} in library ${library}`);
         
         // Enhanced logging for debugging
@@ -4322,7 +4322,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * @param {string} url - The Heidelberg library URL
      * @returns {Promise<Object>} Manifest object with images array
      */
-    async getHeidelbergManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string, metadata?: any, type?: string } | ManuscriptImage[]> {
+    async getHeidelbergManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string, metadata?: MetadataItem[], type?: string } | ManuscriptImage[]> {
         console.log('[Heidelberg] Processing URL:', url);
         
         // Handle DOI URLs (e.g., https://doi.org/10.11588/diglit.7292)
@@ -4340,7 +4340,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             const doiMatch = url.match(/10\.11588\/diglit\.(\d+)/);
             if (doiMatch) {
                 const doiNumber = doiMatch[1];
-                const manuscriptId = doiMappings[doiNumber];
+                const mappings: Record<string, string> = doiMappings as Record<string, string>;
+                const manuscriptId = mappings[doiNumber];
                 
                 if (manuscriptId) {
                     console.log(`[Heidelberg] DOI ${doiNumber} maps to manuscript: ${manuscriptId}`);
@@ -4389,7 +4390,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             throw new Error(`Failed to fetch Heidelberg manifest: ${response.status}`);
         }
         
-        const manifest = await response.json() as IIIFManifest;
+        const manifest: IIIFManifest = await response.json();
         const images: ManuscriptImage[] = [];
         
         // Extract manuscript ID from URL
@@ -4429,7 +4430,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             
             if (manifest.items) {
                 for (let i = 0; i < manifest.items.length; i++) {
-                    const canvas = manifest.items[i] as any;
+                    const canvas: IIIFSequence = manifest.items[i] as IIIFSequence;
                     
                     // Extract label for this page
                     let pageLabel = `Page ${i + 1}`;
@@ -4564,7 +4565,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * 3. Check if the manuscript has alternative access methods
      * 4. Contact nb.no for access permissions
      */
-    async getNorwegianManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string, metadata?: any, type?: string } | ManuscriptImage[]> {
+    async getNorwegianManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string, metadata?: MetadataItem[], type?: string } | ManuscriptImage[]> {
         console.log('[Norwegian] Processing URL:', url);
         
         // Extract item ID from URL
@@ -4601,7 +4602,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             return this.parseNorwegianV3Manifest(await v3Response.json(), itemId);
         }
         
-        const manifest = await response.json() as IIIFManifest;
+        const manifest: IIIFManifest = await response.json();
         const images: ManuscriptImage[] = [];
         
         // Extract metadata  
@@ -4634,10 +4635,12 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         imageUrl = `${serviceId}/full/2000,/0/default.jpg`;
                     }
                     
-                    images.push({
-                        url: imageUrl,
-                        label: this.localizedStringToString(canvas.label) || `Page ${images.length + 1}`
-                    });
+                    if (imageUrl) {
+                        images.push({
+                            url: imageUrl,
+                            label: this.localizedStringToString(canvas.label) || `Page ${images.length + 1}`
+                        });
+                    }
                 }
             }
         }
@@ -4661,7 +4664,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Parse Norwegian v3 manifest (fallback)
      */
-    parseNorwegianV3Manifest(manifest: any, itemId: any) {
+    parseNorwegianV3Manifest(manifest: IIIFManifest, itemId: string) {
         const images: ManuscriptImage[] = [];
         let displayName = `Norwegian Manuscript ${itemId}`;
         
@@ -4689,7 +4692,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         if (manifest.items) {
             for (let i = 0; i < manifest.items.length; i++) {
-                const canvas = manifest.items[i] as any;
+                const canvas: IIIFSequence = manifest.items[i] as IIIFSequence;
                 
                 if (canvas.items && canvas.items[0] && canvas.items[0].items) {
                     for (const annotation of canvas.items[0].items) {

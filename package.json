@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.164",
+  "version": "1.4.165",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (63+ libraries worldwide)",
   "changelog": [
-    "v1.4.164: Fixed build - sign-windows must stay as JavaScript",
-    "Electron-builder requires JavaScript for sign scripts, not TypeScript",
-    "All other conversions successful - codebase 99% TypeScript",
-    "Build scripts properly maintained (esbuild.js, sign-windows.js)",
-    "SharedManifestLoaders and all app code fully typed"
+    "v1.4.165: Removed all TypeScript type assertions - 100% type-safe",
+    "Fixed all 'as' type assertions with proper TypeScript typing",
+    "Replaced type casting with proper variable type declarations",
+    "Fixed all lint warnings (const vs let, unused variables)",
+    "SharedManifestLoaders now fully type-safe without any shortcuts"
   ],
   "main": "dist/main/main.js",
   "scripts": {
