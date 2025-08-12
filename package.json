@@ -44,6 +44,8 @@
     "dist:win": "npm run build && electron-builder --win --x64 --arm64",
     "dist:win:x64": "npm run build && electron-builder --win --x64",
     "dist:win:arm": "npm run build && electron-builder --win --arm64",
+    "dist:win:x64:hotfix": "npm run build:unsafe && electron-builder --win --x64",
+    "dist:win:arm:hotfix": "npm run build:unsafe && electron-builder --win --arm64",
     "dist:win:arm:clean": "node scripts/build-arm64-clean.cjs",
     "dist:mac": "npm run build && electron-builder --mac",
     "dist:linux": "npm run build && electron-builder --linux",

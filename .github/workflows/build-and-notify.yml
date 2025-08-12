@@ -60,12 +60,12 @@ jobs:
       - name: Build Windows AMD64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run dist:win:x64
+        run: npm run dist:win:x64:hotfix
       
       - name: Build Windows ARM64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run dist:win:arm
+        run: npm run dist:win:arm:hotfix
       
       - name: Create GitHub Release
         id: create_release
