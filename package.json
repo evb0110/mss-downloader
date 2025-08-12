@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.156",
+  "version": "1.4.157",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (63+ libraries worldwide)",
   "changelog": [
-    "v1.4.156: HOTFIX - Fix TypeScript build errors from v1.4.155",
-    "Fixed LinzLoader class to properly extend BaseLibraryLoader",
-    "Fixed missing getLibraryName() method and constructor",
-    "Improved pre-commit workflow to catch TypeScript errors before push",
-    "All 6 library fixes from v1.4.155 remain working perfectly"
+    "v1.4.157: HOTFIX - Fix Bordeaux manuscripts stuck on first page",
+    "Fixed Bordeaux loader for manuscripts that start at page 6 instead of page 1",
+    "Added mapping for ARK URL v2b3306361012 to correct manuscript ID",
+    "Enhanced page discovery to detect non-continuous page ranges",
+    "Now properly downloads all 195 pages of Bordeaux manuscript 330636101_MS_0778"
   ],
   "main": "dist/main/main.js",
   "scripts": {

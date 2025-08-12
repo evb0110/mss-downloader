@@ -3315,7 +3315,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const maxTestPages = 200; // Don't test too many to avoid overwhelming the server
         
         // First, do a quick scan to find the general range
-        const quickScanPages = [1, 5, 6, 10, 20, 30, 50, 75, 100, 150, 200];
+        // Include pages 6-9 since some manuscripts start at page 6 instead of page 1
+        const quickScanPages = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 50, 75, 100, 150, 200];
         let foundAny = false;
         let minFound = null;
         let maxFound = null;
@@ -3492,6 +3493,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             const knownMappings = {
                 'btv1b52509616g': '330636101_MS0778',
                 '330636101_MS_0778': '330636101_MS0778',
+                'v2b3306361012': '330636101_MS0778',  // Fix for issue with ARK URL
                 // Add more mappings as discovered
             };
             
@@ -3530,14 +3532,28 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         // Generate the images array based on discovered pages
         const images = [];
-        for (let i = startPage; i < startPage + pageCount && i <= pageDiscovery.lastPage; i++) {
-            // Format the page number with leading zeros (4 digits)
-            const paddedPage = String(i).padStart(4, '0');
-            const imageUrl = `https://selene.bordeaux.fr/in/dz/${baseId}_${paddedPage}_files/13/0_0.jpg`;
-            images.push({
-                url: imageUrl,
-                label: `Page ${i}`
-            });
+        
+        // If we have specific available pages, use them; otherwise generate a range
+        if (pageDiscovery.availablePages && pageDiscovery.availablePages.length > 0) {
+            // Use actual available pages for manuscripts that don't have continuous numbering
+            for (const pageNum of pageDiscovery.availablePages) {
+                const paddedPage = String(pageNum).padStart(4, '0');
+                const imageUrl = `https://selene.bordeaux.fr/in/dz/${baseId}_${paddedPage}_files/13/0_0.jpg`;
+                images.push({
+                    url: imageUrl,
+                    label: `Page ${pageNum}`
+                });
+            }
+        } else if (pageCount > 0) {
+            // Fallback to range-based generation if discovery didn't find specific pages
+            for (let i = startPage; i < startPage + pageCount && i <= pageDiscovery.lastPage; i++) {
+                const paddedPage = String(i).padStart(4, '0');
+                const imageUrl = `https://selene.bordeaux.fr/in/dz/${baseId}_${paddedPage}_files/13/0_0.jpg`;
+                images.push({
+                    url: imageUrl,
+                    label: `Page ${i}`
+                });
+            }
         }
         
         console.log(`[Bordeaux] Generated ${images.length} image URLs`);
