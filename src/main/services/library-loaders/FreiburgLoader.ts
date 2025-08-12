@@ -1,5 +1,6 @@
 import { BaseLibraryLoader, type LoaderDependencies } from './types';
 import type { ManuscriptManifest } from '../../../shared/types';
+import { JSDOM } from 'jsdom';
 
 export class FreiburgLoader extends BaseLibraryLoader {
     constructor(deps: LoaderDependencies) {

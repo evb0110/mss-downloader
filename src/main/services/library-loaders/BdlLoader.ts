@@ -50,16 +50,15 @@ export class BdlLoader extends BaseLibraryLoader {
                 console.log(`Fetching pages from: ${pagesApiUrl}`);
                 
                 // Use intelligent progress monitoring for BDL API call with enhanced timeouts
-                const progressMonitor = this.deps.createProgressMonitor(
-                    'BDL manifest loading',
-                    'bdl',
-                    { initialTimeout: 30000, maxTimeout: 90000 },
-                    {
-                        onStuckDetected: (state: any) => {
-                            console.warn(`[BDL] ${state.statusMessage}`);
-                        }
+                const progressMonitor = this.deps.createProgressMonitor({
+                    task: 'BDL manifest loading',
+                    category: 'bdl',
+                    initialTimeout: 30000,
+                    maxTimeout: 90000,
+                    onStuckDetected: (state: any) => {
+                        console.warn(`[BDL] ${state.statusMessage}`);
                     }
-                );
+                });
                 
                 const controller = progressMonitor.start();
                 progressMonitor.updateProgress(0, 1, 'Loading BDL pages data...');

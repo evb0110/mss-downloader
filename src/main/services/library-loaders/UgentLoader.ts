@@ -22,6 +22,9 @@ export class UgentLoader extends BaseLibraryLoader {
                 // Construct the IIIF v3 manifest URL based on the pattern from the reference implementation
                 const manifestUrl = `https://adore.ugent.be/IIIF/manifests/${manuscriptId}`;
                 
+                if (!this.deps.loadIIIFManifest) {
+                    throw new Error('IIIF manifest loader not available');
+                }
                 return this.deps.loadIIIFManifest(manifestUrl);
             } catch (error: any) {
                 throw new Error(`Failed to load UGent manifest: ${(error as Error).message}`);

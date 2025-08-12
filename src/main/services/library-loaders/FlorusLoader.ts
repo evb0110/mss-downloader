@@ -81,7 +81,7 @@ export class FlorusLoader extends BaseLibraryLoader {
                 throw new Error('Could not parse Florus image path structure');
             }
 
-            const basePath = pathParts[1];
+            // const basePath = pathParts[1]; // unused
             const filenameParts = pathParts[2].match(/^(.+?)_(\d+)_(.+)$/);
             if (!filenameParts) {
                 throw new Error('Could not parse Florus filename structure');

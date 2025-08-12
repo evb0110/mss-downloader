@@ -22,14 +22,14 @@ export class EManuscriptaLoader extends BaseLibraryLoader {
                 console.log(`Loading e-manuscripta.ch manifest from: ${manuscriptaUrl}`);
                 
                 // Log for debugging Issue #10
-                const { comprehensiveLogger } = await import('./ComprehensiveLogger');
+                const { comprehensiveLogger } = await import('../ComprehensiveLogger');
                 comprehensiveLogger.logEManuscriptaDiscovery('load_manifest_start', {
                     originalUrl: manuscriptaUrl,
                     processedUrl: manuscriptaUrl
                 });
                 
                 // Use SharedManifestLoaders for ULTRA-OPTIMIZED discovery
-                const { SharedManifestLoaders } = await import('../../shared/SharedManifestLoaders');
+                const { SharedManifestLoaders } = await import('../../../shared/SharedManifestLoaders');
                 const loader = new SharedManifestLoaders();
                 
                 // Make comprehensiveLogger available globally for SharedManifestLoaders
@@ -38,18 +38,34 @@ export class EManuscriptaLoader extends BaseLibraryLoader {
                 console.log('[e-manuscripta] Using SharedManifestLoaders with ULTRA-OPTIMIZED discovery');
                 const sharedResult = await loader.getEManuscriptaManifest(manuscriptaUrl);
                 
-                if (sharedResult.error) {
-                    throw new Error(sharedResult.error);
-                }
+                // Handle different return types from SharedManifestLoaders
+                let pageLinks: string[];
+                let displayName: string;
                 
-                // Convert SharedManifestLoaders result to ManuscriptManifest format
-                const pageLinks = sharedResult.images.map((img: any) => img.url);
+                if (Array.isArray(sharedResult)) {
+                    // Handle direct array result
+                    pageLinks = sharedResult.map((img: any) => img.url);
+                    displayName = `e-manuscripta manuscript`;
+                } else if (sharedResult && typeof sharedResult === 'object') {
+                    // Handle object result
+                    if ('error' in sharedResult) {
+                        throw new Error((sharedResult as any).error);
+                    }
+                    if ('images' in sharedResult) {
+                        pageLinks = (sharedResult as any).images.map((img: any) => img.url);
+                        displayName = (sharedResult as any).displayName || `e-manuscripta manuscript`;
+                    } else {
+                        throw new Error('Invalid result format from SharedManifestLoaders');
+                    }
+                } else {
+                    throw new Error('Unexpected result format from SharedManifestLoaders');
+                }
                 
                 const eManuscriptaManifest: ManuscriptManifest = {
                     pageLinks,
                     totalPages: pageLinks.length,
                     library: 'e_manuscripta',
-                    displayName: sharedResult.displayName || `e-manuscripta manuscript`,
+                    displayName,
                     originalUrl: manuscriptaUrl,
                 };
                 

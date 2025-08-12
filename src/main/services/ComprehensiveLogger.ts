@@ -5,7 +5,7 @@ import * as os from 'os';
 import { gzipSync } from 'zlib';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
-export type LogCategory = 'network' | 'file' | 'manifest' | 'download' | 'pdf' | 'system' | 'renderer' | 'worker' | 'queue' | 'process' | 'bdl-parallel' | 'url-sanitizer';
+export type LogCategory = 'network' | 'file' | 'manifest' | 'download' | 'pdf' | 'system' | 'renderer' | 'worker' | 'queue' | 'process' | 'bdl-parallel' | 'bdl-ultra' | 'url-sanitizer';
 
 export interface LogContext {
     // System context
@@ -57,7 +57,7 @@ export interface LogRotationConfig {
 export class ComprehensiveLogger {
     private static instance: ComprehensiveLogger;
     private logs: LogContext[] = [];
-    private currentLogFile: string;
+    private currentLogFile: string = '';
     private logStream: fs.WriteStream | null = null;
     private rotationConfig: LogRotationConfig = {
         maxFileSize: 50, // 50MB per file - increased for debugging

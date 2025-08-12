@@ -1169,12 +1169,12 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             const label = labelMatch ? labelMatch[1] : null;
             
             // Use smart label enhancement
-            const _displayName = enhanceManuscriptLabel({
-                library: 'Graz',
-                manuscriptId: manuscriptId,
-                originalLabel: label,
-                includeLibraryName: true
-            });
+            // const _displayName = enhanceManuscriptLabel({
+            //     library: 'Graz',
+            //     manuscriptId: manuscriptId,
+            //     originalLabel: label,
+            //     includeLibraryName: true
+            // });
             
             // Extract canvases using regex to avoid parsing entire JSON at once
             const canvasRegex = /"@id"\s*:\s*"([^"]*\/download\/webcache[^"]+)"/g;

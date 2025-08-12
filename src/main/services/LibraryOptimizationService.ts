@@ -256,6 +256,8 @@ export class LibraryOptimizationService {
             enableProgressiveBackoff: true,
             optimizationDescription: 'Vatican Library optimizations: 4 concurrent downloads, IIIF compliant, stable infrastructure'
         },
+        'bordeaux': {},
+        'linz': {},
         'loading': {}
     };
 
@@ -275,7 +277,7 @@ export class LibraryOptimizationService {
         library: TLibrary
     ): {
         autoSplitThresholdMB: number;
-        maxConcurrentDownloads: number;
+        maxConcurrentDownloads: number | undefined;
         timeoutMultiplier: number;
         enableProgressiveBackoff: boolean;
         optimizationDescription?: string;

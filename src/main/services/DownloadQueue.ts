@@ -8,8 +8,8 @@ import Store from 'electron-store';
 export class DownloadQueue extends EventEmitter {
     private static instance: DownloadQueue | null = null;
     private state: QueueState;
-    private currentDownloader: ManuscriptDownloaderService | null = null;
-    private activeDownloaders: Map<string, ManuscriptDownloaderService> = new Map();
+    private currentDownloader: EnhancedManuscriptDownloaderService | null = null;
+    private activeDownloaders: Map<string, EnhancedManuscriptDownloaderService> = new Map();
     private processingAbortController: AbortController | null = null;
     private pdfMerger: ElectronPdfMerger;
     private store: any;
@@ -637,7 +637,7 @@ export class DownloadQueue extends EventEmitter {
                                 current: downloadedPages,
                                 total: pageCount,
                                 percentage: calculatedPercentage,
-                                eta: this.formatTime(progress.estimatedTimeRemaining || 0),
+                                eta: this.formatTime(progressData.estimatedTimeRemaining || 0),
                                 stage: 'downloading' as TStage,
                                 actualCurrentPage,
                             };
@@ -774,10 +774,10 @@ export class DownloadQueue extends EventEmitter {
                         if (shouldUpdate) {
                             const actualCurrentPage = startPage + downloadedPages - 1;
                             item.progress = {
-                                current: progress.downloadedPages,
+                                current: downloadedPages,
                                 total: pageCount,
                                 percentage: calculatedPercentage,
-                                eta: this.formatTime(progress.estimatedTimeRemaining || 0),
+                                eta: this.formatTime(progressData.estimatedTimeRemaining || 0),
                                 stage: 'downloading' as TStage,
                                 actualCurrentPage,
                             };

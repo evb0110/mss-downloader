@@ -43,7 +43,7 @@ export class BerlinLoader extends BaseLibraryLoader {
                             headers: {
                                 'Accept': 'application/json'
                             }
-                        }, fetchAttempt); // Pass attempt number for timeout calculation
+                        });
                         
                         if (manifestResponse.ok) {
                             break;

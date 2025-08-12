@@ -1399,14 +1399,14 @@ export class EnhancedManuscriptDownloaderService {
                     } else {
                         // Skip DNS resolution if hostname is invalid
                         console.error(`[Grenoble] Cannot extract valid hostname, skipping DNS resolution`);
-                        return;
+                        throw new Error(`[Grenoble] Cannot extract valid hostname from URL: ${url}`);
                     }
                 }
 
                 // Additional validation: hostname should not be too long or contain invalid chars
                 if (hostname.length > 253 || !/^[a-z0-9.-]+$/i.test(hostname)) {
                     console.error(`[Grenoble] Invalid hostname format: ${hostname}`);
-                    return;
+                    throw new Error(`[Grenoble] Invalid hostname format: ${hostname}`);
                 }
 
                 // Pre-resolve DNS to avoid EAI_AGAIN errors
@@ -1729,11 +1729,11 @@ export class EnhancedManuscriptDownloaderService {
                     // Final error or non-retryable error
                     if (error.code === 'ETIMEDOUT' && url.includes('unipub.uni-graz.at')) {
                         const totalTime = Math.round((Date.now() - overallStartTime) / 1000);
-                        const actualTimeout = Math.round(timeout / 1000);
+                        const actualTimeout = Math.round(requestOptions.timeout / 1000);
                         reject(new Error(`University of Graz connection timeout after ${actualTimeout} seconds (${maxRetries} attempts over ${totalTime} seconds total). The server at ${urlObj.hostname} is not responding. This may be due to high server load or network issues. Please try again later or check if the manuscript is accessible at https://unipub.uni-graz.at/`));
                     } else if (error.code === 'ETIMEDOUT' && url.includes('cdm21059.contentdm.oclc.org')) {
                         const totalTime = Math.round((Date.now() - overallStartTime) / 1000);
-                        const actualTimeout = Math.round(timeout / 1000);
+                        const actualTimeout = Math.round(requestOptions.timeout / 1000);
                         reject(new Error(`Florence library (ContentDM) connection timeout after ${actualTimeout} seconds (${maxRetries} attempts over ${totalTime} seconds total). The server at ${urlObj.hostname} is not responding. This may be due to high server load or network issues. Please try again later or check if the manuscript is accessible at https://cdm21059.contentdm.oclc.org/`));
                     } else if (error.code === 'ETIMEDOUT' && (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it'))) {
                         const totalTime = Math.round((Date.now() - overallStartTime) / 1000);
@@ -1741,7 +1741,7 @@ export class EnhancedManuscriptDownloaderService {
                         reject(new Error(`Verona NBM connection timeout after ${actualTimeout} seconds (${maxRetries} attempts over ${totalTime} seconds total). The server at ${urlObj.hostname} is not responding. This may be due to high server load or network issues. Please try again later or check if the manuscript is accessible at https://www.nuovabibliotecamanoscritta.it/`));
                     } else if (error.code === 'ETIMEDOUT' && url.includes('mdc.csuc.cat')) {
                         const totalTime = Math.round((Date.now() - overallStartTime) / 1000);
-                        const actualTimeout = Math.round(timeout / 1000);
+                        const actualTimeout = Math.round(requestOptions.timeout / 1000);
                         reject(new Error(`MDC Catalonia connection timeout after ${actualTimeout} seconds (${maxRetries} attempts over ${totalTime} seconds total). The server at ${urlObj.hostname} is not responding. This may be due to high server load, network restrictions, or regional blocking. Please try again later or check if the manuscript is accessible at https://mdc.csuc.cat/`));
                     } else {
                         reject(error);

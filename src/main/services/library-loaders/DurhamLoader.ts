@@ -29,6 +29,9 @@ export class DurhamLoader extends BaseLibraryLoader {
             const part3 = manifestId.substring(4, 6);
             
             const manifestUrl = `https://iiif.durham.ac.uk/manifests/trifle/32150/${part1}/${part2}/${part3}/${manifestId}/manifest`;
+            if (!this.deps.loadIIIFManifest) {
+                throw new Error('IIIF manifest loader not available');
+            }
             return this.deps.loadIIIFManifest(manifestUrl);
         }
 }

@@ -1,7 +1,8 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import { BaseLibraryLoader, type LoaderDependencies } from './types';
 import type { ManuscriptManifest } from '../../../shared/types';
+import { getAppPath } from '../ElectronCompat';
 
 export class GrazLoader extends BaseLibraryLoader {
     constructor(deps: LoaderDependencies) {
@@ -64,32 +65,28 @@ export class GrazLoader extends BaseLibraryLoader {
                 };
                 
                 // FIXED: Enhanced progress monitoring for Graz's large IIIF manifests with better timeout handling
-                const progressMonitor = this.deps.createProgressMonitor(
-                    'University of Graz manifest loading',
-                    'graz',
-                    { 
-                        initialTimeout: 240000,     // 4 minutes initial (increased)
-                        maxTimeout: 1200000,        // 20 minutes max (increased)
-                        progressCheckInterval: 15000, // Check every 15 seconds
-                        minProgressThreshold: 0.01   // Any progress is good progress
+                const progressMonitor = this.deps.createProgressMonitor({
+                    task: 'University of Graz manifest loading',
+                    category: 'graz',
+                    initialTimeout: 240000,     // 4 minutes initial (increased)
+                    maxTimeout: 1200000,        // 20 minutes max (increased)
+                    progressCheckInterval: 15000, // Check every 15 seconds
+                    minProgressThreshold: 0.01,   // Any progress is good progress
+                    onInitialTimeoutReached: (state: any) => {
+                        console.log(`[Graz] ${state.statusMessage}`);
                     },
-                    {
-                        onInitialTimeoutReached: (state: any) => {
-                            console.log(`[Graz] ${state.statusMessage}`);
-                        },
-                        onStuckDetected: (state: any) => {
-                            console.warn(`[Graz] ${state.statusMessage}`);
-                        },
-                        onProgressResumed: (state: any) => {
-                            console.log(`[Graz] ${state.statusMessage}`);
-                        },
-                        onTimeout: (state: any) => {
-                            console.error(`[Graz] ${state.statusMessage}`);
-                        }
+                    onStuckDetected: (state: any) => {
+                        console.warn(`[Graz] ${state.statusMessage}`);
+                    },
+                    onProgressResumed: (state: any) => {
+                        console.log(`[Graz] ${state.statusMessage}`);
+                    },
+                    onTimeout: (state: any) => {
+                        console.error(`[Graz] ${state.statusMessage}`);
                     }
-                );
+                });
                 
-                const controller = progressMonitor.start();
+                progressMonitor.start();
                 progressMonitor.updateProgress(0, 1, 'Loading University of Graz IIIF manifest...');
                 
                 let response: Response;

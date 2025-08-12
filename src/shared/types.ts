@@ -28,10 +28,13 @@ export interface DownloadCallbacks {
 export interface ManuscriptManifest {
   pageLinks: string[];
   totalPages: number;
-  library: 'nypl' | 'morgan' | 'gallica' | 'grenoble' | 'karlsruhe' | 'manchester' | 'munich' | 'unifr' | 'e_manuscripta' | 'vatlib' | 'cecilia' | 'irht' | 'loc' | 'dijon' | 'laon' | 'durham' | 'florus' | 'unicatt' | 'cudl' | 'trinity_cam' | 'toronto' | 'fulda' | 'isos' | 'mira' | 'orleans' | 'rbme' | 'parker' | 'manuscripta' | 'internet_culturale' | 'graz' | 'gams' | 'cologne' | 'vienna_manuscripta' | 'rome' | 'berlin' | 'czech' | 'modena' | 'bdl' | 'europeana' | 'monte_cassino' | 'vallicelliana' | 'omnes_vallicelliana' | 'verona' | 'diamm' | 'bne' | 'mdc_catalonia' | 'bvpb' | 'onb' | 'rouen' | 'freiburg' | 'sharedcanvas' | 'saint_omer' | 'ugent' | 'bl' | 'wolfenbuettel' | 'florence' | 'hhu' | 'vatican' | 'belgica_kbr' | 'bordeaux';
+  library: 'nypl' | 'morgan' | 'gallica' | 'grenoble' | 'karlsruhe' | 'manchester' | 'munich' | 'unifr' | 'e_manuscripta' | 'vatlib' | 'cecilia' | 'irht' | 'loc' | 'dijon' | 'laon' | 'durham' | 'florus' | 'unicatt' | 'cudl' | 'trinity_cam' | 'toronto' | 'fulda' | 'isos' | 'mira' | 'orleans' | 'rbme' | 'parker' | 'manuscripta' | 'internet_culturale' | 'graz' | 'gams' | 'cologne' | 'vienna_manuscripta' | 'rome' | 'berlin' | 'czech' | 'modena' | 'bdl' | 'europeana' | 'monte_cassino' | 'vallicelliana' | 'omnes_vallicelliana' | 'verona' | 'diamm' | 'bne' | 'mdc_catalonia' | 'bvpb' | 'onb' | 'rouen' | 'freiburg' | 'sharedcanvas' | 'saint_omer' | 'ugent' | 'bl' | 'bodleian' | 'wolfenbuettel' | 'florence' | 'hhu' | 'vatican' | 'belgica_kbr' | 'bordeaux';
   displayName: string;
   originalUrl: string;
   startPageFromUrl?: number; // Optional: page number specified in URL for range starting
+  requiresTileProcessor?: boolean; // Optional: indicates if tile processing is needed
+  tileConfig?: any; // Optional: tile configuration data
+  pageBlocks?: any; // Optional: page block data for special processing
   partInfo?: {
     partNumber: number;
     totalParts: number;
@@ -57,6 +60,9 @@ export interface ElectronAPI {
   clearCache: () => Promise<void>;
   getCacheStats: () => Promise<{ size: number; entries: number }>;
   solveCaptcha: (url: string) => Promise<{ success: boolean; content?: string; error?: string }>;
+  logRendererError: (error: { message: string; filename?: string; lineno?: number; colno?: number; stack?: string; type: string }) => void;
+  updateRenderingProgress: (stage: string, message: string, percentage: number) => Promise<void>;
+  saveImageFile: (filePath: string, data: Uint8Array) => Promise<void>;
 }
 
 declare global {

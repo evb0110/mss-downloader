@@ -26,22 +26,22 @@ export class ManuscriptaLoader extends BaseLibraryLoader {
                 console.log(`Loading Manuscripta.se manifest from: ${manifestUrl}`);
                 
                 // Use intelligent progress monitoring for Manuscripta.se with enhanced error handling
-                const progressMonitor = this.deps.createProgressMonitor(
-                    'Manuscripta.se manifest loading',
-                    'manuscripta',
-                    { initialTimeout: 60000, maxTimeout: 300000, progressCheckInterval: 15000 },
-                    {
-                        onInitialTimeoutReached: (state: any) => {
-                            console.log(`[Manuscripta.se] ${state.statusMessage}`);
-                        },
-                        onStuckDetected: (state: any) => {
-                            console.warn(`[Manuscripta.se] ${state.statusMessage} - ID: ${manuscriptId}`);
-                        },
-                        onTimeout: (state: any) => {
-                            console.error(`[Manuscripta.se] ${state.statusMessage} - ID: ${manuscriptId}`);
-                        }
+                const progressMonitor = this.deps.createProgressMonitor({
+                    task: 'Manuscripta.se manifest loading',
+                    category: 'manuscripta',
+                    initialTimeout: 60000,
+                    maxTimeout: 300000,
+                    progressCheckInterval: 15000,
+                    onInitialTimeoutReached: (state: any) => {
+                        console.log(`[Manuscripta.se] ${state.statusMessage}`);
+                    },
+                    onStuckDetected: (state: any) => {
+                        console.warn(`[Manuscripta.se] ${state.statusMessage} - ID: ${manuscriptId}`);
+                    },
+                    onTimeout: (state: any) => {
+                        console.error(`[Manuscripta.se] ${state.statusMessage} - ID: ${manuscriptId}`);
                     }
-                );
+                });
                 
                 const controller = progressMonitor.start();
                 progressMonitor.updateProgress(0, 1, 'Loading Manuscripta.se manifest...');

@@ -61,12 +61,12 @@ export class LoggedSharedManifestAdapter {
             url,
             details: {
                 message: 'Loading Catalonia MDC manifest',
-                method: 'fetchCataloniaManifest'
+                method: 'getMDCCataloniaManifest'
             }
         });
         
         try {
-            const manifest = await this.loaders.fetchCataloniaManifest(url);
+            const manifest = await this.loaders.getMDCCataloniaManifest(url);
             
             comprehensiveLogger.log({
                 level: 'info',
@@ -92,7 +92,7 @@ export class LoggedSharedManifestAdapter {
                 errorStack: error.stack,
                 details: {
                     message: 'Failed to load Catalonia MDC manifest',
-                    method: 'fetchCataloniaManifest'
+                    method: 'getMDCCataloniaManifest'
                 }
             });
             throw error;
@@ -109,13 +109,13 @@ export class LoggedSharedManifestAdapter {
             library,
             url,
             details: {
-                message: 'Loading Europeana manifest',
-                method: 'fetchEuropeanaManifest'
+                message: 'Loading Europeana manifest (generic method)',
+                method: 'getManifestForLibrary'
             }
         });
         
         try {
-            const manifest = await this.loaders.fetchEuropeanaManifest(url);
+            const manifest = await this.loaders.getManifestForLibrary('europeana', url);
             
             comprehensiveLogger.log({
                 level: 'info',
@@ -141,7 +141,7 @@ export class LoggedSharedManifestAdapter {
                 errorStack: error.stack,
                 details: {
                     message: 'Failed to load Europeana manifest',
-                    method: 'fetchEuropeanaManifest'
+                    method: 'getManifestForLibrary'
                 }
             });
             throw error;
@@ -159,12 +159,12 @@ export class LoggedSharedManifestAdapter {
             url,
             details: {
                 message: 'Loading Florence manifest',
-                method: 'fetchFlorenceManifest'
+                method: 'getFlorenceManifest'
             }
         });
         
         try {
-            const manifest = await this.loaders.fetchFlorenceManifest(url);
+            const manifest = await this.loaders.getFlorenceManifest(url);
             
             comprehensiveLogger.log({
                 level: 'info',
@@ -190,7 +190,7 @@ export class LoggedSharedManifestAdapter {
                 errorStack: error.stack,
                 details: {
                     message: 'Failed to load Florence manifest',
-                    method: 'fetchFlorenceManifest',
+                    method: 'getFlorenceManifest',
                     isAuthError: error.message?.includes('403') || error.message?.includes('Authentication')
                 }
             });
@@ -209,12 +209,12 @@ export class LoggedSharedManifestAdapter {
             url,
             details: {
                 message: 'Loading Verona manifest',
-                method: 'fetchVeronaManifest'
+                method: 'getVeronaManifest'
             }
         });
         
         try {
-            const manifest = await this.loaders.fetchVeronaManifest(url);
+            const manifest = await this.loaders.getVeronaManifest(url);
             
             comprehensiveLogger.log({
                 level: 'info',
@@ -240,7 +240,7 @@ export class LoggedSharedManifestAdapter {
                 errorStack: error.stack,
                 details: {
                     message: 'Failed to load Verona manifest',
-                    method: 'fetchVeronaManifest',
+                    method: 'getVeronaManifest',
                     isTimeoutError: error.message?.includes('timeout') || error.message?.includes('ETIMEDOUT')
                 }
             });
@@ -259,12 +259,12 @@ export class LoggedSharedManifestAdapter {
             url,
             details: {
                 message: 'Parsing Graz manifest',
-                method: 'parseGrazManifest'
+                method: 'getGrazManifest'
             }
         });
         
         try {
-            const manifest = await this.loaders.parseGrazManifest(url);
+            const manifest = await this.loaders.getGrazManifest(url);
             
             comprehensiveLogger.log({
                 level: 'info',
@@ -290,7 +290,7 @@ export class LoggedSharedManifestAdapter {
                 errorStack: error.stack,
                 details: {
                     message: 'Failed to parse Graz manifest',
-                    method: 'parseGrazManifest'
+                    method: 'getGrazManifest'
                 }
             });
             throw error;
@@ -307,14 +307,16 @@ export class LoggedSharedManifestAdapter {
             library,
             url,
             details: {
-                message: 'Loading IIIF manifest',
-                method: 'fetchIIIFManifest',
+                message: 'Loading IIIF manifest (generic fetch with retry)',
+                method: 'fetchWithRetry',
                 customUserAgent
             }
         });
         
         try {
-            const manifest = await this.loaders.fetchIIIFManifest(url, customUserAgent);
+            const manifest = await this.loaders.fetchWithRetry(url, { 
+                headers: customUserAgent ? { 'User-Agent': customUserAgent } : undefined 
+            });
             
             comprehensiveLogger.log({
                 level: 'info',
@@ -343,7 +345,7 @@ export class LoggedSharedManifestAdapter {
                 errorStack: error.stack,
                 details: {
                     message: 'Failed to load IIIF manifest',
-                    method: 'fetchIIIFManifest'
+                    method: 'fetchWithRetry'
                 }
             });
             throw error;

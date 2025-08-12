@@ -34,6 +34,9 @@ export class BritishLibraryLoader extends BaseLibraryLoader {
                     }
                 }
                 
+                if (!this.deps.loadIIIFManifest) {
+                    throw new Error('IIIF manifest loader not available');
+                }
                 return this.deps.loadIIIFManifest(manifestUrl);
             } catch (error: any) {
                 throw new Error(`Failed to load British Library manifest: ${(error as Error).message}`);
