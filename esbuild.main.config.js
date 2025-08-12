@@ -1,10 +1,12 @@
+#!/usr/bin/env node
+
 const esbuild = require('esbuild');
 const path = require('path');
 
 // Build configuration for main process with pdf-lib bundled
 const buildMain = async () => {
   try {
-    await esbuild.build({
+    const buildOptions = {
       entryPoints: ['src/main/main.ts'],
       bundle: true,
       platform: 'node',
@@ -25,8 +27,9 @@ const buildMain = async () => {
       define: {
         'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
       },
-    });
-    
+    };
+
+    await esbuild.build(buildOptions);
     console.log('Main process bundled successfully with pdf-lib included');
   } catch (error) {
     console.error('Build failed:', error);
@@ -37,7 +40,7 @@ const buildMain = async () => {
 // Also bundle the preload script
 const buildPreload = async () => {
   try {
-    await esbuild.build({
+    const preloadOptions = {
       entryPoints: ['src/preload/preload.ts'],
       bundle: true,
       platform: 'node',
@@ -47,8 +50,9 @@ const buildPreload = async () => {
       format: 'cjs',
       sourcemap: false,
       minify: process.env.NODE_ENV === 'production',
-    });
-    
+    };
+
+    await esbuild.build(preloadOptions);
     console.log('Preload script bundled successfully');
   } catch (error) {
     console.error('Preload build failed:', error);

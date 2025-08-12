@@ -1552,10 +1552,18 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 };
             }
 
-            const req = client.request(url, { 
+            // Prepare request options
+            const requestOptions: any = { 
                 timeout,
                 headers
-            }, (res: any) => {
+            };
+            
+            // Add SSL bypass for BNE
+            if (url.includes('bdh-rd.bne.es')) {
+                requestOptions.rejectUnauthorized = false;
+            }
+            
+            const req = client.request(url, requestOptions, (res: any) => {
                 // Handle redirects (3xx status codes)
                 if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
                     const redirectUrl = new URL(res.headers.location, url);

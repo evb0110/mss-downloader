@@ -3025,8 +3025,18 @@ export class EnhancedManuscriptDownloaderService {
             }
 
             validImagePaths.sort((a, b) => {
-                const aNum = parseInt(a.match(/_page_(\d+)\.jpg$/)![1], 10);
-                const bNum = parseInt(b.match(/_page_(\d+)\.jpg$/)![1], 10);
+                // Support multiple file extensions (jpg, jpeg, png, pdf, tiff, etc.)
+                const aMatch = a.match(/_page_(\d+)\.[^.]+$/);
+                const bMatch = b.match(/_page_(\d+)\.[^.]+$/);
+                
+                // Handle cases where the regex doesn't match (shouldn't happen, but be safe)
+                if (!aMatch || !bMatch) {
+                    console.warn('Warning: Could not extract page number from filename', { a, b });
+                    return 0;
+                }
+                
+                const aNum = parseInt(aMatch[1], 10);
+                const bNum = parseInt(bMatch[1], 10);
                 return aNum - bNum;
             });
 
