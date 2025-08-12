@@ -67,7 +67,7 @@ export class BneLoader extends BaseLibraryLoader {
         
         // Binary search for the last valid page
         let low = 1;
-        let high = 500; // Max pages to check
+        let high = Infinity; // Max pages to check
         let lastValidPage = 1;
         let checksPerformed = 0;
         

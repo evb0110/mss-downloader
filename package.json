@@ -1,6 +1,6 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.167",
+  "version": "1.4.168",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (63+ libraries worldwide)",
   "changelog": [
     "v1.4.167: Fixed 700+ Vue/Volar TypeScript errors in SharedManifestLoaders",
@@ -69,6 +69,7 @@
     "validate:libraries": "node .devkit/run-validation.js"
   },
   "dependencies": {
+    "@anthropic-ai/claude-code": "^1.0.74",
     "axios": "^1.10.0",
     "electron-store": "8.1.0",
     "jimp": "^1.6.0",
