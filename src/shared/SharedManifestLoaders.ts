@@ -4,6 +4,9 @@
  * SINGLE SOURCE OF TRUTH for all manuscript library integrations
  */
 
+import * as https from 'https';
+import * as http from 'http';
+
 import type {
     ManuscriptImage,
     FetchOptions,
@@ -15,7 +18,8 @@ import type {
     IIIFManifest,
     IIIFSequence,
     IIIFCanvas,
-    LocalizedString
+    LocalizedString,
+    MetadataItem
 } from './SharedManifestTypes';
 
 class SharedManifestLoaders implements ISharedManifestLoaders {
@@ -70,19 +74,21 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             try {
                 return await this.fetchUrl(url, options);
             } catch (error: unknown) {
-                console.log(`[SharedManifestLoaders] Attempt ${i + 1}/${retries} failed for ${url}: ${error.message}`);
-                if (error.code) console.log(`[SharedManifestLoaders] Error code: ${error.code}`);
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                const errorCode = (error && typeof error === 'object' && 'code' in error) ? (error as any).code : undefined;
+                console.log(`[SharedManifestLoaders] Attempt ${i + 1}/${retries} failed for ${url}: ${errorMessage}`);
+                if (errorCode) console.log(`[SharedManifestLoaders] Error code: ${errorCode}`);
                 
                 if (i === retries - 1) {
                     // Enhanced error messages for specific error types
-                    if (error.code === 'ENOTFOUND' || error.code === 'EAI_AGAIN') {
+                    if (errorCode === 'ENOTFOUND' || errorCode === 'EAI_AGAIN') {
                         // ULTRA-PRIORITY FIX: Sanitize URL before extracting hostname
                         const sanitizedUrl = this.sanitizeUrl(url);
                         const domain = new URL(sanitizedUrl).hostname;
                         throw new Error(`DNS resolution failed for ${domain}. This may be due to:\n1. Network connectivity issues\n2. DNS server problems\n3. Firewall blocking the domain\n4. The server may be temporarily down\n\nPlease check your internet connection and try again.`);
                     }
                     
-                    if (error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
+                    if (errorCode === 'ETIMEDOUT' || errorMessage.includes('timeout')) {
                         // ULTRA-PRIORITY FIX: Sanitize URL before extracting hostname
                         const sanitizedUrl = this.sanitizeUrl(url);
                         const domain = new URL(sanitizedUrl).hostname;
@@ -118,6 +124,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 await new Promise(resolve => setTimeout(resolve, delay));
             }
         }
+        
+        // This should never be reached, but provides type safety
+        throw new Error(`Failed to fetch ${url} after ${retries} attempts`);
     }
     
     calculateTotalRetryTime(retries: number): number {
@@ -135,7 +144,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
      * ULTRA-PRIORITY FIX: Comprehensive URL sanitization to prevent hostname concatenation
      * This addresses Issue #13 where URLs like 'pagella.bm-grenoble.frhttps://...' cause DNS errors
      */
-    sanitizeUrl(_url: string): string {
+    sanitizeUrl(url: string): string {
         if (!url || typeof url !== 'string') return url;
         
         // Pattern 1: hostname directly concatenated with protocol (most common)
@@ -258,7 +267,8 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 urlObj = new URL(url);
             } catch (error: unknown) {
                 console.error('[SharedManifestLoaders] Invalid URL after sanitization:', url);
-                reject(new Error(`Invalid URL: ${url}. Original error: ${error.message}`));
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                reject(new Error(`Invalid URL: ${url}. Original error: ${errorMessage}`));
                 return;
             }
             
@@ -387,15 +397,16 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             req.on('error', (error: unknown) => {
                 // CRITICAL FIX: Clean error to prevent URL malformation
                 // Node.js ETIMEDOUT errors contain address/port that can get concatenated with URLs
-                if (error.code === 'ETIMEDOUT') {
+                const errorCode = (error && typeof error === 'object' && 'code' in error) ? (error as any).code : undefined;
+                if (errorCode === 'ETIMEDOUT') {
                     const cleanError = new Error(`Connection timeout: ${error instanceof Error ? error.message : 'Unknown error'}`);
-                    cleanError.code = error.code;
-                    cleanError.originalUrl = url;
+                    (cleanError as any).code = errorCode;
+                    (cleanError as any).originalUrl = url;
                     // Store network details separately to prevent concatenation
-                    cleanError.networkDetails = {
-                        address: error.address,
-                        port: error.port,
-                        syscall: error.syscall
+                    (cleanError as any).networkDetails = {
+                        address: (error as any).address,
+                        port: (error as any).port,
+                        syscall: (error as any).syscall
                     };
                     reject(cleanError);
                 } else {
@@ -411,7 +422,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         });
     }
     
-    getTimeoutForUrl(_url: string): number {
+    getTimeoutForUrl(url: string): number {
         // Verona servers need extended timeout
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
             return url.includes('mirador_json/manifest/') ? 180000 : 90000;
@@ -427,7 +438,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * BDL Servizirl - Fixed duplicate pages and empty pages issue
      */
-    async getBDLManifest(_url: string): Promise<{ images: ManuscriptImage[] }> {
+    async getBDLManifest(url: string): Promise<{ images: ManuscriptImage[] }> {
         const match = url.match(/BDL-OGGETTO-(\d+)/);
         if (!match) throw new Error('Invalid BDL URL');
         
@@ -472,7 +483,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * Verona - NBM (Nuova Biblioteca Manoscritta) - Fixed with Electron-safe fetch and simplified timeout handling
      */
-    async getVeronaManifest(_url: string): Promise<{ images: ManuscriptImage[] }> {
+    async getVeronaManifest(url: string): Promise<{ images: ManuscriptImage[] }> {
         console.log('[Verona] Processing URL:', url);
         
         // Perform server health check first (but don't fail completely if it fails)
@@ -786,7 +797,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * Vienna Manuscripta - Fixed with direct URL construction
      */
-    async getViennaManuscriptaManifest(_url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+    async getViennaManuscriptaManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         const response = await this.fetchWithRetry(url);
         if (!response.ok) throw new Error(`Failed to fetch page: ${response.status}`);
         
@@ -801,7 +812,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const parts = manuscriptId.match(/(AT)(\d+)-(\d+)/);
         if (!parts) throw new Error('Invalid manuscript ID format');
         
-        const [, prefix, num1, num2] = parts;
+        const [, prefix, num1, _num2] = parts;
         const basePath = `https://manuscripta.at/images/${prefix}/${num1}/${manuscriptId}`;
         
         // Get all pages
@@ -820,7 +831,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * BNE Spain - Fixed with SSL bypass
      */
-    async getBNEManifest(_url: string): Promise<BneViewerInfo | { images: ManuscriptImage[] }> {
+    async getBNEManifest(url: string): Promise<BneViewerInfo | { images: ManuscriptImage[] }> {
         const match = url.match(/id=(\d+)/);
         if (!match) throw new Error('Invalid BNE URL');
         
@@ -884,8 +895,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 }
             }
             
-        } catch (error) {
-            console.warn(`[BNE] HTML detection failed: ${error.message}`);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.warn(`[BNE] HTML detection failed: ${errorMessage}`);
         }
         
         // If we couldn't detect page count, use conservative default
@@ -928,8 +940,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 
                 return { images };
             }
-        } catch (error) {
-            console.warn(`[BNE] Direct PDF test failed: ${error.message}`);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.warn(`[BNE] Direct PDF test failed: ${errorMessage}`);
         }
         
         // Fallback: Generate URLs anyway (they might work even if HEAD fails)
@@ -947,7 +960,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * Karlsruhe - Working
      */
-    async getKarlsruheManifest(_url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+    async getKarlsruheManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         let manifestUrl;
         
         // Handle proxy URLs from i3f.vls.io
@@ -1013,7 +1026,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * Library of Congress - Working
      */
-    async getLibraryOfCongressManifest(_url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+    async getLibraryOfCongressManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         const match = url.match(/item\/(\d+)/);
         if (!match) throw new Error('Invalid Library of Congress URL');
         
@@ -1044,7 +1057,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * University of Graz - Fixed with streaming page processing and memory-efficient JSON parsing
      */
-    async getGrazManifest(_url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+    async getGrazManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         console.log(`[Graz] Processing URL: ${url}`);
         
         // Extract manuscript ID from URL - handle multiple patterns
@@ -1117,7 +1130,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             const label = labelMatch ? labelMatch[1] : null;
             
             // Use smart label enhancement
-            const displayName = enhanceManuscriptLabel({
+            const _displayName = enhanceManuscriptLabel({
                 library: 'Graz',
                 manuscriptId: manuscriptId,
                 originalLabel: label,
@@ -1216,11 +1229,13 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 images
             };
             
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('[Graz] Manifest loading failed:', error);
             
             // Handle different error scenarios gracefully
-            if (error.message && error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            const errorCode = (error && typeof error === 'object' && 'code' in error) ? (error as any).code : undefined;
+            if (errorMessage && errorMessage.includes('timeout') || errorCode === 'ETIMEDOUT') {
                 throw new Error('University of Graz server is not responding. The manuscript may be too large or the server is experiencing high load. Please try again later.');
             }
             
@@ -1236,13 +1251,13 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 throw new Error('Access to University of Graz manuscript is restricted. This may be due to geo-blocking or institutional access requirements.');
             }
             
-            if (error.message && error.message.includes('404')) {
+            if (errorMessage && errorMessage.includes('404')) {
                 throw new Error('University of Graz manuscript not found. Please check the URL or try a different manuscript.');
             }
             
             // Create a safe error for any other cases
             const safeError = new Error(
-                `Failed to load University of Graz manifest: ${error.message || 'Unknown network or server error'}`
+                `Failed to load University of Graz manifest: ${errorMessage || 'Unknown network or server error'}`
             );
             safeError.name = 'GrazManifestError';
             throw safeError;
@@ -1252,7 +1267,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * Linz / Upper Austrian State Library - Uses Goobi viewer with IIIF
      */
-    async getLinzManifest(_url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+    async getLinzManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         console.log(`[Linz] Processing URL: ${url}`);
         
         // Extract manuscript ID from URL pattern like /viewer/image/116/
@@ -1339,16 +1354,17 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 images
             };
             
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('[Linz] Error loading manifest:', error);
-            throw new Error(`Failed to load Linz manuscript: ${error.message}`);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(`Failed to load Linz manuscript: ${errorMessage}`);
         }
     }
 
     /**
      * MDC Catalonia - Fixed to use embedded __INITIAL_STATE__ data
      */
-    async getMDCCataloniaManifest(_url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+    async getMDCCataloniaManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         const response = await this.fetchWithRetry(url);
         if (!response.ok) throw new Error(`Failed to fetch page: ${response.status}`);
         
@@ -1366,7 +1382,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 
                 // Handle HTML entity decoding and JSON escaping
                 jsonString = jsonString.replace(/\\"/g, '"');
-                jsonString = jsonString.replace(/\\\\/g, '\\');
+                const _jsonString = jsonString.replace(/\\\\/g, '\\');
                 
                 // Use a more robust approach - eval the JSON.parse call safely
                 // This handles all the complex escaping automatically
@@ -1432,12 +1448,12 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
      * BVPB (Biblioteca Virtual del Patrimonio Bibliográfico) - Spain
      * Uses direct image ID access pattern
      */
-    async getBVPBManifest(_url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+    async getBVPBManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         // Extract registro ID from URL
         const match = url.match(/registro\.do\?id=(\d+)/);
         if (!match) throw new Error('Invalid BVPB URL');
         
-        const registroId = match[1];
+        const _registroId = match[1];
         
         // Fetch the registro page to find image viewer links
         const response = await this.fetchWithRetry(url);
@@ -1531,7 +1547,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * Morgan Library - Supports multiple URL patterns with high-resolution image extraction
      */
-    async getMorganManifest(_url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+    async getMorganManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         console.log('[Morgan] Processing URL:', url);
         
         // Handle direct image URLs
@@ -1664,9 +1680,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             const images: ManuscriptImage[] = [];
             
             return await this.processMorganHTML(html, url, baseUrl, manuscriptId, displayName, images);
-        } catch (error) {
+        } catch (error: unknown) {
             // Enhance error reporting for Morgan-specific issues
-            if (error.message.includes('Too many redirects')) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            if (errorMessage.includes('Too many redirects')) {
                 throw new Error(`Morgan page has too many redirects - likely a redirect loop. The manuscript URL may be outdated. Try finding the current URL on themorgan.org.`);
             }
             throw error;
@@ -1917,7 +1934,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * Heinrich Heine University Düsseldorf (HHU) - IIIF manifest support
      */
-    async getHHUManifest(_url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
+    async getHHUManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
         console.log('[HHU] Processing URL:', url);
         
         // Extract ID from URL patterns like:
@@ -2039,7 +2056,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
      * GAMS University of Graz - Placeholder for GAMS URLs
      * This prevents the "unsupported library" error for GAMS URLs
      */
-    async getGAMSManifest(_url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+    async getGAMSManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         console.log('[GAMS] Processing URL:', url);
         
         // Handle direct object URLs like: https://gams.uni-graz.at/o:gzc.1605/sdef:TEI/get
@@ -2176,7 +2193,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                                 break;
                             }
                         }
-                    } catch (testError) {
+                    } catch {
                         // Stop on error if we already have some pages
                         if (images.length > 0) {
                             break;
@@ -2287,7 +2304,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Florence (ContentDM Plutei) - Fixed with proper IIIF manifest integration and error handling
      */
-    async getFlorenceManifest(_url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+    async getFlorenceManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         console.log('[Florence] Processing URL:', url);
         
         // Extract item ID from URL - handle multiple formats
@@ -2382,7 +2399,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 const images: ManuscriptImage[] = [];
                 
                 // Look for page navigation or compound object indicators
-                const pageNumberMatches = html.match(/(?:page|item)\s*(\d+)\s*of\s*(\d+)/i);
+                const _pageNumberMatches = html.match(/(?:page|item)\s*(\d+)\s*of\s*(\d+)/i);
                 const compoundPatterns = [
                     /compound[^>]*object/i,
                     /(?:page|item)\s*\d+\s*of\s*(\d+)/i,
@@ -2492,7 +2509,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Parse Florence IIIF manifest structure
      */
-    parseFlorenceIIIFManifest(manifest: IIIFManifest, itemId: string) {
+    parseFlorenceIIIFManifest(manifest: IIIFManifest, _itemId: string) {
         const images: ManuscriptImage[] = [];
         
         // Handle IIIF v2 manifest
@@ -2556,7 +2573,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Grenoble Municipal Library - IIIF manifest with SSL bypass
      */
-    async getGrenobleManifest(_url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+    async getGrenobleManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         // Extract document ID from URL (ARK identifier)
         const match = url.match(/ark:\/12148\/([^/]+)/);
         if (!match) throw new Error('Invalid Grenoble URL');
@@ -2609,7 +2626,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * Server limits: maxWidth: 2000, maxHeight: 2000
      * Native resolution: 3978x5600 (22.3MP) but server-limited
      */
-    async getManchesterManifest(_url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+    async getManchesterManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         // Extract manuscript ID from URL (e.g., MS-LATIN-00074)
         const match = url.match(/view\/(MS-[A-Z]+-\d+)/);
         if (!match) throw new Error('Invalid Manchester URL');
@@ -2659,7 +2676,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * Munich Digital Collections (Digitale Sammlungen)
      * Standard IIIF v2 implementation with reliable image service
      */
-    async getMunichManifest(_url: string): Promise<{ images: ManuscriptImage[], type?: string, manifest?: IIIFManifest, metadata?: MetadataItem[], displayName?: string } | ManuscriptImage[]> {
+    async getMunichManifest(url: string): Promise<{ images: ManuscriptImage[], type?: string, manifest?: IIIFManifest, metadata?: MetadataItem[], displayName?: string } | ManuscriptImage[]> {
         console.log('[Munich] Processing URL:', url);
         
         // Extract manuscript ID from viewer URL
@@ -2753,7 +2770,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * University of Toronto Fisher Library
      * Supports both collections viewer URLs and direct IIIF URLs
      */
-    async getTorontoManifest(_url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+    async getTorontoManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         let manifestUrl = url;
         
         // Handle collections.library.utoronto.ca URLs
@@ -2787,7 +2804,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                             break;
                         }
                     }
-                } catch (error) {
+                } catch {
                     // Try next pattern
                 }
             }
@@ -2809,7 +2826,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         if (manifest.items) {
             const maxPages = manifest.items.length;
             for (let i = 0; i < maxPages; i++) {
-                const item = manifest.items[i] as any;
+                const item = manifest.items[i] as { items?: Array<{ items?: Array<{ body?: { service?: Array<{ id?: string }> } }> }> };
                 if (item.items && item.items[0] && item.items[0].items && item.items[0].items[0]) {
                     const annotation = item.items[0].items[0];
                     if (annotation.body) {
@@ -2871,7 +2888,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * Supports manuscripts from digi.vatlib.it
      * Uses standard IIIF with maximum resolution available
      */
-    async getVaticanManifest(_url: string): Promise<{ images: ManuscriptImage[], label?: string, displayName?: string, metadata?: MetadataItem[] } | ManuscriptImage[]> {
+    async getVaticanManifest(url: string): Promise<{ images: ManuscriptImage[], label?: string, displayName?: string, metadata?: MetadataItem[] } | ManuscriptImage[]> {
         // Extract manuscript ID from URL
         const match = url.match(/view\/([^/?]+)/);
         if (!match) throw new Error('Invalid Vatican Library URL');
@@ -3196,7 +3213,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         req.end();
                     });
                     if (result) quickValidCount++;
-                } catch (e) {
+                } catch {
                     // Continue
                 }
             }
@@ -3234,7 +3251,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         } else {
                             consecutiveFails++;
                         }
-                    } catch (e) {
+                    } catch {
                         consecutiveFails++;
                     }
                 }
@@ -3272,7 +3289,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     } else if (validStart !== -1) {
                         break;
                     }
-                } catch (error) {
+                } catch {
                     // Continue
                 }
                 
@@ -3374,7 +3391,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     if (maxFound === null || page > maxFound) maxFound = page;
                     console.log(`[Bordeaux] Quick scan: Page ${page} available`);
                 }
-            } catch (error) {
+            } catch {
                 // Ignore errors during discovery
             }
             
@@ -3445,7 +3462,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Bordeaux - Fixed with proper tile processor integration
      */
-    async getBordeauxManifest(_url: string): Promise<{ images: ManuscriptImage[], displayName?: string, type?: string, baseId?: number, publicId?: string, startPage?: number, pageCount?: number, tileBaseUrl?: string, requiresTileProcessor?: boolean, tileConfig?: Record<string, unknown>, pageBlocks?: Record<string, unknown> } | ManuscriptImage[]> {
+    async getBordeauxManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string, type?: string, baseId?: number, publicId?: string, startPage?: number, pageCount?: number, tileBaseUrl?: string, requiresTileProcessor?: boolean, tileConfig?: Record<string, unknown>, pageBlocks?: Record<string, unknown> } | ManuscriptImage[]> {
         console.log('[Bordeaux] Processing URL:', url);
         
         // Handle both public URLs and direct tile URLs
@@ -3662,7 +3679,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * Bodleian Library (Oxford) - IIIF v2 manifest support
      * Supports manuscripts from digital.bodleian.ox.ac.uk
      */
-    async getBodleianManifest(_url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
+    async getBodleianManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
         console.log('[Bodleian] Processing URL:', url);
         
         // Extract object ID from URL
@@ -3792,7 +3809,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         break;
                     }
                 }
-            } catch (error) {
+            } catch {
                 // Continue searching even if there's an error
             }
             
@@ -3817,7 +3834,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         break;
                     }
                 }
-            } catch (error) {
+            } catch {
                 // Continue searching even if there's an error
             }
             
@@ -4171,7 +4188,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * SIMPLIFIED VERSION: Extracts pages directly from HTML option tags
      * Much faster and more accurate than complex block discovery
      */
-    async getEManuscriptaManifest(_url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
+    async getEManuscriptaManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
         console.log('[e-manuscripta] Processing URL:', url);
         
         // Extract manuscript ID from URL
@@ -4316,7 +4333,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * @param {string} url - The Heidelberg library URL
      * @returns {Promise<Object>} Manifest object with images array
      */
-    async getHeidelbergManifest(_url: string): Promise<{ images: ManuscriptImage[], displayName?: string, metadata?: MetadataItem[], type?: string } | ManuscriptImage[]> {
+    async getHeidelbergManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string, metadata?: MetadataItem[], type?: string } | ManuscriptImage[]> {
         console.log('[Heidelberg] Processing URL:', url);
         
         // Handle DOI URLs (e.g., https://doi.org/10.11588/diglit.7292)
@@ -4559,7 +4576,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * 3. Check if the manuscript has alternative access methods
      * 4. Contact nb.no for access permissions
      */
-    async getNorwegianManifest(_url: string): Promise<{ images: ManuscriptImage[], displayName?: string, metadata?: MetadataItem[], type?: string } | ManuscriptImage[]> {
+    async getNorwegianManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string, metadata?: MetadataItem[], type?: string } | ManuscriptImage[]> {
         console.log('[Norwegian] Processing URL:', url);
         
         // Extract item ID from URL
@@ -4741,291 +4758,291 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
 
     // Alias methods to match the ISharedManifestLoaders interface
     // These methods call the corresponding get* methods for compatibility
-    async loadMorganManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadMorganManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getMorganManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadGrenobleManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadGrenobleManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getGrenobleManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadKarlsruheManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadKarlsruheManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getKarlsruheManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadManchesterManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadManchesterManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getManchesterManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadMunichManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadMunichManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getMunichManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadEManuscriptaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadEManuscriptaManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getEManuscriptaManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadVatlibManifest(_url: string): Promise<VaticanManifest | ManuscriptImage[]> {
+    async loadVatlibManifest(url: string): Promise<VaticanManifest | ManuscriptImage[]> {
         const result = await this.getVaticanManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadLocManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadLocManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getLibraryOfCongressManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadTorontoManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadTorontoManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getTorontoManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadGrazManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadGrazManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getGrazManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadGamsManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadGamsManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getGAMSManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadViennaManuscriptaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadViennaManuscriptaManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getViennaManuscriptaManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadBdlManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadBdlManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getBDLManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadVeronaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadVeronaManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getVeronaManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadBneManifest(_url: string): Promise<BneViewerInfo | { images: ManuscriptImage[] }> {
+    async loadBneManifest(url: string): Promise<BneViewerInfo | { images: ManuscriptImage[] }> {
         return await this.getBNEManifest(url);
     }
 
-    async loadMdcCataloniaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadMdcCataloniaManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getMDCCataloniaManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadBvpbManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadBvpbManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getBVPBManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadFlorenceManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadFlorenceManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getFlorenceManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadHhuManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadHhuManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getHHUManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadVaticanManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadVaticanManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getVaticanManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadBordeauxManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadBordeauxManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getBordeauxManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadBodleianManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadBodleianManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getBodleianManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadHeidelbergManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadHeidelbergManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getHeidelbergManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadNorwegianManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadNorwegianManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getNorwegianManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
     // Placeholder implementations for interface compliance (methods not implemented yet)
-    async loadGallicaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadGallicaManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Gallica manifest loading not yet implemented');
     }
 
-    async loadNyplManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadNyplManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('NYPL manifest loading not yet implemented');
     }
 
-    async loadUnifrManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadUnifrManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Unifr manifest loading not yet implemented');
     }
 
-    async loadCeciliaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadCeciliaManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Cecilia manifest loading not yet implemented');
     }
 
-    async loadIrhtManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadIrhtManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('IRHT manifest loading not yet implemented');
     }
 
-    async loadDijonManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadDijonManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Dijon manifest loading not yet implemented');
     }
 
-    async loadLaonManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadLaonManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Laon manifest loading not yet implemented');
     }
 
-    async loadDurhamManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadDurhamManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Durham manifest loading not yet implemented');
     }
 
-    async loadFlorusManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadFlorusManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Florus manifest loading not yet implemented');
     }
 
-    async loadUnicattManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadUnicattManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Unicatt manifest loading not yet implemented');
     }
 
-    async loadCudlManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadCudlManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('CUDL manifest loading not yet implemented');
     }
 
-    async loadTrinityCamManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadTrinityCamManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Trinity Cambridge manifest loading not yet implemented');
     }
 
-    async loadFuldaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadFuldaManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Fulda manifest loading not yet implemented');
     }
 
-    async loadIsosManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadIsosManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('ISOS manifest loading not yet implemented');
     }
 
-    async loadMiraManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadMiraManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Mira manifest loading not yet implemented');
     }
 
-    async loadOrleansManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadOrleansManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Orleans manifest loading not yet implemented');
     }
 
-    async loadRbmeManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadRbmeManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('RBME manifest loading not yet implemented');
     }
 
-    async loadParkerManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadParkerManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Parker manifest loading not yet implemented');
     }
 
-    async loadManuscriptaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadManuscriptaManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Manuscripta manifest loading not yet implemented');
     }
 
-    async loadInternetCulturaleManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadInternetCulturaleManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Internet Culturale manifest loading not yet implemented');
     }
 
-    async loadCologneManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadCologneManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Cologne manifest loading not yet implemented');
     }
 
-    async loadRomeManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadRomeManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Rome manifest loading not yet implemented');
     }
 
-    async loadBerlinManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadBerlinManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Berlin manifest loading not yet implemented');
     }
 
-    async loadCzechManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadCzechManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Czech manifest loading not yet implemented');
     }
 
-    async loadModenaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadModenaManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Modena manifest loading not yet implemented');
     }
 
-    async loadEuropeanaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadEuropeanaManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Europeana manifest loading not yet implemented');
     }
 
-    async loadMonteCassinoManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadMonteCassinoManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Monte Cassino manifest loading not yet implemented');
     }
 
-    async loadVallicellianManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadVallicellianManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Vallicelliana manifest loading not yet implemented');
     }
 
-    async loadOmnesVallicellianManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadOmnesVallicellianManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Omnes Vallicelliana manifest loading not yet implemented');
     }
 
-    async loadDiammManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadDiammManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('DIAMM manifest loading not yet implemented');
     }
 
-    async loadOnbManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadOnbManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('ONB manifest loading not yet implemented');
     }
 
-    async loadRouenManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadRouenManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Rouen manifest loading not yet implemented');
     }
 
-    async loadFreiburgManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadFreiburgManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Freiburg manifest loading not yet implemented');
     }
 
-    async loadSharedCanvasManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadSharedCanvasManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('SharedCanvas manifest loading not yet implemented');
     }
 
-    async loadSaintOmerManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadSaintOmerManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Saint Omer manifest loading not yet implemented');
     }
 
-    async loadUgentManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadUgentManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('UGent manifest loading not yet implemented');
     }
 
-    async loadBritishLibraryManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadBritishLibraryManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('British Library manifest loading not yet implemented');
     }
 
-    async loadWolfenbuettelManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadWolfenbuettelManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Wolfenbüttel manifest loading not yet implemented');
     }
 
-    async loadBelgicaKbrManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadBelgicaKbrManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Belgica KBR manifest loading not yet implemented');
     }
 
-    async loadIIIFManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadIIIFManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Generic IIIF manifest loading not yet implemented');
     }
 
-    async loadGenericIIIFManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadGenericIIIFManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Generic IIIF manifest loading not yet implemented');
     }
 
-    async loadDiammSpecificManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadDiammSpecificManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('DIAMM-specific manifest loading not yet implemented');
     }
 }

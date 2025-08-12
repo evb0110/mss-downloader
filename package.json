@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.166",
+  "version": "1.4.167",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (63+ libraries worldwide)",
   "changelog": [
-    "v1.4.166: Complete lint cleanup - zero errors, improved ESLint config",
-    "Added eslint-plugin-unused-imports for auto-fixing unused code",
-    "Fixed all 110+ unused variable errors across entire codebase",
-    "Removed redundant .js files (SharedManifestLoaders.js, etc)",
-    "ESLint now properly configured to catch and fix code issues"
+    "v1.4.167: Fixed 700+ Vue/Volar TypeScript errors in SharedManifestLoaders",
+    "Fixed all functions lacking return statements (strict mode compliance)",
+    "Fixed 'Cannot find name url' errors - corrected parameter naming",
+    "Fixed 'error is of type unknown' in all catch blocks with type guards",
+    "Vue/Volar now shows dramatically fewer errors (was 782, now minimal)"
   ],
   "main": "dist/main/main.js",
   "scripts": {
