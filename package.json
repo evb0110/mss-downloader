@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.169",
+  "version": "1.4.170",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (63+ libraries worldwide)",
   "changelog": [
-    "v1.4.169: HOTFIX - Fixed BDL URL parsing and loadingStartTime crash",
-    "Fixed BDL URL validation to accept cdOggetto=XXXX format",
-    "Fixed ReferenceError: loadingStartTime is not defined crash",
-    "BDL manuscripts now download properly again",
-    "No more unhandled promise rejections in download queue"
+    "v1.4.170: Fixed BDL PDF handling - no more libpng errors",
+    "BDL now properly detects and handles PDF pages when available",
+    "Automatic PDF detection for any library serving .pdf files",
+    "Fixed 'QImage::pixel: coordinate out of range' errors",
+    "BDL manuscripts download reliably with PDF or IIIF fallback"
   ],
   "main": "dist/main/main.js",
   "scripts": {

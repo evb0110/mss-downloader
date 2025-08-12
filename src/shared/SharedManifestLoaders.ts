@@ -462,23 +462,33 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const images: ManuscriptImage[] = [];
         const seenMediaIds = new Set<string>(); // Track unique media IDs to prevent duplicates
         
-        // Extract all pages with IIIF URLs, avoiding duplicates
+        // Extract all pages - prefer PDF if available, fallback to IIIF
         for (let i = 0; i < data.length; i++) {
             const page = data[i];
-            if (page.idMediaServer && !seenMediaIds.has(page.idMediaServer)) {
+            
+            // Check if PDF is available for this page
+            if (page.idMediaServerPdf && page.mediaServerPdf) {
+                const pdfUrl = `${page.mediaServerPdf}${page.idMediaServerPdf}.pdf`;
+                if (!seenMediaIds.has(`pdf_${page.idMediaServerPdf}`)) {
+                    seenMediaIds.add(`pdf_${page.idMediaServerPdf}`);
+                    images.push({
+                        url: pdfUrl,
+                        label: `Page ${images.length + 1}`
+                    });
+                }
+            } else if (page.idMediaServer && !seenMediaIds.has(page.idMediaServer)) {
+                // Fallback to IIIF if no PDF available
                 seenMediaIds.add(page.idMediaServer);
                 
-                // ULTRA-PRIORITY FIX #9: Use optimized size for faster downloads
-                // Use the cantaloupeUrl from API if available, otherwise use default
+                // Use smaller size for more reliable downloads (cantaloupe may be slow)
                 const baseUrl = page.cantaloupeUrl || 'https://www.bdl.servizirl.it/cantaloupe/';
-                // Ensure no double slashes in the path
                 const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
-                // Use 1024px width instead of max for 10x faster downloads
-                const imageUrl = `${cleanBaseUrl}iiif/2/${page.idMediaServer}/full/1024,/0/default.jpg`;
+                // Use 2048px width for good quality but faster downloads
+                const imageUrl = `${cleanBaseUrl}iiif/2/${page.idMediaServer}/full/2048,/0/default.jpg`;
                 
                 images.push({
                     url: imageUrl,
-                    label: `Page ${images.length + 1}` // Use actual count, not loop index
+                    label: `Page ${images.length + 1}`
                 });
             }
         }
@@ -735,7 +745,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             
             // Parse IIIF v2 manifest structure
             let totalCanvases = 0;
-            if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            if (manifest.sequences?.[0]?.canvases) {
                 const canvases = manifest.sequences[0].canvases;
                 totalCanvases = canvases.length;
                 console.log('[Verona] Found', totalCanvases, 'pages in manifest');
@@ -1016,14 +1026,15 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const manifest: IIIFManifest = await response.json();
         const images: ManuscriptImage[] = [];
         
-        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
-            console.log(`[Karlsruhe] Found ${manifest.sequences[0].canvases.length} pages in manifest`);
+        if (manifest.sequences?.[0]?.canvases) {
+            const canvases = manifest.sequences[0].canvases;
+            console.log(`[Karlsruhe] Found ${canvases.length} pages in manifest`);
             
             // FIXED in v1.4.56: Removed Math.min(canvases.length, 10) limit
             // Now processes ALL pages instead of just first 10
             // This ensures users get complete manuscripts (e.g., 600 pages for Karlsruhe)
-            for (let i = 0; i < manifest.sequences[0].canvases.length; i++) {
-                const canvas = manifest.sequences[0].canvases[i];
+            for (let i = 0; i < canvases.length; i++) {
+                const canvas = canvases[i];
                 if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
                     images.push({
                         url: canvas.images[0].resource['@id'],
@@ -1053,9 +1064,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const manifest: IIIFManifest = await response.json();
         const images: ManuscriptImage[] = [];
         
-        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
-            for (let i = 0; i < manifest.sequences[0].canvases.length; i++) {
-                const canvas = manifest.sequences[0].canvases[i];
+        if (manifest.sequences?.[0]?.canvases) {
+            const canvases = manifest.sequences[0].canvases;
+            for (let i = 0; i < canvases.length; i++) {
+                const canvas = canvases[i];
                 if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
                     images.push({
                         url: canvas.images[0].resource['@id'],
@@ -1189,7 +1201,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 console.log('[Graz] Falling back to JSON parsing...');
                 try {
                     const manifest: IIIFManifest = JSON.parse(manifestText);
-                    if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+                    if (manifest.sequences?.[0]?.canvases) {
                         const canvases = manifest.sequences[0].canvases;
                         console.log(`[Graz] Found ${canvases.length} pages in manifest`);
                         
@@ -1323,7 +1335,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             const images: ManuscriptImage[] = [];
             
             // Extract images from IIIF manifest
-            if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            if (manifest.sequences?.[0]?.canvases) {
                 const canvases = manifest.sequences[0].canvases;
                 console.log(`[Linz] Found ${canvases.length} pages in manifest`);
                 
@@ -2014,7 +2026,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             }
             
             // Extract images from IIIF v2 manifest
-            if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            if (manifest.sequences?.[0]?.canvases) {
                 const canvases = manifest.sequences[0].canvases;
                 console.log(`[HHU] Found ${canvases.length} pages in manifest`);
                 
@@ -2097,7 +2109,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                         const manifest: IIIFManifest = await response.json();
                         
                         // Process IIIF manifest directly
-                        if (!manifest.sequences || !manifest.sequences[0] || !manifest.sequences[0].canvases) {
+                        if (!manifest.sequences?.[0]?.canvases) {
                             throw new Error('Invalid GAMS IIIF manifest structure');
                         }
                         
@@ -2159,7 +2171,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                     if (contentType && contentType.includes('json')) {
                         const manifest: IIIFManifest = await response.json();
                         
-                        if (!manifest.sequences || !manifest.sequences[0] || !manifest.sequences[0].canvases) {
+                        if (!manifest.sequences?.[0]?.canvases) {
                             throw new Error('Invalid IIIF manifest structure');
                         }
                 
@@ -2540,7 +2552,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const images: ManuscriptImage[] = [];
         
         // Handle IIIF v2 manifest
-        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+        if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
             console.log(`[Florence] Processing ${canvases.length} pages from IIIF manifest`);
             
@@ -2616,13 +2628,13 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const images: ManuscriptImage[] = [];
         
         // Process IIIF v2 manifest
-        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+        if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
             const maxPages = canvases.length;
             
             for (let i = 0; i < maxPages; i++) {
                 const canvas = canvases[i];
-                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                if (canvas.images?.[0]?.resource) {
                     const imageResource = canvas.images[0].resource;
                     
                     // Get the highest quality image URL
@@ -2669,13 +2681,13 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const images: ManuscriptImage[] = [];
         
         // Process IIIF v2 manifest
-        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+        if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
             const maxPages = canvases.length;
             
             for (let i = 0; i < maxPages; i++) {
                 const canvas = canvases[i];
-                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                if (canvas.images?.[0]?.resource) {
                     const service = canvas.images[0].resource.service;
                     const serviceObj = Array.isArray(service) ? service[0] : service;
                     const imageId = serviceObj['@id'] || serviceObj.id;
@@ -2727,14 +2739,14 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const images: ManuscriptImage[] = [];
         
         // Process IIIF v2 manifest
-        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+        if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
             const maxPages = canvases.length;
             console.log(`[Munich] Found ${maxPages} pages in manifest`);
             
             for (let i = 0; i < maxPages; i++) {
                 const canvas = canvases[i];
-                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                if (canvas.images?.[0]?.resource) {
                     const imageResource = canvas.images[0].resource;
                     const service = imageResource.service;
                     const serviceObj = Array.isArray(service) ? service[0] : service;
@@ -2875,7 +2887,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         // Handle IIIF v2
-        else if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+        else if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
             const maxPages = canvases.length;
             
@@ -2945,7 +2957,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const images: ManuscriptImage[] = [];
         
         // Get all canvases from the manifest
-        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+        if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
             
             for (let i = 0; i < canvases.length; i++) {
@@ -3674,7 +3686,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     async parseBordeauxIIIFManifest(manifest: IIIFManifest, manuscriptId: string): Promise<{ images: ManuscriptImage[]; displayName: string }> {
         const images: ManuscriptImage[] = [];
         
-        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+        if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
             const maxPages = canvases.length;
             
@@ -3729,7 +3741,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const images: ManuscriptImage[] = [];
         
         // Process IIIF v2 manifest
-        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+        if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
             console.log(`[Bodleian] Processing ${canvases.length} pages from IIIF manifest`);
             
@@ -4522,7 +4534,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         } else if (manifest.sequences) {
             // IIIF v2 structure
             const sequence = manifest.sequences[0];
-            if (sequence && sequence.canvases) {
+            if (sequence?.canvases) {
                 console.log(`[Heidelberg] Processing IIIF v2 manifest with ${sequence.canvases.length} canvases`);
                 
                 for (let i = 0; i < sequence.canvases.length; i++) {
@@ -4661,9 +4673,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         }
         
         // Process sequences (IIIF v2 structure)
-        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+        if (manifest.sequences?.[0]?.canvases) {
             for (const canvas of manifest.sequences[0].canvases) {
-                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                if (canvas.images?.[0]?.resource) {
                     const resource = canvas.images[0].resource;
                     
                     // Get the service URL for dynamic sizing

@@ -3062,8 +3062,11 @@ export class EnhancedManuscriptDownloaderService {
 
                     const partStartPage = actualStartPage + startIdx;
                     try {
-                        // BNE provides PDFs, not images - use PDF merger instead
-                        if (manifest?.library === 'bne') {
+                        // BNE and BDL may provide PDFs, not images - use PDF merger instead
+                        // Check if any of the files are PDFs
+                        const hasPDFs = partImages.some(img => img && img.toLowerCase().endsWith('.pdf'));
+                        
+                        if (manifest?.library === 'bne' || hasPDFs) {
                             await this.mergePDFPages(partImages, partFilepath, partStartPage, manifest);
                         } else {
                             await this.convertImagesToPDFWithBlanks(partImages, partFilepath, partStartPage, manifest);
@@ -3111,8 +3114,11 @@ export class EnhancedManuscriptDownloaderService {
             } else {
                 // Single PDF
                 try {
-                    // BNE provides PDFs, not images - use PDF merger instead
-                    if (manifest?.library === 'bne') {
+                    // BNE and BDL may provide PDFs, not images - use PDF merger instead
+                    // Check if any of the files are PDFs
+                    const hasPDFs = completeImagePaths.some(img => img && img.toLowerCase().endsWith('.pdf'));
+                    
+                    if (manifest?.library === 'bne' || hasPDFs) {
                         await this.mergePDFPages(completeImagePaths, filepath, actualStartPage, manifest);
                     } else {
                         await this.convertImagesToPDFWithBlanks(completeImagePaths, filepath, actualStartPage, manifest);
