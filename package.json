@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.158",
+  "version": "1.4.159",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (63+ libraries worldwide)",
   "changelog": [
-    "v1.4.158: Complete BNE (Biblioteca Nacional de España) fix",
-    "Fixed BNE PDF creation crash - regex now handles PDF files correctly",
-    "Fixed BNE naming - displays 'BNE 7619' instead of generic 'bne Manuscript'",
-    "Added SSL bypass for BNE in download sampling (fixes size estimation)",
-    "BNE now uses optimized binary search (10-15 requests vs 200+) and direct PDF access"
+    "v1.4.159: BNE performance boost - increased concurrency to 8",
+    "BNE now downloads 8 pages simultaneously (was limited to 3)",
+    "Significantly faster downloads for Spanish National Library manuscripts",
+    "All BNE fixes from v1.4.158 are included and working",
+    "Direct PDF access with optimized binary search page discovery"
   ],
   "main": "dist/main/main.js",
   "scripts": {

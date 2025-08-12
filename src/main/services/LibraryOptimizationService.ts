@@ -190,9 +190,9 @@ export class LibraryOptimizationService {
             optimizationDescription: 'DIAMM optimizations: 3 concurrent downloads, extended timeouts for high-resolution medieval music manuscripts'
         },
         'bne': {
-            maxConcurrentDownloads: 3, // BNE Spanish National Library with good performance
+            maxConcurrentDownloads: 8, // BNE supports high concurrency with direct PDF access
             timeoutMultiplier: 1.5, // Extended timeout for page discovery and image downloads
-            optimizationDescription: 'BNE optimizations: 3 concurrent downloads, extended timeouts for page discovery'
+            optimizationDescription: 'BNE optimizations: 8 concurrent downloads (direct PDF access), extended timeouts for page discovery'
         },
         'mdc_catalonia': {
             maxConcurrentDownloads: 2, // Reduced due to recent network stability issues
