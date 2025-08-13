@@ -197,7 +197,7 @@ export interface FetchResponse {
   buffer?(): Promise<Buffer>;
   status: number;
   statusText: string;
-  headers: Headers | Record<string, any>;
+  headers: Headers | Record<string, string | string[]>;
   ok: boolean;
 }
 

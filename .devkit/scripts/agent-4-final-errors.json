@@ -1,0 +1,162 @@
+[
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5476,
+    "column": 29,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5480,
+    "column": 38,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5484,
+    "column": 37,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5488,
+    "column": 34,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5492,
+    "column": 28,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5496,
+    "column": 35,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5500,
+    "column": 37,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestTypes.ts",
+    "line": 200,
+    "column": 37,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/types.ts",
+    "line": 36,
+    "column": 16,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/types.ts",
+    "line": 37,
+    "column": 16,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/vite-env.d.ts",
+    "line": 5,
+    "column": 52,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 2,
+    "column": 10,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 34,
+    "column": 12,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 39,
+    "column": 12,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 45,
+    "column": 15,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 95,
+    "column": 21,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 138,
+    "column": 21,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 235,
+    "column": 21,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 285,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 389,
+    "column": 21,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  }
+]

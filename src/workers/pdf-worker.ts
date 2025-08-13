@@ -1,5 +1,5 @@
 // PDF worker temporarily disabled - using main process pdf-lib instead
-let pdf: any | null = null;
+let pdf: unknown | null = null;
 let pageCount = 0;
 
 // Unlimited canvas dimensions for maximum quality
@@ -31,18 +31,18 @@ const WINDOWS_MAX_IMAGE_SIZE_MB = 500; // Increased limit for unlimited resoluti
 
 interface WorkerMessage {
     type: 'init' | 'addPage' | 'finalize' | 'reset' | 'processChunk' | 'assemblePages';
-    data?: any;
+    data?: unknown;
 }
 
 interface WorkerResponse {
     type: 'ready' | 'progress' | 'complete' | 'error' | 'chunkComplete' | 'pageProcessed' | 'imageProcessingFailed' | 'assemblyComplete' | 'log';
-    data?: any;
+    data?: unknown;
 }
 
 interface LogEntry {
     level: 'debug' | 'info' | 'warn' | 'error';
     message: string;
-    details?: any;
+    details?: unknown;
     error?: {
         message: string;
         stack?: string;
@@ -92,20 +92,23 @@ self.onmessage = async function(e: MessageEvent<WorkerMessage>) {
                 resetPDF();
                 break;
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        const errorCode = error instanceof Error && 'code' in error ? (error as Record<string, unknown>).code : undefined;
         log({
             level: 'error',
             message: `Worker error processing ${type} message`,
             error: {
-                message: error.message,
-                stack: error.stack,
-                code: error.code
+                message: errorMessage,
+                stack: errorStack,
+                code: errorCode
             },
             details: { messageType: type, data }
         });
         postMessage({ 
             type: 'error', 
-            data: { message: error.message },
+            data: { message: errorMessage },
         } as WorkerResponse);
     }
 };
@@ -135,7 +138,7 @@ function initializePDF(): void {
         
         // PDF worker disabled - using main process instead
         throw new Error('PDF worker is disabled, using main process pdf-lib instead');
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Failed to initialize PDF:', error);
         log({
             level: 'error',
@@ -232,14 +235,16 @@ async function addPageToPDF(imageBlob: Blob, pageNumber: number, totalPages: num
             data: { pageNumber, totalPages, percentage: Math.round((pageNumber / totalPages) * 100) }
         } as WorkerResponse);
         
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error(`Failed to process page ${pageNumber}:`, error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorStack = error instanceof Error ? error.stack : undefined;
         log({
             level: 'error',
             message: `Failed to process page ${pageNumber}`,
             error: {
-                message: error.message,
-                stack: error.stack
+                message: errorMessage,
+                stack: errorStack
             },
             details: {
                 pageNumber,
@@ -282,8 +287,9 @@ async function processImageForPDF(imageBlob: Blob, pageNumber: number): Promise<
                 const base64Data = canvas.toDataURL('image/jpeg', quality);
                 
                 resolve({ base64Data, width, height });
-            } catch (error: any) {
-                reject(new Error(`Failed to process image for page ${pageNumber}: ${error.message}`));
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                reject(new Error(`Failed to process image for page ${pageNumber}: ${errorMessage}`));
             }
         };
         
@@ -386,9 +392,10 @@ function finalizePDF(): Blob {
         const pdfOutput = pdf.output('blob');
         console.log(`PDF finalized with ${pageCount} pages, size: ${Math.round(pdfOutput.size / 1024 / 1024 * 100) / 100}MB`);
         return pdfOutput;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Failed to finalize PDF:', error);
-        throw new Error(`Failed to finalize PDF: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        throw new Error(`Failed to finalize PDF: ${errorMessage}`);
     }
 }
 

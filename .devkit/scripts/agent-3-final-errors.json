@@ -1,0 +1,178 @@
+[
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5383,
+    "column": 29,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5387,
+    "column": 28,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5391,
+    "column": 28,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5395,
+    "column": 31,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5399,
+    "column": 28,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5403,
+    "column": 30,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5407,
+    "column": 35,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5411,
+    "column": 41,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5415,
+    "column": 31,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5419,
+    "column": 28,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5428,
+    "column": 29,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5432,
+    "column": 30,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5436,
+    "column": 33,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5440,
+    "column": 36,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5444,
+    "column": 36,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5448,
+    "column": 41,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5452,
+    "column": 29,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5456,
+    "column": 27,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5460,
+    "column": 29,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5464,
+    "column": 32,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5468,
+    "column": 36,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5472,
+    "column": 33,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  }
+]

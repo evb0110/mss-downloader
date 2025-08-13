@@ -1,0 +1,178 @@
+[
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 2792,
+    "column": 52,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 2792,
+    "column": 84,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 2792,
+    "column": 114,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3008,
+    "column": 48,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3747,
+    "column": 48,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3805,
+    "column": 48,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3829,
+    "column": 51,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3865,
+    "column": 57,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3866,
+    "column": 24,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3958,
+    "column": 30,
+    "type": "error",
+    "message": "'error' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3980,
+    "column": 34,
+    "type": "error",
+    "message": "'error' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4029,
+    "column": 38,
+    "type": "error",
+    "message": "'error' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4059,
+    "column": 26,
+    "type": "error",
+    "message": "'error' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4197,
+    "column": 30,
+    "type": "error",
+    "message": "'e' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4246,
+    "column": 57,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4247,
+    "column": 24,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4567,
+    "column": 36,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4567,
+    "column": 61,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4567,
+    "column": 89,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4568,
+    "column": 55,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4825,
+    "column": 32,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4825,
+    "column": 57,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  }
+]

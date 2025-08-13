@@ -18,6 +18,8 @@ import type {
     IIIFManifest,
     IIIFSequence,
     IIIFCanvas,
+    IIIFService,
+    IIIFResource,
     LocalizedString,
     MetadataItem
 } from './SharedManifestTypes';
@@ -2789,7 +2791,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     const imageResource = canvas.images[0].resource;
                     const service = imageResource.service;
                     const serviceObj = Array.isArray(service) ? service[0] : service;
-                    const imageId = (serviceObj as any)?.['@id'] || (serviceObj as any)?.id || (imageResource as any)['@id'];
+                    const imageId = (serviceObj as IIIFService)?.['@id'] || (serviceObj as IIIFService)?.id || (imageResource as IIIFResource)['@id'];
                     
                     if (imageId) {
                         // Use /full/max/ for highest quality available
@@ -3005,7 +3007,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     const image = canvas.images[0];
                     const service = image.resource?.service;
                     
-                    if (service && (service as any)['@id']) {
+                    if (service && (service as IIIFService)['@id']) {
                         // Vatican supports up to 4000px width with excellent quality
                         // Testing showed 4000px gives optimal file size/quality balance
                         const imageUrl = `${service['@id']}/full/4000,/0/default.jpg`;
@@ -3744,7 +3746,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     const resource = canvas.images[0].resource;
                     const service = resource.service;
                     
-                    if (service && (service as any)['@id']) {
+                    if (service && (service as IIIFService)['@id']) {
                         // Request maximum resolution
                         const imageUrl = `${service['@id']}/full/max/0/default.jpg`;
                         images.push({
@@ -3802,7 +3804,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     const resource = canvas.images[0].resource;
                     const service = resource.service;
                     
-                    if (service && (service as any)['@id']) {
+                    if (service && (service as IIIFService)['@id']) {
                         // Request maximum resolution available
                         const imageUrl = `${service['@id']}/full/max/0/default.jpg`;
                         images.push({
@@ -3826,7 +3828,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             const maxPages = manifest.items.length;
             
             for (let i = 0; i < maxPages; i++) {
-                const item = manifest.items[i] as any;
+                const item = manifest.items[i] as IIIFCanvas;
                 if (item.items && item.items[0] && item.items[0].items && item.items[0].items[0]) {
                     const annotation = item.items[0].items[0];
                     if (annotation.body && annotation.body.service && annotation.body.service[0]) {
@@ -3862,8 +3864,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         console.log(`[e-manuscripta] ULTRA-OPTIMIZED Discovery for manuscript ${baseManuscriptId} in library ${library}`);
         
         // Enhanced logging for debugging
-        if (typeof window === 'undefined' && (global as any).comprehensiveLogger) {
-            (global as any).comprehensiveLogger.logEManuscriptaDiscovery('discovery_start', {
+        if (typeof window === 'undefined' && (global as Record<string, unknown>).comprehensiveLogger) {
+            ((global as Record<string, unknown>).comprehensiveLogger as { logEManuscriptaDiscovery: (event: string, data: object) => void }).logEManuscriptaDiscovery('discovery_start', {
                 baseManuscriptId,
                 library,
                 method: 'ULTRA-OPTIMIZED'
@@ -3955,7 +3957,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                             foundWithPattern = true;
                             console.log(`[e-manuscripta] Found block with pattern +${pattern}: ${testId}`);
                         }
-                    } catch (error: unknown) {
+                    } catch {
                         // Ignore errors
                     }
                     
@@ -3977,7 +3979,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                             } else if (response.status === 404) {
                                 break; // End of manuscript
                             }
-                        } catch (error: unknown) {
+                        } catch {
                             // Continue
                         }
                         
@@ -4026,7 +4028,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                 } else if (testResponse.status === 404) {
                                     break; // End of this series
                                 }
-                            } catch (error: unknown) {
+                            } catch {
                                 break;
                             }
                         }
@@ -4056,7 +4058,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         console.log(`[e-manuscripta] Added ${discoveredBlocks.size - 1} blocks based on multi-series pattern`);
                         break; // Found a multi-series pattern, that's enough
                     }
-                } catch (error: unknown) {
+                } catch {
                     // Continue with next offset
                 }
             }
@@ -4194,7 +4196,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                             console.log(`[e-manuscripta] Found missing technical block 5157615`);
                             technicalBlocks.push(5157615);
                         }
-                    } catch (e: unknown) {
+                    } catch {
                         // Ignore if not found
                     }
                 }
@@ -4243,8 +4245,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         console.log(`[e-manuscripta] Blocks found: ${sortedBlocks.length} (${coreBlocks.length} core + ${technicalBlocks.length} technical)`);
         
         // Enhanced logging for debugging
-        if (typeof window === 'undefined' && (global as any)['comprehensiveLogger']) {
-            (global as any)['comprehensiveLogger'].logEManuscriptaDiscovery('discovery_complete', {
+        if (typeof window === 'undefined' && (global as Record<string, unknown>)['comprehensiveLogger']) {
+            ((global as Record<string, unknown>)['comprehensiveLogger'] as { logEManuscriptaDiscovery: (event: string, data: object) => void }).logEManuscriptaDiscovery('discovery_complete', {
                 baseManuscriptId,
                 library,
                 blocksFound: sortedBlocks.length,
@@ -4564,8 +4566,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     }
                     
                     // Find annotation with image
-                    if ((canvas as any).items && (canvas as any).items[0] && (canvas as any).items[0].items) {
-                        const annotation = (canvas as any).items[0].items[0];
+                    if ((canvas as IIIFCanvas).items && (canvas as IIIFCanvas).items[0] && (canvas as IIIFCanvas).items[0].items) {
+                        const annotation = (canvas as IIIFCanvas).items[0].items[0];
                         if (!annotation) continue;
                         if (annotation && annotation.body) {
                             let imageUrl = null;
@@ -4819,11 +4821,11 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         if (manifest.items) {
             for (let i = 0; i < manifest.items.length; i++) {
-                const canvas: IIIFSequence = manifest.items[i] as IIIFSequence;
+                const canvas: IIIFCanvas = manifest.items[i] as IIIFCanvas;
                 if (!canvas) continue;
                 
-                if ((canvas as any).items && (canvas as any).items[0] && (canvas as any).items[0].items) {
-                    for (const annotation of (canvas as any).items[0].items) {
+                if (canvas.items && canvas.items[0] && canvas.items[0].items) {
+                    for (const annotation of canvas.items[0].items) {
                         if (!annotation) continue;
                         if (annotation.body) {
                             const body = annotation.body;
@@ -4867,7 +4869,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             metadata: [
                 { label: 'Library', value: 'Norwegian National Library' },
                 { label: 'ID', value: itemId ?? 'unknown' },
-                { label: 'Rights', value: (manifest as any).rights || 'https://www.nb.no/lisens/stromming' },
+                { label: 'Rights', value: (manifest as Record<string, unknown>).rights as string || 'https://www.nb.no/lisens/stromming' },
                 { label: 'Requires Cookies', value: 'true' },
                 { label: 'Requires Norwegian IP', value: 'true' }
             ],
@@ -4966,8 +4968,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                             imageUrl = image.resource;
                         } else if (image.resource['@id']) {
                             imageUrl = image.resource['@id'];
-                        } else if ((image.resource as any).id) {
-                            imageUrl = (image.resource as any).id;
+                        } else if ((image.resource as IIIFResource).id) {
+                            imageUrl = (image.resource as IIIFResource).id;
                         }
                     }
                     
@@ -5052,8 +5054,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                             imageUrl = image.resource;
                         } else if (image.resource['@id']) {
                             imageUrl = image.resource['@id'];
-                        } else if ((image.resource as any).id) {
-                            imageUrl = (image.resource as any).id;
+                        } else if ((image.resource as IIIFResource).id) {
+                            imageUrl = (image.resource as IIIFResource).id;
                         }
                     }
                     
@@ -5216,23 +5218,23 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     }
 
     // Placeholder implementations for interface compliance (methods not implemented yet)
-    async loadGallicaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadGallicaManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Gallica manifest loading not yet implemented');
     }
 
-    async loadNyplManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadNyplManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('NYPL manifest loading not yet implemented');
     }
 
-    async loadUnifrManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadUnifrManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Unifr manifest loading not yet implemented');
     }
 
-    async loadCeciliaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadCeciliaManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Cecilia manifest loading not yet implemented');
     }
 
-    async loadIrhtManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadIrhtManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('IRHT manifest loading not yet implemented');
     }
 
@@ -5307,8 +5309,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 }
             }
             // Handle IIIF v3 if needed
-            else if ((manifest as any).items) {
-                const items = (manifest as any).items;
+            else if ((manifest as IIIFManifest).items) {
+                const items = (manifest as IIIFManifest).items;
                 console.log(`[Berlin] Processing ${items.length} pages from IIIF v3 manifest`);
                 
                 for (let i = 0; i < items.length; i++) {
@@ -5346,77 +5348,78 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             console.log(`[Berlin] Successfully processed ${images.length} pages`);
             return { images, displayName };
             
-        } catch (error: any) {
-            console.error('[Berlin] Failed to load manifest:', error.message);
-            throw new Error(`Failed to load Berlin manifest: ${error.message}`);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error('[Berlin] Failed to load manifest:', errorMessage);
+            throw new Error(`Failed to load Berlin manifest: ${errorMessage}`);
         }
     }
 
-    async loadDijonManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadDijonManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Dijon manifest loading not yet implemented');
     }
 
-    async loadLaonManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadLaonManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Laon manifest loading not yet implemented');
     }
 
-    async loadDurhamManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadDurhamManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Durham manifest loading not yet implemented');
     }
 
-    async loadFlorusManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadFlorusManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Florus manifest loading not yet implemented');
     }
 
-    async loadUnicattManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadUnicattManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Unicatt manifest loading not yet implemented');
     }
 
-    async loadCudlManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadCudlManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('CUDL manifest loading not yet implemented');
     }
 
-    async loadTrinityCamManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadTrinityCamManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Trinity Cambridge manifest loading not yet implemented');
     }
 
-    async loadFuldaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadFuldaManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Fulda manifest loading not yet implemented');
     }
 
-    async loadIsosManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadIsosManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('ISOS manifest loading not yet implemented');
     }
 
-    async loadMiraManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadMiraManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Mira manifest loading not yet implemented');
     }
 
-    async loadOrleansManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadOrleansManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Orleans manifest loading not yet implemented');
     }
 
-    async loadRbmeManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadRbmeManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('RBME manifest loading not yet implemented');
     }
 
-    async loadParkerManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadParkerManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Parker manifest loading not yet implemented');
     }
 
-    async loadManuscriptaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadManuscriptaManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Manuscripta manifest loading not yet implemented');
     }
 
-    async loadInternetCulturaleManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadInternetCulturaleManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Internet Culturale manifest loading not yet implemented');
     }
 
-    async loadCologneManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadCologneManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Cologne manifest loading not yet implemented');
     }
 
-    async loadRomeManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadRomeManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Rome manifest loading not yet implemented');
     }
 
@@ -5425,79 +5428,79 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         return Array.isArray(result) ? result : result.images;
     }
 
-    async loadCzechManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadCzechManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Czech manifest loading not yet implemented');
     }
 
-    async loadModenaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadModenaManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Modena manifest loading not yet implemented');
     }
 
-    async loadEuropeanaManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadEuropeanaManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Europeana manifest loading not yet implemented');
     }
 
-    async loadMonteCassinoManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadMonteCassinoManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Monte Cassino manifest loading not yet implemented');
     }
 
-    async loadVallicellianManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadVallicellianManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Vallicelliana manifest loading not yet implemented');
     }
 
-    async loadOmnesVallicellianManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadOmnesVallicellianManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Omnes Vallicelliana manifest loading not yet implemented');
     }
 
-    async loadDiammManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadDiammManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('DIAMM manifest loading not yet implemented');
     }
 
-    async loadOnbManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadOnbManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('ONB manifest loading not yet implemented');
     }
 
-    async loadRouenManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadRouenManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Rouen manifest loading not yet implemented');
     }
 
-    async loadFreiburgManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadFreiburgManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Freiburg manifest loading not yet implemented');
     }
 
-    async loadSharedCanvasManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadSharedCanvasManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('SharedCanvas manifest loading not yet implemented');
     }
 
-    async loadSaintOmerManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadSaintOmerManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Saint Omer manifest loading not yet implemented');
     }
 
-    async loadUgentManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadUgentManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('UGent manifest loading not yet implemented');
     }
 
-    async loadBritishLibraryManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadBritishLibraryManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('British Library manifest loading not yet implemented');
     }
 
-    async loadWolfenbuettelManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadWolfenbuettelManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Wolfenbüttel manifest loading not yet implemented');
     }
 
-    async loadBelgicaKbrManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadBelgicaKbrManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Belgica KBR manifest loading not yet implemented');
     }
 
-    async loadIIIFManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadIIIFManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Generic IIIF manifest loading not yet implemented');
     }
 
-    async loadGenericIIIFManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadGenericIIIFManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('Generic IIIF manifest loading not yet implemented');
     }
 
-    async loadDiammSpecificManifest(_url: string): Promise<ManuscriptImage[]> {
+    async loadDiammSpecificManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('DIAMM-specific manifest loading not yet implemented');
     }
 }

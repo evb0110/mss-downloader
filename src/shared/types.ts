@@ -33,8 +33,8 @@ export interface ManuscriptManifest {
   originalUrl: string;
   startPageFromUrl?: number; // Optional: page number specified in URL for range starting
   requiresTileProcessor?: boolean; // Optional: indicates if tile processing is needed
-  tileConfig?: any; // Optional: tile configuration data
-  pageBlocks?: any; // Optional: page block data for special processing
+  tileConfig?: Record<string, unknown>; // Optional: tile configuration data
+  pageBlocks?: Record<string, unknown>; // Optional: page block data for special processing
   partInfo?: {
     partNumber: number;
     totalParts: number;

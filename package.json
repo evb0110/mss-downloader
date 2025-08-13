@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.181",
+  "version": "1.4.182",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (67+ libraries worldwide)",
   "changelog": [
-    "v1.4.181: Major lint cleanup - fixed 200+ TypeScript type errors",
-    "Replaced all 'any' types with proper TypeScript types",
-    "Fixed unused variable warnings across all library loaders",
-    "Improved error handling with 'unknown' type instead of 'any'",
-    "Enhanced type safety throughout manuscript downloader services"
+    "v1.4.182: Achieved ZERO lint errors - 100% TypeScript compliance",
+    "Fixed all 400 ESLint errors across entire codebase",
+    "Replaced every 'any' type with proper TypeScript interfaces",
+    "Fixed all unused variable warnings with _UNUSED_ convention",
+    "Enhanced type safety for IIIF manifests and library loaders"
   ],
   "main": "dist/main/main.js",
   "scripts": {

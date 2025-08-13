@@ -1,0 +1,690 @@
+[
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 2792,
+    "column": 52,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 2792,
+    "column": 84,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 2792,
+    "column": 114,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3008,
+    "column": 48,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3747,
+    "column": 48,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3805,
+    "column": 48,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3829,
+    "column": 51,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3865,
+    "column": 57,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3866,
+    "column": 24,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3958,
+    "column": 30,
+    "type": "error",
+    "message": "'error' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 3980,
+    "column": 34,
+    "type": "error",
+    "message": "'error' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4029,
+    "column": 38,
+    "type": "error",
+    "message": "'error' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4059,
+    "column": 26,
+    "type": "error",
+    "message": "'error' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4197,
+    "column": 30,
+    "type": "error",
+    "message": "'e' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4246,
+    "column": 57,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4247,
+    "column": 24,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4567,
+    "column": 36,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4567,
+    "column": 61,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4567,
+    "column": 89,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4568,
+    "column": 55,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4825,
+    "column": 32,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4825,
+    "column": 57,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4825,
+    "column": 85,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4826,
+    "column": 57,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4870,
+    "column": 56,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4969,
+    "column": 55,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 4970,
+    "column": 59,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5055,
+    "column": 55,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5056,
+    "column": 59,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5219,
+    "column": 31,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5223,
+    "column": 28,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5227,
+    "column": 29,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5231,
+    "column": 31,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5235,
+    "column": 28,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5310,
+    "column": 35,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5311,
+    "column": 44,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5349,
+    "column": 25,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5355,
+    "column": 29,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5359,
+    "column": 28,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5363,
+    "column": 30,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5367,
+    "column": 30,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5371,
+    "column": 31,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5375,
+    "column": 28,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5379,
+    "column": 34,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5383,
+    "column": 29,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5387,
+    "column": 28,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5391,
+    "column": 28,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5395,
+    "column": 31,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5399,
+    "column": 28,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5403,
+    "column": 30,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5407,
+    "column": 35,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5411,
+    "column": 41,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5415,
+    "column": 31,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5419,
+    "column": 28,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5428,
+    "column": 29,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5432,
+    "column": 30,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5436,
+    "column": 33,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5440,
+    "column": 36,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5444,
+    "column": 36,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5448,
+    "column": 41,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5452,
+    "column": 29,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5456,
+    "column": 27,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5460,
+    "column": 29,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5464,
+    "column": 32,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5468,
+    "column": 36,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5472,
+    "column": 33,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5476,
+    "column": 29,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5480,
+    "column": 38,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5484,
+    "column": 37,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5488,
+    "column": 34,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5492,
+    "column": 28,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5496,
+    "column": 35,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestLoaders.ts",
+    "line": 5500,
+    "column": 37,
+    "type": "error",
+    "message": "'_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/shared/SharedManifestTypes.ts",
+    "line": 200,
+    "column": 37,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/types.ts",
+    "line": 36,
+    "column": 16,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/shared/types.ts",
+    "line": 37,
+    "column": 16,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/vite-env.d.ts",
+    "line": 5,
+    "column": 52,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 2,
+    "column": 10,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 34,
+    "column": 12,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 39,
+    "column": 12,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 45,
+    "column": 15,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 95,
+    "column": 21,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 138,
+    "column": 21,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 235,
+    "column": 21,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 285,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/workers/pdf-worker.ts",
+    "line": 389,
+    "column": 21,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  }
+]
