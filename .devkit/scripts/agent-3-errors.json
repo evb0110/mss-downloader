@@ -1,0 +1,202 @@
+[
+  {
+    "file": "src/main/services/LoggedSharedManifestAdapter.ts",
+    "line": 337,
+    "column": 25,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/SharedManifestAdapter.ts",
+    "line": 22,
+    "column": 28,
+    "type": "error",
+    "message": "`import()` type annotations are forbidden",
+    "rule": "@typescript-eslint/consistent-type-imports"
+  },
+  {
+    "file": "src/main/services/SharedManifestAdapter.ts",
+    "line": 50,
+    "column": 39,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/SharedManifestAdapter.ts",
+    "line": 57,
+    "column": 30,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/SharedManifestAdapter.ts",
+    "line": 58,
+    "column": 30,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/SharedManifestAdapter.ts",
+    "line": 59,
+    "column": 30,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/SharedManifestAdapter.ts",
+    "line": 61,
+    "column": 34,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/SharedManifestAdapter.ts",
+    "line": 67,
+    "column": 30,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/SharedManifestAdapter.ts",
+    "line": 68,
+    "column": 30,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/SharedManifestAdapter.ts",
+    "line": 96,
+    "column": 27,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/SharedManifestAdapter.ts",
+    "line": 97,
+    "column": 27,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/SharedManifestAdapter.ts",
+    "line": 98,
+    "column": 27,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/ZifImageProcessor.ts",
+    "line": 313,
+    "column": 32,
+    "type": "error",
+    "message": "`import()` type annotations are forbidden",
+    "rule": "@typescript-eslint/consistent-type-imports"
+  },
+  {
+    "file": "src/main/services/ZifImageProcessor.ts",
+    "line": 386,
+    "column": 75,
+    "type": "error",
+    "message": "`import()` type annotations are forbidden",
+    "rule": "@typescript-eslint/consistent-type-imports"
+  },
+  {
+    "file": "src/main/services/ZifImageProcessor.ts",
+    "line": 386,
+    "column": 98,
+    "type": "error",
+    "message": "`import()` type annotations are forbidden",
+    "rule": "@typescript-eslint/consistent-type-imports"
+  },
+  {
+    "file": "src/main/services/library-loaders/BritishLibraryLoader.ts",
+    "line": 41,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/BvpbLoader.ts",
+    "line": 122,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/CeciliaLoader.ts",
+    "line": 103,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/CologneLoader.ts",
+    "line": 137,
+    "column": 43,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/CologneLoader.ts",
+    "line": 142,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/CudlLoader.ts",
+    "line": 34,
+    "column": 83,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/CudlLoader.ts",
+    "line": 56,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/CzechLoader.ts",
+    "line": 82,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/DiammLoader.ts",
+    "line": 48,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/DijonLoader.ts",
+    "line": 28,
+    "column": 55,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  }
+]

@@ -1,0 +1,202 @@
+[
+  {
+    "file": "src/main/services/library-loaders/LocLoader.ts",
+    "line": 180,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/ManchesterLoader.ts",
+    "line": 91,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/ManuscriptaLoader.ts",
+    "line": 35,
+    "column": 54,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/ManuscriptaLoader.ts",
+    "line": 38,
+    "column": 46,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/ManuscriptaLoader.ts",
+    "line": 41,
+    "column": 40,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/ManuscriptaLoader.ts",
+    "line": 49,
+    "column": 35,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/ManuscriptaLoader.ts",
+    "line": 75,
+    "column": 38,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/ManuscriptaLoader.ts",
+    "line": 101,
+    "column": 31,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/ManuscriptaLoader.ts",
+    "line": 113,
+    "column": 57,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/ManuscriptaLoader.ts",
+    "line": 158,
+    "column": 47,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/ManuscriptaLoader.ts",
+    "line": 163,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/MdcCataloniaLoader.ts",
+    "line": 126,
+    "column": 38,
+    "type": "error",
+    "message": "'validationError' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/main/services/library-loaders/MdcCataloniaLoader.ts",
+    "line": 177,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/MiraLoader.ts",
+    "line": 61,
+    "column": 34,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/MiraLoader.ts",
+    "line": 69,
+    "column": 79,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/MiraLoader.ts",
+    "line": 93,
+    "column": 25,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/ModenaLoader.ts",
+    "line": 149,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/MonteCassinoLoader.ts",
+    "line": 108,
+    "column": 83,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/MonteCassinoLoader.ts",
+    "line": 130,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/MorganLoader.ts",
+    "line": 103,
+    "column": 33,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/MorganLoader.ts",
+    "line": 408,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/MunichLoader.ts",
+    "line": 54,
+    "column": 25,
+    "type": "error",
+    "message": "'totalPages' is assigned a value but never used. Allowed unused vars must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/main/services/library-loaders/MunichLoader.ts",
+    "line": 94,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/NyplLoader.ts",
+    "line": 56,
+    "column": 65,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/NyplLoader.ts",
+    "line": 70,
+    "column": 40,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  }
+]

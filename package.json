@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.180",
+  "version": "1.4.181",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (67+ libraries worldwide)",
   "changelog": [
-    "v1.4.180: Fixed critical issues and added 3 new libraries",
-    "Fixed Graz manuscript 6568472 (500 error) with webcache fallback",
-    "Added Linz (Oberösterreichische Landesbibliothek) support",
-    "Added e-rara Swiss digital library support",
-    "Added Yale Beinecke Library support"
+    "v1.4.181: Major lint cleanup - fixed 200+ TypeScript type errors",
+    "Replaced all 'any' types with proper TypeScript types",
+    "Fixed unused variable warnings across all library loaders",
+    "Improved error handling with 'unknown' type instead of 'any'",
+    "Enhanced type safety throughout manuscript downloader services"
   ],
   "main": "dist/main/main.js",
   "scripts": {

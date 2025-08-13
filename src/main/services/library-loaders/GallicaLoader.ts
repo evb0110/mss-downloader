@@ -142,7 +142,7 @@ export class GallicaLoader extends BaseLibraryLoader {
             
             return gallicaManifest;
             
-        } catch (error: any) {
+        } catch (error: unknown) {
             throw new Error(`Failed to load Gallica document: ${(error as Error).message}`);
         }
     }

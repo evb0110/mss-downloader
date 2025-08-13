@@ -45,7 +45,7 @@ export class ViennaManuscriptaLoader extends BaseLibraryLoader {
                             console.log(`Vienna Manuscripta: IIIF manifest loaded successfully with ${canvases.length} pages`);
                             
                             // Extract highest quality image URLs from IIIF manifest
-                            const pageLinks = canvases.map((canvas: any) => {
+                            const pageLinks = canvases.map((canvas: Record<string, unknown>) => {
                                 if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
                                     const resource = canvas.images[0].resource;
                                     
@@ -81,7 +81,7 @@ export class ViennaManuscriptaLoader extends BaseLibraryLoader {
                             }
                         }
                     }
-                } catch (iiifError: any) {
+                } catch (iiifError: unknown) {
                     console.warn(`Vienna Manuscripta: IIIF manifest failed (${iiifError.message}), falling back to page discovery`);
                 }
                 
@@ -94,7 +94,7 @@ export class ViennaManuscriptaLoader extends BaseLibraryLoader {
                     throw new Error('Invalid Vienna Manuscripta manuscript ID format');
                 }
                 
-                const [, prefix, num1, num2] = parts;
+                const [, prefix, num1, _num2] = parts;
                 const imagePath = `https://manuscripta.at/images/${prefix}/${num1}/${manuscriptId}`;
                 
                 const pageLinks: string[] = [];
@@ -125,8 +125,8 @@ export class ViennaManuscriptaLoader extends BaseLibraryLoader {
                             console.log(`Page ${pageNum} (${paddedPage}${side}): HTTP ${response.status}`);
                             consecutiveFailures++;
                         }
-                    } catch (error: any) {
-                        console.log(`Page ${pageNum} (${paddedPage}${side}): Network error - ${error.message}`);
+                    } catch (error: unknown) {
+                        console.log(`Page ${pageNum} (${paddedPage}${side}): Network error - ${(error as Error).message}`);
                         consecutiveFailures++;
                     }
                     
@@ -159,7 +159,7 @@ export class ViennaManuscriptaLoader extends BaseLibraryLoader {
                 console.log(`Vienna Manuscripta manifest loaded: ${displayName}, total pages: ${pageLinks.length}`);
                 return manifest;
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Vienna Manuscripta manifest loading failed:', error);
                 throw new Error(`Failed to load Vienna Manuscripta manuscript: ${(error as Error).message}`);
             }

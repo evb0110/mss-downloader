@@ -177,22 +177,23 @@ export class LocLoader extends BaseLibraryLoader {
                 
                 return locManifest;
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 progressMonitor.abort();
                 
                 const elapsed = Date.now() - startTime;
-                console.error(`[loadLocManifest] FAILED after ${elapsed}ms:`, error.message);
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                console.error(`[loadLocManifest] FAILED after ${elapsed}ms:`, errorMessage);
                 console.error(`[loadLocManifest] Error details:`, {
                     url: locUrl,
                     manifestUrl: manifestUrl || 'not determined',
-                    errorName: error.name,
-                    errorMessage: error.message,
-                    stack: error.stack
+                    errorName: error instanceof Error ? error.name : 'Unknown',
+                    errorMessage: errorMessage,
+                    stack: error instanceof Error ? error.stack : undefined
                 });
                 
                 this.deps.logger.logManifestLoad('loc', locUrl, elapsed, error);
                 
-                throw new Error(`Failed to load Library of Congress manuscript: ${(error as Error).message}`);
+                throw new Error(`Failed to load Library of Congress manuscript: ${errorMessage}`);
             }
         }
 }

@@ -1,5 +1,6 @@
 import { SharedManifestLoaders } from '../../shared/SharedManifestLoaders';
 import { comprehensiveLogger } from './ComprehensiveLogger';
+import type { FetchOptions } from '../../shared/SharedManifestTypes';
 
 /**
  * Wrapper around SharedManifestLoaders that adds comprehensive logging
@@ -12,7 +13,7 @@ export class LoggedSharedManifestAdapter {
         this.loaders = new SharedManifestLoaders();
     }
     
-    async fetchWithRetry(url: string, options: any = {}) {
+    async fetchWithRetry(url: string, options: FetchOptions = {}) {
         const startTime = Date.now();
         const library = this.detectLibraryFromUrl(url);
         
@@ -34,18 +35,19 @@ export class LoggedSharedManifestAdapter {
             });
             
             return result;
-        } catch (error: any) {
-            comprehensiveLogger.logNetworkError(url, error, {
+        } catch (error: unknown) {
+            const err = error as Error;
+            comprehensiveLogger.logNetworkError(url, err, {
                 library,
                 duration: Date.now() - startTime
             });
             
             // Re-throw with enhanced context
-            const enhancedError = new Error(error.message);
-            enhancedError.stack = error.stack;
-            (enhancedError as any).originalError = error;
-            (enhancedError as any).url = url;
-            (enhancedError as any).library = library;
+            const enhancedError = new Error(err.message);
+            enhancedError.stack = err.stack;
+            (enhancedError as Record<string, unknown>).originalError = error;
+            (enhancedError as Record<string, unknown>).url = url;
+            (enhancedError as Record<string, unknown>).library = library;
             throw enhancedError;
         }
     }
@@ -81,15 +83,16 @@ export class LoggedSharedManifestAdapter {
             });
             
             return manifest;
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as Error;
             comprehensiveLogger.log({
                 level: 'error',
                 category: 'manifest',
                 library,
                 url,
                 duration: Date.now() - startTime,
-                errorMessage: error.message,
-                errorStack: error.stack,
+                errorMessage: err.message,
+                errorStack: err.stack,
                 details: {
                     message: 'Failed to load Catalonia MDC manifest',
                     method: 'getMDCCataloniaManifest'
@@ -130,15 +133,16 @@ export class LoggedSharedManifestAdapter {
             });
             
             return manifest;
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as Error;
             comprehensiveLogger.log({
                 level: 'error',
                 category: 'manifest',
                 library,
                 url,
                 duration: Date.now() - startTime,
-                errorMessage: error.message,
-                errorStack: error.stack,
+                errorMessage: err.message,
+                errorStack: err.stack,
                 details: {
                     message: 'Failed to load Europeana manifest',
                     method: 'getManifestForLibrary'
@@ -179,19 +183,20 @@ export class LoggedSharedManifestAdapter {
             });
             
             return manifest;
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as Error;
             comprehensiveLogger.log({
                 level: 'error',
                 category: 'manifest',
                 library,
                 url,
                 duration: Date.now() - startTime,
-                errorMessage: error.message,
-                errorStack: error.stack,
+                errorMessage: err.message,
+                errorStack: err.stack,
                 details: {
                     message: 'Failed to load Florence manifest',
                     method: 'getFlorenceManifest',
-                    isAuthError: error.message?.includes('403') || error.message?.includes('Authentication')
+                    isAuthError: err.message?.includes('403') || err.message?.includes('Authentication')
                 }
             });
             throw error;
@@ -229,19 +234,20 @@ export class LoggedSharedManifestAdapter {
             });
             
             return manifest;
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as Error;
             comprehensiveLogger.log({
                 level: 'error',
                 category: 'manifest',
                 library,
                 url,
                 duration: Date.now() - startTime,
-                errorMessage: error.message,
-                errorStack: error.stack,
+                errorMessage: err.message,
+                errorStack: err.stack,
                 details: {
                     message: 'Failed to load Verona manifest',
                     method: 'getVeronaManifest',
-                    isTimeoutError: error.message?.includes('timeout') || error.message?.includes('ETIMEDOUT')
+                    isTimeoutError: err.message?.includes('timeout') || err.message?.includes('ETIMEDOUT')
                 }
             });
             throw error;
@@ -279,15 +285,16 @@ export class LoggedSharedManifestAdapter {
             });
             
             return manifest;
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as Error;
             comprehensiveLogger.log({
                 level: 'error',
                 category: 'manifest',
                 library,
                 url,
                 duration: Date.now() - startTime,
-                errorMessage: error.message,
-                errorStack: error.stack,
+                errorMessage: err.message,
+                errorStack: err.stack,
                 details: {
                     message: 'Failed to parse Graz manifest',
                     method: 'getGrazManifest'
@@ -334,15 +341,16 @@ export class LoggedSharedManifestAdapter {
             });
             
             return manifest;
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const errorObj = error as Error;
             comprehensiveLogger.log({
                 level: 'error',
                 category: 'manifest',
                 library,
                 url,
                 duration: Date.now() - startTime,
-                errorMessage: error.message,
-                errorStack: error.stack,
+                errorMessage: errorObj.message,
+                errorStack: errorObj.stack,
                 details: {
                     message: 'Failed to load IIIF manifest',
                     method: 'fetchWithRetry'

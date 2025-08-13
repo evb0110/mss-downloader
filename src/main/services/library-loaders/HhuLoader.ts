@@ -92,7 +92,7 @@ export class HhuLoader extends BaseLibraryLoader {
                     let manifest;
                     try {
                         manifest = JSON.parse(responseText);
-                    } catch (parseError: any) {
+                    } catch (parseError: unknown) {
                         console.error('[HHU] JSON parse error:', parseError);
                         console.error('[HHU] Response text (first 500 chars):', responseText.substring(0, 500));
                         throw new Error(`Failed to parse HHU manifest JSON: ${parseError.message}`);
@@ -166,12 +166,12 @@ export class HhuLoader extends BaseLibraryLoader {
                         originalUrl: hhuUrl
                     };
                     
-                } catch (fetchError: any) {
+                } catch (fetchError: unknown) {
                     console.error(`[HHU] Manifest fetch/parse error: ${fetchError.message}`);
                     throw fetchError;
                 }
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 const duration = Date.now() - startTime;
                 console.error(`[HHU] Failed to load manifest after ${duration}ms:`, {
                     url: hhuUrl,

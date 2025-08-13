@@ -47,7 +47,7 @@ export class ParkerLoader extends BaseLibraryLoader {
                     throw new Error('No pages found in manifest');
                 }
                 
-                const pageLinks = canvases.map((canvas: any) => {
+                const pageLinks = canvases.map((canvas: Record<string, unknown>) => {
                     let imageUrl;
                     
                     if (canvas.images && canvas.images[0]) {
@@ -94,11 +94,11 @@ export class ParkerLoader extends BaseLibraryLoader {
                     displayName: sanitizedName,
                     totalPages: pageLinks.length,
                     pageLinks,
-                    library: 'parker' as any,
+                    library: 'parker' as const,
                     originalUrl: parkerUrl
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error(`Stanford Parker manifest loading failed:`, error);
                 throw new Error(`Failed to load Stanford Parker manuscript: ${(error as Error).message}`);
             }

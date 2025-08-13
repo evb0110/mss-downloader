@@ -73,7 +73,7 @@ export class IrhtLoader extends BaseLibraryLoader {
                         originalUrl: url
                     };
                     
-                } catch (error: any) {
+                } catch (error: unknown) {
                     lastError = error;
                     
                     // Only retry for server errors (5xx), not client errors (4xx)

@@ -1,0 +1,202 @@
+[
+  {
+    "file": "src/main/services/library-loaders/NyplLoader.ts",
+    "line": 95,
+    "column": 37,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/NyplLoader.ts",
+    "line": 104,
+    "column": 58,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/NyplLoader.ts",
+    "line": 151,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/OmnesVallicellianLoader.ts",
+    "line": 57,
+    "column": 57,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/OmnesVallicellianLoader.ts",
+    "line": 79,
+    "column": 55,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/OmnesVallicellianLoader.ts",
+    "line": 84,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/OnbLoader.ts",
+    "line": 63,
+    "column": 93,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/OnbLoader.ts",
+    "line": 99,
+    "column": 39,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/OnbLoader.ts",
+    "line": 104,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/OrleansLoader.ts",
+    "line": 56,
+    "column": 40,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/OrleansLoader.ts",
+    "line": 88,
+    "column": 41,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/OrleansLoader.ts",
+    "line": 136,
+    "column": 37,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/OrleansLoader.ts",
+    "line": 229,
+    "column": 46,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/OrleansLoader.ts",
+    "line": 368,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/ParkerLoader.ts",
+    "line": 50,
+    "column": 57,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/ParkerLoader.ts",
+    "line": 97,
+    "column": 42,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/ParkerLoader.ts",
+    "line": 101,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/RbmeLoader.ts",
+    "line": 34,
+    "column": 50,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/RbmeLoader.ts",
+    "line": 60,
+    "column": 37,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/RbmeLoader.ts",
+    "line": 87,
+    "column": 50,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/RbmeLoader.ts",
+    "line": 96,
+    "column": 35,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/RbmeLoader.ts",
+    "line": 114,
+    "column": 41,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/RbmeLoader.ts",
+    "line": 127,
+    "column": 83,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/RbmeLoader.ts",
+    "line": 155,
+    "column": 40,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/RbmeLoader.ts",
+    "line": 159,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  }
+]

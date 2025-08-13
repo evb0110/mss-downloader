@@ -195,12 +195,12 @@ export class InternetCulturaleLoader extends BaseLibraryLoader {
                 return {
                     pageLinks,
                     totalPages: pageLinks.length,
-                    library: 'internet_culturale' as any,
+                    library: 'internet_culturale' as string,
                     displayName: sanitizedName,
                     originalUrl: internetCulturaleUrl,
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error(`Internet Culturale manifest loading failed:`, error);
                 throw new Error(`Failed to load Internet Culturale manuscript: ${(error as Error).message}`);
             }

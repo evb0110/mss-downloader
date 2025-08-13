@@ -105,7 +105,7 @@ export class MonteCassinoLoader extends BaseLibraryLoader {
                 }
                 
                 // Extract page URLs
-                const pageLinks = manifestData.sequences[0].canvases.map((canvas: any) => {
+                const pageLinks = manifestData.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
                     const resource = canvas.images[0].resource;
                     if (resource.service && resource.service['@id']) {
                         return `${resource.service['@id']}/full/full/0/default.jpg`;
@@ -127,8 +127,9 @@ export class MonteCassinoLoader extends BaseLibraryLoader {
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: any) {
-                throw new Error(`Failed to load Monte-Cassino manuscript: ${(error as Error).message}`);
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                throw new Error(`Failed to load Monte-Cassino manuscript: ${errorMessage}`);
             }
         }
 }

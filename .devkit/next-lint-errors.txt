@@ -1,0 +1,300 @@
+/home/evb/WebstormProjects/mss-downloader/src/main/services/ManuscriptDownloaderService.ts
+  987:30  error  '_progress' is defined but never used. Allowed unused args must match /^_UNUSED_/u  unused-imports/no-unused-vars
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/GallicaLoader.ts
+  145:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/GamsLoader.ts
+  94:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/GenericIiifLoader.ts
+   31:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  119:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  139:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/GrazLoader.ts
+   75:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   78:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   81:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   84:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   93:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  122:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  235:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  240:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/GrenobleLoader.ts
+  84:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/HhuLoader.ts
+   95:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  169:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  174:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/IccuLoader.ts
+  75:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/InternetCulturaleLoader.ts
+  198:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  203:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/IrhtLoader.ts
+  76:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/IsosLoader.ts
+  34:83  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  59:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/KarlsruheLoader.ts
+  129:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/LocLoader.ts
+  180:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/ManchesterLoader.ts
+  91:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/ManuscriptaLoader.ts
+   35:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   38:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   41:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   49:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   75:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  158:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  163:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/MdcCataloniaLoader.ts
+  126:38  error    'validationError' is defined but never used  unused-imports/no-unused-vars
+  177:29  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/MiraLoader.ts
+  61:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  69:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  93:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/ModenaLoader.ts
+  149:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/MonteCassinoLoader.ts
+  108:83  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  130:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/MorganLoader.ts
+  103:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  408:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/MunichLoader.ts
+  54:25  error    'totalPages' is assigned a value but never used. Allowed unused vars must match /^_UNUSED_/u  unused-imports/no-unused-vars
+  94:29  warning  Unexpected any. Specify a different type                                                      @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/NyplLoader.ts
+   56:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   70:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   95:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  104:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  151:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/OmnesVallicellianLoader.ts
+  57:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  84:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/OnbLoader.ts
+   63:93  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  104:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/OrleansLoader.ts
+   56:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   88:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  136:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  229:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  368:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/ParkerLoader.ts
+   50:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   97:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/RbmeLoader.ts
+   34:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   60:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   87:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:83  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  155:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/RomeLoader.ts
+   41:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  110:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/RouenLoader.ts
+   71:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  104:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  195:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/SaintOmerLoader.ts
+  98:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/TorontoLoader.ts
+   50:38  error    'error' is defined but never used         unused-imports/no-unused-vars
+  160:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/TrinityCamLoader.ts
+   29:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   77:87  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  102:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/UgentLoader.ts
+  29:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/UnicattLoader.ts
+   59:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  155:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/VallicellianLoader.ts
+   53:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   65:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  105:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/VaticanLoader.ts
+  52:83  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  83:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/VeronaLoader.ts
+  123:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  184:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/ViennaManuscriptaLoader.ts
+   48:69  warning  Unexpected any. Specify a different type                                                                    @typescript-eslint/no-explicit-any
+   84:37  warning  Unexpected any. Specify a different type                                                                    @typescript-eslint/no-explicit-any
+   97:40  error    'num2' is assigned a value but never used. Allowed unused elements of array destructuring must match /^_/u  unused-imports/no-unused-vars
+  128:37  warning  Unexpected any. Specify a different type                                                                    @typescript-eslint/no-explicit-any
+  162:29  warning  Unexpected any. Specify a different type                                                                    @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/WolfenbuettelLoader.ts
+  141:34  error  'error' is defined but never used  unused-imports/no-unused-vars
+/home/evb/WebstormProjects/mss-downloader/src/main/services/library-loaders/types.ts
+  15:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  30:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  30:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/main/services/tile-engine/AbstractTileAdapter.ts
+   19:48  error  '_coordinate' is defined but never used. Allowed unused args must match /^_UNUSED_/u  unused-imports/no-unused-vars
+   70:14  error  'error' is defined but never used                                                     unused-imports/no-unused-vars
+   79:14  error  'error' is defined but never used                                                     unused-imports/no-unused-vars
+   88:14  error  'error' is defined but never used                                                     unused-imports/no-unused-vars
+  159:14  error  'error' is defined but never used                                                     unused-imports/no-unused-vars
+/home/evb/WebstormProjects/mss-downloader/src/main/services/tile-engine/TileEngineCore.ts
+  187:25  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  288:12  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  291:5   error    '_tempDir' is defined but never used. Allowed unused args must match /^_UNUSED_/u  unused-imports/no-unused-vars
+  337:14  error    'error' is defined but never used                                                  unused-imports/no-unused-vars
+/home/evb/WebstormProjects/mss-downloader/src/main/services/tile-engine/TileEngineService.ts
+   84:17  warning  Unexpected any. Specify a different type                                             @typescript-eslint/no-explicit-any
+   85:17  warning  Unexpected any. Specify a different type                                             @typescript-eslint/no-explicit-any
+  131:29  warning  Unexpected any. Specify a different type                                             @typescript-eslint/no-explicit-any
+  132:31  warning  Unexpected any. Specify a different type                                             @typescript-eslint/no-explicit-any
+  152:40  error    '_totalTime' is defined but never used. Allowed unused args must match /^_UNUSED_/u  unused-imports/no-unused-vars
+  170:29  warning  Unexpected any. Specify a different type                                             @typescript-eslint/no-explicit-any
+  171:31  warning  Unexpected any. Specify a different type                                             @typescript-eslint/no-explicit-any
+  210:18  warning  Unexpected any. Specify a different type                                             @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/preload/preload.ts
+   67:21   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  177:35   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  179:47   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  182:52   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  187:64   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  192:56   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  201:114  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  210:55   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/renderer/App.vue
+  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+/home/evb/WebstormProjects/mss-downloader/src/renderer/components/DownloadLogsButton.vue
+  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+/home/evb/WebstormProjects/mss-downloader/src/renderer/components/DownloadQueueManager.vue
+  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+/home/evb/WebstormProjects/mss-downloader/src/renderer/components/ExportLogsButton.vue
+  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+/home/evb/WebstormProjects/mss-downloader/src/renderer/components/LogExportModal.vue
+  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+/home/evb/WebstormProjects/mss-downloader/src/renderer/components/ManuscriptDownloader.vue
+  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+/home/evb/WebstormProjects/mss-downloader/src/renderer/components/Modal.vue
+  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+/home/evb/WebstormProjects/mss-downloader/src/renderer/components/NegativeConverterModal.vue
+  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+/home/evb/WebstormProjects/mss-downloader/src/renderer/components/SettingsModal.vue
+  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+/home/evb/WebstormProjects/mss-downloader/src/renderer/components/Spoiler.vue
+  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+/home/evb/WebstormProjects/mss-downloader/src/renderer/global.d.ts
+   6:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:82  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  15:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  31:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  34:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  39:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  43:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  44:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  71:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+/home/evb/WebstormProjects/mss-downloader/src/renderer/services/PdfRendererService.ts
+  112:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  118:16  error    'error' is defined but never used         unused-imports/no-unused-vars
+/home/evb/WebstormProjects/mss-downloader/src/shared/SharedManifestLoaders.ts
+    98:103  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   274:101  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   284:27   error    `import()` type annotations are forbidden                                         @typescript-eslint/consistent-type-imports
+   439:103  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   442:36   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   443:36   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   445:36   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   446:44   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   447:41   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   448:44   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   640:54   error    '_codice' is defined but never used. Allowed unused args must match /^_UNUSED_/u  unused-imports/no-unused-vars
+   828:52   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   867:97   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  1337:67   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  1375:99   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2164:52   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2166:55   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2248:48   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2248:73   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2250:50   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2251:51   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2311:48   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2311:73   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2512:24   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2515:22   error    'parseError' is defined but never used                                            unused-imports/no-unused-vars
+  2537:41   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2547:38   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2554:77   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2555:76   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2556:76   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2581:41   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2590:38   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2597:70   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2598:69   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2599:69   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2648:25   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2731:67   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2731:97   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2791:52   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2791:84   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  2791:114  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  3007:48   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  3746:48   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  3804:48   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  3828:51   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  3864:57   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  3865:24   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  3957:30   error    'error' is defined but never used                                                 unused-imports/no-unused-vars
+  3979:34   error    'error' is defined but never used                                                 unused-imports/no-unused-vars
+  4028:38   error    'error' is defined but never used                                                 unused-imports/no-unused-vars
+  4058:26   error    'error' is defined but never used                                                 unused-imports/no-unused-vars
+  4196:30   error    'e' is defined but never used                                                     unused-imports/no-unused-vars
+  4245:57   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  4246:24   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  4566:36   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  4566:61   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  4566:89   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  4567:55   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  4824:32   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  4824:57   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  4824:85   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  4825:57   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  4869:56   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  4968:55   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  4969:59   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  5054:55   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  5055:59   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  5137:55   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  5138:59   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  5306:31   error    '_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u     unused-imports/no-unused-vars
+  5310:28   error    '_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u     unused-imports/no-unused-vars
+  5314:29   error    '_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u     unused-imports/no-unused-vars
+  5318:31   error    '_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u     unused-imports/no-unused-vars
+  5322:28   error    '_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u     unused-imports/no-unused-vars
+  5397:35   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  5398:44   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  5436:25   warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  5442:29   error    '_url' is defined but never used. Allowed unused args must match /^_UNUSED_/u     unused-imports/no-unused-vars

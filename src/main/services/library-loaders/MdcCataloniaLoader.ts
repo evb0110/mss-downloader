@@ -123,7 +123,7 @@ export class MdcCataloniaLoader extends BaseLibraryLoader {
                                     console.log(`✅ Page ${page.index}: ${page.title} - ${resolution} validated`);
                                     break; // Use first working resolution (full/full is preferred)
                                 }
-                            } catch (validationError) {
+                            } catch {
                                 // Continue to next resolution strategy
                                 continue;
                             }
@@ -174,9 +174,10 @@ export class MdcCataloniaLoader extends BaseLibraryLoader {
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('❌ MDC Catalonia extraction failed:', error);
-                throw new Error(`Failed to load MDC Catalonia manuscript: ${(error as Error).message}`);
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                throw new Error(`Failed to load MDC Catalonia manuscript: ${errorMessage}`);
             }
         }
 }

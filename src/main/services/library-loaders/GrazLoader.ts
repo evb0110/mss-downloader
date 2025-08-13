@@ -72,16 +72,16 @@ export class GrazLoader extends BaseLibraryLoader {
                     maxTimeout: 1200000,        // 20 minutes max (increased)
                     progressCheckInterval: 15000, // Check every 15 seconds
                     minProgressThreshold: 0.01,   // Any progress is good progress
-                    onInitialTimeoutReached: (state: any) => {
+                    onInitialTimeoutReached: (state: Record<string, unknown>) => {
                         console.log(`[Graz] ${state.statusMessage}`);
                     },
-                    onStuckDetected: (state: any) => {
+                    onStuckDetected: (state: Record<string, unknown>) => {
                         console.warn(`[Graz] ${state.statusMessage}`);
                     },
-                    onProgressResumed: (state: any) => {
+                    onProgressResumed: (state: Record<string, unknown>) => {
                         console.log(`[Graz] ${state.statusMessage}`);
                     },
-                    onTimeout: (state: any) => {
+                    onTimeout: (state: Record<string, unknown>) => {
                         console.error(`[Graz] ${state.statusMessage}`);
                     }
                 });
@@ -90,7 +90,7 @@ export class GrazLoader extends BaseLibraryLoader {
                 progressMonitor.updateProgress(0, 1, 'Loading University of Graz IIIF manifest...');
                 
                 let response: Response;
-                let manifestData: any;
+                let manifestData: Record<string, unknown>;
                 try {
                     console.log(`[Graz] Starting manifest fetch with extended timeout for Issue #2...`);
                     // ULTRA-PRIORITY FIX for Issue #2: Extended timeout for Windows IPC stability
@@ -119,7 +119,7 @@ export class GrazLoader extends BaseLibraryLoader {
                     }
                     
                     progressMonitor.updateProgress(1, 1, 'IIIF manifest parsed successfully');
-                } catch (error: any) {
+                } catch (error: unknown) {
                     console.error(`[Graz] Manifest loading error:`, error);
                     console.error(`[Graz] Error code: ${error.code}, Error name: ${error.name}`);
                     console.error(`[Graz] Full error details:`, JSON.stringify(error, null, 2));
@@ -232,12 +232,12 @@ export class GrazLoader extends BaseLibraryLoader {
                 return {
                     pageLinks,
                     totalPages: pageLinks.length,
-                    library: 'graz' as any,
+                    library: 'graz' as string,
                     displayName: sanitizedName,
                     originalUrl: grazUrl,
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error(`[Graz] loadGrazManifest failed:`, error);
                 console.error(`[Graz] Error stack:`, error.stack);
                 console.error(`[Graz] Original URL: ${grazUrl}`);

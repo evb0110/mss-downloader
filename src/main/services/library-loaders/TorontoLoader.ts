@@ -47,7 +47,7 @@ export class TorontoLoader extends BaseLibraryLoader {
                                         break;
                                     }
                                 }
-                            } catch (error) {
+                            } catch {
                                 // Continue trying other patterns
                             }
                         }
@@ -157,7 +157,7 @@ export class TorontoLoader extends BaseLibraryLoader {
                 
                 return torontoManifest;
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load University of Toronto manuscript: ${(error as Error).message}`);
             }
         }

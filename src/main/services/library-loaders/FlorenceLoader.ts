@@ -1,6 +1,40 @@
 import { BaseLibraryLoader, type LoaderDependencies } from './types';
 import type { ManuscriptManifest } from '../../../shared/types';
 
+interface FlorenceField {
+    key: string;
+    value: string;
+    [key: string]: unknown;
+}
+
+interface FlorenceChild {
+    id: number;
+    title?: string;
+    [key: string]: unknown;
+}
+
+interface FlorenceParent {
+    children?: FlorenceChild[];
+    fields?: FlorenceField[];
+    [key: string]: unknown;
+}
+
+interface FlorenceItemData {
+    parentId?: number;
+    parent?: FlorenceParent;
+    fields?: FlorenceField[];
+    title?: string;
+    [key: string]: unknown;
+}
+
+interface FlorenceState {
+    item?: {
+        item?: FlorenceItemData;
+        children?: FlorenceChild[];
+    };
+    [key: string]: unknown;
+}
+
 export class FlorenceLoader extends BaseLibraryLoader {
     constructor(deps: LoaderDependencies) {
         super(deps);
@@ -68,10 +102,10 @@ export class FlorenceLoader extends BaseLibraryLoader {
                 .replace(/\\u003e/g, '>')
                 .replace(/\\u002F/g, '/');
 
-            let state: any;
+            let state: FlorenceState;
             try {
                 state = JSON.parse(unescapedJson);
-            } catch (parseError) {
+            } catch {
                 console.error('Failed to parse Florence state JSON');
                 throw new Error('Could not parse Florence page state');
             }
@@ -93,7 +127,7 @@ export class FlorenceLoader extends BaseLibraryLoader {
                     
                     // Filter out non-page items (like Color Chart, Dorso, etc.)
                     pages = itemData.parent.children
-                        .filter((child: any) => {
+                        .filter((child: FlorenceChild) => {
                             const title = (child.title || '').toLowerCase();
                             // Include carta/folio pages, exclude color charts and binding parts
                             return !title.includes('color chart') && 
@@ -101,7 +135,7 @@ export class FlorenceLoader extends BaseLibraryLoader {
                                    !title.includes('piatto') &&
                                    !title.includes('controguardia');
                         })
-                        .map((child: any) => ({
+                        .map((child: FlorenceChild) => ({
                             id: child.id.toString(),
                             title: child.title || `Page ${child.id}`
                         }));
@@ -109,9 +143,9 @@ export class FlorenceLoader extends BaseLibraryLoader {
                     // Extract display name from parent metadata
                     if (itemData.parent.fields) {
                         // First check for segnatura (signature) as it's more concise
-                        const subjecField = itemData.parent.fields.find((f: any) => f.key === 'subjec');
-                        const identField = itemData.parent.fields.find((f: any) => f.key === 'identi');
-                        const titleField = itemData.parent.fields.find((f: any) => f.key === 'title' || f.key === 'titlea');
+                        const subjecField = itemData.parent.fields.find((f: FlorenceField) => f.key === 'subjec');
+                        const identField = itemData.parent.fields.find((f: FlorenceField) => f.key === 'identi');
+                        const titleField = itemData.parent.fields.find((f: FlorenceField) => f.key === 'title' || f.key === 'titlea');
                         
                         if (subjecField && subjecField.value) {
                             // Use signature as primary identifier
@@ -141,14 +175,14 @@ export class FlorenceLoader extends BaseLibraryLoader {
                     console.log(`📄 Found ${currentPageChildren.length} child pages in current item`);
                     
                     pages = currentPageChildren
-                        .filter((child: any) => {
+                        .filter((child: FlorenceChild) => {
                             const title = (child.title || '').toLowerCase();
                             return !title.includes('color chart') && 
                                    !title.includes('dorso') && 
                                    !title.includes('piatto') &&
                                    !title.includes('controguardia');
                         })
-                        .map((child: any) => ({
+                        .map((child: FlorenceChild) => ({
                             id: child.id.toString(),
                             title: child.title || `Page ${child.id}`
                         }));
@@ -156,9 +190,9 @@ export class FlorenceLoader extends BaseLibraryLoader {
                     // Extract display name from current item
                     if (itemData.fields) {
                         // First check for segnatura (signature) as it's more concise
-                        const subjecField = itemData.fields.find((f: any) => f.key === 'subjec');
-                        const identField = itemData.fields.find((f: any) => f.key === 'identi');
-                        const titleField = itemData.fields.find((f: any) => f.key === 'title' || f.key === 'titlea');
+                        const subjecField = itemData.fields.find((f: FlorenceField) => f.key === 'subjec');
+                        const identField = itemData.fields.find((f: FlorenceField) => f.key === 'identi');
+                        const titleField = itemData.fields.find((f: FlorenceField) => f.key === 'title' || f.key === 'titlea');
                         
                         if (subjecField && subjecField.value) {
                             // Use signature as primary identifier
@@ -212,9 +246,9 @@ export class FlorenceLoader extends BaseLibraryLoader {
                 originalUrl: originalUrl,
             };
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             this.deps.logger.logDownloadError('florence', originalUrl, error as Error);
-            throw new Error(`Failed to load Florence manuscript: ${(error as Error).message}`);
+            throw new Error(`Failed to load Florence manuscript: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 }

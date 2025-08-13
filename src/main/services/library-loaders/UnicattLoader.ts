@@ -56,7 +56,7 @@ export class UnicattLoader extends BaseLibraryLoader {
                     const pageLinks: string[] = [];
                     
                     // Handle IIIF v2/v3 format
-                    let canvases: any[] = [];
+                    let canvases: Record<string, unknown>[] = [];
                     
                     if (manifest.sequences && Array.isArray(manifest.sequences)) {
                         // IIIF v2: canvases are in sequences
@@ -152,11 +152,11 @@ export class UnicattLoader extends BaseLibraryLoader {
                         originalUrl: unicattUrl
                     };
                     
-                } catch (error: any) {
+                } catch (error: unknown) {
                     throw new Error(`Failed to load Unicatt manifest: ${(error as Error).message}`);
                 }
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load Unicatt manuscript: ${(error as Error).message}`);
             }
         }

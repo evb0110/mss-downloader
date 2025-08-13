@@ -95,7 +95,7 @@ export class SaintOmerLoader extends BaseLibraryLoader {
                 
                 return saintOmerManifest;
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load Saint-Omer manuscript: ${(error as Error).message}`);
             }
         }

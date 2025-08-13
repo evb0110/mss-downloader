@@ -88,8 +88,9 @@ export class ManchesterLoader extends BaseLibraryLoader {
                 
                 return manchesterManifest;
                 
-            } catch (error: any) {
-                throw new Error(`Failed to load Manchester manuscript: ${(error as Error).message}`);
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                throw new Error(`Failed to load Manchester manuscript: ${errorMessage}`);
             }
         }
 }

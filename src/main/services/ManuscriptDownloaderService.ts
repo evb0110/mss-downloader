@@ -984,7 +984,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 totalPages: options.totalPages,
                 autoSplit: options.autoSplit,
                 maxPagesPerPart: options.maxPagesPerPart,
-                onProgress: (_progress) => {
+                onProgress: (_UNUSED_progress) => {
                     // PDF creation progress is already handled in the original progress callback
                 },
                 onError: (error) => options.onError?.(error)

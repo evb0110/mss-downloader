@@ -54,7 +54,7 @@ export class OmnesVallicellianLoader extends BaseLibraryLoader {
                 }
                 
                 // Extract page URLs using full/full/0/default.jpg for maximum resolution
-                const pageLinks = canvases.map((canvas: any) => {
+                const pageLinks = canvases.map((canvas: Record<string, unknown>) => {
                     if (canvas.images && canvas.images[0]) {
                         const imageService = canvas.images[0].resource.service;
                         if (imageService && imageService['@id']) {
@@ -76,12 +76,12 @@ export class OmnesVallicellianLoader extends BaseLibraryLoader {
                 return {
                     pageLinks,
                     totalPages: pageLinks.length,
-                    library: 'omnes_vallicelliana' as any,
+                    library: 'omnes_vallicelliana' as const,
                     displayName: displayName,
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load Omnes Vallicelliana manuscript: ${(error as Error).message}`);
             }
         }

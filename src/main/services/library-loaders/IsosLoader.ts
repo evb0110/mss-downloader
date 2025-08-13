@@ -31,7 +31,7 @@ export class IsosLoader extends BaseLibraryLoader {
                     throw new Error('Invalid IIIF manifest structure');
                 }
                 
-                const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
                     const resource = canvas.images[0].resource;
                     
                     // For ISOS, prefer the service URL format which works better with headers
@@ -56,7 +56,7 @@ export class IsosLoader extends BaseLibraryLoader {
                     originalUrl: isosUrl,
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load ISOS manuscript: ${(error as Error).message}`);
             }
         }

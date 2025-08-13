@@ -38,7 +38,7 @@ export class RomeLoader extends BaseLibraryLoader {
                 let pageResponse: Response;
                 try {
                     pageResponse = await this.deps.fetchDirect(romeUrl);
-                } catch (fetchError: any) {
+                } catch (fetchError: unknown) {
                     // Enhanced error handling for BNC Roma server infrastructure failures
                     if (fetchError.name === 'AbortError' || fetchError.code === 'ECONNRESET' || 
                         fetchError.code === 'ENOTFOUND' || fetchError.code === 'ECONNREFUSED' || 
@@ -107,7 +107,7 @@ export class RomeLoader extends BaseLibraryLoader {
                     originalUrl: romeUrl
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Error loading Rome National Library manifest:', error);
                 
                 // Pass through enhanced error messages without modification

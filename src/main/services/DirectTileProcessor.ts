@@ -250,7 +250,7 @@ export class DirectTileProcessor {
         
         try {
             // Try to use Canvas if available
-            let Canvas: any; // Type will be assigned from dynamic import
+            let Canvas;
             try {
                 Canvas = await import('canvas');
             } catch {

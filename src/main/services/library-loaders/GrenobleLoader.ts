@@ -81,7 +81,7 @@ export class GrenobleLoader extends BaseLibraryLoader {
                     throw new Error(`Failed to load IIIF manifest: ${(manifestError as Error).message}`);
                 }
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load Grenoble manuscript: ${(error as Error).message}`);
             }
         }

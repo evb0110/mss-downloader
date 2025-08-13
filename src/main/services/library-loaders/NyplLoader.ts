@@ -53,7 +53,7 @@ export class NyplLoader extends BaseLibraryLoader {
                                 console.log(`NYPL: Retrieved ${captures.length} pages from captures API (total: ${capturesData.response.total})`);
                                 
                                 // Extract image IDs and construct high-resolution image URLs
-                                pageLinks = captures.map((item: any) => {
+                                pageLinks = captures.map((item: Record<string, unknown>) => {
                                     if (!item.image_id) {
                                         throw new Error(`Missing image_id for capture ${item.id || 'unknown'}`);
                                     }
@@ -67,8 +67,9 @@ export class NyplLoader extends BaseLibraryLoader {
                                 }
                             }
                         }
-                    } catch (apiError: any) {
-                        console.warn(`NYPL: Captures API failed (${apiError.message}), falling back to carousel data`);
+                    } catch (apiError: unknown) {
+                        const errorMessage = apiError instanceof Error ? apiError.message : String(apiError);
+                        console.warn(`NYPL: Captures API failed (${errorMessage}), falling back to carousel data`);
                     }
                 }
                 
@@ -92,7 +93,7 @@ export class NyplLoader extends BaseLibraryLoader {
                     let carouselItems;
                     try {
                         carouselItems = JSON.parse(carouselDataJson);
-                    } catch (error: any) {
+                    } catch (error: unknown) {
                         throw new Error(`Failed to parse carousel JSON: ${(error as Error).message}`);
                     }
                     
@@ -101,7 +102,7 @@ export class NyplLoader extends BaseLibraryLoader {
                     }
                     
                     // Extract image IDs and construct high-resolution image URLs
-                    pageLinks = carouselItems.map((item: any) => {
+                    pageLinks = carouselItems.map((item: Record<string, unknown>) => {
                         if (!item.image_id) {
                             throw new Error(`Missing image_id for item ${item.id || 'unknown'}`);
                         }
@@ -148,7 +149,7 @@ export class NyplLoader extends BaseLibraryLoader {
                 
                 return nyplManifest;
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error(`Failed to load NYPL manifest: ${(error as Error).message}`);
                 throw error;
             }

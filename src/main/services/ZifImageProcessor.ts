@@ -1,6 +1,18 @@
 import { promises as fs } from 'fs';
 import https from 'https';
 import path from 'path';
+import type { CanvasRenderingContext2D } from 'canvas';
+
+interface CanvasModule {
+    createCanvas: (width: number, height: number) => {
+        getContext: (type: '2d') => CanvasRenderingContext2D;
+        toBuffer: () => Buffer;
+    };
+    loadImage: (data: Buffer) => Promise<{
+        width: number;
+        height: number;
+    }>;
+}
 
 /**
  * ZIF (Zoomable Image Format) Processor
@@ -310,10 +322,10 @@ export class ZifImageProcessor {
             console.log(`Stitching ${tiles.length} tiles into ${imageInfo.width}x${imageInfo.height} image...`);
             
             // Try to import Canvas dynamically
-            let Canvas: typeof import('canvas');
+            let Canvas: CanvasModule;
             try {
                 Canvas = await import('canvas');
-            } catch (error) {
+            } catch {
                 // Canvas not available (e.g., ARM64 build) - return first tile as fallback
                 console.warn('Canvas dependency not available on this platform. Morgan Library .zif processing limited to first tile only.');
                 if (tiles.length > 0) {
@@ -383,7 +395,7 @@ export class ZifImageProcessor {
     /**
      * Process a batch of tiles with timeout protection
      */
-    private async processTileBatch(batch: ExtractedTile[], Canvas: typeof import('canvas'), ctx: import('canvas').CanvasRenderingContext2D, imageInfo: ImageInfo): Promise<number> {
+    private async processTileBatch(batch: ExtractedTile[], Canvas: CanvasModule, ctx: CanvasRenderingContext2D, imageInfo: ImageInfo): Promise<number> {
         // Process batch tiles in parallel
         const batchPromises = batch.map(async (tile) => {
             try {

@@ -660,8 +660,8 @@ export class DownloadQueue extends EventEmitter {
             item.completedAt = Date.now();
             item.progress = undefined;
             
-        } catch (error: any) {
-            if (error.message === 'DOCUMENT_WAS_SPLIT') {
+        } catch (error: unknown) {
+            if (error instanceof Error && error.message === 'DOCUMENT_WAS_SPLIT') {
                 // Document was split successfully, just remove current item status
                 item.status = 'completed';
                 item.progress = undefined;
@@ -800,11 +800,11 @@ export class DownloadQueue extends EventEmitter {
             item.completedAt = Date.now();
             item.progress = undefined;
             
-        } catch (error: any) {
-            if (error.message === 'DOCUMENT_WAS_SPLIT') {
+        } catch (error: unknown) {
+            if (error instanceof Error && error.message === 'DOCUMENT_WAS_SPLIT') {
                 item.status = 'completed';
                 item.progress = undefined;
-            } else if (error.name === 'AbortError' || error.message?.includes('abort')) {
+            } else if (error instanceof Error && (error.name === 'AbortError' || error.message?.includes('abort'))) {
                 item.status = 'paused';
                 item.progress = undefined;
             } else {
@@ -1067,7 +1067,7 @@ export class DownloadQueue extends EventEmitter {
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 }
-            }, (res: any) => {
+            }, (res) => {
                 if (res.statusCode !== 200) {
                     reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
                     return;

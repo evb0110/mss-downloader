@@ -1,6 +1,19 @@
 import { BaseLibraryLoader, type LoaderDependencies } from './types';
 import type { ManuscriptManifest } from '../../../shared/types';
 
+interface EuropeanaCanvas {
+    images?: Array<{
+        resource?: {
+            service?: {
+                '@id': string;
+            };
+            '@id'?: string;
+            id?: string;
+        };
+    }>;
+    [key: string]: unknown;
+}
+
 export class EuropeanaLoader extends BaseLibraryLoader {
     constructor(deps: LoaderDependencies) {
         super(deps);
@@ -54,8 +67,8 @@ export class EuropeanaLoader extends BaseLibraryLoader {
                         
                         console.log(`Europeana: No external IIIF manifest found in Record API, falling back to Europeana's own IIIF`);
                     }
-                } catch (error: any) {
-                    console.log(`Europeana: Record API failed (${(error as Error).message}), falling back to Europeana's own IIIF`);
+                } catch (error: unknown) {
+                    console.log(`Europeana: Record API failed (${error instanceof Error ? error.message : String(error)}), falling back to Europeana's own IIIF`);
                 }
                 
                 // Fallback: Use Europeana's own IIIF manifest (limited)
@@ -77,7 +90,7 @@ export class EuropeanaLoader extends BaseLibraryLoader {
                 console.log(`Europeana: Processing ${canvases.length} pages from Europeana's own IIIF manifest`);
                 
                 // Extract image URLs from IIIF manifest
-                const pageLinks = canvases.map((canvas: any) => {
+                const pageLinks = canvases.map((canvas: EuropeanaCanvas) => {
                     if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
                         const resource = canvas.images[0].resource;
                         
@@ -132,8 +145,8 @@ export class EuropeanaLoader extends BaseLibraryLoader {
                 console.log(`Europeana: Created manifest for "${displayName}" with ${pageLinks.length} pages`);
                 return europeanaManifest;
                 
-            } catch (error: any) {
-                console.error(`Failed to load Europeana manifest: ${(error as Error).message}`);
+            } catch (error: unknown) {
+                console.error(`Failed to load Europeana manifest: ${error instanceof Error ? error.message : String(error)}`);
                 throw error;
             }
         }

@@ -100,7 +100,7 @@ export class CeciliaLoader extends BaseLibraryLoader {
                     originalUrl: url
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load Cecilia manifest: ${(error as Error).message}`);
             }
         }

@@ -31,7 +31,7 @@ export class RbmeLoader extends BaseLibraryLoader {
                     'rbme',
                     { initialTimeout: 30000, maxTimeout: 120000 },
                     {
-                        onStuckDetected: (state: any) => {
+                        onStuckDetected: (state: Record<string, unknown>) => {
                             console.warn(`[RBME] ${state.statusMessage} - Item: ${itemId}`);
                         }
                     }
@@ -57,7 +57,7 @@ export class RbmeLoader extends BaseLibraryLoader {
                     pageContent = await pageResponse.text();
                     console.log(`RBME page content loaded, length: ${pageContent.length}`);
                     
-                } catch (pageError: any) {
+                } catch (pageError: unknown) {
                     if (pageError.name === 'AbortError') {
                         throw new Error('RBME page request timed out. The server may be experiencing high load.');
                     }
@@ -84,7 +84,7 @@ export class RbmeLoader extends BaseLibraryLoader {
                     'rbme',
                     { initialTimeout: 30000, maxTimeout: 120000 },
                     {
-                        onStuckDetected: (state: any) => {
+                        onStuckDetected: (state: Record<string, unknown>) => {
                             console.warn(`[RBME] ${state.statusMessage} - URL: ${manifestUrl}`);
                         }
                     }
@@ -93,7 +93,7 @@ export class RbmeLoader extends BaseLibraryLoader {
                 const manifestController = manifestProgressMonitor.start();
                 manifestProgressMonitor.updateProgress(0, 1, 'Loading RBME manifest...');
                 
-                let iiifManifest: any;
+                let iiifManifest: Record<string, unknown>;
                 try {
                     const manifestResponse = await this.deps.fetchDirect(manifestUrl, {
                         signal: manifestController.signal,
@@ -111,7 +111,7 @@ export class RbmeLoader extends BaseLibraryLoader {
                     manifestProgressMonitor.updateProgress(1, 1, 'RBME manifest loaded successfully');
                     console.log(`RBME manifest loaded successfully for item: ${itemId}`);
                     
-                } catch (manifestError: any) {
+                } catch (manifestError: unknown) {
                     if (manifestError.name === 'AbortError') {
                         throw new Error('RBME manifest request timed out. The server may be experiencing high load.');
                     }
@@ -124,7 +124,7 @@ export class RbmeLoader extends BaseLibraryLoader {
                     throw new Error('Invalid IIIF manifest structure');
                 }
                 
-                const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
                     const resource = canvas.images[0].resource;
                     const serviceUrl = resource.service?.['@id'] || resource.service?.id;
                     
@@ -152,11 +152,11 @@ export class RbmeLoader extends BaseLibraryLoader {
                     displayName: sanitizedName,
                     totalPages: pageLinks.length,
                     pageLinks,
-                    library: 'rbme' as any,
+                    library: 'rbme' as const,
                     originalUrl: rbmeUrl
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error(`RBME manifest loading failed:`, error);
                 throw new Error(`Failed to load RBME manuscript: ${(error as Error).message}`);
             }

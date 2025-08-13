@@ -181,7 +181,7 @@ export class DziImageProcessor {
         
         try {
             // Try to use Canvas if available
-            let Canvas: Awaited<typeof import('canvas')>;
+            let Canvas;
             try {
                 Canvas = await import('canvas');
             } catch {

@@ -12,7 +12,7 @@ import { NegativeConverterService } from './services/NegativeConverterService';
 import { DownloadLogger } from './services/DownloadLogger';
 import { VersionMigrationService } from './services/VersionMigrationService';
 import { comprehensiveLogger } from './services/ComprehensiveLogger';
-import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
+import type { QueuedManuscript, QueueState, TSimultaneousMode } from '../shared/queueTypes';
 import type { ConversionSettings } from './services/NegativeConverterService';
 
 // __dirname is available in CommonJS
@@ -929,7 +929,7 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
 });
 
 // Store for managing chunked manifest loading sessions
-const chunkedManifestCache = new Map<string, { manifest: any, timestamp: number }>();
+const chunkedManifestCache = new Map<string, { manifest: Record<string, unknown>, timestamp: number }>();
 
 // Cleanup old cached manifests every 5 minutes
 setInterval(() => {
@@ -1047,7 +1047,7 @@ ipcMain.handle('queue-set-simultaneous-mode', async (_event, mode: string, maxCo
   if (!enhancedDownloadQueue) {
     throw new Error('Enhanced download queue not initialized');
   }
-  enhancedDownloadQueue.setSimultaneousMode(mode as any, maxCount);
+  enhancedDownloadQueue.setSimultaneousMode(mode as TSimultaneousMode, maxCount);
 });
 
 ipcMain.handle('queue-get-simultaneous-state', async () => {
@@ -1127,10 +1127,10 @@ ipcMain.handle('clear-manifest-cache', async () => {
   }
   
   try {
-    await (enhancedManuscriptDownloader as any).manifestCache.clear();
+    await (enhancedManuscriptDownloader as { manifestCache: { clear: () => Promise<void> } }).manifestCache.clear();
     return { success: true, message: 'Manifest cache cleared successfully' };
-  } catch (error: any) {
-    throw new Error(`Failed to clear manifest cache: ${error.message}`);
+  } catch (error: unknown) {
+    throw new Error(`Failed to clear manifest cache: ${error instanceof Error ? error.message : String(error)}`);
   }
 });
 
@@ -1156,8 +1156,8 @@ ipcMain.handle('clear-all-caches', async () => {
     console.log('Performed complete cache wipe - all data cleared');
     
     return { success: true, message: 'All caches and data completely wiped' };
-  } catch (error: any) {
-    throw new Error(`Failed to clear all caches: ${error.message}`);
+  } catch (error: unknown) {
+    throw new Error(`Failed to clear all caches: ${error instanceof Error ? error.message : String(error)}`);
   }
 });
 
@@ -1169,8 +1169,8 @@ ipcMain.handle('get-cache-stats', async () => {
   try {
     const stats = await imageCache.getCacheStats();
     return stats;
-  } catch (error: any) {
-    throw new Error(`Failed to get cache stats: ${error.message}`);
+  } catch (error: unknown) {
+    throw new Error(`Failed to get cache stats: ${error instanceof Error ? error.message : String(error)}`);
   }
 });
 
@@ -1183,8 +1183,8 @@ ipcMain.handle('open-downloads-folder', async () => {
     
     // Find most recently completed item with output path
     const completedItems = state.items
-      .filter((item: any) => item.status === 'completed' && item.outputPath)
-      .sort((a: any, b: any) => (b.completedAt || 0) - (a.completedAt || 0));
+      .filter((item: QueuedManuscript) => item.status === 'completed' && item.outputPath)
+      .sort((a: QueuedManuscript, b: QueuedManuscript) => (b.completedAt || 0) - (a.completedAt || 0));
     
     if (completedItems.length > 0 && completedItems[0].outputPath) {
       // Open the folder containing the specific file
@@ -1194,7 +1194,7 @@ ipcMain.handle('open-downloads-folder', async () => {
     
     // If no completed items, check for any in-progress items to show their target folder
     const inProgressItems = state.items
-      .filter((item: any) => item.status === 'downloading' && item.displayName);
+      .filter((item: QueuedManuscript) => item.status === 'downloading' && item.displayName);
     
     if (inProgressItems.length > 0) {
       // Construct the expected output folder for the in-progress item

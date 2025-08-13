@@ -6,20 +6,47 @@
 import type { ManuscriptManifest } from '../../shared/types';
 import { DownloadLogger } from './DownloadLogger';
 
+// Type definitions for manuscript manifest extensions
+interface TileConfig {
+    type: string;
+    baseId?: string;
+    publicId?: string;
+    startPage?: number;
+    pageCount?: number;
+    tileBaseUrl?: string;
+}
+
+interface ExtendedManuscriptManifest extends ManuscriptManifest {
+    type?: string;
+    requiresTileAssembly?: boolean;
+    processorType?: string;
+    images?: Array<{ url: string; [key: string]: unknown }>;
+    requiresTileProcessor?: boolean;
+    tileConfig?: TileConfig;
+}
+
+interface ManifestLoadError extends Error {
+    library: string;
+    originalUrl: string;
+    isManifestError: boolean;
+}
+
 // Dynamic import for TypeScript module
 const loadSharedManifestLoaders = async () => {
     // Try .ts first for development, fall back to .js for production
     try {
         const module = await import('../../shared/SharedManifestLoaders.ts');
         return module.SharedManifestLoaders;
-    } catch (e) {
+    } catch {
         const module = await import('../../shared/SharedManifestLoaders.js');
         return module.SharedManifestLoaders;
     }
 };
 
+import type { SharedManifestLoaders } from '../../shared/SharedManifestLoaders';
+
 export class SharedManifestAdapter {
-    private sharedLoaders: import('../../shared/SharedManifestLoaders').SharedManifestLoaders | null;
+    private sharedLoaders: SharedManifestLoaders | null;
     private electronFetch: (url: string, options?: RequestInit) => Promise<Response>;
 
     constructor(electronFetch: (url: string, options?: RequestInit) => Promise<Response>) {
@@ -44,28 +71,28 @@ export class SharedManifestAdapter {
             
             // Convert shared loader format to Electron format
             // Handle Bordeaux and other tile-based formats that don't have images array
-            const manifest: ManuscriptManifest = {
+            const manifest: ExtendedManuscriptManifest = {
                 pageLinks: result.images ? result.images.map((image: { url: string }) => image.url) : [],
                 totalPages: result.images ? result.images.length : (result.pageCount || 0),
-                library: libraryId as any,
+                library: libraryId as ManuscriptManifest['library'],
                 displayName: result.displayName || `${libraryId} Manuscript`,
                 originalUrl: url
             };
 
             // Add special properties for tile-based libraries
             if (result.type === 'tiles' || result.type === 'dzi' || result.type === 'bordeaux_tiles') {
-                (manifest as any).type = result.type;
-                (manifest as any).requiresTileAssembly = result.requiresTileAssembly;
-                (manifest as any).processorType = result.processorType;
+                manifest.type = result.type;
+                manifest.requiresTileAssembly = result.requiresTileAssembly;
+                manifest.processorType = result.processorType;
                 if (result.images) {
-                    (manifest as any).images = result.images; // Preserve full image info for tile processing
+                    manifest.images = result.images; // Preserve full image info for tile processing
                 }
             }
             
             // Handle new Bordeaux format with tile processor integration
             if (result.requiresTileProcessor) {
-                (manifest as any).requiresTileProcessor = true;
-                (manifest as any).tileConfig = {
+                manifest.requiresTileProcessor = true;
+                manifest.tileConfig = {
                     type: result.type,
                     baseId: result.baseId,
                     publicId: result.publicId,
@@ -87,15 +114,16 @@ export class SharedManifestAdapter {
             console.error(`SharedManifestAdapter error for ${libraryId}:`, error);
             
             // Create a safe, serializable error that won't crash IPC
+            const errorObj = error as Error;
             const safeError = new Error(
-                `Failed to load ${libraryId} manifest: ${error?.message || 'Unknown error'}`
-            );
+                `Failed to load ${libraryId} manifest: ${errorObj?.message || 'Unknown error'}`
+            ) as ManifestLoadError;
             safeError.name = 'ManifestLoadError';
             
             // Add safe metadata without circular references
-            (safeError as any).library = libraryId;
-            (safeError as any).originalUrl = url;
-            (safeError as any).isManifestError = true;
+            safeError.library = libraryId;
+            safeError.originalUrl = url;
+            safeError.isManifestError = true;
             
             // Log the full error for debugging
             const logger = DownloadLogger.getInstance();

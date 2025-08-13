@@ -72,7 +72,7 @@ export class IccuLoader extends BaseLibraryLoader {
                 
                 return manifest;
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('ICCU API manifest loading error:', error);
                 throw new Error(`Failed to load ICCU manuscript: ${(error as Error).message}`);
             }

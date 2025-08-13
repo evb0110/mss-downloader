@@ -93,7 +93,7 @@ export class FreiburgLoader extends BaseLibraryLoader {
                 const allLinks = thumbsDom.window.document.querySelectorAll('a[href*="/diglit/"]');
                 
                 const uniquePages = new Set<string>();
-                allLinks.forEach((link: any) => {
+                allLinks.forEach((link: Element) => {
                     const href = link.getAttribute('href');
                     if (href) {
                         const pageMatch = href.match(/\/diglit\/[^/]+\/(\d{4})/);
@@ -154,7 +154,7 @@ export class FreiburgLoader extends BaseLibraryLoader {
                     });
                     
                     const batchResults = await Promise.all(batchPromises);
-                    pageLinks.push(...batchResults.filter((url: any): url is string => url !== null));
+                    pageLinks.push(...batchResults.filter((url: string | null): url is string => url !== null));
                     
                     // Progress logging
                     if (i % 50 === 0) {
@@ -172,7 +172,7 @@ export class FreiburgLoader extends BaseLibraryLoader {
                 const manifest: ManuscriptManifest = {
                     pageLinks: pageLinks,
                     totalPages: pageLinks.length,
-                    library: 'freiburg' as any,
+                    library: 'freiburg' as const,
                     displayName: displayName,
                     originalUrl: originalUrl
                 };
@@ -180,9 +180,9 @@ export class FreiburgLoader extends BaseLibraryLoader {
                 console.log(`Freiburg manifest created successfully with ${pageLinks.length} pages`);
                 return manifest;
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Freiburg manifest loading error:', error);
-                throw new Error(`Failed to load Freiburg manuscript: ${(error as Error).message}`);
+                throw new Error(`Failed to load Freiburg manuscript: ${error instanceof Error ? error.message : String(error)}`);
             }
         }
 }

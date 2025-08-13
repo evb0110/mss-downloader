@@ -58,15 +58,16 @@ export class MiraLoader extends BaseLibraryLoader {
             let iiifManifest;
             try {
                 iiifManifest = JSON.parse(manifestText);
-            } catch (parseError: any) {
-                throw new Error(`Invalid JSON manifest from ${manifestUrl}: ${parseError.message}`);
+            } catch (parseError: unknown) {
+                const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
+                throw new Error(`Invalid JSON manifest from ${manifestUrl}: ${errorMessage}`);
             }
             
             if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
                 throw new Error('Invalid IIIF manifest structure');
             }
             
-            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
                 const resource = canvas.images[0].resource;
                 return resource['@id'] || resource.id || resource.service?.['@id'] + '/full/max/0/default.jpg';
             }).filter((link: string) => link);
@@ -90,8 +91,9 @@ export class MiraLoader extends BaseLibraryLoader {
                 originalUrl: miraUrl,
             };
             
-        } catch (error: any) {
-            throw new Error(`Failed to load MIRA manuscript: ${(error as Error).message}`);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(`Failed to load MIRA manuscript: ${errorMessage}`);
         }
     }
 }

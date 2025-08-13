@@ -119,7 +119,7 @@ export class BvpbLoader extends BaseLibraryLoader {
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load BVPB manuscript: ${(error as Error).message}`);
             }
         }

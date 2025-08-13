@@ -32,13 +32,13 @@ export class ManuscriptaLoader extends BaseLibraryLoader {
                     initialTimeout: 60000,
                     maxTimeout: 300000,
                     progressCheckInterval: 15000,
-                    onInitialTimeoutReached: (state: any) => {
+                    onInitialTimeoutReached: (state: Record<string, unknown>) => {
                         console.log(`[Manuscripta.se] ${state.statusMessage}`);
                     },
-                    onStuckDetected: (state: any) => {
+                    onStuckDetected: (state: Record<string, unknown>) => {
                         console.warn(`[Manuscripta.se] ${state.statusMessage} - ID: ${manuscriptId}`);
                     },
-                    onTimeout: (state: any) => {
+                    onTimeout: (state: Record<string, unknown>) => {
                         console.error(`[Manuscripta.se] ${state.statusMessage} - ID: ${manuscriptId}`);
                     }
                 });
@@ -46,7 +46,7 @@ export class ManuscriptaLoader extends BaseLibraryLoader {
                 const controller = progressMonitor.start();
                 progressMonitor.updateProgress(0, 1, 'Loading Manuscripta.se manifest...');
                 
-                let iiifManifest: any;
+                let iiifManifest: Record<string, unknown>;
                 try {
                     const manifestResponse = await this.deps.fetchWithProxyFallback(manifestUrl, {
                         signal: controller.signal,
@@ -72,8 +72,8 @@ export class ManuscriptaLoader extends BaseLibraryLoader {
                     
                     console.log(`Manuscripta.se manifest loaded successfully for ID: ${manuscriptId}`);
                     
-                } catch (fetchError: any) {
-                    if (fetchError.name === 'AbortError') {
+                } catch (fetchError: unknown) {
+                    if (fetchError instanceof Error && fetchError.name === 'AbortError') {
                         throw new Error('Manuscripta.se manifest request timed out. The server may be experiencing high load.');
                     }
                     throw fetchError;
@@ -98,7 +98,7 @@ export class ManuscriptaLoader extends BaseLibraryLoader {
                 }
                 
                 // Parse IIIF manifest structure - support both IIIF 2.x and 3.x
-                let canvases: any[] = [];
+                let canvases: Record<string, unknown>[] = [];
                 
                 if (iiifManifest.sequences && iiifManifest.sequences[0] && iiifManifest.sequences[0].canvases) {
                     // IIIF 2.x structure
@@ -110,7 +110,7 @@ export class ManuscriptaLoader extends BaseLibraryLoader {
                     throw new Error('Invalid IIIF manifest structure - no canvases found');
                 }
                 
-                const pageLinks = canvases.map((canvas: any) => {
+                const pageLinks = canvases.map((canvas: Record<string, unknown>) => {
                     let imageUrl: string | null = null;
                     
                     // IIIF 2.x format
@@ -155,14 +155,15 @@ export class ManuscriptaLoader extends BaseLibraryLoader {
                 return {
                     pageLinks,
                     totalPages: pageLinks.length,
-                    library: 'manuscripta' as any,
+                    library: 'manuscripta' as const,
                     displayName: sanitizedName,
                     originalUrl: manuscriptaUrl,
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error(`Manuscripta.se manifest loading failed:`, error);
-                throw new Error(`Failed to load Manuscripta.se manuscript: ${(error as Error).message}`);
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                throw new Error(`Failed to load Manuscripta.se manuscript: ${errorMessage}`);
             }
         }
 }

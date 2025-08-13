@@ -78,7 +78,41 @@ import {
     type LoaderDependencies,
     type LibraryLoader
 } from './library-loaders';
-import type { ManuscriptManifest, LibraryInfo } from '../../shared/types';
+import type { ManuscriptManifest, LibraryInfo, DownloadProgress } from '../../shared/types';
+import type { QueuedManuscript } from '../../shared/queueTypes';
+
+interface DownloadOptions {
+    onProgress?: (progress: DownloadProgress) => void;
+    onManifestLoaded?: () => void;
+    maxConcurrent?: number | string;
+    skipExisting?: boolean;
+    startPage?: number;
+    endPage?: number;
+    pageLinks?: string[];
+    displayName?: string;
+    library?: string;
+    totalPages?: number;
+    queueItem?: QueuedManuscript;
+}
+
+interface TileConfig {
+    startPage: number;
+    [key: string]: unknown;
+}
+
+interface ManifestWithTileConfig extends ManuscriptManifest {
+    requiresTileProcessor?: boolean;
+    tileConfig?: TileConfig;
+}
+
+interface IIIFManifest {
+    metadata?: Array<{
+        label: unknown;
+        value: unknown;
+    }>;
+    label?: unknown;
+    [key: string]: unknown;
+}
 import type { TLibrary } from '../../shared/queueTypes';
 
 const MIN_VALID_IMAGE_SIZE_BYTES = 1024; // 1KB heuristic
@@ -1320,9 +1354,9 @@ export class EnhancedManuscriptDownloaderService {
                     throw new Error(`Cannot parse malformed URL: ${url}`);
                 }
             }
-        } catch (urlError: any) {
+        } catch (urlError: unknown) {
             console.error(`[CRITICAL] URL parsing failed for: ${url}`);
-            console.error(`[CRITICAL] Error: ${urlError.message}`);
+            console.error(`[CRITICAL] Error: ${urlError instanceof Error ? urlError.message : String(urlError)}`);
 
             // Last resort: try to extract valid URL from error-prone string
             const urlMatch = url.match(/(https?:\/\/[^\s]+)/);
@@ -1365,7 +1399,7 @@ export class EnhancedManuscriptDownloaderService {
                         }
                     });
                 }
-            } catch (dnsError: any) {
+            } catch (dnsError: unknown) {
                 console.warn(`[Graz] DNS resolution failed, proceeding anyway:`, dnsError);
                 comprehensiveLogger.log({
                     level: 'warn',
@@ -1418,13 +1452,14 @@ export class EnhancedManuscriptDownloaderService {
                 if (addresses.length > 0) {
                     console.log(`[Grenoble] Resolved to ${addresses[0]}`);
                 }
-            } catch (dnsError: any) {
-                console.warn(`[Grenoble] DNS resolution failed, proceeding anyway:`, dnsError?.message || dnsError);
+            } catch (dnsError: unknown) {
+                console.warn(`[Grenoble] DNS resolution failed, proceeding anyway:`, dnsError instanceof Error ? dnsError.message : String(dnsError));
 
                 // Log detailed error for debugging Issue #13
-                if (dnsError?.code === 'EAI_AGAIN' || dnsError?.code === 'ENOTFOUND') {
+                const errorWithCode = dnsError as { code?: string };
+                if (errorWithCode?.code === 'EAI_AGAIN' || errorWithCode?.code === 'ENOTFOUND') {
                     console.error(`[Grenoble] DNS Error Details:`);
-                    console.error(`  - Error Code: ${dnsError.code}`);
+                    console.error(`  - Error Code: ${errorWithCode.code}`);
                     console.error(`  - Hostname attempted: ${urlObj.hostname}`);
                     console.error(`  - Original URL: ${url}`);
                     console.error(`  - Sanitized URL: ${this.sanitizeUrl(url)}`);
@@ -1482,7 +1517,7 @@ export class EnhancedManuscriptDownloaderService {
                         }
                     });
                 }
-            } catch (dnsError: any) {
+            } catch (dnsError: unknown) {
                 console.warn(`[MDC Catalonia] DNS resolution failed, proceeding anyway:`, dnsError);
                 comprehensiveLogger.log({
                     level: 'warn',
@@ -1756,7 +1791,7 @@ export class EnhancedManuscriptDownloaderService {
             req.on('timeout', () => {
                 console.log(`[fetchWithHTTPS] Socket timeout for ${urlObj.hostname}`);
                 req.destroy();
-                const timeoutError: any = new Error('Socket timeout');
+                const timeoutError = new Error('Socket timeout') as Error & { code: string };
                 timeoutError.code = 'ETIMEDOUT';
                 req.emit('error', timeoutError);
             });
@@ -2000,7 +2035,7 @@ export class EnhancedManuscriptDownloaderService {
                     throw new Error(`Unsupported library: ${library}`);
             }
 
-            manifest.library = library as any;
+            manifest.library = library as ManuscriptManifest['library'];
             manifest.originalUrl = originalUrl;
 
             // Cache the manifest
@@ -2178,28 +2213,29 @@ export class EnhancedManuscriptDownloaderService {
                         ? await this.fetchWithProxyFallback(fallbackUrl)
                         : await this.fetchDirect(fallbackUrl, {}, attempt + 1);
                 }
-            } catch (fetchError: any) {
+            } catch (fetchError: unknown) {
                 // Enhanced error handling for BNC Roma infrastructure failures
                 if (url.includes('digitale.bnc.roma.sbn.it')) {
-                    if (fetchError.name === 'AbortError' || fetchError.code === 'ECONNRESET' ||
-                        fetchError.code === 'ENOTFOUND' || fetchError.code === 'ECONNREFUSED' ||
-                        fetchError.code === 'ETIMEDOUT' || fetchError.code === 'ENETUNREACH' ||
-                        fetchError.message.includes('timeout') || fetchError.message.includes('ENETUNREACH')) {
+                    const errorWithProps = fetchError as { name?: string; code?: string; message?: string };
+                    if (errorWithProps.name === 'AbortError' || errorWithProps.code === 'ECONNRESET' ||
+                        errorWithProps.code === 'ENOTFOUND' || errorWithProps.code === 'ECONNREFUSED' ||
+                        errorWithProps.code === 'ETIMEDOUT' || errorWithProps.code === 'ENETUNREACH' ||
+                        errorWithProps.message?.includes('timeout') || errorWithProps.message?.includes('ENETUNREACH')) {
                         throw new Error(`BNC Roma infrastructure failure: Cannot reach digitale.bnc.roma.sbn.it server. This appears to be a network infrastructure issue. Check www.bncrm.beniculturali.it for announcements or try again later.`);
                     }
                 }
 
                 // Enhanced error handling for MDC Catalonia network issues
                 if (url.includes('mdc.csuc.cat')) {
-                    const isNetworkError = fetchError.name === 'AbortError' ||
-                                         fetchError.code === 'ECONNRESET' ||
-                                         fetchError.code === 'ENOTFOUND' ||
-                                         fetchError.code === 'ECONNREFUSED' ||
-                                         fetchError.code === 'ETIMEDOUT' ||
-                                         fetchError.code === 'ENETUNREACH' ||
-                                         fetchError.message.includes('timeout') ||
-                                         fetchError.message.includes('ECONNREFUSED') ||
-                                         fetchError.message.includes('ENETUNREACH');
+                    const isNetworkError = errorWithProps.name === 'AbortError' ||
+                                         errorWithProps.code === 'ECONNRESET' ||
+                                         errorWithProps.code === 'ENOTFOUND' ||
+                                         errorWithProps.code === 'ECONNREFUSED' ||
+                                         errorWithProps.code === 'ETIMEDOUT' ||
+                                         errorWithProps.code === 'ENETUNREACH' ||
+                                         errorWithProps.message?.includes('timeout') ||
+                                         errorWithProps.message?.includes('ECONNREFUSED') ||
+                                         errorWithProps.message?.includes('ENETUNREACH');
 
                     if (isNetworkError) {
                         throw new Error(`MDC Catalonia network issue (attempt ${attempt}): Cannot reach mdc.csuc.cat servers. This appears to be a temporary connectivity issue. The server may be experiencing high load or network problems. Please try again later.`);
@@ -2489,7 +2525,7 @@ export class EnhancedManuscriptDownloaderService {
         return safeBase.includes(id) ? safeBase : `${safeBase}__${id}`;
     }
 
-    async downloadManuscript(url: string, options: any = {}): Promise<any> {
+    async downloadManuscript(url: string, options: DownloadOptions = {}): Promise<string> {
         const {
             onProgress = () => {},
             onManifestLoaded = () => {},
@@ -2537,7 +2573,7 @@ export class EnhancedManuscriptDownloaderService {
             }
 
             // Validate special processor requirements
-            if ((manifest as any).requiresTileProcessor && !(manifest as any).tileConfig) {
+            if ((manifest as ManifestWithTileConfig).requiresTileProcessor && !(manifest as ManifestWithTileConfig).tileConfig) {
                 throw new Error('Bordeaux manuscript requires tileConfig but none provided');
             }
 
@@ -2584,7 +2620,7 @@ export class EnhancedManuscriptDownloaderService {
 
             // Apply library-specific optimization settings early to get split threshold
             // This must happen before determining split logic to respect user settings
-            const parsedMax = typeof maxConcurrent === 'string' ? parseInt(maxConcurrent as any, 10) : maxConcurrent;
+            const parsedMax = typeof maxConcurrent === 'string' ? parseInt(maxConcurrent, 10) : maxConcurrent;
             const globalMaxConcurrent = (Number.isFinite(parsedMax as number) && (parsedMax as number) > 0)
                 ? (parsedMax as number)
                 : (configService.get('maxConcurrentDownloads') || 3);
@@ -2717,7 +2753,7 @@ export class EnhancedManuscriptDownloaderService {
                 }
 
                 // Check if this manifest requires the DirectTileProcessor (Bordeaux)
-                if ((manifest as any).requiresTileProcessor && (manifest as any).tileConfig) {
+                if ((manifest as ManifestWithTileConfig).requiresTileProcessor && (manifest as ManifestWithTileConfig).tileConfig) {
                     const imgFile = `${sanitizedName}_page_${pageIndex + 1}.jpg`;
                     const imgPath = path.join(tempImagesDir, imgFile);
 
@@ -2733,7 +2769,7 @@ export class EnhancedManuscriptDownloaderService {
                     } catch {
                         // Use DirectTileProcessor for Bordeaux
                         try {
-                            const tileConfig = (manifest as any).tileConfig;
+                            const tileConfig = (manifest as ManifestWithTileConfig).tileConfig as TileConfig;
                             const pageNum = tileConfig.startPage + pageIndex;
                             console.log(`[Bordeaux] Processing page ${pageNum} using DirectTileProcessor`);
 
@@ -3078,14 +3114,15 @@ export class EnhancedManuscriptDownloaderService {
                             await this.convertImagesToPDFWithBlanks(partImages, partFilepath, partStartPage, manifest);
                         }
                         createdFiles.push(partFilepath);
-                    } catch (pdfError: any) {
-                        console.error(`Failed to create PDF part ${partNumber}: ${pdfError.message}`);
-                        this.logger.logPdfCreationError(manifest.library || 'unknown', pdfError, {
+                    } catch (pdfError: unknown) {
+                        const errorMessage = pdfError instanceof Error ? pdfError.message : String(pdfError);
+                        console.error(`Failed to create PDF part ${partNumber}: ${errorMessage}`);
+                        this.logger.logPdfCreationError(manifest.library || 'unknown', pdfError as Error, {
                             partNumber,
                             imagesInPart: partImages.length,
                             outputPath: partFilepath
                         });
-                        throw new Error(`PDF creation failed for part ${partNumber}: ${pdfError.message}`);
+                        throw new Error(`PDF creation failed for part ${partNumber}: ${errorMessage}`);
                     }
                 }
 
@@ -3129,13 +3166,14 @@ export class EnhancedManuscriptDownloaderService {
                     } else {
                         await this.convertImagesToPDFWithBlanks(completeImagePaths, filepath, actualStartPage, manifest);
                     }
-                } catch (pdfError: any) {
-                    console.error(`Failed to create PDF: ${pdfError.message}`);
-                    this.logger.logPdfCreationError(manifest.library || 'unknown', pdfError, {
+                } catch (pdfError: unknown) {
+                    const errorMessage = pdfError instanceof Error ? pdfError.message : String(pdfError);
+                    console.error(`Failed to create PDF: ${errorMessage}`);
+                    this.logger.logPdfCreationError(manifest.library || 'unknown', pdfError as Error, {
                         totalImages: completeImagePaths.length,
                         outputPath: filepath
                     });
-                    throw new Error(`PDF creation failed: ${pdfError.message}`);
+                    throw new Error(`PDF creation failed: ${errorMessage}`);
                 }
 
                 // Clean up temporary images
@@ -3338,11 +3376,12 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
 
-            } catch (batchError: any) {
-                console.error(`\n❌ Batch ${batchNum} failed: ${batchError.message}`);
+            } catch (batchError: unknown) {
+                const errorMessage = batchError instanceof Error ? batchError.message : String(batchError);
+                console.error(`\n❌ Batch ${batchNum} failed: ${errorMessage}`);
 
                 // ULTRA-PRIORITY FIX for Issue #23: Handle memory allocation failures gracefully
-                if (batchError.message && batchError.message.includes('Array buffer allocation failed')) {
+                if (batchError instanceof Error && batchError.message && batchError.message.includes('Array buffer allocation failed')) {
                     console.error('🚨 [BDL Memory] Memory allocation failure detected!');
                     console.error('🔧 [BDL Memory] Attempting recovery with smaller batch size...');
 
@@ -3379,8 +3418,9 @@ export class EnhancedManuscriptDownloaderService {
                                 await new Promise(resolve => setTimeout(resolve, 50));
                             }
 
-                        } catch (singleError: any) {
-                            console.error(`   Failed to process single image: ${singleError.message}`);
+                        } catch (singleError: unknown) {
+                            const singleErrorMessage = singleError instanceof Error ? singleError.message : String(singleError);
+                            console.error(`   Failed to process single image: ${singleErrorMessage}`);
                         }
                     }
                     console.log('🔧 [BDL Memory] Recovery completed, continuing with next batch...');
@@ -3410,8 +3450,9 @@ export class EnhancedManuscriptDownloaderService {
                     const copiedPages = await finalPdfDoc.copyPages(batchPdf, pageIndices);
 
                     copiedPages.forEach((page) => finalPdfDoc.addPage(page));
-                } catch (mergeError: any) {
-                    console.error(`\n❌ Failed to merge batch ${i + 1}: ${mergeError.message}`);
+                } catch (mergeError: unknown) {
+                    const mergeErrorMessage = mergeError instanceof Error ? mergeError.message : String(mergeError);
+                    console.error(`\n❌ Failed to merge batch ${i + 1}: ${mergeErrorMessage}`);
                     throw mergeError;
                 }
             }
@@ -4485,7 +4526,7 @@ export class EnhancedManuscriptDownloaderService {
      * Extract physical description from manifest metadata
      */
     private extractPhysicalDescription(manifestData: unknown): string {
-        const manifest = manifestData as any;
+        const manifest = manifestData as IIIFManifest;
         if (!manifest.metadata || !Array.isArray(manifest.metadata)) {
             return '';
         }
@@ -4509,7 +4550,7 @@ export class EnhancedManuscriptDownloaderService {
      * Extract CNMD identifier from manifest metadata
      */
     private extractCNMDIdentifier(manifestData: unknown): string {
-        const manifest = manifestData as any;
+        const manifest = manifestData as IIIFManifest;
         if (!manifest.metadata || !Array.isArray(manifest.metadata)) {
             return '';
         }
@@ -4535,7 +4576,7 @@ export class EnhancedManuscriptDownloaderService {
      * Extract manuscript title from manifest
      */
     private extractManuscriptTitle(manifestData: unknown): string {
-        const manifest = manifestData as any;
+        const manifest = manifestData as IIIFManifest;
         if (manifest.label) {
             return this.getMetadataText(manifest.label);
         }

@@ -91,7 +91,7 @@ export class GamsLoader extends BaseLibraryLoader {
                     originalUrl: gamsUrl
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 const duration = Date.now() - startTime;
                 console.error(`[GAMS] Failed to load manifest after ${duration}ms:`, {
                     url: gamsUrl,

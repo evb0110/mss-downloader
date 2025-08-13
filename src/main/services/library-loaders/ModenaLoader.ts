@@ -146,9 +146,10 @@ export class ModenaLoader extends BaseLibraryLoader {
                     originalUrl: modenaUrl
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Error loading Modena Diocesan Archive manifest:', error);
-                throw new Error(`Failed to load Modena manuscript: ${(error as Error).message}`);
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                throw new Error(`Failed to load Modena manuscript: ${errorMessage}`);
             }
         }
 }

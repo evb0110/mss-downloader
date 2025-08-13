@@ -50,7 +50,7 @@ export class VallicellianLoader extends BaseLibraryLoader {
                 const manifestData = await response.json();
                 
                 // Handle both IIIF v2 and v3 structures
-                let canvases: any[] = [];
+                let canvases: Record<string, unknown>[] = [];
                 if (manifestData.sequences && manifestData.sequences[0] && manifestData.sequences[0].canvases) {
                     // IIIF v2
                     canvases = manifestData.sequences[0].canvases;
@@ -62,7 +62,7 @@ export class VallicellianLoader extends BaseLibraryLoader {
                 }
                 
                 // Extract page URLs
-                const pageLinks = canvases.map((canvas: any) => {
+                const pageLinks = canvases.map((canvas: Record<string, unknown>) => {
                     // IIIF v2 structure
                     if (canvas.images && canvas.images[0]) {
                         const resource = canvas.images[0].resource;
@@ -102,7 +102,7 @@ export class VallicellianLoader extends BaseLibraryLoader {
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load Vallicelliana manuscript: ${(error as Error).message}`);
             }
         }

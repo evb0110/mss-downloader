@@ -60,7 +60,7 @@ export class OnbLoader extends BaseLibraryLoader {
                         for (const annotation of annotationPage.items) {
                             if (annotation.body && annotation.body.service && Array.isArray(annotation.body.service)) {
                                 // Find IIIF Image API service
-                                const imageService = annotation.body.service.find((service: any) => 
+                                const imageService = annotation.body.service.find((service: Record<string, unknown>) => 
                                     service.type === 'ImageService3' || service['@type'] === 'ImageService'
                                 );
                                 
@@ -96,12 +96,12 @@ export class OnbLoader extends BaseLibraryLoader {
                 return {
                     pageLinks,
                     totalPages: pageLinks.length,
-                    library: 'onb' as any,
+                    library: 'onb' as const,
                     displayName,
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load ONB manuscript: ${(error as Error).message}`);
             }
         }

@@ -79,7 +79,7 @@ export class CzechLoader extends BaseLibraryLoader {
                     originalUrl: czechUrl
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Error loading Czech Digital Library manifest:', error);
                 throw new Error(`Failed to load Czech Digital Library manuscript: ${(error as Error).message}`);
             }

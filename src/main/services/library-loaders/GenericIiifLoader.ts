@@ -28,7 +28,7 @@ export class GenericIiifLoader extends BaseLibraryLoader {
             const pageLinks: string[] = [];
             
             // Handle IIIF v3 format (items directly in manifest) and IIIF v2 format (sequences)
-            let canvases: any[] = [];
+            let canvases: Record<string, unknown>[] = [];
             
             if (manifest.items && Array.isArray(manifest.items)) {
                 // IIIF v3: canvases are directly in manifest.items
@@ -116,7 +116,7 @@ export class GenericIiifLoader extends BaseLibraryLoader {
             
             // Fallback to metadata if no label found
             if (displayName === 'IIIF Document' && manifest.metadata) {
-                const titleMetadata = manifest.metadata.find((m: any) => 
+                const titleMetadata = manifest.metadata.find((m: Record<string, unknown>) => 
                     m.label === 'Title' || 
                     (typeof m.label === 'object' && (m.label.en?.[0] === 'Title' || m.label.none?.[0] === 'Title'))
                 );
@@ -136,7 +136,7 @@ export class GenericIiifLoader extends BaseLibraryLoader {
                 pageLinks,
                 totalPages: pageLinks.length,
                 displayName: displayName || 'IIIF Document',
-                library: '' as any,
+                library: '' as string,
                 originalUrl: ''
             };
         }

@@ -26,7 +26,7 @@ export class UgentLoader extends BaseLibraryLoader {
                     throw new Error('IIIF manifest loader not available');
                 }
                 return this.deps.loadIIIFManifest(manifestUrl);
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load UGent manifest: ${(error as Error).message}`);
             }
         }

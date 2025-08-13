@@ -51,8 +51,8 @@ export class FlorusLoader extends BaseLibraryLoader {
                 console.log(`Florus manifest loaded: ${manifest.displayName}, total pages: ${pageLinks.length}`);
                 return manifest;
                 
-            } catch (error: any) {
-                throw new Error(`Failed to load Florus manuscript: ${(error as Error).message}`);
+            } catch (error: unknown) {
+                throw new Error(`Failed to load Florus manuscript: ${error instanceof Error ? error.message : String(error)}`);
             }
         }
         
@@ -122,7 +122,7 @@ export class FlorusLoader extends BaseLibraryLoader {
                             pageLinks.push(fullUrl);
                         }
                     }
-                } catch (error) {
+                } catch {
                     console.warn(`Failed to fetch Florus page ${page}, stopping here`);
                     break;
                 }

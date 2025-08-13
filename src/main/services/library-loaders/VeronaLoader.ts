@@ -120,7 +120,7 @@ export class VeronaLoader extends BaseLibraryLoader {
                 let lastLoggedProgress = 0;
                 
                 // Extract page URLs with maximum quality
-                const pageLinks = canvases.map((canvas: any, index: number) => {
+                const pageLinks = canvases.map((canvas: Record<string, unknown>, index: number) => {
                     try {
                         const resource = canvas.images[0].resource;
                         
@@ -181,7 +181,7 @@ export class VeronaLoader extends BaseLibraryLoader {
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 // Provide specific error messages for common issues
                 if (error.message.includes('timeout') || error.message.includes('ETIMEDOUT') || 
                     error.code === 'ETIMEDOUT' || error.code === 'ECONNREFUSED' || error.code === 'ECONNRESET') {

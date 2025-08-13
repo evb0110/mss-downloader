@@ -51,7 +51,7 @@ export class MunichLoader extends BaseLibraryLoader {
                 if (manifest.sequences && manifest.sequences.length > 0) {
                     const sequence = manifest.sequences[0];
                     if (sequence.canvases && Array.isArray(sequence.canvases)) {
-                        totalPages = sequence.canvases.length;
+                        // sequence.canvases.length - totalPages will be pageLinks.length
                         
                         // Extract image URLs with maximum resolution
                         for (const canvas of sequence.canvases) {
@@ -91,8 +91,9 @@ export class MunichLoader extends BaseLibraryLoader {
                 
                 return munichManifest;
                 
-            } catch (error: any) {
-                throw new Error(`Failed to load Munich manuscript: ${(error as Error).message}`);
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                throw new Error(`Failed to load Munich manuscript: ${errorMessage}`);
             }
         }
 }

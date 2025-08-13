@@ -1,6 +1,15 @@
 import { BaseLibraryLoader, type LoaderDependencies } from './types';
 import type { ManuscriptManifest } from '../../../shared/types';
 
+interface IIIFCanvas {
+    images: Array<{
+        resource: {
+            '@id'?: string;
+            id?: string;
+        };
+    }>;
+}
+
 export class CudlLoader extends BaseLibraryLoader {
     constructor(deps: LoaderDependencies) {
         super(deps);
@@ -31,7 +40,7 @@ export class CudlLoader extends BaseLibraryLoader {
                     throw new Error('Invalid IIIF manifest structure');
                 }
                 
-                const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: IIIFCanvas) => {
                     const resource = canvas.images[0].resource;
                     const rawUrl = resource['@id'] || resource.id;
                     // Convert bare IIIF identifier to proper IIIF image URL for Cambridge CUDL
@@ -53,7 +62,7 @@ export class CudlLoader extends BaseLibraryLoader {
                     originalUrl: cudlUrl,
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load Cambridge CUDL manuscript: ${(error as Error).message}`);
             }
         }

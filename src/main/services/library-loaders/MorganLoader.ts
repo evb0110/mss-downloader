@@ -100,9 +100,10 @@ export class MorganLoader extends BaseLibraryLoader {
                             throw new Error(`Redirect response but no location header from ${pageUrl}`);
                         }
                     }
-                } catch (error: any) {
+                } catch (error: unknown) {
                     // Enhanced error message for debugging
-                    throw new Error(`Failed to fetch Morgan page from ${pageUrl}: ${error.message}`);
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    throw new Error(`Failed to fetch Morgan page from ${pageUrl}: ${errorMessage}`);
                 }
                 
                 if (!pageResponse.ok) {
@@ -405,8 +406,9 @@ export class MorganLoader extends BaseLibraryLoader {
                 
                 return morganManifest;
                 
-            } catch (error: any) {
-                console.error(`Failed to load Morgan manifest: ${(error as Error).message}`);
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                console.error(`Failed to load Morgan manifest: ${errorMessage}`);
                 throw error;
             }
         }

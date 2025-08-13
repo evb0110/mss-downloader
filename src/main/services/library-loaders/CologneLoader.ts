@@ -134,12 +134,12 @@ export class CologneLoader extends BaseLibraryLoader {
                 return {
                     pageLinks,
                     totalPages: pageLinks.length,
-                    library: 'cologne' as any,
+                    library: 'cologne',
                     displayName: sanitizedName,
                     originalUrl: cologneUrl,
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error(`Cologne Dom Library manifest loading failed:`, error);
                 throw new Error(`Failed to load Cologne Dom Library manuscript: ${(error as Error).message}`);
             }

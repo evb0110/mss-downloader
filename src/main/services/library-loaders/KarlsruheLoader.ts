@@ -126,7 +126,7 @@ export class KarlsruheLoader extends BaseLibraryLoader {
                 
                 return karlsruheManifest;
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load Karlsruhe manuscript: ${(error as Error).message}`);
             }
         }

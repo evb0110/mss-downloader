@@ -49,7 +49,7 @@ export class VaticanLoader extends BaseLibraryLoader {
                     throw new Error('Invalid manifest structure: missing sequences or canvases');
                 }
                 
-                const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
                     const resource = canvas.images[0].resource;
                     
                     // Vatican Library uses a service object with @id pointing to the image service
@@ -80,7 +80,7 @@ export class VaticanLoader extends BaseLibraryLoader {
                     originalUrl: vatLibUrl,
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load Vatican Library manuscript: ${(error as Error).message}`);
             }
         }

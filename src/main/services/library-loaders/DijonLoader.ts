@@ -1,6 +1,16 @@
 import { BaseLibraryLoader, type LoaderDependencies } from './types';
 import type { ManuscriptManifest } from '../../../shared/types';
 
+interface DijonVersion {
+    src: string;
+    [key: string]: unknown;
+}
+
+interface DijonPage {
+    versions: DijonVersion[];
+    [key: string]: unknown;
+}
+
 export class DijonLoader extends BaseLibraryLoader {
     constructor(deps: LoaderDependencies) {
         super(deps);
@@ -25,11 +35,11 @@ export class DijonLoader extends BaseLibraryLoader {
             if (!Array.isArray(manifestData) || manifestData.length === 0) {
                 throw new Error('No images found in Dijon manifest');
             }
-            const pageLinks = manifestData.map((page: any) => {
+            const pageLinks = manifestData.map((page: DijonPage) => {
                 if (!page.versions || !Array.isArray(page.versions)) {
                     throw new Error(`Invalid page versions for manuscript ${manuscriptId}`);
                 }
-                const version = page.versions.find((v: any) => v.src && !v.src.includes('__thumbs__'));
+                const version = page.versions.find((v: DijonVersion) => v.src && !v.src.includes('__thumbs__'));
                 if (!version || !version.src) {
                     throw new Error(`No full-size version found for a page of manuscript ${manuscriptId}`);
                 }

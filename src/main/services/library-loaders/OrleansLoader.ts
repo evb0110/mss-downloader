@@ -53,7 +53,7 @@ export class OrleansLoader extends BaseLibraryLoader {
                     }
                     
                     // Try multiple search strategies for better results
-                    let searchResults: any[] = [];
+                    let searchResults: Record<string, unknown>[] = [];
                     const searchStrategies = [
                         searchQuery, // Original full query
                         searchQuery.split(' ').slice(0, 2).join(' '), // First two words
@@ -85,7 +85,7 @@ export class OrleansLoader extends BaseLibraryLoader {
                                 console.log(`Orleans search attempt ${i + 1} returned ${results.length} results`);
                                 break;
                             }
-                        } catch (error: any) {
+                        } catch (error: unknown) {
                             console.warn(`Orleans search attempt ${i + 1} failed:`, (error as Error).message);
                             if (i === searchStrategies.length - 1) {
                                 throw error; // Re-throw on final attempt
@@ -133,7 +133,7 @@ export class OrleansLoader extends BaseLibraryLoader {
                         
                         itemData = await itemResponse.json();
                         break;
-                    } catch (error: any) {
+                    } catch (error: unknown) {
                         retryCount++;
                         console.warn(`Orleans item fetch attempt ${retryCount}/${maxRetries} failed:`, (error as Error).message);
                         
@@ -226,8 +226,8 @@ export class OrleansLoader extends BaseLibraryLoader {
                             
                             throw new Error('No valid image URL found');
                             
-                        } catch (fetchError: any) {
-                            if (fetchError.name === 'AbortError') {
+                        } catch (fetchError: unknown) {
+                            if ((fetchError as Error).name === 'AbortError') {
                                 throw new Error(`Request timed out for media ${mediaId}`);
                             }
                             throw fetchError;
@@ -365,7 +365,7 @@ export class OrleansLoader extends BaseLibraryLoader {
                     originalUrl: orleansUrl,
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error(`Orleans manifest loading failed:`, error);
                 throw new Error(`Failed to load Orléans manuscript: ${(error as Error).message}`);
             }

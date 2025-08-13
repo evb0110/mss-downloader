@@ -26,10 +26,10 @@ export class TrinityCamLoader extends BaseLibraryLoader {
                     'trinity',
                     { initialTimeout: 60000, maxTimeout: 360000, progressCheckInterval: 20000 },
                     {
-                        onInitialTimeoutReached: (state: any) => {
+                        onInitialTimeoutReached: (state: Record<string, unknown>) => {
                             console.log(`[Trinity] ${state.statusMessage}`);
                         },
-                        onStuckDetected: (state: any) => {
+                        onStuckDetected: (state: Record<string, unknown>) => {
                             console.warn(`[Trinity] ${state.statusMessage}`);
                         }
                     }
@@ -74,7 +74,7 @@ export class TrinityCamLoader extends BaseLibraryLoader {
                         throw new Error('Invalid IIIF manifest structure from Trinity Cambridge');
                     }
                     
-                    const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                    const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
                         const resource = canvas.images[0].resource;
                         let imageUrl = resource['@id'] || resource.id;
                         
@@ -99,7 +99,7 @@ export class TrinityCamLoader extends BaseLibraryLoader {
                         originalUrl: trinityUrl,
                     };
                     
-                } catch (fetchError: any) {
+                } catch (fetchError: unknown) {
                     if (fetchError.name === 'AbortError') {
                         throw new Error('Trinity Cambridge server request timed out. The server may be temporarily unavailable.');
                     }
@@ -108,7 +108,7 @@ export class TrinityCamLoader extends BaseLibraryLoader {
                     progressMonitor.complete();
                 }
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load Trinity College Cambridge manuscript: ${(error as Error).message}`);
             }
         }

@@ -68,7 +68,7 @@ export class RouenLoader extends BaseLibraryLoader {
                         
                         // Method 4: Recursive search through the entire manifest for totalNumberPage or totalVues
                         if (!foundPageCount) {
-                            const findPageCount = (obj: any): number | null => {
+                            const findPageCount = (obj: Record<string, unknown>): number | null => {
                                 if (typeof obj !== 'object' || obj === null) return null;
                                 
                                 // Check current level for page count fields
@@ -101,7 +101,7 @@ export class RouenLoader extends BaseLibraryLoader {
                             console.log(`Successfully determined page count: ${totalPages}`);
                             
                             // Try to extract title from manifest - also search recursively
-                            const findTitle = (obj: any, keys: string[]): string | null => {
+                            const findTitle = (obj: Record<string, unknown>, keys: string[]): string | null => {
                                 if (typeof obj !== 'object' || obj === null) return null;
                                 
                                 for (const key of keys) {
@@ -192,7 +192,7 @@ export class RouenLoader extends BaseLibraryLoader {
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw new Error(`Failed to load Rouen manuscript: ${(error as Error).message}`);
             }
         }
