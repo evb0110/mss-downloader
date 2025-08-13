@@ -180,7 +180,7 @@
       "createStartMenuShortcut": true,
       "deleteAppDataOnUninstall": false,
       "artifactName": "${productName} Setup ${version}-${arch}.${ext}",
-      "uninstallerDisplayName": "${productName} Uninstaller",
+      "uninstallDisplayName": "${productName}",
       "include": "installer.nsh",
       "perMachine": false,
       "differentialPackage": false
