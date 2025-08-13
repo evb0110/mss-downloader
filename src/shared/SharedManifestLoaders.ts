@@ -2350,281 +2350,197 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     }
 
     /**
-     * Florence (ContentDM Plutei) - Fixed with proper IIIF manifest integration and error handling
+     * Florence (ContentDM Plutei) - Uses new HTML state extraction for complete page discovery
      */
     async getFlorenceManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         console.log('[Florence] Processing URL:', url);
         
-        // Extract item ID from URL - handle multiple formats
-        let match;
-        let itemId;
-        
-        // Pattern 1: New pattern /s/itBMLO0000000000/item/174871
-        match = url.match(/\/item\/(\d+)/);
-        if (match) {
-            itemId = match[1];
-            console.log('[Florence] Extracted item ID from /item/ URL:', itemId);
-        } else {
-            // Pattern 2: Legacy patterns with collection/plutei
-            match = url.match(/collection\/plutei\/id\/(\d+)/);
-            if (!match) {
-                // Try alternative URL format
-                match = url.match(/digital\/collection\/plutei\/id\/(\d+)/);
-            }
-            if (match) {
-                itemId = match[1];
-            }
-        }
-        
-        if (!itemId) throw new Error('Invalid Florence URL. Expected patterns: /item/XXXXX or /collection/plutei/id/XXXXX');
-        
-        console.log(`[Florence] Processing item ID: ${itemId}`);
-        
-        // Strategy 1: Try IIIF manifest first (most reliable)
         try {
-            console.log('[Florence] Attempting IIIF manifest discovery...');
-            const manifestUrl = `https://cdm21059.contentdm.oclc.org/iiif/info/plutei/${itemId}/manifest.json`;
-            const manifestResponse = await this.fetchWithRetry(manifestUrl, {
-                headers: {
-                    'Accept': 'application/json, application/ld+json',
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                }
-            }, 2);
-            
-            if (manifestResponse.ok) {
-                const manifestText = await manifestResponse.text();
-                if (manifestText.trim().startsWith('{') || manifestText.trim().startsWith('[')) {
-                    const manifest = JSON.parse(manifestText);
-                    console.log('[Florence] Successfully parsed IIIF manifest');
-                    const iiifResult = this.parseFlorenceIIIFManifest(manifest, itemId);
-                    
-                    // If IIIF manifest only has 1 image, this might be a compound object
-                    // Check if we need to discover child pages
-                    if (iiifResult.images.length === 1) {
-                        console.log('[Florence] Only 1 image in IIIF manifest, checking for compound object...');
-                        try {
-                            // ULTRA-PRIORITY FIX: Increased timeout for enhanced detection
-                            // The new fast detection method needs less time but we allow 60s for large manuscripts
-                            const timeoutPromise = new Promise((_, reject) => 
-                                setTimeout(() => reject(new Error('Compound object detection timeout after 60s')), 60000)
-                            );
-                            
-                            const compoundResult: { images: ManuscriptImage[] } = await Promise.race([
-                                this.detectFlorenceCompoundObject(itemId),
-                                timeoutPromise
-                            ]);
-                            
-                            if (compoundResult.images.length > 1) {
-                                console.log(`[Florence] Found compound object with ${compoundResult.images.length} pages`);
-                                return compoundResult;
-                            }
-                        } catch (compoundError: unknown) {
-                            const errorMessage = compoundError instanceof Error ? compoundError.message : String(compoundError);
-                            console.log('[Florence] Compound object detection failed:', errorMessage);
-                            // Continue with IIIF result even if compound detection fails
-                        }
-                    }
-                    
-                    return iiifResult;
-                }
+            // Extract collection and item ID from URL
+            const urlMatch = url.match(/cdm21059\.contentdm\.oclc\.org\/digital\/collection\/([^/]+)\/id\/(\d+)/);
+            if (!urlMatch) {
+                throw new Error('Could not extract collection and item ID from Florence URL');
             }
-        } catch (manifestError: unknown) {
-            const errorMessage = manifestError instanceof Error ? manifestError.message : String(manifestError);
-            console.log('[Florence] IIIF manifest not available:', errorMessage);
-        }
-        
-        // Strategy 2: Try ContentDM compound object detection with HTML scraping
-        try {
-            console.log('[Florence] Attempting compound object detection via page scraping...');
-            const pageUrl = `https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/${itemId}`;
-            const pageResponse = await this.fetchWithRetry(pageUrl, {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-                }
-            }, 2);
-            
-            if (pageResponse.ok) {
-                const html = await pageResponse.text();
-                const images: ManuscriptImage[] = [];
-                
-                // Look for page navigation or compound object indicators
-                const _pageNumberMatches = html.match(/(?:page|item)\s*(\d+)\s*of\s*(\d+)/i);
-                const compoundPatterns = [
-                    /compound[^>]*object/i,
-                    /(?:page|item)\s*\d+\s*of\s*(\d+)/i,
-                    /totalPages['"]\s*:\s*(\d+)/i,
-                    /pageCount['"]\s*:\s*(\d+)/i
-                ];
-                
-                let totalPages = 1;
-                
-                // Extract total page count from various patterns
-                for (const pattern of compoundPatterns) {
-                    const match = html.match(pattern);
-                    if (match && match[1]) {
-                        totalPages = parseInt(match[1]);
-                        if (totalPages > 1 && totalPages < 1000) { // Reasonable bounds
-                            console.log(`[Florence] Detected ${totalPages} pages from HTML pattern`);
-                            break;
-                        }
-                    }
-                }
-                
-                // Look for specific page IDs in JavaScript or data attributes
-                const pageIdMatches = html.match(/(?:pageptr|itemid)['"]\s*:\s*['"]*(\d+)/gi);
-                const extractedPageIds = new Set();
-                
-                if (pageIdMatches) {
-                    for (const match of pageIdMatches) {
-                        const idMatch = match.match(/(\d+)/);
-                        if (idMatch) {
-                            extractedPageIds.add(idMatch[1]);
-                        }
-                    }
-                }
-                
-                // Generate IIIF URLs based on discovered page structure
-                if (extractedPageIds.size > 0) {
-                    console.log(`[Florence] Found ${extractedPageIds.size} specific page IDs`);
-                    let pageNum = 1;
-                    for (const pageId of extractedPageIds) {
-                        images.push({
-                            url: `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${pageId}/full/max/0/default.jpg`,
-                            label: `Page ${pageNum++}`
-                        });
-                        if (images.length >= 50) break; // Reasonable limit
-                    }
-                } else if (totalPages > 1) {
-                    // Generate sequential IDs based on base item ID
-                    console.log(`[Florence] Generating sequential page IDs for ${totalPages} pages`);
-                    const baseId = parseInt(itemId);
-                    for (let i = 0; i < totalPages; i++) {
-                        // Try different patterns commonly used by ContentDM
-                        const pageId = (baseId + i).toString();
-                        images.push({
-                            url: `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${pageId}/full/max/0/default.jpg`,
-                            label: `Page ${i + 1}`
-                        });
-                    }
-                }
-                
-                if (images.length > 0) {
-                    console.log(`[Florence] Generated ${images.length} pages from HTML analysis`);
-                    return { images };
-                }
-            }
-        } catch (htmlError: unknown) {
-            const errorMessage = htmlError instanceof Error ? htmlError.message : String(htmlError);
-            console.log('[Florence] HTML scraping failed:', errorMessage);
-        }
-        
-        // Strategy 3: Fallback to direct IIIF URL with validation
-        try {
-            console.log('[Florence] Falling back to direct IIIF URL with validation...');
-            const directUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${itemId}/full/max/0/default.jpg`;
-            
-            // Test if the URL is accessible with HEAD request
-            const headResponse = await this.fetchWithRetry(directUrl, {
-                method: 'HEAD',
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                }
-            }, 1);
-            
-            if (headResponse.ok) {
-                console.log('[Florence] Direct IIIF URL validated successfully');
-                return {
-                    images: [{
-                        url: directUrl,
-                        label: 'Page 1'
-                    }]
-                };
-            } else {
-                throw new Error(`IIIF URL validation failed: ${headResponse.status}`);
-            }
-        } catch (directError: unknown) {
-            const errorMessage = directError instanceof Error ? directError.message : String(directError);
-            console.error('[Florence] Direct URL validation failed:', errorMessage);
-        }
-        
-        // Strategy 4: Last resort - return base URL without validation
-        console.log('[Florence] Using unvalidated direct URL as last resort');
-        return {
-            images: [{
-                url: `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${itemId}/full/max/0/default.jpg`,
-                label: 'Florence Manuscript Page 1'
-            }]
-        };
-    }
-    
-    /**
-     * Parse Florence IIIF manifest structure
-     */
-    parseFlorenceIIIFManifest(manifest: IIIFManifest, _itemId: string) {
-        const images: ManuscriptImage[] = [];
-        
-        // Handle IIIF v2 manifest
-        if (manifest.sequences?.[0]?.canvases) {
-            const canvases = manifest.sequences[0].canvases;
-            console.log(`[Florence] Processing ${canvases.length} pages from IIIF manifest`);
-            
-            // FIXED in v1.4.56: Removed page limit, now downloads ALL pages
-            // Was limited to first 50 pages, users complained about incomplete manuscripts
-            for (let i = 0; i < canvases.length; i++) {
-                const canvas = canvases[i];
-                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
-                    const resource = canvas.images[0].resource;
-                    const service = resource.service;
-                    
-                    let imageUrl = '';
-                    if (service && service['@id']) {
-                        // Use IIIF service for maximum resolution
-                        imageUrl = `${service['@id']}/full/max/0/default.jpg`;
-                    } else if (resource['@id']) {
-                        imageUrl = resource['@id'];
-                    }
-                    
-                    if (imageUrl) {
-                        images.push({
-                            url: imageUrl,
-                            label: this.localizedStringToString(canvas.label, `Page ${i + 1}`)
-                        });
-                    }
-                }
-            }
-        }
-        // Handle IIIF v3 manifest
-        else if (manifest.items) {
-            console.log(`[Florence] Processing ${manifest.items.length} pages from IIIF v3 manifest`);
-            
-            for (let i = 0; i < manifest.items.length; i++) {
-                const item = manifest.items[i];
-                if (item.items && item.items[0] && item.items[0].items && item.items[0].items[0]) {
-                    const annotation = item.items[0].items[0];
-                    if (annotation.body && annotation.body.service) {
-                        const service = annotation.body.service[0];
-                        if (service && service.id) {
-                            images.push({
-                                url: `${service.id}/full/max/0/default.jpg`,
-                                label: item.label || `Page ${i + 1}`
-                            });
-                        }
-                    }
-                }
-            }
-        }
-        
-        if (images.length === 0) {
-            throw new Error('No images found in Florence IIIF manifest');
-        }
-        
-        return { images };
-    }
 
-    /**
-     * Grenoble Municipal Library - IIIF manifest with SSL bypass
-     */
+            const collection = urlMatch[1];
+            const itemId = urlMatch[2];
+            console.log(`[Florence] collection=${collection}, itemId=${itemId}`);
+
+            // Fetch the HTML page to extract the initial state with all children
+            console.log('[Florence] Fetching page HTML to extract manuscript structure...');
+            const pageResponse = await this.fetchWithRetry(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    'Referer': 'https://cdm21059.contentdm.oclc.org/'
+                }
+            });
+
+            if (!pageResponse.ok) {
+                throw new Error(`Failed to fetch Florence page: HTTP ${pageResponse.status}`);
+            }
+
+            const html = await pageResponse.text();
+            console.log(`[Florence] Page HTML retrieved (${html.length} characters)`);
+
+            // Extract __INITIAL_STATE__ from the HTML
+            const stateMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*JSON\.parse\("(.+?)"\);/);
+            if (!stateMatch) {
+                throw new Error('Could not find __INITIAL_STATE__ in Florence page');
+            }
+
+            // Unescape the JSON string
+            const escapedJson = stateMatch[1];
+            const unescapedJson = escapedJson
+                .replace(/\\"/g, '"')
+                .replace(/\\\\/g, '\\')
+                .replace(/\\u0026/g, '&')
+                .replace(/\\u003c/g, '<')
+                .replace(/\\u003e/g, '>')
+                .replace(/\\u002F/g, '/');
+
+            let state: any;
+            try {
+                state = JSON.parse(unescapedJson);
+            } catch (parseError) {
+                console.error('[Florence] Failed to parse state JSON');
+                throw new Error('Could not parse Florence page state');
+            }
+
+            // Extract item and parent data from state
+            const itemData = state?.item?.item;
+            if (!itemData) {
+                throw new Error('No item data found in Florence page state');
+            }
+
+            let pages: Array<{ id: string; title: string }> = [];
+            let manuscriptTitle = 'Florence Manuscript';
+
+            // Check if this item has a parent (compound object)
+            if (itemData.parentId && itemData.parentId !== -1) {
+                // This is a child page - get all siblings from parent
+                if (itemData.parent && itemData.parent.children && Array.isArray(itemData.parent.children)) {
+                    console.log(`[Florence] Found ${itemData.parent.children.length} pages in parent compound object`);
+                    
+                    // Filter out non-page items (like Color Chart, Dorso, etc.)
+                    pages = itemData.parent.children
+                        .filter((child: any) => {
+                            const title = (child.title || '').toLowerCase();
+                            // Include carta/folio pages, exclude color charts and binding parts
+                            return !title.includes('color chart') && 
+                                   !title.includes('dorso') && 
+                                   !title.includes('piatto') &&
+                                   !title.includes('controguardia') &&
+                                   !title.includes('guardia anteriore') &&
+                                   !title.includes('guardia posteriore');
+                        })
+                        .map((child: any) => ({
+                            id: child.id.toString(),
+                            title: child.title || `Page ${child.id}`
+                        }));
+
+                    // Extract manuscript title from parent metadata
+                    if (itemData.parent.fields) {
+                        const subjecField = itemData.parent.fields.find((f: any) => f.key === 'subjec');
+                        const identField = itemData.parent.fields.find((f: any) => f.key === 'identi');
+                        const titleField = itemData.parent.fields.find((f: any) => f.key === 'title' || f.key === 'titlea');
+                        
+                        if (subjecField && subjecField.value) {
+                            manuscriptTitle = subjecField.value;
+                            if (titleField && titleField.value) {
+                                const shortTitle = titleField.value.split('.')[0].substring(0, 50);
+                                manuscriptTitle = `${subjecField.value} - ${shortTitle}`;
+                            }
+                        } else if (identField && identField.value) {
+                            manuscriptTitle = identField.value;
+                        } else if (titleField && titleField.value) {
+                            manuscriptTitle = titleField.value.substring(0, 80);
+                        }
+                    }
+                } else {
+                    throw new Error('Parent compound object has no children data');
+                }
+            } else {
+                // This might be a parent itself or a single page
+                // Check the current page for children
+                const currentPageChildren = state?.item?.children;
+                if (currentPageChildren && Array.isArray(currentPageChildren) && currentPageChildren.length > 0) {
+                    console.log(`[Florence] Found ${currentPageChildren.length} child pages in current item`);
+                    
+                    pages = currentPageChildren
+                        .filter((child: any) => {
+                            const title = (child.title || '').toLowerCase();
+                            return !title.includes('color chart') && 
+                                   !title.includes('dorso') && 
+                                   !title.includes('piatto') &&
+                                   !title.includes('controguardia') &&
+                                   !title.includes('guardia anteriore') &&
+                                   !title.includes('guardia posteriore');
+                        })
+                        .map((child: any) => ({
+                            id: child.id.toString(),
+                            title: child.title || `Page ${child.id}`
+                        }));
+
+                    // Extract manuscript title from current item
+                    if (itemData.fields) {
+                        const subjecField = itemData.fields.find((f: any) => f.key === 'subjec');
+                        const identField = itemData.fields.find((f: any) => f.key === 'identi');
+                        const titleField = itemData.fields.find((f: any) => f.key === 'title' || f.key === 'titlea');
+                        
+                        if (subjecField && subjecField.value) {
+                            manuscriptTitle = subjecField.value;
+                            if (titleField && titleField.value) {
+                                const shortTitle = titleField.value.split('.')[0].substring(0, 50);
+                                manuscriptTitle = `${subjecField.value} - ${shortTitle}`;
+                            }
+                        } else if (identField && identField.value) {
+                            manuscriptTitle = identField.value;
+                        } else if (titleField && titleField.value) {
+                            manuscriptTitle = titleField.value.substring(0, 80);
+                        }
+                    }
+                } else {
+                    // Single page manuscript
+                    pages = [{
+                        id: itemId,
+                        title: itemData.title || 'Page 1'
+                    }];
+                    
+                    manuscriptTitle = itemData.title || manuscriptTitle;
+                    console.log('[Florence] Single page manuscript');
+                }
+            }
+
+            if (pages.length === 0) {
+                throw new Error('No pages found in Florence manuscript');
+            }
+
+            console.log(`[Florence] Extracted ${pages.length} manuscript pages (excluding binding/charts)`);
+
+            // Generate IIIF URLs for all pages with maximum resolution
+            const images: ManuscriptImage[] = pages.map((page, index) => ({
+                url: `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${page.id}/full/6000,/0/default.jpg`,
+                label: page.title || `Page ${index + 1}`
+            }));
+
+            console.log(`[Florence] Manuscript processed: ${pages.length} pages with maximum resolution (6000px width)`);
+            console.log(`[Florence] Manuscript title: ${manuscriptTitle}`);
+
+            // Store the manuscript title for display
+            const result = { 
+                images,
+                displayName: manuscriptTitle // Use displayName for consistency with other loaders
+            };
+
+            return result;
+
+        } catch (error: any) {
+            console.error('[Florence] Failed to load manuscript:', error.message);
+            throw new Error(`Failed to load Florence manuscript: ${error.message}`);
+        }
+    }
     async getGrenobleManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         // Extract document ID from URL (ARK identifier)
         const match = url.match(/ark:\/12148\/([^/]+)/);

@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.174",
+  "version": "1.4.175",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (64+ libraries worldwide)",
   "changelog": [
-    "v1.4.174: Added CSUC MDC Catalonia library support",
-    "New library: Full support for Consortium of University Services of Catalonia (CSUC) digital collections",
-    "Successfully downloads manuscripts from mdc.csuc.cat with high-quality IIIF images",
-    "Tested with 266-page incunable manuscript - all pages download perfectly",
-    "Now supports 64 digital libraries worldwide"
+    "v1.4.175: Fixed Florence (Biblioteca Medicea Laurenziana) manuscript downloads",
+    "Florence loader now correctly extracts all pages from compound manuscripts (was only showing 1 page)",
+    "Fixed manuscript naming - now shows proper signatures like 'Plut.7.5' instead of generic 'florence_Manuscript'",
+    "Uses HTML state extraction to get complete 750+ page manuscripts from CONTENTdm platform",
+    "Tested with Plut.7.5 manuscript - successfully downloads all 749 pages with proper naming"
   ],
   "main": "dist/main/main.js",
   "scripts": {

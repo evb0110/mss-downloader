@@ -26,17 +26,31 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 - **MUST fix root causes** - Debug to find WHY it fails, not just THAT it fails
 - **MUST validate with same failing URL** - Verify fix works on original problem
 
-**Testing Framework Requirements:**
-```javascript
-// ✅ MANDATORY - Uses actual production code
-const { SharedManifestLoaders } = require('../../src/shared/SharedManifestLoaders.js');
+**Testing Framework Requirements - USE BUN FOR TYPESCRIPT:**
+```typescript
+// ✅ MANDATORY - Use Bun to run TypeScript files directly
+// File: test-loader.ts
+import { SharedManifestLoaders } from '../../src/shared/SharedManifestLoaders';
 const loaders = new SharedManifestLoaders();
+
+// Run with: bun test-loader.ts
+```
+
+```javascript
+// ❌ FORBIDDEN - Node.js with CommonJS (can't import TypeScript)
+const { SharedManifestLoaders } = require('../../src/shared/SharedManifestLoaders.js');
 
 // ❌ FORBIDDEN - Isolated test implementation
 async function testManifest() { /* custom logic */ }
 ```
 
-### 3. VERSION CONTROL - COMPLETE WORKFLOW MANDATORY
+**BUN DEVELOPMENT RULE - MANDATORY:**
+- **ALWAYS use Bun** for development testing with TypeScript files
+- **COMMAND:** `bun filename.ts` to run TypeScript directly
+- **WHY:** Enables direct use of production TypeScript code without compilation
+- **NO NODE.JS:** Don't use `node` command for test scripts - use `bun` instead
+
+### 4. VERSION CONTROL - COMPLETE WORKFLOW MANDATORY
 **Version Bump Requirements:**
 - **USER APPROVAL:** When user says "bump", "bump version", "release", or "approved" → Execute FULL workflow
 - **FULL WORKFLOW MANDATORY:** Version bump → Commit → Push → Verify GitHub Actions → Check Telegram
