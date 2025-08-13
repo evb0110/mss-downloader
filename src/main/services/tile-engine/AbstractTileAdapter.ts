@@ -16,7 +16,7 @@ export abstract class AbstractTileAdapter implements ITileAdapter {
   abstract generateTileUrls(baseUrl: string, config: TileGridConfig): Promise<string[]>;
   abstract getAuthConfig(baseUrl: string): Promise<TileAuthConfig>;
 
-  async validateTileResponse(response: Buffer, _coordinate: TileCoordinate): Promise<TileValidationResult> {
+  async validateTileResponse(response: Buffer, _UNUSED_coordinate: TileCoordinate): Promise<TileValidationResult> {
     const errors: string[] = [];
     const warnings: string[] = [];
 
@@ -67,7 +67,7 @@ export abstract class AbstractTileAdapter implements ITileAdapter {
     try {
       const urlObj = new URL(url);
       return `${urlObj.protocol}//${urlObj.host}`;
-    } catch (error) {
+    } catch {
       throw new Error(`Invalid URL: ${url}`);
     }
   }
@@ -76,7 +76,7 @@ export abstract class AbstractTileAdapter implements ITileAdapter {
     try {
       const urlObj = new URL(url);
       return urlObj.pathname.split('/').filter(segment => segment.length > 0);
-    } catch (error) {
+    } catch {
       throw new Error(`Invalid URL: ${url}`);
     }
   }
@@ -85,7 +85,7 @@ export abstract class AbstractTileAdapter implements ITileAdapter {
     try {
       const urlObj = new URL(url);
       return urlObj.searchParams;
-    } catch (error) {
+    } catch {
       throw new Error(`Invalid URL: ${url}`);
     }
   }
@@ -156,7 +156,7 @@ export abstract class AbstractTileAdapter implements ITileAdapter {
       }
       
       return null;
-    } catch (error) {
+    } catch {
       return null;
     }
   }

@@ -26,8 +26,7 @@ export default typescriptEslint.config(
         parser: typescriptEslint.parser,
         sourceType: 'module',
         ecmaVersion: 'latest',
-        project: './tsconfig.json',
-        tsconfigRootDir: __dirname
+        extraFileExtensions: ['.vue']
       }
     }
   },

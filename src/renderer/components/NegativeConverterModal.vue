@@ -198,7 +198,7 @@ const startConversion = async () => {
   
   try {
     const arrayBuffer = await selectedFile.value.arrayBuffer()
-    const uint8Array = new Uint8Array(arrayBuffer)
+    const _UNUSED_uint8Array = new Uint8Array(arrayBuffer)
     
     conversionStatus.value = {
       stage: 'Preparing conversion...',

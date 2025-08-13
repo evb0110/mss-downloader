@@ -138,7 +138,7 @@ export class WolfenbuettelLoader extends BaseLibraryLoader {
                             } else {
                                 consecutiveFailures++;
                             }
-                        } catch (error) {
+                        } catch {
                             consecutiveFailures++;
                         }
                         

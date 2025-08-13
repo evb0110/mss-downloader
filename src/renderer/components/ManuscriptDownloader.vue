@@ -489,8 +489,8 @@ const handleDownload = async () => {
         isDownloading.value = false
       }
     })
-  } catch (error: any) {
-    errorMessage.value = error.message || 'Unknown error occurred'
+  } catch (error: unknown) {
+    errorMessage.value = error instanceof Error ? error.message : 'Unknown error occurred'
   } finally {
     isDownloading.value = false
   }

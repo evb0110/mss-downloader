@@ -1066,19 +1066,38 @@ https://digi.vatlib.it/..."
 <script setup lang="ts">
 import { computed, nextTick, ref, watchEffect, onMounted, onUnmounted } from 'vue';
 import type { QueuedManuscript, QueueState, TStatus, TLibrary, TSimultaneousMode } from '../../shared/queueTypes';
-import type { LibraryInfo, ManuscriptManifest } from '../../shared/types';
+import type { LibraryInfo, ManuscriptManifest, DownloadCallbacks } from '../../shared/types';
 import Modal from './Modal.vue';
 import Spoiler from './Spoiler.vue';
 import NegativeConverterModal from './NegativeConverterModal.vue';
 import DownloadLogsButton from './DownloadLogsButton.vue';
 import abbaAbabusImage from '../../../assets/abba-ababus.jpg';
 
+// Define log entry type
+interface LogEntry {
+  timestamp: string;
+  level: 'debug' | 'info' | 'warn' | 'error';
+  message: string;
+  component?: string;
+  details?: Record<string, unknown>;
+}
+
+// Simple IIIF canvas interface
+interface IIIFCanvas {
+  images: Array<{
+    resource: {
+      '@id'?: string;
+      id?: string;
+    };
+  }>;
+}
+
 // Declare window.electronAPI type
 declare global {
   interface Window {
     electronAPI: {
       getLanguage: () => Promise<string>;
-      downloadManuscript: (url: string, callbacks: any) => Promise<void>; // Simplified for now
+      downloadManuscript: (url: string, callbacks: DownloadCallbacks) => Promise<void>;
       getSupportedLibraries: () => Promise<LibraryInfo[]>;
       parseManuscriptUrl: (url: string) => Promise<ManuscriptManifest>;
       onLanguageChanged: (callback: (language: string) => void) => () => void;
@@ -1156,9 +1175,9 @@ const showNegativeConverterModal = ref(false);
 
 // Log viewer state
 const showLogViewer = ref(false);
-const currentLogs = ref<any[]>([]);
-const currentLogItem = ref<any>(null);
-const downloadLogs = ref<Map<string, any[]>>(new Map());
+const currentLogs = ref<LogEntry[]>([]);
+const currentLogItem = ref<QueuedManuscript | null>(null);
+const downloadLogs = ref<Map<string, LogEntry[]>>(new Map());
 const showAddMoreDocumentsModal = ref(false);
 
 // Context menu state
@@ -1922,7 +1941,7 @@ function parseUrls(text: string): string[] {
     // Look for patterns like "?page=,1" or "?page=, 1"
     const urlPattern = /https?:\/\/[^\s;]+/g;
     let match;
-    let lastIndex = 0;
+    let _UNUSED_lastIndex = 0;
     
     while ((match = urlPattern.exec(text)) !== null) {
         let url = match[0];
@@ -1947,7 +1966,7 @@ function parseUrls(text: string): string[] {
         }
         
         urls.push(url);
-        lastIndex = urlPattern.lastIndex;
+        _UNUSED_lastIndex = urlPattern.lastIndex;
     }
     
     // If no URLs found with pattern, fall back to simple splitting
@@ -1965,15 +1984,16 @@ function parseUrls(text: string): string[] {
 async function parseManuscriptWithCaptcha(url: string) {
     try {
         return await window.electronAPI.parseManuscriptUrl(url);
-    } catch (error: any) {
-        console.log('parseManuscriptWithCaptcha caught error:', error.message);
+    } catch (error: unknown) {
+        console.log('parseManuscriptWithCaptcha caught error:', error instanceof Error ? error.message : String(error));
         
         
         // Check if this is a captcha error (may be wrapped in IPC error)
-        if (error.message?.includes('CAPTCHA_REQUIRED:')) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage?.includes('CAPTCHA_REQUIRED:')) {
             // Extract the captcha URL from the potentially wrapped error message
-            const captchaMatch = error.message.match(/CAPTCHA_REQUIRED:(.+?)(?:\s|$)/);
-            const captchaUrl = captchaMatch ? captchaMatch[1] : error.message.split('CAPTCHA_REQUIRED:')[1];
+            const captchaMatch = errorMessage.match(/CAPTCHA_REQUIRED:(.+?)(?:\s|$)/);
+            const captchaUrl = captchaMatch ? captchaMatch[1] : errorMessage.split('CAPTCHA_REQUIRED:')[1];
             
             console.log('Captcha required for:', url);
             console.log('Captcha URL:', captchaUrl);
@@ -1984,7 +2004,7 @@ async function parseManuscriptWithCaptcha(url: string) {
                 // For libraries that return manifest directly after captcha
                 const iiifManifest = JSON.parse(captchaResult.content);
                 
-                const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
+                const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: IIIFCanvas) => {
                     const resource = canvas.images[0].resource;
                     return resource['@id'] || resource.id;
                 }).filter((link: string) => link);
@@ -2104,8 +2124,8 @@ async function processBulkUrls() {
                 });
                 tempIds.push(tempId);
                 urlsToProcess.push(url);
-            } catch (error: any) {
-                if (error.message.includes('already exists in queue')) {
+            } catch (error: unknown) {
+                if (error instanceof Error && error.message.includes('already exists in queue')) {
                     duplicateCount++;
                 } else {
                     console.error(`[processBulkUrls] Unexpected error for ${url}:`, error);
@@ -2160,18 +2180,19 @@ async function processBulkUrls() {
                     });
                 }
                 addedCount++;
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.log('[RENDERER] Error caught in processBulkUrls:', error);
-                console.log('[RENDERER] Error message:', error.message);
+                console.log('[RENDERER] Error message:', error instanceof Error ? error.message : String(error));
                 console.log('[RENDERER] Error type:', typeof error);
                 
                 // Handle all errors (captcha handled in parseManuscriptWithCaptcha)
-                const isExpectedError = error.message?.includes('not valid JSON') ||
-                    error.message?.includes('404') ||
-                    error.message?.includes('Manuscript not found') ||
-                    error.message?.includes('CORS') ||
-                    error.message?.includes('Invalid manifest structure') ||
-                    error.message?.includes('Captcha verification failed');
+                const errorMessage = error instanceof Error ? error.message : '';
+                const isExpectedError = errorMessage?.includes('not valid JSON') ||
+                    errorMessage?.includes('404') ||
+                    errorMessage?.includes('Manuscript not found') ||
+                    errorMessage?.includes('CORS') ||
+                    errorMessage?.includes('Invalid manifest structure') ||
+                    errorMessage?.includes('Captcha verification failed');
             
                 if (!isExpectedError) {
                     // Only log unexpected errors to avoid console spam
@@ -2206,11 +2227,11 @@ async function processBulkUrls() {
         }
 
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('[processBulkUrls] Unexpected error during bulk processing:', error);
         showAlert(
             'Error',
-            `Failed to process URLs: ${error.message}`,
+            `Failed to process URLs: ${error instanceof Error ? error.message : String(error)}`,
         );
     } finally {
         isProcessingUrls.value = false;
@@ -2481,8 +2502,8 @@ function removeParentWithParts(parentId: string) {
 async function showItemInFinder(filePath: string) {
     try {
         await window.electronAPI.showItemInFinder(filePath);
-    } catch (error: any) {
-        showAlert('Error', `Failed to show file: ${error.message}`);
+    } catch (error: unknown) {
+        showAlert('Error', `Failed to show file: ${error instanceof Error ? error.message : String(error)}`);
     }
 }
 
@@ -2591,7 +2612,7 @@ async function copyLinkToClipboard(url: string) {
 }
 
 // Log viewer functions
-function viewDownloadLogs(item: any) {
+function viewDownloadLogs(item: QueuedManuscript) {
     currentLogItem.value = item;
     currentLogs.value = downloadLogs.value.get(item.id) || [];
     showLogViewer.value = true;
@@ -2638,7 +2659,7 @@ function formatLogTime(timestamp: string | number): string {
 }
 
 // Capture log for a download
-function addLogEntry(itemId: string, level: string, message: string, details?: any) {
+function addLogEntry(itemId: string, level: string, message: string, details?: Record<string, unknown>) {
     const logs = downloadLogs.value.get(itemId) || [];
     logs.push({
         timestamp: Date.now(),
@@ -2669,19 +2690,19 @@ async function cleanupIndexedDBCache() {
             'Cleanup',
             'Cancel',
         );
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Failed to cleanup IndexedDB cache:', error);
-        showAlert('Error', `Failed to clean up cache: ${error.message}`);
+        showAlert('Error', `Failed to clean up cache: ${error instanceof Error ? error.message : String(error)}`);
     }
 }
 
 async function revealDownloadsFolder() {
     await performButtonAction('revealFolder', async () => {
         try {
-            const folderPath = await window.electronAPI.openDownloadsFolder();
-        } catch (error: any) {
+            const _UNUSED_folderPath = await window.electronAPI.openDownloadsFolder();
+        } catch (error: unknown) {
             console.error('Failed to open downloads folder:', error);
-            showAlert('Error', `Failed to open downloads folder: ${error.message}`);
+            showAlert('Error', `Failed to open downloads folder: ${error instanceof Error ? error.message : String(error)}`);
             throw error; // Re-throw to prevent showing success state
         }
     });
@@ -2690,7 +2711,7 @@ async function revealDownloadsFolder() {
 // Removed old global logs functions - now using per-download logs
 
 // Queue settings management
-function updateQueueSettings() {
+function _UNUSED_updateQueueSettings() {
     // Settings are updated in real-time via the reactive refs
 }
 

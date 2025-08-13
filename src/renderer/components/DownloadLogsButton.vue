@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const props = defineProps<{
+const _UNUSED_props = defineProps<{
   showButton: boolean;
 }>();
 

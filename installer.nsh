@@ -3,7 +3,7 @@
 
 !macro customHeader
   ; Set installer attributes for better AV detection
-  VIProductVersion "${VERSION}.0"
+  ; VIProductVersion is now automatically set by electron-builder
   VIAddVersionKey "ProductName" "Abba Ababus MSS Downloader"
   VIAddVersionKey "CompanyName" "Abba Ababus Manuscripts"
   VIAddVersionKey "LegalCopyright" "© 2024 Abba Ababus Manuscripts"

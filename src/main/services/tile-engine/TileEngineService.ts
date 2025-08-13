@@ -6,7 +6,9 @@ import type {
   TileEngineResult,
   TileDownloadCallbacks,
   ITileAdapter,
-  TileDownloadProgress
+  TileDownloadProgress,
+  TileGridConfig,
+  TileAuthConfig
 } from './interfaces';
 
 export class TileEngineService {
@@ -81,8 +83,8 @@ export class TileEngineService {
 
   async analyzeUrl(url: string): Promise<{
     adapter: ITileAdapter;
-    gridConfig: any;
-    authConfig: any;
+    gridConfig: TileGridConfig;
+    authConfig: TileAuthConfig;
     estimatedTiles: number;
     estimatedSize: number;
     estimatedTime: number;
@@ -128,8 +130,8 @@ export class TileEngineService {
   }
 
   createProgressCallback(
-    onProgress?: (progress: any) => void,
-    onStatusChange?: (status: any) => void
+    onProgress?: (progress: Record<string, unknown>) => void,
+    onStatusChange?: (status: Record<string, unknown>) => void
   ): TileDownloadCallbacks {
     return {
       onProgress: (progress: TileDownloadProgress) => {
@@ -149,7 +151,7 @@ export class TileEngineService {
           downloadSpeed: progress.downloadSpeed
         });
       },
-      onComplete: (outputPath: string, _totalTime: number) => {
+      onComplete: (outputPath: string, _UNUSED_totalTime: number) => {
         onStatusChange?.({
           phase: 'completed',
           message: `Tile download completed: ${outputPath}`
@@ -167,8 +169,8 @@ export class TileEngineService {
   async downloadWithProgressIntegration(
     url: string,
     outputPath: string,
-    onProgress?: (progress: any) => void,
-    onStatusChange?: (status: any) => void
+    onProgress?: (progress: Record<string, unknown>) => void,
+    onStatusChange?: (status: Record<string, unknown>) => void
   ): Promise<TileEngineResult> {
     onStatusChange?.({
       phase: 'parsing',
@@ -207,7 +209,7 @@ export class TileEngineService {
   async validateTileSystem(url: string): Promise<{
     isValid: boolean;
     adapter?: string;
-    gridConfig?: any;
+    gridConfig?: TileGridConfig;
     errors: string[];
     warnings: string[];
   }> {

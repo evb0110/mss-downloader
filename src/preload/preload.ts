@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { DownloadProgress, DownloadStatus, DownloadCallbacks, LibraryInfo, ManuscriptManifest } from '../shared/types';
 import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
+import type { ConversionSettings, ConversionProgress } from '../main/services/NegativeConverterService';
 
 
 const api = {
@@ -64,9 +65,9 @@ const api = {
       const manifestString = chunks.join('');
       return JSON.parse(manifestString);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Fallback to original handler if chunked handler is not available (backward compatibility)
-      if (error.message?.includes('No handler registered') || error.message?.includes('is not a function')) {
+      if ((error instanceof Error && error.message?.includes('No handler registered')) || (error instanceof Error && error.message?.includes('is not a function'))) {
         console.log('Chunked handler not available, falling back to original handler');
         // ULTRA-PRIORITY FIX for Issue #2: Original handler now properly throws errors
         // No need for error object handling - IPC will properly serialize thrown errors
@@ -174,22 +175,22 @@ const api = {
 
   // Config management methods
   getConfig: (key: string) => ipcRenderer.invoke('config-get', key),
-  setConfig: (key: string, value: any) => ipcRenderer.invoke('config-set', key, value),
+  setConfig: (key: string, value: unknown) => ipcRenderer.invoke('config-set', key, value),
   getAllConfig: () => ipcRenderer.invoke('config-get-all'),
-  setMultipleConfig: (updates: Record<string, any>) => ipcRenderer.invoke('config-set-multiple', updates),
+  setMultipleConfig: (updates: Record<string, unknown>) => ipcRenderer.invoke('config-set-multiple', updates),
   resetConfig: () => ipcRenderer.invoke('config-reset'),
 
-  onConfigChanged: (callback: (key: string, value: any) => void) => {
+  onConfigChanged: (callback: (key: string, value: unknown) => void) => {
     ipcRenderer.on('config-changed', (_, key, value) => callback(key, value));
     return () => ipcRenderer.removeAllListeners('config-changed');
   },
 
-  onConfigChangedMultiple: (callback: (updates: Record<string, any>) => void) => {
+  onConfigChangedMultiple: (callback: (updates: Record<string, unknown>) => void) => {
     ipcRenderer.on('config-changed-multiple', (_, updates) => callback(updates));
     return () => ipcRenderer.removeAllListeners('config-changed-multiple');
   },
 
-  onConfigReset: (callback: (newConfig: Record<string, any>) => void) => {
+  onConfigReset: (callback: (newConfig: Record<string, unknown>) => void) => {
     ipcRenderer.on('config-reset', (_, newConfig) => callback(newConfig));
     return () => ipcRenderer.removeAllListeners('config-reset');
   },
@@ -198,7 +199,7 @@ const api = {
   solveCaptcha: (url: string) => ipcRenderer.invoke('solve-captcha', url),
   
   // Negative converter methods
-  convertNegativeToPositive: (data: { fileData: ArrayBuffer | Uint8Array | number[]; fileName: string; settings: any; outputDirectory?: string }) => 
+  convertNegativeToPositive: (data: { fileData: ArrayBuffer | Uint8Array | number[]; fileName: string; settings: ConversionSettings; outputDirectory?: string }) => 
     ipcRenderer.invoke('convert-negative-to-positive', data),
   
   saveImageFile: (filePath: string, imageData: Uint8Array) => 
@@ -207,7 +208,7 @@ const api = {
   openInFolder: (filePath: string) => 
     ipcRenderer.invoke('open-in-folder', filePath),
   
-  onNegativeConversionProgress: (callback: (progress: any) => void) => {
+  onNegativeConversionProgress: (callback: (progress: ConversionProgress) => void) => {
     ipcRenderer.on('negative-conversion-progress', (_, progress) => callback(progress));
     return () => ipcRenderer.removeAllListeners('negative-conversion-progress');
   },

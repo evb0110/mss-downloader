@@ -95,7 +95,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 return await this.fetchUrl(url, options);
             } catch (error: unknown) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
-                const errorCode = (error && typeof error === 'object' && 'code' in error) ? (error as any).code : undefined;
+                const errorCode = (error && typeof error === 'object' && 'code' in error) ? (error as { code: string }).code : undefined;
                 console.log(`[SharedManifestLoaders] Attempt ${i + 1}/${retries} failed for ${url}: ${errorMessage}`);
                 if (errorCode) console.log(`[SharedManifestLoaders] Error code: ${errorCode}`);
                 
@@ -271,7 +271,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 };
                 
             } catch (error: unknown) {
-                const errorName = error && typeof error === 'object' && 'name' in error ? (error as any).name : undefined;
+                const errorName = error && typeof error === 'object' && 'name' in error ? (error as { name: string }).name : undefined;
                 if (errorName === 'AbortError') {
                     throw new Error(`Request timeout for ${url}`);
                 }
@@ -280,15 +280,15 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         }
         
         // Fallback to Node.js https module
-        // Use dynamic import to avoid eval warning
-        let https: typeof import('https');
+        // Use dynamic import to avoid eval warning  
+        let httpsLib: typeof https;
         try {
             const httpsModule = await import('https');
-            https = httpsModule.default || httpsModule;
+            httpsLib = httpsModule.default || httpsModule;
         } catch {
             // If dynamic import fails, try indirect eval as last resort
             const requireFunc = (0, eval)('require');
-            https = requireFunc('https');
+            httpsLib = requireFunc('https');
         }
         
         return new Promise((resolve, reject) => {
@@ -364,7 +364,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 }
             }
 
-            const req = https.request(requestOptions, (res: http.IncomingMessage) => {
+            const req = httpsLib.request(requestOptions, (res: http.IncomingMessage) => {
                 if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400) {
                     if (res.headers.location) {
                         let redirectUrl: string;
@@ -436,16 +436,16 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             req.on('error', (error: unknown) => {
                 // CRITICAL FIX: Clean error to prevent URL malformation
                 // Node.js ETIMEDOUT errors contain address/port that can get concatenated with URLs
-                const errorCode = (error && typeof error === 'object' && 'code' in error) ? (error as any).code : undefined;
+                const errorCode = (error && typeof error === 'object' && 'code' in error) ? (error as { code: string }).code : undefined;
                 if (errorCode === 'ETIMEDOUT') {
                     const cleanError = new Error(`Connection timeout: ${error instanceof Error ? error.message : 'Unknown error'}`);
-                    (cleanError as any).code = errorCode;
-                    (cleanError as any).originalUrl = url;
+                    (cleanError as Error & { code?: string }).code = errorCode;
+                    (cleanError as Error & { originalUrl?: string }).originalUrl = url;
                     // Store network details separately to prevent concatenation
-                    (cleanError as any).networkDetails = {
-                        address: (error as any).address,
-                        port: (error as any).port,
-                        syscall: (error as any).syscall
+                    (cleanError as Error & { networkDetails?: Record<string, unknown> }).networkDetails = {
+                        address: (error as { address?: string }).address,
+                        port: (error as { port?: number }).port,
+                        syscall: (error as { syscall?: string }).syscall
                     };
                     reject(cleanError);
                 } else {
@@ -637,7 +637,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * Discover Verona manifest URL from HTML page
      */
-    async discoverVeronaManifestUrl(pageUrl: string, _codice: string): Promise<string | null> {
+    async discoverVeronaManifestUrl(pageUrl: string, _UNUSED_codice: string): Promise<string | null> {
         console.log('[Verona] Attempting to discover manifest URL from page');
         
         try {
@@ -825,8 +825,8 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                         let imageUrl = resource['@id'] || resource.id;
                         
                         // If we have a IIIF service, use it to get maximum resolution
-                        if (service && (service as any)['@id']) {
-                            const serviceUrl = service['@id'].replace(/\/$/, ''); // Remove trailing slash
+                        if (service && typeof service === 'object' && '@id' in service) {
+                            const serviceUrl = (service as { '@id': string })['@id'].replace(/\/$/, ''); // Remove trailing slash
                             // Test different resolution parameters to find the best quality
                             // Verona supports: full/full, full/max, full/2000, etc.
                             imageUrl = `${serviceUrl}/full/max/0/default.jpg`;
@@ -864,7 +864,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         } catch (error: unknown) {
             const elapsed = Math.round((Date.now() - startTime) / 1000);
             const errorMessage = error instanceof Error ? error.message : String(error);
-            const errorCode = error && typeof error === 'object' && 'code' in error ? (error as any).code : undefined;
+            const errorCode = error && typeof error === 'object' && 'code' in error ? (error as { code?: string }).code : undefined;
             console.error(`[Verona] Manifest fetch failed after ${elapsed}s:`, errorMessage);
             
             if (errorMessage.includes('timeout') || errorMessage.includes('ETIMEDOUT')) {
@@ -1334,7 +1334,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                                             imageUrl = `${firstService['@id']}/full/full/0/default.jpg`;
                                         }
                                     } else if (typeof service === 'object' && service !== null && '@id' in service && typeof service['@id'] === 'string') {
-                                        imageUrl = `${(service as any)['@id']}/full/full/0/default.jpg`;
+                                        imageUrl = `${(service as IIIFService)['@id']}/full/full/0/default.jpg`;
                                     }
                                 }
                                 
@@ -1372,7 +1372,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             
             // Handle different error scenarios gracefully
             const errorMessage = error instanceof Error ? error.message : String(error);
-            const errorCode = (error && typeof error === 'object' && 'code' in error) ? (error as any).code : undefined;
+            const errorCode = (error && typeof error === 'object' && 'code' in error) ? (error as { code?: string }).code : undefined;
             if (errorMessage && errorMessage.includes('timeout') || errorCode === 'ETIMEDOUT') {
                 throw new Error('University of Graz server is not responding. The manuscript may be too large or the server is experiencing high load. Please try again later.');
             }
@@ -2161,9 +2161,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                         let imageUrl = '';
                         
                         // Try to get highest resolution from IIIF service
-                        if (service && (service as any)['@id']) {
+                        if (service && (service as IIIFService)['@id']) {
                             // HHU supports full resolution downloads
-                            imageUrl = `${(service as any)['@id']}/full/full/0/default.jpg`;
+                            imageUrl = `${(service as IIIFService)['@id']}/full/full/0/default.jpg`;
                         } else if (resource['@id']) {
                             imageUrl = resource['@id'];
                         }
@@ -2245,10 +2245,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                             }
                             
                             return {
-                                url: (image as any)['@id'] || (image as any).id || '',
+                                url: (image as IIIFResource)['@id'] || (image as IIIFResource).id || '',
                                 label: this.localizedStringToString(canvas.label) || `Page ${index + 1}`,
-                                width: (image as any).width || canvas.width,
-                                height: (image as any).height || canvas.height
+                                width: (image as IIIFResource).width || canvas.width,
+                                height: (image as IIIFResource).height || canvas.height
                             } as ManuscriptImage;
                         }).filter((img: ManuscriptImage | null): img is ManuscriptImage => img !== null);
                         
@@ -2308,7 +2308,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                     }
                     
                     // Use the full quality image URL
-                    const imageUrl = (image as any)['@id'] || (image as any).id || '';
+                    const imageUrl = (image as IIIFResource)['@id'] || (image as IIIFResource).id || '';
                     
                     return {
                         url: imageUrl || '',
@@ -2509,10 +2509,10 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 .replace(/\\u003e/g, '>')
                 .replace(/\\u002F/g, '/');
 
-            let state: any;
+            let state: Record<string, unknown>;
             try {
                 state = JSON.parse(unescapedJson);
-            } catch (parseError) {
+            } catch {
                 console.error('[Florence] Failed to parse state JSON');
                 throw new Error('Could not parse Florence page state');
             }
@@ -2534,7 +2534,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     
                     // Filter out non-page items (like Color Chart, Dorso, etc.)
                     pages = itemData.parent.children
-                        .filter((child: any) => {
+                        .filter((child: Record<string, unknown>) => {
                             const title = (child.title || '').toLowerCase();
                             // Include carta/folio pages, exclude color charts and binding parts
                             return !title.includes('color chart') && 
@@ -2544,16 +2544,16 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                    !title.includes('guardia anteriore') &&
                                    !title.includes('guardia posteriore');
                         })
-                        .map((child: any) => ({
+                        .map((child: Record<string, unknown>) => ({
                             id: child.id.toString(),
                             title: child.title || `Page ${child.id}`
                         }));
 
                     // Extract manuscript title from parent metadata
                     if (itemData.parent.fields) {
-                        const subjecField = itemData.parent.fields.find((f: any) => f.key === 'subjec');
-                        const identField = itemData.parent.fields.find((f: any) => f.key === 'identi');
-                        const titleField = itemData.parent.fields.find((f: any) => f.key === 'title' || f.key === 'titlea');
+                        const subjecField = itemData.parent.fields.find((f: { key: string; value?: string }) => f.key === 'subjec');
+                        const identField = itemData.parent.fields.find((f: { key: string; value?: string }) => f.key === 'identi');
+                        const titleField = itemData.parent.fields.find((f: { key: string; value?: string }) => f.key === 'title' || f.key === 'titlea');
                         
                         if (subjecField && subjecField.value) {
                             manuscriptTitle = subjecField.value;
@@ -2578,7 +2578,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     console.log(`[Florence] Found ${currentPageChildren.length} child pages in current item`);
                     
                     pages = currentPageChildren
-                        .filter((child: any) => {
+                        .filter((child: Record<string, unknown>) => {
                             const title = (child.title || '').toLowerCase();
                             return !title.includes('color chart') && 
                                    !title.includes('dorso') && 
@@ -2587,16 +2587,16 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                    !title.includes('guardia anteriore') &&
                                    !title.includes('guardia posteriore');
                         })
-                        .map((child: any) => ({
+                        .map((child: Record<string, unknown>) => ({
                             id: child.id.toString(),
                             title: child.title || `Page ${child.id}`
                         }));
 
                     // Extract manuscript title from current item
                     if (itemData.fields) {
-                        const subjecField = itemData.fields.find((f: any) => f.key === 'subjec');
-                        const identField = itemData.fields.find((f: any) => f.key === 'identi');
-                        const titleField = itemData.fields.find((f: any) => f.key === 'title' || f.key === 'titlea');
+                        const subjecField = itemData.fields.find((f: Record<string, unknown>) => f.key === 'subjec');
+                        const identField = itemData.fields.find((f: Record<string, unknown>) => f.key === 'identi');
+                        const titleField = itemData.fields.find((f: Record<string, unknown>) => f.key === 'title' || f.key === 'titlea');
                         
                         if (subjecField && subjecField.value) {
                             manuscriptTitle = subjecField.value;
@@ -2645,9 +2645,10 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
 
             return result;
 
-        } catch (error: any) {
-            console.error('[Florence] Failed to load manuscript:', error.message);
-            throw new Error(`Failed to load Florence manuscript: ${error.message}`);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error('[Florence] Failed to load manuscript:', errorMessage);
+            throw new Error(`Failed to load Florence manuscript: ${errorMessage}`);
         }
     }
     async getGrenobleManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
@@ -2728,7 +2729,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 if (canvas.images?.[0]?.resource) {
                     const service = canvas.images[0].resource.service;
                     const serviceObj = Array.isArray(service) ? service[0] : service;
-                    const imageId = serviceObj && ((serviceObj as any)['@id'] || (serviceObj as any).id);
+                    const imageId = serviceObj && ((serviceObj as IIIFService)['@id'] || (serviceObj as IIIFService).id);
                     
                     // Manchester server limits to 2000px max dimension
                     // We request 2000px width to get the best quality allowed
@@ -3293,7 +3294,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 const testUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${testId}/info.json`;
                 try {
                     const result = await new Promise((resolve) => {
-                        const req = https.request(testUrl, { method: 'HEAD', timeout: 3000 }, (res: http.IncomingMessage) => {
+                        const req = httpsLib.request(testUrl, { method: 'HEAD', timeout: 3000 }, (res: http.IncomingMessage) => {
                             resolve(res.statusCode === 200);
                         });
                         req.on('error', () => resolve(false));
@@ -3321,7 +3322,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     
                     try {
                         const result = await new Promise((resolve) => {
-                            const req = https.request(testUrl, { method: 'HEAD', timeout: 3000 }, (res: http.IncomingMessage) => {
+                            const req = httpsLib.request(testUrl, { method: 'HEAD', timeout: 3000 }, (res: http.IncomingMessage) => {
                                 resolve(res.statusCode === 200);
                             });
                             req.on('error', () => resolve(false));
@@ -5075,94 +5076,6 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         return {
             images,
             displayName: this.localizedStringToString(manifest.label) || `e-rara - ${manuscriptId}`
-        };
-    }
-
-    async getLinzManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
-        console.log('[Linz] Processing URL:', url);
-        
-        // Extract manuscript ID from URL pattern like /viewer/image/116/
-        let manuscriptId: string;
-        const idMatch = url.match(/\/viewer\/image\/([^/]+)/);
-        
-        if (idMatch) {
-            manuscriptId = idMatch[1];
-        } else {
-            // Try other patterns
-            const altMatch = url.match(/\/(\d+)$/);
-            if (altMatch) {
-                manuscriptId = altMatch[1];
-            } else {
-                throw new Error('Could not extract manuscript ID from Linz URL');
-            }
-        }
-        
-        console.log('[Linz] Manuscript ID:', manuscriptId);
-        
-        // Linz uses Goobi viewer with standard IIIF manifest endpoint
-        const manifestUrl = `https://digi.landesbibliothek.at/viewer/api/v1/records/${manuscriptId}/manifest/`;
-        console.log('[Linz] Fetching IIIF manifest from:', manifestUrl);
-        
-        const response = await this.fetchWithRetry(manifestUrl, {
-            headers: {
-                'Accept': 'application/json, application/ld+json',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Failed to fetch Linz manifest: ${response.status}`);
-        }
-        
-        const manifest: IIIFManifest = await response.json();
-        const images: ManuscriptImage[] = [];
-        
-        // Extract images from IIIF manifest
-        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
-            const canvases = manifest.sequences[0].canvases;
-            console.log(`[Linz] Found ${canvases.length} pages in manifest`);
-            
-            for (let i = 0; i < canvases.length; i++) {
-                const canvas = canvases[i];
-                if (canvas.images && canvas.images[0]) {
-                    const image = canvas.images[0];
-                    let imageUrl: string | null = null;
-                    
-                    // Handle different IIIF image formats
-                    if (image.resource) {
-                        if (typeof image.resource === 'string') {
-                            imageUrl = image.resource;
-                        } else if (image.resource['@id']) {
-                            imageUrl = image.resource['@id'];
-                        } else if ((image.resource as any).id) {
-                            imageUrl = (image.resource as any).id;
-                        }
-                    }
-                    
-                    // If it's a IIIF image service, construct full resolution URL
-                    if (imageUrl && imageUrl.includes('/info.json')) {
-                        imageUrl = imageUrl.replace('/info.json', '/full/full/0/default.jpg');
-                    }
-                    
-                    if (imageUrl) {
-                        images.push({
-                            url: imageUrl,
-                            label: this.localizedStringToString(canvas.label) || `Page ${i + 1}`
-                        });
-                    }
-                }
-            }
-        }
-        
-        if (images.length === 0) {
-            throw new Error('No images found in Linz manifest');
-        }
-        
-        console.log(`[Linz] Successfully extracted ${images.length} pages`);
-        
-        return {
-            images,
-            displayName: this.localizedStringToString(manifest.label) || `Linz - ${manuscriptId}`
         };
     }
 

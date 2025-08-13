@@ -135,6 +135,7 @@
 <script setup lang="ts">
 import { reactive, computed, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type { AppConfig } from '../../main/services/ConfigService';
 
 const { t } = useI18n();
 
@@ -178,7 +179,7 @@ onMounted(async () => {
 });
 
 // Update specific config setting
-const updateConfig = async (key: string, value: any) => {
+const updateConfig = async (key: string, value: unknown) => {
   try {
     await window.electronAPI.setConfig(key, value);
   } catch (error) {
@@ -204,13 +205,13 @@ const resetToDefaults = async () => {
 };
 
 // Listen for config changes from other sources
-const handleConfigChanged = (key: string, value: any) => {
+const handleConfigChanged = (key: string, value: unknown) => {
   if (key in localConfig) {
-    (localConfig as any)[key] = value;
+    (localConfig as Record<string, unknown>)[key] = value;
   }
 };
 
-const handleConfigReset = (newConfig: any) => {
+const handleConfigReset = (newConfig: AppConfig) => {
   Object.assign(localConfig, newConfig);
 };
 

@@ -113,7 +113,7 @@ defineProps<{
 }>()
 
 // Emits
-const emit = defineEmits<{
+const _UNUSED_emit = defineEmits<{
   close: []
 }>()
 
@@ -147,11 +147,11 @@ async function exportLogs() {
       type: 'success',
       message: `Logs exported successfully to ${filePath.split('/').pop()}`
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to export logs:', error)
     exportStatus.value = {
       type: 'error',
-      message: `Export failed: ${error.message || 'Unknown error'}`
+      message: `Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`
     }
   } finally {
     isExporting.value = false

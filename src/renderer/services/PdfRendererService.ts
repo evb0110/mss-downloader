@@ -109,13 +109,13 @@ export class PdfRendererService {
         img.remove();
         
         // Force garbage collection hint
-        if (typeof window !== 'undefined' && (window as any).gc) {
-          (window as any).gc();
+        if (typeof window !== 'undefined' && 'gc' in window && typeof (window as { gc?: () => void }).gc === 'function') {
+          (window as { gc: () => void }).gc();
         }
         
         invertedFiles.push(invertedPath);
         
-      } catch (error) {
+      } catch {
         // Create a placeholder name if inversion fails  
         const fileName = `failed-invert-page-${(i + 1).toString().padStart(3, '0')}.jpg`;
         invertedFiles.push(`${outputDir}/${fileName}`);

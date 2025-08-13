@@ -45,7 +45,7 @@ export class MunichLoader extends BaseLibraryLoader {
                 }
                 
                 // Get page count from sequences/canvases (IIIF v2.0)
-                let totalPages = 0;
+                const _UNUSED_totalPages = 0;
                 const pageLinks: string[] = [];
                 
                 if (manifest.sequences && manifest.sequences.length > 0) {

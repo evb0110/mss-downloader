@@ -184,7 +184,7 @@ export class TileEngineCore extends EventEmitter {
       
       const successfulTiles = results
         .filter(r => r.status === 'fulfilled' && r.value.success)
-        .map(r => (r as any).value);
+        .map(r => (r as PromiseFulfilledResult<TileDownloadResult>).value);
 
       if (successfulTiles.length === 0) {
         throw new Error('No tiles downloaded successfully');
@@ -285,10 +285,10 @@ export class TileEngineCore extends EventEmitter {
   }
 
   private async stitchTiles(
-    tiles: any[],
+    tiles: TileDownloadResult[],
     gridConfig: TileGridConfig,
     outputPath: string,
-    _tempDir: string
+    _UNUSED_tempDir: string
   ): Promise<string> {
     const montageArgs = [
       '-mode', 'concatenate',
@@ -334,7 +334,7 @@ export class TileEngineCore extends EventEmitter {
       const files = await fs.promises.readdir(tempDir);
       await Promise.all(files.map(file => unlink(path.join(tempDir, file))));
       await fs.promises.rmdir(tempDir);
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
   }

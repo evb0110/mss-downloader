@@ -1,0 +1,202 @@
+[
+  {
+    "file": "src/main/services/library-loaders/MunichLoader.ts",
+    "line": 48,
+    "column": 21,
+    "type": "error",
+    "message": "'totalPages' is never reassigned. Use 'const' instead",
+    "rule": "prefer-const"
+  },
+  {
+    "file": "src/main/services/library-loaders/MunichLoader.ts",
+    "line": 48,
+    "column": 21,
+    "type": "error",
+    "message": "'totalPages' is assigned a value but never used. Allowed unused vars must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/main/services/library-loaders/WolfenbuettelLoader.ts",
+    "line": 141,
+    "column": 34,
+    "type": "error",
+    "message": "'error' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/main/services/library-loaders/types.ts",
+    "line": 15,
+    "column": 42,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/types.ts",
+    "line": 16,
+    "column": 53,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/types.ts",
+    "line": 17,
+    "column": 45,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/types.ts",
+    "line": 17,
+    "column": 61,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/types.ts",
+    "line": 30,
+    "column": 38,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/library-loaders/types.ts",
+    "line": 30,
+    "column": 46,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/tile-engine/AbstractTileAdapter.ts",
+    "line": 19,
+    "column": 48,
+    "type": "error",
+    "message": "'_coordinate' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/main/services/tile-engine/AbstractTileAdapter.ts",
+    "line": 70,
+    "column": 14,
+    "type": "error",
+    "message": "'error' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/main/services/tile-engine/AbstractTileAdapter.ts",
+    "line": 79,
+    "column": 14,
+    "type": "error",
+    "message": "'error' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/main/services/tile-engine/AbstractTileAdapter.ts",
+    "line": 88,
+    "column": 14,
+    "type": "error",
+    "message": "'error' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/main/services/tile-engine/AbstractTileAdapter.ts",
+    "line": 159,
+    "column": 14,
+    "type": "error",
+    "message": "'error' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/main/services/tile-engine/TileEngineCore.ts",
+    "line": 187,
+    "column": 25,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/tile-engine/TileEngineCore.ts",
+    "line": 288,
+    "column": 12,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/tile-engine/TileEngineCore.ts",
+    "line": 291,
+    "column": 5,
+    "type": "error",
+    "message": "'_tempDir' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/main/services/tile-engine/TileEngineCore.ts",
+    "line": 337,
+    "column": 14,
+    "type": "error",
+    "message": "'error' is defined but never used",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/main/services/tile-engine/TileEngineService.ts",
+    "line": 84,
+    "column": 17,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/tile-engine/TileEngineService.ts",
+    "line": 85,
+    "column": 17,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/tile-engine/TileEngineService.ts",
+    "line": 131,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/tile-engine/TileEngineService.ts",
+    "line": 132,
+    "column": 31,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/tile-engine/TileEngineService.ts",
+    "line": 152,
+    "column": 40,
+    "type": "error",
+    "message": "'_totalTime' is defined but never used. Allowed unused args must match /^_UNUSED_/u",
+    "rule": "unused-imports/no-unused-vars"
+  },
+  {
+    "file": "src/main/services/tile-engine/TileEngineService.ts",
+    "line": 170,
+    "column": 29,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  },
+  {
+    "file": "src/main/services/tile-engine/TileEngineService.ts",
+    "line": 171,
+    "column": 31,
+    "type": "warning",
+    "message": "Unexpected any. Specify a different type",
+    "rule": "@typescript-eslint/no-explicit-any"
+  }
+]

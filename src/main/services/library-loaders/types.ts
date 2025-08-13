@@ -12,9 +12,9 @@ import type { UltraReliableBDLService } from '../UltraReliableBDLService';
  * Dependencies required by library loaders
  */
 export interface LoaderDependencies {
-    fetchDirect: (url: string, options?: any) => Promise<Response>;
-    fetchWithProxyFallback: (url: string, options?: any) => Promise<Response>;
-    fetchWithHTTPS: (url: string, options?: any) => Promise<any>;
+    fetchDirect: (url: string, options?: RequestInit) => Promise<Response>;
+    fetchWithProxyFallback: (url: string, options?: RequestInit) => Promise<Response>;
+    fetchWithHTTPS: (url: string, options?: RequestInit) => Promise<Response>;
     sanitizeUrl: (url: string) => string;
     sleep: (ms: number) => Promise<void>;
     manifestCache: ManifestCache;
@@ -27,7 +27,7 @@ export interface LoaderDependencies {
     sharedManifestAdapter?: SharedManifestAdapter;
     ultraBDLService?: UltraReliableBDLService;
     // Progress monitoring
-    createProgressMonitor: (options: any) => any;
+    createProgressMonitor: (options: Record<string, unknown>) => Record<string, unknown>;
     // Helper for validation
     validateInternetCulturaleImage?: (buffer: ArrayBuffer, url: string) => Promise<void>;
     // Other loaders for dependencies
