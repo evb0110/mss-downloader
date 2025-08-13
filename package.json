@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.179",
-  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (64+ libraries worldwide)",
+  "version": "1.4.180",
+  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (67+ libraries worldwide)",
   "changelog": [
-    "v1.4.179: Fixed antivirus false positive detections",
-    "Normalized executable name to prevent AV flagging (no spaces/special chars)",
-    "Separated x64 and arm64 builds for better compatibility",
-    "Enhanced NSIS installer configuration with proper metadata",
-    "Added code signing improvements with timestamp server"
+    "v1.4.180: Fixed critical issues and added 3 new libraries",
+    "Fixed Graz manuscript 6568472 (500 error) with webcache fallback",
+    "Added Linz (Oberösterreichische Landesbibliothek) support",
+    "Added e-rara Swiss digital library support",
+    "Added Yale Beinecke Library support"
   ],
   "main": "dist/main/main.js",
   "scripts": {

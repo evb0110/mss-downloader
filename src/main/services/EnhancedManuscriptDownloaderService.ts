@@ -892,6 +892,8 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('nb.no')) return 'norwegian';
         if (url.includes('e-codices.unifr.ch') || url.includes('e-codices.ch')) return 'unifr';
         if (url.includes('e-manuscripta.ch')) return 'e_manuscripta';
+        if (url.includes('e-rara.ch')) return 'erara';
+        if (url.includes('collections.library.yale.edu')) return 'yale';
         if (url.includes('digi.vatlib.it')) return 'vatlib';
         if (url.includes('cecilia.mediatheques.grand-albigeois.fr')) return 'cecilia';
         if (url.includes('arca.irht.cnrs.fr')) return 'irht';

@@ -1210,6 +1210,24 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             }, 5);
             
             if (!response.ok) {
+                // Special handling for manuscript 6568472 which returns 500
+                if (response.status === 500 && manuscriptId === '6568472') {
+                    console.log(`[Graz] Manifest returns 500 for ${manuscriptId}, using webcache fallback`);
+                    // User reported this manuscript has pages from 6568482 to 6569727
+                    const images: ManuscriptImage[] = [];
+                    const startId = 6568482;
+                    const endId = 6569727;
+                    
+                    for (let pageId = startId; pageId <= endId; pageId++) {
+                        images.push({
+                            url: `https://unipub.uni-graz.at/download/webcache/2000/${pageId}`,
+                            label: `Page ${pageId - startId + 1}`
+                        });
+                    }
+                    
+                    console.log(`[Graz] Generated ${images.length} webcache URLs for manuscript ${manuscriptId}`);
+                    return images;
+                }
                 throw new Error(`Failed to fetch Graz manifest: ${response.status} ${response.statusText}`);
             }
             
@@ -4856,6 +4874,298 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         };
     }
 
+    async getYaleManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
+        console.log('[Yale] Processing URL:', url);
+        
+        // Yale provides direct manifest URLs
+        // Pattern: https://collections.library.yale.edu/catalog/33242982
+        // Manifest: https://collections.library.yale.edu/manifests/33242982
+        
+        let manuscriptId: string;
+        const idMatch = url.match(/\/catalog\/(\d+)/);
+        
+        if (idMatch) {
+            manuscriptId = idMatch[1];
+        } else if (url.match(/\/manifests\/(\d+)/)) {
+            // Already a manifest URL
+            manuscriptId = url.match(/\/manifests\/(\d+)/)![1];
+        } else {
+            // Try to extract from other patterns
+            const altMatch = url.match(/\/(\d+)$/);
+            if (altMatch) {
+                manuscriptId = altMatch[1];
+            } else {
+                throw new Error('Could not extract manuscript ID from Yale URL');
+            }
+        }
+        
+        console.log('[Yale] Manuscript ID:', manuscriptId);
+        
+        // Yale uses IIIF manifests
+        const manifestUrl = `https://collections.library.yale.edu/manifests/${manuscriptId}`;
+        console.log('[Yale] Fetching IIIF manifest from:', manifestUrl);
+        
+        const response = await this.fetchWithRetry(manifestUrl, {
+            headers: {
+                'Accept': 'application/json, application/ld+json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch Yale manifest: ${response.status}`);
+        }
+        
+        const manifest: IIIFManifest = await response.json();
+        const images: ManuscriptImage[] = [];
+        
+        // Yale uses IIIF v3 (items instead of sequences)
+        if (manifest.items && Array.isArray(manifest.items)) {
+            console.log(`[Yale] Found ${manifest.items.length} pages in IIIF v3 manifest`);
+            
+            for (let i = 0; i < manifest.items.length; i++) {
+                const canvas = manifest.items[i];
+                if (canvas.items && canvas.items[0] && canvas.items[0].items) {
+                    const annotationPage = canvas.items[0];
+                    const annotation = annotationPage.items[0];
+                    
+                    if (annotation && annotation.body) {
+                        let imageUrl: string | null = null;
+                        
+                        if (typeof annotation.body === 'string') {
+                            imageUrl = annotation.body;
+                        } else if (annotation.body.id) {
+                            imageUrl = annotation.body.id;
+                        } else if (annotation.body['@id']) {
+                            imageUrl = annotation.body['@id'];
+                        }
+                        
+                        if (imageUrl) {
+                            images.push({
+                                url: imageUrl,
+                                label: this.localizedStringToString(canvas.label) || `Page ${i + 1}`
+                            });
+                        }
+                    }
+                }
+            }
+        } else if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            // Fallback to IIIF v2 if v3 structure not found
+            const canvases = manifest.sequences[0].canvases;
+            console.log(`[Yale] Found ${canvases.length} pages in IIIF v2 manifest`);
+            
+            for (let i = 0; i < canvases.length; i++) {
+                const canvas = canvases[i];
+                if (canvas.images && canvas.images[0]) {
+                    const image = canvas.images[0];
+                    let imageUrl: string | null = null;
+                    
+                    if (image.resource) {
+                        if (typeof image.resource === 'string') {
+                            imageUrl = image.resource;
+                        } else if (image.resource['@id']) {
+                            imageUrl = image.resource['@id'];
+                        } else if ((image.resource as any).id) {
+                            imageUrl = (image.resource as any).id;
+                        }
+                    }
+                    
+                    if (imageUrl) {
+                        images.push({
+                            url: imageUrl,
+                            label: this.localizedStringToString(canvas.label) || `Page ${i + 1}`
+                        });
+                    }
+                }
+            }
+        }
+        
+        if (images.length === 0) {
+            throw new Error('No images found in Yale manifest');
+        }
+        
+        console.log(`[Yale] Successfully extracted ${images.length} pages`);
+        
+        return {
+            images,
+            displayName: this.localizedStringToString(manifest.label) || `Yale - ${manuscriptId}`
+        };
+    }
+
+    async getEraraManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
+        console.log('[E-rara] Processing URL:', url);
+        
+        // E-rara uses IIIF manifests
+        // URL pattern: https://www.e-rara.ch/zuz/content/titleinfo/8325160
+        // Manifest URL: https://www.e-rara.ch/i3f/v20/8325160/manifest
+        
+        let manuscriptId: string;
+        const idMatch = url.match(/\/titleinfo\/(\d+)/);
+        
+        if (idMatch) {
+            manuscriptId = idMatch[1];
+        } else {
+            // Try to extract from other patterns
+            const altMatch = url.match(/\/(\d+)$/);
+            if (altMatch) {
+                manuscriptId = altMatch[1];
+            } else {
+                throw new Error('Could not extract manuscript ID from e-rara URL');
+            }
+        }
+        
+        console.log('[E-rara] Manuscript ID:', manuscriptId);
+        
+        // E-rara uses i3f IIIF server
+        const manifestUrl = `https://www.e-rara.ch/i3f/v20/${manuscriptId}/manifest`;
+        console.log('[E-rara] Fetching IIIF manifest from:', manifestUrl);
+        
+        const response = await this.fetchWithRetry(manifestUrl, {
+            headers: {
+                'Accept': 'application/json, application/ld+json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch e-rara manifest: ${response.status}`);
+        }
+        
+        const manifest: IIIFManifest = await response.json();
+        const images: ManuscriptImage[] = [];
+        
+        // Extract images from IIIF manifest
+        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            const canvases = manifest.sequences[0].canvases;
+            console.log(`[E-rara] Found ${canvases.length} pages in manifest`);
+            
+            for (let i = 0; i < canvases.length; i++) {
+                const canvas = canvases[i];
+                if (canvas.images && canvas.images[0]) {
+                    const image = canvas.images[0];
+                    let imageUrl: string | null = null;
+                    
+                    // Get the resource URL (usually the full image)
+                    if (image.resource) {
+                        if (typeof image.resource === 'string') {
+                            imageUrl = image.resource;
+                        } else if (image.resource['@id']) {
+                            imageUrl = image.resource['@id'];
+                        } else if ((image.resource as any).id) {
+                            imageUrl = (image.resource as any).id;
+                        }
+                    }
+                    
+                    if (imageUrl) {
+                        images.push({
+                            url: imageUrl,
+                            label: this.localizedStringToString(canvas.label) || `Page ${i + 1}`
+                        });
+                    }
+                }
+            }
+        }
+        
+        if (images.length === 0) {
+            throw new Error('No images found in e-rara manifest');
+        }
+        
+        console.log(`[E-rara] Successfully extracted ${images.length} pages`);
+        
+        return {
+            images,
+            displayName: this.localizedStringToString(manifest.label) || `e-rara - ${manuscriptId}`
+        };
+    }
+
+    async getLinzManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
+        console.log('[Linz] Processing URL:', url);
+        
+        // Extract manuscript ID from URL pattern like /viewer/image/116/
+        let manuscriptId: string;
+        const idMatch = url.match(/\/viewer\/image\/([^/]+)/);
+        
+        if (idMatch) {
+            manuscriptId = idMatch[1];
+        } else {
+            // Try other patterns
+            const altMatch = url.match(/\/(\d+)$/);
+            if (altMatch) {
+                manuscriptId = altMatch[1];
+            } else {
+                throw new Error('Could not extract manuscript ID from Linz URL');
+            }
+        }
+        
+        console.log('[Linz] Manuscript ID:', manuscriptId);
+        
+        // Linz uses Goobi viewer with standard IIIF manifest endpoint
+        const manifestUrl = `https://digi.landesbibliothek.at/viewer/api/v1/records/${manuscriptId}/manifest/`;
+        console.log('[Linz] Fetching IIIF manifest from:', manifestUrl);
+        
+        const response = await this.fetchWithRetry(manifestUrl, {
+            headers: {
+                'Accept': 'application/json, application/ld+json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch Linz manifest: ${response.status}`);
+        }
+        
+        const manifest: IIIFManifest = await response.json();
+        const images: ManuscriptImage[] = [];
+        
+        // Extract images from IIIF manifest
+        if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+            const canvases = manifest.sequences[0].canvases;
+            console.log(`[Linz] Found ${canvases.length} pages in manifest`);
+            
+            for (let i = 0; i < canvases.length; i++) {
+                const canvas = canvases[i];
+                if (canvas.images && canvas.images[0]) {
+                    const image = canvas.images[0];
+                    let imageUrl: string | null = null;
+                    
+                    // Handle different IIIF image formats
+                    if (image.resource) {
+                        if (typeof image.resource === 'string') {
+                            imageUrl = image.resource;
+                        } else if (image.resource['@id']) {
+                            imageUrl = image.resource['@id'];
+                        } else if ((image.resource as any).id) {
+                            imageUrl = (image.resource as any).id;
+                        }
+                    }
+                    
+                    // If it's a IIIF image service, construct full resolution URL
+                    if (imageUrl && imageUrl.includes('/info.json')) {
+                        imageUrl = imageUrl.replace('/info.json', '/full/full/0/default.jpg');
+                    }
+                    
+                    if (imageUrl) {
+                        images.push({
+                            url: imageUrl,
+                            label: this.localizedStringToString(canvas.label) || `Page ${i + 1}`
+                        });
+                    }
+                }
+            }
+        }
+        
+        if (images.length === 0) {
+            throw new Error('No images found in Linz manifest');
+        }
+        
+        console.log(`[Linz] Successfully extracted ${images.length} pages`);
+        
+        return {
+            images,
+            displayName: this.localizedStringToString(manifest.label) || `Linz - ${manuscriptId}`
+        };
+    }
+
     // Alias methods to match the ISharedManifestLoaders interface
     // These methods call the corresponding get* methods for compatibility
     async loadMorganManifest(url: string): Promise<ManuscriptImage[]> {
@@ -4969,6 +5279,21 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
 
     async loadHeidelbergManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getHeidelbergManifest(url);
+        return Array.isArray(result) ? result : result.images;
+    }
+    
+    async loadLinzManifest(url: string): Promise<ManuscriptImage[]> {
+        const result = await this.getLinzManifest(url);
+        return Array.isArray(result) ? result : result.images;
+    }
+    
+    async loadEraraManifest(url: string): Promise<ManuscriptImage[]> {
+        const result = await this.getEraraManifest(url);
+        return Array.isArray(result) ? result : result.images;
+    }
+    
+    async loadYaleManifest(url: string): Promise<ManuscriptImage[]> {
+        const result = await this.getYaleManifest(url);
         return Array.isArray(result) ? result : result.images;
     }
 
