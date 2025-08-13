@@ -469,7 +469,7 @@ export class UltraReliableBDLService {
         // Process any remaining items in retry queue
         if (this.retryQueue.size > 0) {
             console.log(`[BDL Ultra] Processing ${this.retryQueue.size} items in retry queue...`);
-            for (const [key, item] of this.retryQueue) {
+            for (const [_key, item] of this.retryQueue) {
                 if (item.url.includes('bdl.servizirl.it')) {
                     const buffer = await this.ultraReliableDownload(
                         item.url, 

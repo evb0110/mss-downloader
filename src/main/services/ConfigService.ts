@@ -4,7 +4,7 @@ import Store from 'electron-store';
 const KB = 1024;
 const MB = KB * 1024;
 
-interface AppConfig {
+export interface AppConfig {
     // Download settings
     maxConcurrentDownloads: number;
     maxRetries: number;
@@ -91,28 +91,28 @@ export class ConfigService {
     }
 
     get<K extends keyof AppConfig>(key: K): AppConfig[K] {
-        return (this.store as any).get(key);
+        return this.store.get(key);
     }
 
     set<K extends keyof AppConfig>(key: K, value: AppConfig[K]): void {
-        (this.store as any).set(key, value);
+        this.store.set(key, value);
     }
 
     getAll(): AppConfig {
-        return (this.store as any).store;
+        return this.store.store;
     }
 
     setMultiple(updates: Partial<AppConfig>): void {
         for (const [key, value] of Object.entries(updates)) {
-            (this.store as any).set(key as keyof AppConfig, value as any);
+            this.store.set(key as keyof AppConfig, value as AppConfig[keyof AppConfig]);
         }
     }
 
     reset(): void {
-        (this.store as any).clear();
+        this.store.clear();
         // Restore defaults
         for (const [key, value] of Object.entries(defaultConfig)) {
-            (this.store as any).set(key as keyof AppConfig, value as any);
+            this.store.set(key as keyof AppConfig, value as AppConfig[keyof AppConfig]);
         }
     }
 

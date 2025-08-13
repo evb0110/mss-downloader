@@ -3,6 +3,11 @@ import typescriptEslint from 'typescript-eslint';
 import pluginVue from 'eslint-plugin-vue';
 import vueParser from 'vue-eslint-parser';
 import unusedImports from 'eslint-plugin-unused-imports';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default typescriptEslint.config(
   js.configs.recommended,
@@ -20,7 +25,9 @@ export default typescriptEslint.config(
       parserOptions: {
         parser: typescriptEslint.parser,
         sourceType: 'module',
-        ecmaVersion: 'latest'
+        ecmaVersion: 'latest',
+        project: './tsconfig.json',
+        tsconfigRootDir: __dirname
       }
     }
   },
@@ -30,8 +37,28 @@ export default typescriptEslint.config(
       parser: typescriptEslint.parser,
       parserOptions: {
         sourceType: 'module',
-        ecmaVersion: 'latest'
+        ecmaVersion: 'latest',
+        project: './tsconfig.json',
+        tsconfigRootDir: __dirname
       }
+    },
+    rules: {
+      // Rules requiring type information - only for TS files
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off'
+    }
+  },
+  {
+    files: ['**/*.js'],
+    rules: {
+      // Disable TypeScript rules for JS files
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off'
     }
   },
   {
@@ -52,19 +79,19 @@ export default typescriptEslint.config(
       // Enable unused-imports plugin rules (auto-fixable!)
       'unused-imports/no-unused-imports': 'error',
       'unused-imports/no-unused-vars': [
-        'warn',  // Change to warn so we can still see them but not block
+        'error',  // Strict mode - all unused vars are errors
         {
           'vars': 'all',
-          'varsIgnorePattern': '^_',
+          'varsIgnorePattern': '^_UNUSED_',
           'args': 'after-used', 
-          'argsIgnorePattern': '^_',
+          'argsIgnorePattern': '^_UNUSED_',
           'ignoreRestSiblings': true,
           'destructuredArrayIgnorePattern': '^_'
         }
       ],
       
-      // TypeScript rules
-      '@typescript-eslint/no-explicit-any': 'warn',
+      // TypeScript rules - STRICT
+      '@typescript-eslint/no-explicit-any': 'warn', // Changed to warn for now
       '@typescript-eslint/consistent-type-imports': ['error', {
         'prefer': 'type-imports',
         'fixStyle': 'inline-type-imports'

@@ -8,7 +8,7 @@ export interface LogEntry {
     library: string;
     url?: string;
     message: string;
-    details?: any;
+    details?: Record<string, unknown>;
     duration?: number;
     attemptNumber?: number;
     errorStack?: string;
@@ -59,7 +59,7 @@ export class DownloadLogger {
         }
     }
     
-    logDownloadStart(library: string, url: string, details?: any) {
+    logDownloadStart(library: string, url: string, details?: Record<string, unknown>) {
         this.log({
             level: 'info',
             library,
@@ -191,7 +191,7 @@ export class DownloadLogger {
         });
     }
     
-    logPdfCreationError(library: string, error: Error, details?: any) {
+    logPdfCreationError(library: string, error: Error, details?: Record<string, unknown>) {
         this.log({
             level: 'error',
             library,

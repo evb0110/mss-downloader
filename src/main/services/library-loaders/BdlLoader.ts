@@ -55,7 +55,7 @@ export class BdlLoader extends BaseLibraryLoader {
                     category: 'bdl',
                     initialTimeout: 30000,
                     maxTimeout: 90000,
-                    onStuckDetected: (state: any) => {
+                    onStuckDetected: (state: { consecutive: number; threshold: number }) => {
                         console.warn(`[BDL] ${state.statusMessage}`);
                     }
                 });
@@ -125,7 +125,7 @@ export class BdlLoader extends BaseLibraryLoader {
                         originalUrl: bdlUrl
                     };
                     
-                } catch (fetchError: any) {
+                } catch (fetchError: unknown) {
                     if (fetchError.name === 'AbortError') {
                         throw new Error('BDL API request timed out. The BDL server (bdl.servizirl.it) may be experiencing high load or temporary connectivity issues. Please try again later.');
                     }
@@ -140,7 +140,7 @@ export class BdlLoader extends BaseLibraryLoader {
                     progressMonitor.complete();
                 }
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Error loading BDL manuscript manifest:', error);
                 throw new Error(`Failed to load BDL manuscript: ${(error as Error).message}`);
             }

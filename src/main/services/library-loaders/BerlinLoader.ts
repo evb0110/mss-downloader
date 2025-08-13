@@ -49,7 +49,7 @@ export class BerlinLoader extends BaseLibraryLoader {
                             break;
                         }
                         console.warn(`Berlin: HTTP ${manifestResponse.status}, retrying...`);
-                    } catch (error: any) {
+                    } catch (error: unknown) {
                         console.error(`Berlin: Attempt ${fetchAttempt} failed: ${error.message}`);
                         if (fetchAttempt >= maxAttempts) {
                             throw new Error(`Failed to fetch Berlin manifest: ${error.message}`);
@@ -114,7 +114,7 @@ export class BerlinLoader extends BaseLibraryLoader {
                     originalUrl: berlinUrl
                 };
                 
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Error loading Berlin State Library manifest:', error);
                 throw new Error(`Failed to load Berlin State Library manuscript: ${(error as Error).message}`);
             }

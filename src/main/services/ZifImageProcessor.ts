@@ -310,9 +310,9 @@ export class ZifImageProcessor {
             console.log(`Stitching ${tiles.length} tiles into ${imageInfo.width}x${imageInfo.height} image...`);
             
             // Try to import Canvas dynamically
-            let Canvas: any;
+            let Canvas: typeof import('canvas');
             try {
-                Canvas = await import('canvas' as any);
+                Canvas = await import('canvas');
             } catch (error) {
                 // Canvas not available (e.g., ARM64 build) - return first tile as fallback
                 console.warn('Canvas dependency not available on this platform. Morgan Library .zif processing limited to first tile only.');
@@ -374,7 +374,7 @@ export class ZifImageProcessor {
             
             return jpegBuffer;
             
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error stitching tiles:', error);
             throw new Error(`Failed to stitch tiles: ${error.message}`);
         }
@@ -383,7 +383,7 @@ export class ZifImageProcessor {
     /**
      * Process a batch of tiles with timeout protection
      */
-    private async processTileBatch(batch: ExtractedTile[], Canvas: any, ctx: any, imageInfo: ImageInfo): Promise<number> {
+    private async processTileBatch(batch: ExtractedTile[], Canvas: typeof import('canvas'), ctx: import('canvas').CanvasRenderingContext2D, imageInfo: ImageInfo): Promise<number> {
         // Process batch tiles in parallel
         const batchPromises = batch.map(async (tile) => {
             try {

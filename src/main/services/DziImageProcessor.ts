@@ -181,10 +181,10 @@ export class DziImageProcessor {
         
         try {
             // Try to use Canvas if available
-            let Canvas: any;
+            let Canvas: Awaited<typeof import('canvas')>;
             try {
-                Canvas = await import('canvas' as any);
-            } catch (error) {
+                Canvas = await import('canvas');
+            } catch {
                 // Canvas not available - return error
                 throw new Error('Canvas dependency required for DZI tile assembly. Please install canvas package.');
             }

@@ -55,8 +55,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 defaults: { queueState: defaultState },
                 name: 'queue'
             });
-        } catch (error: any) {
-            console.warn('Store corrupted, resetting:', error.message);
+        } catch (error: unknown) {
+            console.warn('Store corrupted, resetting:', error instanceof Error ? error.message : String(error));
             // Try to clear the corrupted store file and recreate
             try {
                 const storePath = path.join(userDataPath, 'queue.json');
@@ -102,10 +102,10 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     currentItemId: undefined 
                 };
                 // Save to electron-store
-                (this.store as any).set('queueState', this.state);
+                this.store.set('queueState', this.state);
             } catch {
                 // Fall back to electron-store
-                this.state = (this.store as any).get('queueState', this.state);
+                this.state = this.store.get('queueState', this.state);
                 // Ensure proper cleanup for electron-store loaded state as well
                 this.state.isProcessing = false;
                 this.state.isPaused = false;
@@ -161,12 +161,14 @@ export class EnhancedDownloadQueue extends EventEmitter {
             
             try {
                 // Use the sanitized state for electron-store as well
-                (this.store as any).set('queueState', sanitizedState);
-            } catch (storeError: any) {
-                console.warn('Failed to save to electron-store, but file saved successfully:', storeError.message);
+                (this.store as Store<{ queueState: QueueState }>).set('queueState', sanitizedState);
+            } catch (storeError: unknown) {
+                const errorMessage = storeError instanceof Error ? storeError.message : String(storeError);
+                console.warn('Failed to save to electron-store, but file saved successfully:', errorMessage);
             }
-        } catch (error: any) {
-            console.error('Failed to save queue:', error.message);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error('Failed to save queue:', errorMessage);
         }
     }
 
@@ -287,7 +289,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
             let hasShownProgress = false;
             
             // Create progress callback that updates the item
-            const progressCallback = (current: number, total: number, _message?: string) => {
+            const progressCallback = (current: number, total: number, _UNUSED_message?: string) => {
                 // Only show progress for slow-loading manifests (> 30 items) or Orleans library
                 if (total > 30 || item.url.includes('orleans')) {
                     hasShownProgress = true;
@@ -348,8 +350,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
             
             this.saveToStorage();
             this.notifyListeners();
-        } catch (error: any) {
-            console.warn(`Failed to load manifest for ${item.displayName}: ${error.message}`);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.warn(`Failed to load manifest for ${item.displayName}: ${errorMessage}`);
             
             // Log the error to the download logger for user visibility
             const logger = DownloadLogger.getInstance();
@@ -415,7 +418,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
         }
 
         // Clear manifest cache for this item
-        this.manifestCache.clearUrl(item.url).catch((error: any) => {
+        this.manifestCache.clearUrl(item.url).catch((error: unknown) => {
             console.warn(`Failed to clear manifest cache for ${item.url}:`, error.message);
         });
 
@@ -470,7 +473,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
         // const totalCount = this.state.items.length;
         
         // Clear manifest cache for all items
-        this.manifestCache.clear().catch((error: any) => {
+        this.manifestCache.clear().catch((error: unknown) => {
             console.warn(`Failed to clear manifest cache:`, error.message);
         });
         
@@ -668,8 +671,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     await this.sleep(this.state.globalSettings.pauseBetweenItems);
                 }
             }
-        } catch (error: any) {
-            console.error('Queue processing error:', error.message);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error('Queue processing error:', errorMessage);
         } finally {
             this.isProcessingQueue = false;
             if (this.activeDownloadCount === 0) {
@@ -823,7 +827,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
             const effectiveConcurrent = libraryCap ? Math.min(baseConcurrent, libraryCap) : baseConcurrent;
 
             const result = await this.currentDownloader!.downloadManuscript(item.url, {
-                onProgress: (progress: any) => {
+                onProgress: (progress: { current?: number; total?: number; status?: string } | number) => {
                     // Handle both simple progress (0-1) and detailed progress object
                     if (typeof progress === 'number') {
                         item.progress = progress;
@@ -839,7 +843,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     item.eta = progress.eta;
                     this.notifyListeners();
                 },
-                onManifestLoaded: (manifest: any) => {
+                onManifestLoaded: (manifest: { totalPages?: number; library?: string; title?: string }) => {
                     item.totalPages = manifest.totalPages;
                     item.library = manifest.library as TLibrary;
                     this.notifyListeners();
@@ -882,15 +886,16 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     item.outputPath = result.filepath;
                     // Do NOT update totalPages here - it should always reflect the manifest total, not download count
                     
-                } catch (verificationError: any) {
-                    console.error(`❌ File verification failed for ${item.displayName}:`, verificationError.message);
-                    throw new Error(`Download appeared successful but file verification failed: ${verificationError.message}`);
+                } catch (verificationError: unknown) {
+                    const errorMessage = verificationError instanceof Error ? verificationError.message : String(verificationError);
+                    console.error(`❌ File verification failed for ${item.displayName}:`, errorMessage);
+                    throw new Error(`Download appeared successful but file verification failed: ${errorMessage}`);
                 }
             } else {
                 throw new Error('Download failed without specific error');
             }
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             // Always log the error, even if aborted
             const logger = DownloadLogger.getInstance();
             const library = item.library || this.detectLibraryFromUrl(item.url) || 'unknown';
@@ -1271,7 +1276,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
     
     private async checkAndSplitLargeDocument(item: QueuedManuscript): Promise<boolean> {
         try {
-            let manifest: any;
+            let manifest: { totalPages?: number; library?: string; title?: string } | undefined;
             
             // Only load manifest if we don't already have the data (avoid double loading)
             if (!item.totalPages || !item.library) {
@@ -1424,12 +1429,13 @@ export class EnhancedDownloadQueue extends EventEmitter {
             }
             
             return false;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('❌ Error checking document size:', error);
             // If it's a captcha error, mark the item as failed with captcha message
-            if (error.message?.includes('CAPTCHA_REQUIRED:')) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            if (errorMessage?.includes('CAPTCHA_REQUIRED:')) {
                 item.status = 'failed';
-                item.error = error.message;
+                item.error = errorMessage;
                 this.saveToStorage();
                 this.notifyListeners();
                 throw error; // Re-throw to be handled by processItem
@@ -1440,7 +1446,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
     
     private async splitQueueItem(
         originalItem: QueuedManuscript, 
-        manifest: any, 
+        manifest: { totalPages?: number; library?: string; title?: string }, 
         estimatedSizeMB: number
     ): Promise<void> {
         const thresholdMB = this.state.globalSettings.autoSplitThresholdMB;
@@ -1555,7 +1561,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
             }
 
             // Prepare request options
-            const requestOptions: any = { 
+            const requestOptions: { timeout: number; headers: Record<string, string>; rejectUnauthorized?: boolean } = { 
                 timeout,
                 headers
             };
@@ -1565,7 +1571,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 requestOptions.rejectUnauthorized = false;
             }
             
-            const req = client.request(url, requestOptions, (res: any) => {
+            const req = client.request(url, requestOptions, (res: { statusCode?: number; headers: { location?: string } }) => {
                 // Handle redirects (3xx status codes)
                 if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
                     const redirectUrl = new URL(res.headers.location, url);
@@ -1599,7 +1605,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
     /**
      * Handle download errors with isolation and cache cleanup to prevent corruption spread
      */
-    private async handleDownloadError(item: QueuedManuscript, error: any): Promise<void> {
+    private async handleDownloadError(item: QueuedManuscript, error: unknown): Promise<void> {
         try {
             console.log(`Performing error isolation cleanup for: ${item.displayName}`);
             
@@ -1618,15 +1624,16 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 await this.performAggressiveCleanup();
             }
             
-        } catch (cleanupError: any) {
-            console.warn('Error during cleanup, but not propagating:', cleanupError.message);
+        } catch (cleanupError: unknown) {
+            const errorMessage = cleanupError instanceof Error ? cleanupError.message : String(cleanupError);
+            console.warn('Error during cleanup, but not propagating:', errorMessage);
         }
     }
 
     /**
      * Check if error is critical and might cause widespread corruption
      */
-    private isCriticalError(error: any): boolean {
+    private isCriticalError(error: unknown): boolean {
         const errorMessage = error.message?.toLowerCase() || '';
         const criticalPatterns = [
             'json',
@@ -1667,8 +1674,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     }
                 }
             }
-        } catch (error: any) {
-            console.warn('Failed to cleanup temp files:', error.message);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.warn('Failed to cleanup temp files:', errorMessage);
         }
     }
 
@@ -1680,8 +1688,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
             // Create a fresh downloader instance to avoid corrupted state
             this.currentDownloader = new EnhancedManuscriptDownloaderService(this.manifestCache);
             console.log('Reset downloader state after error');
-        } catch (error: any) {
-            console.warn('Failed to reset downloader state:', error.message);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.warn('Failed to reset downloader state:', errorMessage);
         }
     }
 
@@ -1710,14 +1719,16 @@ export class EnhancedDownloadQueue extends EventEmitter {
             // Reset store state cleanly
             try {
                 const sanitizedState = this.sanitizeStateForSaving(this.state);
-                (this.store as any).set('queueState', sanitizedState);
-            } catch (storeError: any) {
-                console.warn('Failed to reset store state:', storeError.message);
+                (this.store as Store<{ queueState: QueueState }>).set('queueState', sanitizedState);
+            } catch (storeError: unknown) {
+                const errorMessage = storeError instanceof Error ? storeError.message : String(storeError);
+                console.warn('Failed to reset store state:', errorMessage);
             }
             
             console.log('Aggressive cleanup completed');
-        } catch (error: any) {
-            console.warn('Failed aggressive cleanup:', error.message);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.warn('Failed aggressive cleanup:', errorMessage);
         }
     }
 
@@ -1729,8 +1740,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
             console.log('Clearing all caches...');
             await this.performAggressiveCleanup();
             console.log('All caches cleared successfully');
-        } catch (error: any) {
-            console.error('Failed to clear caches:', error.message);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error('Failed to clear caches:', errorMessage);
             throw error;
         }
     }
@@ -1973,7 +1985,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
 
             // Actually download the manuscript
             const result = await downloader.downloadManuscript(item.url, {
-                onProgress: (progress: any) => {
+                onProgress: (progress: { current?: number; total?: number; status?: string } | number) => {
                     // Handle both simple progress (0-1) and detailed progress object
                     if (typeof progress === 'number') {
                         item.progress = progress;
@@ -1989,7 +2001,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     item.eta = progress.eta;
                     this.notifyListeners();
                 },
-                onManifestLoaded: (manifest: any) => {
+                onManifestLoaded: (manifest: { totalPages?: number; library?: string; title?: string }) => {
                     item.totalPages = manifest.totalPages;
                     item.library = manifest.library as TLibrary;
                     this.notifyListeners();
@@ -2031,16 +2043,18 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     item.progress = undefined;
                     item.outputPath = result.filepath;
                     
-                } catch (verificationError: any) {
-                    console.error(`❌ File verification failed for ${item.displayName}:`, verificationError.message);
-                    throw new Error(`Download appeared successful but file verification failed: ${verificationError.message}`);
+                } catch (verificationError: unknown) {
+                    const errorMessage = verificationError instanceof Error ? verificationError.message : String(verificationError);
+                    console.error(`❌ File verification failed for ${item.displayName}:`, errorMessage);
+                    throw new Error(`Download appeared successful but file verification failed: ${errorMessage}`);
                 }
             } else {
                 throw new Error('Download failed without specific error');
             }
             
-        } catch (error: any) {
-            if (error.name === 'AbortError' || error.message?.includes('abort')) {
+        } catch (error: unknown) {
+            const isAbortError = error instanceof Error && (error.name === 'AbortError' || error.message?.includes('abort'));
+            if (isAbortError) {
                 item.status = 'paused';
                 item.progress = undefined;
             } else {

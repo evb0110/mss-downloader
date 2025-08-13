@@ -94,14 +94,14 @@ export class ElectronPdfMerger {
                 const partsDir = join(outputDir, folderBase || baseName);
                 try {
                     await fs.mkdir(partsDir, { recursive: true });
-                } catch (_) {
+                } catch {
                     // If directory creation fails, fallback to parent outputDir
                 }
                 
                 const result = await this.enhancedMerger.createSplitPDFs(images, baseName, partsDir || outputDir, {
                     maxPagesPerPart: maxPagesPerPart || 100,
                     startPage: startPage || 1,
-                    onProgress: (progress: any) => {
+                    onProgress: (progress: { current: number; total: number; message?: string }) => {
                         onProgress?.({
                             pageNumber: progress.overallPage,
                             totalPages: progress.totalPages,
@@ -135,8 +135,8 @@ export class ElectronPdfMerger {
 
             return finalOutputPath;
 
-        } catch (error: any) {
-            onError?.(error.message);
+        } catch (error: unknown) {
+            onError?.(error instanceof Error ? error.message : String(error));
             throw error;
         } finally {
             this.isProcessing = false;

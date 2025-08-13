@@ -6,7 +6,7 @@ import { configService } from './ConfigService';
 export class ManifestCache {
     private cacheDir: string;
     private cacheFile: string;
-    private cache = new Map<string, { manifest: any; timestamp: number; version: number }>();
+    private cache = new Map<string, { manifest: Record<string, unknown>; timestamp: number; version: number }>();
     private maxAge = 24 * 60 * 60 * 1000; // 24 hours
     private initialized = false;
     private static readonly CACHE_VERSION = 4; // Increment when URL processing logic changes
@@ -36,7 +36,7 @@ export class ManifestCache {
                 } else {
                     // Convert back to Map and filter expired entries
                     const now = Date.now();
-                    for (const [key, value] of Object.entries(cached) as [string, any][]) {
+                    for (const [key, value] of Object.entries(cached) as [string, { manifest: Record<string, unknown>; timestamp: number; version: number }][]) {
                         if (key !== '_cacheVersion' && value.timestamp && now - value.timestamp < this.maxAge) {
                             // Ensure version compatibility for individual entries
                             const entryVersion = value.version || 1;
@@ -54,14 +54,14 @@ export class ManifestCache {
             if (shouldClearCache) {
                 await this.clear();
             }
-        } catch (error: any) {
-            console.warn('Failed to initialize manifest cache:', error.message);
+        } catch (error: unknown) {
+            console.warn('Failed to initialize manifest cache:', error instanceof Error ? error.message : 'Unknown error');
         }
         
         this.initialized = true;
     }
 
-    async get(url: string): Promise<any | null> {
+    async get(url: string): Promise<Record<string, unknown> | null> {
         try {
             await this.init();
             
@@ -79,15 +79,15 @@ export class ManifestCache {
                     await this.save();
                 }
             }
-        } catch (error: any) {
-            console.warn(`Failed to get manifest from cache for ${url}:`, error.message);
+        } catch (error: unknown) {
+            console.warn(`Failed to get manifest from cache for ${url}:`, error instanceof Error ? error.message : 'Unknown error');
             // Don't propagate cache errors - just return null to trigger fresh fetch
         }
         
         return null;
     }
 
-    async set(url: string, manifest: any): Promise<void> {
+    async set(url: string, manifest: Record<string, unknown>): Promise<void> {
         try {
             await this.init();
             
@@ -105,20 +105,20 @@ export class ManifestCache {
             });
             
             await this.save();
-        } catch (error: any) {
-            console.warn(`Failed to cache manifest for ${url}:`, error.message);
+        } catch (error: unknown) {
+            console.warn(`Failed to cache manifest for ${url}:`, error instanceof Error ? error.message : 'Unknown error');
             // Don't propagate cache errors - download can continue without caching
         }
     }
 
     private async save(): Promise<void> {
         try {
-            const cacheObject: any = Object.fromEntries(this.cache);
+            const cacheObject: Record<string, unknown> = Object.fromEntries(this.cache);
             // Add cache version to the saved data
             cacheObject._cacheVersion = ManifestCache.CACHE_VERSION;
             await fs.writeFile(this.cacheFile, JSON.stringify(cacheObject, null, 2));
-        } catch (error: any) {
-            console.warn('Failed to save manifest cache:', error.message);
+        } catch (error: unknown) {
+            console.warn('Failed to save manifest cache:', error instanceof Error ? error.message : 'Unknown error');
         }
     }
 
@@ -144,7 +144,8 @@ export class ManifestCache {
         
         const keysToDelete: string[] = [];
         for (const [key, value] of this.cache.entries()) {
-            if (value.manifest?.originalUrl?.includes(domain)) {
+            const manifest = value.manifest as Record<string, unknown>;
+            if (typeof manifest.originalUrl === 'string' && manifest.originalUrl.includes(domain)) {
                 keysToDelete.push(key);
             }
         }
@@ -173,18 +174,20 @@ export class ManifestCache {
     /**
      * Validate manifest structure to prevent corruption
      */
-    private isValidManifest(manifest: any): boolean {
+    private isValidManifest(manifest: unknown): boolean {
         if (!manifest || typeof manifest !== 'object') {
             return false;
         }
         
+        const manifestObj = manifest as Record<string, unknown>;
+        
         // Check for required fields and basic structure
-        if (!manifest.pageLinks || !Array.isArray(manifest.pageLinks)) {
+        if (!manifestObj.pageLinks || !Array.isArray(manifestObj.pageLinks)) {
             return false;
         }
         
         // Check for common corruption indicators
-        if (manifest.pageLinks.some((link: any) => 
+        if (manifestObj.pageLinks.some((link: unknown) => 
             !link || typeof link !== 'string' || link.includes('undefined') || link.includes('null')
         )) {
             return false;
@@ -205,8 +208,8 @@ export class ManifestCache {
                 await this.save();
                 console.log(`Cleared corrupted cache entry for: ${url}`);
             }
-        } catch (error: any) {
-            console.warn(`Failed to clear cache entry for ${url}:`, error.message);
+        } catch (error: unknown) {
+            console.warn(`Failed to clear cache entry for ${url}:`, error instanceof Error ? error.message : 'Unknown error');
         }
     }
 }

@@ -47,8 +47,8 @@ export class BneLoader extends BaseLibraryLoader {
                 originalUrl: originalUrl,
             };
 
-        } catch (error: any) {
-            throw new Error(`Failed to load BNE manuscript: ${(error as Error).message}`);
+        } catch (error: unknown) {
+            throw new Error(`Failed to load BNE manuscript: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 

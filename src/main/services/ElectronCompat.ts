@@ -4,7 +4,7 @@ import path from 'path';
 // Lightweight compatibility layer to allow running production code under Node (no Electron)
 // Provides getPath() and showSaveDialog() fallbacks.
 
-let electronCache: any | undefined;
+let electronCache: Awaited<typeof import('electron')> | null | undefined;
 
 // Initialize electron asynchronously to avoid eval warning
 async function initElectron(): Promise<void> {
@@ -28,7 +28,7 @@ initElectron().catch(() => {
   electronCache = null;
 });
 
-function getElectron(): any | null {
+function getElectron(): Awaited<typeof import('electron')> | null {
   // If not yet initialized, try synchronous require as fallback
   if (electronCache === undefined) {
     try {
@@ -69,7 +69,7 @@ export async function showSaveDialog(options: {
   const electron = getElectron();
   if (electron?.dialog?.showSaveDialog) {
     try {
-      return await electron.dialog.showSaveDialog(options as any);
+      return await electron.dialog.showSaveDialog(options);
     } catch {
       // fall through to fallback
     }

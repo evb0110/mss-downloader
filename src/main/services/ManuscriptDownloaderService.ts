@@ -191,8 +191,8 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 message: `PDF saved to: ${pdfPath}` 
             });
             
-        } catch (error: any) {
-            callbacks?.onError?.(error.message);
+        } catch (error: unknown) {
+            callbacks?.onError?.(error instanceof Error ? error.message : 'Unknown error');
             throw error;
         }
     }
@@ -243,7 +243,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                     } else {
                         throw new Error('Invalid image size');
                     }
-                } catch (error: any) {
+                } catch (error: unknown) {
                     console.error(`Download attempt ${retry + 1} failed for ${urls[i]}:`, error);
                     
                     if (retry === MAX_IMAGE_FETCH_RETRIES) {
@@ -307,14 +307,15 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 throw new Error('Invalid IIIF manifest structure');
             }
             
-            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
-                const resource = canvas.images[0].resource;
+            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
+                const images = canvas.images as Record<string, unknown>[];
+                const resource = images[0].resource as Record<string, unknown>;
                 const rawUrl = resource['@id'] || resource.id;
                 // Convert bare IIIF identifier to proper IIIF image URL for Cambridge CUDL
-                if (rawUrl && rawUrl.includes('images.lib.cam.ac.uk/iiif/')) {
+                if (rawUrl && typeof rawUrl === 'string' && rawUrl.includes('images.lib.cam.ac.uk/iiif/')) {
                     return rawUrl + '/full/1000,/0/default.jpg';
                 }
-                return rawUrl;
+                return rawUrl as string;
             }).filter((link: string) => link);
             
             if (pageLinks.length === 0) {
@@ -329,8 +330,8 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 originalUrl: cudlUrl,
             };
             
-        } catch (error: any) {
-            throw new Error(`Failed to load Cambridge CUDL manuscript: ${error.message}`);
+        } catch (error: unknown) {
+            throw new Error(`Failed to load Cambridge CUDL manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
@@ -343,8 +344,8 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
             
             throw new Error('Trinity College Cambridge manuscripts require manual inspection - please provide direct image URLs or use a supported IIIF endpoint');
             
-        } catch (error: any) {
-            throw new Error(`Failed to load Trinity Cambridge manuscript: ${error.message}`);
+        } catch (error: unknown) {
+            throw new Error(`Failed to load Trinity Cambridge manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
@@ -366,12 +367,14 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 throw new Error('Invalid IIIF manifest structure');
             }
             
-            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
-                const resource = canvas.images[0].resource;
-                if (resource.service && resource.service['@id']) {
-                    return `${resource.service['@id']}/full/full/0/default.jpg`;
+            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
+                const images = canvas.images as Record<string, unknown>[];
+                const resource = images[0].resource as Record<string, unknown>;
+                const service = resource.service as Record<string, unknown>;
+                if (service && service['@id']) {
+                    return `${service['@id']}/full/full/0/default.jpg`;
                 }
-                return resource['@id'] || resource.id;
+                return (resource['@id'] || resource.id) as string;
             }).filter((link: string) => link);
             
             if (pageLinks.length === 0) {
@@ -386,8 +389,8 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 originalUrl: isosUrl,
             };
             
-        } catch (error: any) {
-            throw new Error(`Failed to load ISOS manuscript: ${error.message}`);
+        } catch (error: unknown) {
+            throw new Error(`Failed to load ISOS manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
@@ -409,12 +412,14 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 const iiifManifest = JSON.parse(manifestData);
                 
                 if (iiifManifest.sequences && iiifManifest.sequences[0] && iiifManifest.sequences[0].canvases) {
-                    const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
-                        const resource = canvas.images[0].resource;
-                        if (resource.service && resource.service['@id']) {
-                            return `${resource.service['@id']}/full/full/0/default.jpg`;
+                    const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
+                        const images = canvas.images as Record<string, unknown>[];
+                        const resource = images[0].resource as Record<string, unknown>;
+                        const service = resource.service as Record<string, unknown>;
+                        if (service && service['@id']) {
+                            return `${service['@id']}/full/full/0/default.jpg`;
                         }
-                        return resource['@id'] || resource.id;
+                        return (resource['@id'] || resource.id) as string;
                     }).filter((link: string) => link);
                     
                     if (pageLinks.length > 0) {
@@ -431,8 +436,8 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
             
             throw new Error('Could not find valid IIIF manifest in MIRA page');
             
-        } catch (error: any) {
-            throw new Error(`Failed to load MIRA manuscript: ${error.message}`);
+        } catch (error: unknown) {
+            throw new Error(`Failed to load MIRA manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
@@ -540,9 +545,9 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 displayName: manuscriptCode,
                 originalUrl: unifrUrl,
             };
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to load e-codices manifest:', error);
-            throw new Error(`Failed to load e-codices manuscript: ${error.message || 'Unknown error during manifest loading'}`);
+            throw new Error(`Failed to load e-codices manuscript: ${error instanceof Error ? error.message : 'Unknown error during manifest loading'}`);
         }
     }
 
@@ -577,13 +582,15 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 throw new Error('Invalid manifest structure: missing sequences or canvases');
             }
             
-            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: any) => {
-                const resource = canvas.images[0].resource;
+            const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
+                const images = canvas.images as Record<string, unknown>[];
+                const resource = images[0].resource as Record<string, unknown>;
+                const service = resource.service as Record<string, unknown>;
                 
                 // Vatican Library uses a service object with @id pointing to the image service
-                if (resource.service && resource.service['@id']) {
+                if (service && service['@id']) {
                     // Extract the base service URL and construct full resolution image URL
-                    const serviceId = resource.service['@id'];
+                    const serviceId = service['@id'];
                     return `${serviceId}/full/full/0/native.jpg`;
                 }
                 
@@ -608,8 +615,8 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 originalUrl: vatLibUrl,
             };
             
-        } catch (error: any) {
-            throw new Error(`Failed to load Vatican Library manuscript: ${error.message}`);
+        } catch (error: unknown) {
+            throw new Error(`Failed to load Vatican Library manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
@@ -651,8 +658,8 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 originalUrl: florusUrl,
             };
             
-        } catch (error: any) {
-            throw new Error(`Failed to load Florus manuscript: ${error.message}`);
+        } catch (error: unknown) {
+            throw new Error(`Failed to load Florus manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
@@ -718,10 +725,10 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 const menuBarDataJson = menuBarDataMatch[1];
                 const menuBarData = JSON.parse(menuBarDataJson);
                 if (menuBarData.canvases && Array.isArray(menuBarData.canvases)) {
-                    return menuBarData.canvases.map((canvas: any) => {
+                    return menuBarData.canvases.map((canvas: Record<string, unknown>) => {
                         if (!canvas.src) throw new Error('Canvas missing src field');
                         // Convert thumbnails to full-resolution images
-                        const imageUrl = canvas.src.replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
+                        const imageUrl = (canvas.src as string).replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
                             .replace(/\/full\/,\d+\//g, '/full/full/')
                             .replace(/\/default\/jpg$/, '/default.jpg');
                         return imageUrl;
@@ -765,9 +772,9 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                     const viewerDataJson = html.substring(jsonStart, jsonEnd);
                     const viewerData = JSON.parse(viewerDataJson);
                     if (viewerData.canvases && Array.isArray(viewerData.canvases)) {
-                        return viewerData.canvases.map((canvas: any) => {
+                        return viewerData.canvases.map((canvas: Record<string, unknown>) => {
                             if (!canvas.src) throw new Error('Canvas missing src field');
-                            const imageUrl = canvas.src.replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
+                            const imageUrl = (canvas.src as string).replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
                                 .replace(/\/full\/,\d+\//g, '/full/full/')
                                 .replace(/\/default\/jpg$/, '/default.jpg');
                             return imageUrl;
@@ -786,9 +793,9 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 const viewerDataJson = legacyViewerDataMatch[1].replace(/\\"/g, '"').replace(/\\\//g, '/');
                 const viewerData = JSON.parse(viewerDataJson);
                 if (viewerData.canvases && Array.isArray(viewerData.canvases)) {
-                    return viewerData.canvases.map((canvas: any) => {
+                    return viewerData.canvases.map((canvas: Record<string, unknown>) => {
                         if (!canvas.src) throw new Error('Canvas missing src field');
-                        const imageUrl = canvas.src.replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
+                        const imageUrl = (canvas.src as string).replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
                             .replace(/\/full\/,\d+\//g, '/full/full/')
                             .replace(/\/default\/jpg$/, '/default.jpg');
                         return imageUrl;
@@ -806,9 +813,9 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 const menuBarDataJson = altMenuBarDataMatch[1];
                 const menuBarData = JSON.parse(menuBarDataJson);
                 if (menuBarData.canvases && Array.isArray(menuBarData.canvases)) {
-                    return menuBarData.canvases.map((canvas: any) => {
+                    return menuBarData.canvases.map((canvas: Record<string, unknown>) => {
                         if (!canvas.src) throw new Error('Canvas missing src field');
-                        const imageUrl = canvas.src.replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
+                        const imageUrl = (canvas.src as string).replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
                             .replace(/\/full\/,\d+\//g, '/full/full/')
                             .replace(/\/default\/jpg$/, '/default.jpg');
                         return imageUrl;
@@ -988,8 +995,8 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 message: `PDF saved to: ${pdfPath}` 
             });
             
-        } catch (error: any) {
-            options.onError?.(error.message);
+        } catch (error: unknown) {
+            options.onError?.(error instanceof Error ? error.message : 'Unknown error');
             throw error;
         }
     }

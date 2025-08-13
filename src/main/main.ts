@@ -7,7 +7,7 @@ import { ElectronImageCache } from './services/ElectronImageCache';
 import { ElectronPdfMerger } from './services/ElectronPdfMerger';
 import { EnhancedManuscriptDownloaderService } from './services/EnhancedManuscriptDownloaderService';
 import { EnhancedDownloadQueue } from './services/EnhancedDownloadQueue';
-import { configService } from './services/ConfigService';
+import { configService, type AppConfig } from './services/ConfigService';
 import { NegativeConverterService } from './services/NegativeConverterService';
 import { DownloadLogger } from './services/DownloadLogger';
 import { VersionMigrationService } from './services/VersionMigrationService';
@@ -507,11 +507,11 @@ ipcMain.handle('get-language', () => {
 
 // Config management handlers
 ipcMain.handle('config-get', (_event, key: string) => {
-  return configService.get(key as any);
+  return configService.get(key as keyof AppConfig);
 });
 
-ipcMain.handle('config-set', (_event, key: string, value: any) => {
-  configService.set(key as any, value);
+ipcMain.handle('config-set', (_event, key: string, value: unknown) => {
+  configService.set(key as keyof AppConfig, value as AppConfig[keyof AppConfig]);
   // Notify renderer of config changes
   mainWindow?.webContents.send('config-changed', key, value);
 
@@ -520,7 +520,7 @@ ipcMain.handle('config-set', (_event, key: string, value: any) => {
     try {
       enhancedDownloadQueue?.updateGlobalConcurrentDownloads(value);
     } catch (e) {
-      console.warn('Failed to propagate maxConcurrentDownloads to queue:', (e as any)?.message);
+      console.warn('Failed to propagate maxConcurrentDownloads to queue:', e instanceof Error ? e.message : String(e));
     }
   }
 });
@@ -529,7 +529,7 @@ ipcMain.handle('config-get-all', () => {
   return configService.getAll();
 });
 
-ipcMain.handle('config-set-multiple', (_event, updates: Record<string, any>) => {
+ipcMain.handle('config-set-multiple', (_event, updates: Partial<AppConfig>) => {
   configService.setMultiple(updates);
   // Notify renderer of config changes
   mainWindow?.webContents.send('config-changed-multiple', updates);
@@ -542,7 +542,7 @@ ipcMain.handle('config-reset', () => {
   mainWindow?.webContents.send('config-reset', newConfig);
 });
 
-ipcMain.handle('download-manuscript', async (_event, url: string, _callbacks: any) => {
+ipcMain.handle('download-manuscript', async (_event, url: string, _UNUSED_callbacks: unknown) => {
   if (!manuscriptDownloader) {
     throw new Error('Manuscript downloader not initialized');
   }
@@ -668,13 +668,14 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
     
     // Small manifest, return directly
     return { isChunked: false, manifest };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     comprehensiveLogger.log({
       level: 'error',
       category: 'manifest',
       url: url || 'undefined',
-      errorMessage: error.message,
-      errorStack: error.stack,
+      errorMessage: err.message,
+      errorStack: err.stack,
       details: {
         message: 'Parse manuscript URL chunked failed',
         originalUrl: url
@@ -682,12 +683,14 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
     });
     
     // Create a safe error for IPC serialization
-    const safeError = new Error(error?.message || 'Failed to load manuscript');
-    safeError.name = error?.name || 'ManifestError';
+    const safeError = new Error(err.message || 'Failed to load manuscript');
+    safeError.name = err.name || 'ManifestError';
     
     // Add safe metadata without circular references
-    (safeError as any).library = error?.library;
-    (safeError as any).isManifestError = true;
+    Object.assign(safeError, {
+      library: error && typeof error === 'object' && 'library' in error ? (error as {library: unknown}).library : undefined,
+      isManifestError: true
+    });
     
     throw safeError;
   }
@@ -712,12 +715,13 @@ ipcMain.handle('get-manifest-chunk', async (_event, url: string, chunkIndex: num
       isLastChunk: end >= manifestString.length,
       totalChunks: Math.ceil(manifestString.length / chunkSize)
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     comprehensiveLogger.log({
       level: 'error',
       category: 'manifest',
       url: url || 'undefined',
-      errorMessage: error.message,
+      errorMessage: err.message,
       details: {
         message: 'Get manifest chunk failed',
         chunkIndex
@@ -725,9 +729,9 @@ ipcMain.handle('get-manifest-chunk', async (_event, url: string, chunkIndex: num
     });
     
     // Create a safe error for IPC serialization
-    const safeError = new Error(error?.message || 'Failed to get manifest chunk');
-    safeError.name = error?.name || 'ManifestChunkError';
-    (safeError as any).chunkIndex = chunkIndex;
+    const safeError = new Error(err.message || 'Failed to get manifest chunk');
+    safeError.name = err.name || 'ManifestChunkError';
+    Object.assign(safeError, { chunkIndex });
     
     throw safeError;
   }
@@ -883,38 +887,40 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
     // Race between manifest loading and timeout
     const result = await Promise.race([manifestPromise, timeoutPromise]);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     // ULTRA-PRIORITY FIX for Issue #2: Enhanced error handling to ensure reply is sent
     comprehensiveLogger.log({
       level: 'error',
       category: 'manifest',
       url: url || 'undefined',
-      errorMessage: error?.message || 'Unknown error',
-      errorStack: error?.stack,
+      errorMessage: err.message,
+      errorStack: err.stack,
       details: {
         message: 'Parse manuscript URL failed',
         originalUrl: url,
         urlType: typeof url,
-        errorType: error?.constructor?.name,
+        errorType: err.constructor.name,
         platform: process.platform
       }
     });
     
     // Check if this is a captcha error that should be handled by the UI
-    if (error?.message?.startsWith('CAPTCHA_REQUIRED:')) {
+    if (err.message?.startsWith('CAPTCHA_REQUIRED:')) {
       // Let the error pass through to the UI for captcha handling
-      throw error;
+      throw err;
     }
     
     // ULTRA-PRIORITY FIX for Issue #2: Create and throw a guaranteed serializable error
     // The error MUST be thrown (not returned) for proper IPC communication
-    const errorMessage = error?.message || 'Failed to load manuscript';
-    const safeError = new Error(errorMessage);
-    safeError.name = error?.name || 'ManifestError';
-    (safeError as any).library = error?.library;
-    (safeError as any).isManifestError = true;
-    (safeError as any).url = url;
-    (safeError as any).platform = process.platform;
+    const safeError = new Error(err.message || 'Failed to load manuscript');
+    safeError.name = err.name || 'ManifestError';
+    Object.assign(safeError, {
+      library: error && typeof error === 'object' && 'library' in error ? (error as {library: unknown}).library : undefined,
+      isManifestError: true,
+      url: url,
+      platform: process.platform
+    });
     
     // CRITICAL FIX for Issue #2: Throw the error to ensure IPC reply is sent properly
     // Returning { error: safeError } causes "reply was never sent" in renderer

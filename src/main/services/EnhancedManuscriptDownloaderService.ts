@@ -975,7 +975,7 @@ export class EnhancedManuscriptDownloaderService {
     /**
      * Fetch with automatic proxy fallback
      */
-    async fetchWithProxyFallback(url: string, options: any = {}): Promise<Response> {
+    async fetchWithProxyFallback(url: string, options: RequestInit = {}): Promise<Response> {
         // ULTRA-PRIORITY FIX for Issue #9: Sanitize URL before any fetch operation
         url = this.sanitizeUrl(url);
 
@@ -1005,7 +1005,7 @@ export class EnhancedManuscriptDownloaderService {
             }
 
             throw new Error(`HTTP ${response.status}`);
-        } catch (directError: any) {
+        } catch (directError: unknown) {
             clearTimeout(timeoutId);
 
             // If direct access fails, try proxy servers
@@ -1026,7 +1026,7 @@ export class EnhancedManuscriptDownloaderService {
                         console.log(`Successfully fetched ${url} via proxy: ${proxy}`);
                         return proxyResponse;
                     }
-                } catch (proxyError: any) {
+                } catch (proxyError: unknown) {
                     console.warn(`Proxy ${proxy} failed for ${url}: ${proxyError.message}`);
                     continue;
                 }
@@ -1040,7 +1040,7 @@ export class EnhancedManuscriptDownloaderService {
     /**
      * Direct fetch (no proxy needed in Electron main process)
      */
-    async fetchDirect(url: string, options: any = {}, attempt: number = 1): Promise<Response> {
+    async fetchDirect(url: string, options: RequestInit = {}, attempt: number = 1): Promise<Response> {
         const startTime = Date.now();
 
         // Always create our own controller for library-specific timeouts
@@ -1209,7 +1209,7 @@ export class EnhancedManuscriptDownloaderService {
 
         try {
             // SSL-tolerant fetching for Verona domains with certificate hostname mismatch
-            const fetchOptions: any = {
+            const fetchOptions: RequestInit & { rejectUnauthorized?: boolean } = {
                 ...options,
                 signal: controller.signal,
                 headers
@@ -1224,11 +1224,12 @@ export class EnhancedManuscriptDownloaderService {
                     const response = await this.fetchWithHTTPS(url, { ...fetchOptions, timeout });
                     if (timeoutId) clearTimeout(timeoutId);
                     return response;
-                } catch (httpsError: any) {
+                } catch (httpsError: unknown) {
                     // For Verona, if main site fails, try IIIF server directly
+                    const errorCode = (httpsError as { code?: string })?.code;
                     if ((url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) &&
-                        (httpsError.code === 'ETIMEDOUT' || httpsError.code === 'ECONNREFUSED')) {
-                        console.warn(`[Verona] Primary connection failed with ${httpsError.code}, attempting IIIF server fallback`);
+                        (errorCode === 'ETIMEDOUT' || errorCode === 'ECONNREFUSED')) {
+                        console.warn(`[Verona] Primary connection failed with ${errorCode}, attempting IIIF server fallback`);
 
                         // If it's the main site, try the IIIF server
                         if (url.includes('nuovabibliotecamanoscritta.it')) {
@@ -1274,7 +1275,7 @@ export class EnhancedManuscriptDownloaderService {
             }
 
             return response;
-        } catch (error: any) {
+        } catch (error: unknown) {
             if (timeoutId) clearTimeout(timeoutId);
 
             const elapsed = Date.now() - startTime;
@@ -1290,7 +1291,7 @@ export class EnhancedManuscriptDownloaderService {
      * Specialized fetch for Verona domains using native HTTPS module
      * This fixes SSL certificate validation issues with Node.js fetch API
      */
-    private async fetchWithHTTPS(url: string, options: any = {}): Promise<Response> {
+    private async fetchWithHTTPS(url: string, options: RequestInit & { rejectUnauthorized?: boolean } = {}): Promise<Response> {
         // ULTRA-PRIORITY FIX: Sanitize URL before any processing
         url = this.sanitizeUrl(url);
 
@@ -1519,7 +1520,7 @@ export class EnhancedManuscriptDownloaderService {
                 library,
                 url,
                 errorCode: 'INVALID_HOSTNAME',
-                errorMessage: error.message,
+                errorMessage: (error as Error).message,
                 details: {
                     hostname,
                     url
@@ -1693,9 +1694,9 @@ export class EnhancedManuscriptDownloaderService {
                 });
             });
 
-            req.on('error', (error: any) => {
+            req.on('error', (error: unknown) => {
                 const attemptDuration = Date.now() - attemptStartTime;
-                console.log(`[fetchWithHTTPS] Request error after ${attemptDuration}ms:`, error.code, error.message);
+                console.log(`[fetchWithHTTPS] Request error after ${attemptDuration}ms:`, error.code, (error as Error).message);
 
                 comprehensiveLogger.logNetworkError(url, error, {
                     library,
@@ -1768,7 +1769,7 @@ export class EnhancedManuscriptDownloaderService {
     /**
      * Load manifest for different library types
      */
-    async loadManifest(originalUrl: string, _progressCallback?: (current: number, total: number, message?: string) => void): Promise<ManuscriptManifest> {
+    async loadManifest(originalUrl: string, _UNUSED_progressCallback?: (current: number, total: number, message?: string) => void): Promise<ManuscriptManifest> {
         // ULTRA-PRIORITY FIX for Issue #9: Sanitize URL at the earliest entry point
         originalUrl = this.sanitizeUrl(originalUrl);
 
@@ -2005,7 +2006,7 @@ export class EnhancedManuscriptDownloaderService {
 
             return manifest;
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(`Failed to load manifest: ${(error as Error).message}`);
 
             // Enhanced error handling for specific network issues
@@ -2017,7 +2018,7 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error(`University of Graz connection was reset. The server closed the connection unexpectedly. Please try again in a few moments.`);
             }
 
-            if (error.message?.includes('timeout') && originalUrl.includes('unipub.uni-graz.at')) {
+            if ((error as Error).message?.includes('timeout') && originalUrl.includes('unipub.uni-graz.at')) {
                 throw new Error(`University of Graz request timed out. Large manuscripts may take longer to load - please try again with patience, as the system allows extended timeouts for Graz manuscripts.`);
             }
 
@@ -2305,10 +2306,10 @@ export class EnhancedManuscriptDownloaderService {
 
             return { buffer, fileType };
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             const elapsed = Date.now() - startTime;
             this.logger.logDownloadError(library || 'unknown', url, error, attempt + 1);
-            console.error(`[downloadImageWithRetries] Error after ${elapsed}ms:`, error.message);
+            console.error(`[downloadImageWithRetries] Error after ${elapsed}ms:`, (error as Error).message);
 
             const maxRetries = configService.get('maxRetries');
             if (attempt < maxRetries) {
@@ -2390,7 +2391,7 @@ export class EnhancedManuscriptDownloaderService {
 
             return arrayBuffer;
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             const maxRetries = configService.get('maxRetries');
             if (attempt < maxRetries) {
                 const isTimeoutError = (error as Error).message.includes('timeout') || (error as Error).message.includes('timed out');
@@ -2432,7 +2433,7 @@ export class EnhancedManuscriptDownloaderService {
 
             return arrayBuffer;
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             const maxRetries = configService.get('maxRetries');
             if (attempt < maxRetries) {
                 const isTimeoutError = (error as Error).message.includes('timeout') || (error as Error).message.includes('timed out');
@@ -2771,8 +2772,8 @@ export class EnhancedManuscriptDownloaderService {
                                 console.error(`[Bordeaux] Failed to process page ${pageNum}: ${result.error}`);
                                 failedPages.push(pageIndex + 1);
                             }
-                        } catch (error: any) {
-                            console.error(`[Bordeaux] Error processing page ${pageIndex + 1}: ${error.message}`);
+                        } catch (error: unknown) {
+                            console.error(`[Bordeaux] Error processing page ${pageIndex + 1}: ${(error as Error).message}`);
                             failedPages.push(pageIndex + 1);
                         }
                     }
@@ -2836,8 +2837,8 @@ export class EnhancedManuscriptDownloaderService {
                                 console.error(`Failed to download tiles for page ${pageIndex + 1}: ${result.errors.join(', ')}`);
                                 failedPages.push(pageIndex + 1);
                             }
-                        } catch (error: any) {
-                            console.error(`Tile download error for page ${pageIndex + 1}: ${error.message}`);
+                        } catch (error: unknown) {
+                            console.error(`Tile download error for page ${pageIndex + 1}: ${(error as Error).message}`);
                             failedPages.push(pageIndex + 1);
                         }
                     }
@@ -2881,7 +2882,7 @@ export class EnhancedManuscriptDownloaderService {
                             updateProgress();
                             return;
                         }
-                    } catch (error: any) {
+                    } catch (error: unknown) {
                         console.error(`Failed to fetch lazy page ${pageNum}: ${(error as Error).message}`);
                         completedPages++;
                         updateProgress();
@@ -2925,7 +2926,7 @@ export class EnhancedManuscriptDownloaderService {
                         
                         console.log(`💾 Downloaded: ${imgFile} (${fileType.extension.toUpperCase()}, ${fileType.mimeType})`);
                     }
-                } catch (error: any) {
+                } catch (error: unknown) {
                     console.error(`\n❌ Failed to download page ${pageIndex + 1}: ${(error as Error).message}`);
                     // Track failed page
                     failedPages.push(pageIndex + 1);
@@ -3168,17 +3169,17 @@ export class EnhancedManuscriptDownloaderService {
                 };
             }
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(`❌ Download failed: ${(error as Error).message}`);
 
             // Log manuscript download failed with better stage detection
             let failedStage = 'unknown';
             if (!manifest) {
                 failedStage = 'manifest_loading';
-            } else if (error.message?.includes('convertImagesToPDF') ||
-                      error.message?.includes('PDF') ||
-                      error.message?.includes('memory') ||
-                      error.message?.includes('No pages created') ||
+            } else if ((error as Error).message?.includes('convertImagesToPDF') ||
+                      (error as Error).message?.includes('PDF') ||
+                      (error as Error).message?.includes('memory') ||
+                      (error as Error).message?.includes('No pages created') ||
                       validImagePaths && validImagePaths.length > 0 && !filepath) {
                 failedStage = 'pdf_creation';
             } else if (validImagePaths && validImagePaths.length === 0) {
@@ -3201,7 +3202,7 @@ export class EnhancedManuscriptDownloaderService {
     /**
      * Convert images to PDF with robust error handling and memory management
      */
-    async convertImagesToPDF(imagePaths: string[], outputPath: string, manifest?: any): Promise<void> {
+    async convertImagesToPDF(imagePaths: string[], outputPath: string, manifest?: unknown): Promise<void> {
         const startTime = Date.now();
         const totalImages = imagePaths.length;
         const maxMemoryMB = 1024; // 1GB memory limit
@@ -3300,7 +3301,7 @@ export class EnhancedManuscriptDownloaderService {
                         validImagesInBatch++;
                         // processedCount++;
 
-                    } catch (error: any) {
+                    } catch (error: unknown) {
                         console.error(`\n❌ Failed to process ${path.basename(imagePath)}: ${(error as Error).message}`);
                         continue;
                     }
@@ -3429,7 +3430,7 @@ export class EnhancedManuscriptDownloaderService {
 
     }
 
-    async convertImagesToPDFWithBlanks(imagePaths: (string | null)[], outputPath: string, startPageNumber: number = 1, manifest?: any): Promise<void> {
+    async convertImagesToPDFWithBlanks(imagePaths: (string | null)[], outputPath: string, startPageNumber: number = 1, manifest?: unknown): Promise<void> {
         const startTime = Date.now();
         const totalImages = imagePaths.length;
         const maxMemoryMB = 1024;
@@ -3631,7 +3632,7 @@ export class EnhancedManuscriptDownloaderService {
                         pagesInBatch++;
                         processedCount++;
 
-                    } catch (error: any) {
+                    } catch (error: unknown) {
                         // Create informative page for any other errors
                         const page = batchPdfDoc.addPage([595, 842]);
                         const { height } = page.getSize();
@@ -3711,8 +3712,8 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
 
-            } catch (batchError: any) {
-                console.error(`Error processing batch ${Math.floor(i / batchSize) + 1}:`, batchError.message);
+            } catch (batchError: unknown) {
+                console.error(`Error processing batch ${Math.floor(i / batchSize) + 1}:`, (batchError as Error).message);
             }
         }
 
@@ -3750,7 +3751,7 @@ export class EnhancedManuscriptDownloaderService {
     /**
      * Merge PDF pages for libraries that provide PDFs instead of images (like BNE)
      */
-    async mergePDFPages(pdfPaths: (string | null)[], outputPath: string, startPageNumber: number = 1, manifest?: any): Promise<void> {
+    async mergePDFPages(pdfPaths: (string | null)[], outputPath: string, startPageNumber: number = 1, manifest?: unknown): Promise<void> {
         const startTime = Date.now();
         const totalPages = pdfPaths.length;
 
@@ -3839,8 +3840,8 @@ export class EnhancedManuscriptDownloaderService {
                     copiedPages.forEach((page) => finalPdfDoc.addPage(page));
                     processedCount++;
 
-                } catch (error: any) {
-                    console.error(`Failed to merge PDF page ${pageNumber}: ${error.message}`);
+                } catch (error: unknown) {
+                    console.error(`Failed to merge PDF page ${pageNumber}: ${(error as Error).message}`);
                     
                     // Create error page
                     const page = finalPdfDoc.addPage([595, 842]);
@@ -3853,7 +3854,7 @@ export class EnhancedManuscriptDownloaderService {
                         color: rgb(0.6, 0.2, 0.2),
                     });
 
-                    page.drawText(`Error: ${error.message}`, {
+                    page.drawText(`Error: ${(error as Error).message}`, {
                         x: 50,
                         y: height - 140,
                         size: 12,
@@ -3883,9 +3884,9 @@ export class EnhancedManuscriptDownloaderService {
                 duration
             );
 
-        } catch (error: any) {
-            console.error(`Failed to merge PDFs: ${error.message}`);
-            throw new Error(`PDF merge failed: ${error.message}`);
+        } catch (error: unknown) {
+            console.error(`Failed to merge PDFs: ${(error as Error).message}`);
+            throw new Error(`PDF merge failed: ${(error as Error).message}`);
         }
     }
 
@@ -4008,7 +4009,7 @@ export class EnhancedManuscriptDownloaderService {
                                     await new Promise(resolve => setTimeout(resolve, 1000));
                                 }
                             }
-                        } catch (error: any) {
+                        } catch (error: unknown) {
                             console.warn(`Failed to fetch page ${pageNum} (${retries} retries left):`, (error as Error).message);
                             retries--;
                             if (retries > 0) {
@@ -4108,13 +4109,13 @@ export class EnhancedManuscriptDownloaderService {
                         }));
                         if (pageData.length > 1) return pageData;
                     }
-                } catch (error: any) {
+                } catch (error: unknown) {
                     console.warn(`e-manuscripta: Deep HTML approach ${i + 1} failed: ${(error as Error).message}`);
                 }
             }
 
             return [];
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.warn(`e-manuscripta: Deep HTML parsing failed: ${(error as Error).message}`);
             return [];
         }
@@ -4148,7 +4149,7 @@ export class EnhancedManuscriptDownloaderService {
                         console.log(`e-manuscripta: URL pattern discovery stopped at page ${i + 1} (no more valid pages)`);
                         break;
                     }
-                } catch (error: any) {
+                } catch (error: unknown) {
                     console.log(`e-manuscripta: URL test failed at page ${i + 1}: ${(error as Error).message}`);
                     break;
                 }
@@ -4180,7 +4181,7 @@ export class EnhancedManuscriptDownloaderService {
                             console.log(`e-manuscripta: Found end of manuscript at page ${i + 1}`);
                             break;
                         }
-                    } catch (error: any) {
+                    } catch (error: unknown) {
                         console.log(`e-manuscripta: Pattern discovery ended at page ${i + 1}: ${(error as Error).message}`);
                         break;
                     }
@@ -4197,7 +4198,7 @@ export class EnhancedManuscriptDownloaderService {
             }
 
             return [];
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.warn(`e-manuscripta: URL pattern discovery failed: ${(error as Error).message}`);
             return [];
         }
@@ -4222,7 +4223,7 @@ export class EnhancedManuscriptDownloaderService {
             }
 
             console.log('e-manuscripta: All sample URLs validated successfully');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(`e-manuscripta: URL validation failed: ${(error as Error).message}`);
             throw error;
         }
@@ -4283,7 +4284,7 @@ export class EnhancedManuscriptDownloaderService {
                     // totalPagesCount += blockManifest.totalPages;
 
                     console.log(`e-manuscripta: Block ${i + 1} contributed ${blockManifest.totalPages} pages`);
-                } catch (error: any) {
+                } catch (error: unknown) {
                     console.warn(`e-manuscripta: Failed to process block ${i + 1}: ${(error as Error).message}`);
                 }
             }
@@ -4302,7 +4303,7 @@ export class EnhancedManuscriptDownloaderService {
                 originalUrl: titleinfoUrl,
             };
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(`e-manuscripta: titleinfo processing failed: ${(error as Error).message}`);
             throw error;
         }
@@ -4388,7 +4389,7 @@ export class EnhancedManuscriptDownloaderService {
                 originalUrl: thumbviewUrl,
             };
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(`e-manuscripta: thumbview processing failed: ${(error as Error).message}`);
             throw error;
         }
@@ -4425,7 +4426,7 @@ export class EnhancedManuscriptDownloaderService {
                 } else {
                     console.log(`e-manuscripta: ✗ Block ${zoomId} - HTTP ${response.status} (skipping)`);
                 }
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.log(`e-manuscripta: ✗ Block ${zoomId} - Error: ${(error as Error).message} (skipping)`);
             }
         }
@@ -4439,7 +4440,7 @@ export class EnhancedManuscriptDownloaderService {
      * Detects incomplete manifests and provides helpful error messages
      */
     private async validateManifestCompleteness(
-        manifestData: any,
+        manifestData: unknown,
         pageLinks: string[],
         originalUrl: string
     ): Promise<void> {
@@ -4481,12 +4482,13 @@ export class EnhancedManuscriptDownloaderService {
     /**
      * Extract physical description from manifest metadata
      */
-    private extractPhysicalDescription(manifestData: any): string {
-        if (!manifestData.metadata || !Array.isArray(manifestData.metadata)) {
+    private extractPhysicalDescription(manifestData: unknown): string {
+        const manifest = manifestData as any;
+        if (!manifest.metadata || !Array.isArray(manifest.metadata)) {
             return '';
         }
 
-        for (const meta of manifestData.metadata) {
+        for (const meta of manifest.metadata) {
             if (meta.label && meta.value) {
                 const labelText = this.getMetadataText(meta.label);
                 const valueText = this.getMetadataText(meta.value);
@@ -4504,12 +4506,13 @@ export class EnhancedManuscriptDownloaderService {
     /**
      * Extract CNMD identifier from manifest metadata
      */
-    private extractCNMDIdentifier(manifestData: any): string {
-        if (!manifestData.metadata || !Array.isArray(manifestData.metadata)) {
+    private extractCNMDIdentifier(manifestData: unknown): string {
+        const manifest = manifestData as any;
+        if (!manifest.metadata || !Array.isArray(manifest.metadata)) {
             return '';
         }
 
-        for (const meta of manifestData.metadata) {
+        for (const meta of manifest.metadata) {
             if (meta.label && meta.value) {
                 const labelText = this.getMetadataText(meta.label);
                 const valueText = this.getMetadataText(meta.value);
@@ -4529,13 +4532,14 @@ export class EnhancedManuscriptDownloaderService {
     /**
      * Extract manuscript title from manifest
      */
-    private extractManuscriptTitle(manifestData: any): string {
-        if (manifestData.label) {
-            return this.getMetadataText(manifestData.label);
+    private extractManuscriptTitle(manifestData: unknown): string {
+        const manifest = manifestData as any;
+        if (manifest.label) {
+            return this.getMetadataText(manifest.label);
         }
 
-        if (manifestData.metadata) {
-            for (const meta of manifestData.metadata) {
+        if (manifest.metadata) {
+            for (const meta of manifest.metadata) {
                 if (meta.label && meta.value) {
                     const labelText = this.getMetadataText(meta.label);
                     if (labelText.toLowerCase().includes('titolo') ||
@@ -4580,7 +4584,7 @@ export class EnhancedManuscriptDownloaderService {
     /**
      * Extract text from IIIF metadata value (handle various formats)
      */
-    private getMetadataText(value: any): string {
+    private getMetadataText(value: unknown): string {
         if (typeof value === 'string') {
             return value;
         }

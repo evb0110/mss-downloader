@@ -19,11 +19,12 @@ const loadSharedManifestLoaders = async () => {
 };
 
 export class SharedManifestAdapter {
-    private sharedLoaders: any;
-    private electronFetch: (url: string, options?: any) => Promise<any>;
+    private sharedLoaders: import('../../shared/SharedManifestLoaders').SharedManifestLoaders | null;
+    private electronFetch: (url: string, options?: RequestInit) => Promise<Response>;
 
-    constructor(electronFetch: (url: string, options?: any) => Promise<any>) {
+    constructor(electronFetch: (url: string, options?: RequestInit) => Promise<Response>) {
         this.electronFetch = electronFetch;
+        this.sharedLoaders = null;
     }
 
     private async initializeSharedLoaders() {
@@ -44,7 +45,7 @@ export class SharedManifestAdapter {
             // Convert shared loader format to Electron format
             // Handle Bordeaux and other tile-based formats that don't have images array
             const manifest: ManuscriptManifest = {
-                pageLinks: result.images ? result.images.map((image: any) => image.url) : [],
+                pageLinks: result.images ? result.images.map((image: { url: string }) => image.url) : [],
                 totalPages: result.images ? result.images.length : (result.pageCount || 0),
                 library: libraryId as any,
                 displayName: result.displayName || `${libraryId} Manuscript`,
@@ -82,7 +83,7 @@ export class SharedManifestAdapter {
             }
 
             return manifest;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(`SharedManifestAdapter error for ${libraryId}:`, error);
             
             // Create a safe, serializable error that won't crash IPC

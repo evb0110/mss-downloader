@@ -21,7 +21,7 @@ export class LoggedFileOperations {
             });
             
             return result;
-        } catch (error: any) {
+        } catch (error: unknown) {
             comprehensiveLogger.logFileOperation('read', filePath, {
                 success: false,
                 error,
@@ -51,7 +51,7 @@ export class LoggedFileOperations {
                 fileSize: stats.size,
                 duration: Date.now() - startTime
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
             comprehensiveLogger.logFileOperation('write', filePath, {
                 success: false,
                 error,
@@ -72,7 +72,7 @@ export class LoggedFileOperations {
             });
             
             return result;
-        } catch (error: any) {
+        } catch (error: unknown) {
             // Don't log EEXIST errors when recursive: true
             if (error.code !== 'EEXIST' || !options?.recursive) {
                 comprehensiveLogger.logFileOperation('create', dirPath, {
@@ -96,7 +96,7 @@ export class LoggedFileOperations {
                 fileSize: stats?.size,
                 duration: Date.now() - startTime
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
             comprehensiveLogger.logFileOperation('delete', filePath, {
                 success: false,
                 error,
@@ -132,7 +132,7 @@ export class LoggedFileOperations {
             });
             
             return files;
-        } catch (error: any) {
+        } catch (error: unknown) {
             comprehensiveLogger.logFileOperation('read', dirPath, {
                 success: false,
                 error,
@@ -163,7 +163,7 @@ export class LoggedFileOperations {
             });
             
             return stats;
-        } catch (error: any) {
+        } catch (error: unknown) {
             comprehensiveLogger.logFileOperation('read', filePath, {
                 success: false,
                 error,
@@ -191,7 +191,7 @@ export class LoggedFileOperations {
                     destination: dest
                 }
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
             comprehensiveLogger.log({
                 level: 'error',
                 category: 'file',
@@ -227,7 +227,7 @@ export class LoggedFileOperations {
                     newPath
                 }
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
             comprehensiveLogger.log({
                 level: 'error',
                 category: 'file',

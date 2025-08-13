@@ -116,7 +116,7 @@ export class DirectTileProcessor {
                 } else {
                     high = mid - 1;
                 }
-            } catch (error) {
+            } catch {
                 high = mid - 1;
             }
         }
@@ -134,7 +134,7 @@ export class DirectTileProcessor {
                 } else {
                     high = mid - 1;
                 }
-            } catch (error) {
+            } catch {
                 high = mid - 1;
             }
         }
@@ -227,7 +227,7 @@ export class DirectTileProcessor {
                         tile.exists = false;
                         return tile;
                     }
-                } catch (error) {
+                } catch {
                     console.warn(`[DirectTile] Failed to download tile ${tile.column}_${tile.row}:`, error.message);
                     tile.exists = false;
                     return tile;
@@ -250,10 +250,10 @@ export class DirectTileProcessor {
         
         try {
             // Try to use Canvas if available
-            let Canvas: any;
+            let Canvas: any; // Type will be assigned from dynamic import
             try {
-                Canvas = await import('canvas' as any);
-            } catch (error) {
+                Canvas = await import('canvas');
+            } catch {
                 throw new Error('Canvas dependency required for tile assembly. Please install canvas package.');
             }
             
@@ -290,7 +290,7 @@ export class DirectTileProcessor {
                     if (processedTiles % 10 === 0) {
                         console.log(`[DirectTile] Stitching progress: ${Math.round((processedTiles / tiles.length) * 100)}%`);
                     }
-                } catch (error) {
+                } catch {
                     console.error(`[DirectTile] Error processing tile ${tile.column}_${tile.row}:`, error.message);
                 }
             }
@@ -350,7 +350,7 @@ export class DirectTileProcessor {
             try {
                 const image = await this.processTiledImage(pageInfos[i].baseUrl, pageInfos[i].tileInfo);
                 images.push(image);
-            } catch (error) {
+            } catch {
                 console.error(`[DirectTile] Failed to process page ${i + 1}:`, error.message);
                 throw error;
             }
@@ -421,9 +421,9 @@ export class DirectTileProcessor {
             console.log(`[DirectTile] Successfully saved page ${pageNum} to ${outputPath}`);
             return { success: true };
             
-        } catch (error: any) {
-            console.error(`[DirectTile] Error processing page ${pageNum}:`, error.message);
-            return { success: false, error: error.message };
+        } catch (error: unknown) {
+            console.error(`[DirectTile] Error processing page ${pageNum}:`, error instanceof Error ? error.message : String(error));
+            return { success: false, error: error instanceof Error ? error.message : String(error) };
         }
     }
 }

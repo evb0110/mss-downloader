@@ -45,7 +45,7 @@ export interface LogContext {
     downloadTime?: number;
     
     // Additional details
-    details?: any;
+    details?: Record<string, unknown>;
 }
 
 export interface LogRotationConfig {
@@ -73,7 +73,7 @@ export class ComprehensiveLogger {
     private readonly MAX_MEMORY_LOGS = 5000; // Keep last 5k logs in memory
     
     // System info captured once per session
-    private systemInfo: any;
+    private systemInfo: Record<string, unknown>;
     
     private constructor() {
         this.initializeLogger();
@@ -286,7 +286,7 @@ export class ComprehensiveLogger {
         });
     }
     
-    logNetworkError(url: string, error: any, context: {
+    logNetworkError(url: string, error: unknown, context: {
         library?: string;
         attemptNumber?: number;
         duration?: number;
@@ -349,11 +349,11 @@ export class ComprehensiveLogger {
             diskSpace,
             errorMessage: result.error?.message,
             errorStack: result.error?.stack,
-            errorCode: (result.error as any)?.code,
+            errorCode: result.error && typeof result.error === 'object' && 'code' in result.error ? (result.error as {code: unknown}).code : undefined,
             details: {
                 message: `File ${operation} ${result.success ? 'succeeded' : 'failed'}`,
                 operation,
-                permissions: (result.error as any)?.code === 'EACCES' ? 'Permission denied' : undefined
+                permissions: result.error && typeof result.error === 'object' && 'code' in result.error && (result.error as {code: unknown}).code === 'EACCES' ? 'Permission denied' : undefined
             }
         });
     }
@@ -381,7 +381,7 @@ export class ComprehensiveLogger {
         });
     }
     
-    logWorkerError(workerType: string, error: Error, context?: any) {
+    logWorkerError(workerType: string, error: Error, context?: Record<string, unknown>) {
         this.log({
             level: 'error',
             category: 'worker',
@@ -395,7 +395,7 @@ export class ComprehensiveLogger {
         });
     }
     
-    logUnhandledRejection(reason: any, promise: Promise<any>) {
+    logUnhandledRejection(reason: unknown, promise: Promise<unknown>) {
         this.log({
             level: 'fatal',
             category: 'system',
@@ -426,7 +426,7 @@ export class ComprehensiveLogger {
     
     // Helper methods
     
-    private getAvailableDiskSpace(_filePath: string): number | undefined {
+    private getAvailableDiskSpace(_UNUSED_filePath: string): number | undefined {
         try {
             // Note: statfs is not available in standard Node.js fs module
             // This is a placeholder - actual disk space checking would require
@@ -488,7 +488,7 @@ export class ComprehensiveLogger {
         }
     }
     
-    private formatReadableLogs(data: any): string {
+    private formatReadableLogs(data: unknown): string {
         let output = '=== MSS DOWNLOADER LOG EXPORT ===\n\n';
         
         output += 'SESSION INFORMATION:\n';
@@ -555,7 +555,7 @@ export class ComprehensiveLogger {
     }
     
     // Enhanced logging for e-manuscripta debugging
-    logEManuscriptaDiscovery(phase: string, data: any) {
+    logEManuscriptaDiscovery(phase: string, data: unknown) {
         this.log({
             level: 'debug',
             category: 'manifest',

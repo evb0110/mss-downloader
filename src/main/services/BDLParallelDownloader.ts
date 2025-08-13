@@ -185,13 +185,13 @@ export class BDLParallelDownloader extends EventEmitter {
                 return null;
             }
             
-        } catch (error: any) {
+        } catch (error: unknown) {
             clearTimeout(timeoutId);
             
-            if (error.name === 'AbortError') {
+            if (error instanceof Error && error.name === 'AbortError') {
                 console.error(`[BDL Parallel] Timeout for page ${pageIndex + 1} after ${timeout}ms`);
             } else {
-                console.error(`[BDL Parallel] Error downloading page ${pageIndex + 1}: ${error.message}`);
+                console.error(`[BDL Parallel] Error downloading page ${pageIndex + 1}: ${error instanceof Error ? error.message : String(error)}`);
             }
             
             return null;

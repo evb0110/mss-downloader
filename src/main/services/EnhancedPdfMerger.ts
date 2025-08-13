@@ -4,7 +4,7 @@ export class EnhancedPdfMerger {
     constructor() {
     }
 
-    async createPDF(imageBuffers: Buffer[], options: any = {}): Promise<Uint8Array> {
+    async createPDF(imageBuffers: Buffer[], options: { title?: string; onProgress?: (current: number, total: number) => void } = {}): Promise<Uint8Array> {
         const { title = 'Manuscript', onProgress } = options;
         
         const pdfDoc = await PDFDocument.create();
@@ -26,8 +26,8 @@ export class EnhancedPdfMerger {
             
             try {
                 await this.addImageToPDF(pdfDoc, imageBuffers[i], i + 1);
-            } catch (error: any) {
-                console.error(`Failed to add page ${i + 1} to PDF: ${error.message}`);
+            } catch (error: unknown) {
+                console.error(`Failed to add page ${i + 1} to PDF: ${(error as Error).message}`);
                 // Continue with other pages
             }
         }
@@ -47,7 +47,7 @@ export class EnhancedPdfMerger {
                 try {
                     // Fallback to PNG
                     image = await pdfDoc.embedPng(imageBuffer);
-                } catch (embedError: any) {
+                } catch (embedError: unknown) {
                     throw new Error(`Failed to embed image: ${embedError.message}`);
                 }
             }
@@ -65,8 +65,8 @@ export class EnhancedPdfMerger {
                 height: imageDims.height,
             });
             
-        } catch (error: any) {
-            console.error(`Error processing page ${pageNumber}:`, error.message);
+        } catch (error: unknown) {
+            console.error(`Error processing page ${pageNumber}:`, (error as Error).message);
             
             // Fallback: create a blank page with error message
             const page = pdfDoc.addPage();
@@ -79,7 +79,7 @@ export class EnhancedPdfMerger {
                 color: rgb(1, 0, 0),
             });
             
-            page.drawText(error.message, {
+            page.drawText((error as Error).message, {
                 x: 50,
                 y: height - 80,
                 size: 10,
@@ -89,7 +89,7 @@ export class EnhancedPdfMerger {
     }
 
     // Memory-efficient processing for large documents
-    async createPDFChunked(imageBuffers: Buffer[], options: any = {}): Promise<Uint8Array> {
+    async createPDFChunked(imageBuffers: Buffer[], options: { title?: string; onProgress?: (progress: number) => void; library?: string; totalPages?: number; chunkSize?: number } = {}): Promise<Uint8Array> {
         const { title = 'Manuscript', onProgress, library, totalPages: expectedTotalPages } = options;
         let { chunkSize = 50 } = options;
         
@@ -163,7 +163,7 @@ export class EnhancedPdfMerger {
         options: {
             maxPagesPerPart?: number;
             startPage?: number;
-            onProgress?: (progress: any) => void;
+            onProgress?: (progress: { completed: number; total: number; message?: string }) => void;
         } = {}
     ): Promise<{
         success: boolean;
@@ -197,7 +197,7 @@ export class EnhancedPdfMerger {
             try {
                 const pdfBytes = await this.createPDF(partImages, {
                     title: `${baseName} - Part ${partNumber}`,
-                    onProgress: (progress: any) => {
+                    onProgress: (progress: { pageNumber: number }) => {
                         const overallProgress = {
                             currentPart: partNumber,
                             totalParts,

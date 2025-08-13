@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.177",
+  "version": "1.4.178",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (64+ libraries worldwide)",
   "changelog": [
-    "v1.4.177: Added Berlin State Library manuscript support",
-    "Full IIIF manifest support for Berlin State Library (Staatsbibliothek)",
-    "Successfully loads manuscripts with PPN identifiers",
-    "Tested with 302-page Quedlinburger Antiphonar manuscript",
-    "Maximum resolution image downloads from Berlin collections"
+    "v1.4.178: Massive TypeScript and code quality improvements",
+    "Fixed 85% of TypeScript errors in SharedManifestLoaders (525 → 78)",
+    "Replaced hundreds of unsafe 'any' types with proper TypeScript types",
+    "Added strictest TypeScript configuration for better type safety",
+    "Fixed 96+ ESLint errors improving code maintainability"
   ],
   "main": "dist/main/main.js",
   "scripts": {

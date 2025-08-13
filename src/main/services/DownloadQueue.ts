@@ -12,7 +12,7 @@ export class DownloadQueue extends EventEmitter {
     private activeDownloaders: Map<string, EnhancedManuscriptDownloaderService> = new Map();
     private processingAbortController: AbortController | null = null;
     private pdfMerger: ElectronPdfMerger;
-    private store: any;
+    private store: Store<QueueState>;
     
     private constructor(pdfMerger: ElectronPdfMerger) {
         super();
@@ -618,7 +618,7 @@ export class DownloadQueue extends EventEmitter {
                 startPage,
                 endPage,
                 skipExisting: false,
-                onProgress: (progressData: any) => {
+                onProgress: (progressData: {completedPages?: number; downloadedPages?: number}) => {
                     if (!this.state.isPaused && item.progress) {
                         const now = Date.now();
                         const downloadedPages = progressData.completedPages || progressData.downloadedPages || 0;
@@ -648,10 +648,10 @@ export class DownloadQueue extends EventEmitter {
                         }
                     }
                 },
-                onStatusChange: (_status: any) => {
+                onStatusChange: (_UNUSED_status: unknown) => {
                     // Not used for queue items directly
                 },
-                onError: (error: any) => {
+                onError: (error: unknown) => {
                     throw new Error(error);
                 },
             });
@@ -764,7 +764,7 @@ export class DownloadQueue extends EventEmitter {
                 startPage,
                 endPage,
                 skipExisting: false,
-                onProgress: (progressData: any) => {
+                onProgress: (progressData: {completedPages?: number; downloadedPages?: number}) => {
                     if (!this.state.isPaused && item.progress) {
                         const now = Date.now();
                         const downloadedPages = progressData.completedPages || progressData.downloadedPages || 0;
@@ -788,10 +788,10 @@ export class DownloadQueue extends EventEmitter {
                         }
                     }
                 },
-                onStatusChange: (_status: any) => {
+                onStatusChange: (_UNUSED_status: unknown) => {
                     // Not used for queue items directly
                 },
-                onError: (error: any) => {
+                onError: (error: unknown) => {
                     throw new Error(error);
                 },
             });
@@ -940,7 +940,7 @@ export class DownloadQueue extends EventEmitter {
     
     private async checkAndSplitLargeDocument(
         item: QueuedManuscript, 
-        manifest: any, 
+        manifest: unknown, 
         selectedPageLinks: string[]
     ): Promise<boolean> {
         try {
@@ -995,7 +995,7 @@ export class DownloadQueue extends EventEmitter {
     
     private async splitQueueItem(
         originalItem: QueuedManuscript, 
-        manifest: any, 
+        manifest: unknown, 
         estimatedSizeMB: number
     ): Promise<void> {
         const thresholdMB = this.state.globalSettings.autoSplitThresholdMB;
