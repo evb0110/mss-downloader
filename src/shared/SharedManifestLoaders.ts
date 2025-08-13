@@ -2362,6 +2362,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 return await this.getNorwegianManifest(url);
             case 'heidelberg':
                 return await this.getHeidelbergManifest(url);
+            case 'berlin':
+                return await this.getBerlinManifest(url);
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }
@@ -4897,6 +4899,119 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         throw new Error('IRHT manifest loading not yet implemented');
     }
 
+    /**
+     * Berlin State Library - IIIF manifest
+     */
+    async getBerlinManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
+        console.log('[Berlin] Processing URL:', url);
+        
+        try {
+            // Extract PPN from URL
+            // Expected formats:
+            // https://digital.staatsbibliothek-berlin.de/werkansicht?PPN=PPN782404456&view=picture-download&PHYSID=PHYS_0005&DMDID=DMDLOG_0001
+            // https://digital.staatsbibliothek-berlin.de/werkansicht/?PPN=PPN782404677
+            const ppnMatch = url.match(/[?&]PPN=(PPN\d+)/);
+            if (!ppnMatch) {
+                throw new Error('Could not extract PPN from Berlin State Library URL');
+            }
+            
+            const fullPpn = ppnMatch[1]; // e.g., "PPN782404456"
+            
+            // Fetch IIIF manifest
+            const manifestUrl = `https://content.staatsbibliothek-berlin.de/dc/${fullPpn}/manifest`;
+            console.log('[Berlin] Fetching IIIF manifest from:', manifestUrl);
+            
+            const manifestResponse = await this.fetchWithRetry(manifestUrl, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (!manifestResponse.ok) {
+                throw new Error(`Failed to fetch Berlin manifest: HTTP ${manifestResponse.status}`);
+            }
+            
+            const manifest: IIIFManifest = await manifestResponse.json();
+            const images: ManuscriptImage[] = [];
+            
+            // Process IIIF v2 manifest
+            if (manifest.sequences?.[0]?.canvases) {
+                const canvases = manifest.sequences[0].canvases;
+                console.log(`[Berlin] Processing ${canvases.length} pages from IIIF manifest`);
+                
+                for (let i = 0; i < canvases.length; i++) {
+                    const canvas = canvases[i];
+                    if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                        const resource = canvas.images[0].resource;
+                        const service = resource.service;
+                        
+                        if (service) {
+                            const serviceObj = Array.isArray(service) ? service[0] : service;
+                            const serviceId = serviceObj['@id'] || serviceObj.id;
+                            
+                            if (serviceId) {
+                                // Request maximum resolution available
+                                const imageUrl = `${serviceId}/full/max/0/default.jpg`;
+                                images.push({
+                                    url: imageUrl,
+                                    label: this.localizedStringToString(canvas.label, `Page ${i + 1}`)
+                                });
+                            }
+                        } else if (resource['@id']) {
+                            // Fallback to direct resource URL
+                            images.push({
+                                url: resource['@id'],
+                                label: this.localizedStringToString(canvas.label, `Page ${i + 1}`)
+                            });
+                        }
+                    }
+                }
+            }
+            // Handle IIIF v3 if needed
+            else if ((manifest as any).items) {
+                const items = (manifest as any).items;
+                console.log(`[Berlin] Processing ${items.length} pages from IIIF v3 manifest`);
+                
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    if (item.items?.[0]?.items?.[0]?.body) {
+                        const body = item.items[0].items[0].body;
+                        const service = Array.isArray(body.service) ? body.service[0] : body.service;
+                        
+                        if (service?.id) {
+                            // Request maximum resolution available
+                            const imageUrl = `${service.id}/full/max/0/default.jpg`;
+                            images.push({
+                                url: imageUrl,
+                                label: this.localizedStringToString(item.label, `Page ${i + 1}`)
+                            });
+                        } else if (body.id) {
+                            // Fallback to direct body URL
+                            images.push({
+                                url: body.id,
+                                label: this.localizedStringToString(item.label, `Page ${i + 1}`)
+                            });
+                        }
+                    }
+                }
+            }
+            
+            if (images.length === 0) {
+                throw new Error('No images found in Berlin manifest');
+            }
+            
+            // Extract display name from manifest
+            const displayName = this.localizedStringToString(manifest.label, `Berlin State Library - ${fullPpn}`);
+            
+            console.log(`[Berlin] Successfully processed ${images.length} pages`);
+            return { images, displayName };
+            
+        } catch (error: any) {
+            console.error('[Berlin] Failed to load manifest:', error.message);
+            throw new Error(`Failed to load Berlin manifest: ${error.message}`);
+        }
+    }
+
     async loadDijonManifest(url: string): Promise<ManuscriptImage[]> {
         throw new Error('Dijon manifest loading not yet implemented');
     }
@@ -4966,7 +5081,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     }
 
     async loadBerlinManifest(url: string): Promise<ManuscriptImage[]> {
-        throw new Error('Berlin manifest loading not yet implemented');
+        const result = await this.getBerlinManifest(url);
+        return Array.isArray(result) ? result : result.images;
     }
 
     async loadCzechManifest(url: string): Promise<ManuscriptImage[]> {

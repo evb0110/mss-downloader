@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.176",
+  "version": "1.4.177",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (64+ libraries worldwide)",
   "changelog": [
-    "v1.4.176: Eliminated all esbuild bundler warnings - cleaner, safer build",
-    "Replaced eval() with dynamic imports for better security and performance",
-    "Zero 'direct-eval' warnings during build process",
-    "Improved bundler optimization - esbuild can now properly analyze and optimize code",
-    "Maintains full backward compatibility with fallback mechanisms"
+    "v1.4.177: Added Berlin State Library manuscript support",
+    "Full IIIF manifest support for Berlin State Library (Staatsbibliothek)",
+    "Successfully loads manuscripts with PPN identifiers",
+    "Tested with 302-page Quedlinburger Antiphonar manuscript",
+    "Maximum resolution image downloads from Berlin collections"
   ],
   "main": "dist/main/main.js",
   "scripts": {
