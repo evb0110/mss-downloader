@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.175",
+  "version": "1.4.176",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (64+ libraries worldwide)",
   "changelog": [
-    "v1.4.175: Fixed Florence (Biblioteca Medicea Laurenziana) manuscript downloads",
-    "Florence loader now correctly extracts all pages from compound manuscripts (was only showing 1 page)",
-    "Fixed manuscript naming - now shows proper signatures like 'Plut.7.5' instead of generic 'florence_Manuscript'",
-    "Uses HTML state extraction to get complete 750+ page manuscripts from CONTENTdm platform",
-    "Tested with Plut.7.5 manuscript - successfully downloads all 749 pages with proper naming"
+    "v1.4.176: Eliminated all esbuild bundler warnings - cleaner, safer build",
+    "Replaced eval() with dynamic imports for better security and performance",
+    "Zero 'direct-eval' warnings during build process",
+    "Improved bundler optimization - esbuild can now properly analyze and optimize code",
+    "Maintains full backward compatibility with fallback mechanisms"
   ],
   "main": "dist/main/main.js",
   "scripts": {

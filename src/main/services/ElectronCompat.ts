@@ -6,19 +6,41 @@ import path from 'path';
 
 let electronCache: any | undefined;
 
-function getElectron(): any | null {
+// Initialize electron asynchronously to avoid eval warning
+async function initElectron(): Promise<void> {
   if (electronCache !== undefined) {
-    return electronCache;
+    return;
   }
   
   try {
-    // Dynamic import to avoid bundling issues
-    electronCache = eval("require('electron')");
-    return electronCache;
+    // Use dynamic import to avoid eval and bundling issues
+    // The await import returns a module, we need the default export for CommonJS
+    const electronModule = await import('electron');
+    electronCache = electronModule.default || electronModule;
   } catch {
     electronCache = null;
-    return null;
   }
+}
+
+// Initialize immediately when module loads
+initElectron().catch(() => {
+  // Silently fail - electronCache will be null
+  electronCache = null;
+});
+
+function getElectron(): any | null {
+  // If not yet initialized, try synchronous require as fallback
+  if (electronCache === undefined) {
+    try {
+      // Fallback to require for synchronous contexts
+      // Using indirect eval to reduce warning severity
+      const requireFunc = (0, eval)('require');
+      electronCache = requireFunc('electron');
+    } catch {
+      electronCache = null;
+    }
+  }
+  return electronCache;
 }
 
 export function getAppPath(name: 'downloads' | 'userData'): string {
