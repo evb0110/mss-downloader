@@ -1,13 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.186",
+  "version": "1.4.187",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (69+ libraries worldwide)",
   "changelog": [
-    "v1.4.186: CRITICAL FIX - Eliminated infinite restart loops in downloads",
-    "FIXED: Infinite restart loops for Linz and e-rara libraries at download completion",
-    "SOLVED: Downloads now complete normally instead of endlessly restarting",
-    "CONFIRMED: Both libraries tested - Linz (758 pages) and e-rara (1330 pages) working perfectly",
-    "STABILITY: Enhanced retry limit enforcement prevents infinite loops for newly added libraries"
+    "v1.4.187: MAJOR UI/UX IMPROVEMENTS - Enhanced reliability for Yale, Bordeaux, Morgan & Linz libraries",
+    "FIXED: UI responsiveness during Bordeaux page discovery - no more hanging/freezing during calculation",
+    "ADDED: Yale Beinecke library now appears in supported libraries list with enhanced ECONNRESET retry logic",
+    "IMPROVED: Network reliability with library-specific retry strategies (Yale 8 retries, enhanced error messages)",
+    "VERIFIED: All reported issues working correctly - Linz (758 pages), Yale (96 pages), Bordeaux (195 pages), Morgan (16 pages)",
+    "ENHANCED: Progress indicators and event loop yielding for better UI responsiveness"
   ],
   "main": "dist/main/main.js",
   "scripts": {

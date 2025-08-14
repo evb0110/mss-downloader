@@ -779,6 +779,11 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://digi.landesbibliothek.at/viewer/image/116/',
             description: 'Upper Austrian State Library (Linz) digital manuscripts via IIIF v2, featuring 500+ historical manuscripts from medieval to modern periods',
         },
+        {
+            name: 'Yale Beinecke Rare Book Library',
+            example: 'https://collections.library.yale.edu/catalog/33242982',
+            description: 'Yale Beinecke Rare Book & Manuscript Library digital collections via IIIF v3, featuring medieval manuscripts, archives, and rare books',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {

@@ -87,9 +87,14 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             }
         }
         
-        // Increase retries for Verona domains  
+        // Increase retries for problematic domains  
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
             retries = 15; // Increased from 9 to 15 for maximum reliability against server issues
+        }
+        
+        // Increase retries for Yale due to frequent ECONNRESET errors
+        if (url.includes('collections.library.yale.edu')) {
+            retries = 8; // Yale-specific retry count for connection resets
         }
         
         for (let i = 0; i < retries; i++) {
@@ -126,10 +131,21 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                         }
                     }
                     
+                    if (errorCode === 'ECONNRESET') {
+                        // Enhanced ECONNRESET error messages by library
+                        const sanitizedUrl = this.sanitizeUrl(url);
+                        const domain = new URL(sanitizedUrl).hostname;
+                        if (url.includes('collections.library.yale.edu')) {
+                            throw new Error(`Yale library connection reset after ${retries} attempts. This is a common issue with Yale's server. The manuscript data loads correctly - try refreshing the application or waiting a few minutes before retrying.`);
+                        } else {
+                            throw new Error(`Connection to ${domain} was reset by the server after ${retries} attempts. This may indicate server maintenance or high load. Please try again in a few minutes.`);
+                        }
+                    }
+                    
                     throw error;
                 }
                 
-                // Exponential backoff with jitter for Verona, progressive for others
+                // Exponential backoff with jitter for Verona, progressive for others, moderate for Yale
                 let delay: number;
                 if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
                     // Exponential backoff: 3s, 6s, 12s, 24s, 48s, 96s, 192s, 384s, 768s
@@ -138,6 +154,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                     // Add jitter to prevent thundering herd
                     const jitter = Math.random() * 1000;
                     delay = Math.min(exponentialDelay + jitter, 300000); // Cap at 5 minutes
+                } else if (url.includes('collections.library.yale.edu')) {
+                    // Yale-specific: longer initial delays for ECONNRESET recovery
+                    delay = 4000 * (i + 1) + (Math.random() * 2000); // 4s, 8s, 12s, 16s, 20s, 24s, 28s, 32s
                 } else {
                     delay = 2000 * (i + 1);
                 }
@@ -3520,8 +3539,12 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         // Process pages in batches for faster discovery
         const batchSize = 10;
+        const totalBatches = Math.ceil((detailedEnd - detailedStart + 1) / batchSize);
+        let currentBatch = 0;
+        
         for (let batchStart = detailedStart; batchStart <= detailedEnd; batchStart += batchSize) {
             const batchEnd = Math.min(batchStart + batchSize - 1, detailedEnd);
+            currentBatch++;
             
             // Create promises for batch
             const batchPromises = [];
@@ -3544,11 +3567,17 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 }
             }
             
-            // Progress indication
-            console.log(`[Bordeaux] Scanned up to page ${batchEnd}... (${availablePages?.length} found)`);
+            // Progress indication - more detailed for UI responsiveness
+            const progressPercent = Math.round((currentBatch / totalBatches) * 100);
+            console.log(`[Bordeaux] Page discovery progress: ${progressPercent}% (batch ${currentBatch}/${totalBatches}, ${availablePages?.length} pages found)`);
             
-            // Small delay between batches to be respectful to the server
-            await new Promise(resolve => setTimeout(resolve, 50));
+            // Yield control back to event loop more frequently to keep UI responsive
+            if (currentBatch % 3 === 0) {  // Every 3 batches (30 pages)
+                await new Promise(resolve => setImmediate(resolve));
+            }
+            
+            // Smaller delay between batches for better performance
+            await new Promise(resolve => setTimeout(resolve, 25));
         }
         
         // Sort pages in case they came back out of order
