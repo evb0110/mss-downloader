@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.184",
-  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (67+ libraries worldwide)",
+  "version": "1.4.185",
+  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (69+ libraries worldwide)",
   "changelog": [
-    "v1.4.184: Achieved 100% TypeScript compliance - ZERO errors",
-    "Fixed ALL 457 TypeScript errors completely",
-    "Removed 1,293 lines of unused code",
-    "Aligned ESLint with Vue Language Service",
-    "Enhanced type safety across all services"
+    "v1.4.185: Major library expansion - Added 2 new libraries + fixed critical issues",
+    "NEW: Yale Beinecke Rare Book Library support (96+ manuscripts)",
+    "NEW: e-rara Swiss National Library support (1330+ manuscripts)",
+    "FIXED: Bordeaux page discovery now shows 195 pages instead of 0",
+    "FIXED: Linz library routing issues - fully working again"
   ],
   "main": "dist/main/main.js",
   "scripts": {

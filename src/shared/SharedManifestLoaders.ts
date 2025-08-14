@@ -2460,6 +2460,10 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 return await this.getHeidelbergManifest(url);
             case 'berlin':
                 return await this.getBerlinManifest(url);
+            case 'yale':
+                return await this.getYaleManifest(url);
+            case 'e_rara':
+                return await this.getEraraManifest(url);
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }
@@ -3464,7 +3468,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Discover the actual page range for a Bordeaux manuscript by testing tile availability
      */
-    async discoverBordeauxPageRange(baseId: number): Promise<{ firstPage: number | null; lastPage: number | null; totalPages: number; availablePages: number[] }> {
+    async discoverBordeauxPageRange(baseId: string | number): Promise<{ firstPage: number | null; lastPage: number | null; totalPages: number; availablePages: number[] }> {
         console.log(`[Bordeaux] Discovering page range for baseId: ${baseId}`);
         
         const baseUrl = 'https://selene.bordeaux.fr/in/dz';
@@ -3679,7 +3683,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         // For Bordeaux, discover the actual page range by testing availability
         console.log('[Bordeaux] Discovering actual page range...');
-        const pageDiscovery = await this.discoverBordeauxPageRange(parseInt(baseId!, 10));
+        const pageDiscovery = await this.discoverBordeauxPageRange(baseId!);
         
         let startPage = (typeof pageNum === 'number' ? pageNum : parseInt(pageNum || '0', 10)) || pageDiscovery.firstPage || 1;
         const pageCount = pageDiscovery?.totalPages;

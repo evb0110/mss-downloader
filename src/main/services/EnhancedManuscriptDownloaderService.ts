@@ -923,7 +923,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('nb.no')) return 'norwegian';
         if (url.includes('e-codices.unifr.ch') || url.includes('e-codices.ch')) return 'unifr';
         if (url.includes('e-manuscripta.ch')) return 'e_manuscripta';
-        if (url.includes('e-rara.ch')) return 'erara';
+        if (url.includes('e-rara.ch')) return 'e_rara';
         if (url.includes('collections.library.yale.edu')) return 'yale';
         if (url.includes('digi.vatlib.it')) return 'vatlib';
         if (url.includes('cecilia.mediatheques.grand-albigeois.fr')) return 'cecilia';
@@ -2026,6 +2026,15 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'generic_iiif':
                     manifest = await this.useLoaderOrFallback('generic_iiif', originalUrl, this.loadIIIFManifest);
+                    break;
+                case 'linz':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('linz', originalUrl);
+                    break;
+                case 'yale':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('yale', originalUrl);
+                    break;
+                case 'e_rara':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('e_rara', originalUrl);
                     break;
 
                 default:
