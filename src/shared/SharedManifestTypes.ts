@@ -174,7 +174,8 @@ export type LibraryIdentifier =
   | 'omnes_vallicelliana' | 'verona' | 'diamm' | 'bne' | 'mdc_catalonia' 
   | 'bvpb' | 'onb' | 'rouen' | 'freiburg' | 'sharedcanvas' 
   | 'saint_omer' | 'ugent' | 'bl' | 'wolfenbuettel' | 'florence' 
-  | 'hhu' | 'vatican' | 'belgica_kbr' | 'bordeaux';
+  | 'hhu' | 'vatican' | 'belgica_kbr' | 'bordeaux'
+  | 'linz' | 'e_rara' | 'yale';
 
 /**
  * Fetch options for HTTP requests

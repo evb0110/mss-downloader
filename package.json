@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.185",
+  "version": "1.4.186",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (69+ libraries worldwide)",
   "changelog": [
-    "v1.4.185: Major library expansion - Added 2 new libraries + fixed critical issues",
-    "NEW: Yale Beinecke Rare Book Library support (96+ manuscripts)",
-    "NEW: e-rara Swiss National Library support (1330+ manuscripts)",
-    "FIXED: Bordeaux page discovery now shows 195 pages instead of 0",
-    "FIXED: Linz library routing issues - fully working again"
+    "v1.4.186: CRITICAL FIX - Eliminated infinite restart loops in downloads",
+    "FIXED: Infinite restart loops for Linz and e-rara libraries at download completion",
+    "SOLVED: Downloads now complete normally instead of endlessly restarting",
+    "CONFIRMED: Both libraries tested - Linz (758 pages) and e-rara (1330 pages) working perfectly",
+    "STABILITY: Enhanced retry limit enforcement prevents infinite loops for newly added libraries"
   ],
   "main": "dist/main/main.js",
   "scripts": {

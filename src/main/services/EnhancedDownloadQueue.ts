@@ -945,6 +945,15 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     }
                 }
                 
+                // CRITICAL FIX for Issue #29: Prevent infinite restart loops for Linz and e-rara
+                if ((item.library === 'linz' || item.library === 'e_rara')) {
+                    const maxRetries = 3; // Standard retry limit for newly implemented libraries
+                    if (item.retryCount >= maxRetries) {
+                        item.error = `${error instanceof Error ? error.message : String(error)} (Max ${maxRetries} retries exceeded to prevent infinite loops)`;
+                        console.error(`${item.library} library retry limit reached: ${item.displayName}`);
+                    }
+                }
+                
                 // Perform error isolation and cache cleanup to prevent corruption spread
                 await this.handleDownloadError(item, error);
             }
@@ -2073,6 +2082,15 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     if (item.retryCount >= maxRetries) {
                         item.error = `${error instanceof Error ? error.message : String(error)} (Large manuscript - max ${maxRetries} retries exceeded to prevent infinite loops)`;
                         console.error(`Large manuscripta.se manuscript retry limit reached: ${item.displayName}`);
+                    }
+                }
+                
+                // CRITICAL FIX for Issue #29: Prevent infinite restart loops for Linz and e-rara
+                if ((item.library === 'linz' || item.library === 'e_rara')) {
+                    const maxRetries = 3; // Standard retry limit for newly implemented libraries
+                    if (item.retryCount >= maxRetries) {
+                        item.error = `${error instanceof Error ? error.message : String(error)} (Max ${maxRetries} retries exceeded to prevent infinite loops)`;
+                        console.error(`${item.library} library retry limit reached: ${item.displayName}`);
                     }
                 }
                 

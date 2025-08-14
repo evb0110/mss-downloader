@@ -258,6 +258,8 @@ export class LibraryOptimizationService {
         },
         'bordeaux': {},
         'linz': {},
+        'e_rara': {},
+        'yale': {},
         'loading': {}
     };
 
