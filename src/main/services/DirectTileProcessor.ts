@@ -199,11 +199,11 @@ export class DirectTileProcessor {
         const batchSize = 5;
         const downloadedTiles: Tile[] = [];
         
-        console.log(`[DirectTile] Downloading up to ${tiles.length} tiles...`);
+        console.log(`[DirectTile] Downloading up to ${tiles?.length} tiles...`);
         
         let validTiles = 0;
-        for (let i = 0; i < tiles.length; i += batchSize) {
-            const batch = tiles.slice(i, Math.min(i + batchSize, tiles.length));
+        for (let i = 0; i < tiles?.length; i += batchSize) {
+            const batch = tiles.slice(i, Math.min(i + batchSize, tiles?.length));
             
             const promises = batch.map(async (tile) => {
                 try {
@@ -219,7 +219,7 @@ export class DirectTileProcessor {
                         
                         // Report progress if callback provided
                         if (onProgress) {
-                            onProgress(validTiles, tiles.length);
+                            onProgress(validTiles, tiles?.length);
                         }
                         
                         return tile;
@@ -227,8 +227,8 @@ export class DirectTileProcessor {
                         tile.exists = false;
                         return tile;
                     }
-                } catch {
-                    console.warn(`[DirectTile] Failed to download tile ${tile.column}_${tile.row}:`, error.message);
+                } catch (error: any) {
+                    console.warn(`[DirectTile] Failed to download tile ${tile.column}_${tile.row}:`, error instanceof Error ? error.message : String(error));
                     tile.exists = false;
                     return tile;
                 }
@@ -246,7 +246,7 @@ export class DirectTileProcessor {
      * Stitch tiles into a full image
      */
     private async stitchTiles(tiles: Tile[], tileInfo: TileInfo): Promise<Buffer> {
-        console.log(`[DirectTile] Stitching ${tiles.length} tiles...`);
+        console.log(`[DirectTile] Stitching ${tiles?.length} tiles...`);
         
         try {
             // Try to use Canvas if available
@@ -288,10 +288,10 @@ export class DirectTileProcessor {
                     
                     processedTiles++;
                     if (processedTiles % 10 === 0) {
-                        console.log(`[DirectTile] Stitching progress: ${Math.round((processedTiles / tiles.length) * 100)}%`);
+                        console.log(`[DirectTile] Stitching progress: ${Math.round((processedTiles / tiles?.length) * 100)}%`);
                     }
-                } catch {
-                    console.error(`[DirectTile] Error processing tile ${tile.column}_${tile.row}:`, error.message);
+                } catch (error: any) {
+                    console.error(`[DirectTile] Error processing tile ${tile.column}_${tile.row}:`, error instanceof Error ? error.message : String(error));
                 }
             }
             
@@ -299,13 +299,15 @@ export class DirectTileProcessor {
             
             // Convert to JPEG buffer
             const jpegBuffer = await new Promise<Buffer>((resolve, reject) => {
-                canvas.toBuffer('image/jpeg', { quality: 0.95 }, (err: Error | null, buffer: Buffer) => {
-                    if (err) reject(err);
-                    else resolve(buffer);
-                });
+                try {
+                    const buffer = canvas.toBuffer();
+                    resolve(buffer);
+                } catch (err) {
+                    reject(err);
+                }
             });
             
-            console.log(`[DirectTile] Final image size: ${(jpegBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+            console.log(`[DirectTile] Final image size: ${(jpegBuffer?.length / 1024 / 1024).toFixed(2)} MB`);
             return jpegBuffer;
             
         } catch (error) {
@@ -329,7 +331,7 @@ export class DirectTileProcessor {
         // Download tiles
         const downloadedTiles = await this.downloadTiles(tiles, onProgress);
         
-        if (downloadedTiles.length === 0) {
+        if (downloadedTiles?.length === 0) {
             throw new Error('No valid tiles found');
         }
         
@@ -345,13 +347,13 @@ export class DirectTileProcessor {
     async processTiledPages(pageInfos: Array<{ baseUrl: string; tileInfo?: TileInfo }>): Promise<Buffer[]> {
         const images: Buffer[] = [];
         
-        for (let i = 0; i < pageInfos.length; i++) {
-            console.log(`[DirectTile] Processing page ${i + 1}/${pageInfos.length}`);
+        for (let i = 0; i < pageInfos?.length; i++) {
+            console.log(`[DirectTile] Processing page ${i + 1}/${pageInfos?.length}`);
             try {
-                const image = await this.processTiledImage(pageInfos[i].baseUrl, pageInfos[i].tileInfo);
+                const image = await this.processTiledImage(pageInfos[i]?.baseUrl || '', pageInfos[i]?.tileInfo);
                 images.push(image);
-            } catch {
-                console.error(`[DirectTile] Failed to process page ${i + 1}:`, error.message);
+            } catch (error: any) {
+                console.error(`[DirectTile] Failed to process page ${i + 1}:`, error instanceof Error ? error.message : String(error));
                 throw error;
             }
         }
@@ -421,7 +423,7 @@ export class DirectTileProcessor {
             console.log(`[DirectTile] Successfully saved page ${pageNum} to ${outputPath}`);
             return { success: true };
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             console.error(`[DirectTile] Error processing page ${pageNum}:`, error instanceof Error ? error.message : String(error));
             return { success: false, error: error instanceof Error ? error.message : String(error) };
         }

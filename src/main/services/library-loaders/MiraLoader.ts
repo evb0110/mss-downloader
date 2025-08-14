@@ -28,7 +28,7 @@ export class MiraLoader extends BaseLibraryLoader {
             const manifestUrl = windowsMatch[1];
             console.log(`[MIRA] Found manifest URL: ${manifestUrl}`);
             
-            const manifestResponse = await this.deps.fetchDirect(manifestUrl);
+            const manifestResponse = await this.deps.fetchDirect(manifestUrl || '');
             if (!manifestResponse.ok) {
                 throw new Error(`Failed to fetch MIRA manifest: HTTP ${manifestResponse.status}`);
             }
@@ -36,7 +36,7 @@ export class MiraLoader extends BaseLibraryLoader {
             const manifestText = await manifestResponse.text();
             
             // Check if Trinity Dublin returned HTML instead of JSON (blocked/captcha)
-            if (manifestUrl.includes('digitalcollections.tcd.ie') && manifestText.trim().startsWith('<')) {
+            if (manifestUrl?.includes('digitalcollections.tcd.ie') && manifestText.trim().startsWith('<')) {
                 throw new Error('Trinity College Dublin manifests are currently blocked due to access restrictions. This MIRA item points to a Trinity Dublin manuscript that cannot be accessed programmatically.');
             }
             
@@ -44,11 +44,11 @@ export class MiraLoader extends BaseLibraryLoader {
             if (manifestText.trim().startsWith('<')) {
                 // Extract institution name from manifest URL for better error messages
                 let institution = 'Unknown institution';
-                if (manifestUrl.includes('digitalcollections.tcd.ie')) {
+                if (manifestUrl?.includes('digitalcollections.tcd.ie')) {
                     institution = 'Trinity College Dublin';
-                } else if (manifestUrl.includes('isos.dias.ie')) {
+                } else if (manifestUrl?.includes('isos.dias.ie')) {
                     institution = 'Irish Script on Screen (ISOS)';
-                } else if (manifestUrl.includes('riaconservation.ie')) {
+                } else if (manifestUrl?.includes('riaconservation.ie')) {
                     institution = 'Royal Irish Academy';
                 }
                 
@@ -59,7 +59,7 @@ export class MiraLoader extends BaseLibraryLoader {
             try {
                 iiifManifest = JSON.parse(manifestText);
             } catch (parseError: unknown) {
-                const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
+                const errorMessage = parseError instanceof Error ? parseError instanceof Error ? parseError.message : String(parseError) : String(parseError);
                 throw new Error(`Invalid JSON manifest from ${manifestUrl}: ${errorMessage}`);
             }
             
@@ -68,11 +68,11 @@ export class MiraLoader extends BaseLibraryLoader {
             }
             
             const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
-                const resource = canvas.images[0].resource;
-                return resource['@id'] || resource.id || resource.service?.['@id'] + '/full/max/0/default.jpg';
+                const resource = ((canvas['images'] as unknown[])[0] as Record<string, unknown>)['resource'] as Record<string, unknown>;
+                return (resource as any)["@id"] || (resource as any)["id"] || (resource as any)["service"]?.['@id'] + '/full/max/0/default.jpg';
             }).filter((link: string) => link);
             
-            if (pageLinks.length === 0) {
+            if (pageLinks?.length === 0) {
                 throw new Error('No pages found in manifest');
             }
             
@@ -81,17 +81,17 @@ export class MiraLoader extends BaseLibraryLoader {
             
             // Extract manuscript name from the page title if available
             const titleMatch = html.match(/<h1[^>]*>MIrA \d+:\s*([^<]+)<\/h1>/);
-            const manuscriptName = titleMatch ? titleMatch[1].trim() : `MIRA_${manuscriptId}`;
+            const manuscriptName = titleMatch?.[1]?.trim() || `MIRA_${manuscriptId}`;
             
             return {
                 pageLinks,
-                totalPages: pageLinks.length,
+                totalPages: pageLinks?.length,
                 library: 'mira',
                 displayName: manuscriptName,
                 originalUrl: miraUrl,
             };
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             throw new Error(`Failed to load MIRA manuscript: ${errorMessage}`);
         }

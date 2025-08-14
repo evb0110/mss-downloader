@@ -48,6 +48,16 @@ export interface TileDownloadProgress {
   failedTiles: TileCoordinate[];
 }
 
+export interface TileDownloadResult {
+  success: boolean;
+  coordinate: TileCoordinate;
+  buffer?: Buffer;
+  path?: string;
+  error?: string;
+  retryCount?: number;
+  downloadTime?: number;
+}
+
 export interface TileDownloadCallbacks {
   onProgress?: (progress: TileDownloadProgress) => void;
   onTileDownloaded?: (coordinate: TileCoordinate, buffer: Buffer) => void;

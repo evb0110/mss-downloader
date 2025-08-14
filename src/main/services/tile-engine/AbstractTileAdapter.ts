@@ -20,12 +20,12 @@ export abstract class AbstractTileAdapter implements ITileAdapter {
     const errors: string[] = [];
     const warnings: string[] = [];
 
-    if (response.length === 0) {
+    if (response?.length === 0) {
       errors.push('Empty response buffer');
       return { isValid: false, errors, warnings };
     }
 
-    if (response.length < 100) {
+    if (response?.length < 100) {
       errors.push('Response too small to be a valid image');
       return { isValid: false, errors, warnings };
     }
@@ -40,7 +40,7 @@ export abstract class AbstractTileAdapter implements ITileAdapter {
       return { isValid: false, errors, warnings };
     }
 
-    if (response.length > 5 * 1024 * 1024) {
+    if (response?.length > 5 * 1024 * 1024) {
       warnings.push('Large tile size detected (>5MB)');
     }
 
@@ -75,7 +75,7 @@ export abstract class AbstractTileAdapter implements ITileAdapter {
   protected extractPathSegments(url: string): string[] {
     try {
       const urlObj = new URL(url);
-      return urlObj.pathname.split('/').filter(segment => segment.length > 0);
+      return urlObj.pathname.split('/').filter(segment => segment?.length > 0);
     } catch {
       throw new Error(`Invalid URL: ${url}`);
     }
@@ -141,7 +141,7 @@ export abstract class AbstractTileAdapter implements ITileAdapter {
 
   protected parseImageDimensions(imageBuffer: Buffer): { width: number; height: number } | null {
     try {
-      if (imageBuffer.length < 24) {
+      if (imageBuffer?.length < 24) {
         return null;
       }
 
@@ -164,7 +164,7 @@ export abstract class AbstractTileAdapter implements ITileAdapter {
   private parseJpegDimensions(buffer: Buffer): { width: number; height: number } | null {
     let offset = 2;
     
-    while (offset < buffer.length - 8) {
+    while (offset < buffer?.length - 8) {
       const marker = buffer.readUInt16BE(offset);
       
       if (marker === 0xffc0 || marker === 0xffc2) {

@@ -27,7 +27,7 @@ export class CeciliaLoader extends BaseLibraryLoader {
                         throw new Error('Invalid Cecilia URL format - could not extract document ID');
                     }
                     
-                    documentId = idMatch[1];
+                    documentId = idMatch[1] || '';
                 
                     // For known documents, use direct manifest URLs
                     if (documentId === '124') {
@@ -88,19 +88,19 @@ export class CeciliaLoader extends BaseLibraryLoader {
                     throw new Error('Invalid Cecilia manifest structure: missing item.tiles object');
                 }
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No images found in Cecilia manifest');
                 }
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     displayName: `Cecilia_${documentId}`,
                     library: 'cecilia',
                     originalUrl: url
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load Cecilia manifest: ${(error as Error).message}`);
             }
         }

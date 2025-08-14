@@ -54,6 +54,11 @@ export interface QueuedManuscript {
     estimatedSizeMB?: number; // Estimated size based on actual downloaded data
     // Library-specific optimization settings
     libraryOptimizations?: LibraryOptimizationSettings;
+    // Tile processing properties
+    tileConfig?: any;
+    requiresTileProcessor?: boolean;
+    manuscriptId?: string;
+    pageLinks?: any[];
 }
 
 export type TSimultaneousMode = 'sequential' | 'all' | 'custom';

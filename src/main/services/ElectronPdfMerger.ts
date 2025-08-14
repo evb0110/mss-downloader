@@ -75,7 +75,7 @@ export class ElectronPdfMerger {
             }
 
             // Check if document should be auto-split
-            const shouldSplit = autoSplit && images.length > (maxPagesPerPart || 100);
+            const shouldSplit = autoSplit && images?.length > (maxPagesPerPart || 100);
             
             if (shouldSplit) {
                 // Create split PDFs with both part and page numbers
@@ -101,18 +101,18 @@ export class ElectronPdfMerger {
                 const result = await this.enhancedMerger.createSplitPDFs(images, baseName, partsDir || outputDir, {
                     maxPagesPerPart: maxPagesPerPart || 100,
                     startPage: startPage || 1,
-                    onProgress: (progress: { current: number; total: number; message?: string }) => {
+                    onProgress: (progress: { completed: number; total: number; message?: string }) => {
                         onProgress?.({
-                            pageNumber: progress.overallPage,
-                            totalPages: progress.totalPages,
-                            percentage: Math.round(progress.percentage)
+                            pageNumber: progress.completed,
+                            totalPages: progress.total,
+                            percentage: Math.round((progress.completed / progress.total) * 100)
                         });
                     }
                 });
                 
-                if (result.success && result.files.length > 0) {
+                if (result.success && result.files?.length > 0) {
                     // Return the first file path (caller can check for multiple files)
-                    return result.files[0];
+                    return result.files[0] || '';
                 } else {
                     throw new Error('Failed to create split PDFs');
                 }
@@ -120,11 +120,11 @@ export class ElectronPdfMerger {
                 // Create single PDF
                 const pdfBytes = await this.enhancedMerger.createPDF(images, {
                     title: displayName || 'Manuscript',
-                    onProgress: (progress: { pageNumber: number; totalPages: number; percentage: number }) => {
+                    onProgress: (current: number, total: number) => {
                         onProgress?.({
-                            pageNumber: progress.pageNumber,
-                            totalPages: progress.totalPages,
-                            percentage: Math.round(progress.percentage)
+                            pageNumber: current,
+                            totalPages: total,
+                            percentage: Math.round((current / total) * 100)
                         });
                     }
                 });
@@ -135,7 +135,7 @@ export class ElectronPdfMerger {
 
             return finalOutputPath;
 
-        } catch (error: unknown) {
+        } catch (error: any) {
             onError?.(error instanceof Error ? error.message : String(error));
             throw error;
         } finally {

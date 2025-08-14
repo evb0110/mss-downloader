@@ -37,7 +37,7 @@ export class CzechLoader extends BaseLibraryLoader {
                 let title = `Czech Manuscript ${manuscriptId}`;
                 const titleMatch = htmlContent.match(/<title[^>]*>([^<]+)<\/title>/i);
                 if (titleMatch) {
-                    title = titleMatch[1].trim().replace(/\s+/g, ' ');
+                    title = titleMatch[1]?.trim().replace(/\s+/g, ' ') ?? "";
                 }
     
                 // Try to extract total page count from HTML content
@@ -46,7 +46,7 @@ export class CzechLoader extends BaseLibraryLoader {
                 
                 const folioMatch = htmlContent.match(/(\d+)\s*ff?\.|Obsah.*?(\d+)\s*ff?\./i);
                 if (folioMatch) {
-                    const detectedFolios = parseInt(folioMatch[1] || folioMatch[2]);
+                    const detectedFolios = parseInt((folioMatch[1] || folioMatch[2]) || '0');
                     if (detectedFolios > 0 && detectedFolios < 1000) { // Sanity check
                         maxFolio = detectedFolios;
                         console.log(`Czech library: detected ${maxFolio} folios from HTML content`);
@@ -69,17 +69,17 @@ export class CzechLoader extends BaseLibraryLoader {
                     pageLinks.push(versoImageUrl);
                 }
     
-                console.log(`Czech Digital Library: Generated ${pageLinks.length} page URLs for "${title}"`);
+                console.log(`Czech Digital Library: Generated ${pageLinks?.length} page URLs for "${title}"`);
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'czech',
                     displayName: title,
                     originalUrl: czechUrl
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error('Error loading Czech Digital Library manifest:', error);
                 throw new Error(`Failed to load Czech Digital Library manuscript: ${(error as Error).message}`);
             }

@@ -446,6 +446,7 @@ export interface IIIFSequence {
   type?: string;
   label?: string | LocalizedString;
   canvases: IIIFCanvas[];
+  items?: IIIFCanvas[]; // IIIF v3 support
   viewingHint?: string;
   viewingDirection?: string;
   startCanvas?: string;

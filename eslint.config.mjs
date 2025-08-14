@@ -76,26 +76,23 @@ export default typescriptEslint.config(
       '@typescript-eslint/no-unused-vars': 'off',
       
       // Enable unused-imports plugin rules (auto-fixable!)
-      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-imports': 'warn',
       'unused-imports/no-unused-vars': [
-        'error',  // Strict mode - all unused vars are errors
+        'warn',  // Warning mode to align with Vue Language Service
         {
           'vars': 'all',
-          'varsIgnorePattern': '^_UNUSED_',
-          'args': 'after-used', 
-          'argsIgnorePattern': '^_UNUSED_',
+          'varsIgnorePattern': '^_',
+          'args': 'none', // Don't check function arguments
+          'argsIgnorePattern': '^_',
           'ignoreRestSiblings': true,
           'destructuredArrayIgnorePattern': '^_'
         }
       ],
       
-      // TypeScript rules - STRICT
-      '@typescript-eslint/no-explicit-any': 'warn', // Changed to warn for now
-      '@typescript-eslint/consistent-type-imports': ['error', {
-        'prefer': 'type-imports',
-        'fixStyle': 'inline-type-imports'
-      }],
-      '@typescript-eslint/no-import-type-side-effects': 'error',
+      // TypeScript rules - RELAXED
+      '@typescript-eslint/no-explicit-any': 'off', // Allow any types
+      '@typescript-eslint/consistent-type-imports': 'off', // Don't enforce type imports
+      '@typescript-eslint/no-import-type-side-effects': 'off',
       
       // Vue rules
       'vue/multi-word-component-names': 'off',

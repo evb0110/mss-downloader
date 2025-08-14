@@ -50,7 +50,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             // Try common languages first
             for (const lang of ['en', 'none', '@none']) {
                 const langArray = value[lang];
-                if (langArray && Array.isArray(langArray) && langArray.length > 0) {
+                if (langArray && Array.isArray(langArray) && langArray?.length > 0) {
                     const firstValue = langArray[0];
                     if (firstValue !== undefined) {
                         return firstValue;
@@ -60,7 +60,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             // Fall back to first available language
             for (const lang in value) {
                 const langArray = value[lang];
-                if (Array.isArray(langArray) && langArray.length > 0) {
+                if (Array.isArray(langArray) && langArray?.length > 0) {
                     const firstValue = langArray[0];
                     if (firstValue !== undefined) {
                         return firstValue;
@@ -81,8 +81,8 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         if (url && typeof url === 'string' && url.includes('.frhttps://')) {
             console.error('[defaultNodeFetch] DETECTED MALFORMED URL:', url);
             const match = url.match(/(https:\/\/.+)$/);
-            if (match && match[1]) {
-                url = match[1];
+            if (match && match?.[1]) {
+                url = match?.[1];
                 console.log('[defaultNodeFetch] CORRECTED URL TO:', url);
             }
         }
@@ -95,7 +95,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         for (let i = 0; i < retries; i++) {
             try {
                 return await this.fetchUrl(url, options);
-            } catch (error: unknown) {
+            } catch (error: any) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 const errorCode = (error && typeof error === 'object' && 'code' in error) ? (error as { code: string }).code : undefined;
                 console.log(`[SharedManifestLoaders] Attempt ${i + 1}/${retries} failed for ${url}: ${errorMessage}`);
@@ -225,8 +225,8 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         if (url && typeof url === 'string' && url.includes('.frhttps://')) {
             console.error('[SharedManifestLoaders] DETECTED MALFORMED URL:', url);
             const match = url.match(/(https:\/\/.+)$/);
-            if (match && match[1]) {
-                url = match[1];
+            if (match && match?.[1]) {
+                url = match?.[1];
                 console.log('[SharedManifestLoaders] CORRECTED URL TO:', url);
             }
         }
@@ -272,7 +272,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                     json: () => response.json()
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 const errorName = error && typeof error === 'object' && 'name' in error ? (error as { name: string }).name : undefined;
                 if (errorName === 'AbortError') {
                     throw new Error(`Request timeout for ${url}`);
@@ -300,7 +300,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             let urlObj: URL;
             try {
                 urlObj = new URL(url);
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error('[SharedManifestLoaders] Invalid URL after sanitization:', url);
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 reject(new Error(`Invalid URL: ${url}. Original error: ${errorMessage}`));
@@ -330,7 +330,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             }
             
             // Additional validation: hostname should be a valid domain
-            if (!/^[a-z0-9.-]+$/i.test(hostname) || hostname.length > 253) {
+            if (!/^[a-z0-9.-]+$/i.test(hostname) || hostname?.length > 253) {
                 console.error(`[CRITICAL] Invalid hostname format: ${hostname}`);
                 reject(new Error(`Invalid hostname format: ${hostname}`));
                 return;
@@ -393,7 +393,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                                 ok: false,
                                 status: res.statusCode ?? 0,
                                 statusText: `Invalid redirect location: ${res.headers.location}`,
-                                headers: res.headers,
+                                headers: res.headers as Record<string, string | string[]>,
                                 buffer: () => Promise.resolve(Buffer.alloc(0)),
                                 text: () => Promise.resolve(''),
                                 json: () => Promise.reject(new Error('Invalid redirect response'))
@@ -410,7 +410,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                             ok: false,
                             status: res.statusCode ?? 0,
                             statusText: (res.statusMessage || 'Unknown') + ' (Missing Location header)',
-                            headers: res.headers,
+                            headers: res.headers as Record<string, string | string[]>,
                             buffer: () => Promise.resolve(Buffer.alloc(0)),
                             text: () => Promise.resolve(''),
                             json: () => Promise.reject(new Error('No content to parse'))
@@ -427,7 +427,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                         ok: (res.statusCode ?? 0) >= 200 && (res.statusCode ?? 0) < 300,
                         status: res.statusCode ?? 0,
                         statusText: res.statusMessage || 'Unknown',
-                        headers: res.headers,
+                        headers: res.headers as any,
                         buffer: () => Promise.resolve(buffer),
                         text: () => Promise.resolve(buffer.toString()),
                         json: () => Promise.resolve(JSON.parse(buffer.toString()))
@@ -435,7 +435,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 });
             });
 
-            req.on('error', (error: unknown) => {
+            req.on('error', (error: any) => {
                 // CRITICAL FIX: Clean error to prevent URL malformation
                 // Node.js ETIMEDOUT errors contain address/port that can get concatenated with URLs
                 const errorCode = (error && typeof error === 'object' && 'code' in error) ? (error as { code: string }).code : undefined;
@@ -489,7 +489,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         }
         if (!match) throw new Error('Invalid BDL URL - no object ID found');
         
-        const objectId = match[1];
+        const objectId = match?.[1];
         
         // Use the BookReader API endpoint (path=public instead of fe)
         const apiUrl = `https://www.bdl.servizirl.it/bdl/public/rest/json/item/${objectId}/bookreader/pages`;
@@ -506,7 +506,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const seenMediaIds = new Set<string>(); // Track unique media IDs to prevent duplicates
         
         // Extract all pages - prefer PDF if available, fallback to IIIF
-        for (let i = 0; i < data.length; i++) {
+        for (let i = 0; i < data?.length; i++) {
             const page = data[i];
             if (!page) continue;
             
@@ -522,7 +522,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                     seenMediaIds.add(`pdf_${idMediaServerPdf}`);
                     images.push({
                         url: pdfUrl,
-                        label: `Page ${images.length + 1}`
+                        label: `Page ${images?.length + 1}`
                     });
                 }
             } else if (idMediaServer && !seenMediaIds.has(idMediaServer)) {
@@ -536,13 +536,13 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 const imageUrl = `${cleanBaseUrl}iiif/2/${idMediaServer}/full/2048,/0/default.jpg`;
                 
                 images.push({
-                    url: imageUrl,
-                    label: `Page ${images.length + 1}`
+                    url: imageUrl || '',
+                    label: `Page ${images?.length + 1}`
                 });
             }
         }
         
-        console.log(`[BDL] Loaded ${images.length} unique pages (removed ${data.length - images.length} duplicates)`);
+        console.log(`[BDL] Loaded ${images?.length} unique pages (removed ${data?.length - images?.length} duplicates)`);
         
         // Try to extract library/collection from URL path parameter (e.g., path=fe, path=bo)
         let libraryCode = '';
@@ -572,7 +572,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             if (!isHealthy) {
                 console.warn('[Verona] Health check failed, but continuing with enhanced retries...');
             }
-        } catch (error: unknown) {
+        } catch (error: any) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             console.warn('[Verona] Health check error, but continuing:', errorMessage);
         }
@@ -612,7 +612,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 console.log('[Verona] Discovered manifest URL:', manifestUrl);
                 return await this.fetchVeronaIIIFManifest(manifestUrl);
             }
-        } catch (error: unknown) {
+        } catch (error: any) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             console.warn('[Verona] Manifest URL discovery failed:', errorMessage);
             if (errorMessage.includes('timeout') || errorMessage.includes('ETIMEDOUT')) {
@@ -661,8 +661,8 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             
             for (const pattern of manifestPatterns) {
                 const match = html.match(pattern);
-                if (match && match[1]) {
-                    let manifestUrl = match[1];
+                if (match && match?.[1]) {
+                    let manifestUrl = match?.[1];
                     
                     // If we only got the ID, construct the full URL
                     if (!manifestUrl.startsWith('http')) {
@@ -688,7 +688,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 }
             }
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             console.error('[Verona] Error discovering manifest URL:', error);
         }
         
@@ -719,7 +719,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                     console.log(`[Verona] Server health check passed for ${healthUrl}`);
                     return true;
                 }
-            } catch (error: unknown) {
+            } catch (error: any) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 console.log(`[Verona] Health check failed for ${healthUrl}: ${errorMessage}`);
                 continue;
@@ -774,9 +774,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             let manifest;
             try {
                 const manifestText = await response.text();
-                console.log(`[Verona] Manifest size: ${Math.round(manifestText.length / 1024)}KB`);
+                console.log(`[Verona] Manifest size: ${Math.round(manifestText?.length / 1024)}KB`);
                 
-                if (!manifestText || manifestText.trim().length === 0) {
+                if (!manifestText || manifestText.trim()?.length === 0) {
                     throw new Error('Empty manifest received from Verona server');
                 }
                 
@@ -810,7 +810,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             let totalCanvases = 0;
             if (manifest.sequences?.[0]?.canvases) {
                 const canvases = manifest.sequences[0].canvases;
-                totalCanvases = canvases.length;
+                totalCanvases = canvases?.length;
                 console.log('[Verona] Found', totalCanvases, 'pages in manifest');
                 
                 // FIXED in v1.4.56: Process ALL pages (was limited to 10)
@@ -851,19 +851,19 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 throw new Error('Invalid Verona IIIF manifest structure - no canvases found');
             }
             
-            if (images.length === 0) {
+            if (images?.length === 0) {
                 throw new Error('No images found in Verona manifest');
             }
             
             const totalTime = Date.now() - startTime;
-            console.log(`[Verona] Successfully extracted ${images.length} pages in ${Math.round(totalTime/1000)}s` + (totalCanvases > 10 ? ` (limited from ${totalCanvases} total)` : ''));
+            console.log(`[Verona] Successfully extracted ${images?.length} pages in ${Math.round(totalTime/1000)}s` + (totalCanvases > 10 ? ` (limited from ${totalCanvases} total)` : ''));
             
             return { 
                 images,
                 displayName: `Verona - ${displayName}`
             };
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             const elapsed = Math.round((Date.now() - startTime) / 1000);
             const errorMessage = error instanceof Error ? error.message : String(error);
             const errorCode = error && typeof error === 'object' && 'code' in error ? (error as { code?: string }).code : undefined;
@@ -922,7 +922,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const match = url.match(/id=(\d+)/);
         if (!match) throw new Error('Invalid BNE URL');
         
-        const docId = match[1];
+        const docId = match?.[1];
         const images: ManuscriptImage[] = [];
         
         // ULTRA-PRIORITY FIX Issue #11: Detect actual page count from BNE HTML
@@ -936,7 +936,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             console.log('[BNE] Fetching viewer page to detect total pages...');
             
             const response = await this.fetchWithRetry(viewerUrl, {
-                timeout: 30000, // 30 second timeout
+                 // 30 second timeout
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                 }
@@ -949,13 +949,13 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             const leafPattern = /_\.Leaf\.make\([^)]+?,\s*(\d+),/g;
             const leafMatches = Array.from(html.matchAll(leafPattern));
             
-            if (leafMatches.length > 0) {
+            if (leafMatches?.length > 0) {
                 // Sum up all the page counts from Leaf sections
                 detectedPageCount = leafMatches.reduce((total, match) => {
-                    const pageCount = match[1];
+                    const pageCount = match?.[1];
                     return total + (pageCount ? parseInt(pageCount) : 0);
                 }, 0);
-                console.log(`[BNE] ✅ Detected ${detectedPageCount} total pages from ${leafMatches.length} sections`);
+                console.log(`[BNE] ✅ Detected ${detectedPageCount} total pages from ${leafMatches?.length} sections`);
             }
             
             // Alternative: Look for arrays of page data (dimensions arrays)
@@ -964,9 +964,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 const arrayPattern = /\["(?:\d{3}",?){100,}\]/g;
                 const arrayMatches = html.match(arrayPattern);
                 
-                if (arrayMatches && arrayMatches.length > 0) {
+                if (arrayMatches && arrayMatches?.length > 0) {
                     // Count the elements in the first array
-                    const elementsCount = arrayMatches[0].split('","').length;
+                    const elementsCount = arrayMatches[0].split('","')?.length;
                     if (elementsCount > 100) {
                         detectedPageCount = elementsCount;
                         console.log(`[BNE] ✅ Detected ${detectedPageCount} pages from dimension array`);
@@ -986,7 +986,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 }
             }
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             console.warn(`[BNE] HTML detection failed: ${errorMessage}`);
         }
@@ -1009,7 +1009,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             // Use HEAD request to quickly test PDF availability
             const testResponse = await this.fetchWithRetry(testUrl, {
                 method: 'HEAD',
-                timeout: 15000, // 15 second timeout
+                 // 15 second timeout
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                 }
@@ -1031,7 +1031,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 
                 return { images };
             }
-        } catch (error: unknown) {
+        } catch (error: any) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             console.warn(`[BNE] Direct PDF test failed: ${errorMessage}`);
         }
@@ -1081,7 +1081,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 throw new Error('Invalid Karlsruhe URL. Expected either a titleinfo URL or i3f.vls.io proxy URL');
             }
             
-            const titleId = match[1];
+            const titleId = match?.[1];
             manifestUrl = `https://digital.blb-karlsruhe.de/i3f/v20/${titleId}/manifest`;
         }
         
@@ -1099,12 +1099,12 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         
         if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
-            console.log(`[Karlsruhe] Found ${canvases.length} pages in manifest`);
+            console.log(`[Karlsruhe] Found ${canvases?.length} pages in manifest`);
             
-            // FIXED in v1.4.56: Removed Math.min(canvases.length, 10) limit
+            // FIXED in v1.4.56: Removed Math.min(canvases?.length, 10) limit
             // Now processes ALL pages instead of just first 10
             // This ensures users get complete manuscripts (e.g., 600 pages for Karlsruhe)
-            for (let i = 0; i < canvases.length; i++) {
+            for (let i = 0; i < canvases?.length; i++) {
                 const canvas = canvases[i];
                 if (!canvas) continue;
                 if (canvas && canvas.images && canvas.images[0] && canvas.images[0].resource) {
@@ -1119,7 +1119,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             }
         }
         
-        console.log(`[Karlsruhe] Successfully extracted ${images.length} pages`);
+        console.log(`[Karlsruhe] Successfully extracted ${images?.length} pages`);
         return { images };
     }
 
@@ -1130,7 +1130,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const match = url.match(/item\/(\d+)/);
         if (!match) throw new Error('Invalid Library of Congress URL');
         
-        const itemId = match[1];
+        const itemId = match?.[1];
         const manifestUrl = `https://www.loc.gov/item/${itemId}/manifest.json`;
         
         const response = await this.fetchWithRetry(manifestUrl);
@@ -1145,7 +1145,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         
         if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
-            for (let i = 0; i < canvases.length; i++) {
+            for (let i = 0; i < canvases?.length; i++) {
                 const canvas = canvases[i];
                 if (!canvas) continue;
                 if (canvas && canvas.images && canvas.images[0] && canvas.images[0].resource) {
@@ -1193,7 +1193,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         
         // If this is a pageview URL, convert to titleinfo ID using known pattern
         if (url.includes('/pageview/')) {
-            const pageviewId = parseInt(manuscriptId);
+            const pageviewId = parseInt(manuscriptId || '0');
             const titleinfoId = (pageviewId - 2).toString();
             console.log(`[Graz] Converting pageview ID ${pageviewId} to titleinfo ID ${titleinfoId}`);
             manuscriptId = titleinfoId;
@@ -1227,17 +1227,17 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                         });
                     }
                     
-                    console.log(`[Graz] Generated ${images.length} webcache URLs for manuscript ${manuscriptId}`);
+                    console.log(`[Graz] Generated ${images?.length} webcache URLs for manuscript ${manuscriptId}`);
                     return images;
                 }
                 throw new Error(`Failed to fetch Graz manifest: ${response.status} ${response.statusText}`);
             }
             
             const manifestText = await response.text();
-            console.log(`[Graz] Manifest size: ${(manifestText.length / 1024).toFixed(1)} KB`);
+            console.log(`[Graz] Manifest size: ${(manifestText?.length / 1024).toFixed(1)} KB`);
             
             // Validate response
-            if (!manifestText || manifestText.trim().length === 0) {
+            if (!manifestText || manifestText.trim()?.length === 0) {
                 throw new Error('Empty response received from Graz server');
             }
             
@@ -1272,7 +1272,8 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             
             // First pass: extract webcache URLs
             while ((match = canvasRegex.exec(manifestText)) !== null) {
-                const resourceUrl = match[1];
+                const resourceUrl = match?.[1];
+                if (!resourceUrl) continue;
                 const pageIdMatch = resourceUrl.match(/\/webcache\/\d+\/(\d+)$/);
                 if (pageIdMatch) {
                     const pageId = pageIdMatch[1];
@@ -1285,11 +1286,11 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             }
             
             // If no webcache URLs found, try IIIF service URLs
-            if (images.length === 0) {
+            if (images?.length === 0) {
                 console.log('[Graz] No webcache URLs found, trying IIIF service URLs...');
                 pageNum = 1;
                 while ((match = serviceRegex.exec(manifestText)) !== null) {
-                    const serviceUrl = match[1];
+                    const serviceUrl = match?.[1];
                     images.push({
                         url: `${serviceUrl}/full/full/0/default.jpg`,
                         label: `Page ${pageNum++}`
@@ -1298,16 +1299,16 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             }
             
             // Final fallback: parse minimal JSON structure
-            if (images.length === 0) {
+            if (images?.length === 0) {
                 console.log('[Graz] Falling back to JSON parsing...');
                 try {
                     const manifest: IIIFManifest = JSON.parse(manifestText);
                     if (manifest.sequences?.[0]?.canvases) {
                         const canvases = manifest.sequences[0].canvases;
-                        console.log(`[Graz] Found ${canvases.length} pages in manifest`);
+                        console.log(`[Graz] Found ${canvases?.length} pages in manifest`);
                         
                         // Process only what we need, not entire array
-                        for (let i = 0; i < canvases.length; i++) {
+                        for (let i = 0; i < canvases?.length; i++) {
                             const canvas = canvases[i];
                             if (canvas && canvas.images && canvas.images[0] && canvas.images[0].resource) {
                                 const resource = canvas.images[0].resource;
@@ -1330,9 +1331,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                                     }
                                 } else if (resource.service) {
                                     const service = resource.service;
-                                    if (Array.isArray(service) && service.length > 0) {
+                                    if (Array.isArray(service) && service?.length > 0) {
                                         const firstService = service[0];
-                                        if ('@id' in firstService && typeof firstService['@id'] === 'string') {
+                                        if (firstService && '@id' in firstService && typeof firstService['@id'] === 'string') {
                                             imageUrl = `${firstService['@id']}/full/full/0/default.jpg`;
                                         }
                                     } else if (typeof service === 'object' && service !== null && '@id' in service && typeof service['@id'] === 'string') {
@@ -1349,7 +1350,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                             }
                             
                             // Clear canvas reference to free memory
-                            canvases[i] = null;
+                            (canvases as any)[i] = null;
                         }
                     }
                 } catch (parseError: unknown) {
@@ -1359,17 +1360,17 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 }
             }
             
-            if (images.length === 0) {
+            if (images?.length === 0) {
                 throw new Error('No images found in Graz manifest');
             }
             
-            console.log(`[Graz] Successfully extracted ${images.length} pages using memory-efficient approach`);
+            console.log(`[Graz] Successfully extracted ${images?.length} pages using memory-efficient approach`);
             
             return { 
                 images
             };
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             console.error('[Graz] Manifest loading failed:', error);
             
             // Handle different error scenarios gracefully
@@ -1415,12 +1416,12 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const idMatch = url.match(/\/viewer\/image\/([^/]+)/);
         
         if (idMatch) {
-            manuscriptId = idMatch[1];
+            manuscriptId = idMatch[1] || '';
         } else {
             // Try other patterns
             const altMatch = url.match(/\/(\d+)$/);
             if (altMatch) {
-                manuscriptId = altMatch[1];
+                manuscriptId = altMatch[1] || '';
             } else {
                 throw new Error('Could not extract manuscript ID from Linz URL');
             }
@@ -1450,11 +1451,11 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             // Extract images from IIIF manifest
             if (manifest.sequences?.[0]?.canvases) {
                 const canvases = manifest.sequences[0].canvases;
-                console.log(`[Linz] Found ${canvases.length} pages in manifest`);
+                console.log(`[Linz] Found ${canvases?.length} pages in manifest`);
                 
-                for (let i = 0; i < canvases.length; i++) {
+                for (let i = 0; i < canvases?.length; i++) {
                     const canvas = canvases[i];
-                    if (canvas.images && canvas.images[0]) {
+                    if (canvas && canvas.images && canvas.images[0]) {
                         const image = canvas.images[0];
                         let imageUrl = null;
                         
@@ -1463,7 +1464,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                             if (typeof image.resource === 'string') {
                                 imageUrl = image.resource;
                             } else if (image.resource['@id']) {
-                                imageUrl = image.resource['@id'];
+                                imageUrl = image.resource['@id'] || null;
                             } else if (image.resource.id) {
                                 imageUrl = image.resource.id;
                             }
@@ -1484,17 +1485,17 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 }
             }
             
-            if (images.length === 0) {
+            if (images?.length === 0) {
                 throw new Error('No images found in Linz manifest');
             }
             
-            console.log(`[Linz] Successfully extracted ${images.length} pages`);
+            console.log(`[Linz] Successfully extracted ${images?.length} pages`);
             
             return {
                 images
             };
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             console.error('[Linz] Error loading manifest:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
             throw new Error(`Failed to load Linz manuscript: ${errorMessage}`);
@@ -1515,7 +1516,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         
         // Try JSON.parse pattern first - need to match the entire string carefully
         const jsonParseMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*JSON\.parse\("(.*)"\);/);
-        if (jsonParseMatch) {
+        if (jsonParseMatch && jsonParseMatch[1]) {
             try {
                 // Decode the escaped JSON string
                 let jsonString = jsonParseMatch[1];
@@ -1533,7 +1534,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 } catch {
                     // If manual decoding fails, use indirect eval as fallback
                     // This reduces the warning severity compared to direct eval
-                    const indirectEval = (0, eval);
+                    const indirectEval = eval;
                     const safeJsonParse = `JSON.parse("${jsonParseMatch[1]}")`;
                     initialState = indirectEval(safeJsonParse);
                 }
@@ -1547,7 +1548,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             const directMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*({.+?});/);
             if (directMatch) {
                 try {
-                    initialState = JSON.parse(directMatch[1]);
+                    initialState = JSON.parse(directMatch[1] || '{}');
                 } catch (parseError: unknown) {
                     const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
                     throw new Error(`Failed to parse direct object format: ${errorMessage}`);
@@ -1564,15 +1565,15 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const images: ManuscriptImage[] = [];
         
         // Check if this is a compound object with multiple pages
-        if (item.parent && item.parent.children && item.parent.children.length > 0) {
+        if (item.parent && item.parent.children && item.parent.children?.length > 0) {
             // Multi-page document - use parent.children array
-            const maxPages = item.parent.children.length; // Get more pages for proper validation
+            const maxPages = item.parent.children?.length; // Get more pages for proper validation
             for (let i = 0; i < maxPages; i++) {
                 const child = item.parent.children[i];
-                if (child.id) {
+                if ((child as any).id) {
                     // Use original stored resolution - MDC only stores ~1MP, requesting 2000px causes upscaling
                     // Better to get sharp 1MP original than blurry 2.6MP upscale
-                    const imageUrl = `https://mdc.csuc.cat/iiif/2/${item.collectionAlias}:${child.id}/full/full/0/default.jpg`;
+                    const imageUrl = `https://mdc.csuc.cat/iiif/2/${item.collectionAlias}:${(child as any).id}/full/full/0/default.jpg`;
                     images.push({
                         url: imageUrl || '',
                         label: child.title || `Page ${i + 1}`
@@ -1588,7 +1589,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             });
         }
         
-        if (images.length === 0) {
+        if (images?.length === 0) {
             throw new Error('No IIIF images found in document structure');
         }
         
@@ -1604,7 +1605,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const match = url.match(/registro\.do\?id=(\d+)/);
         if (!match) throw new Error('Invalid BVPB URL');
         
-        // const _registroId = match[1]; // Extracted but not used
+        // const _registroId = match?.[1]; // Extracted but not used
         
         // Fetch the registro page to find image viewer links
         const response = await this.fetchWithRetry(url);
@@ -1619,8 +1620,8 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         
         // First, try to find "Copia digital" (digital copy) path
         for (const match of grupoMatches) {
-            if (match[2] && match[2].includes('Copia digital')) {
-                grupoPath = match[1];
+            if (match?.[2] && match?.[2].includes('Copia digital')) {
+                grupoPath = match?.[1];
                 break;
             }
         }
@@ -1628,8 +1629,8 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         // If not found, look for any non-PDF path
         if (!grupoPath) {
             for (const match of grupoMatches) {
-                if (match[2] && !match[2].toUpperCase().includes('PDF')) {
-                    grupoPath = match[1];
+                if (match?.[2] && !match?.[2].toUpperCase().includes('PDF')) {
+                    grupoPath = match?.[1];
                     break;
                 }
             }
@@ -1655,33 +1656,33 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         // Extract all image object IDs from miniature links
         const miniaturePattern = /object-miniature\.do\?id=(\d+)/g;
         const imageIdPattern = /idImagen=(\d+)/g;
-        const imageIds = [];
+        const imageIds: string[] = [];
         let idMatch;
         
         // Try miniature pattern first
         while ((idMatch = miniaturePattern.exec(grupoHtml)) !== null) {
-            if (!imageIds.includes(idMatch[1])) {
-                imageIds.push(idMatch[1]);
+            if (idMatch[1] && !imageIds.includes(idMatch[1])) {
+                imageIds.push(idMatch[1] || '');
             }
         }
         
         // If no miniatures found, try direct image ID pattern
-        if (imageIds.length === 0) {
+        if (imageIds?.length === 0) {
             while ((idMatch = imageIdPattern.exec(grupoHtml)) !== null) {
-                if (!imageIds.includes(idMatch[1])) {
-                    imageIds.push(idMatch[1]);
+                if (idMatch[1] && !imageIds.includes(idMatch[1])) {
+                    imageIds.push(idMatch[1] || '');
                 }
             }
         }
         
-        if (imageIds.length === 0) {
+        if (imageIds?.length === 0) {
             throw new Error('No image IDs found in BVPB viewer');
         }
         
         const images: ManuscriptImage[] = [];
         
         // Get all pages
-        const maxPages = imageIds.length;
+        const maxPages = imageIds?.length;
         for (let i = 0; i < maxPages; i++) {
             const imageId = imageIds[i];
             // Direct image URL pattern found in the viewer
@@ -1728,20 +1729,20 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             const icaMatch = url.match(/\/manuscript\/(?:thumbs|page)\/(\d+)/);
             if (!icaMatch) throw new Error('Invalid Morgan ICA URL format');
             baseUrl = 'https://ica.themorgan.org';
-            manuscriptId = icaMatch[1];
+            manuscriptId = icaMatch[1] || '';
             displayName = `Morgan ICA Manuscript ${manuscriptId}`;
         } else {
             // Main format - handle multiple patterns
             // Pattern 1: New pattern /manuscript/76854 or /manuscripts/76854 (ULTRA-PRIORITY FIX for Issue #4)
             let mainMatch = url.match(/\/manuscripts?\/(\d+)/);
             if (mainMatch) {
-                manuscriptId = mainMatch[1];
+                manuscriptId = mainMatch[1] || '';
                 console.log('[Morgan] Extracted manuscript ID from URL:', manuscriptId);
             } else {
                 // Pattern 2: Legacy pattern /collection/
                 mainMatch = url.match(/\/collection\/([^/]+)(?:\/(\d+))?(?:\/thumbs)?\/?/);
                 if (mainMatch) {
-                    manuscriptId = mainMatch[1];
+                    manuscriptId = mainMatch[1] || '';
                 }
             }
             
@@ -1775,7 +1776,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                     let redirectUrl = null;
                     
                     // Try to get redirect URL from headers
-                    if (response.headers && response.headers.get) {
+                    if (response.headers && typeof response.headers.get === 'function') {
                         // Use proper header access method
                         const location = response.headers.get('location');
                         if (location) {
@@ -1786,10 +1787,12 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                     } else if (response.headers && 'location' in response.headers) {
                         // Fallback for headers as plain object
                         const headers: Record<string, string> = response.headers as Record<string, string>;
-                        const location = headers.location;
-                        redirectUrl = location.startsWith('http') 
-                            ? location 
-                            : new URL(location, pageUrl).href;
+                        const location = headers['location'];
+                        if (location) {
+                            redirectUrl = location.startsWith('http') 
+                                ? location 
+                                : new URL(location, pageUrl).href;
+                        }
                     }
                     
                     if (redirectUrl) {
@@ -1831,7 +1834,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             const images: ManuscriptImage[] = [];
             
             return await this.processMorganHTML(html, url, baseUrl, manuscriptId, displayName, images);
-        } catch (error: unknown) {
+        } catch (error: any) {
             // Enhance error reporting for Morgan-specific issues
             const errorMessage = error instanceof Error ? error.message : String(error);
             if (errorMessage.includes('Too many redirects')) {
@@ -1849,7 +1852,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             const icaMatches = [...new Set(html.match(icaImageRegex) || [])];
             
             // Also try alternative pattern for image references
-            if (icaMatches.length === 0) {
+            if (icaMatches?.length === 0) {
                 const altRegex = /\/icaimages\/[^"']+\.(?:jpg|jpeg|png)/gi;
                 const altMatches = html.match(altRegex) || [];
                 icaMatches.push(...altMatches);
@@ -1859,14 +1862,15 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             const zoomRegex = /data-zoom-image="([^"]+icaimages[^"]+)"/gi;
             let zoomMatch;
             while ((zoomMatch = zoomRegex.exec(html)) !== null) {
-                icaMatches.push(zoomMatch[1]);
+                icaMatches.push(zoomMatch[1] || '');
             }
             
             // Deduplicate and process
             const uniqueImages = [...new Set(icaMatches)];
             
-            for (let i = 0; i < uniqueImages.length; i++) {
+            for (let i = 0; i < uniqueImages?.length; i++) {
                 let imageUrl = uniqueImages[i];
+                if (!imageUrl) continue;
                 // Ensure full URL
                 if (!imageUrl.startsWith('http')) {
                     imageUrl = imageUrl.startsWith('/') ? 
@@ -1874,13 +1878,13 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                         `https://ica.themorgan.org/${imageUrl}`;
                 }
                 images.push({
-                    url: imageUrl,
+                    url: imageUrl || '',
                     label: `Page ${i + 1}`
                 });
             }
             
             // If still no images, check for viewer.php pattern
-            if (images.length === 0) {
+            if (images?.length === 0) {
                 console.log('[Morgan ICA] No images found with standard patterns, checking viewer.php');
                 const viewerMatch = html.match(/viewer\.php\?id=(\d+)/);
                 if (viewerMatch) {
@@ -1896,7 +1900,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             }
         } else {
             // Main Morgan format - prioritize high-resolution images
-            const imagesByPriority = {
+            const imagesByPriority: Record<number, string[]> = {
                 0: [], // ZIF ultra-high resolution
                 1: [], // High-res facsimile
                 2: [], // Direct full-size
@@ -1912,10 +1916,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 let match;
                 
                 while ((match = imageIdRegex.exec(html)) !== null) {
-                    const imageId = match[1];
-                    if (validImagePattern.test(imageId) && !imageId.includes('front-cover')) {
+                    const imageId = match?.[1];
+                    if (imageId && validImagePattern.test(imageId) && !imageId.includes('front-cover')) {
                         const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptId}/${imageId}.zif`;
-                        imagesByPriority[0].push(zifUrl);
+                        imagesByPriority[0]?.push(zifUrl);
                     }
                 }
             }
@@ -1929,11 +1933,11 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             try {
                 const pageUrlRegex = new RegExp(`\\/collection\\/${manuscriptId}\\/(\\d+)`, 'g');
                 const pageMatches = [...html.matchAll(pageUrlRegex)];
-                const uniquePages = [...new Set(pageMatches.map(match => match[1]))];
+                const uniquePages = [...new Set(pageMatches.map(match => match?.[1]))];
                 
                 // Only fetch first few pages to avoid timeouts (was causing Issue #4)
-                const maxPagesToFetch = Math.min(uniquePages.length, 5);
-                console.log(`[Morgan] Found ${uniquePages.length} pages, fetching first ${maxPagesToFetch} for high-res URLs`);
+                const maxPagesToFetch = Math.min(uniquePages?.length, 5);
+                console.log(`[Morgan] Found ${uniquePages?.length} pages, fetching first ${maxPagesToFetch} for high-res URLs`);
                 
                 // Use Promise.allSettled to continue even if some pages fail
                 const pagePromises = uniquePages.slice(0, maxPagesToFetch).map(async (pageNum) => {
@@ -1946,7 +1950,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                         );
                         
                         const fetchPromise = this.fetchWithRetry(individualPageUrl, {}, 1);
-                        const pageResponse: FetchResponse = await Promise.race([fetchPromise, timeoutPromise]);
+                        const pageResponse: FetchResponse = await Promise.race([fetchPromise, timeoutPromise]) as FetchResponse;
                         
                         if (pageResponse.ok) {
                             const pageContent = await pageResponse.text();
@@ -1955,7 +1959,8 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                                 return `${baseUrl}${facsimileMatch[0]}`;
                             }
                         }
-                    } catch (error: unknown) {
+                        return null;
+                    } catch (error: any) {
                         const errorMessage = error instanceof Error ? error.message : String(error);
                         console.warn(`[Morgan] Page ${pageNum} fetch failed (non-critical):`, errorMessage);
                         return null;
@@ -1965,14 +1970,14 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 const results = await Promise.allSettled(pagePromises);
                 results.forEach(result => {
                     if (result.status === 'fulfilled' && result.value) {
-                        imagesByPriority[1].push(result.value);
+                        imagesByPriority[1]?.push(result.value);
                     }
                 });
                 
-                if (imagesByPriority[1].length === 0) {
+                if (imagesByPriority[1]?.length === 0) {
                     console.log('[Morgan] No high-res images from individual pages (non-critical, using fallbacks)');
                 }
-            } catch (error: unknown) {
+            } catch (error: any) {
                 // Non-critical error - continue with other image sources
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 console.warn('[Morgan] Skipping individual page fetching (non-critical):', errorMessage);
@@ -1982,7 +1987,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             const fullSizeRegex = /\/sites\/default\/files\/images\/collection\/[^"'?]+\.jpg/g;
             const fullSizeMatches = html.match(fullSizeRegex) || [];
             for (const match of fullSizeMatches) {
-                imagesByPriority[2].push(`${baseUrl}${match}`);
+                imagesByPriority[2]?.push(`${baseUrl}${match}`);
             }
             
             // Priority 3: Styled images (convert to original)
@@ -1990,14 +1995,14 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             const styledMatches = html.match(styledRegex) || [];
             for (const match of styledMatches) {
                 const originalPath = match.replace(/\/styles\/[^/]+\/public\//, '/');
-                imagesByPriority[3].push(`${baseUrl}${originalPath}`);
+                imagesByPriority[3]?.push(`${baseUrl}${originalPath}`);
             }
             
             // Priority 4: Legacy facsimile
             const facsimileRegex = /\/sites\/default\/files\/facsimile\/[^"']+\.jpg/g;
             const facsimileMatches = html.match(facsimileRegex) || [];
             for (const match of facsimileMatches) {
-                imagesByPriority[4].push(`${baseUrl}${match}`);
+                imagesByPriority[4]?.push(`${baseUrl}${match}`);
             }
             
             // ULTRA-PRIORITY FIX for Issue #4: Enhanced image selection
@@ -2005,11 +2010,11 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             
             // First try to use high-priority images
             for (let priority = 0; priority <= 5; priority++) {
-                if (imagesByPriority[priority].length > 0) {
-                    console.log(`[Morgan] Using priority ${priority} images: ${imagesByPriority[priority].length} found`);
-                    for (let i = 0; i < imagesByPriority[priority].length; i++) {
+                if ((imagesByPriority[priority]?.length ?? 0) > 0) {
+                    console.log(`[Morgan] Using priority ${priority} images: ${imagesByPriority[priority]?.length} found`);
+                    for (let i = 0; i < imagesByPriority[priority]!.length; i++) {
                         images.push({
-                            url: imagesByPriority[priority][i],
+                            url: imagesByPriority[priority]?.[i] || '',
                             label: `Page ${i + 1}`
                         });
                     }
@@ -2021,10 +2026,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             // If we have fewer images than page links found, generate URLs for all pages
             const pageUrlRegex = new RegExp(`\\/collection\\/${manuscriptId}\\/(\\d+)`, 'g');
             const pageMatches = [...html.matchAll(pageUrlRegex)];
-            const uniquePages = [...new Set(pageMatches.map(match => match[1]))];
+            const uniquePages = [...new Set(pageMatches.map(match => match?.[1]))];
             
-            if (uniquePages.length > images.length) {
-                console.log(`[Morgan] Found ${uniquePages.length} pages but only ${images.length} high-res images`);
+            if (uniquePages?.length > images?.length) {
+                console.log(`[Morgan] Found ${uniquePages?.length} pages but only ${images?.length} high-res images`);
                 
                 // Sort page numbers numerically  
                 uniquePages.sort((a, b) => parseInt(a ?? '0') - parseInt(b ?? '0'));
@@ -2033,7 +2038,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 const existingPageNumbers = new Set();
                 images.forEach((img: ManuscriptImage) => {
                     const match = img.label?.match(/Page (\d+)/);
-                    if (match) existingPageNumbers.add(match[1]);                   
+                    if (match) existingPageNumbers.add(match?.[1]);                   
                 });
                 
                 for (const pageNum of uniquePages) {
@@ -2053,7 +2058,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                     return aNum - bNum;
                 });
                 
-                console.log(`[Morgan] Total images after adding thumbnails: ${images.length}`);
+                console.log(`[Morgan] Total images after adding thumbnails: ${images?.length}`);
             }
         }
         
@@ -2072,11 +2077,11 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             displayName = `${displayName} (MS M.${msMatch[1]})`;
         }
         
-        if (images.length === 0) {
+        if (images?.length === 0) {
             throw new Error('No images found on Morgan Library page');
         }
         
-        console.log(`[Morgan] Successfully extracted ${images.length} images`);
+        console.log(`[Morgan] Successfully extracted ${images?.length} images`);
         
         return {
             images,
@@ -2097,7 +2102,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const match = url.match(/titleinfo\/(\d+)/);
         if (!match) throw new Error('Invalid HHU URL format');
         
-        const manuscriptId = match[1];
+        const manuscriptId = match?.[1];
         
         // HHU uses a unified IIIF v2.0 pattern for all collections
         // All collections use the same /i3f/v20/ endpoint regardless of collection type
@@ -2122,7 +2127,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             const manifestText = await response.text();
             
             // Validate response is JSON
-            if (!manifestText || manifestText.trim().length === 0) {
+            if (!manifestText || manifestText.trim()?.length === 0) {
                 throw new Error('HHU returned empty manifest response');
             }
             
@@ -2150,10 +2155,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             // Extract images from IIIF v2 manifest
             if (manifest.sequences?.[0]?.canvases) {
                 const canvases = manifest.sequences[0].canvases;
-                console.log(`[HHU] Found ${canvases.length} pages in manifest`);
+                console.log(`[HHU] Found ${canvases?.length} pages in manifest`);
                 
                 // Process all pages, not just first 10
-                for (let i = 0; i < canvases.length; i++) {
+                for (let i = 0; i < canvases?.length; i++) {
                     const canvas = canvases[i];
                     
                     if (canvas && canvas.images && canvas.images[0] && canvas.images[0].resource) {
@@ -2180,25 +2185,25 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                     
                     // Log progress for large manuscripts
                     if ((i + 1) % 50 === 0) {
-                        console.log(`[HHU] Processing page ${i + 1}/${canvases.length}`);
+                        console.log(`[HHU] Processing page ${i + 1}/${canvases?.length}`);
                     }
                 }
             } else {
                 throw new Error('Invalid HHU IIIF manifest structure - no canvases found');
             }
             
-            if (images.length === 0) {
+            if (images?.length === 0) {
                 throw new Error('No images found in HHU manifest');
             }
             
-            console.log(`[HHU] Successfully extracted ${images.length} pages`);
+            console.log(`[HHU] Successfully extracted ${images?.length} pages`);
             
             return {
                 images,
                 displayName
             };
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             if (errorMessage.includes('timeout')) {
                 throw new Error('HHU server request timed out. Please try again later.');
@@ -2236,7 +2241,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                         }
                         
                         const canvases = manifest.sequences[0].canvases;
-                        console.log(`[GAMS] Found ${canvases.length} canvases in IIIF manifest`);
+                        console.log(`[GAMS] Found ${canvases?.length} canvases in IIIF manifest`);
                         
                         // Extract images from IIIF manifest
                         const images = canvases.map((canvas: IIIFCanvas, index: number) => {
@@ -2254,10 +2259,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                             } as ManuscriptImage;
                         }).filter((img: ManuscriptImage | null): img is ManuscriptImage => img !== null);
                         
-                        console.log(`[GAMS] Successfully extracted ${images.length} images from IIIF manifest`);
+                        console.log(`[GAMS] Successfully extracted ${images?.length} images from IIIF manifest`);
                         return { images };
                     }
-                } catch (error: unknown) {
+                } catch (error: any) {
                     const errorMessage = error instanceof Error ? error.message : String(error);
                     console.log('[GAMS] IIIF manifest failed:', errorMessage);
                 }
@@ -2289,7 +2294,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 const response = await this.fetchWithRetry(url, {}, 1);
                 
                 if (response.ok) {
-                    const contentType = response.headers.get('content-type');
+                    const contentType = typeof response.headers.get === 'function' ? response.headers.get('content-type') : null;
                     if (contentType && contentType.includes('json')) {
                         const manifest = await response.json() as IIIFManifest;
                         
@@ -2298,7 +2303,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                         }
                 
                 const canvases = manifest.sequences[0].canvases;
-                console.log(`[GAMS] Found ${canvases.length} canvases in IIIF manifest`);
+                console.log(`[GAMS] Found ${canvases?.length} canvases in IIIF manifest`);
                 
                 // Extract images from IIIF manifest
                 const images = canvases.map((canvas: IIIFCanvas, index: number) => {
@@ -2318,7 +2323,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                     } as ManuscriptImage;
                 }).filter((img: ManuscriptImage | null): img is ManuscriptImage => img !== null);
                 
-                        console.log(`[GAMS] Successfully extracted ${images.length} images from IIIF manifest`);
+                        console.log(`[GAMS] Successfully extracted ${images?.length} images from IIIF manifest`);
                         return { images };
                     }
                 }
@@ -2345,31 +2350,31 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                             });
                         } else {
                             // Stop when we hit a 404
-                            if (testResponse.status === 404 && images.length > 0) {
+                            if (testResponse.status === 404 && images?.length > 0) {
                                 break;
                             }
                         }
                     } catch {
                         // Stop on error if we already have some pages
-                        if (images.length > 0) {
+                        if (images?.length > 0) {
                             break;
                         }
                     }
                     
                     // Stop after finding 10 consecutive missing pages
-                    if (page > 10 && images.length === 0) {
+                    if (page > 10 && images?.length === 0) {
                         break;
                     }
                 }
                 
-                if (images.length > 0) {
-                    console.log(`[GAMS] Found ${images.length} images using alternative approach`);
+                if (images?.length > 0) {
+                    console.log(`[GAMS] Found ${images?.length} images using alternative approach`);
                     return { images };
                 }
                 
                 throw new Error(`GAMS manuscript "${objectId}" requires authentication. This is a protected collection at the University of Graz that requires institutional login. Please try:\n1. Using a public manuscript from unipub.uni-graz.at instead\n2. Accessing the manuscript directly through the GAMS website with your credentials\n3. Contacting the University of Graz library for access permissions`);
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error('[GAMS] Failed to process GAMS manuscript:', error);
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 throw new Error(`Failed to load GAMS manuscript: ${errorMessage}`);
@@ -2493,7 +2498,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
 
             const html = await pageResponse.text();
-            console.log(`[Florence] Page HTML retrieved (${html.length} characters)`);
+            console.log(`[Florence] Page HTML retrieved (${html?.length} characters)`);
 
             // Extract __INITIAL_STATE__ from the HTML
             const stateMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*JSON\.parse\("(.+?)"\);/);
@@ -2520,7 +2525,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
 
             // Extract item and parent data from state
-            const itemData = state?.item?.item;
+            const itemData = (state as Record<string, unknown>)?.['item'] && ((state as Record<string, unknown>)['item'] as Record<string, unknown>)?.['item'];
             if (!itemData) {
                 throw new Error('No item data found in Florence page state');
             }
@@ -2529,15 +2534,15 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             let manuscriptTitle = 'Florence Manuscript';
 
             // Check if this item has a parent (compound object)
-            if (itemData.parentId && itemData.parentId !== -1) {
+            if ((itemData as any).parentId && (itemData as any).parentId !== -1) {
                 // This is a child page - get all siblings from parent
-                if (itemData.parent && itemData.parent.children && Array.isArray(itemData.parent.children)) {
-                    console.log(`[Florence] Found ${itemData.parent.children.length} pages in parent compound object`);
+                if ((itemData as any).parent && (itemData as any).parent.children && Array.isArray((itemData as any).parent.children)) {
+                    console.log(`[Florence] Found ${(itemData as any).parent.children?.length} pages in parent compound object`);
                     
                     // Filter out non-page items (like Color Chart, Dorso, etc.)
-                    pages = itemData.parent.children
+                    pages = (itemData as any).parent.children
                         .filter((child: Record<string, unknown>) => {
-                            const title = (child.title || '').toLowerCase();
+                            const title = String(child['title'] || '').toLowerCase();
                             // Include carta/folio pages, exclude color charts and binding parts
                             return !title.includes('color chart') && 
                                    !title.includes('dorso') && 
@@ -2547,15 +2552,15 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                    !title.includes('guardia posteriore');
                         })
                         .map((child: Record<string, unknown>) => ({
-                            id: child.id.toString(),
-                            title: child.title || `Page ${child.id}`
+                            id: String(child['id'] || ''),
+                            title: String(child['title'] || `Page ${child['id']}`)
                         }));
 
                     // Extract manuscript title from parent metadata
-                    if (itemData.parent.fields) {
-                        const subjecField = itemData.parent.fields.find((f: { key: string; value?: string }) => f.key === 'subjec');
-                        const identField = itemData.parent.fields.find((f: { key: string; value?: string }) => f.key === 'identi');
-                        const titleField = itemData.parent.fields.find((f: { key: string; value?: string }) => f.key === 'title' || f.key === 'titlea');
+                    if ((itemData as any).parent.fields) {
+                        const subjecField = (itemData as any).parent.fields.find((f: { key: string; value?: string }) => f.key === 'subjec');
+                        const identField = (itemData as any).parent.fields.find((f: { key: string; value?: string }) => f.key === 'identi');
+                        const titleField = (itemData as any).parent.fields.find((f: { key: string; value?: string }) => f.key === 'title' || f.key === 'titlea');
                         
                         if (subjecField && subjecField.value) {
                             manuscriptTitle = subjecField.value;
@@ -2575,13 +2580,13 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             } else {
                 // This might be a parent itself or a single page
                 // Check the current page for children
-                const currentPageChildren = state?.item?.children;
-                if (currentPageChildren && Array.isArray(currentPageChildren) && currentPageChildren.length > 0) {
-                    console.log(`[Florence] Found ${currentPageChildren.length} child pages in current item`);
+                const currentPageChildren = (state as Record<string, unknown>)?.['item'] && ((state as Record<string, unknown>)['item'] as Record<string, unknown>)?.['children'];
+                if (currentPageChildren && Array.isArray(currentPageChildren) && currentPageChildren?.length > 0) {
+                    console.log(`[Florence] Found ${currentPageChildren?.length} child pages in current item`);
                     
                     pages = currentPageChildren
                         .filter((child: Record<string, unknown>) => {
-                            const title = (child.title || '').toLowerCase();
+                            const title = String(child['title'] || '').toLowerCase();
                             return !title.includes('color chart') && 
                                    !title.includes('dorso') && 
                                    !title.includes('piatto') &&
@@ -2590,15 +2595,15 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                    !title.includes('guardia posteriore');
                         })
                         .map((child: Record<string, unknown>) => ({
-                            id: child.id.toString(),
-                            title: child.title || `Page ${child.id}`
+                            id: String(child['id'] || ''),
+                            title: String(child['title'] || `Page ${child['id']}`)
                         }));
 
                     // Extract manuscript title from current item
-                    if (itemData.fields) {
-                        const subjecField = itemData.fields.find((f: Record<string, unknown>) => f.key === 'subjec');
-                        const identField = itemData.fields.find((f: Record<string, unknown>) => f.key === 'identi');
-                        const titleField = itemData.fields.find((f: Record<string, unknown>) => f.key === 'title' || f.key === 'titlea');
+                    if ((itemData as any).fields) {
+                        const subjecField = (itemData as any).fields.find((f: Record<string, unknown>) => f['key'] === 'subjec');
+                        const identField = (itemData as any).fields.find((f: Record<string, unknown>) => f['key'] === 'identi');
+                        const titleField = (itemData as any).fields.find((f: Record<string, unknown>) => f['key'] === 'title' || f['key'] === 'titlea');
                         
                         if (subjecField && subjecField.value) {
                             manuscriptTitle = subjecField.value;
@@ -2616,19 +2621,19 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     // Single page manuscript
                     pages = [{
                         id: itemId || '',
-                        title: itemData.title || 'Page 1'
+                        title: (itemData as any).title || 'Page 1'
                     }];
                     
-                    manuscriptTitle = itemData.title || manuscriptTitle;
+                    manuscriptTitle = (itemData as any).title || manuscriptTitle;
                     console.log('[Florence] Single page manuscript');
                 }
             }
 
-            if (pages.length === 0) {
+            if (pages?.length === 0) {
                 throw new Error('No pages found in Florence manuscript');
             }
 
-            console.log(`[Florence] Extracted ${pages.length} manuscript pages (excluding binding/charts)`);
+            console.log(`[Florence] Extracted ${pages?.length} manuscript pages (excluding binding/charts)`);
 
             // Generate IIIF URLs for all pages with maximum resolution
             const images: ManuscriptImage[] = pages.map((page, index) => ({
@@ -2636,7 +2641,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 label: page.title || `Page ${index + 1}`
             }));
 
-            console.log(`[Florence] Manuscript processed: ${pages.length} pages with maximum resolution (6000px width)`);
+            console.log(`[Florence] Manuscript processed: ${pages?.length} pages with maximum resolution (6000px width)`);
             console.log(`[Florence] Manuscript title: ${manuscriptTitle}`);
 
             // Store the manuscript title for display
@@ -2647,7 +2652,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
 
             return result;
 
-        } catch (error: unknown) {
+        } catch (error: any) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             console.error('[Florence] Failed to load manuscript:', errorMessage);
             throw new Error(`Failed to load Florence manuscript: ${errorMessage}`);
@@ -2658,7 +2663,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const match = url.match(/ark:\/12148\/([^/]+)/);
         if (!match) throw new Error('Invalid Grenoble URL');
         
-        const documentId = match[1];
+        const documentId = match?.[1];
         const manifestUrl = `https://pagella.bm-grenoble.fr/iiif/ark:/12148/${documentId}/manifest.json`;
         
         // Fetch IIIF manifest (SSL bypass already configured in fetchUrl)
@@ -2671,11 +2676,11 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         // Process IIIF v2 manifest
         if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
-            const maxPages = canvases.length;
+            const maxPages = canvases?.length;
             
             for (let i = 0; i < maxPages; i++) {
                 const canvas = canvases[i];
-                if (canvas.images?.[0]?.resource) {
+                if (canvas && canvas.images?.[0]?.resource) {
                     const imageResource = canvas.images[0].resource;
                     
                     // Get the highest quality image URL
@@ -2694,7 +2699,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         
-        if (images.length === 0) {
+        if (images?.length === 0) {
             throw new Error('No images found in Grenoble manifest');
         }
         
@@ -2711,7 +2716,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const match = url.match(/view\/(MS-[A-Z]+-\d+)/);
         if (!match) throw new Error('Invalid Manchester URL');
         
-        const manuscriptId = match[1];
+        const manuscriptId = match?.[1];
         const manifestUrl = `https://www.digitalcollections.manchester.ac.uk/iiif/${manuscriptId}`;
         
         // Fetch IIIF manifest
@@ -2724,11 +2729,11 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         // Process IIIF v2 manifest
         if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
-            const maxPages = canvases.length;
+            const maxPages = canvases?.length;
             
             for (let i = 0; i < maxPages; i++) {
                 const canvas = canvases[i];
-                if (canvas.images?.[0]?.resource) {
+                if (canvas && canvas.images?.[0]?.resource) {
                     const service = canvas.images[0].resource.service;
                     const serviceObj = Array.isArray(service) ? service[0] : service;
                     const imageId = serviceObj && ((serviceObj as IIIFService)['@id'] || (serviceObj as IIIFService).id);
@@ -2745,7 +2750,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         
-        if (images.length === 0) {
+        if (images?.length === 0) {
             throw new Error('No images found in Manchester manifest');
         }
         
@@ -2766,7 +2771,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             throw new Error('Invalid Munich Digital Collections URL. Expected format: https://www.digitale-sammlungen.de/en/view/[manuscript-id]');
         }
         
-        const manuscriptId = match[1];
+        const manuscriptId = match?.[1];
         const manifestUrl = `https://api.digitale-sammlungen.de/iiif/presentation/v2/${manuscriptId}/manifest`;
         console.log('[Munich] IIIF manifest URL:', manifestUrl);
         
@@ -2782,12 +2787,12 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         // Process IIIF v2 manifest
         if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
-            const maxPages = canvases.length;
+            const maxPages = canvases?.length;
             console.log(`[Munich] Found ${maxPages} pages in manifest`);
             
             for (let i = 0; i < maxPages; i++) {
                 const canvas = canvases[i];
-                if (canvas.images?.[0]?.resource) {
+                if (canvas && canvas.images?.[0]?.resource) {
                     const imageResource = canvas.images[0].resource;
                     const service = imageResource.service;
                     const serviceObj = Array.isArray(service) ? service[0] : service;
@@ -2808,7 +2813,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         
-        if (images.length === 0) {
+        if (images?.length === 0) {
             throw new Error('No images found in Munich manifest');
         }
         
@@ -2859,6 +2864,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             if (!viewMatch) throw new Error('Invalid Toronto collections URL');
             
             const itemId = viewMatch[1];
+            if (!itemId) throw new Error('Invalid Toronto item ID');
             
             // Try different manifest URL patterns
             const manifestPatterns = [
@@ -2904,23 +2910,24 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         // Handle IIIF v3
         if (manifest.items) {
-            const maxPages = manifest.items.length;
+            const maxPages = manifest.items?.length;
             for (let i = 0; i < maxPages; i++) {
                 const item = manifest.items[i] as { items?: Array<{ items?: Array<{ body?: { service?: Array<{ id?: string }> } }> }> };
                 if (item.items && item.items[0] && item.items[0].items && item.items[0].items[0]) {
                     const annotation = item.items[0].items[0];
                     if (annotation.body) {
-                        const service = annotation.body.service && annotation.body.service[0];
+                        const body = Array.isArray(annotation.body) ? annotation.body[0] : annotation.body;
+                        const service = body?.service && (Array.isArray(body.service) ? body.service[0] : body.service);
                         if (service && service.id) {
                             const imageUrl = `${service.id}/full/max/0/default.jpg`;
                             images.push({
                                 url: imageUrl || '',
-                                label: this.localizedStringToString(item.label, `Page ${i + 1}`)
+                                label: this.localizedStringToString((item as any).label, `Page ${i + 1}`)
                             });
-                        } else if (annotation.body.id) {
+                        } else if (body?.id) {
                             images.push({
-                                url: annotation.body.id,
-                                label: this.localizedStringToString(item.label, `Page ${i + 1}`)
+                                url: body.id,
+                                label: this.localizedStringToString((item as any).label, `Page ${i + 1}`)
                             });
                         }
                     }
@@ -2930,7 +2937,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         // Handle IIIF v2
         else if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
-            const maxPages = canvases.length;
+            const maxPages = canvases?.length;
             
             for (let i = 0; i < maxPages; i++) {
                 const canvas = canvases[i];
@@ -2940,12 +2947,14 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     
                     if (service) {
                         const serviceObj = Array.isArray(service) ? service[0] : service;
-                        const serviceId = serviceObj['@id'] || serviceObj.id;
-                        const imageUrl = `${serviceId}/full/max/0/default.jpg`;
-                        images.push({
-                            url: imageUrl || '',
-                            label: this.localizedStringToString(canvas?.label, `Page ${i + 1}`)
-                        });
+                        if (serviceObj) {
+                            const serviceId = serviceObj['@id'] || serviceObj.id;
+                            const imageUrl = `${serviceId}/full/max/0/default.jpg`;
+                            images.push({
+                                url: imageUrl || '',
+                                label: this.localizedStringToString(canvas?.label, `Page ${i + 1}`)
+                            });
+                        }
                     } else if (resource['@id']) {
                         images.push({
                             url: resource['@id'],
@@ -2956,7 +2965,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         
-        if (images.length === 0) {
+        if (images?.length === 0) {
             throw new Error('No images found in Toronto manifest');
         }
         
@@ -2973,18 +2982,18 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const match = url.match(/view\/([^/?]+)/);
         if (!match) throw new Error('Invalid Vatican Library URL');
         
-        const manuscriptId = match[1];
+        const manuscriptId = match?.[1];
         
         // Extract cleaner manuscript name according to patterns:
         // MSS_Vat.lat.7172 -> Vat.lat.7172
         // bav_pal_lat_243 -> Pal.lat.243
         // MSS_Reg.lat.15 -> Reg.lat.15
         let displayName = manuscriptId;
-        if (manuscriptId.startsWith('MSS_')) {
-            displayName = manuscriptId.substring(4);
-        } else if (manuscriptId.startsWith('bav_')) {
+        if (manuscriptId?.startsWith('MSS_')) {
+            displayName = manuscriptId?.substring(4);
+        } else if (manuscriptId?.startsWith('bav_')) {
             // Convert bav_pal_lat_243 to Pal.lat.243
-            displayName = manuscriptId.substring(4)
+            displayName = manuscriptId?.substring(4)
                 .replace(/^([a-z])/, (match) => match.toUpperCase())
                 .replace(/_/g, '.');
         }
@@ -3001,16 +3010,16 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
             
-            for (let i = 0; i < canvases.length; i++) {
+            for (let i = 0; i < canvases?.length; i++) {
                 const canvas = canvases[i];
-                if (canvas.images && canvas.images[0]) {
-                    const image = canvas.images[0];
+                if (canvas?.images && canvas?.images[0]) {
+                    const image = canvas?.images[0];
                     const service = image.resource?.service;
                     
                     if (service && (service as IIIFService)['@id']) {
                         // Vatican supports up to 4000px width with excellent quality
                         // Testing showed 4000px gives optimal file size/quality balance
-                        const imageUrl = `${service['@id']}/full/4000,/0/default.jpg`;
+                        const imageUrl = `${(service as IIIFService)['@id']}/full/4000,/0/default.jpg`;
                         images.push({
                             url: imageUrl || '',
                             label: this.localizedStringToString(canvas?.label, `Page ${i + 1}`)
@@ -3020,7 +3029,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         
-        if (images.length === 0) {
+        if (images?.length === 0) {
             throw new Error('No images found in Vatican manifest');
         }
         
@@ -3067,37 +3076,37 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             const imageRegex = /(?:src|href)=['"]([^'"]*\/(?:images?|facsimile|zoom)[^'"]*\.(?:jpg|jpeg|png))/gi;
             let match;
             while ((match = imageRegex.exec(html)) !== null) {
-                let imageUrl = match[1];
-                if (!imageUrl.startsWith('http')) {
-                    imageUrl = imageUrl.startsWith('/') ? 
+                let imageUrl = match?.[1];
+                if (imageUrl && !imageUrl.startsWith('http')) {
+                    imageUrl = imageUrl?.startsWith('/') ? 
                         `https://host.themorgan.org${imageUrl}` : 
                         `https://host.themorgan.org/${imageUrl}`;
                 }
                 images.push({
-                    url: imageUrl,
-                    label: `Page ${images.length + 1}`
+                    url: imageUrl || '',
+                    label: `Page ${images?.length + 1}`
                 });
             }
             
             // Pattern 2: Look for zoom images or high-resolution references
             const zoomRegex = /['"](.*?(?:zoom|large|high|max).*?\.(?:jpg|jpeg|png))['"]/gi;
             while ((match = zoomRegex.exec(html)) !== null) {
-                let imageUrl = match[1];
-                if (!imageUrl.startsWith('http')) {
-                    imageUrl = imageUrl.startsWith('/') ? 
+                let imageUrl = match?.[1];
+                if (imageUrl && !imageUrl.startsWith('http')) {
+                    imageUrl = imageUrl?.startsWith('/') ? 
                         `https://host.themorgan.org${imageUrl}` : 
                         `https://host.themorgan.org/${imageUrl}`;
                 }
                 if (!images.some(img => img.url === imageUrl)) {
                     images.push({
                         url: imageUrl || '',
-                        label: `Page ${images.length + 1} (High-res)`
+                        label: `Page ${images?.length + 1} (High-res)`
                     });
                 }
             }
             
             // Pattern 3: Generate potential image URLs based on common Morgan patterns
-            if (images.length === 0) {
+            if (images?.length === 0) {
                 console.log('[Morgan] No images found in HTML, generating potential URLs...');
                 // Try common Morgan image URL patterns
                 const basePatterns = [
@@ -3134,18 +3143,18 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 if (!seenUrls.has(img.url)) {
                     seenUrls.add(img.url);
                     uniqueImages.push(img);
-                    if (uniqueImages.length >= 50) break;
+                    if (uniqueImages?.length >= 50) break;
                 }
             }
             
-            console.log(`[Morgan] Found ${uniqueImages.length} facsimile images`);
+            console.log(`[Morgan] Found ${uniqueImages?.length} facsimile images`);
             
             return {
                 images: uniqueImages,
                 displayName: `Morgan Library Manuscript ${manuscriptId} (Facsimile)`
             };
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             console.error('[Morgan] Facsimile processing error:', errorMessage);
             throw new Error(`Failed to process Morgan facsimile URL: ${errorMessage}`);
@@ -3204,9 +3213,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         if (childrenMatch) {
                             console.log('[Florence] Found children array in parent page');
                             const childrenData = childrenMatch[1];
-                            const childMatches = [...childrenData.matchAll(/"id":(\d+)/g)];
+                            const childMatches = [...(childrenData?.matchAll(/"id":(\d+)/g) || [])];
                             
-                            console.log(`[Florence] Found ${childMatches.length} child pages`);
+                            console.log(`[Florence] Found ${childMatches?.length} child pages`);
                             
                             // Create IIIF URLs for each child page
                             for (const childMatch of childMatches) {
@@ -3215,8 +3224,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                 
                                 // Try to extract title from the children data  
                                 const titleRegex = new RegExp(`"id":${childId}[^}]*"title":"([^"]+)"`);
-                                const titleMatch = childrenData.match(titleRegex);
-                                const title = titleMatch ? titleMatch[1] : `Page ${images.length + 1}`;
+                                const titleMatch = childrenData?.match(titleRegex);
+                                const title = titleMatch ? titleMatch[1] : `Page ${images?.length + 1}`;
                                 
                                 images.push({
                                     url: imageUrl || '',
@@ -3237,28 +3246,28 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             if (childrenMatch) {
                 console.log('[Florence] Found children array in current page');
                 const childrenData = childrenMatch[1];
-                const childMatches = [...childrenData.matchAll(/"id":(\d+)/g)];
+                const childMatches = [...(childrenData?.matchAll(/"id":(\d+)/g) || [])];
                 
-                console.log(`[Florence] Found ${childMatches.length} child pages`);
+                console.log(`[Florence] Found ${childMatches?.length} child pages`);
                 
                 for (const childMatch of childMatches) {
                     const childId = childMatch[1];
                     const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${childId}/full/max/0/default.jpg`;
                     images.push({
                         url: imageUrl || '',
-                        label: `Page ${images.length + 1}`
+                        label: `Page ${images?.length + 1}`
                     });
                 }
             }
         }
         
         // Fallback: if we found a parent ID but no children, try generating child URLs
-        if (images.length === 0 && parentIdMatch) {
+        if (images?.length === 0 && parentIdMatch) {
             console.log('[Florence] No children found, trying URL generation based on parent...');
             
             // For Florence ContentDM, if we have a parent ID, the children are usually
             // sequential IDs starting from a base number. Let's try to find them.
-            const parentId = parseInt(parentIdMatch[1]);
+            const parentId = parseInt(parentIdMatch[1] || '0');
             const currentId = parseInt(itemId);
             
             // Find the starting ID - usually it's lower than the current ID
@@ -3295,8 +3304,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             for (const testId of quickCheckIds) {
                 const testUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${testId}/info.json`;
                 try {
+                    const httpsModule = await import('https');
                     const result = await new Promise((resolve) => {
-                        const req = httpsLib.request(testUrl, { method: 'HEAD', timeout: 3000 }, (res: http.IncomingMessage) => {
+                        const req = httpsModule.default.request(testUrl, { method: 'HEAD', timeout: 3000 }, (res: http.IncomingMessage) => {
                             resolve(res.statusCode === 200);
                         });
                         req.on('error', () => resolve(false));
@@ -3323,8 +3333,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     const testUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${testId}/info.json`;
                     
                     try {
+                        const httpsModule = await import('https');
                         const result = await new Promise((resolve) => {
-                            const req = httpsLib.request(testUrl, { method: 'HEAD', timeout: 3000 }, (res: http.IncomingMessage) => {
+                            const req = httpsModule.default.request(testUrl, { method: 'HEAD', timeout: 3000 }, (res: http.IncomingMessage) => {
                                 resolve(res.statusCode === 200);
                             });
                             req.on('error', () => resolve(false));
@@ -3347,8 +3358,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     }
                 }
                 
-                console.log(`[Florence] Sequential scan found ${images.length} pages`);
-                if (images.length > 0) {
+                console.log(`[Florence] Sequential scan found ${images?.length} pages`);
+                if (images?.length > 0) {
                     return { images };
                 }
             }
@@ -3401,14 +3412,14 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     const imageUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/plutei:${id}/full/max/0/default.jpg`;
                     images.push({
                         url: imageUrl || '',
-                        label: `Page ${images.length + 1}`
+                        label: `Page ${images?.length + 1}`
                     });
                 }
             }
         }
         
         // Final fallback: look for page count indicators
-        if (images.length === 0) {
+        if (images?.length === 0) {
             console.log('[Florence] No valid URLs found, trying page count detection...');
             
             const patterns = [
@@ -3420,8 +3431,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             let totalPages = 0;
             for (const pattern of patterns) {
                 const match = html.match(pattern);
-                if (match && match[1]) {
-                    totalPages = parseInt(match[1]);
+                if (match && match?.[1]) {
+                    totalPages = parseInt(match?.[1]);
                     if (totalPages > 1 && totalPages < 1000) {
                         console.log(`[Florence] Detected ${totalPages} pages from pattern`);
                         break;
@@ -3443,7 +3454,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         
-        if (images.length === 0) {
+        if (images?.length === 0) {
             throw new Error('No compound object structure detected');
         }
         
@@ -3457,7 +3468,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         console.log(`[Bordeaux] Discovering page range for baseId: ${baseId}`);
         
         const baseUrl = 'https://selene.bordeaux.fr/in/dz';
-        const availablePages = [];
+        const availablePages: any[] = [];
         
         // Test a reasonable range of pages
         const maxTestPages = 200; // Don't test too many to avoid overwhelming the server
@@ -3495,11 +3506,11 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             return { firstPage: null, lastPage: null, totalPages: 0, availablePages: [] };
         }
         
-        console.log(`[Bordeaux] Quick scan found pages between ${minFound} and ${maxFound}`);
+        console.log(`[Bordeaux] Quick scan found pages between ${minFound ?? 'unknown'} and ${maxFound ?? 'unknown'}`);
         
         // Now do a detailed scan in the discovered range
-        const detailedStart = Math?.max(1, minFound - 5);
-        const detailedEnd = Math?.min(maxTestPages, maxFound + 10);
+        const detailedStart = Math?.max(1, (minFound ?? 1) - 5);
+        const detailedEnd = Math?.min(maxTestPages, (maxFound ?? 1) + 10);
         
         console.log(`[Bordeaux] Detailed scan from ${detailedStart} to ${detailedEnd}...`);
         
@@ -3530,7 +3541,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
             
             // Progress indication
-            console.log(`[Bordeaux] Scanned up to page ${batchEnd}... (${availablePages.length} found)`);
+            console.log(`[Bordeaux] Scanned up to page ${batchEnd}... (${availablePages?.length} found)`);
             
             // Small delay between batches to be respectful to the server
             await new Promise(resolve => setTimeout(resolve, 50));
@@ -3540,13 +3551,13 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         availablePages.sort((a, b) => a - b);
         
         const result = {
-            firstPage: availablePages.length > 0 ? availablePages[0] : null,
-            lastPage: availablePages.length > 0 ? availablePages[availablePages.length - 1] : null,
-            totalPages: availablePages.length,
+            firstPage: availablePages?.length > 0 ? availablePages[0] : null,
+            lastPage: availablePages?.length > 0 ? availablePages[availablePages?.length - 1] : null,
+            totalPages: availablePages?.length,
             availablePages: availablePages
         };
         
-        console.log(`[Bordeaux] Page discovery complete: ${result.totalPages} pages found (${result.firstPage}-${result.lastPage})`);
+        console.log(`[Bordeaux] Page discovery complete: ${result?.totalPages} pages found (${result.firstPage}-${result.lastPage})`);
         return result;
     }
 
@@ -3581,7 +3592,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             pageNum = directMatch[2] ? parseInt(directMatch[2]) : 1;
             
             // Extract the manuscript part for display
-            const idParts = internalId.match(/(\d+)_(.+)/);
+            const idParts = internalId?.match(/(\d+)_(.+)/);
             publicId = idParts ? idParts[2] : internalId;
         } else {
             // ULTRA-PRIORITY FIX for Issue #6: Try to extract ID from selene/page URL
@@ -3612,9 +3623,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         console.log('[Bordeaux] Found iframe URL:', iframeMatch[1]);
                         
                         // Fetch iframe content to find tile ID
-                        const iframeUrl = iframeMatch[1].startsWith('http') ? iframeMatch[1] : `https://selene.bordeaux.fr${iframeMatch[1]}`;
+                        const iframeUrl = iframeMatch[1]?.startsWith('http') ? iframeMatch[1] : `https://selene.bordeaux.fr${iframeMatch[1]}`;
                         try {
-                            const iframeResponse = await this.fetchWithRetry(iframeUrl);
+                            const iframeResponse = await this.fetchWithRetry(iframeUrl || '');
                             if (iframeResponse.ok) {
                                 const iframeHtml = await iframeResponse.text();
                                 
@@ -3625,13 +3636,13 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                     console.log('[Bordeaux] Found internal tile ID:', internalId);
                                 }
                             }
-                        } catch (error: unknown) {
+                        } catch (error: any) {
                             const errorMessage = error instanceof Error ? error.message : String(error);
                             console.log('[Bordeaux] Could not fetch iframe content:', errorMessage);
                         }
                     }
                 }
-            } catch (error: unknown) {
+            } catch (error: any) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 console.log('[Bordeaux] Could not fetch main page:', errorMessage);
             }
@@ -3647,7 +3658,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 // Add more mappings as discovered
             };
             
-            internalId = knownMappings[publicId];
+            internalId = (knownMappings as Record<string, string>)[publicId ?? ''];
             
             if (!internalId) {
                 // If it's a direct selene.bordeaux.fr URL, extract the ID
@@ -3663,19 +3674,19 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         }
         
         // Extract base ID without page number if present
-        const baseIdMatch = internalId.match(/^(.+?)(?:_\d{4})?$/);
+        const baseIdMatch = internalId?.match(/^(.+?)(?:_\d{4})?$/);
         const baseId = baseIdMatch ? baseIdMatch[1] : internalId;
         
         // For Bordeaux, discover the actual page range by testing availability
         console.log('[Bordeaux] Discovering actual page range...');
-        const pageDiscovery = await this.discoverBordeauxPageRange(baseId);
+        const pageDiscovery = await this.discoverBordeauxPageRange(parseInt(baseId!, 10));
         
-        let startPage = pageNum || pageDiscovery.firstPage || 1;
-        const pageCount = pageDiscovery.totalPages;
+        let startPage = (typeof pageNum === 'number' ? pageNum : parseInt(pageNum || '0', 10)) || pageDiscovery.firstPage || 1;
+        const pageCount = pageDiscovery?.totalPages;
         
         // If user specified a specific page, respect it but use discovered total count
-        if (pageNum && pageDiscovery.totalPages > 0) {
-            startPage = pageNum;
+        if (pageNum && pageDiscovery?.totalPages > 0) {
+            startPage = typeof pageNum === 'number' ? pageNum : parseInt(pageNum, 10);
         }
         
         console.log(`[Bordeaux] Discovered ${pageCount} pages, starting from page ${startPage}`);
@@ -3684,29 +3695,29 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const images: ManuscriptImage[] = [];
         
         // If we have specific available pages, use them; otherwise generate a range
-        if (pageDiscovery.availablePages && pageDiscovery.availablePages.length > 0) {
+        if (pageDiscovery.availablePages && pageDiscovery.availablePages?.length > 0) {
             // Use actual available pages for manuscripts that don't have continuous numbering
             for (const pageNum of pageDiscovery.availablePages) {
                 const paddedPage = String(pageNum).padStart(4, '0');
                 const imageUrl = `https://selene.bordeaux.fr/in/dz/${baseId}_${paddedPage}_files/13/0_0.jpg`;
                 images.push({
-                    url: imageUrl,
+                    url: imageUrl || '',
                     label: `Page ${pageNum}`
                 });
             }
         } else if (pageCount > 0) {
             // Fallback to range-based generation if discovery didn't find specific pages
-            for (let i = startPage; i < startPage + pageCount && i <= pageDiscovery?.lastPage; i++) {
+            for (let i = startPage; i < startPage + pageCount && i <= (pageDiscovery?.lastPage ?? startPage + pageCount); i++) {
                 const paddedPage = String(i).padStart(4, '0');
                 const imageUrl = `https://selene.bordeaux.fr/in/dz/${baseId}_${paddedPage}_files/13/0_0.jpg`;
                 images.push({
-                    url: imageUrl,
+                    url: imageUrl || '',
                     label: `Page ${i}`
                 });
             }
         }
         
-        console.log(`[Bordeaux] Generated ${images.length} image URLs`);
+        console.log(`[Bordeaux] Generated ${images?.length} image URLs`);
         
         // Return standard images array for compatibility
         return { 
@@ -3714,7 +3725,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             displayName: `Bordeaux - ${publicId}`,
             // Keep tile processor info for backward compatibility
             type: 'bordeaux_tiles',
-            baseId: baseId,
+            baseId: parseInt(baseId!, 10),
             publicId: publicId,
             startPage: startPage,
             pageCount: pageCount,
@@ -3738,7 +3749,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
-            const maxPages = canvases.length;
+            const maxPages = canvases?.length;
             
             for (let i = 0; i < maxPages; i++) {
                 const canvas = canvases[i];
@@ -3748,7 +3759,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     
                     if (service && (service as IIIFService)['@id']) {
                         // Request maximum resolution
-                        const imageUrl = `${service['@id']}/full/max/0/default.jpg`;
+                        const imageUrl = `${(service as IIIFService)['@id']}/full/max/0/default.jpg`;
                         images.push({
                             url: imageUrl || '',
                             label: this.localizedStringToString(canvas?.label, `Page ${i + 1}`)
@@ -3758,7 +3769,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         
-        if (images.length === 0) {
+        if (images?.length === 0) {
             throw new Error('No images found in Bordeaux IIIF manifest');
         }
         
@@ -3779,7 +3790,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const match = url.match(/objects\/([^/?]+)/);
         if (!match) throw new Error('Invalid Bodleian URL');
         
-        const objectId = match[1];
+        const objectId = match?.[1];
         const manifestUrl = `https://iiif.bodleian.ox.ac.uk/iiif/manifest/${objectId}.json`;
         
         console.log('[Bodleian] Fetching IIIF manifest from:', manifestUrl);
@@ -3793,10 +3804,10 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         // Process IIIF v2 manifest
         if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
-            console.log(`[Bodleian] Processing ${canvases.length} pages from IIIF manifest`);
+            console.log(`[Bodleian] Processing ${canvases?.length} pages from IIIF manifest`);
             
             // Process all canvases (Bodleian manuscripts can be quite long)
-            const maxPages = canvases.length; // Reasonable limit
+            const maxPages = canvases?.length; // Reasonable limit
             
             for (let i = 0; i < maxPages; i++) {
                 const canvas = canvases[i];
@@ -3806,7 +3817,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     
                     if (service && (service as IIIFService)['@id']) {
                         // Request maximum resolution available
-                        const imageUrl = `${service['@id']}/full/max/0/default.jpg`;
+                        const imageUrl = `${(service as IIIFService)['@id']}/full/max/0/default.jpg`;
                         images.push({
                             url: imageUrl || '',
                             label: this.localizedStringToString(canvas?.label, `Page ${i + 1}`)
@@ -3823,20 +3834,21 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         }
         // Handle IIIF v3 if needed
         else if (manifest.items) {
-            console.log(`[Bodleian] Processing ${manifest.items.length} items from IIIF v3 manifest`);
+            console.log(`[Bodleian] Processing ${manifest.items?.length} items from IIIF v3 manifest`);
             
-            const maxPages = manifest.items.length;
+            const maxPages = manifest.items?.length;
             
             for (let i = 0; i < maxPages; i++) {
                 const item = manifest.items[i] as IIIFCanvas;
                 if (item.items && item.items[0] && item.items[0].items && item.items[0].items[0]) {
                     const annotation = item.items[0].items[0];
-                    if (annotation.body && annotation.body.service && annotation.body.service[0]) {
-                        const service = annotation.body.service[0];
-                        if (service.id) {
+                    const body = Array.isArray(annotation.body) ? annotation.body[0] : annotation.body;
+                    if (body && body.service && (Array.isArray(body.service) ? body.service[0] : body.service)) {
+                        const service = Array.isArray(body.service) ? body.service[0] : body.service;
+                        if (service!.id) {
                             images.push({
-                                url: `${service.id}/full/max/0/default.jpg`,
-                                label: this.localizedStringToString(item.label, `Page ${i + 1}`)
+                                url: `${service!.id}/full/max/0/default.jpg`,
+                                label: this.localizedStringToString((item as any).label, `Page ${i + 1}`)
                             });
                         }
                     }
@@ -3844,11 +3856,11 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         
-        if (images.length === 0) {
+        if (images?.length === 0) {
             throw new Error('No images found in Bodleian manifest');
         }
         
-        console.log(`[Bodleian] Successfully extracted ${images.length} pages`);
+        console.log(`[Bodleian] Successfully extracted ${images?.length} pages`);
         
         return {
             images,
@@ -3864,8 +3876,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         console.log(`[e-manuscripta] ULTRA-OPTIMIZED Discovery for manuscript ${baseManuscriptId} in library ${library}`);
         
         // Enhanced logging for debugging
-        if (typeof window === 'undefined' && (global as Record<string, unknown>).comprehensiveLogger) {
-            ((global as Record<string, unknown>).comprehensiveLogger as { logEManuscriptaDiscovery: (event: string, data: object) => void }).logEManuscriptaDiscovery('discovery_start', {
+        if (typeof window === 'undefined' && (global as Record<string, unknown>)['comprehensiveLogger']) {
+            ((global as Record<string, unknown>)['comprehensiveLogger'] as { logEManuscriptaDiscovery: (event: string, data: object) => void }).logEManuscriptaDiscovery('discovery_start', {
                 baseManuscriptId,
                 library,
                 method: 'ULTRA-OPTIMIZED'
@@ -4049,7 +4061,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                 } else if (testResponse.status === 404) {
                                     break; // Start of this series
                                 }
-                            } catch (error: unknown) {
+                            } catch (error: any) {
                                 break;
                             }
                         }
@@ -4082,12 +4094,12 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         let coreBlocks: number[] = [];
         let technicalBlocks: number[] = [];
         
-        if (sortedAll.length > 0) {
+        if (sortedAll?.length > 0) {
             // Find all consecutive sequences
             const sequences: number[][] = [];
             let currentSeq: number[] = [sortedAll[0] ?? 0];
             
-            for (let i = 1; i < sortedAll.length; i++) {
+            for (let i = 1; i < sortedAll?.length; i++) {
                 const currentItem = sortedAll[i];
                 const previousItem = sortedAll[i-1];
                 if (!currentItem || !previousItem) continue;
@@ -4100,25 +4112,25 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     if (currentItem) currentSeq.push(currentItem);
                 } else {
                     // Sequence broken, save current and start new
-                    if (currentSeq.length > 1) {
+                    if (currentSeq?.length > 1) {
                         sequences.push([...currentSeq]);
                     }
                     currentSeq = currentItem ? [currentItem] : [];
                 }
             }
             // Don't forget the last sequence
-            if (currentSeq.length > 1) {
+            if (currentSeq?.length > 1) {
                 sequences.push(currentSeq);
-            } else if (currentSeq.length === 1) {
+            } else if (currentSeq?.length === 1) {
                 // Single blocks are likely technical blocks
                 const singleBlock = currentSeq[0];
                 if (singleBlock) technicalBlocks.push(singleBlock);
             }
             
             // The longest sequence is likely the core manuscript
-            if (sequences.length > 0) {
+            if (sequences?.length > 0) {
                 coreBlocks = sequences.reduce((longest, current) => 
-                    current.length > longest.length ? current : longest, []);
+                    current?.length > longest?.length ? current : longest, []);
                 
                 // All other blocks are technical blocks
                 technicalBlocks = sortedAll.filter(block => !coreBlocks.includes(block));
@@ -4128,9 +4140,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 
                 // 1. Check if any technical blocks should actually be core blocks
                 // Blocks that fit within the core range should be core, not technical
-                if (coreBlocks.length > 0) {
+                if (coreBlocks?.length > 0) {
                     const coreStart = coreBlocks[0];
-                    // const coreEnd = coreBlocks[coreBlocks.length - 1]; // Commented out unused variable
+                    // const coreEnd = coreBlocks[coreBlocks?.length - 1]; // Commented out unused variable
                     
                     // ULTRA-PRIORITY FIX for Issue #10: Better core range detection
                     // The core manuscript might have gaps but blocks should follow the +11 pattern
@@ -4154,16 +4166,16 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     });
                     
                     // Add reclassified blocks to core and re-sort
-                    if (reclassified.length > 0) {
+                    if (reclassified?.length > 0) {
                         coreBlocks = [...coreBlocks, ...reclassified].sort((a, b) => a - b);
                     }
                 }
                 
                 // 2. Filter out blocks that are too far from the manuscript
                 // Blocks that are > 100 IDs away from the core sequence likely belong to other manuscripts
-                if (coreBlocks.length > 0 && technicalBlocks.length > 0) {
+                if (coreBlocks?.length > 0 && technicalBlocks?.length > 0) {
                     const coreStart = coreBlocks[0] ?? 0;
-                    const coreEnd = coreBlocks[coreBlocks.length - 1] ?? 0;
+                    const coreEnd = coreBlocks[coreBlocks?.length - 1] ?? 0;
                     
                     // Keep only technical blocks that are reasonably close to the core
                     const maxDistance = 100; // Maximum distance from core to be considered part of same manuscript
@@ -4201,7 +4213,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     }
                 }
                 
-                console.log(`[e-manuscripta] Identified ${coreBlocks.length} core blocks and ${technicalBlocks.length} technical blocks`);
+                console.log(`[e-manuscripta] Identified ${coreBlocks?.length} core blocks and ${technicalBlocks?.length} technical blocks`);
                 
                 // Special handling for Issue #10: Technical blocks ordering
                 // Technical blocks near the manuscript ID (covers) should maintain specific order
@@ -4239,25 +4251,25 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         // Final block order: core blocks first, then technical blocks
         const sortedBlocks = [...coreBlocks, ...technicalBlocks];
-        const totalPages = sortedBlocks.length * 11; // Assuming 11 pages per block
+        const totalPages = sortedBlocks?.length * 11; // Assuming 11 pages per block
         
         console.log(`[e-manuscripta] Discovery completed in ${elapsed}ms`);
-        console.log(`[e-manuscripta] Blocks found: ${sortedBlocks.length} (${coreBlocks.length} core + ${technicalBlocks.length} technical)`);
+        console.log(`[e-manuscripta] Blocks found: ${sortedBlocks?.length} (${coreBlocks?.length} core + ${technicalBlocks?.length} technical)`);
         
         // Enhanced logging for debugging
         if (typeof window === 'undefined' && (global as Record<string, unknown>)['comprehensiveLogger']) {
             ((global as Record<string, unknown>)['comprehensiveLogger'] as { logEManuscriptaDiscovery: (event: string, data: object) => void }).logEManuscriptaDiscovery('discovery_complete', {
                 baseManuscriptId,
                 library,
-                blocksFound: sortedBlocks.length,
+                blocksFound: sortedBlocks?.length,
                 totalPages,
                 elapsed,
-                blocks: sortedBlocks.length > 50 ? 
+                blocks: sortedBlocks?.length > 50 ? 
                     `${sortedBlocks.slice(0, 10).join(',')}...${sortedBlocks.slice(-10).join(',')}` : 
                     sortedBlocks.join(',')
             });
         }
-        if (sortedBlocks.length <= 20) {
+        if (sortedBlocks?.length <= 20) {
             console.log(`[e-manuscripta] Block IDs: ${sortedBlocks.join(', ')}`);
         } else {
             console.log(`[e-manuscripta] First blocks: ${sortedBlocks.slice(0, 5).join(', ')}...`);
@@ -4266,7 +4278,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         console.log(`[e-manuscripta] Total pages: ${totalPages}`);
         
         // Log any large gaps for debugging
-        for (let i = 1; i < sortedBlocks.length; i++) {
+        for (let i = 1; i < sortedBlocks?.length; i++) {
             const currentBlock = sortedBlocks[i];
             const previousBlock = sortedBlocks[i-1];
             if (!currentBlock || !previousBlock) continue;
@@ -4361,7 +4373,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             html = await response.text();
         }
         
-        console.log(`[e-manuscripta] Fetched ${html.length} bytes of HTML`);
+        console.log(`[e-manuscripta] Fetched ${html?.length} bytes of HTML`);
         
         // Extract title
         let displayName = `e-manuscripta ${library} ${manuscriptId}`;
@@ -4396,11 +4408,11 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         // Convert to sorted array
         const pages = Array.from(pagesByNumber.values()).sort((a, b) => a.number - b.number);
         
-        console.log(`[e-manuscripta] Found ${pages.length} unique pages from HTML option tags`);
+        console.log(`[e-manuscripta] Found ${pages?.length} unique pages from HTML option tags`);
         
         // If we found pages from option tags, use them (much more accurate)
         const images: ManuscriptImage[] = [];
-        if (pages.length > 0) {
+        if (pages?.length > 0) {
             // Use the pages extracted from option tags
             for (const page of pages) {
                 images.push({
@@ -4408,7 +4420,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     label: `Page ${page.number}`
                 });
             }
-            console.log(`[e-manuscripta] Successfully extracted ${images.length} pages using simplified method`);
+            console.log(`[e-manuscripta] Successfully extracted ${images?.length} pages using simplified method`);
         } else {
             // Fallback: If no option tags found, generate basic pages
             console.log('[e-manuscripta] No option tags found, using fallback method');
@@ -4491,7 +4503,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             // Extract manuscript ID and construct manifest URL
             const match = url.match(/\/diglit\/([^/?#]+)/);
             if (match) {
-                const manuscriptId = match[1];
+                const manuscriptId = match?.[1];
                 // Default to IIIF v3 for better features
                 manifestUrl = `https://digi.ub.uni-heidelberg.de/diglit/iiif3/${manuscriptId}/manifest`;
                 isV3 = true;
@@ -4549,7 +4561,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             console.log(`[Heidelberg] Processing IIIF v3 manifest with ${manifest.items?.length || 0} items`);
             
             if (manifest.items) {
-                for (let i = 0; i < manifest.items.length; i++) {
+                for (let i = 0; i < manifest.items?.length; i++) {
                     const canvas: IIIFSequence = manifest.items[i] as IIIFSequence;
                     if (!canvas) continue;
                     
@@ -4566,21 +4578,22 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     }
                     
                     // Find annotation with image
-                    if ((canvas as IIIFCanvas).items && (canvas as IIIFCanvas).items[0] && (canvas as IIIFCanvas).items[0].items) {
-                        const annotation = (canvas as IIIFCanvas).items[0].items[0];
+                    if ((canvas as IIIFCanvas).items && (canvas as IIIFCanvas).items?.[0] && (canvas as IIIFCanvas).items?.[0]?.items) {
+                        const annotation = (canvas as IIIFCanvas).items?.[0]?.items?.[0];
                         if (!annotation) continue;
                         if (annotation && annotation.body) {
                             let imageUrl = null;
                             
                             // Direct image URL
-                            if (annotation.body.id) {
-                                imageUrl = annotation.body.id;
+                            const bodyResource = Array.isArray(annotation.body) ? annotation.body[0] : annotation.body;
+                            if (bodyResource?.id) {
+                                imageUrl = bodyResource.id;
                             }
                             
                             // Or use image service for maximum resolution
-                            if (annotation.body.service && annotation.body.service[0]) {
-                                const service = annotation.body.service[0];
-                                const serviceId = service.id || service['@id'];
+                            if (bodyResource?.service && (Array.isArray(bodyResource.service) ? bodyResource.service[0] : bodyResource.service)) {
+                                const service = Array.isArray(bodyResource.service) ? bodyResource.service[0] : bodyResource.service;
+                                const serviceId = service?.id || service?.['@id'];
                                 
                                 // Try different resolutions in order of preference
                                 // Heidelberg supports: full/max, full/full, full/4000, full/2000
@@ -4604,9 +4617,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             // IIIF v2 structure
             const sequence = manifest.sequences[0];
             if (sequence?.canvases) {
-                console.log(`[Heidelberg] Processing IIIF v2 manifest with ${sequence.canvases.length} canvases`);
+                console.log(`[Heidelberg] Processing IIIF v2 manifest with ${sequence.canvases?.length} canvases`);
                 
-                for (let i = 0; i < sequence.canvases.length; i++) {
+                for (let i = 0; i < sequence.canvases?.length; i++) {
                     const canvas = sequence.canvases[i];
                     if (!canvas) continue;
                     
@@ -4652,16 +4665,16 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         
-        console.log(`[Heidelberg] Found ${images.length} pages`);
+        console.log(`[Heidelberg] Found ${images?.length} pages`);
         
-        if (images.length === 0) {
+        if (images?.length === 0) {
             throw new Error('No images found in Heidelberg manifest');
         }
         
         // Log sample URLs for debugging
-        if (images.length > 0) {
+        if (images?.length > 0) {
             const firstImage = images[0];
-            const lastImage = images[images.length - 1];
+            const lastImage = images[images?.length - 1];
             if (firstImage) console.log(`[Heidelberg] First page URL: ${firstImage.url}`);
             if (lastImage) console.log(`[Heidelberg] Last page URL: ${lastImage.url}`);
         }
@@ -4673,7 +4686,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 { label: 'Library', value: 'Heidelberg University Library' },
                 { label: 'Manuscript ID', value: url.match(/\/([^/]+)\/manifest/)?.[1] || 'unknown' },
                 { label: 'IIIF Version', value: (isV3 ? 3 : 2).toString() },
-                { label: 'Total Pages', value: images.length.toString() }
+                { label: 'Total Pages', value: images?.length.toString() }
             ],
             type: 'iiif'
         };
@@ -4700,7 +4713,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const match = url.match(/\/items\/([a-f0-9]+)/);
         if (!match) throw new Error('Invalid Norwegian National Library URL');
         
-        const itemId = match[1];
+        const itemId = match?.[1];
         
         // Try v1 API first (the one that works from curl)
         const manifestUrl = `https://api.nb.no/catalog/v1/iiif/${itemId}/manifest?profile=nbdigital`;
@@ -4767,14 +4780,14 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     if (imageUrl) {
                         images.push({
                             url: imageUrl || '',
-                            label: this.localizedStringToString(canvas.label) || `Page ${images.length + 1}`
+                            label: this.localizedStringToString(canvas.label) || `Page ${images?.length + 1}`
                         });
                     }
                 }
             }
         }
         
-        console.log(`[Norwegian] Found ${images.length} pages in IIIF v1/v2 manifest`);
+        console.log(`[Norwegian] Found ${images?.length} pages in IIIF v1/v2 manifest`);
         
         return {
             images,
@@ -4820,7 +4833,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         }
         
         if (manifest.items) {
-            for (let i = 0; i < manifest.items.length; i++) {
+            for (let i = 0; i < manifest.items?.length; i++) {
                 const canvas: IIIFCanvas = manifest.items[i] as IIIFCanvas;
                 if (!canvas) continue;
                 
@@ -4828,14 +4841,14 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     for (const annotation of canvas.items[0].items) {
                         if (!annotation) continue;
                         if (annotation.body) {
-                            const body = annotation.body;
+                            const body = Array.isArray(annotation.body) ? annotation.body[0] : annotation.body;
                             
                             let imageUrl = null;
-                            if (body.id) {
+                            if (body?.id) {
                                 imageUrl = body.id;
-                            } else if (body.service && body.service[0]) {
-                                const service = body.service[0];
-                                const serviceId = service['@id'] || service.id;
+                            } else if (body?.service && (Array.isArray(body.service) ? body.service[0] : body.service)) {
+                                const service = Array.isArray(body.service) ? body.service[0] : body.service;
+                                const serviceId = service?.['@id'] || service?.id;
                                 // Use a reasonable size
                                 imageUrl = `${serviceId}/full/2000,/0/default.jpg`;
                             }
@@ -4869,7 +4882,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             metadata: [
                 { label: 'Library', value: 'Norwegian National Library' },
                 { label: 'ID', value: itemId ?? 'unknown' },
-                { label: 'Rights', value: (manifest as Record<string, unknown>).rights as string || 'https://www.nb.no/lisens/stromming' },
+                { label: 'Rights', value: (manifest as Record<string, unknown>)['rights'] as string || 'https://www.nb.no/lisens/stromming' },
                 { label: 'Requires Cookies', value: 'true' },
                 { label: 'Requires Norwegian IP', value: 'true' }
             ],
@@ -4888,15 +4901,15 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const idMatch = url.match(/\/catalog\/(\d+)/);
         
         if (idMatch) {
-            manuscriptId = idMatch[1];
+            manuscriptId = idMatch[1] || '';
         } else if (url.match(/\/manifests\/(\d+)/)) {
             // Already a manifest URL
-            manuscriptId = url.match(/\/manifests\/(\d+)/)![1];
+            manuscriptId = url.match(/\/manifests\/(\d+)/)?.[1] || '';
         } else {
             // Try to extract from other patterns
             const altMatch = url.match(/\/(\d+)$/);
             if (altMatch) {
-                manuscriptId = altMatch[1];
+                manuscriptId = altMatch[1] || '';
             } else {
                 throw new Error('Could not extract manuscript ID from Yale URL');
             }
@@ -4919,33 +4932,33 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             throw new Error(`Failed to fetch Yale manifest: ${response.status}`);
         }
         
-        const manifest: IIIFManifest = await response.json();
+        const manifest: IIIFManifest = await response.json() as IIIFManifest;
         const images: ManuscriptImage[] = [];
         
         // Yale uses IIIF v3 (items instead of sequences)
         if (manifest.items && Array.isArray(manifest.items)) {
-            console.log(`[Yale] Found ${manifest.items.length} pages in IIIF v3 manifest`);
+            console.log(`[Yale] Found ${manifest.items?.length} pages in IIIF v3 manifest`);
             
-            for (let i = 0; i < manifest.items.length; i++) {
+            for (let i = 0; i < manifest.items?.length; i++) {
                 const canvas = manifest.items[i];
-                if (canvas.items && canvas.items[0] && canvas.items[0].items) {
-                    const annotationPage = canvas.items[0];
-                    const annotation = annotationPage.items[0];
+                if (canvas?.items && canvas?.items[0] && canvas?.items[0].items) {
+                    const annotationPage = canvas?.items[0];
+                    const annotation = annotationPage.items![0];
                     
-                    if (annotation && annotation.body) {
+                    if (annotation && (annotation as any).body) {
                         let imageUrl: string | null = null;
                         
-                        if (typeof annotation.body === 'string') {
-                            imageUrl = annotation.body;
-                        } else if (annotation.body.id) {
-                            imageUrl = annotation.body.id;
-                        } else if (annotation.body['@id']) {
-                            imageUrl = annotation.body['@id'];
+                        if (typeof (annotation as any).body === 'string') {
+                            imageUrl = (annotation as any).body;
+                        } else if ((annotation as any).body.id) {
+                            imageUrl = (annotation as any).body.id;
+                        } else if ((annotation as any).body['@id']) {
+                            imageUrl = (annotation as any).body['@id'];
                         }
                         
                         if (imageUrl) {
                             images.push({
-                                url: imageUrl,
+                                url: imageUrl || '',
                                 label: this.localizedStringToString(canvas.label) || `Page ${i + 1}`
                             });
                         }
@@ -4955,27 +4968,27 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         } else if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
             // Fallback to IIIF v2 if v3 structure not found
             const canvases = manifest.sequences[0].canvases;
-            console.log(`[Yale] Found ${canvases.length} pages in IIIF v2 manifest`);
+            console.log(`[Yale] Found ${canvases?.length} pages in IIIF v2 manifest`);
             
-            for (let i = 0; i < canvases.length; i++) {
+            for (let i = 0; i < canvases?.length; i++) {
                 const canvas = canvases[i];
-                if (canvas.images && canvas.images[0]) {
-                    const image = canvas.images[0];
+                if (canvas?.images && canvas?.images[0]) {
+                    const image = canvas?.images[0];
                     let imageUrl: string | null = null;
                     
                     if (image.resource) {
                         if (typeof image.resource === 'string') {
                             imageUrl = image.resource;
                         } else if (image.resource['@id']) {
-                            imageUrl = image.resource['@id'];
+                            imageUrl = image.resource['@id'] || null;
                         } else if ((image.resource as IIIFResource).id) {
-                            imageUrl = (image.resource as IIIFResource).id;
+                            imageUrl = (image.resource as IIIFResource).id || null;
                         }
                     }
                     
                     if (imageUrl) {
                         images.push({
-                            url: imageUrl,
+                            url: imageUrl || '',
                             label: this.localizedStringToString(canvas.label) || `Page ${i + 1}`
                         });
                     }
@@ -4983,11 +4996,11 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         
-        if (images.length === 0) {
+        if (images?.length === 0) {
             throw new Error('No images found in Yale manifest');
         }
         
-        console.log(`[Yale] Successfully extracted ${images.length} pages`);
+        console.log(`[Yale] Successfully extracted ${images?.length} pages`);
         
         return {
             images,
@@ -5006,12 +5019,12 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const idMatch = url.match(/\/titleinfo\/(\d+)/);
         
         if (idMatch) {
-            manuscriptId = idMatch[1];
+            manuscriptId = idMatch[1] || '';
         } else {
             // Try to extract from other patterns
             const altMatch = url.match(/\/(\d+)$/);
             if (altMatch) {
-                manuscriptId = altMatch[1];
+                manuscriptId = altMatch[1] || '';
             } else {
                 throw new Error('Could not extract manuscript ID from e-rara URL');
             }
@@ -5034,18 +5047,18 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             throw new Error(`Failed to fetch e-rara manifest: ${response.status}`);
         }
         
-        const manifest: IIIFManifest = await response.json();
+        const manifest: IIIFManifest = await response.json() as IIIFManifest;
         const images: ManuscriptImage[] = [];
         
         // Extract images from IIIF manifest
         if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
             const canvases = manifest.sequences[0].canvases;
-            console.log(`[E-rara] Found ${canvases.length} pages in manifest`);
+            console.log(`[E-rara] Found ${canvases?.length} pages in manifest`);
             
-            for (let i = 0; i < canvases.length; i++) {
+            for (let i = 0; i < canvases?.length; i++) {
                 const canvas = canvases[i];
-                if (canvas.images && canvas.images[0]) {
-                    const image = canvas.images[0];
+                if (canvas?.images && canvas?.images[0]) {
+                    const image = canvas?.images[0];
                     let imageUrl: string | null = null;
                     
                     // Get the resource URL (usually the full image)
@@ -5053,15 +5066,15 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         if (typeof image.resource === 'string') {
                             imageUrl = image.resource;
                         } else if (image.resource['@id']) {
-                            imageUrl = image.resource['@id'];
+                            imageUrl = image.resource['@id'] || null;
                         } else if ((image.resource as IIIFResource).id) {
-                            imageUrl = (image.resource as IIIFResource).id;
+                            imageUrl = (image.resource as IIIFResource).id || null;
                         }
                     }
                     
                     if (imageUrl) {
                         images.push({
-                            url: imageUrl,
+                            url: imageUrl || '',
                             label: this.localizedStringToString(canvas.label) || `Page ${i + 1}`
                         });
                     }
@@ -5069,11 +5082,11 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         
-        if (images.length === 0) {
+        if (images?.length === 0) {
             throw new Error('No images found in e-rara manifest');
         }
         
-        console.log(`[E-rara] Successfully extracted ${images.length} pages`);
+        console.log(`[E-rara] Successfully extracted ${images?.length} pages`);
         
         return {
             images,
@@ -5276,9 +5289,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             // Process IIIF v2 manifest
             if (manifest.sequences?.[0]?.canvases) {
                 const canvases = manifest.sequences[0].canvases;
-                console.log(`[Berlin] Processing ${canvases.length} pages from IIIF manifest`);
+                console.log(`[Berlin] Processing ${canvases?.length} pages from IIIF manifest`);
                 
-                for (let i = 0; i < canvases.length; i++) {
+                for (let i = 0; i < canvases?.length; i++) {
                     const canvas = canvases[i];
                     if (!canvas) continue;
                     if (canvas && canvas.images && canvas.images[0] && canvas.images[0].resource) {
@@ -5311,13 +5324,13 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             // Handle IIIF v3 if needed
             else if ((manifest as IIIFManifest).items) {
                 const items = (manifest as IIIFManifest).items;
-                console.log(`[Berlin] Processing ${items.length} pages from IIIF v3 manifest`);
+                console.log(`[Berlin] Processing ${items?.length || 0} pages from IIIF v3 manifest`);
                 
-                for (let i = 0; i < items.length; i++) {
-                    const item = items[i];
+                for (let i = 0; i < (items?.length || 0); i++) {
+                    const item = items?.[i];
                     if (!item) continue;
-                    if (item.items?.[0]?.items?.[0]?.body) {
-                        const body = item.items[0].items[0].body;
+                    if ((item as any).items?.[0]?.items?.[0]?.body) {
+                        const body = (item as any).items[0].items[0].body;
                         const service = Array.isArray(body.service) ? body.service[0] : body.service;
                         
                         if (service?.id) {
@@ -5325,30 +5338,30 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                             const imageUrl = `${service.id}/full/max/0/default.jpg`;
                             images.push({
                                 url: imageUrl || '',
-                                label: this.localizedStringToString(item.label, `Page ${i + 1}`)
+                                label: this.localizedStringToString((item as any).label, `Page ${i + 1}`)
                             });
                         } else if (body.id) {
                             // Fallback to direct body URL
                             images.push({
                                 url: body.id,
-                                label: this.localizedStringToString(item.label, `Page ${i + 1}`)
+                                label: this.localizedStringToString((item as any).label, `Page ${i + 1}`)
                             });
                         }
                     }
                 }
             }
             
-            if (images.length === 0) {
+            if (images?.length === 0) {
                 throw new Error('No images found in Berlin manifest');
             }
             
             // Extract display name from manifest
             const displayName = this.localizedStringToString(manifest.label, `Berlin State Library - ${fullPpn}`);
             
-            console.log(`[Berlin] Successfully processed ${images.length} pages`);
+            console.log(`[Berlin] Successfully processed ${images?.length} pages`);
             return { images, displayName };
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             console.error('[Berlin] Failed to load manifest:', errorMessage);
             throw new Error(`Failed to load Berlin manifest: ${errorMessage}`);

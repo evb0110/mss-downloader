@@ -41,7 +41,7 @@ export class GallicaLoader extends BaseLibraryLoader {
                     
                     for (const sequence of sequences) {
                         const canvases = sequence.canvases || sequence.items || [];
-                        totalPages += canvases.length;
+                        totalPages += canvases?.length;
                     }
                     
                     if (totalPages > 0) {
@@ -54,7 +54,7 @@ export class GallicaLoader extends BaseLibraryLoader {
                         
                         const gallicaManifest = {
                             pageLinks,
-                            totalPages: pageLinks.length,
+                            totalPages: pageLinks?.length,
                             library: 'gallica' as const,
                             displayName,
                             originalUrl: gallicaUrl,
@@ -142,7 +142,7 @@ export class GallicaLoader extends BaseLibraryLoader {
             
             return gallicaManifest;
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             throw new Error(`Failed to load Gallica document: ${(error as Error).message}`);
         }
     }

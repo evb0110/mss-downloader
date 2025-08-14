@@ -73,11 +73,11 @@ export class FuldaLoader extends BaseLibraryLoader {
                     }
                 }
     
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No images found in Fulda manifest');
                 }
     
-                console.log(`Found ${pageLinks.length} pages in Fulda manuscript`);
+                console.log(`Found ${pageLinks?.length} pages in Fulda manuscript`);
     
                 const fuldaManifest = {
                     displayName,

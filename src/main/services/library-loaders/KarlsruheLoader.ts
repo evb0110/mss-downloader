@@ -62,14 +62,14 @@ export class KarlsruheLoader extends BaseLibraryLoader {
                 let totalPages = 0;
                 const pageLinks: string[] = [];
                 
-                if (manifest.sequences && manifest.sequences.length > 0) {
+                if (manifest.sequences && manifest.sequences?.length > 0) {
                     const sequence = manifest.sequences[0];
                     if (sequence.canvases && Array.isArray(sequence.canvases)) {
-                        totalPages = sequence.canvases.length;
+                        totalPages = sequence.canvases?.length;
                         
                         // Extract image URLs with maximum resolution
                         for (const canvas of sequence.canvases) {
-                            if (canvas.images && canvas.images.length > 0) {
+                            if (canvas.images && canvas.images?.length > 0) {
                                 const image = canvas.images[0];
                                 if (image.resource && image.resource['@id']) {
                                     // Extract base image ID and construct maximum resolution URL
@@ -109,13 +109,13 @@ export class KarlsruheLoader extends BaseLibraryLoader {
                     }
                 }
                 
-                if (totalPages === 0 || pageLinks.length === 0) {
+                if (totalPages === 0 || pageLinks?.length === 0) {
                     throw new Error('No pages found in IIIF manifest');
                 }
                 
                 const karlsruheManifest = {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'karlsruhe' as const,
                     displayName,
                     originalUrl: karlsruheUrl,
@@ -126,7 +126,7 @@ export class KarlsruheLoader extends BaseLibraryLoader {
                 
                 return karlsruheManifest;
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load Karlsruhe manuscript: ${(error as Error).message}`);
             }
         }

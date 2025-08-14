@@ -38,7 +38,7 @@ export class DownloadLogger {
         this.logs.push(logEntry);
         
         // Keep only last maxLogs entries
-        if (this.logs.length > this.maxLogs) {
+        if (this.logs?.length > this.maxLogs) {
             this.logs = this.logs.slice(-this.maxLogs);
         }
         
@@ -99,7 +99,7 @@ export class DownloadLogger {
             attemptNumber,
             errorStack: error.stack,
             details: {
-                errorName: error.name,
+                errorName: (error as any)?.name,
                 errorMessage: error.message
             }
         });
@@ -197,7 +197,7 @@ export class DownloadLogger {
             library,
             message: `PDF creation failed: ${error.message}`,
             errorStack: error.stack,
-            details: { ...details, errorName: error.name }
+            details: { ...details, errorName: (error as any)?.name }
         });
     }
     
@@ -207,7 +207,7 @@ export class DownloadLogger {
             level: 'info',
             library,
             url,
-            message: `Manuscript download completed: ${totalPages} pages saved to ${outputFiles.length} file(s)`,
+            message: `Manuscript download completed: ${totalPages} pages saved to ${outputFiles?.length} file(s)`,
             duration,
             details: { 
                 totalPages, 
@@ -226,7 +226,7 @@ export class DownloadLogger {
             errorStack: error.stack,
             details: { 
                 failedAtStage,
-                errorName: error.name 
+                errorName: (error as any)?.name 
             }
         });
     }
@@ -280,7 +280,7 @@ export class DownloadLogger {
         const exportData = {
             sessionStart: this.sessionStartTime,
             exportTime: new Date().toISOString(),
-            totalLogs: this.logs.length,
+            totalLogs: this.logs?.length,
             systemInfo: {
                 platform: process.platform,
                 arch: process.arch,

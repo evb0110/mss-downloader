@@ -43,29 +43,29 @@ export class ParkerLoader extends BaseLibraryLoader {
                     throw new Error('Invalid IIIF manifest structure - no sequences or items found');
                 }
                 
-                if (!canvases || canvases.length === 0) {
+                if (!canvases || canvases?.length === 0) {
                     throw new Error('No pages found in manifest');
                 }
                 
                 const pageLinks = canvases.map((canvas: Record<string, unknown>) => {
                     let imageUrl;
                     
-                    if (canvas.images && canvas.images[0]) {
+                    if (canvas['images'] && (canvas['images'] as unknown[])[0]) {
                         // IIIF v2 format - Stanford Parker provides direct image URLs
-                        const resource = canvas.images[0].resource;
+                        const resource = ((canvas['images'] as unknown[])[0] as Record<string, unknown>)['resource'];
                         // Use the direct image URL provided by Stanford Parker
-                        imageUrl = resource['@id'] || resource.id;
-                    } else if (canvas.items && canvas.items[0] && canvas.items[0].items && canvas.items[0].items[0]) {
+                        imageUrl = (resource as Record<string, unknown>)['@id'] || (resource as Record<string, unknown>)['id'];
+                    } else if (canvas['items'] && (canvas['items'] as unknown[])[0] && ((canvas['items'] as unknown[])[0] as Record<string, unknown>)['items'] && (((canvas['items'] as unknown[])[0] as Record<string, unknown>)['items'] as unknown[])[0]) {
                         // IIIF v3 format
-                        const annotation = canvas.items[0].items[0];
-                        const body = annotation.body;
-                        imageUrl = body.id;
+                        const annotation = (((canvas['items'] as unknown[])[0] as Record<string, unknown>)['items'] as unknown[])[0] as Record<string, unknown>;
+                        const body = annotation['body'];
+                        imageUrl = (body as Record<string, unknown>)['id'];
                     }
                     
                     return imageUrl;
                 }).filter((link: string) => link);
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No images found in Stanford Parker manifest');
                 }
                 
@@ -92,13 +92,13 @@ export class ParkerLoader extends BaseLibraryLoader {
                 
                 return {
                     displayName: sanitizedName,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     pageLinks,
                     library: 'parker' as const,
                     originalUrl: parkerUrl
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error(`Stanford Parker manifest loading failed:`, error);
                 throw new Error(`Failed to load Stanford Parker manuscript: ${(error as Error).message}`);
             }

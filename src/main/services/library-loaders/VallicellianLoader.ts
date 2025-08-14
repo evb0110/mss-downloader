@@ -64,45 +64,46 @@ export class VallicellianLoader extends BaseLibraryLoader {
                 // Extract page URLs
                 const pageLinks = canvases.map((canvas: Record<string, unknown>) => {
                     // IIIF v2 structure
-                    if (canvas.images && canvas.images[0]) {
-                        const resource = canvas.images[0].resource;
-                        if (resource.service && resource.service['@id']) {
-                            return `${resource.service['@id']}/full/full/0/default.jpg`;
-                        } else if (resource['@id']) {
+                    if (canvas['images'] && (canvas['images'] as unknown[])[0]) {
+                        const resource = ((canvas['images'] as unknown[])[0] as Record<string, unknown>)['resource'] as Record<string, unknown>;
+                        if (resource && resource['service'] && (resource['service'] as Record<string, unknown>)['@id']) {
+                            return `${(resource['service'] as Record<string, unknown>)['@id']}/full/full/0/default.jpg`;
+                        } else if (resource && resource['@id']) {
                             return resource['@id'];
                         }
                     }
                     
                     // IIIF v3 structure
-                    if (canvas.items && canvas.items[0] && canvas.items[0].items && canvas.items[0].items[0]) {
-                        const annotation = canvas.items[0].items[0];
-                        if (annotation.body && annotation.body.service && annotation.body.service[0]) {
-                            const serviceId = annotation.body.service[0].id || annotation.body.service[0]['@id'];
+                    if (canvas['items'] && (canvas['items'] as unknown[])[0] && ((canvas['items'] as unknown[])[0] as Record<string, unknown>)['items'] && (((canvas['items'] as unknown[])[0] as Record<string, unknown>)['items'] as unknown[])[0]) {
+                        const annotation = (((canvas['items'] as unknown[])[0] as Record<string, unknown>)['items'] as unknown[])[0] as Record<string, unknown>;
+                        if (annotation['body'] && (annotation['body'] as Record<string, unknown>)['service'] && ((annotation['body'] as Record<string, unknown>)['service'] as unknown[])[0]) {
+                            const serviceArray = (annotation['body'] as Record<string, unknown>)['service'] as Record<string, unknown>[];
+                            const serviceId = serviceArray[0]?.['id'] || serviceArray[0]?.['@id'];
                             return `${serviceId}/full/full/0/default.jpg`;
-                        } else if (annotation.body && annotation.body.id) {
-                            return annotation.body.id;
+                        } else if (annotation['body'] && (annotation['body'] as Record<string, unknown>)['id']) {
+                            return (annotation['body'] as Record<string, unknown>)['id'];
                         }
                     }
                     
                     return null;
-                }).filter((link: string) => link);
+                }).filter((link: unknown): link is string => typeof link === 'string' && link !== null);
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No pages found in manifest');
                 }
                 
                 // Basic validation: log warning if manifest might be incomplete
-                console.log(`Vallicelliana manifest loaded: ${pageLinks.length} pages found`);
+                console.log(`Vallicelliana manifest loaded: ${pageLinks?.length} pages found`);
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'vallicelliana',
                     displayName: displayName,
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load Vallicelliana manuscript: ${(error as Error).message}`);
             }
         }

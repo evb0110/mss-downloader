@@ -21,14 +21,14 @@ export class WolfenbuettelLoader extends BaseLibraryLoader {
                 // Try original format first
                 const dirMatch = wolfenbuettelUrl.match(/dir=mss\/([^&]+)/);
                 if (dirMatch) {
-                    manuscriptId = dirMatch[1];
+                    manuscriptId = dirMatch[1] || '';
                 } else {
                     // Try alternative format - extract from path
                     const pathMatch = wolfenbuettelUrl.match(/diglib\.hab\.de\/([^/]+\/[^/]+\/[^/]+)/);
                     if (!pathMatch) {
                         throw new Error('Could not extract manuscript ID from Wolfenbüttel URL');
                     }
-                    manuscriptId = pathMatch[1]; // e.g., "varia/selecta/ed000011"
+                    manuscriptId = pathMatch[1] || ''; // e.g., "varia/selecta/ed000011"
                 }
                 console.log(`Loading Wolfenbüttel manuscript: ${manuscriptId}`);
                 
@@ -43,6 +43,10 @@ export class WolfenbuettelLoader extends BaseLibraryLoader {
                     while (hasMorePages) {
                         // Construct thumbs URL based on manuscript ID format
                         let thumbsUrl: string;
+                        if (!manuscriptId) {
+                            throw new Error('Manuscript ID is required for Wolfenbüttel loader');
+                        }
+                        
                         if (manuscriptId.startsWith('mss/')) {
                             // Already has mss/ prefix
                             thumbsUrl = `https://diglib.hab.de/thumbs.php?dir=${manuscriptId}&pointer=${pointer}`;
@@ -61,17 +65,17 @@ export class WolfenbuettelLoader extends BaseLibraryLoader {
                             
                             // Extract image names from current thumbs page
                             const imageMatches = thumbsHtml.matchAll(/image=([^'"&]+)/g);
-                            const imageNames = Array.from(imageMatches, m => m[1]);
+                            const imageNames = Array.from(imageMatches, m => m[1]!).filter(name => name);
                             
-                            if (imageNames.length > 0) {
+                            if (imageNames?.length > 0) {
                                 allImageNames.push(...imageNames);
-                                console.log(`Found ${imageNames.length} images on page (total so far: ${allImageNames.length})`);
+                                console.log(`Found ${imageNames?.length} images on page (total so far: ${allImageNames?.length})`);
                                 
                                 // Check if there's a next page link (forward button)
                                 // Updated regex to handle both mss/ and other directory structures
                                 const nextPageMatch = thumbsHtml.match(/href="thumbs\.php\?dir=[^&]+&pointer=(\d+)"[^>]*><img[^>]*title="forward"/);
                                 if (nextPageMatch) {
-                                    const nextPointer = parseInt(nextPageMatch[1], 10);
+                                    const nextPointer = parseInt(nextPageMatch[1] || '0', 10);
                                     // Check if we're stuck on the same page (last page scenario)
                                     if (nextPointer === pointer) {
                                         hasMorePages = false;
@@ -89,10 +93,10 @@ export class WolfenbuettelLoader extends BaseLibraryLoader {
                         }
                     }
                     
-                    if (allImageNames.length > 0) {
+                    if (allImageNames?.length > 0) {
                         // Remove duplicates from collected image names
                         const uniqueImageNames = [...new Set(allImageNames)];
-                        console.log(`Total unique images found: ${uniqueImageNames.length} (from ${allImageNames.length} total)`);
+                        console.log(`Total unique images found: ${uniqueImageNames?.length} (from ${allImageNames?.length} total)`);
                         
                         // Convert all unique image names to full URLs using maximum resolution
                         for (const imageName of uniqueImageNames) {
@@ -112,7 +116,7 @@ export class WolfenbuettelLoader extends BaseLibraryLoader {
                 }
                 
                 // If thumbs approach failed, fall back to sequential number testing
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     console.log('Falling back to sequential page detection');
                     let baseImageUrl: string;
                     if (manuscriptId.includes('/')) {
@@ -120,6 +124,11 @@ export class WolfenbuettelLoader extends BaseLibraryLoader {
                         baseImageUrl = `http://diglib.hab.de/${manuscriptId}/max`;
                     } else {
                         // Just manuscript number, add mss/ prefix
+                        baseImageUrl = `http://diglib.hab.de/mss/${manuscriptId}/max`;
+                    }
+                    
+                    // Ensure baseImageUrl is defined
+                    if (!baseImageUrl) {
                         baseImageUrl = `http://diglib.hab.de/mss/${manuscriptId}/max`;
                     }
                     
@@ -146,13 +155,13 @@ export class WolfenbuettelLoader extends BaseLibraryLoader {
                     }
                 }
     
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error(`No pages found for Wolfenbüttel manuscript: ${manuscriptId}`);
                 }
     
                 const displayName = `Wolfenbüttel HAB MS ${manuscriptId}`;
                 
-                console.log(`Found ${pageLinks.length} pages in Wolfenbüttel manuscript`);
+                console.log(`Found ${pageLinks?.length} pages in Wolfenbüttel manuscript`);
     
                 const wolfenbuettelManifest = {
                     displayName,

@@ -39,15 +39,15 @@ export class MdcCataloniaLoader extends BaseLibraryLoader {
                 }
                 
                 const xmlText = await xmlResponse.text();
-                console.log(`📄 XML structure retrieved (${xmlText.length} characters)`);
+                console.log(`📄 XML structure retrieved (${xmlText?.length} characters)`);
                 
                 // Step 2: Parse XML to extract all page pointers
                 const pageMatches = xmlText.match(/<page>[\s\S]*?<\/page>/g);
-                if (!pageMatches || pageMatches.length === 0) {
+                if (!pageMatches || pageMatches?.length === 0) {
                     throw new Error('No pages found in compound object XML structure');
                 }
                 
-                console.log(`📄 Found ${pageMatches.length} pages in compound object`);
+                console.log(`📄 Found ${pageMatches?.length} pages in compound object`);
                 
                 // Step 3: Extract page information with robust parsing
                 const pages: Array<{
@@ -57,30 +57,30 @@ export class MdcCataloniaLoader extends BaseLibraryLoader {
                     pagePtr: string;
                 }> = [];
                 
-                for (let i = 0; i < pageMatches.length; i++) {
+                for (let i = 0; i < pageMatches?.length; i++) {
                     const pageXml = pageMatches[i];
                     
-                    const titleMatch = pageXml.match(/<pagetitle>(.*?)<\/pagetitle>/);
-                    const fileMatch = pageXml.match(/<pagefile>(.*?)<\/pagefile>/);
-                    const ptrMatch = pageXml.match(/<pageptr>(.*?)<\/pageptr>/);
+                    const titleMatch = pageXml?.match(/<pagetitle>(.*?)<\/pagetitle>/);
+                    const fileMatch = pageXml?.match(/<pagefile>(.*?)<\/pagefile>/);
+                    const ptrMatch = pageXml?.match(/<pageptr>(.*?)<\/pageptr>/);
                     
                     if (titleMatch && fileMatch && ptrMatch) {
                         pages.push({
                             index: i + 1,
-                            title: titleMatch[1],
-                            filename: fileMatch[1],
-                            pagePtr: ptrMatch[1]
+                            title: titleMatch[1] || '',
+                            filename: fileMatch[1] || '',
+                            pagePtr: ptrMatch[1] || ''
                         });
                     } else {
                         console.warn(`⚠️ Could not parse page ${i + 1} from XML structure`);
                     }
                 }
                 
-                if (pages.length === 0) {
+                if (pages?.length === 0) {
                     throw new Error('No valid pages could be extracted from XML structure');
                 }
                 
-                console.log(`✅ Successfully parsed ${pages.length} pages from XML`);
+                console.log(`✅ Successfully parsed ${pages?.length} pages from XML`);
                 
                 // Step 4: Generate image URLs with multiple resolution strategies
                 const pageLinks: string[] = [];
@@ -147,7 +147,7 @@ export class MdcCataloniaLoader extends BaseLibraryLoader {
                         consecutiveErrors++;
                         
                         if (consecutiveErrors >= maxConsecutiveErrors) {
-                            throw new Error(`MDC Catalonia processing failed after ${consecutiveErrors} consecutive errors at page ${page.index}/${pages.length}: ${(error as Error).message}`);
+                            throw new Error(`MDC Catalonia processing failed after ${consecutiveErrors} consecutive errors at page ${page.index}/${pages?.length}: ${(error as Error).message}`);
                         }
                         continue;
                     }
@@ -156,11 +156,11 @@ export class MdcCataloniaLoader extends BaseLibraryLoader {
                     await new Promise(resolve => setTimeout(resolve, 150));
                 }
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No valid image URLs could be generated from any pages');
                 }
                 
-                console.log(`🎯 MDC Catalonia extraction completed: ${validPages} valid pages from ${pages.length} total`);
+                console.log(`🎯 MDC Catalonia extraction completed: ${validPages} valid pages from ${pages?.length} total`);
                 
                 // Step 5: Return robust manifest with comprehensive metadata
                 const title = `MDC Catalonia ${collection} ${parentId}`;
@@ -168,13 +168,13 @@ export class MdcCataloniaLoader extends BaseLibraryLoader {
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'mdc_catalonia',
                     displayName: displayName,
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error('❌ MDC Catalonia extraction failed:', error);
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 throw new Error(`Failed to load MDC Catalonia manuscript: ${errorMessage}`);

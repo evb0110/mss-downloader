@@ -11,7 +11,8 @@ import type {
   TileCoordinate,
   TileGridConfig,
   TileAuthConfig,
-  TileDownloadProgress
+  TileDownloadProgress,
+  TileDownloadResult
 } from './interfaces';
 
 const writeFile = promisify(fs.writeFile);
@@ -148,17 +149,17 @@ export class TileEngineCore extends EventEmitter {
           await writeFile(tilePath, buffer);
           
           downloadedTiles.push(coordinate);
-          downloadedBytes += buffer.length;
+          downloadedBytes += buffer?.length;
           
           const progress: TileDownloadProgress = {
-            totalTiles: tileUrls.length,
-            downloadedTiles: downloadedTiles.length,
+            totalTiles: tileUrls?.length,
+            downloadedTiles: downloadedTiles?.length,
             currentTile: coordinate,
-            percentage: (downloadedTiles.length / tileUrls.length) * 100,
+            percentage: (downloadedTiles?.length / tileUrls?.length) * 100,
             elapsedTime: Date.now() - startTime,
-            estimatedTimeRemaining: this.calculateETA(downloadedTiles.length, tileUrls.length, Date.now() - startTime),
+            estimatedTimeRemaining: this.calculateETA(downloadedTiles?.length, tileUrls?.length, Date.now() - startTime),
             bytesDownloaded: downloadedBytes,
-            bytesTotal: tileUrls.length * 1024 * 50, // Estimated
+            bytesTotal: tileUrls?.length * 1024 * 50, // Estimated
             downloadSpeed: downloadedBytes / ((Date.now() - startTime) / 1000),
             failedTiles: [...failedTiles]
           };
@@ -186,7 +187,7 @@ export class TileEngineCore extends EventEmitter {
         .filter(r => r.status === 'fulfilled' && r.value.success)
         .map(r => (r as PromiseFulfilledResult<TileDownloadResult>).value);
 
-      if (successfulTiles.length === 0) {
+      if (successfulTiles?.length === 0) {
         throw new Error('No tiles downloaded successfully');
       }
 
@@ -201,8 +202,8 @@ export class TileEngineCore extends EventEmitter {
         success: true,
         outputPath: stitchedPath,
         totalTime,
-        totalTiles: tileUrls.length,
-        downloadedTiles: downloadedTiles.length,
+        totalTiles: tileUrls?.length,
+        downloadedTiles: downloadedTiles?.length,
         failedTiles,
         errors,
         metadata: {
@@ -304,7 +305,12 @@ export class TileEngineCore extends EventEmitter {
       return a.coordinate.x - b.coordinate.x;
     });
 
-    const inputPaths = sortedTiles.map(tile => tile.path);
+    const inputPaths = sortedTiles.map(tile => tile.path).filter((path): path is string => path != null && typeof path === 'string');
+    
+    if (!outputPath) {
+      throw new Error('Output path is required for tile stitching');
+    }
+    
     const args = [...montageArgs, ...inputPaths, outputPath];
 
     return new Promise((resolve, reject) => {

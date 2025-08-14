@@ -20,7 +20,7 @@ export class BritishLibraryLoader extends BaseLibraryLoader {
                     if (!manifestMatch) {
                         throw new Error('Invalid British Library viewer URL format. Expected format with manifest parameter');
                     }
-                    manifestUrl = decodeURIComponent(manifestMatch[1]);
+                    manifestUrl = decodeURIComponent(manifestMatch[1] || '');
                 } else if (url.includes('bl.digirati.io/iiif/')) {
                     // Direct manifest URL - British Library doesn't need '/manifest' suffix
                     manifestUrl = url;
@@ -38,7 +38,7 @@ export class BritishLibraryLoader extends BaseLibraryLoader {
                     throw new Error('IIIF manifest loader not available');
                 }
                 return this.deps.loadIIIFManifest(manifestUrl);
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load British Library manifest: ${(error as Error).message}`);
             }
         }

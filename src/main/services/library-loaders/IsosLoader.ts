@@ -32,31 +32,31 @@ export class IsosLoader extends BaseLibraryLoader {
                 }
                 
                 const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
-                    const resource = canvas.images[0].resource;
+                    const resource = ((canvas['images'] as unknown[])[0] as Record<string, unknown>)['resource'] as Record<string, unknown>;
                     
                     // For ISOS, prefer the service URL format which works better with headers
-                    if (resource.service && (resource.service['@id'] || resource.service.id)) {
-                        const serviceUrl = resource.service['@id'] || resource.service.id;
+                    if ((resource as any)["service"] && ((resource as any)["service"]['@id'] || (resource as any)["service"]['id'])) {
+                        const serviceUrl = (resource as any)["service"]['@id'] || (resource as any)["service"]['id'];
                         return serviceUrl + '/full/max/0/default.jpg';
                     }
                     
                     // Fallback to resource ID
-                    return resource['@id'] || resource.id;
+                    return resource['@id'] || resource['id'];
                 }).filter((link: string) => link);
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No pages found in manifest');
                 }
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'isos',
                     displayName: `ISOS_${manuscriptId}`,
                     originalUrl: isosUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load ISOS manuscript: ${(error as Error).message}`);
             }
         }

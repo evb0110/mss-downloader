@@ -27,7 +27,7 @@ export class HhuLoader extends BaseLibraryLoader {
                     manifestUrl = hhuUrl;
                     const idMatch = hhuUrl.match(/\/v20\/(\d+)\/manifest/);
                     if (idMatch) {
-                        manuscriptId = idMatch[1];
+                        manuscriptId = idMatch[1] || null;
                     }
                     console.log(`[HHU] Found manifest URL, manuscript ID: ${manuscriptId}`);
                 } else {
@@ -44,7 +44,7 @@ export class HhuLoader extends BaseLibraryLoader {
                     if (!idMatch) {
                         throw new Error('Could not extract manuscript ID from HHU URL');
                     }
-                    manuscriptId = idMatch[1];
+                    manuscriptId = idMatch[1] || null;
                     manifestUrl = `https://digital.ulb.hhu.de/i3f/v20/${manuscriptId}/manifest`;
                     console.log(`[HHU] Extracted manuscript ID: ${manuscriptId}, manifest URL: ${manifestUrl}`);
                 }
@@ -79,7 +79,7 @@ export class HhuLoader extends BaseLibraryLoader {
                     const responseText = await response.text();
                     
                     // Additional validation before parsing
-                    if (!responseText || responseText.trim().length === 0) {
+                    if (!responseText || responseText.trim()?.length === 0) {
                         throw new Error('Empty response received from HHU server');
                     }
                     
@@ -95,7 +95,7 @@ export class HhuLoader extends BaseLibraryLoader {
                     } catch (parseError: unknown) {
                         console.error('[HHU] JSON parse error:', parseError);
                         console.error('[HHU] Response text (first 500 chars):', responseText.substring(0, 500));
-                        throw new Error(`Failed to parse HHU manifest JSON: ${parseError.message}`);
+                        throw new Error(`Failed to parse HHU manifest JSON: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
                     }
                 
                     // Extract metadata from IIIF manifest
@@ -116,10 +116,10 @@ export class HhuLoader extends BaseLibraryLoader {
                     const canvases = manifest.sequences[0].canvases;
                     const pageLinks: string[] = [];
                     
-                    console.log(`[HHU] Processing ${canvases.length} pages from manuscript`);
+                    console.log(`[HHU] Processing ${canvases?.length} pages from manuscript`);
                     
                     // Process each canvas to extract maximum quality image URLs
-                    for (let i = 0; i < canvases.length; i++) {
+                    for (let i = 0; i < canvases?.length; i++) {
                         const canvas = canvases[i];
                         if (!canvas.images || !canvas.images[0]) {
                             console.warn(`[HHU] Canvas ${i + 1} has no images, skipping`);
@@ -134,7 +134,7 @@ export class HhuLoader extends BaseLibraryLoader {
                             // Use maximum resolution - full/full/0/default.jpg
                             const imageUrl = `${serviceId}/full/full/0/default.jpg`;
                             pageLinks.push(imageUrl);
-                            if (i < 3 || i === canvases.length - 1) {
+                            if (i < 3 || i === canvases?.length - 1) {
                                 console.log(`[HHU] Page ${i + 1} image URL: ${imageUrl}`);
                             }
                         } else if (resource['@id']) {
@@ -146,50 +146,49 @@ export class HhuLoader extends BaseLibraryLoader {
                         }
                     }
                     
-                    if (pageLinks.length === 0) {
+                    if (pageLinks?.length === 0) {
                         console.error('[HHU] No valid image URLs found in manifest');
                         throw new Error('No images found in HHU manifest');
                     }
                     
-                    console.log(`[HHU] Successfully extracted ${pageLinks.length} pages in ${Date.now() - startTime}ms`);
-                    this.deps.logger.logDownloadComplete('hhu', manifestUrl, {
-                        totalPages: pageLinks.length,
-                        processingTime: Date.now() - startTime,
-                        firstPageUrl: pageLinks[0]?.substring(0, 100) + '...'
-                    });
+                    console.log(`[HHU] Successfully extracted ${pageLinks?.length} pages in ${Date.now() - startTime}ms`);
+                    this.deps.logger.logDownloadComplete('hhu', manifestUrl, Date.now() - startTime, pageLinks?.length || 0);
                     
                     return {
                         displayName,
-                        totalPages: pageLinks.length,
+                        totalPages: pageLinks?.length,
                         library: 'hhu',
                         pageLinks,
                         originalUrl: hhuUrl
                     };
                     
                 } catch (fetchError: unknown) {
-                    console.error(`[HHU] Manifest fetch/parse error: ${fetchError.message}`);
+                    console.error(`[HHU] Manifest fetch/parse error: ${fetchError instanceof Error ? fetchError instanceof Error ? fetchError.message : String(fetchError) : String(fetchError)}`);
                     throw fetchError;
                 }
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 const duration = Date.now() - startTime;
                 console.error(`[HHU] Failed to load manifest after ${duration}ms:`, {
                     url: hhuUrl,
-                    error: error.message,
-                    stack: error.stack
+                    error: error instanceof Error ? error.message : String(error),
+                    stack: (error as any)?.stack
                 });
                 
                 // Provide more specific error messages
-                if (error.message.includes('timeout')) {
+                if (error instanceof Error ? error.message : String(error).includes('timeout')) {
                     throw new Error(`HHU Düsseldorf manifest loading timed out after ${duration / 1000} seconds. The server may be slow or unresponsive. Please try again later or check if the manuscript is accessible at ${hhuUrl}`);
-                } else if (error.message.includes('Could not extract manuscript ID')) {
+                } else if (error instanceof Error ? error.message : String(error).includes('Could not extract manuscript ID')) {
                     throw new Error(`Invalid HHU URL format. Expected formats: /i3f/v20/[ID]/manifest, /content/titleinfo/[ID], or /content/pageview/[ID]. Received: ${hhuUrl}`);
-                } else if (error.message.includes('Invalid IIIF manifest structure')) {
+                } else if (error instanceof Error ? error.message : String(error).includes('Invalid IIIF manifest structure')) {
                     throw new Error(`HHU server returned an invalid IIIF manifest. The manuscript may not be available or the server format may have changed.`);
-                } else if (error.message.includes('ECONNREFUSED') || error.message.includes('ENOTFOUND')) {
-                    throw new Error(`Cannot connect to HHU Düsseldorf server. Please check your internet connection and verify the URL is correct.`);
                 } else {
-                    throw new Error(`Failed to load HHU Düsseldorf manuscript: ${error.message}`);
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('ENOTFOUND')) {
+                        throw new Error(`Cannot connect to HHU Düsseldorf server. Please check your internet connection and verify the URL is correct.`);
+                    } else {
+                        throw new Error(`Failed to load HHU Düsseldorf manuscript: ${error instanceof Error ? error.message : String(error)}`);
+                    }
                 }
             }
         }

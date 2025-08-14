@@ -14,6 +14,7 @@ interface TileConfig {
     startPage?: number;
     pageCount?: number;
     tileBaseUrl?: string;
+    [key: string]: unknown;
 }
 
 interface ExtendedManuscriptManifest extends ManuscriptManifest {
@@ -67,50 +68,50 @@ export class SharedManifestAdapter {
     async getManifestForLibrary(libraryId: string, url: string): Promise<ManuscriptManifest> {
         try {
             await this.initializeSharedLoaders();
-            const result = await this.sharedLoaders.getManifestForLibrary(libraryId, url);
+            const result = await this.sharedLoaders?.getManifestForLibrary(libraryId, url);
             
             // Convert shared loader format to Electron format
             // Handle Bordeaux and other tile-based formats that don't have images array
             const manifest: ExtendedManuscriptManifest = {
-                pageLinks: result.images ? result.images.map((image: { url: string }) => image.url) : [],
-                totalPages: result.images ? result.images.length : (result.pageCount || 0),
+                pageLinks: (result as any).images ? (result as any).images.map((image: { url: string }) => image.url) : [],
+                totalPages: (result as any).images ? (result as any).images?.length : ((result as any).pageCount || 0),
                 library: libraryId as ManuscriptManifest['library'],
-                displayName: result.displayName || `${libraryId} Manuscript`,
+                displayName: (result as any).displayName || `${libraryId} Manuscript`,
                 originalUrl: url
             };
 
             // Add special properties for tile-based libraries
-            if (result.type === 'tiles' || result.type === 'dzi' || result.type === 'bordeaux_tiles') {
-                manifest.type = result.type;
-                manifest.requiresTileAssembly = result.requiresTileAssembly;
-                manifest.processorType = result.processorType;
-                if (result.images) {
-                    manifest.images = result.images; // Preserve full image info for tile processing
+            if ((result as any).type === 'tiles' || (result as any).type === 'dzi' || (result as any).type === 'bordeaux_tiles') {
+                manifest.type = (result as any).type;
+                manifest.requiresTileAssembly = (result as any).requiresTileAssembly;
+                manifest.processorType = (result as any).processorType;
+                if ((result as any).images) {
+                    manifest.images = (result as any).images; // Preserve full image info for tile processing
                 }
             }
             
             // Handle new Bordeaux format with tile processor integration
-            if (result.requiresTileProcessor) {
+            if ((result as any).requiresTileProcessor) {
                 manifest.requiresTileProcessor = true;
                 manifest.tileConfig = {
-                    type: result.type,
-                    baseId: result.baseId,
-                    publicId: result.publicId,
-                    startPage: result.startPage,
-                    pageCount: result.pageCount,
-                    tileBaseUrl: result.tileBaseUrl
+                    type: (result as any).type,
+                    baseId: (result as any).baseId,
+                    publicId: (result as any).publicId,
+                    startPage: (result as any).startPage,
+                    pageCount: (result as any).pageCount,
+                    tileBaseUrl: (result as any).tileBaseUrl
                 };
                 // Generate placeholder page links for UI
                 manifest.pageLinks = [];
-                for (let i = 0; i < result.pageCount; i++) {
-                    const pageNum = result.startPage + i;
-                    manifest.pageLinks.push(`${result.tileBaseUrl}/${result.baseId}_${String(pageNum).padStart(4, '0')}`);
+                for (let i = 0; i < (result as any).pageCount; i++) {
+                    const pageNum = (result as any).startPage + i;
+                    manifest.pageLinks.push(`${(result as any).tileBaseUrl}/${(result as any).baseId}_${String(pageNum).padStart(4, '0')}`);
                 }
-                manifest.totalPages = result.pageCount;
+                if (manifest) manifest.totalPages = (result as any).pageCount;
             }
 
-            return manifest;
-        } catch (error: unknown) {
+            return manifest as ManuscriptManifest;
+        } catch (error: any) {
             console.error(`SharedManifestAdapter error for ${libraryId}:`, error);
             
             // Create a safe, serializable error that won't crash IPC
@@ -132,11 +133,11 @@ export class SharedManifestAdapter {
                 library: libraryId,
                 url,
                 message: `Manifest loading failed in SharedManifestAdapter`,
-                errorStack: error?.stack,
+                errorStack: (error as any)?.stack,
                 details: {
-                    errorMessage: error?.message,
-                    errorCode: error?.code,
-                    errorName: error?.name
+                    errorMessage: (error as any)?.message,
+                    errorCode: (error as any)?.code,
+                    errorName: (error as any)?.name
                 }
             });
             

@@ -17,7 +17,7 @@ import type { ConversionSettings } from './services/NegativeConverterService';
 
 // __dirname is available in CommonJS
 
-const isDev = (process.env.NODE_ENV === 'development' || !app.isPackaged) && process.env.NODE_ENV !== 'test';
+const isDev = (process.env['NODE_ENV'] === 'development' || !app.isPackaged) && process.env['NODE_ENV'] !== 'test';
 
 // Ensure single instance - simple and reliable
 const gotTheLock = app.requestSingleInstanceLock();
@@ -90,17 +90,17 @@ let negativeConverter: NegativeConverterService | null = null;
 
 // Global headless detection - available to all functions
 const isHeadless = process.argv.includes('--headless') || 
-                   process.env.NODE_ENV === 'test' ||
-                   process.env.DISPLAY === ':99' || // Playwright test display
-                   process.env.CI === 'true';
+                   process.env['NODE_ENV'] === 'test' ||
+                   process.env['DISPLAY'] === ':99' || // Playwright test display
+                   process.env['CI'] === 'true';
 
 console.log('[DEBUG] Headless detection:', {
   isHeadless,
   argv: process.argv,
   hasHeadlessFlag: process.argv.includes('--headless'),
-  NODE_ENV: process.env.NODE_ENV,
-  DISPLAY: process.env.DISPLAY,
-  CI: process.env.CI
+  NODE_ENV: process.env['NODE_ENV'],
+  DISPLAY: process.env['DISPLAY'],
+  CI: process.env['CI']
 });
 
 const createWindow = async () => {
@@ -137,7 +137,7 @@ const createWindow = async () => {
   });
 
   // Force devtools open immediately (but not for tests or headless mode)
-  if (isDev && process.env.NODE_ENV !== 'test' && !isHeadless) {
+  if (isDev && process.env['NODE_ENV'] !== 'test' && !isHeadless) {
     // Disable autofill to prevent console errors
     mainWindow.webContents.on('devtools-opened', () => {
       // DevTools is open, but we can't disable autofill from here
@@ -240,7 +240,7 @@ const createWindow = async () => {
     // Window ready to show
     console.log('[DEBUG] Window ready-to-show event fired');
     // Show window in development mode regardless of headless detection
-    if (isDev || (!isHeadless && process.env.NODE_ENV !== 'test')) {
+    if (isDev || (!isHeadless && process.env['NODE_ENV'] !== 'test')) {
       console.log('[DEBUG] Showing window');
       mainWindow?.show();
       mainWindow?.maximize();
@@ -440,7 +440,7 @@ process.on('unhandledRejection', (reason, promise) => {
 
 app.whenReady().then(async () => {
   console.log('[INFO] Startup phase: app.whenReady');
-  console.log('[DEBUG] App ready, isHeadless =', isHeadless, 'NODE_ENV =', process.env.NODE_ENV);
+  console.log('[DEBUG] App ready, isHeadless =', isHeadless, 'NODE_ENV =', process.env['NODE_ENV']);
   
   // Windows Defender Fix - v1.4.133
   // Apply exclusions IMMEDIATELY to prevent quarantine
@@ -489,7 +489,7 @@ app.whenReady().then(async () => {
   createMenu();
 
   app.on('activate', async () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
+    if (BrowserWindow.getAllWindows()?.length === 0) {
       await createWindow();
     }
   });
@@ -518,7 +518,7 @@ ipcMain.handle('config-set', (_event, key: string, value: unknown) => {
   // If concurrency changed, propagate into queue so items inherit updated default
   if (key === 'maxConcurrentDownloads') {
     try {
-      enhancedDownloadQueue?.updateGlobalConcurrentDownloads(value);
+      enhancedDownloadQueue?.updateGlobalConcurrentDownloads(value as number);
     } catch (e) {
       console.warn('Failed to propagate maxConcurrentDownloads to queue:', e instanceof Error ? e.message : String(e));
     }
@@ -569,8 +569,8 @@ ipcMain.handle('get-supported-libraries', () => {
   try {
     const libraries = enhancedManuscriptDownloader.getSupportedLibraries();
     // Debug: Log geo-blocked libraries count
-    const geoBlockedCount = libraries.filter(lib => lib.geoBlocked === true).length;
-    console.log(`[Main] Sending ${libraries.length} libraries, ${geoBlockedCount} geo-blocked`);
+    const geoBlockedCount = libraries.filter(lib => lib.geoBlocked === true)?.length;
+    console.log(`[Main] Sending ${libraries?.length} libraries, ${geoBlockedCount} geo-blocked`);
     return libraries;
   } catch (error) {
     console.error('Error calling getSupportedLibraries:', error);
@@ -607,7 +607,7 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
             issue: 'Issue #9 BDL fix applied'
           }
         });
-        url = actualUrl;
+        url = actualUrl || url;
       }
       // Pattern 2: Any TLD followed by https:// (comprehensive fix for all domains)
       // Handles .frhttps://, .ithttps://, .eshttps://, .dehttps://, etc.
@@ -627,7 +627,7 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
         // Extract the correct URL from the malformed string
         const match = url.match(/(https?:\/\/.+)$/);
         if (match) {
-          const correctedUrl = match[1];
+          const correctedUrl = match?.[1];
           comprehensiveLogger.log({
             level: 'info',
             category: 'manifest',
@@ -638,7 +638,7 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
               correctedUrl: correctedUrl
             }
           });
-          url = correctedUrl;
+          url = correctedUrl || url;
         }
       }
       
@@ -653,7 +653,7 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
     const manifest = await enhancedManuscriptDownloader.loadManifest(url);
     
     // Check if manifest is large and needs chunking
-    const manifestSize = JSON.stringify(manifest).length;
+    const manifestSize = JSON.stringify(manifest)?.length;
     const CHUNK_THRESHOLD = 100 * 1024; // 100KB threshold
     
     if (manifestSize > CHUNK_THRESHOLD) {
@@ -668,7 +668,7 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
     
     // Small manifest, return directly
     return { isChunked: false, manifest };
-  } catch (error: unknown) {
+  } catch (error: any) {
     const err = error instanceof Error ? error : new Error(String(error));
     comprehensiveLogger.log({
       level: 'error',
@@ -707,15 +707,15 @@ ipcMain.handle('get-manifest-chunk', async (_event, url: string, chunkIndex: num
     const manifestString = JSON.stringify(manifest);
     
     const start = chunkIndex * chunkSize;
-    const end = Math.min(start + chunkSize, manifestString.length);
+    const end = Math.min(start + chunkSize, manifestString?.length);
     const chunk = manifestString.slice(start, end);
     
     return {
       chunk,
-      isLastChunk: end >= manifestString.length,
-      totalChunks: Math.ceil(manifestString.length / chunkSize)
+      isLastChunk: end >= manifestString?.length,
+      totalChunks: Math.ceil(manifestString?.length / chunkSize)
     };
-  } catch (error: unknown) {
+  } catch (error: any) {
     const err = error instanceof Error ? error : new Error(String(error));
     comprehensiveLogger.log({
       level: 'error',
@@ -767,7 +767,7 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
             issue: 'Issue #9 BDL fix applied'
           }
         });
-        url = actualUrl;
+        url = actualUrl || url;
       }
       // Pattern 2: Any TLD followed by https:// (comprehensive fix for all domains)
       // Handles .frhttps://, .ithttps://, .eshttps://, .dehttps://, etc.
@@ -787,7 +787,7 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
         // Extract the correct URL from the malformed string
         const match = url.match(/(https?:\/\/.+)$/);
         if (match) {
-          const correctedUrl = match[1];
+          const correctedUrl = match?.[1];
           comprehensiveLogger.log({
             level: 'info',
             category: 'manifest',
@@ -798,7 +798,7 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
               correctedUrl: correctedUrl
             }
           });
-          url = correctedUrl;
+          url = correctedUrl || url;
         }
       }
       
@@ -823,7 +823,7 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
         // Extract the correct URL from the malformed string
         const match = url.match(/\d+\.\d+\.\d+\.\d+:\d+(https:\/\/.+)$/);
         if (match) {
-          const correctedUrl = match[1];
+          const correctedUrl = match?.[1];
           comprehensiveLogger.log({
             level: 'info',
             category: 'manifest',
@@ -834,7 +834,7 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
               correctedUrl: correctedUrl
             }
           });
-          url = correctedUrl;
+          url = correctedUrl || url;
         }
       }
     }
@@ -869,7 +869,7 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
         url,
         details: {
           message: 'Using extended timeout for Graz manifest',
-          timeout: timeoutMs,
+          
           platform: process.platform,
           issue: 'Issue #2 fix applied'
         }
@@ -887,7 +887,7 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
     // Race between manifest loading and timeout
     const result = await Promise.race([manifestPromise, timeoutPromise]);
     return result;
-  } catch (error: unknown) {
+  } catch (error: any) {
     const err = error instanceof Error ? error : new Error(String(error));
     // ULTRA-PRIORITY FIX for Issue #2: Enhanced error handling to ensure reply is sent
     comprehensiveLogger.log({
@@ -1127,9 +1127,9 @@ ipcMain.handle('clear-manifest-cache', async () => {
   }
   
   try {
-    await (enhancedManuscriptDownloader as { manifestCache: { clear: () => Promise<void> } }).manifestCache.clear();
+    await (enhancedManuscriptDownloader as unknown as { manifestCache: { clear: () => Promise<void> } }).manifestCache.clear();
     return { success: true, message: 'Manifest cache cleared successfully' };
-  } catch (error: unknown) {
+  } catch (error: any) {
     throw new Error(`Failed to clear manifest cache: ${error instanceof Error ? error.message : String(error)}`);
   }
 });
@@ -1156,7 +1156,7 @@ ipcMain.handle('clear-all-caches', async () => {
     console.log('Performed complete cache wipe - all data cleared');
     
     return { success: true, message: 'All caches and data completely wiped' };
-  } catch (error: unknown) {
+  } catch (error: any) {
     throw new Error(`Failed to clear all caches: ${error instanceof Error ? error.message : String(error)}`);
   }
 });
@@ -1169,7 +1169,7 @@ ipcMain.handle('get-cache-stats', async () => {
   try {
     const stats = await imageCache.getCacheStats();
     return stats;
-  } catch (error: unknown) {
+  } catch (error: any) {
     throw new Error(`Failed to get cache stats: ${error instanceof Error ? error.message : String(error)}`);
   }
 });
@@ -1186,7 +1186,7 @@ ipcMain.handle('open-downloads-folder', async () => {
       .filter((item: QueuedManuscript) => item.status === 'completed' && item.outputPath)
       .sort((a: QueuedManuscript, b: QueuedManuscript) => (b.completedAt || 0) - (a.completedAt || 0));
     
-    if (completedItems.length > 0 && completedItems[0].outputPath) {
+    if (completedItems?.length > 0 && completedItems[0]?.outputPath) {
       // Open the folder containing the specific file
       shell.showItemInFolder(completedItems[0].outputPath);
       return path.dirname(completedItems[0].outputPath);
@@ -1196,9 +1196,9 @@ ipcMain.handle('open-downloads-folder', async () => {
     const inProgressItems = state.items
       .filter((item: QueuedManuscript) => item.status === 'downloading' && item.displayName);
     
-    if (inProgressItems.length > 0) {
+    if (inProgressItems?.length > 0) {
       // Construct the expected output folder for the in-progress item
-      const sanitizedName = inProgressItems[0].displayName
+      const sanitizedName = inProgressItems[0]?.displayName
         .replace(/[<>:"/\\|?*\x00-\x1f]/g, '_')
         .replace(/[\u00A0-\u9999]/g, '_')
         .replace(/[^\w\s.-]/g, '_')
@@ -1253,7 +1253,7 @@ ipcMain.handle('get-logs-folder-path', async () => {
 
 ipcMain.handle('export-logs-now', async () => {
   const { comprehensiveLogger } = await import('./services/ComprehensiveLogger');
-  const filepath = await comprehensiveLogger.exportLogs('json', true, false);
+  const filepath = await comprehensiveLogger.exportLogs({ format: 'json', includeDebug: true });
   shell.showItemInFolder(filepath);
   return filepath;
 });
@@ -1337,7 +1337,7 @@ ipcMain.handle('solve-captcha', async (_event, url: string) => {
     
     captchaWindow.once('ready-to-show', () => {
       // CRITICAL: Never show captcha window during tests or headless mode
-      if (!isHeadless && process.env.NODE_ENV !== 'test') {
+      if (!isHeadless && process.env['NODE_ENV'] !== 'test') {
         captchaWindow.show();
         console.log('[MAIN] Captcha window shown for URL:', url);
       } else {

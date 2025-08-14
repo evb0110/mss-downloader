@@ -19,7 +19,7 @@ export class BerlinLoader extends BaseLibraryLoader {
                 // https://digital.staatsbibliothek-berlin.de/werkansicht?PPN=PPN782404456&view=picture-download&PHYSID=PHYS_0005&DMDID=DMDLOG_0001
                 // https://digital.staatsbibliothek-berlin.de/werkansicht/?PPN=PPN782404677
                 const ppnMatch = berlinUrl.match(/[?&]PPN=(PPN\d+)/);
-                if (!ppnMatch) {
+                if (!ppnMatch || !ppnMatch[1]) {
                     throw new Error('Could not extract PPN from Berlin State Library URL');
                 }
                 
@@ -49,10 +49,10 @@ export class BerlinLoader extends BaseLibraryLoader {
                             break;
                         }
                         console.warn(`Berlin: HTTP ${manifestResponse.status}, retrying...`);
-                    } catch (error: unknown) {
-                        console.error(`Berlin: Attempt ${fetchAttempt} failed: ${error.message}`);
+                    } catch (error: any) {
+                        console.error(`Berlin: Attempt ${fetchAttempt} failed: ${error instanceof Error ? error.message : String(error)}`);
                         if (fetchAttempt >= maxAttempts) {
-                            throw new Error(`Failed to fetch Berlin manifest: ${error.message}`);
+                            throw new Error(`Failed to fetch Berlin manifest: ${error instanceof Error ? error.message : String(error)}`);
                         }
                         // Wait before retry
                         await new Promise(resolve => setTimeout(resolve, 2000 * fetchAttempt));
@@ -69,21 +69,21 @@ export class BerlinLoader extends BaseLibraryLoader {
                 const title = manifestData.label || `Berlin Manuscript ${ppnNumber}`;
                 
                 // Get sequences and canvases
-                if (!manifestData.sequences || manifestData.sequences.length === 0) {
+                if (!manifestData.sequences || manifestData.sequences?.length === 0) {
                     throw new Error('No sequences found in Berlin IIIF manifest');
                 }
                 
                 const sequence = manifestData.sequences[0];
                 const canvases = sequence.canvases || [];
                 
-                if (canvases.length === 0) {
+                if (canvases?.length === 0) {
                     throw new Error('No canvases found in Berlin IIIF manifest');
                 }
                 
                 // Generate page links from canvases
                 const pageLinks: string[] = [];
                 for (const canvas of canvases) {
-                    if (canvas.images && canvas.images.length > 0) {
+                    if (canvas.images && canvas.images?.length > 0) {
                         const image = canvas.images[0];
                         if (image.resource && image.resource['@id']) {
                             // Use the direct image URL from the manifest
@@ -100,21 +100,21 @@ export class BerlinLoader extends BaseLibraryLoader {
                     }
                 }
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No valid image URLs found in Berlin IIIF manifest');
                 }
                 
-                console.log(`Berlin State Library: Found ${pageLinks.length} pages for "${title}"`);
+                console.log(`Berlin State Library: Found ${pageLinks?.length} pages for "${title}"`);
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'berlin',
                     displayName: title,
                     originalUrl: berlinUrl
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error('Error loading Berlin State Library manifest:', error);
                 throw new Error(`Failed to load Berlin State Library manuscript: ${(error as Error).message}`);
             }

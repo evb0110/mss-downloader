@@ -65,7 +65,7 @@ const api = {
       const manifestString = chunks.join('');
       return JSON.parse(manifestString);
       
-    } catch (error: unknown) {
+    } catch (error: any) {
       // Fallback to original handler if chunked handler is not available (backward compatibility)
       if ((error instanceof Error && error.message?.includes('No handler registered')) || (error instanceof Error && error.message?.includes('is not a function'))) {
         console.log('Chunked handler not available, falling back to original handler');

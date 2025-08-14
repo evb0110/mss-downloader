@@ -3,14 +3,14 @@ export class PdfRendererService {
     
     const invertedFiles: string[] = [];
     
-    for (let i = 0; i < imageFiles.length; i++) {
+    for (let i = 0; i < imageFiles?.length; i++) {
       const originalFilePath = imageFiles[i];
       
       // Update progress for this image (Stage 2: 40-80%)
-      const inversionProgress = 40 + Math.round(((i + 1) / imageFiles.length) * 40);
+      const inversionProgress = 40 + Math.round(((i + 1) / imageFiles?.length) * 40);
       await window.electronAPI.updateRenderingProgress(
         'Stage 2: Image Inversion', 
-        `Inverting image ${i + 1}/${imageFiles.length} from negative to positive... (${inversionProgress}% complete)`, 
+        `Inverting image ${i + 1}/${imageFiles?.length} from negative to positive... (${inversionProgress}% complete)`, 
         inversionProgress
       );
       
@@ -62,10 +62,10 @@ export class PdfRendererService {
           const pixels = imageDataStrip.data;
           
           // Invert each pixel in this strip (RGB channels, keep alpha)
-          for (let j = 0; j < pixels.length; j += 4) {
-            pixels[j] = 255 - pixels[j];     // Red
-            pixels[j + 1] = 255 - pixels[j + 1]; // Green
-            pixels[j + 2] = 255 - pixels[j + 2]; // Blue
+          for (let j = 0; j < pixels?.length; j += 4) {
+            pixels![j] = 255 - (pixels![j] ?? 0);     // Red
+            pixels![j + 1] = 255 - (pixels![j + 1] ?? 0); // Green
+            pixels![j + 2] = 255 - (pixels![j + 2] ?? 0); // Blue
             // pixels[j + 3] stays the same (Alpha)
           }
           
@@ -135,14 +135,14 @@ export class PdfRendererService {
       // Create a new PDF document
       const pdfDoc = await PDFDocument.create();
       
-      for (let i = 0; i < imageFiles.length; i++) {
+      for (let i = 0; i < imageFiles?.length; i++) {
         const imagePath = imageFiles[i];
         
         // Update progress for this page (Stage 3: 80-100%)
-        const pdfProgress = 80 + Math.round(((i + 1) / imageFiles.length) * 20);
+        const pdfProgress = 80 + Math.round(((i + 1) / imageFiles?.length) * 20);
         await window.electronAPI.updateRenderingProgress(
           'Stage 3: Creating PDF', 
-          `Adding page ${i + 1}/${imageFiles.length} to PDF... (${pdfProgress}% complete)`, 
+          `Adding page ${i + 1}/${imageFiles?.length} to PDF... (${pdfProgress}% complete)`, 
           pdfProgress
         );
         

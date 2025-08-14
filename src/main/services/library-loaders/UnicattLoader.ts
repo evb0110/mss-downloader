@@ -25,9 +25,9 @@ export class UnicattLoader extends BaseLibraryLoader {
                 // Build the folder structure as done in the JavaScript:
                 // for (let i = 0; i < 15; i += 2) { bookId = bookId + bookIdFull.substring(i, i+2) + "/" }
                 let bookIdPath = '';
-                for (let i = 0; i < Math.min(15, bookIdFull.length); i += 2) {
-                    const segment = bookIdFull.substring(i, i + 2);
-                    if (segment.length > 0) {
+                for (let i = 0; i < Math.min(15, bookIdFull?.length || 0); i += 2) {
+                    const segment = bookIdFull?.substring(i, i + 2);
+                    if (segment && segment.length > 0) {
                         bookIdPath += segment + '/';
                     }
                 }
@@ -77,8 +77,8 @@ export class UnicattLoader extends BaseLibraryLoader {
                         let foundImages = false;
                         
                         // Check IIIF v2 format (canvas.images)
-                        if (canvas.images && Array.isArray(canvas.images)) {
-                            for (const image of canvas.images) {
+                        if (canvas['images'] && Array.isArray(canvas['images'])) {
+                            for (const image of canvas['images']) {
                                 let imageUrl;
                                 
                                 if (image.resource) {
@@ -99,8 +99,8 @@ export class UnicattLoader extends BaseLibraryLoader {
                         }
                         
                         // Check IIIF v3 format (canvas.items with AnnotationPages)
-                        if (!foundImages && canvas.items && Array.isArray(canvas.items)) {
-                            for (const item of canvas.items) {
+                        if (!foundImages && canvas['items'] && Array.isArray(canvas['items'])) {
+                            for (const item of canvas['items']) {
                                 if (item.type === 'AnnotationPage' && item.items && Array.isArray(item.items)) {
                                     for (const annotation of item.items) {
                                         if (annotation.body && annotation.body.id) {
@@ -119,7 +119,7 @@ export class UnicattLoader extends BaseLibraryLoader {
                         }
                     }
                     
-                    if (pageLinks.length === 0) {
+                    if (pageLinks?.length === 0) {
                         throw new Error('No page links found in Unicatt IIIF manifest');
                     }
                     
@@ -138,25 +138,25 @@ export class UnicattLoader extends BaseLibraryLoader {
                         } else if (typeof manifest.label === 'object') {
                             // Try to extract any language variant
                             const languages = Object.keys(manifest.label);
-                            if (languages.length > 0 && Array.isArray(manifest.label[languages[0]])) {
-                                displayName = manifest.label[languages[0]][0];
+                            if (languages?.length > 0 && languages[0] && Array.isArray(manifest.label[languages[0]])) {
+                                displayName = manifest.label[languages[0]]![0];
                             }
                         }
                     }
                     
                     return {
                         pageLinks,
-                        totalPages: pageLinks.length,
+                        totalPages: pageLinks?.length,
                         displayName: displayName,
                         library: 'unicatt',
                         originalUrl: unicattUrl
                     };
                     
-                } catch (error: unknown) {
+                } catch (error: any) {
                     throw new Error(`Failed to load Unicatt manifest: ${(error as Error).message}`);
                 }
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load Unicatt manuscript: ${(error as Error).message}`);
             }
         }

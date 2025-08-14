@@ -45,17 +45,17 @@ export class MunichLoader extends BaseLibraryLoader {
                 }
                 
                 // Get page count from sequences/canvases (IIIF v2.0)
-                const _UNUSED_totalPages = 0;
+                // Removed unused _totalPages variable
                 const pageLinks: string[] = [];
                 
-                if (manifest.sequences && manifest.sequences.length > 0) {
+                if (manifest.sequences && manifest.sequences?.length > 0) {
                     const sequence = manifest.sequences[0];
                     if (sequence.canvases && Array.isArray(sequence.canvases)) {
-                        // sequence.canvases.length - totalPages will be pageLinks.length
+                        // sequence.canvases?.length - totalPages will be pageLinks.length
                         
                         // Extract image URLs with maximum resolution
                         for (const canvas of sequence.canvases) {
-                            if (canvas.images && canvas.images.length > 0) {
+                            if (canvas.images && canvas.images?.length > 0) {
                                 const image = canvas.images[0];
                                 if (image.resource) {
                                     const service = image.resource.service;
@@ -74,24 +74,24 @@ export class MunichLoader extends BaseLibraryLoader {
                     }
                 }
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No images found in Munich manifest');
                 }
                 
                 const munichManifest: ManuscriptManifest = {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'munich' as const,
                     displayName,
                     originalUrl: munichUrl,
                 };
                 
                 // Cache the manifest
-                this.deps.manifestCache.set(munichUrl, munichManifest).catch(console.warn);
+                this.deps.manifestCache.set(munichUrl, munichManifest as unknown as Record<string, unknown>).catch(console.warn);
                 
                 return munichManifest;
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 throw new Error(`Failed to load Munich manuscript: ${errorMessage}`);
             }

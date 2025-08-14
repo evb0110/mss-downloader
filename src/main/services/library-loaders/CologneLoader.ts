@@ -31,15 +31,15 @@ export class CologneLoader extends BaseLibraryLoader {
                 
                 if (hsMatch) {
                     collection = 'hs';
-                    pageId = hsMatch[1];
+                    pageId = hsMatch[1] || '';
                     displayName = 'Cologne Dom Library Manuscript';
                 } else if (schnuetgenMatch) {
                     collection = 'schnuetgen';
-                    pageId = schnuetgenMatch[1];
+                    pageId = schnuetgenMatch[1] || '';
                     displayName = 'Cologne Schnütgen Museum Manuscript';
                 } else if (ddbkhdMatch) {
                     collection = 'ddbkhd';
-                    pageId = ddbkhdMatch[1];
+                    pageId = ddbkhdMatch[1] || '';
                     displayName = 'Cologne DDBKHD Manuscript';
                 } else {
                     throw new Error('Could not extract collection and page ID from Cologne URL');
@@ -75,36 +75,36 @@ export class CologneLoader extends BaseLibraryLoader {
                     const pageIdRegex = /data-id="(\d+)"/g;
                     let match;
                     while ((match = pageIdRegex.exec(pageListHtml)) !== null) {
-                        pageIds.push(match[1]);
+                        pageIds.push(match?.[1] || '');
                     }
-                    console.log(`Found ${pageIds.length} pages using pageList method`);
+                    console.log(`Found ${pageIds?.length} pages using pageList method`);
                 }
                 
                 // Method 2: Try select dropdown options (for Schnütgen and DDBKHD collections)
-                if (pageIds.length === 0) {
+                if (pageIds?.length === 0) {
                     const selectMatch = html.match(/<select[^>]*id="goToPages"[^>]*>.*?<\/select>/s);
                     if (selectMatch) {
                         const selectHtml = selectMatch[0];
                         const optionRegex = /option value="(\d+)"/g;
                         let match;
                         while ((match = optionRegex.exec(selectHtml)) !== null) {
-                            pageIds.push(match[1]);
+                            pageIds.push(match?.[1] || '');
                         }
-                        console.log(`Found ${pageIds.length} pages using select dropdown method`);
+                        console.log(`Found ${pageIds?.length} pages using select dropdown method`);
                     }
                 }
                 
-                if (pageIds.length === 0) {
+                if (pageIds?.length === 0) {
                     throw new Error('No page IDs found in Cologne page using any method');
                 }
                 
-                console.log(`Found ${pageIds.length} pages`);
+                console.log(`Found ${pageIds?.length} pages`);
                 
                 // Extract manuscript title from page metadata if available
                 const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/);
                 if (titleMatch) {
                     const title = titleMatch[1]
-                        .replace(/Handschriften der Diözesan- und Dombibliothek \/ /, '')
+                        ?.replace(/Handschriften der Diözesan- und Dombibliothek \/ /, '')
                         .replace(/ \[.*$/, '') // Remove trailing bracket content
                         .trim();
                     
@@ -129,17 +129,17 @@ export class CologneLoader extends BaseLibraryLoader {
                     .trim()
                     .replace(/\.$/, ''); // Remove trailing period
                 
-                console.log(`Cologne Dom Library manifest loaded: ${pageLinks.length} pages`);
+                console.log(`Cologne Dom Library manifest loaded: ${pageLinks?.length} pages`);
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'cologne',
                     displayName: sanitizedName,
                     originalUrl: cologneUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error(`Cologne Dom Library manifest loading failed:`, error);
                 throw new Error(`Failed to load Cologne Dom Library manuscript: ${(error as Error).message}`);
             }

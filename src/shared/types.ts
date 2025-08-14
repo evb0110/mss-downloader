@@ -7,8 +7,10 @@ export interface DownloadProgress {
   currentImageIndex: number;
   pagesProcessed: number;
   percentage: number;
+  progress?: number; // Alternative progress field
   elapsedTime: number;
   estimatedTimeRemaining: number;
+  eta?: number; // Estimated time of arrival
   bytesDownloaded: number;
   bytesTotal: number;
   downloadSpeed: number;
@@ -30,6 +32,7 @@ export interface ManuscriptManifest {
   totalPages: number;
   library: 'nypl' | 'morgan' | 'gallica' | 'grenoble' | 'karlsruhe' | 'manchester' | 'munich' | 'unifr' | 'e_manuscripta' | 'vatlib' | 'cecilia' | 'irht' | 'loc' | 'dijon' | 'laon' | 'durham' | 'florus' | 'unicatt' | 'cudl' | 'trinity_cam' | 'toronto' | 'fulda' | 'isos' | 'mira' | 'orleans' | 'rbme' | 'parker' | 'manuscripta' | 'internet_culturale' | 'graz' | 'gams' | 'cologne' | 'vienna_manuscripta' | 'rome' | 'berlin' | 'czech' | 'modena' | 'bdl' | 'europeana' | 'monte_cassino' | 'vallicelliana' | 'omnes_vallicelliana' | 'verona' | 'diamm' | 'bne' | 'mdc_catalonia' | 'bvpb' | 'onb' | 'rouen' | 'freiburg' | 'sharedcanvas' | 'saint_omer' | 'ugent' | 'bl' | 'bodleian' | 'wolfenbuettel' | 'florence' | 'hhu' | 'vatican' | 'belgica_kbr' | 'bordeaux';
   displayName: string;
+  title?: string; // Optional title property
   originalUrl: string;
   startPageFromUrl?: number; // Optional: page number specified in URL for range starting
   requiresTileProcessor?: boolean; // Optional: indicates if tile processing is needed

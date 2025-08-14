@@ -47,7 +47,7 @@ export class MonteCassinoLoader extends BaseLibraryLoader {
                         '0000401004': 'IT-FR0084_0018'
                     };
                     
-                    if (catalogMappings[catalogId]) {
+                    if (catalogId && catalogMappings[catalogId]) {
                         manuscriptId = catalogMappings[catalogId];
                     } else {
                         // Special handling for catalog 0000313041 which is cataloged but not digitized
@@ -61,7 +61,7 @@ export class MonteCassinoLoader extends BaseLibraryLoader {
                         }
                         
                         // Find nearby available alternatives for better user guidance
-                        const catalogNum = parseInt(catalogId);
+                        const catalogNum = parseInt(catalogId || '0');
                         const availableIds = Object.keys(catalogMappings);
                         const nearest = availableIds
                             .map(id => ({ id, distance: Math.abs(parseInt(id) - catalogNum) }))
@@ -83,7 +83,7 @@ export class MonteCassinoLoader extends BaseLibraryLoader {
                     if (!iiifMatch) {
                         throw new Error('Cannot extract manuscript ID from OMNES URL');
                     }
-                    manuscriptId = iiifMatch[1];
+                    manuscriptId = iiifMatch[1] || '';
                 } else {
                     throw new Error('Unsupported Monte-Cassino URL format');
                 }
@@ -106,28 +106,28 @@ export class MonteCassinoLoader extends BaseLibraryLoader {
                 
                 // Extract page URLs
                 const pageLinks = manifestData.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
-                    const resource = canvas.images[0].resource;
-                    if (resource.service && resource.service['@id']) {
-                        return `${resource.service['@id']}/full/full/0/default.jpg`;
+                    const resource = ((canvas['images'] as unknown[])[0] as Record<string, unknown>)['resource'] as Record<string, unknown>;
+                    if ((resource as any)["service"] && (resource as any)["service"]['@id']) {
+                        return `${(resource as any)["service"]['@id']}/full/full/0/default.jpg`;
                     } else if (resource['@id']) {
                         return resource['@id'];
                     }
                     return null;
                 }).filter((link: string) => link);
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No pages found in manifest');
                 }
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'monte_cassino',
                     displayName: `Monte_Cassino_${manuscriptId}`,
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 throw new Error(`Failed to load Monte-Cassino manuscript: ${errorMessage}`);
             }

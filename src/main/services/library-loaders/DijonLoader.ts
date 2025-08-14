@@ -32,7 +32,7 @@ export class DijonLoader extends BaseLibraryLoader {
                 throw new Error(`Failed to load Dijon manifest: HTTP ${response.status}`);
             }
             const manifestData = await response.json();
-            if (!Array.isArray(manifestData) || manifestData.length === 0) {
+            if (!Array.isArray(manifestData) || manifestData?.length === 0) {
                 throw new Error('No images found in Dijon manifest');
             }
             const pageLinks = manifestData.map((page: DijonPage) => {
@@ -47,7 +47,7 @@ export class DijonLoader extends BaseLibraryLoader {
             });
             return {
                 pageLinks,
-                totalPages: pageLinks.length,
+                totalPages: pageLinks?.length,
                 displayName: `Dijon_${manuscriptId}`,
                 library: 'dijon',
                 originalUrl: url

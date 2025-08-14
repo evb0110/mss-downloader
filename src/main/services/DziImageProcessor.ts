@@ -146,10 +146,10 @@ export class DziImageProcessor {
         const tileData = new Map<string, Buffer>();
         const batchSize = 5; // Download tiles in batches
         
-        console.log(`[DZI] Downloading ${tiles.length} tiles...`);
+        console.log(`[DZI] Downloading ${tiles?.length} tiles...`);
         
-        for (let i = 0; i < tiles.length; i += batchSize) {
-            const batch = tiles.slice(i, Math.min(i + batchSize, tiles.length));
+        for (let i = 0; i < tiles?.length; i += batchSize) {
+            const batch = tiles.slice(i, Math.min(i + batchSize, tiles?.length));
             
             const promises = batch.map(async (tile) => {
                 try {
@@ -158,10 +158,10 @@ export class DziImageProcessor {
                     tileData.set(key, data);
                     
                     if ((i + batch.indexOf(tile) + 1) % 10 === 0) {
-                        console.log(`[DZI] Downloaded ${i + batch.indexOf(tile) + 1}/${tiles.length} tiles`);
+                        console.log(`[DZI] Downloaded ${i + batch.indexOf(tile) + 1}/${tiles?.length} tiles`);
                     }
                 } catch (error) {
-                    console.error(`[DZI] Failed to download tile ${tile.column}_${tile.row}:`, error.message);
+                    console.error(`[DZI] Failed to download tile ${tile.column}_${tile.row}:`, error instanceof Error ? error.message : String(error));
                     throw error;
                 }
             });
@@ -177,7 +177,7 @@ export class DziImageProcessor {
      * Stitch tiles into a full-resolution image
      */
     private async stitchTiles(tiles: TileInfo[], tileData: Map<string, Buffer>, metadata: DziMetadata): Promise<Buffer> {
-        console.log(`[DZI] Stitching ${tiles.length} tiles into ${metadata.width}x${metadata.height} image...`);
+        console.log(`[DZI] Stitching ${tiles?.length} tiles into ${metadata.width}x${metadata.height} image...`);
         
         try {
             // Try to use Canvas if available
@@ -224,10 +224,10 @@ export class DziImageProcessor {
                     
                     processedTiles++;
                     if (processedTiles % 10 === 0) {
-                        console.log(`[DZI] Stitching progress: ${Math.round((processedTiles / tiles.length) * 100)}%`);
+                        console.log(`[DZI] Stitching progress: ${Math.round((processedTiles / tiles?.length) * 100)}%`);
                     }
                 } catch (error) {
-                    console.error(`[DZI] Error processing tile ${key}:`, error.message);
+                    console.error(`[DZI] Error processing tile ${key}:`, error instanceof Error ? error.message : String(error));
                 }
             }
             
@@ -235,13 +235,15 @@ export class DziImageProcessor {
             
             // Convert to JPEG buffer
             const jpegBuffer = await new Promise<Buffer>((resolve, reject) => {
-                canvas.toBuffer('image/jpeg', { quality: 0.95 }, (err: Error | null, buffer: Buffer) => {
-                    if (err) reject(err);
-                    else resolve(buffer);
-                });
+                try {
+                    const buffer = canvas.toBuffer();
+                    resolve(buffer);
+                } catch (err) {
+                    reject(err);
+                }
             });
             
-            console.log(`[DZI] Final image size: ${(jpegBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+            console.log(`[DZI] Final image size: ${(jpegBuffer?.length / 1024 / 1024).toFixed(2)} MB`);
             return jpegBuffer;
             
         } catch (error) {
@@ -285,13 +287,13 @@ export class DziImageProcessor {
     async processDziPages(dziUrls: string[]): Promise<Buffer[]> {
         const images: Buffer[] = [];
         
-        for (let i = 0; i < dziUrls.length; i++) {
-            console.log(`[DZI] Processing page ${i + 1}/${dziUrls.length}`);
+        for (let i = 0; i < dziUrls?.length; i++) {
+            console.log(`[DZI] Processing page ${i + 1}/${dziUrls?.length}`);
             try {
-                const image = await this.processDziImage(dziUrls[i]);
+                const image = await this.processDziImage(dziUrls[i] || '');
                 images.push(image);
             } catch (error) {
-                console.error(`[DZI] Failed to process page ${i + 1}:`, error.message);
+                console.error(`[DZI] Failed to process page ${i + 1}:`, error instanceof Error ? error.message : String(error));
                 throw error;
             }
         }

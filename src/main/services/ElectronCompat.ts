@@ -40,20 +40,20 @@ function getElectron(): Record<string, unknown> | null {
       electronCache = null;
     }
   }
-  return electronCache;
+  return electronCache ?? null;
 }
 
 export function getAppPath(name: 'downloads' | 'userData'): string {
   const electron = getElectron();
-  if (electron?.app?.getPath) {
+  if (electron?.['app'] && (electron['app'] as any).getPath) {
     try {
-      return electron.app.getPath(name);
+      return (electron['app'] as any).getPath(name);
     } catch {
       // fall through to fallback
     }
   }
 
-  const home = os.homedir() || process.env.HOME || '.';
+  const home = os.homedir() || process.env['HOME'] || '.';
   if (name === 'downloads') {
     return path.join(home, 'Downloads');
   }
@@ -67,9 +67,9 @@ export async function showSaveDialog(options: {
   filters?: { name: string; extensions: string[] }[];
 }): Promise<{ canceled: boolean; filePath?: string } > {
   const electron = getElectron();
-  if (electron?.dialog?.showSaveDialog) {
+  if (electron?.['dialog'] && (electron['dialog'] as any).showSaveDialog) {
     try {
-      return await electron.dialog.showSaveDialog(options);
+      return await (electron['dialog'] as any).showSaveDialog(options);
     } catch {
       // fall through to fallback
     }

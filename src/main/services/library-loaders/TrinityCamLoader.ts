@@ -22,21 +22,11 @@ export class TrinityCamLoader extends BaseLibraryLoader {
                 
                 // Use intelligent progress monitoring for Trinity Cambridge as their server can be slow
                 const progressMonitor = this.deps.createProgressMonitor(
-                    'Trinity Cambridge manifest loading',
-                    'trinity',
-                    { initialTimeout: 60000, maxTimeout: 360000, progressCheckInterval: 20000 },
-                    {
-                        onInitialTimeoutReached: (state: Record<string, unknown>) => {
-                            console.log(`[Trinity] ${state.statusMessage}`);
-                        },
-                        onStuckDetected: (state: Record<string, unknown>) => {
-                            console.warn(`[Trinity] ${state.statusMessage}`);
-                        }
-                    }
+                    'Trinity Cambridge manifest loading'
                 );
                 
-                const controller = progressMonitor.start();
-                progressMonitor.updateProgress(0, 1, 'Loading Trinity Cambridge manifest...');
+                const controller = (progressMonitor as any)['start']();
+                (progressMonitor as any)['updateProgress'](0, 1, 'Loading Trinity Cambridge manifest...');
                 
                 try {
                     const manifestResponse = await fetch(manifestUrl, {
@@ -49,7 +39,7 @@ export class TrinityCamLoader extends BaseLibraryLoader {
                         }
                     });
                     
-                    progressMonitor.updateProgress(1, 1, 'Trinity Cambridge manifest loaded successfully');
+                    (progressMonitor as any)['updateProgress'](1, 1, 'Trinity Cambridge manifest loaded successfully');
                     
                     if (!manifestResponse.ok) {
                         if (manifestResponse.status === 404) {
@@ -75,40 +65,40 @@ export class TrinityCamLoader extends BaseLibraryLoader {
                     }
                     
                     const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
-                        const resource = canvas.images[0].resource;
-                        let imageUrl = resource['@id'] || resource.id;
+                        const resource = ((canvas['images'] as unknown[])[0] as Record<string, unknown>)['resource'] as Record<string, unknown>;
+                        let imageUrl = resource['@id'] || resource['id'];
                         
                         // For Trinity Cambridge, convert to smaller size for faster downloads
                         // Convert from /full/full/ to /full/1000,/ (1000px wide, loads in ~1.4s vs 45s)
-                        if (imageUrl && imageUrl.includes('/full/full/')) {
+                        if (imageUrl && typeof imageUrl === 'string' && imageUrl.includes('/full/full/')) {
                             imageUrl = imageUrl.replace('/full/full/', '/full/1000,/');
                         }
                         
                         return imageUrl;
                     }).filter((link: string) => link);
                     
-                    if (pageLinks.length === 0) {
+                    if (pageLinks?.length === 0) {
                         throw new Error('No pages found in Trinity Cambridge manifest');
                     }
                     
                     return {
                         pageLinks,
-                        totalPages: pageLinks.length,
+                        totalPages: pageLinks?.length,
                         library: 'trinity_cam',
                         displayName: `TrinityC_${manuscriptId}`,
                         originalUrl: trinityUrl,
                     };
                     
                 } catch (fetchError: unknown) {
-                    if (fetchError.name === 'AbortError') {
+                    if ((fetchError as any)?.name === 'AbortError') {
                         throw new Error('Trinity Cambridge server request timed out. The server may be temporarily unavailable.');
                     }
                     throw fetchError;
                 } finally {
-                    progressMonitor.complete();
+                    (progressMonitor as any)['complete']();
                 }
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load Trinity College Cambridge manuscript: ${(error as Error).message}`);
             }
         }

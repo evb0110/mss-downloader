@@ -21,7 +21,7 @@ export class LoggedFileOperations {
             });
             
             return result;
-        } catch (error: unknown) {
+        } catch (error: any) {
             comprehensiveLogger.logFileOperation('read', filePath, {
                 success: false,
                 error,
@@ -51,7 +51,7 @@ export class LoggedFileOperations {
                 fileSize: stats.size,
                 duration: Date.now() - startTime
             });
-        } catch (error: unknown) {
+        } catch (error: any) {
             comprehensiveLogger.logFileOperation('write', filePath, {
                 success: false,
                 error,
@@ -72,9 +72,9 @@ export class LoggedFileOperations {
             });
             
             return result;
-        } catch (error: unknown) {
+        } catch (error: any) {
             // Don't log EEXIST errors when recursive: true
-            if (error.code !== 'EEXIST' || !options?.recursive) {
+            if ((error as any)?.code !== 'EEXIST' || !options?.recursive) {
                 comprehensiveLogger.logFileOperation('create', dirPath, {
                     success: false,
                     error,
@@ -96,7 +96,7 @@ export class LoggedFileOperations {
                 fileSize: stats?.size,
                 duration: Date.now() - startTime
             });
-        } catch (error: unknown) {
+        } catch (error: any) {
             comprehensiveLogger.logFileOperation('delete', filePath, {
                 success: false,
                 error,
@@ -132,7 +132,7 @@ export class LoggedFileOperations {
             });
             
             return files;
-        } catch (error: unknown) {
+        } catch (error: any) {
             comprehensiveLogger.logFileOperation('read', dirPath, {
                 success: false,
                 error,
@@ -163,7 +163,7 @@ export class LoggedFileOperations {
             });
             
             return stats;
-        } catch (error: unknown) {
+        } catch (error: any) {
             comprehensiveLogger.logFileOperation('read', filePath, {
                 success: false,
                 error,
@@ -191,14 +191,14 @@ export class LoggedFileOperations {
                     destination: dest
                 }
             });
-        } catch (error: unknown) {
+        } catch (error: any) {
             comprehensiveLogger.log({
                 level: 'error',
                 category: 'file',
                 filePath: src,
                 duration: Date.now() - startTime,
-                errorMessage: error.message,
-                errorCode: error.code,
+                errorMessage: error instanceof Error ? error.message : String(error),
+                errorCode: (error as any)?.code,
                 details: {
                     message: 'File copy failed',
                     source: src,
@@ -227,14 +227,14 @@ export class LoggedFileOperations {
                     newPath
                 }
             });
-        } catch (error: unknown) {
+        } catch (error: any) {
             comprehensiveLogger.log({
                 level: 'error',
                 category: 'file',
                 filePath: oldPath,
                 duration: Date.now() - startTime,
-                errorMessage: error.message,
-                errorCode: error.code,
+                errorMessage: error instanceof Error ? error.message : String(error),
+                errorCode: (error as any)?.code,
                 details: {
                     message: 'File rename failed',
                     oldPath,

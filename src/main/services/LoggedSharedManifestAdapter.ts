@@ -30,12 +30,12 @@ export class LoggedSharedManifestAdapter {
             comprehensiveLogger.logNetworkResponse(url, {
                 statusCode: 200, // Successful since no error thrown
                 duration: Date.now() - startTime,
-                bytesReceived: result.length,
+                bytesReceived: (result as any)?.length,
                 library
             });
             
             return result;
-        } catch (error: unknown) {
+        } catch (error: any) {
             const err = error as Error;
             comprehensiveLogger.logNetworkError(url, err, {
                 library,
@@ -45,9 +45,9 @@ export class LoggedSharedManifestAdapter {
             // Re-throw with enhanced context
             const enhancedError = new Error(err.message);
             enhancedError.stack = err.stack;
-            (enhancedError as Record<string, unknown>).originalError = error;
-            (enhancedError as Record<string, unknown>).url = url;
-            (enhancedError as Record<string, unknown>).library = library;
+            (enhancedError as unknown as Record<string, unknown>)['originalError'] = error;
+            (enhancedError as unknown as Record<string, unknown>)['url'] = url;
+            (enhancedError as unknown as Record<string, unknown>)['library'] = library;
             throw enhancedError;
         }
     }
@@ -78,12 +78,12 @@ export class LoggedSharedManifestAdapter {
                 duration: Date.now() - startTime,
                 details: {
                     message: 'Catalonia MDC manifest loaded successfully',
-                    pageCount: manifest.pages?.length || 0
+                    pageCount: (manifest as any).pages?.length || 0
                 }
             });
             
             return manifest;
-        } catch (error: unknown) {
+        } catch (error: any) {
             const err = error as Error;
             comprehensiveLogger.log({
                 level: 'error',
@@ -128,12 +128,12 @@ export class LoggedSharedManifestAdapter {
                 duration: Date.now() - startTime,
                 details: {
                     message: 'Europeana manifest loaded successfully',
-                    pageCount: manifest.pages?.length || 0
+                    pageCount: (manifest as any).pages?.length || 0
                 }
             });
             
             return manifest;
-        } catch (error: unknown) {
+        } catch (error: any) {
             const err = error as Error;
             comprehensiveLogger.log({
                 level: 'error',
@@ -178,12 +178,12 @@ export class LoggedSharedManifestAdapter {
                 duration: Date.now() - startTime,
                 details: {
                     message: 'Florence manifest loaded successfully',
-                    pageCount: manifest.pages?.length || 0
+                    pageCount: (manifest as any).pages?.length || 0
                 }
             });
             
             return manifest;
-        } catch (error: unknown) {
+        } catch (error: any) {
             const err = error as Error;
             comprehensiveLogger.log({
                 level: 'error',
@@ -229,12 +229,12 @@ export class LoggedSharedManifestAdapter {
                 duration: Date.now() - startTime,
                 details: {
                     message: 'Verona manifest loaded successfully',
-                    pageCount: manifest.pages?.length || 0
+                    pageCount: (manifest as any).pages?.length || 0
                 }
             });
             
             return manifest;
-        } catch (error: unknown) {
+        } catch (error: any) {
             const err = error as Error;
             comprehensiveLogger.log({
                 level: 'error',
@@ -280,12 +280,12 @@ export class LoggedSharedManifestAdapter {
                 duration: Date.now() - startTime,
                 details: {
                     message: 'Graz manifest parsed successfully',
-                    pageCount: manifest.pages?.length || 0
+                    pageCount: (manifest as any).pages?.length || 0
                 }
             });
             
             return manifest;
-        } catch (error: unknown) {
+        } catch (error: any) {
             const err = error as Error;
             comprehensiveLogger.log({
                 level: 'error',
@@ -333,15 +333,15 @@ export class LoggedSharedManifestAdapter {
                 duration: Date.now() - startTime,
                 details: {
                     message: 'IIIF manifest loaded successfully',
-                    manifestType: manifest['@context'] ? 'Presentation API' : 'Unknown',
-                    canvases: Array.isArray(manifest.sequences?.[0]?.canvases) 
-                        ? manifest.sequences[0].canvases.length 
-                        : manifest.items?.length || 0
+                    manifestType: (manifest as unknown as Record<string, unknown>)['@context'] ? 'Presentation API' : 'Unknown',
+                    canvases: Array.isArray((manifest as any).sequences?.[0]?.canvases) 
+                        ? (manifest as any).sequences[0].canvases?.length 
+                        : (manifest as any).items?.length || 0
                 }
             });
             
             return manifest;
-        } catch (error: unknown) {
+        } catch (error: any) {
             const errorObj = error as Error;
             comprehensiveLogger.log({
                 level: 'error',

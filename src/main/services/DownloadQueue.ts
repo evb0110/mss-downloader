@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { EnhancedManuscriptDownloaderService } from './EnhancedManuscriptDownloaderService';
-import type { ElectronPdfMerger } from './ElectronPdfMerger';
+// ElectronPdfMerger import removed - was unused
 import { configService } from './ConfigService';
 import type { QueuedManuscript, QueueState, TStage, TLibrary, TSimultaneousMode } from '../../shared/queueTypes';
 import Store from 'electron-store';
@@ -11,12 +11,12 @@ export class DownloadQueue extends EventEmitter {
     private currentDownloader: EnhancedManuscriptDownloaderService | null = null;
     private activeDownloaders: Map<string, EnhancedManuscriptDownloaderService> = new Map();
     private processingAbortController: AbortController | null = null;
-    private pdfMerger: ElectronPdfMerger;
-    private store: Store<QueueState>;
+    // private pdfMerger: ElectronPdfMerger;
+    private store: Store<{ queueState: QueueState }>;
     
-    private constructor(pdfMerger: ElectronPdfMerger) {
+    private constructor() {
         super();
-        this.pdfMerger = pdfMerger;
+        // PDF merger removed - was unused
         // Define default state for electron-store
         const defaultState: QueueState = {
             items: [],
@@ -39,12 +39,9 @@ export class DownloadQueue extends EventEmitter {
         this.loadFromStorage();
     }
     
-    public static getInstance(pdfMerger?: ElectronPdfMerger): DownloadQueue {
-        if (!DownloadQueue.instance && pdfMerger) {
-            DownloadQueue.instance = new DownloadQueue(pdfMerger);
-        }
+    public static getInstance(): DownloadQueue {
         if (!DownloadQueue.instance) {
-            throw new Error('DownloadQueue not initialized with pdfMerger');
+            DownloadQueue.instance = new DownloadQueue();
         }
         return DownloadQueue.instance;
     }
@@ -59,7 +56,7 @@ export class DownloadQueue extends EventEmitter {
             status: 'pending',
             displayName: manuscript.displayName || manuscript.url.substring(0, 50) + '...', // Provide a default display name if not given
             library: manuscript.library || 'loading', // Default to loading until manifest is processed
-            totalPages: manuscript.totalPages || 0, // Default to 0 until manifest is processed
+            totalPages: manuscript?.totalPages || 0, // Default to 0 until manifest is processed
         };
         
         this.state.items.push(queuedManuscript);
@@ -75,7 +72,7 @@ export class DownloadQueue extends EventEmitter {
         
         const item = this.state.items[index];
         
-        if (item.status === 'downloading' && this.state.currentItemId === id) {
+        if (item && item.status === 'downloading' && this.state.currentItemId === id) {
             this.cancelCurrent();
         }
         
@@ -86,13 +83,16 @@ export class DownloadQueue extends EventEmitter {
     }
     
     moveItem(fromIndex: number, toIndex: number): boolean {
-        if (fromIndex < 0 || fromIndex >= this.state.items.length ||
-            toIndex < 0 || toIndex >= this.state.items.length) {
+        if (fromIndex < 0 || fromIndex >= this.state.items?.length ||
+            toIndex < 0 || toIndex >= this.state.items?.length) {
             return false;
         }
         
-        const [item] = this.state.items.splice(fromIndex, 1);
-        this.state.items.splice(toIndex, 0, item);
+        const removedItems = this.state.items.splice(fromIndex, 1);
+        const item = removedItems[0];
+        if (item) {
+            this.state.items.splice(toIndex, 0, item);
+        }
         this.saveToStorage();
         this.notifyListeners();
         return true;
@@ -109,7 +109,7 @@ export class DownloadQueue extends EventEmitter {
     }
     
     clearCompleted(): number {
-        const completedCount = this.state.items.filter((item) => item.status === 'completed').length;
+        const completedCount = this.state.items.filter((item) => item.status === 'completed')?.length;
         this.state.items = this.state.items.filter((item) => item.status !== 'completed');
         this.saveToStorage();
         this.notifyListeners();
@@ -117,7 +117,7 @@ export class DownloadQueue extends EventEmitter {
     }
     
     clearFailed(): number {
-        const failedCount = this.state.items.filter((item) => item.status === 'failed').length;
+        const failedCount = this.state.items.filter((item) => item.status === 'failed')?.length;
         this.state.items = this.state.items.filter((item) => item.status !== 'failed');
         this.saveToStorage();
         this.notifyListeners();
@@ -125,7 +125,7 @@ export class DownloadQueue extends EventEmitter {
     }
     
     clearAll(): number {
-        const count = this.state.items.length;
+        const count = this.state.items?.length;
         this.stopProcessing();
         this.state.items = [];
         this.saveToStorage();
@@ -256,7 +256,7 @@ export class DownloadQueue extends EventEmitter {
             item.status === 'pending' || item.status === 'loading'
         );
         
-        if (pendingItems.length === 0) return;
+        if (pendingItems?.length === 0) return;
         
         this.state.isProcessing = true;
         this.state.isPaused = false;
@@ -268,8 +268,8 @@ export class DownloadQueue extends EventEmitter {
             // Start all pending items simultaneously with resource limits
             const itemsToStart = pendingItems.slice(0, this.state.globalSettings.maxSimultaneousDownloads);
             
-            if (itemsToStart.length < pendingItems.length) {
-                console.warn(`Starting ${itemsToStart.length} of ${pendingItems.length} items due to resource limits`);
+            if (itemsToStart?.length < pendingItems?.length) {
+                console.warn(`Starting ${itemsToStart?.length} of ${pendingItems?.length} items due to resource limits`);
             }
             
             const promises = itemsToStart.map(item => this.processItemConcurrently(item));
@@ -278,7 +278,7 @@ export class DownloadQueue extends EventEmitter {
             // Log any failures
             results.forEach((result, index) => {
                 if (result.status === 'rejected') {
-                    console.error(`Failed to process item ${itemsToStart[index].id}:`, result.reason);
+                    console.error(`Failed to process item ${itemsToStart[index]?.id}:`, result.reason);
                 }
             });
         } catch (error) {
@@ -376,7 +376,7 @@ export class DownloadQueue extends EventEmitter {
         
         // For each parent group, recalculate splits
         for (const [parentId, parts] of parentGroups) {
-            if (parts.length > 0) {
+            if (parts?.length > 0) {
                 this.recalculatePartsForGroup(parentId, parts);
             }
         }
@@ -385,9 +385,9 @@ export class DownloadQueue extends EventEmitter {
     private recalculatePartsForGroup(parentId: string, existingParts: QueuedManuscript[]): void {
         // Get the first part to reconstruct original document info
         const firstPart = existingParts[0];
-        if (!firstPart.partInfo) return;
+        if (!firstPart || !firstPart.partInfo) return;
         
-        const originalDisplayName = firstPart.partInfo.originalDisplayName;
+        const originalDisplayName = firstPart.partInfo?.originalDisplayName;
         const totalPages = existingParts.reduce((max, part) => 
             Math.max(max, part.partInfo?.pageRange.end || 0), 0);
         
@@ -403,7 +403,7 @@ export class DownloadQueue extends EventEmitter {
             const newNumberOfParts = Math.ceil(estimatedSizeMB / thresholdMB);
             const newPagesPerPart = Math.ceil(totalPages / newNumberOfParts);
             
-            if (newNumberOfParts !== existingParts.length) {
+            if (newNumberOfParts !== existingParts?.length) {
                 this.recreatePartsWithNewSizes(parentId, existingParts, originalDisplayName, totalPages, newNumberOfParts, newPagesPerPart);
             }
         }
@@ -415,7 +415,7 @@ export class DownloadQueue extends EventEmitter {
         
         // Create single item
         const firstPart = parts[0];
-        const mergedItem: QueuedManuscript = {
+        const mergedItem = {
             ...firstPart,
             id: parentId,
             displayName: originalDisplayName,
@@ -425,7 +425,7 @@ export class DownloadQueue extends EventEmitter {
             parentId: undefined,
             partInfo: undefined,
             downloadOptions: {
-                concurrentDownloads: firstPart.downloadOptions?.concurrentDownloads || 3,
+                concurrentDownloads: firstPart?.downloadOptions?.concurrentDownloads || 3,
                 startPage: 1,
                 endPage: totalPages,
             },
@@ -435,7 +435,7 @@ export class DownloadQueue extends EventEmitter {
             completedAt: undefined,
         };
         
-        this.state.items.push(mergedItem);
+        this.state.items.push(mergedItem as QueuedManuscript);
         this.saveToStorage();
         this.notifyListeners();
     }
@@ -459,10 +459,10 @@ export class DownloadQueue extends EventEmitter {
             const partNumber = i + 1;
             
             const partId = `${parentId}_part_${partNumber}`;
-            const partItem: QueuedManuscript = {
+            const partItem = {
                 ...firstPart,
                 id: partId,
-                displayName: `${this.buildDescriptiveName(originalDisplayName, firstPart.url)}_Part_${partNumber}_pages_${startPage}-${endPage}`,
+                displayName: `${this.buildDescriptiveName(originalDisplayName, firstPart?.url || '')}_Part_${partNumber}_pages_${startPage}-${endPage}`,
                 status: 'pending',
                 parentId,
                 isAutoPart: true,
@@ -473,7 +473,7 @@ export class DownloadQueue extends EventEmitter {
                     pageRange: { start: startPage, end: endPage },
                 },
                 downloadOptions: {
-                    concurrentDownloads: firstPart.downloadOptions?.concurrentDownloads || 3,
+                    concurrentDownloads: firstPart?.downloadOptions?.concurrentDownloads || 3,
                     startPage,
                     endPage,
                 },
@@ -483,7 +483,7 @@ export class DownloadQueue extends EventEmitter {
                 completedAt: undefined,
             };
             
-            this.state.items.push(partItem);
+            this.state.items.push(partItem as QueuedManuscript);
         }
         
         this.saveToStorage();
@@ -497,12 +497,12 @@ export class DownloadQueue extends EventEmitter {
     getStatistics() {
         const items = this.state.items;
         return {
-            total: items.length,
-            pending: items.filter((item) => item.status === 'pending' || item.status === 'loading').length,
-            downloading: items.filter((item) => item.status === 'downloading').length,
-            completed: items.filter((item) => item.status === 'completed').length,
-            failed: items.filter((item) => item.status === 'failed').length,
-            paused: items.filter((item) => item.status === 'paused').length,
+            total: items?.length,
+            pending: items.filter((item) => item.status === 'pending' || item.status === 'loading')?.length,
+            downloading: items.filter((item) => item.status === 'downloading')?.length,
+            completed: items.filter((item) => item.status === 'completed')?.length,
+            failed: items.filter((item) => item.status === 'failed')?.length,
+            paused: items.filter((item) => item.status === 'paused')?.length,
         };
     }
     
@@ -543,7 +543,7 @@ export class DownloadQueue extends EventEmitter {
         
         item.progress = {
             current: 0,
-            total: item.totalPages || 1,
+            total: item?.totalPages || 1,
             percentage: 0,
             eta: 'Calculating...',
             stage: 'downloading' as TStage,
@@ -580,13 +580,15 @@ export class DownloadQueue extends EventEmitter {
             
             const manifest = await this.currentDownloader.loadManifest(item.url);
             
-            item.totalPages = manifest.totalPages;
-            item.displayName = manifest.displayName;
-            item.library = manifest.library as TLibrary;
-            item.status = 'downloading';
+            if (item) {
+                item.totalPages = manifest?.totalPages;
+                item.displayName = manifest.displayName;
+                item.library = manifest.library as TLibrary;
+                item.status = 'downloading';
+            }
 
             const startPage = Math.max(1, item.downloadOptions?.startPage || 1);
-            const endPage = Math.min(manifest.totalPages, item.downloadOptions?.endPage || manifest.totalPages);
+            const endPage = Math.min(manifest?.totalPages, item.downloadOptions?.endPage || manifest?.totalPages);
             const pageCount = endPage - startPage + 1;
             
             const selectedPageLinks = manifest.pageLinks.slice(startPage - 1, endPage);
@@ -618,7 +620,7 @@ export class DownloadQueue extends EventEmitter {
                 startPage,
                 endPage,
                 skipExisting: false,
-                onProgress: (progressData: {completedPages?: number; downloadedPages?: number}) => {
+                onProgress: (progressData: {completedPages?: number; downloadedPages?: number; estimatedTimeRemaining?: number}) => {
                     if (!this.state.isPaused && item.progress) {
                         const now = Date.now();
                         const downloadedPages = progressData.completedPages || progressData.downloadedPages || 0;
@@ -651,8 +653,8 @@ export class DownloadQueue extends EventEmitter {
                 onStatusChange: (_UNUSED_status: unknown) => {
                     // Not used for queue items directly
                 },
-                onError: (error: unknown) => {
-                    throw new Error(error);
+                onError: (error: string) => {
+                    throw new Error(error || 'Unknown error');
                 },
             });
             
@@ -660,17 +662,17 @@ export class DownloadQueue extends EventEmitter {
             item.completedAt = Date.now();
             item.progress = undefined;
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             if (error instanceof Error && error.message === 'DOCUMENT_WAS_SPLIT') {
                 // Document was split successfully, just remove current item status
                 item.status = 'completed';
                 item.progress = undefined;
-            } else if (error.name === 'AbortError' || error.message?.includes('abort')) {
+            } else if ((error as any)?.name === 'AbortError' || (error as any)?.message?.includes('abort')) {
                 item.status = 'paused';
                 item.progress = undefined;
             } else {
                 item.status = 'failed';
-                item.error = error.message;
+                item.error = error instanceof Error ? error.message : String(error);
                 item.progress = undefined;
             }
         } finally {
@@ -695,7 +697,7 @@ export class DownloadQueue extends EventEmitter {
         
         item.progress = {
             current: 0,
-            total: item.totalPages || 1,
+            total: item?.totalPages || 1,
             percentage: 0,
             eta: 'Calculating...',
             stage: 'downloading' as TStage,
@@ -734,13 +736,15 @@ export class DownloadQueue extends EventEmitter {
         try {
             const manifest = await downloader.loadManifest(item.url);
             
-            item.totalPages = manifest.totalPages;
-            item.displayName = manifest.displayName;
-            item.library = manifest.library as TLibrary;
-            item.status = 'downloading';
+            if (item) {
+                item.totalPages = manifest?.totalPages;
+                item.displayName = manifest.displayName;
+                item.library = manifest.library as TLibrary;
+                item.status = 'downloading';
+            }
 
             const startPage = Math.max(1, item.downloadOptions?.startPage || 1);
-            const endPage = Math.min(manifest.totalPages, item.downloadOptions?.endPage || manifest.totalPages);
+            const endPage = Math.min(manifest?.totalPages, item.downloadOptions?.endPage || manifest?.totalPages);
             const pageCount = endPage - startPage + 1;
             
             const selectedPageLinks = manifest.pageLinks.slice(startPage - 1, endPage);
@@ -764,7 +768,7 @@ export class DownloadQueue extends EventEmitter {
                 startPage,
                 endPage,
                 skipExisting: false,
-                onProgress: (progressData: {completedPages?: number; downloadedPages?: number}) => {
+                onProgress: (progressData: {completedPages?: number; downloadedPages?: number; estimatedTimeRemaining?: number}) => {
                     if (!this.state.isPaused && item.progress) {
                         const now = Date.now();
                         const downloadedPages = progressData.completedPages || progressData.downloadedPages || 0;
@@ -791,8 +795,8 @@ export class DownloadQueue extends EventEmitter {
                 onStatusChange: (_UNUSED_status: unknown) => {
                     // Not used for queue items directly
                 },
-                onError: (error: unknown) => {
-                    throw new Error(error);
+                onError: (error: string) => {
+                    throw new Error(error || 'Unknown error');
                 },
             });
             
@@ -800,16 +804,16 @@ export class DownloadQueue extends EventEmitter {
             item.completedAt = Date.now();
             item.progress = undefined;
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             if (error instanceof Error && error.message === 'DOCUMENT_WAS_SPLIT') {
                 item.status = 'completed';
                 item.progress = undefined;
-            } else if (error instanceof Error && (error.name === 'AbortError' || error.message?.includes('abort'))) {
+            } else if (error instanceof Error && ((error as any)?.name === 'AbortError' || error.message?.includes('abort'))) {
                 item.status = 'paused';
                 item.progress = undefined;
             } else {
                 item.status = 'failed';
-                item.error = error.message;
+                item.error = error instanceof Error ? error.message : String(error);
                 item.progress = undefined;
             }
         } finally {
@@ -959,11 +963,11 @@ export class DownloadQueue extends EventEmitter {
             const firstPageUrl = selectedPageLinks[0];
             if (!firstPageUrl) return false;
             
-            console.log(`Checking document size for ${manifest.library} manuscript: ${manifest.displayName}`);
+            console.log(`Checking document size for ${(manifest as any).library} manuscript: ${(manifest as any).displayName}`);
             const firstPageBuffer = await this.downloadSinglePage(firstPageUrl);
             
-            const firstPageSizeMB = firstPageBuffer.length / (1024 * 1024);
-            const estimatedTotalSizeMB = firstPageSizeMB * manifest.totalPages;
+            const firstPageSizeMB = firstPageBuffer?.length / (1024 * 1024);
+            const estimatedTotalSizeMB = firstPageSizeMB * (manifest as any)?.totalPages;
             
             console.log(`Size estimation: ${firstPageSizeMB.toFixed(2)}MB per page, ${estimatedTotalSizeMB.toFixed(2)}MB total`);
             
@@ -1000,9 +1004,9 @@ export class DownloadQueue extends EventEmitter {
     ): Promise<void> {
         const thresholdMB = this.state.globalSettings.autoSplitThresholdMB;
         const numberOfParts = Math.ceil(estimatedSizeMB / thresholdMB);
-        const pagesPerPart = Math.ceil(manifest.totalPages / numberOfParts);
+        const pagesPerPart = Math.ceil((manifest as any)?.totalPages / numberOfParts);
         
-        console.log(`Splitting ${manifest.displayName} into ${numberOfParts} parts (${pagesPerPart} pages each)`);
+        console.log(`Splitting ${(manifest as any).displayName} into ${numberOfParts} parts (${pagesPerPart} pages each)`);
         console.log(`Original size: ${estimatedSizeMB.toFixed(2)}MB, Threshold: ${thresholdMB}MB`);
         
         // Remove original item from queue
@@ -1015,21 +1019,21 @@ export class DownloadQueue extends EventEmitter {
         // Create parts
         for (let i = 0; i < numberOfParts; i++) {
             const startPage = i * pagesPerPart + 1;
-            const endPage = Math.min((i + 1) * pagesPerPart, manifest.totalPages);
+            const endPage = Math.min((i + 1) * pagesPerPart, (manifest as any)?.totalPages);
             const partNumber = i + 1;
             
             const partId = `${originalItem.id}_part_${partNumber}`;
             const partItem: QueuedManuscript = {
                 ...originalItem, // Copy all original properties
                 id: partId,
-                displayName: `${this.buildDescriptiveName(manifest.displayName, originalItem.url)}_Part_${partNumber}_pages_${startPage}-${endPage}`,
+                displayName: `${this.buildDescriptiveName((manifest as any).displayName, originalItem.url)}_Part_${partNumber}_pages_${startPage}-${endPage}`,
                 status: 'pending',
                 parentId: originalItem.id,
                 isAutoPart: true,
                 partInfo: {
                     partNumber,
                     totalParts: numberOfParts,
-                    originalDisplayName: manifest.displayName,
+                    originalDisplayName: (manifest as any).displayName,
                     pageRange: { start: startPage, end: endPage },
                 },
                 downloadOptions: {
@@ -1063,11 +1067,11 @@ export class DownloadQueue extends EventEmitter {
             const client = urlObj.protocol === 'https:' ? https : http;
 
             const req = client.request(url, { 
-                timeout: 10000,
+                
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 }
-            }, (res) => {
+            }, (res: any) => {
                 if (res.statusCode !== 200) {
                     reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
                     return;

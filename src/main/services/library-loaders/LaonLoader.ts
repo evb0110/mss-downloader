@@ -51,7 +51,7 @@ export class LaonLoader extends BaseLibraryLoader {
             }
             const tiles = data.item.tiles;
             const imageIds = Object.keys(tiles);
-            if (imageIds.length === 0) {
+            if (imageIds?.length === 0) {
                 throw new Error('No images found in Laon manifest');
             }
             const pageLinks = imageIds.map((id) => {
@@ -61,7 +61,7 @@ export class LaonLoader extends BaseLibraryLoader {
             });
             return {
                 pageLinks,
-                totalPages: pageLinks.length,
+                totalPages: pageLinks?.length,
                 displayName: `Laon_${documentId}`,
                 library: 'laon',
                 originalUrl: laonUrl

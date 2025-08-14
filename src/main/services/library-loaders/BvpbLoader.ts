@@ -43,7 +43,7 @@ export class BvpbLoader extends BaseLibraryLoader {
                             const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
                             if (titleMatch) {
                                 pageTitle = titleMatch[1]
-                                    .replace(/Biblioteca Virtual del Patrimonio Bibliográfico[^>]*>\s*/gi, '')
+                                    ?.replace(/Biblioteca Virtual del Patrimonio Bibliográfico[^>]*>\s*/gi, '')
                                     .replace(/^\s*Búsqueda[^>]*>\s*/gi, '')
                                     .replace(/\s*\(Objetos digitales\)\s*/gi, '')
                                     .replace(/&gt;/g, '>')
@@ -59,7 +59,7 @@ export class BvpbLoader extends BaseLibraryLoader {
                         // Extract total pages count
                         const totalMatch = html.match(/(\d+)\s*de\s*(\d+)/);
                         if (totalMatch) {
-                            totalPages = parseInt(totalMatch[2]);
+                            totalPages = parseInt(totalMatch[2] || '0');
                             console.log(`Found total pages: ${totalPages}`);
                         }
                     }
@@ -69,20 +69,20 @@ export class BvpbLoader extends BaseLibraryLoader {
                     const pageImageIds: string[] = [];
                     let match;
                     while ((match = imageIdPattern.exec(html)) !== null) {
-                        const imageId = match[1];
-                        if (!pageImageIds.includes(imageId)) {
+                        const imageId = match?.[1] || '';
+                        if (imageId && !pageImageIds.includes(imageId)) {
                             pageImageIds.push(imageId);
                         }
                     }
                     
-                    console.log(`Found ${pageImageIds.length} images on page starting at position ${currentPosition}`);
+                    console.log(`Found ${pageImageIds?.length} images on page starting at position ${currentPosition}`);
                     allImageIds.push(...pageImageIds);
                     
                     // Check if there are more pages
-                    if (totalPages > 0 && allImageIds.length >= totalPages) {
+                    if (totalPages > 0 && allImageIds?.length >= totalPages) {
                         hasMorePages = false;
                         console.log(`Reached total pages limit: ${totalPages}`);
-                    } else if (pageImageIds.length === 0) {
+                    } else if (pageImageIds?.length === 0) {
                         hasMorePages = false;
                         console.log('No more images found, stopping pagination');
                     } else {
@@ -97,15 +97,15 @@ export class BvpbLoader extends BaseLibraryLoader {
                     }
                 }
                 
-                if (allImageIds.length === 0) {
+                if (allImageIds?.length === 0) {
                     throw new Error('No images found for this BVPB manuscript');
                 }
                 
-                console.log(`BVPB manuscript discovery completed: ${allImageIds.length} pages found`);
+                console.log(`BVPB manuscript discovery completed: ${allImageIds?.length} pages found`);
                 
                 // Remove duplicates and sort by numeric ID to ensure proper order
                 const uniqueImageIds = [...new Set(allImageIds)].sort((a, b) => parseInt(a) - parseInt(b));
-                console.log(`Unique image IDs: ${uniqueImageIds.length}`);
+                console.log(`Unique image IDs: ${uniqueImageIds?.length}`);
                 
                 const pageLinks = uniqueImageIds.map(imageId => 
                     `https://bvpb.mcu.es/es/media/object.do?id=${imageId}`
@@ -113,13 +113,13 @@ export class BvpbLoader extends BaseLibraryLoader {
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'bvpb',
                     displayName: pageTitle,
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load BVPB manuscript: ${(error as Error).message}`);
             }
         }

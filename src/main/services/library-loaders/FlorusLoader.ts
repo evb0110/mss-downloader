@@ -19,7 +19,7 @@ export class FlorusLoader extends BaseLibraryLoader {
                 }
                 
                 const html = await response.text();
-                console.log('Florus page fetched, length:', html.length);
+                console.log('Florus page fetched, length:', html?.length);
                 
                 // Extract manuscript code and current page from URL
                 const urlParams = new URLSearchParams(florusUrl.split('?')[1]);
@@ -34,24 +34,24 @@ export class FlorusLoader extends BaseLibraryLoader {
                 console.log('Extracting Florus image URLs...');
                 const pageLinks = await this.extractFlorusImageUrls(html, cote, currentVue);
                 
-                console.log(`Found ${pageLinks.length} pages for Florus manuscript`);
-                if (pageLinks.length === 0) {
+                console.log(`Found ${pageLinks?.length} pages for Florus manuscript`);
+                if (pageLinks?.length === 0) {
                     throw new Error('No pages found in Florus manuscript');
                 }
                 
                 // For Florus, we now have all pages loaded
                 const manifest = {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'florus' as const,
                     displayName: `BM_Lyon_${cote}`,
                     originalUrl: florusUrl,
                 };
                 
-                console.log(`Florus manifest loaded: ${manifest.displayName}, total pages: ${pageLinks.length}`);
+                console.log(`Florus manifest loaded: ${manifest.displayName}, total pages: ${pageLinks?.length}`);
                 return manifest;
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load Florus manuscript: ${error instanceof Error ? error.message : String(error)}`);
             }
         }
@@ -76,13 +76,13 @@ export class FlorusLoader extends BaseLibraryLoader {
 
             // Extract the base path and manuscript ID
             // Example: /var/www/florus/web/ms/B693836101_MS0425/B693836101_MS0425_129_62V.JPG.tif
-            const pathParts = currentImagePath.match(/(.+\/)([^/]+)\.JPG\.tif$/);
+            const pathParts = currentImagePath?.match(/(.+\/)([^/]+)\.JPG\.tif$/);
             if (!pathParts) {
                 throw new Error('Could not parse Florus image path structure');
             }
 
             // const basePath = pathParts[1]; // unused
-            const filenameParts = pathParts[2].match(/^(.+?)_(\d+)_(.+)$/);
+            const filenameParts = pathParts[2]?.match(/^(.+?)_(\d+)_(.+)$/);
             if (!filenameParts) {
                 throw new Error('Could not parse Florus filename structure');
             }
@@ -91,10 +91,10 @@ export class FlorusLoader extends BaseLibraryLoader {
             let maxPage = currentVue + 20; // Conservative fallback
 
             const navNumbers = [...html.matchAll(/naviguer\((\d+)\)/g)]
-                .map(match => parseInt(match[1]))
+                .map(match => parseInt(match?.[1] || '0'))
                 .filter(num => !isNaN(num) && num > 0);
 
-            if (navNumbers.length > 0) {
+            if (navNumbers?.length > 0) {
                 maxPage = Math.max(...navNumbers);
             }
 
@@ -128,7 +128,7 @@ export class FlorusLoader extends BaseLibraryLoader {
                 }
             }
 
-            console.log(`Extracted ${pageLinks.length} Florus page URLs`);
+            console.log(`Extracted ${pageLinks?.length} Florus page URLs`);
             return pageLinks;
         }
 }

@@ -13,20 +13,16 @@ export class EnhancedPdfMerger {
         pdfDoc.setSubject('Downloaded manuscript');
         pdfDoc.setCreator('Electron Manuscript Downloader');
         
-        const totalPages = imageBuffers.length;
+        const totalPages = imageBuffers?.length;
         
         for (let i = 0; i < totalPages; i++) {
             if (onProgress) {
-                onProgress({
-                    pageNumber: i + 1,
-                    totalPages,
-                    percentage: ((i + 1) / totalPages) * 100,
-                });
+                onProgress(i + 1, totalPages);
             }
             
             try {
-                await this.addImageToPDF(pdfDoc, imageBuffers[i], i + 1);
-            } catch (error: unknown) {
+                await this.addImageToPDF(pdfDoc, imageBuffers[i] || Buffer.alloc(0), i + 1);
+            } catch (error: any) {
                 console.error(`Failed to add page ${i + 1} to PDF: ${(error as Error).message}`);
                 // Continue with other pages
             }
@@ -48,7 +44,7 @@ export class EnhancedPdfMerger {
                     // Fallback to PNG
                     image = await pdfDoc.embedPng(imageBuffer);
                 } catch (embedError: unknown) {
-                    throw new Error(`Failed to embed image: ${embedError.message}`);
+                    throw new Error(`Failed to embed image: ${embedError instanceof Error ? embedError.message : String(embedError)}`);
                 }
             }
             
@@ -65,7 +61,7 @@ export class EnhancedPdfMerger {
                 height: imageDims.height,
             });
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             console.error(`Error processing page ${pageNumber}:`, (error as Error).message);
             
             // Fallback: create a blank page with error message
@@ -104,10 +100,10 @@ export class EnhancedPdfMerger {
             } else if (expectedTotalPages > 100) {
                 chunkSize = 25;
             }
-        } else if (imageBuffers.length > 200) {
+        } else if (imageBuffers?.length > 200) {
             // General large manuscript handling
-            chunkSize = Math.max(8, Math.min(30, Math.floor(150 / Math.sqrt(imageBuffers.length))));
-            console.log(`Large manuscript detected (${imageBuffers.length} pages), using calculated batch size: ${chunkSize}`);
+            chunkSize = Math.max(8, Math.min(30, Math.floor(150 / Math.sqrt(imageBuffers?.length))));
+            console.log(`Large manuscript detected (${imageBuffers?.length} pages), using calculated batch size: ${chunkSize}`);
         }
         
         const pdfDoc = await PDFDocument.create();
@@ -116,7 +112,7 @@ export class EnhancedPdfMerger {
         pdfDoc.setSubject('Downloaded manuscript');
         pdfDoc.setCreator('Electron Manuscript Downloader');
         
-        const totalPages = imageBuffers.length;
+        const totalPages = imageBuffers?.length;
         const chunks: Buffer[][] = [];
         
         // Split into chunks
@@ -129,11 +125,7 @@ export class EnhancedPdfMerger {
         for (const chunk of chunks) {
             for (const imageBuffer of chunk) {
                 if (onProgress) {
-                    onProgress({
-                        pageNumber: processedPages + 1,
-                        totalPages,
-                        percentage: ((processedPages + 1) / totalPages) * 100,
-                    });
+                    onProgress(((processedPages + 1) / totalPages) * 100);
                 }
                 
                 await this.addImageToPDF(pdfDoc, imageBuffer, processedPages + 1);
@@ -146,7 +138,7 @@ export class EnhancedPdfMerger {
                 // For very large manuscripts, add a small delay to allow memory cleanup
                 if (library === 'manuscripta' && expectedTotalPages && expectedTotalPages > 200) {
                     await new Promise(resolve => setTimeout(resolve, 150)); // 150ms pause for memory cleanup
-                    console.log(`Memory cleanup pause after batch ${Math.floor(processedPages / chunkSize)} of ${chunks.length}`);
+                    console.log(`Memory cleanup pause after batch ${Math.floor(processedPages / chunkSize)} of ${chunks?.length}`);
                 }
             }
         }
@@ -173,7 +165,7 @@ export class EnhancedPdfMerger {
         failedPages: number;
     }> {
         const { maxPagesPerPart = 100, startPage = 1, onProgress } = options;
-        const totalPages = imageBuffers.length;
+        const totalPages = imageBuffers?.length;
         const files: string[] = [];
         let failedPages = 0;
         
@@ -197,17 +189,13 @@ export class EnhancedPdfMerger {
             try {
                 const pdfBytes = await this.createPDF(partImages, {
                     title: `${baseName} - Part ${partNumber}`,
-                    onProgress: (progress: { pageNumber: number }) => {
-                        const overallProgress = {
-                            currentPart: partNumber,
-                            totalParts,
-                            pageInPart: progress.pageNumber,
-                            pagesInPart: partImages.length,
-                            overallPage: startIdx + progress.pageNumber,
-                            totalPages,
-                            percentage: ((startIdx + progress.pageNumber) / totalPages) * 100
+                    onProgress: (current: number, _UNUSED_total: number) => {
+                        const progress = {
+                            completed: startIdx + current,
+                            total: totalPages,
+                            message: `Part ${partNumber}/${totalParts} - Page ${current}/${partImages?.length}`
                         };
-                        onProgress?.(overallProgress);
+                        if (onProgress) onProgress(progress);
                     }
                 });
                 
@@ -218,12 +206,12 @@ export class EnhancedPdfMerger {
                 
             } catch (error) {
                 console.error(`Failed to create part ${partNumber}:`, error);
-                failedPages += partImages.length;
+                failedPages += partImages?.length;
             }
         }
         
         return {
-            success: files.length > 0,
+            success: files?.length > 0,
             split: true,
             files,
             totalPages,

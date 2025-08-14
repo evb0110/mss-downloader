@@ -33,11 +33,11 @@ export class BDLParallelDownloader extends EventEmitter {
      * Download all pages with parallel execution
      */
     async downloadAllPages(pageUrls: string[]): Promise<(Buffer | null)[]> {
-        this.totalPages = pageUrls.length;
+        this.totalPages = pageUrls?.length || 0;
         this.completedPages = 0;
         this.results.clear();
         
-        console.log(`[BDL Parallel] Starting parallel download of ${pageUrls.length} pages with ${this.concurrentLimit} concurrent connections`);
+        console.log(`[BDL Parallel] Starting parallel download of ${pageUrls?.length} pages with ${this.concurrentLimit} concurrent connections`);
         
         // Initialize download queue
         this.downloadQueue = pageUrls.map((url, index) => ({
@@ -48,7 +48,7 @@ export class BDLParallelDownloader extends EventEmitter {
         }));
         
         // Start initial batch of downloads
-        const initialBatch = Math.min(this.concurrentLimit, this.downloadQueue.length);
+        const initialBatch = Math.min(this.concurrentLimit, this.downloadQueue?.length);
         const activePromises: Promise<void>[] = [];
         
         for (let i = 0; i < initialBatch; i++) {
@@ -63,13 +63,13 @@ export class BDLParallelDownloader extends EventEmitter {
         
         // Convert results map to array in correct order
         const finalResults: (Buffer | null)[] = [];
-        for (let i = 0; i < pageUrls.length; i++) {
+        for (let i = 0; i < pageUrls?.length; i++) {
             const result = this.results.get(i);
             finalResults.push(result?.buffer || null);
         }
         
-        const successCount = finalResults.filter(b => b !== null).length;
-        console.log(`[BDL Parallel] Download complete: ${successCount}/${pageUrls.length} pages successful`);
+        const successCount = finalResults.filter(b => b !== null)?.length;
+        console.log(`[BDL Parallel] Download complete: ${successCount}/${pageUrls?.length} pages successful`);
         
         return finalResults;
     }
@@ -91,13 +91,13 @@ export class BDLParallelDownloader extends EventEmitter {
             this.completedPages++;
             this.emit('progress', {
                 completed: this.completedPages,
-                total: this.totalPages,
+                total: this?.totalPages,
                 pageIndex: task.pageIndex,
                 success: buffer !== null
             });
             
         } catch (error) {
-            console.error(`[BDL Parallel] Failed page ${task.pageIndex}: ${error.message}`);
+            console.error(`[BDL Parallel] Failed page ${task.pageIndex}: ${error instanceof Error ? error.message : String(error)}`);
             
             // Retry logic
             if (task.retries < 3) {
@@ -115,7 +115,7 @@ export class BDLParallelDownloader extends EventEmitter {
                 this.completedPages++;
                 this.emit('progress', {
                     completed: this.completedPages,
-                    total: this.totalPages,
+                    total: this?.totalPages,
                     pageIndex: task.pageIndex,
                     success: false
                 });
@@ -173,22 +173,22 @@ export class BDLParallelDownloader extends EventEmitter {
                 const buffer = Buffer.from(arrayBuffer);
                 
                 // Validate minimum size (1024px images should be ~100-500KB)
-                if (buffer.length < 10240) { // Less than 10KB is suspicious
-                    console.warn(`[BDL Parallel] Page ${pageIndex + 1} too small: ${buffer.length} bytes`);
+                if (buffer?.length < 10240) { // Less than 10KB is suspicious
+                    console.warn(`[BDL Parallel] Page ${pageIndex + 1} too small: ${buffer?.length} bytes`);
                     return null;
                 }
                 
-                console.log(`[BDL Parallel] ✅ Page ${pageIndex + 1} downloaded: ${(buffer.length / 1024).toFixed(1)}KB`);
+                console.log(`[BDL Parallel] ✅ Page ${pageIndex + 1} downloaded: ${(buffer?.length / 1024).toFixed(1)}KB`);
                 return buffer;
             } else {
                 console.error(`[BDL Parallel] HTTP ${response.status} for page ${pageIndex + 1}`);
                 return null;
             }
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             clearTimeout(timeoutId);
             
-            if (error instanceof Error && error.name === 'AbortError') {
+            if (error instanceof Error && (error as any)?.name === 'AbortError') {
                 console.error(`[BDL Parallel] Timeout for page ${pageIndex + 1} after ${timeout}ms`);
             } else {
                 console.error(`[BDL Parallel] Error downloading page ${pageIndex + 1}: ${error instanceof Error ? error.message : String(error)}`);
@@ -226,11 +226,11 @@ export class BDLParallelDownloader extends EventEmitter {
         const successful = results.filter(r => r.success);
         
         return {
-            total: this.totalPages,
+            total: this?.totalPages,
             completed: this.completedPages,
-            successful: successful.length,
-            failed: results.length - successful.length,
-            averageTime: successful.length > 0 
+            successful: successful?.length,
+            failed: results?.length - successful?.length,
+            averageTime: successful?.length > 0 
                 ? successful.reduce((sum, r) => sum + r.time, 0) / successful.length
                 : 0
         };

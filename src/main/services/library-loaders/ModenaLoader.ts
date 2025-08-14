@@ -38,7 +38,7 @@ export class ModenaLoader extends BaseLibraryLoader {
                 // Try to extract from mobile page display (e.g., "Page: 1/11")
                 const pageDisplayMatch = mobileHtml.match(/Page:\s*\d+\/(\d+)/);
                 if (pageDisplayMatch) {
-                    const displayedTotal = parseInt(pageDisplayMatch[1]);
+                    const displayedTotal = parseInt(pageDisplayMatch[1] || '0');
                     console.log(`Found page display total: ${displayedTotal}`);
                     if (!totalPages || displayedTotal > totalPages) {
                         totalPages = displayedTotal;
@@ -48,7 +48,7 @@ export class ModenaLoader extends BaseLibraryLoader {
                 // Try to extract from JavaScript config (more reliable for actual total)
                 const totalPagesMatch = mobileHtml.match(/totalPages['":\s]*(\d+)/i);
                 if (totalPagesMatch) {
-                    const jsTotal = parseInt(totalPagesMatch[1]);
+                    const jsTotal = parseInt(totalPagesMatch[1] || '0');
                     console.log(`Found JavaScript total pages: ${jsTotal}`);
                     if (!totalPages || jsTotal > totalPages) {
                         totalPages = jsTotal;
@@ -58,7 +58,7 @@ export class ModenaLoader extends BaseLibraryLoader {
                 // Try to extract from data-pages attribute or similar
                 const dataPagesMatch = mobileHtml.match(/data-pages[='"\s]*(\d+)/i);
                 if (dataPagesMatch) {
-                    const dataTotal = parseInt(dataPagesMatch[1]);
+                    const dataTotal = parseInt(dataPagesMatch[1] || '0');
                     console.log(`Found data-pages total: ${dataTotal}`);
                     if (!totalPages || dataTotal > totalPages) {
                         totalPages = dataTotal;
@@ -69,7 +69,7 @@ export class ModenaLoader extends BaseLibraryLoader {
                 const pagesArrayMatch = mobileHtml.match(/pages\s*[:=]\s*\[(.*?)\]/s);
                 if (pagesArrayMatch) {
                     const pagesContent = pagesArrayMatch[1];
-                    const pageCount = (pagesContent.match(/,/g) || []).length + 1;
+                    const pageCount = (pagesContent?.match(/,/g) || [])?.length + 1;
                     console.log(`Found pages array with ${pageCount} items`);
                     if (!totalPages || pageCount > totalPages) {
                         totalPages = pageCount;
@@ -91,7 +91,7 @@ export class ModenaLoader extends BaseLibraryLoader {
                         const testUrl = `${baseImageUrl}${mid}.jpg`;
                         
                         try {
-                            const testResponse = await this.deps.fetchDirect(testUrl, { timeout: 5000 });
+                            const testResponse = await this.deps.fetchDirect(testUrl);
                             if (testResponse.ok) {
                                 lastFound = mid;
                                 low = mid + 1;
@@ -136,17 +136,17 @@ export class ModenaLoader extends BaseLibraryLoader {
                 }
                 
                 const displayName = `Modena_${manuscriptId}`;
-                console.log(`Generated ${pageLinks.length} page URLs for "${displayName}"`);
+                console.log(`Generated ${pageLinks?.length} page URLs for "${displayName}"`);
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'modena',
                     displayName,
                     originalUrl: modenaUrl
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error('Error loading Modena Diocesan Archive manifest:', error);
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 throw new Error(`Failed to load Modena manuscript: ${errorMessage}`);

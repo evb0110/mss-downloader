@@ -18,12 +18,12 @@ export class InternetCulturaleLoader extends BaseLibraryLoader {
                     throw new Error('Invalid Internet Culturale URL: missing OAI identifier');
                 }
                 
-                const oaiId = decodeURIComponent(oaiMatch[1]);
+                const oaiId = decodeURIComponent(oaiMatch[1] || '');
                 console.log(`Loading Internet Culturale manuscript with OAI ID: ${oaiId}`);
                 
                 // Extract teca parameter for institution info
                 const tecaMatch = internetCulturaleUrl.match(/teca=([^&]+)/);
-                const teca = tecaMatch ? decodeURIComponent(tecaMatch[1]) : 'Unknown';
+                const teca = tecaMatch ? decodeURIComponent(tecaMatch[1] || '') : 'Unknown';
                 
                 // CRITICAL FIX: Establish session first by visiting main page
                 console.log('Establishing Internet Culturale session...');
@@ -58,7 +58,7 @@ export class InternetCulturaleLoader extends BaseLibraryLoader {
                 }
                 const xmlText = await response.text();
                 
-                if (!xmlText || xmlText.trim().length === 0) {
+                if (!xmlText || xmlText.trim()?.length === 0) {
                     throw new Error('Empty response from API');
                 }
                 
@@ -69,12 +69,12 @@ export class InternetCulturaleLoader extends BaseLibraryLoader {
                 let displayName = 'Internet Culturale Manuscript';
                 const titleMatch = xmlText.match(/<info key="Titolo">\s*<value>(.*?)<\/value>/);
                 if (titleMatch) {
-                    displayName = titleMatch[1].trim();
+                    displayName = titleMatch[1]?.trim() ?? "";
                 } else {
                     // Fallback: extract from OAI ID
                     const parts = oaiId.split(':');
-                    if (parts.length > 0) {
-                        displayName = parts[parts.length - 1].replace(/%/g, ' ').trim();
+                    if (parts?.length > 0) {
+                        displayName = parts[parts?.length - 1]?.replace(/%/g, ' ').trim() ?? "";
                     }
                 }
                 
@@ -90,7 +90,7 @@ export class InternetCulturaleLoader extends BaseLibraryLoader {
                     /"([^"]*cacheman[^"]*\.jpg)"/g
                 ];
                 
-                console.log(`[Internet Culturale] XML response length: ${xmlText.length} characters`);
+                console.log(`[Internet Culturale] XML response length: ${xmlText?.length} characters`);
                 console.log(`[Internet Culturale] XML preview: ${xmlText.substring(0, 500)}...`);
                 
                 let foundPages = false;
@@ -99,30 +99,30 @@ export class InternetCulturaleLoader extends BaseLibraryLoader {
                     const tempLinks: string[] = [];
                     
                     while ((match = pageRegex.exec(xmlText)) !== null) {
-                        let relativePath = match[1];
+                        let relativePath = match?.[1];
                         
                         // Skip non-image URLs
-                        if (!relativePath.includes('.jpg') && !relativePath.includes('.jpeg')) {
+                        if (!relativePath?.includes('.jpg') && !relativePath?.includes('.jpeg')) {
                             continue;
                         }
                         
                         // Optimize Internet Culturale resolution: use 'normal' for highest quality images
-                        if (relativePath.includes('cacheman/web/')) {
-                            relativePath = relativePath.replace('cacheman/web/', 'cacheman/normal/');
+                        if (relativePath?.includes('cacheman/web/')) {
+                            relativePath = relativePath?.replace('cacheman/web/', 'cacheman/normal/');
                         }
                         
                         // Ensure absolute URL
-                        const imageUrl = relativePath.startsWith('http') 
+                        const imageUrl = relativePath?.startsWith('http') 
                             ? relativePath 
                             : `https://www.internetculturale.it/jmms/${relativePath}`;
                         
-                        tempLinks.push(imageUrl);
+                        tempLinks.push(imageUrl || '');
                     }
                     
-                    if (tempLinks.length > 0) {
+                    if (tempLinks?.length > 0) {
                         pageLinks.push(...tempLinks);
                         foundPages = true;
-                        console.log(`[Internet Culturale] Found ${tempLinks.length} pages using regex pattern ${pageRegex.source}`);
+                        console.log(`[Internet Culturale] Found ${tempLinks?.length} pages using regex pattern ${pageRegex.source}`);
                         break;
                     }
                 }
@@ -149,32 +149,32 @@ export class InternetCulturaleLoader extends BaseLibraryLoader {
                 });
                 
                 // If only one unique page found, attempt to generate additional pages
-                if (uniquePageLinks.length === 1 && pageLinks.length > 1) {
-                    console.warn(`[Internet Culturale] Only 1 unique page found but ${pageLinks.length} total pages expected`);
+                if (uniquePageLinks?.length === 1 && pageLinks?.length > 1) {
+                    console.warn(`[Internet Culturale] Only 1 unique page found but ${pageLinks?.length} total pages expected`);
                     console.log('[Internet Culturale] Attempting to generate additional page URLs...');
                     
                     const baseUrl = uniquePageLinks[0];
-                    const urlPattern = baseUrl.replace(/\/\d+\.jpg$/, '');
+                    const urlPattern = baseUrl?.replace(/\/\d+\.jpg$/, '');
                     
                     // Generate URLs for pages 1-50 (reasonable limit)
                     const generatedLinks: string[] = [];
-                    for (let i = 1; i <= Math.min(50, pageLinks.length); i++) {
+                    for (let i = 1; i <= Math.min(50, pageLinks?.length); i++) {
                         const generatedUrl = `${urlPattern}/${i}.jpg`;
                         generatedLinks.push(generatedUrl);
                     }
                     
-                    console.log(`[Internet Culturale] Generated ${generatedLinks.length} page URLs from pattern`);
-                    pageLinks.length = 0; // Clear original array
+                    console.log(`[Internet Culturale] Generated ${generatedLinks?.length} page URLs from pattern`);
+                    if (pageLinks) pageLinks.length = 0; // Clear original array
                     pageLinks.push(...generatedLinks);
                 } else {
                     // Use unique pages only
-                    pageLinks.length = 0;
+                    if (pageLinks) pageLinks.length = 0;
                     pageLinks.push(...uniquePageLinks);
                 }
                 
-                console.log(`[Internet Culturale] Final page count: ${pageLinks.length} pages`);
+                console.log(`[Internet Culturale] Final page count: ${pageLinks?.length} pages`);
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No valid image URLs found after duplicate removal');
                 }
                 
@@ -190,17 +190,17 @@ export class InternetCulturaleLoader extends BaseLibraryLoader {
                     .trim()
                     .replace(/\.$/, ''); // Remove trailing period
                 
-                console.log(`Internet Culturale manifest loaded: ${pageLinks.length} pages`);
+                console.log(`Internet Culturale manifest loaded: ${pageLinks?.length} pages`);
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
-                    library: 'internet_culturale' as string,
+                    totalPages: pageLinks?.length,
+                    library: 'internet_culturale' as const,
                     displayName: sanitizedName,
                     originalUrl: internetCulturaleUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error(`Internet Culturale manifest loading failed:`, error);
                 throw new Error(`Failed to load Internet Culturale manuscript: ${(error as Error).message}`);
             }

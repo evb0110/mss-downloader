@@ -54,7 +54,7 @@ export class GamsLoader extends BaseLibraryLoader {
                 
                 if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
                     const canvases = manifest.sequences[0].canvases;
-                    console.log(`[GAMS] Found ${canvases.length} canvases in manifest`);
+                    console.log(`[GAMS] Found ${canvases?.length} canvases in manifest`);
                     
                     for (const canvas of canvases) {
                         if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
@@ -77,33 +77,33 @@ export class GamsLoader extends BaseLibraryLoader {
                     throw new Error('Invalid GAMS IIIF manifest structure');
                 }
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No images found in GAMS manifest');
                 }
                 
-                console.log(`[GAMS] Successfully extracted ${pageLinks.length} pages in ${Date.now() - startTime}ms`);
+                console.log(`[GAMS] Successfully extracted ${pageLinks?.length} pages in ${Date.now() - startTime}ms`);
                 
                 return {
                     displayName,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'gams',
                     pageLinks,
                     originalUrl: gamsUrl
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 const duration = Date.now() - startTime;
                 console.error(`[GAMS] Failed to load manifest after ${duration}ms:`, {
                     url: gamsUrl,
-                    error: error.message
+                    error: error instanceof Error ? error.message : String(error)
                 });
                 
-                if (error.message.includes('timeout')) {
+                if (error instanceof Error ? error.message : String(error).includes('timeout')) {
                     throw new Error(`GAMS manifest loading timed out. The server may be slow or unresponsive.`);
-                } else if (error.message.includes('Could not extract context ID')) {
+                } else if (error instanceof Error ? error.message : String(error).includes('Could not extract context ID')) {
                     throw new Error(`Invalid GAMS URL format. Expected format: https://gams.uni-graz.at/context:ID`);
                 } else {
-                    throw new Error(`Failed to load GAMS manuscript: ${error.message}`);
+                    throw new Error(`Failed to load GAMS manuscript: ${error instanceof Error ? error.message : String(error)}`);
                 }
             }
         }

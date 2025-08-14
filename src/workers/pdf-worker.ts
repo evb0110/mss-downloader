@@ -68,15 +68,15 @@ self.onmessage = async function(e: MessageEvent<WorkerMessage>) {
                 break;
                 
             case 'addPage':
-                await addPageToPDF(data.imageBlob, data.pageNumber, data.totalPages);
+                await addPageToPDF((data as any).imageBlob, (data as any).pageNumber, (data as any)?.totalPages);
                 break;
                 
             case 'processChunk':
-                await processImageChunk(data.imageBlobs, data.startPageNumber, data.chunkId, data.totalPages);
+                await processImageChunk((data as any).imageBlobs, (data as any).startPageNumber, (data as any).chunkId, (data as any)?.totalPages);
                 break;
                 
             case 'assemblePages':
-                await assemblePagesFromData(data.processedPages, data.totalPages);
+                await assemblePagesFromData((data as any).processedPages, (data as any)?.totalPages);
                 break;
                 
             case 'finalize': {
@@ -92,17 +92,17 @@ self.onmessage = async function(e: MessageEvent<WorkerMessage>) {
                 resetPDF();
                 break;
         }
-    } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        const errorStack = error instanceof Error ? error.stack : undefined;
-        const errorCode = error instanceof Error && 'code' in error ? (error as Record<string, unknown>).code : undefined;
+    } catch (error: any) {
+        const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error';
+        const errorStack = error instanceof Error ? (error as any)?.stack : undefined;
+        const errorCode = error instanceof Error && 'code' in error ? (error as Record<string, unknown>)['code'] : undefined;
         log({
             level: 'error',
             message: `Worker error processing ${type} message`,
             error: {
                 message: errorMessage,
                 stack: errorStack,
-                code: errorCode
+                code: errorCode as string | undefined
             },
             details: { messageType: type, data }
         });
@@ -138,17 +138,17 @@ function initializePDF(): void {
         
         // PDF worker disabled - using main process instead
         throw new Error('PDF worker is disabled, using main process pdf-lib instead');
-    } catch (error: unknown) {
+    } catch (error: any) {
         console.error('Failed to initialize PDF:', error);
         log({
             level: 'error',
             message: 'Failed to initialize PDF',
             error: {
-                message: error.message,
-                stack: error.stack
+                message: error instanceof Error ? error.message : String(error),
+                stack: (error as any)?.stack
             }
         });
-        throw new Error(`Failed to initialize PDF: ${error.message}`);
+        throw new Error(`Failed to initialize PDF: ${error instanceof Error ? error.message : String(error)}`);
     }
 }
 
@@ -188,11 +188,11 @@ async function addPageToPDF(imageBlob: Blob, pageNumber: number, totalPages: num
         const processedImage = await processImageForPDF(imageBlob, pageNumber);
         
         if (pageCount > 0) {
-            pdf.addPage();
+            (pdf as any).addPage();
         }
         
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
+        const pageWidth = (pdf as any).internal.pageSize.getWidth();
+        const pageHeight = (pdf as any).internal.pageSize.getHeight();
         
         const margin = 10;
         const availableWidth = pageWidth - (2 * margin);
@@ -213,7 +213,7 @@ async function addPageToPDF(imageBlob: Blob, pageNumber: number, totalPages: num
         const x = (pageWidth - finalWidth) / 2;
         const y = (pageHeight - finalHeight) / 2;
         
-        pdf.addImage(
+        (pdf as any).addImage(
             processedImage.base64Data,
             'JPEG',
             x,
@@ -235,10 +235,10 @@ async function addPageToPDF(imageBlob: Blob, pageNumber: number, totalPages: num
             data: { pageNumber, totalPages, percentage: Math.round((pageNumber / totalPages) * 100) }
         } as WorkerResponse);
         
-    } catch (error: unknown) {
+    } catch (error: any) {
         console.error(`Failed to process page ${pageNumber}:`, error);
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        const errorStack = error instanceof Error ? error.stack : undefined;
+        const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error';
+        const errorStack = error instanceof Error ? (error as any)?.stack : undefined;
         log({
             level: 'error',
             message: `Failed to process page ${pageNumber}`,
@@ -287,8 +287,8 @@ async function processImageForPDF(imageBlob: Blob, pageNumber: number): Promise<
                 const base64Data = canvas.toDataURL('image/jpeg', quality);
                 
                 resolve({ base64Data, width, height });
-            } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            } catch (error: any) {
+                const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error';
                 reject(new Error(`Failed to process image for page ${pageNumber}: ${errorMessage}`));
             }
         };
@@ -304,10 +304,10 @@ async function processImageForPDF(imageBlob: Blob, pageNumber: number): Promise<
 async function processImageChunk(imageBlobs: Blob[], startPageNumber: number, chunkId: number, totalPages: number): Promise<void> {
     const processedPages: ProcessedPageData[] = [];
     
-    for (let i = 0; i < imageBlobs.length; i++) {
+    for (let i = 0; i < imageBlobs?.length; i++) {
         const pageNumber = startPageNumber + i;
         try {
-            const processedImage = await processImageForPDF(imageBlobs[i], pageNumber);
+            const processedImage = await processImageForPDF(imageBlobs[i] || new Blob(), pageNumber);
             processedPages.push({
                 pageNumber,
                 base64Data: processedImage.base64Data,
@@ -334,11 +334,11 @@ async function assemblePagesFromData(processedPages: ProcessedPageData[], totalP
     
     for (const pageData of processedPages) {
         if (pageCount > 0) {
-            pdf.addPage();
+            (pdf as any).addPage();
         }
         
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
+        const pageWidth = (pdf as any).internal.pageSize.getWidth();
+        const pageHeight = (pdf as any).internal.pageSize.getHeight();
         
         const margin = 10;
         const availableWidth = pageWidth - (2 * margin);
@@ -359,7 +359,7 @@ async function assemblePagesFromData(processedPages: ProcessedPageData[], totalP
         const x = (pageWidth - finalWidth) / 2;
         const y = (pageHeight - finalHeight) / 2;
         
-        pdf.addImage(
+        (pdf as any).addImage(
             pageData.base64Data,
             'JPEG',
             x,
@@ -389,12 +389,12 @@ function finalizePDF(): Blob {
     
     try {
         console.log('Finalizing PDF...');
-        const pdfOutput = pdf.output('blob');
+        const pdfOutput = (pdf as any).output('blob');
         console.log(`PDF finalized with ${pageCount} pages, size: ${Math.round(pdfOutput.size / 1024 / 1024 * 100) / 100}MB`);
         return pdfOutput;
-    } catch (error: unknown) {
+    } catch (error: any) {
         console.error('Failed to finalize PDF:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error';
         throw new Error(`Failed to finalize PDF: ${errorMessage}`);
     }
 }

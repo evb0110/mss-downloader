@@ -41,8 +41,8 @@ export class CudlLoader extends BaseLibraryLoader {
                 }
                 
                 const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: IIIFCanvas) => {
-                    const resource = canvas.images[0].resource;
-                    const rawUrl = resource['@id'] || resource.id;
+                    const resource = canvas.images[0]?.resource;
+                    const rawUrl = resource!['@id'] || resource!.id;
                     // Convert bare IIIF identifier to proper IIIF image URL for Cambridge CUDL
                     if (rawUrl && rawUrl.includes('images.lib.cam.ac.uk/iiif/')) {
                         return rawUrl + '/full/1000,/0/default.jpg';
@@ -50,19 +50,19 @@ export class CudlLoader extends BaseLibraryLoader {
                     return rawUrl;
                 }).filter((link: string) => link);
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No pages found in manifest');
                 }
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'cudl',
                     displayName: `Cambridge_${manuscriptId}`,
                     originalUrl: cudlUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load Cambridge CUDL manuscript: ${(error as Error).message}`);
             }
         }

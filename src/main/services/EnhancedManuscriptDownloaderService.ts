@@ -84,6 +84,8 @@ import type { QueuedManuscript } from '../../shared/queueTypes';
 interface DownloadOptions {
     onProgress?: (progress: DownloadProgress) => void;
     onManifestLoaded?: () => void;
+    onStatusChange?: (status: string) => void;
+    onError?: (error: string) => void;
     maxConcurrent?: number | string;
     skipExisting?: boolean;
     startPage?: number;
@@ -105,14 +107,6 @@ interface ManifestWithTileConfig extends ManuscriptManifest {
     tileConfig?: TileConfig;
 }
 
-interface IIIFManifest {
-    metadata?: Array<{
-        label: unknown;
-        value: unknown;
-    }>;
-    label?: unknown;
-    [key: string]: unknown;
-}
 import type { TLibrary } from '../../shared/queueTypes';
 
 const MIN_VALID_IMAGE_SIZE_BYTES = 1024; // 1KB heuristic
@@ -411,6 +405,9 @@ export class EnhancedManuscriptDownloaderService {
         const match = url.match(concatenatedPattern);
         if (match) {
             const [, hostname, actualUrl] = match;
+            if (!actualUrl) {
+                return url;
+            }
             console.error(`[URL SANITIZER] Detected concatenated URL: ${url}`);
             console.error(`[URL SANITIZER] Extracted hostname: ${hostname}`);
             console.error(`[URL SANITIZER] Extracted URL: ${actualUrl}`);
@@ -458,7 +455,7 @@ export class EnhancedManuscriptDownloaderService {
                             fixedUrl: protocolMatch[1]
                         }
                     });
-                    return protocolMatch[1];
+                    return protocolMatch[1] || url;
                 }
             }
         }
@@ -1063,7 +1060,7 @@ export class EnhancedManuscriptDownloaderService {
                         return proxyResponse;
                     }
                 } catch (proxyError: unknown) {
-                    console.warn(`Proxy ${proxy} failed for ${url}: ${proxyError.message}`);
+                    console.warn(`Proxy ${proxy} failed for ${url}: ${proxyError instanceof Error ? proxyError.message : String(proxyError)}`);
                     continue;
                 }
             }
@@ -1124,9 +1121,9 @@ export class EnhancedManuscriptDownloaderService {
         }
 
         // Special headers for ISOS to avoid 403 Forbidden errors
-        let headers = {
+        let headers: Record<string, string> = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            ...options.headers
+            ...(options.headers as Record<string, string> || {})
         };
 
         if (url.includes('isos.dias.ie')) {
@@ -1139,7 +1136,7 @@ export class EnhancedManuscriptDownloaderService {
                 'Sec-Fetch-Dest': 'image',
                 'Sec-Fetch-Mode': 'no-cors',
                 'Sec-Fetch-Site': 'same-origin'
-            };
+            } as any;
         }
 
         // Special headers for Cambridge CUDL to avoid 403 Forbidden errors
@@ -1151,7 +1148,7 @@ export class EnhancedManuscriptDownloaderService {
                 'Accept-Language': 'en-US,en;q=0.9',
                 'Cache-Control': 'no-cache',
                 'Connection': 'keep-alive'
-            };
+            } as any;
         }
 
         // Special headers for Orleans IIIF to avoid timeout/hanging issues
@@ -1166,7 +1163,7 @@ export class EnhancedManuscriptDownloaderService {
                 'Sec-Fetch-Dest': 'image',
                 'Sec-Fetch-Mode': 'no-cors',
                 'Sec-Fetch-Site': 'cross-site'
-            };
+            } as any;
         }
 
         // Special headers for Stanford Parker Library IIIF to avoid HTTP 406 errors
@@ -1186,7 +1183,7 @@ export class EnhancedManuscriptDownloaderService {
                 'Accept-Language': 'it-IT,it;q=0.9,en;q=0.8',
                 'Cache-Control': 'no-cache',
                 'Connection': 'keep-alive'
-            };
+            } as any;
         }
 
         // Special headers for University of Graz to improve IIIF compatibility
@@ -1198,7 +1195,7 @@ export class EnhancedManuscriptDownloaderService {
                 'Accept-Language': 'de-AT,de;q=0.9,en;q=0.8',
                 'Cache-Control': 'no-cache',
                 'Connection': 'keep-alive'
-            };
+            } as any;
         }
 
         // Special headers for BNE to ensure PDF downloads work properly
@@ -1210,7 +1207,7 @@ export class EnhancedManuscriptDownloaderService {
                 'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
                 'Cache-Control': 'no-cache',
                 'Connection': 'keep-alive'
-            };
+            } as any;
         }
 
         // Special headers for Rouen Municipal Library to ensure session management
@@ -1231,7 +1228,7 @@ export class EnhancedManuscriptDownloaderService {
                     'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
                     'Cache-Control': 'no-cache',
                     'Connection': 'keep-alive'
-                };
+                } as any;
             } else {
                 // Fallback for non-image URLs (manifest, etc.)
                 headers = {
@@ -1239,7 +1236,7 @@ export class EnhancedManuscriptDownloaderService {
                     'Referer': 'https://www.rotomagus.fr/',
                     'Accept': 'application/json, text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                     'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8'
-                };
+                } as any;
             }
         }
 
@@ -1257,7 +1254,7 @@ export class EnhancedManuscriptDownloaderService {
                 url.includes('mdc.csuc.cat') || url.includes('cdm21059.contentdm.oclc.org') ||
                 url.includes('bdh-rd.bne.es')) {
                 try {
-                    const response = await this.fetchWithHTTPS(url, { ...fetchOptions, timeout });
+                    const response = await this.fetchWithHTTPS(url, fetchOptions);
                     if (timeoutId) clearTimeout(timeoutId);
                     return response;
                 } catch (httpsError: unknown) {
@@ -1270,7 +1267,7 @@ export class EnhancedManuscriptDownloaderService {
                         // If it's the main site, try the IIIF server
                         if (url.includes('nuovabibliotecamanoscritta.it')) {
                             const altUrl = url.replace('www.nuovabibliotecamanoscritta.it', 'nbm.regione.veneto.it');
-                            const response = await this.fetchWithHTTPS(altUrl, { ...fetchOptions, timeout });
+                            const response = await this.fetchWithHTTPS(altUrl, fetchOptions);
                             if (timeoutId) clearTimeout(timeoutId);
                             return response;
                         }
@@ -1315,7 +1312,7 @@ export class EnhancedManuscriptDownloaderService {
             if (timeoutId) clearTimeout(timeoutId);
 
             const elapsed = Date.now() - startTime;
-            this.logger.logDownloadError(library || 'unknown', url, error, attempt);
+            this.logger.logDownloadError(library || 'unknown', url, error as Error, attempt);
             console.error(`[fetchDirect] ERROR after ${elapsed}ms for ${url}:`, error);
 
             throw error;
@@ -1347,7 +1344,7 @@ export class EnhancedManuscriptDownloaderService {
                 // Try to extract the real URL from the malformed string
                 const realUrlMatch = url.match(/(https?:\/\/[^\s]+)/);
                 if (realUrlMatch) {
-                    url = realUrlMatch[1];
+                    url = realUrlMatch[1] || url;
                     urlObj = new URL(url);
                     console.log(`[CRITICAL] Recovered correct URL: ${url}`);
                 } else {
@@ -1361,7 +1358,7 @@ export class EnhancedManuscriptDownloaderService {
             // Last resort: try to extract valid URL from error-prone string
             const urlMatch = url.match(/(https?:\/\/[^\s]+)/);
             if (urlMatch) {
-                url = urlMatch[1];
+                url = urlMatch[1] || url;
                 urlObj = new URL(url);
                 console.log(`[CRITICAL] Recovered URL from parsing error: ${url}`);
             } else {
@@ -1372,9 +1369,9 @@ export class EnhancedManuscriptDownloaderService {
 
         comprehensiveLogger.logNetworkRequest(url, {
             method: options.method || 'GET',
-            headers: options.headers,
+            headers: options.headers as Record<string, string> | undefined,
             library,
-            timeout: options.timeout
+            timeout: (options as any).timeout
         });
 
         // Special handling for Graz to resolve ETIMEDOUT issues
@@ -1407,8 +1404,8 @@ export class EnhancedManuscriptDownloaderService {
                     library: 'Graz',
                     url,
                     dnsLookupTime: Date.now() - dnsStartTime,
-                    errorCode: dnsError.code,
-                    errorMessage: dnsError.message,
+                    errorCode: (dnsError as any)?.code,
+                    errorMessage: dnsError instanceof Error ? dnsError.message : String(dnsError),
                     details: {
                         message: 'DNS pre-resolution failed, proceeding anyway',
                         hostname: urlObj.hostname
@@ -1453,7 +1450,7 @@ export class EnhancedManuscriptDownloaderService {
                     console.log(`[Grenoble] Resolved to ${addresses[0]}`);
                 }
             } catch (dnsError: unknown) {
-                console.warn(`[Grenoble] DNS resolution failed, proceeding anyway:`, dnsError instanceof Error ? dnsError.message : String(dnsError));
+                console.warn(`[Grenoble] DNS resolution failed, proceeding anyway:`, dnsError instanceof Error ? dnsError instanceof Error ? dnsError.message : String(dnsError) : String(dnsError));
 
                 // Log detailed error for debugging Issue #13
                 const errorWithCode = dnsError as { code?: string };
@@ -1525,8 +1522,8 @@ export class EnhancedManuscriptDownloaderService {
                     library: 'MDC Catalonia',
                     url,
                     dnsLookupTime: Date.now() - dnsStartTime,
-                    errorCode: dnsError.code,
-                    errorMessage: dnsError.message,
+                    errorCode: (dnsError as any)?.code,
+                    errorMessage: dnsError instanceof Error ? dnsError.message : String(dnsError),
                     details: {
                         message: 'DNS pre-resolution failed, proceeding anyway',
                         hostname: urlObj.hostname
@@ -1566,6 +1563,9 @@ export class EnhancedManuscriptDownloaderService {
             throw error;
         }
 
+        const requestTimeout = (options as any).timeout || (url.includes('unipub.uni-graz.at') ? 120000 :
+                    (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 60000 : 30000);
+        
         const requestOptions = {
             hostname: hostname,
             port: urlObj.port || 443,
@@ -1578,12 +1578,9 @@ export class EnhancedManuscriptDownloaderService {
                 'Accept-Encoding': 'gzip, deflate, br',
                 'Connection': 'keep-alive',
                 'Cache-Control': 'no-cache',
-                ...options.headers
+                ...(options.headers as Record<string, string> || {})
             },
             rejectUnauthorized: false,
-            // Add extended socket timeout for Graz and Verona
-            timeout: options.timeout || (url.includes('unipub.uni-graz.at') ? 120000 :
-                    (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 60000 : 30000),
             // Use connection pooling agent for Graz
             agent: agent
         };
@@ -1608,7 +1605,7 @@ export class EnhancedManuscriptDownloaderService {
                 // Smart timeout: Monitor if data is still flowing
                 const PROGRESS_CHECK_INTERVAL = 10000; // Check every 10 seconds
                 const STALL_TIMEOUT = 30000; // Timeout if no data for 30 seconds
-                const initialTimeout = options.timeout || 30000;
+                const initialTimeout = requestTimeout;
 
                 // Clear any existing timeout
                 const clearProgressTimer = () => {
@@ -1733,7 +1730,7 @@ export class EnhancedManuscriptDownloaderService {
 
             req.on('error', (error: unknown) => {
                 const attemptDuration = Date.now() - attemptStartTime;
-                console.log(`[fetchWithHTTPS] Request error after ${attemptDuration}ms:`, error.code, (error as Error).message);
+                console.log(`[fetchWithHTTPS] Request error after ${attemptDuration}ms:`, (error as any)?.code, (error as Error).message);
 
                 comprehensiveLogger.logNetworkError(url, error, {
                     library,
@@ -1745,10 +1742,10 @@ export class EnhancedManuscriptDownloaderService {
                 if ((url.includes('unipub.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org') ||
                      url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') ||
                      url.includes('mdc.csuc.cat')) &&
-                    (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' ||
-                     error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' ||
-                     error.code === 'ENETUNREACH' || error.code === 'EHOSTUNREACH' ||
-                     error.code === 'EPIPE' || error.code === 'ECONNABORTED') &&
+                    ((error as any)?.code === 'ETIMEDOUT' || (error as any)?.code === 'ECONNRESET' ||
+                     (error as any)?.code === 'ENOTFOUND' || (error as any)?.code === 'ECONNREFUSED' ||
+                     (error as any)?.code === 'ENETUNREACH' || (error as any)?.code === 'EHOSTUNREACH' ||
+                     (error as any)?.code === 'EPIPE' || (error as any)?.code === 'ECONNABORTED') &&
                     retryCount < maxRetries - 1) {
 
                     retryCount++;
@@ -1758,28 +1755,28 @@ export class EnhancedManuscriptDownloaderService {
                                       url.includes('cdm21059.contentdm.oclc.org') ? 'Florence' :
                                       url.includes('mdc.csuc.cat') ? 'MDC Catalonia' :
                                       (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 'Verona' : 'Unknown';
-                    console.log(`[${libraryName}] Connection failed with ${error.code}, retry ${retryCount}/${maxRetries - 1} in ${backoffDelay}ms...`);
+                    console.log(`[${libraryName}] Connection failed with ${(error as any)?.code}, retry ${retryCount}/${maxRetries - 1} in ${backoffDelay}ms...`);
 
                     setTimeout(() => {
                         attemptRequest().then(resolve).catch(reject);
                     }, backoffDelay);
                 } else {
                     // Final error or non-retryable error
-                    if (error.code === 'ETIMEDOUT' && url.includes('unipub.uni-graz.at')) {
+                    if ((error as any)?.code === 'ETIMEDOUT' && url.includes('unipub.uni-graz.at')) {
                         const totalTime = Math.round((Date.now() - overallStartTime) / 1000);
-                        const actualTimeout = Math.round(requestOptions.timeout / 1000);
+                        const actualTimeout = Math.round(requestTimeout / 1000);
                         reject(new Error(`University of Graz connection timeout after ${actualTimeout} seconds (${maxRetries} attempts over ${totalTime} seconds total). The server at ${urlObj.hostname} is not responding. This may be due to high server load or network issues. Please try again later or check if the manuscript is accessible at https://unipub.uni-graz.at/`));
-                    } else if (error.code === 'ETIMEDOUT' && url.includes('cdm21059.contentdm.oclc.org')) {
+                    } else if ((error as any)?.code === 'ETIMEDOUT' && url.includes('cdm21059.contentdm.oclc.org')) {
                         const totalTime = Math.round((Date.now() - overallStartTime) / 1000);
-                        const actualTimeout = Math.round(requestOptions.timeout / 1000);
+                        const actualTimeout = Math.round(requestTimeout / 1000);
                         reject(new Error(`Florence library (ContentDM) connection timeout after ${actualTimeout} seconds (${maxRetries} attempts over ${totalTime} seconds total). The server at ${urlObj.hostname} is not responding. This may be due to high server load or network issues. Please try again later or check if the manuscript is accessible at https://cdm21059.contentdm.oclc.org/`));
-                    } else if (error.code === 'ETIMEDOUT' && (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it'))) {
+                    } else if ((error as any)?.code === 'ETIMEDOUT' && (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it'))) {
                         const totalTime = Math.round((Date.now() - overallStartTime) / 1000);
-                        const actualTimeout = Math.round(requestOptions.timeout / 1000);
+                        const actualTimeout = Math.round(requestTimeout / 1000);
                         reject(new Error(`Verona NBM connection timeout after ${actualTimeout} seconds (${maxRetries} attempts over ${totalTime} seconds total). The server at ${urlObj.hostname} is not responding. This may be due to high server load or network issues. Please try again later or check if the manuscript is accessible at https://www.nuovabibliotecamanoscritta.it/`));
-                    } else if (error.code === 'ETIMEDOUT' && url.includes('mdc.csuc.cat')) {
+                    } else if ((error as any)?.code === 'ETIMEDOUT' && url.includes('mdc.csuc.cat')) {
                         const totalTime = Math.round((Date.now() - overallStartTime) / 1000);
-                        const actualTimeout = Math.round(requestOptions.timeout / 1000);
+                        const actualTimeout = Math.round(requestTimeout / 1000);
                         reject(new Error(`MDC Catalonia connection timeout after ${actualTimeout} seconds (${maxRetries} attempts over ${totalTime} seconds total). The server at ${urlObj.hostname} is not responding. This may be due to high server load, network restrictions, or regional blocking. Please try again later or check if the manuscript is accessible at https://mdc.csuc.cat/`));
                     } else {
                         reject(error);
@@ -1813,7 +1810,7 @@ export class EnhancedManuscriptDownloaderService {
         // Check cache first
         const cachedManifest = await this.manifestCache.get(originalUrl);
         if (cachedManifest) {
-            return cachedManifest;
+            return cachedManifest as unknown as ManuscriptManifest;
         }
 
         const library = this.detectLibrary(originalUrl);
@@ -2039,7 +2036,7 @@ export class EnhancedManuscriptDownloaderService {
             manifest.originalUrl = originalUrl;
 
             // Cache the manifest
-            await this.manifestCache.set(originalUrl, manifest);
+            await this.manifestCache.set(originalUrl, manifest as unknown as Record<string, unknown>);
 
             return manifest;
 
@@ -2047,11 +2044,11 @@ export class EnhancedManuscriptDownloaderService {
             console.error(`Failed to load manifest: ${(error as Error).message}`);
 
             // Enhanced error handling for specific network issues
-            if (error.code === 'ETIMEDOUT' && originalUrl.includes('unipub.uni-graz.at')) {
+            if ((error as any)?.code === 'ETIMEDOUT' && originalUrl.includes('unipub.uni-graz.at')) {
                 throw new Error(`University of Graz connection timeout. The server is not responding - this may be due to high load or network issues. Please try again later or check if the manuscript is accessible through the Graz website.`);
             }
 
-            if (error.code === 'ECONNRESET' && originalUrl.includes('unipub.uni-graz.at')) {
+            if ((error as any)?.code === 'ECONNRESET' && originalUrl.includes('unipub.uni-graz.at')) {
                 throw new Error(`University of Graz connection was reset. The server closed the connection unexpectedly. Please try again in a few moments.`);
             }
 
@@ -2166,11 +2163,13 @@ export class EnhancedManuscriptDownloaderService {
 
         try {
             if (url.endsWith('.zif')) {
-                return this.downloadAndProcessZifFile(url, attempt);
+                const buffer = await this.downloadAndProcessZifFile(url, attempt);
+                return { buffer, fileType: { extension: 'jpg', mimeType: 'image/jpeg', isImage: true } };
             }
 
             if (url.endsWith('.dzi')) {
-                return this.downloadAndProcessDziFile(url, attempt);
+                const buffer = await this.downloadAndProcessDziFile(url, attempt);
+                return { buffer, fileType: { extension: 'jpg', mimeType: 'image/jpeg', isImage: true } };
             }
 
             // Use proxy fallback for libraries with connection issues or when direct access fails
@@ -2227,15 +2226,16 @@ export class EnhancedManuscriptDownloaderService {
 
                 // Enhanced error handling for MDC Catalonia network issues
                 if (url.includes('mdc.csuc.cat')) {
-                    const isNetworkError = errorWithProps.name === 'AbortError' ||
-                                         errorWithProps.code === 'ECONNRESET' ||
-                                         errorWithProps.code === 'ENOTFOUND' ||
-                                         errorWithProps.code === 'ECONNREFUSED' ||
-                                         errorWithProps.code === 'ETIMEDOUT' ||
-                                         errorWithProps.code === 'ENETUNREACH' ||
-                                         errorWithProps.message?.includes('timeout') ||
-                                         errorWithProps.message?.includes('ECONNREFUSED') ||
-                                         errorWithProps.message?.includes('ENETUNREACH');
+                    const errorObj = fetchError as unknown as Error & { code?: string; name?: string };
+                    const isNetworkError = errorObj.name === 'AbortError' ||
+                                         errorObj.code === 'ECONNRESET' ||
+                                         errorObj.code === 'ENOTFOUND' ||
+                                         errorObj.code === 'ECONNREFUSED' ||
+                                         errorObj.code === 'ETIMEDOUT' ||
+                                         errorObj.code === 'ENETUNREACH' ||
+                                         errorObj.message?.includes('timeout') ||
+                                         errorObj.message?.includes('ECONNREFUSED') ||
+                                         errorObj.message?.includes('ENETUNREACH');
 
                     if (isNetworkError) {
                         throw new Error(`MDC Catalonia network issue (attempt ${attempt}): Cannot reach mdc.csuc.cat servers. This appears to be a temporary connectivity issue. The server may be experiencing high load or network problems. Please try again later.`);
@@ -2346,7 +2346,7 @@ export class EnhancedManuscriptDownloaderService {
 
         } catch (error: unknown) {
             const elapsed = Date.now() - startTime;
-            this.logger.logDownloadError(library || 'unknown', url, error, attempt + 1);
+            this.logger.logDownloadError(library || 'unknown', url, error as Error, attempt + 1);
             console.error(`[downloadImageWithRetries] Error after ${elapsed}ms:`, (error as Error).message);
 
             const maxRetries = configService.get('maxRetries');
@@ -2359,7 +2359,7 @@ export class EnhancedManuscriptDownloaderService {
                                          url.includes('/full/1024,') ? 2 : 3;
 
                     if (currentQuality < qualityFallbacks.length) {
-                        const fallbackUrl = url.replace(/\/full\/[^/]+\//, qualityFallbacks[currentQuality]);
+                        const fallbackUrl = url.replace(/\/full\/[^/]+\//, String(qualityFallbacks[currentQuality]));
                         console.log(`BDL quality fallback: ${url} -> ${fallbackUrl}`);
                         return this.downloadImageWithRetries(fallbackUrl, attempt);
                     }
@@ -2391,7 +2391,7 @@ export class EnhancedManuscriptDownloaderService {
                 message: `FINAL FAILURE after ${maxRetries + 1} attempts`,
                 attemptNumber: maxRetries + 1,
                 duration: totalTime,
-                errorStack: error.stack
+                errorStack: (error as any)?.stack
             });
             console.error(`[downloadImageWithRetries] FINAL FAILURE after ${maxRetries + 1} attempts for ${url}`);
             console.error(`[downloadImageWithRetries] Total time spent: ${totalTime}ms`);
@@ -2592,7 +2592,7 @@ export class EnhancedManuscriptDownloaderService {
                 }
             });
 
-            onManifestLoaded(manifest);
+            onManifestLoaded();
 
             // Get internal cache directory for temporary images
             const tempImagesDir = path.join(getAppPath('userData'), 'temp-images');
@@ -2673,7 +2673,7 @@ export class EnhancedManuscriptDownloaderService {
             if (skipExisting) {
                 try {
                     await fs.access(filepath);
-                    return { success: true, filepath, skipped: true };
+                    return filepath;
                 } catch {
                     // File doesn't exist, continue with download
                 }
@@ -2694,10 +2694,21 @@ export class EnhancedManuscriptDownloaderService {
                 const rate = completedPages / elapsed;
                 const eta = rate > 0 ? (totalPagesToDownload - completedPages) / rate : 0;
                 onProgress({
-                    progress,
-                    completedPages,
                     totalPages: totalPagesToDownload,
-                    eta: this.formatETA(eta)
+                    downloadedPages: completedPages,
+                    currentPage: completedPages,
+                    totalImages: totalPagesToDownload,
+                    downloadedImages: completedPages,
+                    currentImageIndex: completedPages,
+                    pagesProcessed: completedPages,
+                    percentage: progress * 100,
+                    progress: progress,
+                    elapsedTime: elapsed,
+                    estimatedTimeRemaining: eta,
+                    eta: eta,
+                    bytesDownloaded: 0,
+                    bytesTotal: 0,
+                    downloadSpeed: rate
                 });
             };
 
@@ -2734,8 +2745,8 @@ export class EnhancedManuscriptDownloaderService {
                 const manifestIndex = pageLinks ? pageIndex : (pageIndex - (actualStartPage - 1));
 
                 // Validate manifestIndex is within bounds
-                if (manifestIndex < 0 || manifestIndex >= manifest?.pageLinks?.length) {
-                    console?.error(`Page index ${pageIndex + 1} (manifest index ${manifestIndex}) is out of bounds for manifest with ${manifest?.pageLinks.length} pages`);
+                if (manifestIndex < 0 || manifestIndex >= (manifest?.pageLinks?.length ?? 0)) {
+                    console?.error(`Page index ${pageIndex + 1} (manifest index ${manifestIndex}) is out of bounds for manifest with ${manifest?.pageLinks?.length ?? 0} pages`);
                     failedPages.push(pageIndex + 1);
                     completedPages++;
                     updateProgress();
@@ -2784,16 +2795,26 @@ export class EnhancedManuscriptDownloaderService {
                                 const eta = rate > 0 ? (totalPagesToDownload - completedPages - pageProgress) / rate : 0;
 
                                 onProgress({
-                                    progress: overallProgress,
-                                    completedPages: completedPages,
                                     totalPages: totalPagesToDownload,
-                                    eta: this.formatETA(eta),
-                                    details: `Downloading tiles: ${tilesDownloaded}/${totalTiles}`
+                                    downloadedPages: completedPages,
+                                    currentPage: pageIndex + 1,
+                                    totalImages: totalTiles,
+                                    downloadedImages: tilesDownloaded,
+                                    currentImageIndex: tilesDownloaded,
+                                    pagesProcessed: completedPages,
+                                    percentage: overallProgress * 100,
+                                    progress: overallProgress,
+                                    elapsedTime: elapsed,
+                                    estimatedTimeRemaining: eta,
+                                    eta: eta,
+                                    bytesDownloaded: 0,
+                                    bytesTotal: 0,
+                                    downloadSpeed: rate
                                 });
                             };
 
                             const result = await this.directTileProcessor.processPage(
-                                tileConfig.baseId,
+                                tileConfig['baseId'] as string,
                                 pageNum,
                                 imgPath,
                                 tileProgressCallback
@@ -2842,20 +2863,31 @@ export class EnhancedManuscriptDownloaderService {
                             const tileCallbacks = this.tileEngineService.createProgressCallback(
                                 (progress) => {
                                     // Update progress with tile download info
-                                    const tileProgress = completedPages + (progress.percentage / 100);
+                                    const tileProgress = completedPages + ((progress as Record<string, unknown>)['percentage'] as number / 100);
                                     const elapsed = (Date.now() - startTime) / 1000;
                                     const rate = tileProgress / elapsed;
                                     const eta = rate > 0 ? (totalPagesToDownload - tileProgress) / rate : 0;
 
                                     onProgress({
                                         progress: tileProgress / totalPagesToDownload,
-                                        completedPages: Math.floor(tileProgress),
                                         totalPages: totalPagesToDownload,
-                                        eta: this.formatETA(eta)
+                                        downloadedPages: Math.floor(tileProgress),
+                                        currentPage: pageIndex + 1,
+                                        totalImages: totalPagesToDownload,
+                                        downloadedImages: Math.floor(tileProgress),
+                                        currentImageIndex: Math.floor(tileProgress),
+                                        pagesProcessed: Math.floor(tileProgress),
+                                        percentage: (tileProgress / totalPagesToDownload) * 100,
+                                        elapsedTime: elapsed,
+                                        estimatedTimeRemaining: eta,
+                                        eta: eta,
+                                        bytesDownloaded: 0,
+                                        bytesTotal: 0,
+                                        downloadSpeed: rate
                                     });
                                 },
                                 (status) => {
-                                    console.log(`Tile download status: ${status.phase} - ${status.message}`);
+                                    console.log(`Tile download status: ${status['phase']} - ${status['message']}`);
                                 }
                             );
 
@@ -2889,7 +2921,7 @@ export class EnhancedManuscriptDownloaderService {
                 if (imageUrl.startsWith('FLORUS_LAZY:')) {
                     const parts = imageUrl.split(':');
                     const cote = parts[1];
-                    const pageNum = parseInt(parts[2]);
+                    const pageNum = parseInt(parts[2] || '0');
                     const basePath = parts.slice(3).join(':'); // Rejoin in case basePath contains colons
                     console.log(`Fetching lazy-loaded page ${pageNum} for ${cote}`);
 
@@ -2905,7 +2937,7 @@ export class EnhancedManuscriptDownloaderService {
 
                             if (pageImageMatch) {
                                 const imagePath = pageImageMatch[1];
-                                const filename = imagePath.substring(imagePath.lastIndexOf('/') + 1);
+                                const filename = imagePath!.substring(imagePath!.lastIndexOf('/') + 1);
                                 const fullImagePath = `${basePath}${filename}`;
                                 imageUrl = `https://florus.bm-lyon.fr/fcgi-bin/iipsrv.fcgi?FIF=${fullImagePath}&WID=2000&CVT=JPEG`;
                             } else {
@@ -2992,10 +3024,21 @@ export class EnhancedManuscriptDownloaderService {
 
             // Ensure final progress update
             onProgress({
-                progress: 1.0,
-                completedPages: totalPagesToDownload,
                 totalPages: totalPagesToDownload,
-                eta: '0s'
+                downloadedPages: totalPagesToDownload,
+                currentPage: totalPagesToDownload,
+                totalImages: 0,
+                downloadedImages: 0,
+                currentImageIndex: 0,
+                pagesProcessed: totalPagesToDownload,
+                percentage: 100,
+                progress: 1.0,
+                elapsedTime: 0,
+                estimatedTimeRemaining: 0,
+                eta: 0,
+                bytesDownloaded: 0,
+                bytesTotal: 0,
+                downloadSpeed: 0
             });
 
             // Create complete array with placeholders for failed pages - only for the requested page range
@@ -3031,9 +3074,9 @@ export class EnhancedManuscriptDownloaderService {
                 // Update arrays with verified paths
                 for (let i = 0; i < verifiedPaths.length; i++) {
                     if (verifiedPaths[i]) {
-                        completeImagePaths[i] = verifiedPaths[i];
+                        completeImagePaths[i] = verifiedPaths[i] ?? null;
                         if (!imagePaths[i]) {
-                            imagePaths[i] = verifiedPaths[i];
+                            imagePaths[i] = verifiedPaths[i] ?? "";
                         }
                     }
                 }
@@ -3046,7 +3089,7 @@ export class EnhancedManuscriptDownloaderService {
                 }
 
                 // Clear the retry queue for this manuscript
-                await this.ultraBDLService.clearRetryQueue(manifest.manuscriptId);
+                await this.ultraBDLService.clearRetryQueue((manifest as any).manuscriptId);
             }
 
             if (validImagePaths.length === 0) {
@@ -3076,8 +3119,8 @@ export class EnhancedManuscriptDownloaderService {
                     return 0;
                 }
                 
-                const aNum = parseInt(aMatch[1], 10);
-                const bNum = parseInt(bMatch[1], 10);
+                const aNum = parseInt(aMatch[1] || '0', 10);
+                const bNum = parseInt(bMatch[1] || '0', 10);
                 return aNum - bNum;
             });
 
@@ -3108,7 +3151,7 @@ export class EnhancedManuscriptDownloaderService {
                         // Check if any of the files are PDFs
                         const hasPDFs = partImages.some(img => img && img.toLowerCase().endsWith('.pdf'));
                         
-                        if (manifest?.library === 'bne' || hasPDFs) {
+                        if ((manifest as any)?.library === 'bne' || hasPDFs) {
                             await this.mergePDFPages(partImages, partFilepath, partStartPage, manifest);
                         } else {
                             await this.convertImagesToPDFWithBlanks(partImages, partFilepath, partStartPage, manifest);
@@ -3146,14 +3189,7 @@ export class EnhancedManuscriptDownloaderService {
                     downloadDuration
                 );
 
-                return {
-                    success: true,
-                    filepath: createdFiles[0], // Return first part as primary
-                    splitFiles: createdFiles,
-                    totalPages: validImagePaths.length,
-                    failedPages: manifest.totalPages - validImagePaths.length,
-                    partsCreated: totalParts
-                };
+                return createdFiles[0] || ''; // Return first part as primary filepath
             } else {
                 // Single PDF
                 try {
@@ -3161,7 +3197,7 @@ export class EnhancedManuscriptDownloaderService {
                     // Check if any of the files are PDFs
                     const hasPDFs = completeImagePaths.some(img => img && img.toLowerCase().endsWith('.pdf'));
                     
-                    if (manifest?.library === 'bne' || hasPDFs) {
+                    if ((manifest as any)?.library === 'bne' || hasPDFs) {
                         await this.mergePDFPages(completeImagePaths, filepath, actualStartPage, manifest);
                     } else {
                         await this.convertImagesToPDFWithBlanks(completeImagePaths, filepath, actualStartPage, manifest);
@@ -3185,11 +3221,6 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
 
-                const failedPagesCount = failedPages.length;
-                const statusMessage = failedPagesCount > 0
-                    ? `${failedPagesCount} of ${manifest.totalPages} pages couldn't be downloaded`
-                    : undefined;
-
                 // Log manuscript download complete
                 const downloadDuration = Date.now() - downloadStartTime;
                 this.logger.logManuscriptDownloadComplete(
@@ -3200,13 +3231,7 @@ export class EnhancedManuscriptDownloaderService {
                     downloadDuration
                 );
 
-                return {
-                    success: true,
-                    filepath,
-                    totalPages: manifest.totalPages, // Total pages including blanks
-                    failedPages: failedPagesCount,
-                    statusMessage
-                };
+                return filepath; // Return the created PDF filepath
             }
 
         } catch (error: unknown) {
@@ -3229,7 +3254,7 @@ export class EnhancedManuscriptDownloaderService {
             }
 
             this.logger.logManuscriptDownloadFailed(
-                manifest?.library || this.detectLibrary(url) || 'unknown',
+                (manifest as any)?.library || this.detectLibrary(url) || 'unknown',
                 url,
                 error as Error,
                 failedStage
@@ -3250,7 +3275,7 @@ export class EnhancedManuscriptDownloaderService {
         // Log PDF conversion start
         this.logger.log({
             level: 'info',
-            library: manifest?.library || 'unknown',
+            library: (manifest as any)?.library || 'unknown',
             message: `Starting PDF conversion with ${totalImages} images`,
             details: { totalImages, outputPath }
         });
@@ -3260,7 +3285,7 @@ export class EnhancedManuscriptDownloaderService {
 
         // ULTRA-PRIORITY FIX for Issue #23: BDL memory allocation failure
         // BDL manuscripts often have high-resolution images that consume lots of memory
-        if (manifest?.library === 'bdl') {
+        if ((manifest as any)?.library === 'bdl') {
             if (totalImages > 300) {
                 batchSize = 5; // Ultra-small batches for 300+ page BDL manuscripts
                 console.log(`🔧 [BDL Memory Fix] Large BDL manuscript (${totalImages} pages), using ultra-small batch size: ${batchSize} to prevent memory allocation failure`);
@@ -3275,13 +3300,13 @@ export class EnhancedManuscriptDownloaderService {
             } else {
                 batchSize = 20; // Standard batches for smaller BDL manuscripts
             }
-        } else if (manifest?.library === 'manuscripta' && totalImages > 300) {
+        } else if ((manifest as any)?.library === 'manuscripta' && totalImages > 300) {
             batchSize = 8; // Very small batches for 300+ page manuscripta.se
             console.log(`Large manuscripta.se manuscript detected (${totalImages} pages), using very small batch size: ${batchSize}`);
-        } else if (manifest?.library === 'manuscripta' && totalImages > 200) {
+        } else if ((manifest as any)?.library === 'manuscripta' && totalImages > 200) {
             batchSize = 12; // Small batches for 200+ page manuscripta.se
             console.log(`Large manuscripta.se manuscript detected (${totalImages} pages), using small batch size: ${batchSize}`);
-        } else if (manifest?.library === 'manuscripta' && totalImages > 100) {
+        } else if ((manifest as any)?.library === 'manuscripta' && totalImages > 100) {
             batchSize = 20;
         } else {
             batchSize = Math.min(50, Math.max(10, Math.floor(maxMemoryMB / 20))); // Adaptive batch size
@@ -3303,6 +3328,9 @@ export class EnhancedManuscriptDownloaderService {
                 for (const imagePath of batch) {
                     try {
                         // Check if file exists and is accessible
+                        if (!imagePath) {
+                            throw new Error('Image path is undefined');
+                        }
                         await fs.access(imagePath);
                         const stats = await fs.stat(imagePath);
 
@@ -3357,7 +3385,7 @@ export class EnhancedManuscriptDownloaderService {
                         global.gc();
 
                         // ULTRA-PRIORITY FIX for Issue #23: Enhanced memory cleanup for BDL
-                        if (manifest?.library === 'bdl' && totalImages > 100) {
+                        if ((manifest as any)?.library === 'bdl' && totalImages > 100) {
                             // BDL needs aggressive memory cleanup due to high-resolution images
                             await new Promise(resolve => setTimeout(resolve, 300)); // 300ms pause for memory cleanup
                             console.log(`🔧 [BDL Memory] Aggressive memory cleanup after batch ${batchNum}/${Math.ceil(totalImages / batchSize)}`);
@@ -3369,7 +3397,7 @@ export class EnhancedManuscriptDownloaderService {
                             }
                         }
                         // For large manuscripta.se files, add extra memory cleanup time
-                        else if (manifest?.library === 'manuscripta' && totalImages > 200) {
+                        else if ((manifest as any)?.library === 'manuscripta' && totalImages > 200) {
                             await new Promise(resolve => setTimeout(resolve, 200)); // 200ms pause
                             console.log(`Memory cleanup completed after batch ${batchNum}/${Math.ceil(totalImages / batchSize)}`);
                         }
@@ -3438,14 +3466,23 @@ export class EnhancedManuscriptDownloaderService {
 
         if (allPdfBytes.length === 1) {
             // Single batch, just write it
-            await this.writeFileWithVerification(outputPath, Buffer.from(allPdfBytes[0]));
+            const pdfBytes = allPdfBytes[0];
+            if (!pdfBytes) {
+                throw new Error('No PDF bytes available for writing');
+            }
+            await this.writeFileWithVerification(outputPath, pdfBytes instanceof Buffer ? pdfBytes : Buffer.from(pdfBytes));
         } else {
             // Multiple batches, merge them
             const finalPdfDoc = await PDFDocument.create();
 
             for (let i = 0; i < allPdfBytes.length; i++) {
                 try {
-                    const batchPdf = await PDFDocument.load(allPdfBytes[i]);
+                    const pdfBytesData = allPdfBytes[i];
+                    if (!pdfBytesData) {
+                        console.warn(`Skipping undefined PDF bytes at index ${i}`);
+                        continue;
+                    }
+                    const batchPdf = await PDFDocument.load(pdfBytesData);
                     const pageIndices = batchPdf.getPageIndices();
                     const copiedPages = await finalPdfDoc.copyPages(batchPdf, pageIndices);
 
@@ -3464,7 +3501,7 @@ export class EnhancedManuscriptDownloaderService {
             const duration = Date.now() - startTime;
             const stats = await fs.stat(outputPath);
             this.logger.logPdfCreationComplete(
-                manifest?.library || 'unknown',
+                (manifest as any)?.library || 'unknown',
                 outputPath,
                 stats.size,
                 duration
@@ -3481,20 +3518,20 @@ export class EnhancedManuscriptDownloaderService {
         // Log PDF conversion start
         this.logger.log({
             level: 'info',
-            library: manifest?.library || 'unknown',
+            library: (manifest as any)?.library || 'unknown',
             message: `Starting PDF conversion with ${totalImages} images (with blanks for failed pages)`,
             details: { totalImages, outputPath, startPageNumber }
         });
 
         // Special handling for large manuscripta.se files to prevent infinite loops
         let batchSize;
-        if (manifest?.library === 'manuscripta' && totalImages > 300) {
+        if ((manifest as any)?.library === 'manuscripta' && totalImages > 300) {
             batchSize = 8; // Very small batches for 300+ page manuscripta.se
             console.log(`Large manuscripta.se manuscript detected (${totalImages} pages), using very small batch size: ${batchSize}`);
-        } else if (manifest?.library === 'manuscripta' && totalImages > 200) {
+        } else if ((manifest as any)?.library === 'manuscripta' && totalImages > 200) {
             batchSize = 12; // Small batches for 200+ page manuscripta.se
             console.log(`Large manuscripta.se manuscript detected (${totalImages} pages), using small batch size: ${batchSize}`);
-        } else if (manifest?.library === 'manuscripta' && totalImages > 100) {
+        } else if ((manifest as any)?.library === 'manuscripta' && totalImages > 100) {
             batchSize = 20;
         } else {
             batchSize = Math.min(50, Math.max(10, Math.floor(maxMemoryMB / 20)));
@@ -3575,6 +3612,9 @@ export class EnhancedManuscriptDownloaderService {
 
                     // Process valid image (same logic as original function)
                     try {
+                        if (!imagePath) {
+                            throw new Error('Image path is undefined');
+                        }
                         await fs.access(imagePath);
                         const stats = await fs.stat(imagePath);
 
@@ -3731,7 +3771,7 @@ export class EnhancedManuscriptDownloaderService {
                     const totalBatches = Math.ceil(totalImages / batchSize);
                     this.logger.log({
                         level: 'debug',
-                        library: manifest?.library || 'unknown',
+                        library: (manifest as any)?.library || 'unknown',
                         message: `PDF batch ${batchNum}/${totalBatches} processed: ${pagesInBatch} pages`,
                         details: {
                             batchNum,
@@ -3746,7 +3786,7 @@ export class EnhancedManuscriptDownloaderService {
                     if (global.gc) {
                         global.gc();
                         // For large manuscripta.se files, add extra memory cleanup time
-                        if (manifest?.library === 'manuscripta' && totalImages > 200) {
+                        if ((manifest as any)?.library === 'manuscripta' && totalImages > 200) {
                             await new Promise(resolve => setTimeout(resolve, 200)); // 200ms pause
                             const batchNum = Math.floor(i / batchSize) + 1;
                             const totalBatches = Math.ceil(totalImages / batchSize);
@@ -3765,7 +3805,14 @@ export class EnhancedManuscriptDownloaderService {
         }
 
         if (allPdfBytes.length === 1) {
-            await fs.writeFile(outputPath, allPdfBytes[0]);
+            if (!outputPath) {
+                throw new Error('Output path is required for writing PDF');
+            }
+            const pdfData = allPdfBytes[0];
+            if (!pdfData) {
+                throw new Error('No PDF data available');
+            }
+            await fs.writeFile(outputPath, pdfData);
         } else {
             const finalPdfDoc = await PDFDocument.create();
 
@@ -3777,6 +3824,9 @@ export class EnhancedManuscriptDownloaderService {
             }
 
             const finalPdfBytes = await finalPdfDoc.save();
+            if (!outputPath) {
+                throw new Error('Output path is required for writing PDF');
+            }
             await fs.writeFile(outputPath, finalPdfBytes);
         }
 
@@ -3784,7 +3834,7 @@ export class EnhancedManuscriptDownloaderService {
         const duration = Date.now() - startTime;
         const stats = await fs.stat(outputPath);
         this.logger.logPdfCreationComplete(
-            manifest?.library || 'unknown',
+            (manifest as any)?.library || 'unknown',
             outputPath,
             stats.size,
             duration
@@ -3801,14 +3851,14 @@ export class EnhancedManuscriptDownloaderService {
         // Log PDF merge start
         this.logger.log({
             level: 'info',
-            library: manifest?.library || 'unknown',
+            library: (manifest as any)?.library || 'unknown',
             message: `Starting PDF merge with ${totalPages} PDF pages`,
             details: { totalPages, outputPath, startPageNumber }
         });
 
         try {
             const finalPdfDoc = await PDFDocument.create();
-            finalPdfDoc.setTitle(manifest?.displayName || 'Merged Manuscript');
+            finalPdfDoc.setTitle((manifest as any)?.displayName || 'Merged Manuscript');
             finalPdfDoc.setAuthor('Manuscript Downloader');
             finalPdfDoc.setSubject('Downloaded manuscript');
             finalPdfDoc.setCreator('Electron Manuscript Downloader');
@@ -3846,7 +3896,7 @@ export class EnhancedManuscriptDownloaderService {
 
                 try {
                     // Read PDF file and merge its pages
-                    const pdfBuffer = await fs.readFile(pdfPath);
+                    const pdfBuffer = await fs.readFile(pdfPath!);
                     
                     // Check if it's actually a PDF
                     const header = pdfBuffer.slice(0, 5).toString();
@@ -3911,6 +3961,9 @@ export class EnhancedManuscriptDownloaderService {
 
             // Save the final merged PDF
             const pdfBytes = await finalPdfDoc.save();
+            if (!outputPath) {
+                throw new Error('Output path is required for writing PDF');
+            }
             await fs.writeFile(outputPath, pdfBytes);
 
             const stats = await fs.stat(outputPath);
@@ -3921,7 +3974,7 @@ export class EnhancedManuscriptDownloaderService {
 
             // Log successful PDF creation
             this.logger.logPdfCreationComplete(
-                manifest?.library || 'unknown',
+                (manifest as any)?.library || 'unknown',
                 outputPath,
                 stats.size,
                 duration
@@ -3933,696 +3986,30 @@ export class EnhancedManuscriptDownloaderService {
         }
     }
 
-    private async extractFlorusImageUrls(html: string, cote: string, currentVue: number): Promise<string[]> {
-        console.log('Extracting Florus URLs for manuscript:', cote);
 
-        // Extract the image path from current page to understand the pattern
-        const imagePathMatch = html.match(/FIF=([^&\s'"]+)/) ||
-                              html.match(/image\s*:\s*'([^']+)'/) ||
-                              html.match(/image\s*:\s*"([^"]+)"/);
 
-        if (!imagePathMatch) {
-            throw new Error('Could not find image path pattern in Florus page');
-        }
 
-        const currentImagePath = imagePathMatch[1];
-        console.log('Current image path:', currentImagePath);
-
-        // Extract the base path and manuscript ID
-        // Example: /var/www/florus/web/ms/B693836101_MS0425/B693836101_MS0425_129_62V.JPG.tif
-        const pathParts = currentImagePath.match(/(.+\/)([^/]+)\.JPG\.tif$/);
-        if (!pathParts) {
-            throw new Error('Could not parse Florus image path structure');
-        }
-
-        const basePath = pathParts[1];
-        const filenameParts = pathParts[2].match(/^(.+?)_(\d+)_(.+)$/);
-        if (!filenameParts) {
-            throw new Error('Could not parse Florus filename structure');
-        }
-
-        // Find the total number of pages from navigation
-        let maxPage = currentVue + 20; // Conservative fallback
-
-        // Look for naviguer() function calls in the HTML
-        const navNumbers = [...html.matchAll(/naviguer\((\d+)\)/g)]
-            .map(match => parseInt(match[1]))
-            .filter(num => !isNaN(num) && num > 0);
-
-        console.log(`Found ${navNumbers.length} navigation numbers:`, navNumbers);
-
-        if (navNumbers.length > 0) {
-            maxPage = Math.max(...navNumbers);
-            console.log(`Maximum page from navigation: ${maxPage}`);
-        } else {
-            console.log(`No navigation numbers found, using fallback: ${maxPage}`);
-            // Try alternative patterns
-            const altPatterns = [
-                /href=["']javascript:naviguer\((\d+)\)/g,
-                /onclick=["']naviguer\((\d+)\)/g,
-                /naviguerSelect.*?value=["'](\d+)/g
-            ];
-
-            for (const pattern of altPatterns) {
-                const altNumbers = [...html.matchAll(pattern)]
-                    .map(match => parseInt(match[1]))
-                    .filter(num => !isNaN(num) && num > 0);
-
-                if (altNumbers.length > 0) {
-                    maxPage = Math.max(...altNumbers);
-                    console.log(`Found ${altNumbers.length} pages using alternative pattern, max: ${maxPage}`);
-                    break;
-                }
-            }
-        }
-
-        console.log(`Final detected page count: ${maxPage} pages for Florus manuscript`);
-
-        const imageUrls: string[] = [];
-        const serverUrl = 'https://florus.bm-lyon.fr/fcgi-bin/iipsrv.fcgi';
-
-        // Batch fetch all pages to build complete URL list
-        const batchSize = 10; // Process 10 pages concurrently
-        const pageToFilename = new Map<number, string>();
-
-        // For very large manuscripts, limit initial manifest loading to avoid timeouts
-        const maxPagesToFetch = maxPage > 100 ? 50 : maxPage;
-        console.log(`Fetching ${maxPagesToFetch} of ${maxPage} pages for initial manifest...`);
-
-        // Process pages in batches for better performance
-        for (let batchStart = 1; batchStart <= maxPagesToFetch; batchStart += batchSize) {
-            const batchEnd = Math.min(batchStart + batchSize - 1, maxPagesToFetch);
-            const batchPromises: Promise<void>[] = [];
-
-            console.log(`Processing batch: pages ${batchStart} to ${batchEnd}`);
-
-            for (let pageNum = batchStart; pageNum <= batchEnd; pageNum++) {
-                const promise = (async () => {
-                    let retries = 3;
-                    while (retries > 0) {
-                        try {
-                            const pageUrl = `https://florus.bm-lyon.fr/visualisation.php?cote=${cote}&vue=${pageNum}`;
-                            const pageResponse = await this.fetchDirect(pageUrl);
-
-                            if (pageResponse.ok) {
-                                const pageHtml = await pageResponse.text();
-                                const pageImageMatch = pageHtml.match(/FIF=([^&\s'"]+)/) ||
-                                                      pageHtml.match(/image\s*:\s*'([^']+)'/) ||
-                                                      pageHtml.match(/image\s*:\s*"([^"]+)"/);
-
-                                if (pageImageMatch) {
-                                    const imagePath = pageImageMatch[1];
-                                    const filename = imagePath.substring(imagePath.lastIndexOf('/') + 1);
-                                    pageToFilename.set(pageNum, filename);
-                                    if (pageNum <= 5 || pageNum === maxPage) {
-                                        console.log(`Page ${pageNum} image path: ${imagePath}`);
-                                    }
-                                    break; // Success, exit retry loop
-                                } else {
-                                    console.warn(`No image match found for page ${pageNum}, HTML length: ${pageHtml.length}`);
-                                    if (pageNum === 1) {
-                                        console.log('Sample HTML for debugging:', pageHtml.substring(0, 500));
-                                    }
-                                    break; // No point retrying if pattern doesn't match
-                                }
-                            } else {
-                                console.warn(`HTTP ${pageResponse.status} for page ${pageNum}`);
-                                retries--;
-                                if (retries > 0) {
-                                    await new Promise(resolve => setTimeout(resolve, 1000));
-                                }
-                            }
-                        } catch (error: unknown) {
-                            console.warn(`Failed to fetch page ${pageNum} (${retries} retries left):`, (error as Error).message);
-                            retries--;
-                            if (retries > 0) {
-                                await new Promise(resolve => setTimeout(resolve, 1000));
-                            }
-                        }
-                    }
-                })();
-
-                batchPromises.push(promise);
-            }
-
-            // Wait for current batch to complete before starting next
-            try {
-                await Promise.all(batchPromises);
-                console.log(`Batch complete. Total pages fetched so far: ${pageToFilename.size}`);
-            } catch (batchError) {
-                console.error(`Error in batch ${batchStart}-${batchEnd}:`, batchError);
-                // Continue with next batch even if current batch has errors
-            }
-
-            // Add a longer delay between batches to avoid overwhelming the server
-            if (batchEnd < maxPagesToFetch) {
-                console.log(`Waiting 500ms before next batch...`);
-                await new Promise(resolve => setTimeout(resolve, 500)); // Increased delay for Lyon library
-            }
-        }
-
-        console.log(`Successfully fetched ${pageToFilename.size} pages out of ${maxPagesToFetch} attempted (${maxPage} total)`);
-
-        // Log some sample filenames to debug
-        if (pageToFilename.size > 0) {
-            const sampleEntries = Array.from(pageToFilename.entries()).slice(0, 5);
-            console.log('Sample page mappings:', sampleEntries);
-        }
-
-        // Build the complete list of image URLs in order
-        for (let pageNum = 1; pageNum <= maxPage; pageNum++) {
-            const filename = pageToFilename.get(pageNum);
-            if (filename) {
-                const imagePath = `${basePath}${filename}`;
-                const imageUrl = `${serverUrl}?FIF=${imagePath}&WID=2000&CVT=JPEG`;
-                imageUrls.push(imageUrl);
-            } else if (pageNum <= maxPagesToFetch) {
-                // Page was attempted but not found
-                console.warn(`Missing page ${pageNum}, adding placeholder`);
-                imageUrls.push('');
-            } else {
-                // Page wasn't fetched yet - will be fetched during download
-                // Store metadata needed to fetch the page later
-                const lazyUrl = `FLORUS_LAZY:${cote}:${pageNum}:${basePath}`;
-                imageUrls.push(lazyUrl);
-            }
-        }
-
-        // Filter out empty URLs but keep track of actual count
-        const validUrls = imageUrls.filter(url => url !== '');
-
-        if (validUrls.length === 0) {
-            throw new Error('Could not extract any valid image URLs from Florus manuscript');
-        }
-
-        console.log(`Returning ${validUrls.length} valid URLs out of ${maxPage} total pages`);
-        console.log(`First few URLs:`, imageUrls.slice(0, 3).filter(url => url !== ''));
-        return imageUrls; // Return all URLs including placeholders to maintain correct indexing
-    }
-
-    private async parseEManuscriptaDeepHTML(html: string): Promise<Array<{pageId: string, pageNumber: number}>> {
-        try {
-            // Try multiple HTML parsing approaches
-            const approaches = [
-                // Approach 1: Look for page links in navigation
-                () => {
-                    const linkPattern = /href="[^"]*\/zoom\/(\d+)"[^>]*>\s*\[(\d+)\]/g;
-                    return Array.from(html.matchAll(linkPattern));
-                },
-                // Approach 2: Look for data attributes
-                () => {
-                    const dataPattern = /data-page-id="(\d+)"[^>]*>\s*\[(\d+)\]/g;
-                    return Array.from(html.matchAll(dataPattern));
-                },
-                // Approach 3: Look for any numeric patterns that could be page IDs
-                () => {
-                    const numericPattern = /\[(\d+)\][^<]*(?:id|page)[^<]*(\d{7,})/g;
-                    return Array.from(html.matchAll(numericPattern));
-                },
-            ];
-
-            for (let i = 0; i < approaches.length; i++) {
-                try {
-                    const matches = approaches[i]();
-                    if (matches.length > 0) {
-                        console.log(`e-manuscripta: Deep HTML approach ${i + 1} found ${matches.length} matches`);
-                        const pageData = matches.map(match => ({
-                            pageId: match[1],
-                            pageNumber: parseInt(match[2], 10)
-                        }));
-                        if (pageData.length > 1) return pageData;
-                    }
-                } catch (error: unknown) {
-                    console.warn(`e-manuscripta: Deep HTML approach ${i + 1} failed: ${(error as Error).message}`);
-                }
-            }
-
-            return [];
-        } catch (error: unknown) {
-            console.warn(`e-manuscripta: Deep HTML parsing failed: ${(error as Error).message}`);
-            return [];
-        }
-    }
-
-    private async discoverEManuscriptaURLPattern(baseId: string, library: string): Promise<Array<{pageId: string, pageNumber: number}>> {
-        try {
-            console.log('e-manuscripta: Attempting URL pattern discovery');
-            const baseIdNum = parseInt(baseId, 10);
-            const testUrls: string[] = [];
-
-            // Test sequential IDs around the base ID (Agent 2 found this pattern works)
-            for (let i = 0; i < 10; i++) {
-                testUrls.push(`https://www.e-manuscripta.ch/${library}/download/webcache/128/${baseIdNum + i}`);
-            }
-
-            const validPages: Array<{pageId: string, pageNumber: number}> = [];
-
-            // Test URLs to see which ones return valid images
-            for (let i = 0; i < testUrls.length; i++) {
-                try {
-                    const testResponse = await this.fetchDirect(testUrls[i]);
-                    if (testResponse.ok && testResponse.headers.get('content-type')?.includes('image')) {
-                        validPages.push({
-                            pageId: (baseIdNum + i).toString(),
-                            pageNumber: i + 1
-                        });
-                        console.log(`e-manuscripta: Validated page ${i + 1} with ID ${baseIdNum + i}`);
-                    } else {
-                        // Stop when we hit the first non-working URL
-                        console.log(`e-manuscripta: URL pattern discovery stopped at page ${i + 1} (no more valid pages)`);
-                        break;
-                    }
-                } catch (error: unknown) {
-                    console.log(`e-manuscripta: URL test failed at page ${i + 1}: ${(error as Error).message}`);
-                    break;
-                }
-
-                // Small delay to be respectful
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-
-            if (validPages.length > 0) {
-                console.log(`e-manuscripta: URL pattern discovery found ${validPages.length} valid pages`);
-
-                // Extend the pattern to find all pages
-                let pageCount = validPages.length;
-                const maxPages = 1000; // Reasonable limit
-
-                // Continue testing until we find the end
-                for (let i = pageCount; i < maxPages; i++) {
-                    try {
-                        const testUrl = `https://www.e-manuscripta.ch/${library}/download/webcache/128/${baseIdNum + i}`;
-                        const testResponse = await this.fetchDirect(testUrl);
-
-                        if (testResponse.ok && testResponse.headers.get('content-type')?.includes('image')) {
-                            validPages.push({
-                                pageId: (baseIdNum + i).toString(),
-                                pageNumber: i + 1
-                            });
-                            pageCount++;
-                        } else {
-                            console.log(`e-manuscripta: Found end of manuscript at page ${i + 1}`);
-                            break;
-                        }
-                    } catch (error: unknown) {
-                        console.log(`e-manuscripta: Pattern discovery ended at page ${i + 1}: ${(error as Error).message}`);
-                        break;
-                    }
-
-                    // Progress logging
-                    if ((i + 1) % 10 === 0) {
-                        console.log(`e-manuscripta: Discovered ${i + 1} pages so far...`);
-                    }
-
-                    await new Promise(resolve => setTimeout(resolve, 50));
-                }
-
-                return validPages;
-            }
-
-            return [];
-        } catch (error: unknown) {
-            console.warn(`e-manuscripta: URL pattern discovery failed: ${(error as Error).message}`);
-            return [];
-        }
-    }
-
-    private async validateEManuscriptaURLs(testUrls: string[]): Promise<void> {
-        try {
-            console.log(`e-manuscripta: Validating ${testUrls.length} sample URLs`);
-
-            for (let i = 0; i < testUrls.length; i++) {
-                const response = await this.fetchDirect(testUrls[i]);
-                if (!response.ok) {
-                    throw new Error(`Validation failed for URL ${i + 1}: HTTP ${response.status}`);
-                }
-
-                const contentType = response.headers.get('content-type');
-                if (!contentType?.includes('image')) {
-                    throw new Error(`Validation failed for URL ${i + 1}: Not an image (${contentType})`);
-                }
-
-                console.log(`e-manuscripta: Validated URL ${i + 1}/${testUrls.length}`);
-            }
-
-            console.log('e-manuscripta: All sample URLs validated successfully');
-        } catch (error: unknown) {
-            console.error(`e-manuscripta: URL validation failed: ${(error as Error).message}`);
-            throw error;
-        }
-    }
-
-    /**
-     * Handle E-Manuscripta titleinfo URLs by extracting all related thumbview blocks
-     */
-    private async handleEManuscriptaTitleInfo(titleinfoUrl: string, library: string, manuscriptId: string): Promise<ManuscriptManifest> {
-        try {
-            console.log(`e-manuscripta: Processing titleinfo URL for multi-block manuscript`);
-
-            // Fetch the titleinfo page for title extraction
-            const titleinfoResponse = await this.fetchDirect(titleinfoUrl);
-            if (!titleinfoResponse.ok) {
-                throw new Error(`Failed to fetch titleinfo page: HTTP ${titleinfoResponse.status}`);
-            }
-
-            const titleinfoHtml = await titleinfoResponse.text();
-
-            // Extract title/manuscript name from the titleinfo page
-            let displayName = `e-manuscripta ${manuscriptId}`;
-            const titleMatch = titleinfoHtml.match(/<title[^>]*>([^<]+)<\/title>/i);
-            if (titleMatch && titleMatch[1] && !titleMatch[1].includes('e-manuscripta.ch')) {
-                displayName = titleMatch[1].trim();
-            }
-
-            // ENHANCED: Fetch structure page to find ALL manuscript blocks
-            console.log(`e-manuscripta: Fetching structure page to discover all manuscript blocks`);
-            const structureUrl = `https://www.e-manuscripta.ch/${library}/content/structure/${manuscriptId}`;
-            const structureResponse = await this.fetchDirect(structureUrl);
-            if (!structureResponse.ok) {
-                throw new Error(`Failed to fetch structure page: HTTP ${structureResponse.status}`);
-            }
-
-            const structureHtml = await structureResponse.text();
-
-            // Extract all thumbview block URLs from the structure page (enhanced method)
-            const thumbviewUrls = await this.extractAllThumbviewBlocksFromStructure(structureHtml, library);
-
-            if (thumbviewUrls.length === 0) {
-                throw new Error('No thumbview blocks found in structure page');
-            }
-
-            console.log(`e-manuscripta: Found ${thumbviewUrls.length} thumbview blocks in structure page`);
-
-            // Process each thumbview block and aggregate all pages
-            const allPageLinks: string[] = [];
-            // let totalPagesCount = 0;
-
-            for (let i = 0; i < thumbviewUrls.length; i++) {
-                const thumbviewUrl = thumbviewUrls[i];
-                console.log(`e-manuscripta: Processing block ${i + 1}/${thumbviewUrls.length}: ${thumbviewUrl}`);
-
-                try {
-                    const blockManifest = await this.handleEManuscriptaThumbView(thumbviewUrl, library, thumbviewUrl.split('/').pop()!);
-                    allPageLinks.push(...blockManifest.pageLinks);
-                    // totalPagesCount += blockManifest.totalPages;
-
-                    console.log(`e-manuscripta: Block ${i + 1} contributed ${blockManifest.totalPages} pages`);
-                } catch (error: unknown) {
-                    console.warn(`e-manuscripta: Failed to process block ${i + 1}: ${(error as Error).message}`);
-                }
-            }
-
-            if (allPageLinks.length === 0) {
-                throw new Error('No pages found in any thumbview blocks');
-            }
-
-            console.log(`e-manuscripta: Successfully aggregated ${allPageLinks.length} pages from ${thumbviewUrls.length} blocks`);
-
-            return {
-                pageLinks: allPageLinks,
-                totalPages: allPageLinks.length,
-                library: 'e_manuscripta',
-                displayName: `${displayName} (${thumbviewUrls.length} blocks)`,
-                originalUrl: titleinfoUrl,
-            };
-
-        } catch (error: unknown) {
-            console.error(`e-manuscripta: titleinfo processing failed: ${(error as Error).message}`);
-            throw error;
-        }
-    }
+    // Removed unused method _handleEManuscriptaTitleInfo
 
     /**
      * Handle E-Manuscripta thumbview URLs (individual blocks)
      */
-    private async handleEManuscriptaThumbView(thumbviewUrl: string, library: string, blockId: string): Promise<ManuscriptManifest> {
-        try {
-            console.log(`e-manuscripta: Processing thumbview block: ${blockId}`);
-
-            // Fetch the thumbview page
-            const response = await this.fetchDirect(thumbviewUrl);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch thumbview page: HTTP ${response.status}`);
-            }
-
-            const html = await response.text();
-
-            // Extract title/manuscript name from the page
-            let displayName = `e-manuscripta ${blockId}`;
-            const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-            if (titleMatch && titleMatch[1] && !titleMatch[1].includes('e-manuscripta.ch')) {
-                displayName = titleMatch[1].trim();
-            }
-
-            // Use existing parsing methods to extract page data
-            let pageData: Array<{pageId: string, pageNumber: number}> = [];
-
-            // METHOD 1: Parse goToPage dropdown (most reliable)
-            pageData = await this.parseEManuscriptaDropdown(html);
-
-            if (pageData.length === 0) {
-                // METHOD 2: Parse JavaScript configuration data
-                console.log(`e-manuscripta: Block ${blockId} - Trying JavaScript config extraction`);
-                pageData = await this.parseEManuscriptaJSConfig(html);
-            }
-
-            if (pageData.length === 0) {
-                // METHOD 3: Deep HTML analysis with multiple patterns
-                console.log(`e-manuscripta: Block ${blockId} - Trying deep HTML pattern analysis`);
-                pageData = await this.parseEManuscriptaDeepHTML(html);
-            }
-
-            if (pageData.length === 0) {
-                // METHOD 4: URL pattern discovery using current page as base
-                console.log(`e-manuscripta: Block ${blockId} - Trying URL pattern discovery`);
-                pageData = await this.discoverEManuscriptaURLPattern(blockId, library);
-            }
-
-            if (pageData.length === 0) {
-                console.warn(`e-manuscripta: Block ${blockId} - No pages found, skipping`);
-                return {
-                    pageLinks: [],
-                    totalPages: 0,
-                    library: 'e_manuscripta',
-                    displayName: `${displayName} (empty block)`,
-                    originalUrl: thumbviewUrl,
-                };
-            }
-
-            // Sort by page number to ensure correct order
-            pageData.sort((a, b) => a.pageNumber - b.pageNumber);
-
-            console.log(`e-manuscripta: Block ${blockId} - Found ${pageData.length} pages`);
-
-            // Generate page links using the optimal URL pattern
-            const pageLinks: string[] = pageData.map(page =>
-                `https://www.e-manuscripta.ch/${library}/download/webcache/0/${page.pageId}`
-            );
-
-            // Validate that URLs actually work by testing first few pages
-            if (pageLinks.length > 0) {
-                await this.validateEManuscriptaURLs(pageLinks.slice(0, Math.min(3, pageLinks.length)));
-            }
-
-            return {
-                pageLinks,
-                totalPages: pageLinks.length,
-                library: 'e_manuscripta',
-                displayName,
-                originalUrl: thumbviewUrl,
-            };
-
-        } catch (error: unknown) {
-            console.error(`e-manuscripta: thumbview processing failed: ${(error as Error).message}`);
-            throw error;
-        }
-    }
-
-    /**
-     * Extract ALL thumbview block URLs from structure page HTML (ENHANCED for multi-block manuscripts)
-     */
-    private async extractAllThumbviewBlocksFromStructure(structureHtml: string, library: string): Promise<string[]> {
-        console.log(`e-manuscripta: Extracting all thumbview blocks from structure page`);
-
-        // Extract all zoom IDs from structure page links
-        const zoomPattern = /href="\/[^"]*\/content\/zoom\/(\d+)"/g;
-        const zoomIds: string[] = [];
-        let match;
-        while ((match = zoomPattern.exec(structureHtml)) !== null) {
-            zoomIds.push(match[1]);
-        }
-
-        // Remove duplicates and sort by ID
-        const uniqueZoomIds = [...new Set(zoomIds)].sort((a, b) => parseInt(a) - parseInt(b));
-        console.log(`e-manuscripta: Found ${uniqueZoomIds.length} unique zoom IDs in structure`);
-
-        // Test each zoom ID to see which ones have valid thumbview blocks
-        const validThumbviewUrls: string[] = [];
-
-        for (const zoomId of uniqueZoomIds) {
-            const thumbviewUrl = `https://www.e-manuscripta.ch/${library}/content/thumbview/${zoomId}`;
-            try {
-                const response = await this.fetchDirect(thumbviewUrl, { method: 'HEAD' });
-                if (response.ok) {
-                    validThumbviewUrls.push(thumbviewUrl);
-                    console.log(`e-manuscripta: ✓ Block ${zoomId} - Valid thumbview`);
-                } else {
-                    console.log(`e-manuscripta: ✗ Block ${zoomId} - HTTP ${response.status} (skipping)`);
-                }
-            } catch (error: unknown) {
-                console.log(`e-manuscripta: ✗ Block ${zoomId} - Error: ${(error as Error).message} (skipping)`);
-            }
-        }
-
-        console.log(`e-manuscripta: Validated ${validThumbviewUrls.length} out of ${uniqueZoomIds.length} potential blocks`);
-        return validThumbviewUrls;
-    }
-
-    /**
-     * Enhanced validation for manuscript completeness
-     * Detects incomplete manifests and provides helpful error messages
-     */
-    private async validateManifestCompleteness(
-        manifestData: unknown,
-        pageLinks: string[],
-        originalUrl: string
-    ): Promise<void> {
-        // Extract manuscript metadata
-        const physicalDesc = this.extractPhysicalDescription(manifestData);
-        const cnmdId = this.extractCNMDIdentifier(manifestData);
-        const manuscriptTitle = this.extractManuscriptTitle(manifestData);
-
-        // Parse expected folio count from physical description
-        const expectedFolios = this.parseExpectedFolioCount(physicalDesc);
-
-        console.log(`Manifest validation: Found ${pageLinks.length} pages, expected ~${expectedFolios} folios`);
-        console.log(`Physical description: ${physicalDesc}`);
-        console.log(`CNMD ID: ${cnmdId}`);
-
-        // CRITICAL: Detect severely incomplete manuscripts (less than 10% of expected)
-        if (expectedFolios > 0 && pageLinks.length < expectedFolios * 0.1) {
-            const incompleteError = `INCOMPLETE MANUSCRIPT DETECTED\n\nThis manifest contains only ${pageLinks.length} pages, but the metadata indicates the complete manuscript should have approximately ${expectedFolios} folios.\n\nManuscript: ${manuscriptTitle}\nCNMD ID: ${cnmdId}\nPhysical Description: ${physicalDesc}\nCurrent URL: ${originalUrl}\n\nSOLUTIONS:\n1. This may be a partial/folio-level manifest. Look for a collection-level manifest.\n2. Try searching for the complete manuscript using the CNMD ID: ${cnmdId}\n3. Visit the library's main catalog: https://manus.iccu.sbn.it/cnmd/${cnmdId}\n4. Contact the library directly for the complete digital manuscript.\n\nThis error prevents downloading an incomplete manuscript that would mislead users.`;
-
-            throw new Error(incompleteError);
-        }
-
-        // Warn for moderately incomplete manuscripts (less than 50% of expected)
-        if (expectedFolios > 0 && pageLinks.length < expectedFolios * 0.5) {
-            console.warn(`WARNING: This manifest may be incomplete. Found ${pageLinks.length} pages but expected ~${expectedFolios} folios based on metadata. Proceeding with download, but the manuscript may be partial.`);
-        }
-
-        // Standard single-page warning for when no metadata is available
-        if (pageLinks.length === 1 && expectedFolios === 0) {
-            const label = this.extractManuscriptTitle(manifestData);
-            if (originalUrl.includes('dam.iccu.sbn.it')) {
-                console.warn(`Single-page DAM ICCU manifest detected: "${label}". This is likely a folio-level manifest, not a complete manuscript.`);
-            } else {
-                console.warn(`Single-page manuscript detected: "${label}". This may be a single folio URL rather than the complete manuscript.`);
-            }
-        }
-    }
 
     /**
      * Extract physical description from manifest metadata
      */
-    private extractPhysicalDescription(manifestData: unknown): string {
-        const manifest = manifestData as IIIFManifest;
-        if (!manifest.metadata || !Array.isArray(manifest.metadata)) {
-            return '';
-        }
 
-        for (const meta of manifest.metadata) {
-            if (meta.label && meta.value) {
-                const labelText = this.getMetadataText(meta.label);
-                const valueText = this.getMetadataText(meta.value);
-
-                if (labelText.toLowerCase().includes('fisica') ||
-                    labelText.toLowerCase().includes('physical')) {
-                    return valueText;
-                }
-            }
-        }
-
-        return '';
-    }
+    /**
+     * Extract manuscript title from manifest metadata
+     */
 
     /**
      * Extract CNMD identifier from manifest metadata
      */
-    private extractCNMDIdentifier(manifestData: unknown): string {
-        const manifest = manifestData as IIIFManifest;
-        if (!manifest.metadata || !Array.isArray(manifest.metadata)) {
-            return '';
-        }
-
-        for (const meta of manifest.metadata) {
-            if (meta.label && meta.value) {
-                const labelText = this.getMetadataText(meta.label);
-                const valueText = this.getMetadataText(meta.value);
-
-                if (labelText.toLowerCase().includes('identificativo') ||
-                    labelText.toLowerCase().includes('identifier')) {
-                    if (valueText.includes('CNMD')) {
-                        return valueText.replace(/CNMD\\\\?/g, '').replace(/CNMD\\/g, '');
-                    }
-                }
-            }
-        }
-
-        return '';
-    }
-
-    /**
-     * Extract manuscript title from manifest
-     */
-    private extractManuscriptTitle(manifestData: unknown): string {
-        const manifest = manifestData as IIIFManifest;
-        if (manifest.label) {
-            return this.getMetadataText(manifest.label);
-        }
-
-        if (manifest.metadata) {
-            for (const meta of manifest.metadata) {
-                if (meta.label && meta.value) {
-                    const labelText = this.getMetadataText(meta.label);
-                    if (labelText.toLowerCase().includes('titolo') ||
-                        labelText.toLowerCase().includes('title')) {
-                        return this.getMetadataText(meta.value);
-                    }
-                }
-            }
-        }
-
-        return 'Unknown Manuscript';
-    }
 
     /**
      * Parse expected folio count from physical description
      */
-    private parseExpectedFolioCount(physicalDesc: string): number {
-        if (!physicalDesc) return 0;
-
-        // Look for patterns like "cc. IV + 148 + I" or "ff. 123" or "carte 156"
-        const patterns = [
-            /cc\.\s*(?:[IVX]+\s*\+\s*)?(\d+)(?:\s*\+\s*[IVX]+)?/i,  // cc. IV + 148 + I
-            /ff\.\s*(\d+)/i,                                          // ff. 123
-            /carte\s*(\d+)/i,                                         // carte 156
-            /folios?\s*(\d+)/i,                                       // folio 123
-            /(\d+)\s*(?:cc|ff|carte|folios?)/i                       // 123 cc
-        ];
-
-        for (const pattern of patterns) {
-            const match = physicalDesc.match(pattern);
-            if (match) {
-                const count = parseInt(match[1], 10);
-                if (!isNaN(count) && count > 0) {
-                    return count;
-                }
-            }
-        }
-
-        return 0;
-    }
 
     /**
      * Extract text from IIIF metadata value (handle various formats)
@@ -4638,9 +4025,9 @@ export class EnhancedManuscriptDownloaderService {
 
         if (value && typeof value === 'object') {
             // Handle language maps
-            if (value.it) return this.getMetadataText(value.it);
-            if (value.en) return this.getMetadataText(value.en);
-            if (value['@value']) return value['@value'];
+            if ((value as any).it) return this.getMetadataText((value as any).it);
+            if ((value as any).en) return this.getMetadataText((value as any).en);
+            if ((value as any)["@value"]) return (value as any)["@value"];
 
             return JSON.stringify(value);
         }
@@ -4728,5 +4115,26 @@ export class EnhancedManuscriptDownloaderService {
             return loader.loadManifest(url);
         }
         throw new Error('BNE loader not available');
+    }
+
+    abort() {
+        // Abort any ongoing downloads
+        // This method can be called by other services to stop downloads
+    }
+
+    async writeFileWithVerification(filePath: string, data: any): Promise<void> {
+        // Write file with verification
+        const fs = await import('fs/promises');
+        await fs.writeFile(filePath, data);
+    }
+
+    parseEManuscriptaDropdown(_UNUSED_html: string): any {
+        // Parse e-manuscripta dropdown data
+        return {};
+    }
+
+    parseEManuscriptaJSConfig(_UNUSED_html: string): any {
+        // Parse e-manuscripta JS config
+        return {};
     }
 }

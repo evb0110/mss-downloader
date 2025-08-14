@@ -49,17 +49,18 @@ export class OmnesVallicellianLoader extends BaseLibraryLoader {
                 
                 // Get canvases from IIIF v2 structure
                 const canvases = manifestData.sequences?.[0]?.canvases || [];
-                if (canvases.length === 0) {
+                if (canvases?.length === 0) {
                     throw new Error('No canvases found in manifest');
                 }
                 
                 // Extract page URLs using full/full/0/default.jpg for maximum resolution
                 const pageLinks = canvases.map((canvas: Record<string, unknown>) => {
-                    if (canvas.images && canvas.images[0]) {
-                        const imageService = canvas.images[0].resource.service;
-                        if (imageService && imageService['@id']) {
+                    if (canvas['images'] && (canvas['images'] as unknown[])[0]) {
+                        const resource = ((canvas['images'] as unknown[])[0] as Record<string, unknown>)['resource'] as Record<string, unknown>;
+                        const imageService = resource['service'];
+                        if (imageService && (imageService as Record<string, unknown>)['@id']) {
                             // Extract canvas ID and construct full resolution URL
-                            const serviceId = imageService['@id'];
+                            const serviceId = (imageService as Record<string, unknown>)['@id'] as string;
                             const canvasId = serviceId.split('/').pop();
                             return `https://omnes.dbseret.com/vallicelliana/iiif/2/${canvasId}/full/full/0/default.jpg`;
                         }
@@ -67,21 +68,21 @@ export class OmnesVallicellianLoader extends BaseLibraryLoader {
                     return null;
                 }).filter((url: string) => url !== null);
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No valid image URLs found in manifest');
                 }
                 
-                console.log(`Found ${pageLinks.length} pages in Omnes Vallicelliana manuscript: ${displayName}`);
+                console.log(`Found ${pageLinks?.length} pages in Omnes Vallicelliana manuscript: ${displayName}`);
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'omnes_vallicelliana' as const,
                     displayName: displayName,
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load Omnes Vallicelliana manuscript: ${(error as Error).message}`);
             }
         }

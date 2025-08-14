@@ -45,7 +45,7 @@ export class DiammLoader extends BaseLibraryLoader {
                 
                 return manifest;
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load DIAMM manuscript: ${(error as Error).message}`);
             }
         }

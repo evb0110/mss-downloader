@@ -14,7 +14,7 @@ export class SharedCanvasLoader extends BaseLibraryLoader {
             if (!match) {
                 throw new Error('Invalid SharedCanvas URL format');
             }
-            const manifestUrl = `https://sharedcanvas.be/IIIF/manifests/${match[1]}`;
+            const manifestUrl = `https://sharedcanvas.be/IIIF/manifests/${match?.[1]}`;
             if (!this.deps.loadIIIFManifest) {
                 throw new Error('IIIF manifest loader not available');
             }

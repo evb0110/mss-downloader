@@ -44,7 +44,7 @@ export class OnbLoader extends BaseLibraryLoader {
                     throw new Error('Invalid ONB manifest: no items array found');
                 }
                 
-                console.log(`Processing ONB manifest with ${manifestData.items.length} canvases`);
+                console.log(`Processing ONB manifest with ${manifestData.items?.length} canvases`);
                 
                 for (const canvas of manifestData.items) {
                     if (!canvas.items || !Array.isArray(canvas.items)) {
@@ -61,7 +61,7 @@ export class OnbLoader extends BaseLibraryLoader {
                             if (annotation.body && annotation.body.service && Array.isArray(annotation.body.service)) {
                                 // Find IIIF Image API service
                                 const imageService = annotation.body.service.find((service: Record<string, unknown>) => 
-                                    service.type === 'ImageService3' || service['@type'] === 'ImageService'
+                                    service['type'] === 'ImageService3' || service['@type'] === 'ImageService'
                                 );
                                 
                                 if (imageService && imageService.id) {
@@ -75,7 +75,7 @@ export class OnbLoader extends BaseLibraryLoader {
                     }
                 }
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No valid images found in ONB manifest');
                 }
                 
@@ -91,17 +91,17 @@ export class OnbLoader extends BaseLibraryLoader {
                     }
                 }
                 
-                console.log(`ONB manifest loaded successfully: ${pageLinks.length} pages found - "${displayName}"`);
+                console.log(`ONB manifest loaded successfully: ${pageLinks?.length} pages found - "${displayName}"`);
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'onb' as const,
                     displayName,
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load ONB manuscript: ${(error as Error).message}`);
             }
         }

@@ -50,15 +50,15 @@ export class NyplLoader extends BaseLibraryLoader {
                             if (capturesData.response?.captures && Array.isArray(capturesData.response.captures)) {
                                 const captures = capturesData.response.captures;
                                 
-                                console.log(`NYPL: Retrieved ${captures.length} pages from captures API (total: ${capturesData.response.total})`);
+                                console.log(`NYPL: Retrieved ${captures?.length} pages from captures API (total: ${capturesData.response.total})`);
                                 
                                 // Extract image IDs and construct high-resolution image URLs
                                 pageLinks = captures.map((item: Record<string, unknown>) => {
-                                    if (!item.image_id) {
-                                        throw new Error(`Missing image_id for capture ${item.id || 'unknown'}`);
+                                    if (!item['image_id']) {
+                                        throw new Error(`Missing image_id for capture ${item['id'] || 'unknown'}`);
                                     }
                                     // Use iiif-prod.nypl.org format for full resolution images (&t=g parameter)
-                                    return `https://iiif-prod.nypl.org/index.php?id=${item.image_id}&t=g`;
+                                    return `https://iiif-prod.nypl.org/index.php?id=${item['image_id']}&t=g`;
                                 });
                                 
                                 // Extract display name from the first capture
@@ -74,7 +74,7 @@ export class NyplLoader extends BaseLibraryLoader {
                 }
                 
                 // Fallback to original carousel method if captures API failed or no data
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     console.log('NYPL: Using fallback carousel data method');
                     
                     // Extract carousel data which contains image IDs
@@ -86,28 +86,32 @@ export class NyplLoader extends BaseLibraryLoader {
                     // Decode HTML entities and parse JSON
                     const carouselDataHtml = carouselMatch[1];
                     const carouselDataJson = carouselDataHtml
-                        .replace(/&quot;/g, '"')
+                        ?.replace(/&quot;/g, '"')
                         .replace(/&#39;/g, "'")
                         .replace(/&amp;/g, '&');
+                    
+                    if (!carouselDataJson) {
+                        throw new Error('Carousel data JSON is empty');
+                    }
                     
                     let carouselItems;
                     try {
                         carouselItems = JSON.parse(carouselDataJson);
-                    } catch (error: unknown) {
+                    } catch (error: any) {
                         throw new Error(`Failed to parse carousel JSON: ${(error as Error).message}`);
                     }
                     
-                    if (!Array.isArray(carouselItems) || carouselItems.length === 0) {
+                    if (!Array.isArray(carouselItems) || carouselItems?.length === 0) {
                         throw new Error('No carousel items found');
                     }
                     
                     // Extract image IDs and construct high-resolution image URLs
                     pageLinks = carouselItems.map((item: Record<string, unknown>) => {
-                        if (!item.image_id) {
-                            throw new Error(`Missing image_id for item ${item.id || 'unknown'}`);
+                        if (!item['image_id']) {
+                            throw new Error(`Missing image_id for item ${item['id'] || 'unknown'}`);
                         }
                         // Use iiif-prod.nypl.org format for full resolution images (&t=g parameter)
-                        return `https://iiif-prod.nypl.org/index.php?id=${item.image_id}&t=g`;
+                        return `https://iiif-prod.nypl.org/index.php?id=${item['image_id']}&t=g`;
                     });
                     
                     // Extract display name from the first item or fallback to title from item_data
@@ -120,7 +124,7 @@ export class NyplLoader extends BaseLibraryLoader {
                         const itemDataMatch = pageContent.match(/var\s+item_data\s*=\s*({.*?});/s);
                         if (itemDataMatch) {
                             try {
-                                const itemData = JSON.parse(itemDataMatch[1]);
+                                const itemData = JSON.parse(itemDataMatch[1] || '{}');
                                 if (itemData.title) {
                                     displayName = Array.isArray(itemData.title) ? itemData.title[0] : itemData.title;
                                 }
@@ -130,26 +134,26 @@ export class NyplLoader extends BaseLibraryLoader {
                         }
                     }
                     
-                    console.warn(`NYPL: Using carousel fallback method - got ${pageLinks.length} pages. If this manuscript has more pages, there may be an issue with the captures API.`);
+                    console.warn(`NYPL: Using carousel fallback method - got ${pageLinks?.length} pages. If this manuscript has more pages, there may be an issue with the captures API.`);
                 }
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No pages found in NYPL manifest');
                 }
                 
                 const nyplManifest = {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'nypl' as const,
                     displayName,
                     originalUrl: nyplUrl,
                 };
                 
-                console.log(`NYPL: Created manifest for "${displayName}" with ${pageLinks.length} pages`);
+                console.log(`NYPL: Created manifest for "${displayName}" with ${pageLinks?.length} pages`);
                 
                 return nyplManifest;
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error(`Failed to load NYPL manifest: ${(error as Error).message}`);
                 throw error;
             }

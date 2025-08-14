@@ -226,7 +226,7 @@ export class TileEngineService {
 
       const testTileUrl = await analysis.adapter.generateTileUrls(url, analysis.gridConfig);
       
-      if (testTileUrl.length === 0) {
+      if (testTileUrl?.length === 0) {
         errors.push('No tiles could be generated for this URL');
         return { isValid: false, adapter: analysis.adapter.name, errors, warnings };
       }
@@ -286,7 +286,7 @@ export class TileEngineService {
     });
 
     return {
-      supportedAdapters: adapters.length,
+      supportedAdapters: adapters?.length,
       defaultConfig: this.defaultConfig,
       supportedFormats: Array.from(supportedFormats)
     };

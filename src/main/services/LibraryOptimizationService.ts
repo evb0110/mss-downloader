@@ -354,7 +354,7 @@ export class LibraryOptimizationService {
      */
     static hasOptimizations(library: TLibrary): boolean {
         const opts = this.getOptimizationsForLibrary(library);
-        return Object.keys(opts).length > 0;
+        return Object.keys(opts)?.length > 0;
     }
 
     /**

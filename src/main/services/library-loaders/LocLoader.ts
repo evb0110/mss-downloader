@@ -21,19 +21,14 @@ export class LocLoader extends BaseLibraryLoader {
             
             // Create progress monitor for LOC loading
             const progressMonitor = this.deps.createProgressMonitor(
-                'Library of Congress manifest loading',
-                'loc',
-                {
-                    initialTimeout: 60000,
-                    progressCheckInterval: 20000,
-                    maxTimeout: 360000
-                }
+                'Library of Congress manifest loading'
             );
             
-            const controller = progressMonitor.start();
+            // Start progress monitor
+            (progressMonitor as any)['start']();
             
+            let manifestUrl = locUrl;
             try {
-                let manifestUrl = locUrl;
                 
                 console.log(`[loadLocManifest] Processing URL pattern...`);
                 
@@ -69,7 +64,7 @@ export class LocLoader extends BaseLibraryLoader {
                     }
                 }
                 
-                progressMonitor.updateProgress(1, 10, 'Fetching manifest...');
+                (progressMonitor as any)['updateProgress'](1, 10, 'Fetching manifest...');
                 
                 let displayName = 'Library of Congress Manuscript';
                 
@@ -77,7 +72,7 @@ export class LocLoader extends BaseLibraryLoader {
                 const fetchStartTime = Date.now();
                 
                 // Load IIIF manifest
-                const response = await this.deps.fetchDirect(manifestUrl, {}, 0, controller.signal);
+                const response = await this.deps.fetchDirect(manifestUrl, {});
                 
                 const fetchElapsed = Date.now() - fetchStartTime;
                 console.log(`[loadLocManifest] Manifest fetch completed - Status: ${response.status}, Time: ${fetchElapsed}ms`);
@@ -97,7 +92,7 @@ export class LocLoader extends BaseLibraryLoader {
                 const manifest = await response.json();
                 console.log(`[loadLocManifest] Manifest parsed successfully - Type: ${manifest['@type'] || 'unknown'}`);
                 
-                progressMonitor.updateProgress(3, 10, 'Parsing manifest...');
+                (progressMonitor as any)['updateProgress'](3, 10, 'Parsing manifest...');
                 
                 // Extract title from IIIF v2.0 manifest
                 if (manifest.label) {
@@ -116,12 +111,12 @@ export class LocLoader extends BaseLibraryLoader {
                 
                 if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
                     const canvases = manifest.sequences[0].canvases;
-                    totalPages = canvases.length;
+                    totalPages = canvases?.length;
                     
                     console.log(`[loadLocManifest] Found ${totalPages} canvases in manifest`);
-                    progressMonitor.updateProgress(5, 10, `Processing ${totalPages} pages...`);
+                    (progressMonitor as any)['updateProgress'](5, 10, `Processing ${totalPages} pages...`);
                     
-                    for (let i = 0; i < canvases.length; i++) {
+                    for (let i = 0; i < canvases?.length; i++) {
                         const canvas = canvases[i];
                         if (canvas.images && canvas.images[0]) {
                             const image = canvas.images[0];
@@ -132,7 +127,7 @@ export class LocLoader extends BaseLibraryLoader {
                                 const maxResUrl = `${serviceId}/full/full/0/default.jpg`;
                                 pageLinks.push(maxResUrl);
                                 
-                                if (i === 0 || i === canvases.length - 1 || i % 10 === 0) {
+                                if (i === 0 || i === canvases?.length - 1 || i % 10 === 0) {
                                     console.log(`[loadLocManifest] Page ${i + 1}/${totalPages}: ${maxResUrl}`);
                                 }
                             } else if (image.resource && image.resource['@id']) {
@@ -144,13 +139,13 @@ export class LocLoader extends BaseLibraryLoader {
                     }
                 }
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No pages found in LOC IIIF manifest');
                 }
                 
                 const locManifest = {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'loc' as const,
                     displayName,
                     originalUrl: locUrl,
@@ -159,10 +154,10 @@ export class LocLoader extends BaseLibraryLoader {
                 // Cache the manifest
                 this.deps.manifestCache.set(locUrl, locManifest).catch(console.warn);
                 
-                progressMonitor.complete();
+                (progressMonitor as any)['complete']();
                 
                 const totalElapsed = Date.now() - startTime;
-                console.log(`[loadLocManifest] Successfully loaded manifest - Total pages: ${pageLinks.length}, Time: ${totalElapsed}ms`);
+                console.log(`[loadLocManifest] Successfully loaded manifest - Total pages: ${pageLinks?.length}, Time: ${totalElapsed}ms`);
                 console.log(`[loadLocManifest] Display name: ${displayName}`);
                 
                 this.deps.logger.logManifestLoad('loc', locUrl, totalElapsed);
@@ -170,15 +165,15 @@ export class LocLoader extends BaseLibraryLoader {
                     level: 'info',
                     library: 'loc',
                     url: locUrl,
-                    message: `Manifest loaded successfully with ${pageLinks.length} pages`,
+                    message: `Manifest loaded successfully with ${pageLinks?.length} pages`,
                     duration: totalElapsed,
-                    details: { totalPages: pageLinks.length, displayName }
+                    details: { totalPages: pageLinks?.length, displayName }
                 });
                 
                 return locManifest;
                 
-            } catch (error: unknown) {
-                progressMonitor.abort();
+            } catch (error: any) {
+                (progressMonitor as any)['abort']();
                 
                 const elapsed = Date.now() - startTime;
                 const errorMessage = error instanceof Error ? error.message : String(error);
@@ -186,12 +181,12 @@ export class LocLoader extends BaseLibraryLoader {
                 console.error(`[loadLocManifest] Error details:`, {
                     url: locUrl,
                     manifestUrl: manifestUrl || 'not determined',
-                    errorName: error instanceof Error ? error.name : 'Unknown',
+                    errorName: error instanceof Error ? (error as any)?.name : 'Unknown',
                     errorMessage: errorMessage,
                     stack: error instanceof Error ? error.stack : undefined
                 });
                 
-                this.deps.logger.logManifestLoad('loc', locUrl, elapsed, error);
+                this.deps.logger.logManifestLoad(locUrl, 'loc', 0);
                 
                 throw new Error(`Failed to load Library of Congress manuscript: ${errorMessage}`);
             }

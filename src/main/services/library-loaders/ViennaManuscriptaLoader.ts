@@ -42,28 +42,28 @@ export class ViennaManuscriptaLoader extends BaseLibraryLoader {
                         
                         if (iiifManifest.sequences && iiifManifest.sequences[0] && iiifManifest.sequences[0].canvases) {
                             const canvases = iiifManifest.sequences[0].canvases;
-                            console.log(`Vienna Manuscripta: IIIF manifest loaded successfully with ${canvases.length} pages`);
+                            console.log(`Vienna Manuscripta: IIIF manifest loaded successfully with ${canvases?.length} pages`);
                             
                             // Extract highest quality image URLs from IIIF manifest
                             const pageLinks = canvases.map((canvas: Record<string, unknown>) => {
-                                if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
-                                    const resource = canvas.images[0].resource;
+                                if (canvas['images'] && (canvas['images'] as unknown[])[0] && ((canvas['images'] as unknown[])[0] as Record<string, unknown>)['resource']) {
+                                    const resource = ((canvas['images'] as unknown[])[0] as Record<string, unknown>)['resource'] as Record<string, unknown>;
                                     
                                     // Check for service URL (IIIF Image API)
-                                    if (resource.service && resource.service['@id']) {
-                                        return resource.service['@id'] + '/full/max/0/default.jpg';
+                                    if ((resource as Record<string, unknown>)['service'] && ((resource as Record<string, unknown>)['service'] as Record<string, unknown>)['@id']) {
+                                        return ((resource as Record<string, unknown>)['service'] as Record<string, unknown>)['@id'] + '/full/max/0/default.jpg';
                                     }
                                     
                                     // Fallback to resource @id
-                                    return resource['@id'] || resource.id;
+                                    return (resource as Record<string, unknown>)['@id'] || (resource as Record<string, unknown>)['id'];
                                 }
                                 return null;
                             }).filter((url: string | null): url is string => url !== null);
                             
-                            if (pageLinks.length > 0) {
+                            if (pageLinks?.length > 0) {
                                 // DO NOT pre-filter pageLinks here to avoid hanging issues
                                 // Page range filtering will be handled during download process
-                                console.log(`Vienna Manuscripta: IIIF manifest loaded with ${pageLinks.length} total pages available`);
+                                console.log(`Vienna Manuscripta: IIIF manifest loaded with ${pageLinks?.length} total pages available`);
                                 if (startPage !== null) {
                                     console.log(`Vienna Manuscripta: URL specifies starting from page ${startPage} - this will be handled during download`);
                                 }
@@ -72,7 +72,7 @@ export class ViennaManuscriptaLoader extends BaseLibraryLoader {
                                 
                                 return {
                                     pageLinks: pageLinks, // Return full page list, filtering handled in download
-                                    totalPages: pageLinks.length, // Total pages available
+                                    totalPages: pageLinks?.length, // Total pages available
                                     library: 'vienna_manuscripta' as const,
                                     displayName: typeof displayName === 'string' ? displayName : displayName[0] || `Vienna_${manuscriptId}`,
                                     originalUrl: manuscriptaUrl,
@@ -82,14 +82,14 @@ export class ViennaManuscriptaLoader extends BaseLibraryLoader {
                         }
                     }
                 } catch (iiifError: unknown) {
-                    console.warn(`Vienna Manuscripta: IIIF manifest failed (${iiifError.message}), falling back to page discovery`);
+                    console.warn(`Vienna Manuscripta: IIIF manifest failed (${iiifError instanceof Error ? iiifError.message : String(iiifError)}), falling back to page discovery`);
                 }
                 
                 // Fallback to direct image URL construction
                 console.log('Vienna Manuscripta: Using direct image URL construction method');
                 
                 // Parse manuscript ID to build image path
-                const parts = manuscriptId.match(/(AT)(\d+)-(\d+)/);
+                const parts = manuscriptId?.match(/(AT)(\d+)-(\d+)/);
                 if (!parts) {
                     throw new Error('Invalid Vienna Manuscripta manuscript ID format');
                 }
@@ -125,7 +125,7 @@ export class ViennaManuscriptaLoader extends BaseLibraryLoader {
                             console.log(`Page ${pageNum} (${paddedPage}${side}): HTTP ${response.status}`);
                             consecutiveFailures++;
                         }
-                    } catch (error: unknown) {
+                    } catch (error: any) {
                         console.log(`Page ${pageNum} (${paddedPage}${side}): Network error - ${(error as Error).message}`);
                         consecutiveFailures++;
                     }
@@ -133,13 +133,13 @@ export class ViennaManuscriptaLoader extends BaseLibraryLoader {
                     pageNum++;
                 }
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No pages found in Vienna Manuscripta manuscript');
                 }
                 
                 // DO NOT pre-filter pageLinks here to avoid hanging issues
                 // Page range filtering will be handled during download process
-                console.log(`Vienna Manuscripta: Page discovery found ${pageLinks.length} total pages available`);
+                console.log(`Vienna Manuscripta: Page discovery found ${pageLinks?.length} total pages available`);
                 if (startPage !== null) {
                     console.log(`Vienna Manuscripta: URL specifies starting from page ${startPage} - this will be handled during download`);
                 }
@@ -149,17 +149,17 @@ export class ViennaManuscriptaLoader extends BaseLibraryLoader {
                 
                 const manifest: ManuscriptManifest = {
                     pageLinks: pageLinks, // Return full page list, filtering handled in download
-                    totalPages: pageLinks.length, // Total pages available
+                    totalPages: pageLinks?.length, // Total pages available
                     library: 'vienna_manuscripta' as const,
                     displayName,
                     originalUrl: manuscriptaUrl,
                     startPageFromUrl: startPage ?? undefined, // Store URL page number for later use
                 };
                 
-                console.log(`Vienna Manuscripta manifest loaded: ${displayName}, total pages: ${pageLinks.length}`);
+                console.log(`Vienna Manuscripta manifest loaded: ${displayName}, total pages: ${pageLinks?.length}`);
                 return manifest;
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error('Vienna Manuscripta manifest loading failed:', error);
                 throw new Error(`Failed to load Vienna Manuscripta manuscript: ${(error as Error).message}`);
             }

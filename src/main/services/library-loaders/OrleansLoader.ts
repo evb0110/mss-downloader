@@ -37,7 +37,7 @@ export class OrleansLoader extends BaseLibraryLoader {
                         if (titleMatch) {
                             const encodedTitle = titleMatch[1];
                             // Handle common Orleans URL patterns
-                            let decodedTitle = decodeURIComponent(encodedTitle.replace(/--/g, ' '));
+                            let decodedTitle = decodeURIComponent(encodedTitle?.replace(/--/g, ' ') || '');
                             
                             // Apply transformations for common patterns
                             decodedTitle = decodedTitle
@@ -62,13 +62,13 @@ export class OrleansLoader extends BaseLibraryLoader {
                         searchQuery.toLowerCase().split(' ').slice(0, 2).join(' '), // Lowercase first two words
                         searchQuery.toLowerCase().split(' ')[0], // Lowercase first word
                         // Extract partial terms for complex titles
-                        ...searchQuery.toLowerCase().split(' ').filter(word => word.length > 4) // Words longer than 4 chars
+                        ...searchQuery.toLowerCase().split(' ').filter(word => word?.length > 4) // Words longer than 4 chars
                     ];
                     
-                    for (let i = 0; i < searchStrategies.length && searchResults.length === 0; i++) {
+                    for (let i = 0; i < searchStrategies?.length && searchResults?.length === 0; i++) {
                         const currentQuery = searchStrategies[i];
-                        console.log(`Searching Orleans API (attempt ${i + 1}/${searchStrategies.length}) for: "${currentQuery}"`);
-                        const searchUrl = `${baseApiUrl}/items?search=${encodeURIComponent(currentQuery)}`;
+                        console.log(`Searching Orleans API (attempt ${i + 1}/${searchStrategies?.length}) for: "${currentQuery}"`);
+                        const searchUrl = `${baseApiUrl}/items?search=${encodeURIComponent(currentQuery || '')}`;
                         
                         try {
                             // Use fetchDirect with extended Orleans timeout
@@ -80,24 +80,24 @@ export class OrleansLoader extends BaseLibraryLoader {
                             }
                             
                             const results = await searchResponse.json();
-                            if (Array.isArray(results) && results.length > 0) {
+                            if (Array.isArray(results) && results?.length > 0) {
                                 searchResults = results;
-                                console.log(`Orleans search attempt ${i + 1} returned ${results.length} results`);
+                                console.log(`Orleans search attempt ${i + 1} returned ${results?.length} results`);
                                 break;
                             }
-                        } catch (error: unknown) {
+                        } catch (error: any) {
                             console.warn(`Orleans search attempt ${i + 1} failed:`, (error as Error).message);
-                            if (i === searchStrategies.length - 1) {
+                            if (i === searchStrategies?.length - 1) {
                                 throw error; // Re-throw on final attempt
                             }
                         }
                     }
                     
-                    if (!Array.isArray(searchResults) || searchResults.length === 0) {
+                    if (!Array.isArray(searchResults) || searchResults?.length === 0) {
                         throw new Error(`Manuscript not found in Orleans search results using any search strategy. Tried: ${searchStrategies.join(', ')}`);
                     }
                     
-                    itemId = searchResults[0]['o:id']?.toString() || searchResults[0].o_id?.toString();
+                    itemId = searchResults[0]?.['o:id']?.toString() || searchResults[0]?.['o_id']?.toString() || '';
                     if (!itemId) {
                         throw new Error('Could not extract item ID from Orleans search results');
                     }
@@ -109,7 +109,7 @@ export class OrleansLoader extends BaseLibraryLoader {
                     if (!itemMatch) {
                         throw new Error('Invalid Aurelia URL format - could not extract item ID');
                     }
-                    itemId = itemMatch[1];
+                    itemId = itemMatch[1] || '';
                 } else {
                     throw new Error('Unsupported Orléans URL format');
                 }
@@ -133,7 +133,7 @@ export class OrleansLoader extends BaseLibraryLoader {
                         
                         itemData = await itemResponse.json();
                         break;
-                    } catch (error: unknown) {
+                    } catch (error: any) {
                         retryCount++;
                         console.warn(`Orleans item fetch attempt ${retryCount}/${maxRetries} failed:`, (error as Error).message);
                         
@@ -150,39 +150,39 @@ export class OrleansLoader extends BaseLibraryLoader {
                 // Extract media items from the Omeka item
                 const mediaItems = itemData['o:media'] || itemData.o_media || [];
                 
-                if (!Array.isArray(mediaItems) || mediaItems.length === 0) {
+                if (!Array.isArray(mediaItems) || mediaItems?.length === 0) {
                     throw new Error('No media items found in Orléans manuscript');
                 }
                 
                 // Process media items to get IIIF URLs
                 const pageLinks: string[] = [];
-                console.log(`Processing ${mediaItems.length} media items for Orleans manuscript`);
+                console.log(`Processing ${mediaItems?.length} media items for Orleans manuscript`);
                 
                 // Report initial progress
-                progressCallback?.(0, mediaItems.length, `Loading manifest: 0/${mediaItems.length} pages`);
+                progressCallback?.(0, mediaItems?.length, `Loading manifest: 0/${mediaItems?.length} pages`);
                 
                 // Process media items with batch processing and circuit breaker to prevent hanging
                 let processedCount = 0;
                 const batchSize = 4; // Smaller batches for Orleans to reduce API load
                 const maxFailedBatches = 5; // Allow more failed batches before giving up
-                const maxTotalFailures = Math.floor(mediaItems.length * 0.3); // Allow 30% failures max
+                const maxTotalFailures = Math.floor(mediaItems?.length * 0.3); // Allow 30% failures max
                 
                 let failedBatchCount = 0;
                 let totalFailures = 0;
                 let lastProgressUpdate = Date.now();
                 
                 // For very large manuscripts (>200 pages), limit to first 200 pages to prevent hanging
-                const maxPagesToProcess = Math.min(mediaItems.length, 200);
-                if (mediaItems.length > 200) {
-                    console.log(`Orleans manuscript has ${mediaItems.length} pages, limiting to first ${maxPagesToProcess} pages for stability`);
+                const maxPagesToProcess = Math.min(mediaItems?.length, 200);
+                if (mediaItems?.length > 200) {
+                    console.log(`Orleans manuscript has ${mediaItems?.length} pages, limiting to first ${maxPagesToProcess} pages for stability`);
                     progressCallback?.(0, maxPagesToProcess, `Loading manifest (limited): 0/${maxPagesToProcess} pages`);
                 }
                 
                 const itemsToProcess = mediaItems.slice(0, maxPagesToProcess);
                 
                 // Process items in batches with circuit breaker
-                for (let batchStart = 0; batchStart < itemsToProcess.length; batchStart += batchSize) {
-                    const batchEnd = Math.min(batchStart + batchSize, itemsToProcess.length);
+                for (let batchStart = 0; batchStart < itemsToProcess?.length; batchStart += batchSize) {
+                    const batchEnd = Math.min(batchStart + batchSize, itemsToProcess?.length);
                     const batch = itemsToProcess.slice(batchStart, batchEnd);
                     
                     console.log(`Orleans: processing batch ${Math.floor(batchStart / batchSize) + 1} (items ${batchStart + 1}-${batchEnd})`);
@@ -253,12 +253,12 @@ export class OrleansLoader extends BaseLibraryLoader {
                     }
                     
                     // Circuit breaker logic
-                    if (batchFailures === batch.length) {
+                    if (batchFailures === batch?.length) {
                         failedBatchCount++;
                         console.warn(`Orleans: entire batch failed (${failedBatchCount}/${maxFailedBatches} consecutive failures)`);
                         
                         if (failedBatchCount >= maxFailedBatches) {
-                            throw new Error(`Orleans API appears to be blocked - ${maxFailedBatches} consecutive batch failures. Processed ${processedCount}/${itemsToProcess.length} pages.`);
+                            throw new Error(`Orleans API appears to be blocked - ${maxFailedBatches} consecutive batch failures. Processed ${processedCount}/${itemsToProcess?.length} pages.`);
                         }
                     } else {
                         failedBatchCount = 0; // Reset consecutive failure count on any success
@@ -266,51 +266,51 @@ export class OrleansLoader extends BaseLibraryLoader {
                     
                     // Check total failure threshold
                     if (totalFailures > maxTotalFailures) {
-                        throw new Error(`Too many Orleans API failures (${totalFailures}/${itemsToProcess.length}). Server may be rate limiting. Processed ${processedCount} pages.`);
+                        throw new Error(`Too many Orleans API failures (${totalFailures}/${itemsToProcess?.length}). Server may be rate limiting. Processed ${processedCount} pages.`);
                     }
                     
                     // Progress reporting and stall detection
                     const now = Date.now();
-                    const shouldReport = processedCount % 10 === 0 || batchEnd >= itemsToProcess.length;
+                    const shouldReport = processedCount % 10 === 0 || batchEnd >= itemsToProcess?.length;
                     
                     if (shouldReport) {
-                        const progressMessage = itemsToProcess.length < mediaItems.length 
-                            ? `Loading manifest (limited): ${processedCount}/${itemsToProcess.length} pages`
-                            : `Loading manifest: ${processedCount}/${itemsToProcess.length} pages`;
+                        const progressMessage = itemsToProcess?.length < mediaItems?.length 
+                            ? `Loading manifest (limited): ${processedCount}/${itemsToProcess?.length} pages`
+                            : `Loading manifest: ${processedCount}/${itemsToProcess?.length} pages`;
                         
-                        console.log(`Orleans: processed ${processedCount}/${itemsToProcess.length} media items (${totalFailures} failures)`);
-                        progressCallback?.(processedCount, itemsToProcess.length, progressMessage);
+                        console.log(`Orleans: processed ${processedCount}/${itemsToProcess?.length} media items (${totalFailures} failures)`);
+                        progressCallback?.(processedCount, itemsToProcess?.length, progressMessage);
                         lastProgressUpdate = now;
                     }
                     
                     // Check for stalled progress (no progress for >5 minutes)
                     if (now - lastProgressUpdate > 300000) {
-                        throw new Error(`Orleans manifest loading stalled - no progress for 5 minutes. Processed ${processedCount}/${itemsToProcess.length} pages.`);
+                        throw new Error(`Orleans manifest loading stalled - no progress for 5 minutes. Processed ${processedCount}/${itemsToProcess?.length} pages.`);
                     }
                     
                     // Add longer delay between batches to be respectful to the server
-                    if (batchEnd < itemsToProcess.length) {
+                    if (batchEnd < itemsToProcess?.length) {
                         await new Promise(resolve => setTimeout(resolve, 3000)); // 3 second delay between batches
                     }
                 }
                 
                 // Report final progress
-                const finalMessage = itemsToProcess.length < mediaItems.length 
+                const finalMessage = itemsToProcess?.length < mediaItems?.length 
                     ? `Manifest loaded (limited): ${processedCount} pages` 
                     : `Manifest loaded: ${processedCount} pages`;
-                progressCallback?.(processedCount, itemsToProcess.length, finalMessage);
+                progressCallback?.(processedCount, itemsToProcess?.length, finalMessage);
                 
                 // Preserve page order by keeping original positions, only filter out sparse array gaps
                 const validPageLinks: string[] = [];
                 let validPageCount = 0;
                 
                 // Process pageLinks array in order, maintaining sequence
-                for (let i = 0; i < pageLinks.length; i++) {
+                for (let i = 0; i < pageLinks?.length; i++) {
                     const pageUrl = pageLinks[i];
                     if (pageUrl && typeof pageUrl === 'string') {
                         validPageLinks.push(pageUrl);
                         validPageCount++;
-                    } else if (pageLinks[i] === undefined && i < itemsToProcess.length) {
+                    } else if (pageLinks[i] === undefined && i < itemsToProcess?.length) {
                         // For failed pages within the expected range, log warning but don't break sequence
                         console.warn(`Orleans: Page ${i + 1} failed to load, skipping in sequence`);
                     }
@@ -318,26 +318,26 @@ export class OrleansLoader extends BaseLibraryLoader {
                 
                 console.log(`Successfully processed ${validPageCount} page links for Orleans manuscript (maintained original order)`);
                 
-                if (validPageLinks.length === 0) {
+                if (validPageLinks?.length === 0) {
                     throw new Error('No valid image URLs found in Orléans manuscript');
                 }
                 
                 // Ensure we have a reasonable number of pages (more lenient threshold)
-                const minExpectedPages = Math.min(3, itemsToProcess.length * 0.05); // Only require 5% minimum
-                if (validPageLinks.length < minExpectedPages) {
-                    console.warn(`Only ${validPageLinks.length}/${itemsToProcess.length} Orleans media items processed successfully`);
+                const minExpectedPages = Math.min(3, itemsToProcess?.length * 0.05); // Only require 5% minimum
+                if (validPageLinks?.length < minExpectedPages) {
+                    console.warn(`Only ${validPageLinks?.length}/${itemsToProcess?.length} Orleans media items processed successfully`);
                     
                     // If we have very few pages, it might be worth throwing an error
-                    if (validPageLinks.length < 2) {
-                        throw new Error(`Insufficient Orleans pages loaded: only ${validPageLinks.length} pages out of ${itemsToProcess.length} total`);
+                    if (validPageLinks?.length < 2) {
+                        throw new Error(`Insufficient Orleans pages loaded: only ${validPageLinks?.length} pages out of ${itemsToProcess?.length} total`);
                     }
                 }
                 
                 // Log summary of processing
-                if (itemsToProcess.length < mediaItems.length) {
-                    console.log(`Orleans: Successfully processed ${validPageLinks.length} pages (limited from ${mediaItems.length} total pages for stability)`);
+                if (itemsToProcess?.length < mediaItems?.length) {
+                    console.log(`Orleans: Successfully processed ${validPageLinks?.length} pages (limited from ${mediaItems?.length} total pages for stability)`);
                 } else {
-                    console.log(`Orleans: Successfully processed ${validPageLinks.length}/${mediaItems.length} pages`);
+                    console.log(`Orleans: Successfully processed ${validPageLinks?.length}/${mediaItems?.length} pages`);
                 }
                 
                 // Extract display name from item metadata
@@ -345,7 +345,7 @@ export class OrleansLoader extends BaseLibraryLoader {
                 
                 if (itemData['dcterms:title'] || itemData['dcterms_title']) {
                     const titleProperty = itemData['dcterms:title'] || itemData['dcterms_title'];
-                    if (Array.isArray(titleProperty) && titleProperty.length > 0) {
+                    if (Array.isArray(titleProperty) && titleProperty?.length > 0) {
                         displayName = titleProperty[0]['@value'] || titleProperty[0].value || titleProperty[0];
                     } else if (typeof titleProperty === 'string') {
                         displayName = titleProperty;
@@ -359,13 +359,13 @@ export class OrleansLoader extends BaseLibraryLoader {
                 
                 return {
                     pageLinks: validPageLinks,
-                    totalPages: validPageLinks.length,
+                    totalPages: validPageLinks?.length,
                     displayName: displayName,
                     library: 'orleans',
                     originalUrl: orleansUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error(`Orleans manifest loading failed:`, error);
                 throw new Error(`Failed to load Orléans manuscript: ${(error as Error).message}`);
             }

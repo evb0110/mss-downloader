@@ -86,7 +86,7 @@ export class FreiburgLoader extends BaseLibraryLoader {
                 }
                 
                 const thumbsHtml = await thumbsResponse.text();
-                console.log(`Thumbs HTML length: ${thumbsHtml.length} characters`);
+                console.log(`Thumbs HTML length: ${thumbsHtml?.length} characters`);
                 
                 // Extract all unique page numbers from thumbs page
                 const thumbsDom = new JSDOM(thumbsHtml);
@@ -98,15 +98,15 @@ export class FreiburgLoader extends BaseLibraryLoader {
                     if (href) {
                         const pageMatch = href.match(/\/diglit\/[^/]+\/(\d{4})/);
                         if (pageMatch) {
-                            uniquePages.add(pageMatch[1]);
+                            uniquePages.add(pageMatch[1] || '');
                         }
                     }
                 });
                 
                 const sortedPages = Array.from(uniquePages).sort((a, b) => parseInt(a) - parseInt(b));
-                console.log(`Found ${sortedPages.length} unique pages`);
+                console.log(`Found ${sortedPages?.length} unique pages`);
                 
-                if (sortedPages.length === 0) {
+                if (sortedPages?.length === 0) {
                     throw new Error('No pages found in thumbs page');
                 }
                 
@@ -114,7 +114,7 @@ export class FreiburgLoader extends BaseLibraryLoader {
                 const pageLinks: string[] = [];
                 const batchSize = 10;
                 
-                for (let i = 0; i < sortedPages.length; i += batchSize) {
+                for (let i = 0; i < sortedPages?.length; i += batchSize) {
                     const batch = sortedPages.slice(i, i + batchSize);
                     const batchPromises = batch.map(async (pageNumber) => {
                         const pageUrl = `https://dl.ub.uni-freiburg.de/diglit/${manuscriptId}/${pageNumber}`;
@@ -135,8 +135,8 @@ export class FreiburgLoader extends BaseLibraryLoader {
                                 
                                 const imageElements = pageDom.window.document.querySelectorAll('img[src*="diglitData"]');
                                 
-                                if (imageElements.length > 0) {
-                                    const imageUrl = imageElements[0].getAttribute('src');
+                                if (imageElements?.length > 0) {
+                                    const imageUrl = imageElements[0]?.getAttribute('src');
                                     if (imageUrl) {
                                         const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : `https://dl.ub.uni-freiburg.de${imageUrl}`;
                                         // Upgrade to maximum resolution level 4 for highest quality
@@ -158,29 +158,29 @@ export class FreiburgLoader extends BaseLibraryLoader {
                     
                     // Progress logging
                     if (i % 50 === 0) {
-                        console.log(`Processed ${Math.min(i + batchSize, sortedPages.length)} of ${sortedPages.length} pages`);
+                        console.log(`Processed ${Math.min(i + batchSize, sortedPages?.length)} of ${sortedPages?.length} pages`);
                     }
                 }
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No valid page images found');
                 }
                 
-                console.log(`Successfully extracted ${pageLinks.length} page links`);
+                console.log(`Successfully extracted ${pageLinks?.length} page links`);
                 
                 // Create manifest structure
                 const manifest: ManuscriptManifest = {
                     pageLinks: pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'freiburg' as const,
                     displayName: displayName,
                     originalUrl: originalUrl
                 };
                 
-                console.log(`Freiburg manifest created successfully with ${pageLinks.length} pages`);
+                console.log(`Freiburg manifest created successfully with ${pageLinks?.length} pages`);
                 return manifest;
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error('Freiburg manifest loading error:', error);
                 throw new Error(`Failed to load Freiburg manuscript: ${error instanceof Error ? error.message : String(error)}`);
             }

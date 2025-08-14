@@ -44,10 +44,10 @@ export class GrenobleLoader extends BaseLibraryLoader {
                     
                     // Get page count from sequences/canvases (IIIF v1.1 format)
                     let totalPages = 0;
-                    if (manifest.sequences && manifest.sequences.length > 0) {
+                    if (manifest.sequences && manifest.sequences?.length > 0) {
                         const sequence = manifest.sequences[0];
                         if (sequence.canvases) {
-                            totalPages = sequence.canvases.length;
+                            totalPages = sequence.canvases?.length;
                         }
                     }
                     
@@ -66,7 +66,7 @@ export class GrenobleLoader extends BaseLibraryLoader {
                     
                     const grenobleManifest = {
                         pageLinks,
-                        totalPages: pageLinks.length,
+                        totalPages: pageLinks?.length,
                         library: 'grenoble' as const,
                         displayName,
                         originalUrl: grenobleUrl,
@@ -81,7 +81,7 @@ export class GrenobleLoader extends BaseLibraryLoader {
                     throw new Error(`Failed to load IIIF manifest: ${(manifestError as Error).message}`);
                 }
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load Grenoble manuscript: ${(error as Error).message}`);
             }
         }

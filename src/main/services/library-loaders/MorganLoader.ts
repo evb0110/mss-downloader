@@ -49,7 +49,7 @@ export class MorganLoader extends BaseLibraryLoader {
                     baseUrl = 'https://www.themorgan.org';
                     
                     // Extract display name from URL
-                    displayName = mainMatch[1].replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    displayName = mainMatch[1]?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) ?? "";
                 }
                 
                 // Ensure we're fetching the correct page
@@ -61,8 +61,8 @@ export class MorganLoader extends BaseLibraryLoader {
                 // Extract manuscript ID and check if it's a single page URL
                 const singlePageMatch = morganUrl.match(/\/collection\/([^/]+)\/(\d+)/);
                 if (singlePageMatch) {
-                    manuscriptId = singlePageMatch[1];
-                    startPageNum = parseInt(singlePageMatch[2]);
+                    manuscriptId = singlePageMatch[1] || '';
+                    startPageNum = parseInt(singlePageMatch[2] || '0');
                     // For single page URLs, we need to fetch the thumbs page to find all pages
                     pageUrl = `${baseUrl}/collection/${manuscriptId}/thumbs`;
                     console.log(`Morgan: Single page URL detected, fetching thumbs page for ${manuscriptId}`);
@@ -70,7 +70,7 @@ export class MorganLoader extends BaseLibraryLoader {
                     // For thumbs URLs or general collection URLs
                     const collectionMatch = morganUrl.match(/\/collection\/([^/]+)/);
                     if (collectionMatch) {
-                        manuscriptId = collectionMatch[1];
+                        manuscriptId = collectionMatch[1] || '';
                         // Ensure we have the thumbs page
                         if (!pageUrl.includes('/thumbs')) {
                             pageUrl = `${baseUrl}/collection/${manuscriptId}/thumbs`;
@@ -100,7 +100,7 @@ export class MorganLoader extends BaseLibraryLoader {
                             throw new Error(`Redirect response but no location header from ${pageUrl}`);
                         }
                     }
-                } catch (error: unknown) {
+                } catch (error: any) {
                     // Enhanced error message for debugging
                     const errorMessage = error instanceof Error ? error.message : String(error);
                     throw new Error(`Failed to fetch Morgan page from ${pageUrl}: ${errorMessage}`);
@@ -149,9 +149,9 @@ export class MorganLoader extends BaseLibraryLoader {
                         
                         let match;
                         while ((match = imageIdRegex.exec(pageContent)) !== null) {
-                            const imageId = match[1];
+                            const imageId = match?.[1] || '';
                             // FIXED: Use correct pattern for Lindau Gospels (76874v_*) and similar manuscripts
-                            if (validImagePattern.test(imageId) && !imageId.includes('front-cover')) {
+                            if (imageId && validImagePattern.test(imageId) && !imageId.includes('front-cover')) {
                                 const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptId}/${imageId}.zif`;
                                 if (imagesByPriority && imagesByPriority[0]) {
                                     imagesByPriority[0].push(zifUrl);
@@ -165,7 +165,7 @@ export class MorganLoader extends BaseLibraryLoader {
                             // Extract individual page URLs from thumbs page
                             const pageUrlRegex = new RegExp(`\\/collection\\/${manuscriptId}\\/(\\d+)`, 'g');
                             const pageMatches = [...pageContent.matchAll(pageUrlRegex)];
-                            const uniquePages = [...new Set(pageMatches.map(match => match[1]))];
+                            const uniquePages = [...new Set(pageMatches.map(match => match?.[1]))];
                             
                             // Also try alternative patterns for page detection
                             const altPatterns = [
@@ -183,15 +183,15 @@ export class MorganLoader extends BaseLibraryLoader {
                             for (const pattern of altPatterns) {
                                 const altMatches = [...pageContent.matchAll(pattern)];
                                 for (const match of altMatches) {
-                                    allPages.push(match[1]);
+                                    allPages.push(match?.[1] || '');
                                 }
                             }
                             
                             // Remove duplicates and sort
-                            const allUniquePages = [...new Set(allPages)].sort((a, b) => parseInt(a) - parseInt(b));
+                            const allUniquePages = [...new Set(allPages)].sort((a, b) => parseInt(a || '0') - parseInt(b || '0'));
                             
                             // FIXED: If no pages found in thumbs and we started from a single page, create page range
-                            if (allUniquePages.length === 0 && startPageNum !== null) {
+                            if (allUniquePages?.length === 0 && startPageNum !== null) {
                                 console.log(`Morgan: No pages found in thumbs, checking individual page for navigation`);
                                 // Try to find total pages from the original single page
                                 const singlePageResponse = await this.deps.fetchDirect(morganUrl);
@@ -202,7 +202,7 @@ export class MorganLoader extends BaseLibraryLoader {
                                                           singlePageContent.match(/(\d+)\s*pages?/i) ||
                                                           singlePageContent.match(/page\s+\d+\s*\/\s*(\d+)/i);
                                     if (totalPagesMatch) {
-                                        const totalPages = parseInt(totalPagesMatch[1]);
+                                        const totalPages = parseInt(totalPagesMatch[1] || '0');
                                         // Generate page numbers array
                                         for (let i = 1; i <= totalPages; i++) {
                                             allUniquePages.push(i.toString());
@@ -220,8 +220,8 @@ export class MorganLoader extends BaseLibraryLoader {
                                 }
                             }
                             
-                            console.log(`Morgan: Found ${allUniquePages.length} individual pages for ${manuscriptId}`);
-                            console.log(`Morgan: Page numbers detected: ${allUniquePages.slice(0, 10).join(', ')}${allUniquePages.length > 10 ? '...' : ''}`);
+                            console.log(`Morgan: Found ${allUniquePages?.length} individual pages for ${manuscriptId}`);
+                            console.log(`Morgan: Page numbers detected: ${allUniquePages.slice(0, 10).join(', ')}${allUniquePages?.length > 10 ? '...' : ''}`);
                             this.deps.logger.log({
                                 level: 'info',
                                 library: 'morgan',
@@ -229,7 +229,7 @@ export class MorganLoader extends BaseLibraryLoader {
                                 message: 'Morgan page detection complete',
                                 details: {
                                     manuscriptId,
-                                    totalPagesDetected: allUniquePages.length,
+                                    totalPagesDetected: allUniquePages?.length,
                                     pageNumbers: allUniquePages.slice(0, 20),
                                     detectionMethod: 'multiple patterns'
                                 }
@@ -266,8 +266,8 @@ export class MorganLoader extends BaseLibraryLoader {
                                 }
                             }
                             
-                            if (imagesByPriority && imagesByPriority[1] && imagesByPriority[1].length > 0) {
-                                console.log(`Morgan: Successfully found ${imagesByPriority[1].length} high-resolution download URLs`);
+                            if (imagesByPriority && imagesByPriority[1] && imagesByPriority[1]?.length > 0) {
+                                console.log(`Morgan: Successfully found ${imagesByPriority[1]?.length} high-resolution download URLs`);
                             }
                             
                         } catch (error) {
@@ -326,20 +326,20 @@ export class MorganLoader extends BaseLibraryLoader {
                     
                     // FIXED: Properly select all discovered images with highest quality
                     // Priority 1 contains all individually fetched high-resolution facsimile images
-                    if (imagesByPriority && imagesByPriority[1] && imagesByPriority[1].length > 0) {
+                    if (imagesByPriority && imagesByPriority[1] && imagesByPriority[1]?.length > 0) {
                         // Use high-resolution facsimile images from individual pages
-                        console.log(`Morgan: Using ${imagesByPriority[1].length} high-resolution facsimile images`);
+                        console.log(`Morgan: Using ${imagesByPriority[1]?.length} high-resolution facsimile images`);
                         pageLinks.push(...imagesByPriority[1]);
-                    } else if (imagesByPriority && imagesByPriority[0] && imagesByPriority[0].length > 0) {
+                    } else if (imagesByPriority && imagesByPriority[0] && imagesByPriority[0]?.length > 0) {
                         // Fallback to ZIF ultra-high resolution images if no facsimile images found
-                        console.log(`Morgan: Using ${imagesByPriority[0].length} ZIF ultra-high resolution images`);
+                        console.log(`Morgan: Using ${imagesByPriority[0]?.length} ZIF ultra-high resolution images`);
                         pageLinks.push(...imagesByPriority[0]);
                     } else {
                         // Fallback to other image priorities if no high-res images found
                         console.log('Morgan: No high-resolution images found, using fallback priorities');
                         const getFilenameFromUrl = (url: string) => {
                             const match = url.match(/([^/]+)\.(jpg|zif)$/);
-                            return match ? match[1] : url;
+                            return match ? match?.[1] : url;
                         };
                         
                         // Use Map for deduplication
@@ -349,9 +349,9 @@ export class MorganLoader extends BaseLibraryLoader {
                         if (imagesByPriority) {
                             for (let priority = 2; priority <= 5; priority++) {
                                 if (imagesByPriority[priority]) {
-                                    for (const imageUrl of imagesByPriority[priority]) {
-                                        const filename = getFilenameFromUrl(imageUrl);
-                                        if (!filenameMap.has(filename)) {
+                                    for (const imageUrl of imagesByPriority[priority]!) {
+                                        const filename = getFilenameFromUrl(imageUrl) || '';
+                                        if (filename && !filenameMap.has(filename)) {
                                             filenameMap.set(filename, imageUrl);
                                             pageLinks.push(imageUrl);
                                         }
@@ -365,7 +365,7 @@ export class MorganLoader extends BaseLibraryLoader {
                 // Try to extract title from page content
                 const titleMatch = pageContent.match(/<title[^>]*>([^<]+)</i);
                 if (titleMatch) {
-                    const pageTitle = titleMatch[1].replace(/\s*\|\s*The Morgan Library.*$/i, '').trim();
+                    const pageTitle = titleMatch[1]?.replace(/\s*\|\s*The Morgan Library.*$/i, '').trim();
                     if (pageTitle && pageTitle !== 'The Morgan Library & Museum') {
                         displayName = pageTitle;
                     }
@@ -377,7 +377,7 @@ export class MorganLoader extends BaseLibraryLoader {
                     displayName = `${displayName} (MS M.${msMatch[1]})`;
                 }
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No images found on Morgan Library page');
                 }
                 
@@ -387,18 +387,18 @@ export class MorganLoader extends BaseLibraryLoader {
                 // Log priority distribution for debugging - only if imagesByPriority is defined
                 if (typeof imagesByPriority !== 'undefined' && imagesByPriority) {
                     console.log(`Morgan: Image quality distribution:`);
-                    console.log(`  - Priority 0 (ZIF ultra-high res): ${imagesByPriority[0].length} images`);
-                    console.log(`  - Priority 1 (High-res facsimile): ${imagesByPriority[1].length} images`);
-                    console.log(`  - Priority 2 (Direct full-size): ${imagesByPriority[2].length} images`);
-                    console.log(`  - Priority 3 (Converted styled): ${imagesByPriority[3].length} images`);
-                    console.log(`  - Priority 4 (Legacy facsimile): ${imagesByPriority[4].length} images`);
-                    console.log(`  - Priority 5 (Other direct): ${imagesByPriority[5].length} images`);
+                    console.log(`  - Priority 0 (ZIF ultra-high res): ${imagesByPriority[0]?.length} images`);
+                    console.log(`  - Priority 1 (High-res facsimile): ${imagesByPriority[1]?.length} images`);
+                    console.log(`  - Priority 2 (Direct full-size): ${imagesByPriority[2]?.length} images`);
+                    console.log(`  - Priority 3 (Converted styled): ${imagesByPriority[3]?.length} images`);
+                    console.log(`  - Priority 4 (Legacy facsimile): ${imagesByPriority[4]?.length} images`);
+                    console.log(`  - Priority 5 (Other direct): ${imagesByPriority[5]?.length} images`);
                 }
-                console.log(`Morgan: Total unique images: ${uniquePageLinks.length}`);
+                console.log(`Morgan: Total unique images: ${uniquePageLinks?.length}`);
                 
                 const morganManifest = {
                     pageLinks: uniquePageLinks,
-                    totalPages: uniquePageLinks.length,
+                    totalPages: uniquePageLinks?.length,
                     library: 'morgan' as const,
                     displayName,
                     originalUrl: morganUrl,
@@ -406,7 +406,7 @@ export class MorganLoader extends BaseLibraryLoader {
                 
                 return morganManifest;
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 console.error(`Failed to load Morgan manifest: ${errorMessage}`);
                 throw error;

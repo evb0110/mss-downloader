@@ -82,7 +82,7 @@ export class NegativeConverterService {
       });
 
       // Get the original filename without extension
-      const originalBaseName = basename(fileName, '.pdf');
+      const originalBaseName: string = basename(fileName, '.pdf') || 'unknown';
       
       // Set up output directories - temp work dir vs final output location
       let workDir: string; // Where images are processed
@@ -94,15 +94,22 @@ export class NegativeConverterService {
         workDir = join(customOutputDir, `${originalBaseName}_temp_${timestamp}`);
       } else {
         // Default Downloads structure: organized subfolder  
-        let downloadsPath: string;
+        let downloadsPath: string = join(os.homedir(), 'Downloads'); // Default value
         try {
           downloadsPath = app.getPath('downloads');
         } catch {
+          // Keep default value
+        }
+        
+        // Ensure downloadsPath is set (TypeScript safety)
+        if (!downloadsPath) {
           downloadsPath = join(os.homedir(), 'Downloads');
         }
         
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-        const organizedDir = join(downloadsPath, 'PDF_Negative_Conversions', today, `${originalBaseName}_inverted`);
+        const today = new Date().toISOString().split('T')[0] || '1970-01-01'; // YYYY-MM-DD
+        const baseName: string = originalBaseName.trim() || 'unknown';
+        const inverted = `${baseName}_inverted`;
+        const organizedDir = join(downloadsPath, 'PDF_Negative_Conversions', today, inverted);
         finalOutputDir = organizedDir;
         workDir = organizedDir;
       }
@@ -152,7 +159,7 @@ export class NegativeConverterService {
         try {
           const files = await fs.readdir(workDir);
           const imageFiles = files.filter(f => f.endsWith('.png') || f.endsWith('.jpg'));
-          actualPageCount = imageFiles.length;
+          actualPageCount = imageFiles?.length;
           
         } catch {
           actualPageCount = 0;
@@ -182,7 +189,7 @@ export class NegativeConverterService {
             
             // Only remove work directory if it's empty (no inverted images left)
             const remainingFiles = await fs.readdir(workDir);
-            if (remainingFiles.length === 0) {
+            if (remainingFiles?.length === 0) {
               await fs.rm(workDir, { recursive: true, force: true });
             }
           } catch {

@@ -40,13 +40,13 @@ export class RomeLoader extends BaseLibraryLoader {
                     pageResponse = await this.deps.fetchDirect(romeUrl);
                 } catch (fetchError: unknown) {
                     // Enhanced error handling for BNC Roma server infrastructure failures
-                    if (fetchError.name === 'AbortError' || fetchError.code === 'ECONNRESET' || 
-                        fetchError.code === 'ENOTFOUND' || fetchError.code === 'ECONNREFUSED' || 
-                        fetchError.code === 'ETIMEDOUT' || fetchError.code === 'ENETUNREACH' ||
-                        fetchError.message.includes('timeout') || fetchError.message.includes('ENETUNREACH')) {
+                    if ((fetchError as any)?.name === 'AbortError' || (fetchError as any)?.code === 'ECONNRESET' || 
+                        (fetchError as any)?.code === 'ENOTFOUND' || (fetchError as any)?.code === 'ECONNREFUSED' || 
+                        (fetchError as any)?.code === 'ETIMEDOUT' || (fetchError as any)?.code === 'ENETUNREACH' ||
+                        fetchError instanceof Error ? fetchError instanceof Error ? fetchError.message : String(fetchError) : String(fetchError).includes('timeout') || fetchError instanceof Error ? fetchError instanceof Error ? fetchError.message : String(fetchError) : String(fetchError).includes('ENETUNREACH')) {
                         throw new Error(`BNC Roma server infrastructure failure: The digital library server (digitale.bnc.roma.sbn.it) is currently unreachable. This appears to be a network infrastructure issue affecting the entire server. Please check the BNC Roma website (www.bncrm.beniculturali.it) for service announcements, or try again later. If the issue persists, contact GARR technical support at cert@garr.it or BNC Roma IT at bnc-rm.digitallibrary@beniculturali.it`);
                     }
-                    throw new Error(`BNC Roma network connection failed: ${fetchError.message}`);
+                    throw new Error(`BNC Roma network connection failed: ${fetchError instanceof Error ? fetchError instanceof Error ? fetchError.message : String(fetchError) : String(fetchError)}`);
                 }
                 
                 if (!pageResponse.ok) {
@@ -73,7 +73,7 @@ export class RomeLoader extends BaseLibraryLoader {
                                   html.match(/Dettaglio manoscritto[^>]*>[^:]*:\s*([^<]+)</) ||
                                   html.match(/data-caption="([^"]+)"/);
                 if (titleMatch) {
-                    title = titleMatch[1].trim().replace(/\s*-\s*Biblioteca.*/, '');
+                    title = (titleMatch[1] || '').trim().replace(/\s*-\s*Biblioteca.*/, '');
                 }
                 
                 // Extract total page count from "Totale immagini: 175"
@@ -82,7 +82,7 @@ export class RomeLoader extends BaseLibraryLoader {
                     throw new Error('Could not extract page count from Rome manuscript page');
                 }
                 
-                const totalPages = parseInt(pageCountMatch[1], 10);
+                const totalPages = parseInt(pageCountMatch[1] || '0', 10);
                 
                 // Use the maximum resolution /original URL pattern for highest quality
                 // /original provides 3-5x larger images compared to /full (tested 2025-07-02)
@@ -103,11 +103,11 @@ export class RomeLoader extends BaseLibraryLoader {
                     pageLinks,
                     totalPages: totalPages,
                     library: 'rome',
-                    displayName: title,
+                    displayName: title || 'Rome Manuscript',
                     originalUrl: romeUrl
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error('Error loading Rome National Library manifest:', error);
                 
                 // Pass through enhanced error messages without modification

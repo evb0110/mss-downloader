@@ -45,7 +45,7 @@ export class EManuscriptaLoader extends BaseLibraryLoader {
                 const loader = new SharedManifestLoaders();
                 
                 // Make comprehensiveLogger available globally for SharedManifestLoaders
-                (global as Record<string, unknown>).comprehensiveLogger = comprehensiveLogger;
+                (global as Record<string, unknown>)['comprehensiveLogger'] = comprehensiveLogger;
                 
                 console.log('[e-manuscripta] Using SharedManifestLoaders with ULTRA-OPTIMIZED discovery');
                 const sharedResult = await loader.getEManuscriptaManifest(manuscriptaUrl);
@@ -56,7 +56,7 @@ export class EManuscriptaLoader extends BaseLibraryLoader {
                 
                 if (Array.isArray(sharedResult)) {
                     // Handle direct array result
-                    pageLinks = sharedResult.map((img: EManuscriptaImage) => img.url);
+                    pageLinks = (sharedResult as EManuscriptaImage[]).map((img: EManuscriptaImage) => img.url);
                     displayName = `e-manuscripta manuscript`;
                 } else if (sharedResult && typeof sharedResult === 'object') {
                     // Handle object result
@@ -76,21 +76,21 @@ export class EManuscriptaLoader extends BaseLibraryLoader {
                 
                 const eManuscriptaManifest: ManuscriptManifest = {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'e_manuscripta',
                     displayName,
                     originalUrl: manuscriptaUrl,
                 };
                 
-                console.log(`[e-manuscripta] Manifest created with ${pageLinks.length} pages using ULTRA-OPTIMIZED discovery`);
+                console.log(`[e-manuscripta] Manifest created with ${pageLinks?.length} pages using ULTRA-OPTIMIZED discovery`);
                 comprehensiveLogger.logEManuscriptaDiscovery('load_manifest_complete', {
-                    pagesFound: pageLinks.length,
+                    pagesFound: pageLinks?.length,
                     displayName: eManuscriptaManifest.displayName
                 });
                 
                 return eManuscriptaManifest;
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error(`Failed to load e-manuscripta.ch manifest: ${error instanceof Error ? error.message : String(error)}`);
                 throw error;
             }

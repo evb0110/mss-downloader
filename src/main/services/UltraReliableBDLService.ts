@@ -157,17 +157,17 @@ export class UltraReliableBDLService {
                 return a.avgResponseTime - b.avgResponseTime;
             });
         
-        if (healthyProxies.length === 0) {
+        if (healthyProxies?.length === 0) {
             // All proxies are unhealthy, reset and try again
             console.log('[BDL Ultra] All proxies unhealthy, resetting...');
             this.proxyServers.forEach(p => {
                 p.isHealthy = true;
                 p.failureCount = 0;
             });
-            return this.proxyServers[0];
+            return this.proxyServers[0] || null;
         }
         
-        return healthyProxies[0];
+        return healthyProxies[0] || null;
     }
     
     /**
@@ -199,13 +199,13 @@ export class UltraReliableBDLService {
         url: string, 
         qualityLevel: number = 0
     ): Promise<{ buffer: Buffer; quality: number } | null> {
-        if (qualityLevel >= this.qualityLevels.length) {
+        if (qualityLevel >= this.qualityLevels?.length) {
             return null;
         }
         
         // Replace quality in URL
         const currentQuality = this.qualityLevels[qualityLevel];
-        const modifiedUrl = url.replace(/\/full\/[^/]+\//, currentQuality);
+        const modifiedUrl = url.replace(/\/full\/[^/]+\//, String(currentQuality));
         
         try {
             const controller = new AbortController();
@@ -225,12 +225,12 @@ export class UltraReliableBDLService {
             if (response.ok) {
                 const arrayBuffer = await response.arrayBuffer();
                 const buffer = Buffer.from(arrayBuffer);
-                if (buffer.length > 1024) { // At least 1KB
+                if (buffer?.length > 1024) { // At least 1KB
                     return { buffer, quality: qualityLevel };
                 }
             }
         } catch (error) {
-            console.log(`[BDL Ultra] Quality ${currentQuality} failed: ${error.message}`);
+            console.log(`[BDL Ultra] Quality ${currentQuality} failed: ${error instanceof Error ? error.message : String(error)}`);
         }
         
         // Try next quality level
@@ -335,13 +335,13 @@ export class UltraReliableBDLService {
                         proxy.failureCount = 0;
                         
                         // Verify image size
-                        if (buffer.length > (options.pageVerificationSize || 10240)) {
-                            console.log(`[BDL Ultra] SUCCESS: Page ${pageIndex} via proxy (${buffer.length} bytes)`);
+                        if (buffer?.length > (options.pageVerificationSize || 10240)) {
+                            console.log(`[BDL Ultra] SUCCESS: Page ${pageIndex} via proxy (${buffer?.length} bytes)`);
                             this.retryQueue.delete(queueKey);
                             await this.saveRetryQueue();
                             return buffer;
                         } else {
-                            console.warn(`[BDL Ultra] Page ${pageIndex} too small: ${buffer.length} bytes`);
+                            console.warn(`[BDL Ultra] Page ${pageIndex} too small: ${buffer?.length} bytes`);
                         }
                     } else {
                         proxy.failureCount++;
@@ -350,7 +350,7 @@ export class UltraReliableBDLService {
                 
                 // Strategy 3: Try different quality level
                 if (options.maxQualityFallbacks && attempt % 10 === 0) {
-                    queueItem.qualityLevel = (queueItem.qualityLevel + 1) % this.qualityLevels.length;
+                    queueItem.qualityLevel = (queueItem.qualityLevel + 1) % this.qualityLevels?.length;
                     console.log(`[BDL Ultra] Switching to quality level ${queueItem.qualityLevel}`);
                 }
                 
@@ -415,14 +415,14 @@ export class UltraReliableBDLService {
         
         console.log('[BDL Ultra] Starting post-download verification...');
         
-        for (let i = 0; i < imagePaths.length; i++) {
+        for (let i = 0; i < imagePaths?.length; i++) {
             const imagePath = imagePaths[i];
             
             if (!imagePath) {
                 // Page failed initial download, retry with ultra-reliable mode
                 console.log(`[BDL Ultra] Re-downloading failed page ${i + 1}...`);
                 const buffer = await this.ultraReliableDownload(
-                    pageUrls[i], 
+                    pageUrls[i] || '', 
                     i, 
                     { ...options, ultraReliableMode: true }
                 );
@@ -439,21 +439,21 @@ export class UltraReliableBDLService {
                     if (stats.size < minSize) {
                         console.log(`[BDL Ultra] Page ${i + 1} too small (${stats.size} bytes), re-downloading...`);
                         const buffer = await this.ultraReliableDownload(
-                            pageUrls[i], 
+                            pageUrls[i] || '', 
                             i, 
                             { ...options, ultraReliableMode: true }
                         );
                         
-                        if (buffer && buffer.length > stats.size) {
+                        if (buffer && buffer?.length > stats.size) {
                             await fs.writeFile(imagePath, buffer);
-                            console.log(`[BDL Ultra] Replaced page ${i + 1} with larger version (${buffer.length} bytes)`);
+                            console.log(`[BDL Ultra] Replaced page ${i + 1} with larger version (${buffer?.length} bytes)`);
                         }
                     }
                     verifiedPaths[i] = imagePath;
                 } catch {
                     // File doesn't exist, re-download
                     const buffer = await this.ultraReliableDownload(
-                        pageUrls[i], 
+                        pageUrls[i] || '', 
                         i, 
                         { ...options, ultraReliableMode: true }
                     );
@@ -477,7 +477,7 @@ export class UltraReliableBDLService {
                         { ...options, ultraReliableMode: true }
                     );
                     
-                    if (buffer && item.pageIndex < verifiedPaths.length) {
+                    if (buffer && item.pageIndex < verifiedPaths?.length) {
                         const path = verifiedPaths[item.pageIndex] || `recovered_page_${item.pageIndex + 1}.jpg`;
                         await fs.writeFile(path, buffer);
                         verifiedPaths[item.pageIndex] = path;

@@ -163,15 +163,15 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 images,
                 displayName: this.buildDescriptiveName(manifest.displayName, url),
                 startPage: 1,
-                endPage: manifest.totalPages,
-                totalPages: manifest.totalPages,
+                endPage: manifest?.totalPages,
+                totalPages: manifest?.totalPages,
                 onProgress: (progress) => {
                     const overallProgress: DownloadProgress = {
-                        totalPages: manifest.totalPages,
-                        downloadedPages: manifest.totalPages,
+                        totalPages: manifest?.totalPages,
+                        downloadedPages: manifest?.totalPages,
                         currentPage: progress.pageNumber,
-                        totalImages: manifest.totalPages,
-                        downloadedImages: manifest.totalPages,
+                        totalImages: manifest?.totalPages,
+                        downloadedImages: manifest?.totalPages,
                         currentImageIndex: progress.pageNumber - 1,
                         pagesProcessed: progress.pageNumber,
                         percentage: 80 + Math.round(progress.percentage * 0.2), // 80-100% for PDF creation
@@ -191,7 +191,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 message: `PDF saved to: ${pdfPath}` 
             });
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             callbacks?.onError?.(error instanceof Error ? error.message : 'Unknown error');
             throw error;
         }
@@ -225,7 +225,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
 
         this.abortController = new AbortController();
 
-        for (let i = 0; i < urls.length; i++) {
+        for (let i = 0; i < urls?.length; i++) {
             // Check abort signal more frequently
             if (this.abortController?.signal.aborted) {
                 throw new Error('Download cancelled');
@@ -236,14 +236,14 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
             // Download directly without cache operations
             for (let retry = 0; retry <= MAX_IMAGE_FETCH_RETRIES; retry++) {
                 try {
-                    imageData = await this.downloadImageBuffer(urls[i]);
+                    imageData = await this.downloadImageBuffer(urls[i] || '');
                     
-                    if (imageData && imageData.length >= MIN_VALID_IMAGE_SIZE_BYTES) {
+                    if (imageData && imageData?.length >= MIN_VALID_IMAGE_SIZE_BYTES) {
                         break;
                     } else {
                         throw new Error('Invalid image size');
                     }
-                } catch (error: unknown) {
+                } catch (error: any) {
                     console.error(`Download attempt ${retry + 1} failed for ${urls[i]}:`, error);
                     
                     if (retry === MAX_IMAGE_FETCH_RETRIES) {
@@ -258,17 +258,17 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
 
             if (imageData) {
                 images.push(imageData);
-                bytesDownloaded += imageData.length;
+                bytesDownloaded += imageData?.length;
 
                 const progress: DownloadProgress = {
-                    totalPages: urls.length,
+                    totalPages: urls?.length,
                     downloadedPages: i + 1,
                     currentPage: i + 1,
-                    totalImages: urls.length,
+                    totalImages: urls?.length,
                     downloadedImages: i + 1,
                     currentImageIndex: i,
                     pagesProcessed: i + 1,
-                    percentage: Math.round(((i + 1) / urls.length) * 100),
+                    percentage: Math.round(((i + 1) / urls?.length) * 100),
                     elapsedTime: Date.now() - startTime,
                     estimatedTimeRemaining: 0,
                     bytesDownloaded,
@@ -279,7 +279,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 if (i > 0) {
                     const elapsed = Date.now() - startTime;
                     const rate = (i + 1) / elapsed;
-                    const remaining = urls.length - (i + 1);
+                    const remaining = urls?.length - (i + 1);
                     progress.estimatedTimeRemaining = remaining / rate;
                 }
 
@@ -308,9 +308,9 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
             }
             
             const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
-                const images = canvas.images as Record<string, unknown>[];
-                const resource = images[0].resource as Record<string, unknown>;
-                const rawUrl = resource['@id'] || resource.id;
+                const images = canvas['images'] as Record<string, unknown>[];
+                const resource = images[0]?.['resource'] as Record<string, unknown>;
+                const rawUrl = resource['@id'] || resource['id'];
                 // Convert bare IIIF identifier to proper IIIF image URL for Cambridge CUDL
                 if (rawUrl && typeof rawUrl === 'string' && rawUrl.includes('images.lib.cam.ac.uk/iiif/')) {
                     return rawUrl + '/full/1000,/0/default.jpg';
@@ -318,19 +318,19 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 return rawUrl as string;
             }).filter((link: string) => link);
             
-            if (pageLinks.length === 0) {
+            if (pageLinks?.length === 0) {
                 throw new Error('No pages found in manifest');
             }
             
             return {
                 pageLinks,
-                totalPages: pageLinks.length,
+                totalPages: pageLinks?.length,
                 library: 'cudl',
                 displayName: `Cambridge_${manuscriptId}`,
                 originalUrl: cudlUrl,
             };
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             throw new Error(`Failed to load Cambridge CUDL manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
@@ -344,7 +344,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
             
             throw new Error('Trinity College Cambridge manuscripts require manual inspection - please provide direct image URLs or use a supported IIIF endpoint');
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             throw new Error(`Failed to load Trinity Cambridge manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
@@ -368,28 +368,28 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
             }
             
             const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
-                const images = canvas.images as Record<string, unknown>[];
-                const resource = images[0].resource as Record<string, unknown>;
-                const service = resource.service as Record<string, unknown>;
+                const images = canvas['images'] as Record<string, unknown>[];
+                const resource = images[0]?.['resource'] as Record<string, unknown>;
+                const service = resource['service'] as Record<string, unknown>;
                 if (service && service['@id']) {
                     return `${service['@id']}/full/full/0/default.jpg`;
                 }
-                return (resource['@id'] || resource.id) as string;
+                return (resource['@id'] || resource['id']) as string;
             }).filter((link: string) => link);
             
-            if (pageLinks.length === 0) {
+            if (pageLinks?.length === 0) {
                 throw new Error('No pages found in manifest');
             }
             
             return {
                 pageLinks,
-                totalPages: pageLinks.length,
+                totalPages: pageLinks?.length,
                 library: 'isos',
                 displayName: `ISOS_${collection}_${manuscriptId}`,
                 originalUrl: isosUrl,
             };
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             throw new Error(`Failed to load ISOS manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
@@ -408,24 +408,24 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
             const manifestMatch = html.match(/manifest[^"]*([^"]+\.json)/);
             if (manifestMatch) {
                 const manifestUrl = manifestMatch[1];
-                const manifestData = await this.downloadTextContent(manifestUrl);
+                const manifestData = await this.downloadTextContent(manifestUrl || '');
                 const iiifManifest = JSON.parse(manifestData);
                 
                 if (iiifManifest.sequences && iiifManifest.sequences[0] && iiifManifest.sequences[0].canvases) {
                     const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
-                        const images = canvas.images as Record<string, unknown>[];
-                        const resource = images[0].resource as Record<string, unknown>;
-                        const service = resource.service as Record<string, unknown>;
+                        const images = canvas['images'] as Record<string, unknown>[];
+                        const resource = images[0]?.['resource'] as Record<string, unknown>;
+                        const service = resource['service'] as Record<string, unknown>;
                         if (service && service['@id']) {
                             return `${service['@id']}/full/full/0/default.jpg`;
                         }
-                        return (resource['@id'] || resource.id) as string;
+                        return (resource['@id'] || resource['id']) as string;
                     }).filter((link: string) => link);
                     
-                    if (pageLinks.length > 0) {
+                    if (pageLinks?.length > 0) {
                         return {
                             pageLinks,
-                            totalPages: pageLinks.length,
+                            totalPages: pageLinks?.length,
                             library: 'mira',
                             displayName: `MIRA_${miraId}`,
                             originalUrl: miraUrl,
@@ -436,7 +436,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
             
             throw new Error('Could not find valid IIIF manifest in MIRA page');
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             throw new Error(`Failed to load MIRA manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
@@ -448,7 +448,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
             const client = urlObj.protocol === 'https:' ? https : http;
 
             const req = client.request(url, { 
-                timeout: 30000,
+                
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 }
@@ -500,7 +500,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
         
         const pageLinks = this.extractGallicaImageUrls(html);
         
-        if (pageLinks.length === 0) {
+        if (pageLinks?.length === 0) {
             throw new Error('No images found in document. Please verify the URL is a valid Gallica manuscript page.');
         }
         
@@ -511,7 +511,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
         
         return {
             pageLinks: uniquePageLinks,
-            totalPages: uniquePageLinks.length,
+            totalPages: uniquePageLinks?.length,
             library: 'gallica',
             displayName: manuscriptCode,
             originalUrl: gallicaUrl,
@@ -523,7 +523,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
             const html = await this.downloadTextContent(unifrUrl);
             const pageLinks = this.extractUnifrImageUrls(html);
             
-            if (pageLinks.length === 0) {
+            if (pageLinks?.length === 0) {
                 throw new Error('No images found in manuscript');
             }
 
@@ -540,12 +540,12 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
             
             return {
                 pageLinks,
-                totalPages: pageLinks.length,
+                totalPages: pageLinks?.length,
                 library: 'unifr',
                 displayName: manuscriptCode,
                 originalUrl: unifrUrl,
             };
-        } catch (error: unknown) {
+        } catch (error: any) {
             console.error('Failed to load e-codices manifest:', error);
             throw new Error(`Failed to load e-codices manuscript: ${error instanceof Error ? error.message : 'Unknown error during manifest loading'}`);
         }
@@ -555,7 +555,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
         try {
             // Extract manuscript name from URL
             const nameMatch = vatLibUrl.match(/\/view\/([^/?]+)/);
-            if (!nameMatch) {
+            if (!nameMatch || !nameMatch[1]) {
                 throw new Error('Invalid Vatican Library URL format');
             }
             
@@ -583,9 +583,9 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
             }
             
             const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
-                const images = canvas.images as Record<string, unknown>[];
-                const resource = images[0].resource as Record<string, unknown>;
-                const service = resource.service as Record<string, unknown>;
+                const images = canvas['images'] as Record<string, unknown>[];
+                const resource = images[0]?.['resource'] as Record<string, unknown>;
+                const service = resource['service'] as Record<string, unknown>;
                 
                 // Vatican Library uses a service object with @id pointing to the image service
                 if (service && service['@id']) {
@@ -602,20 +602,20 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 return null;
             }).filter((link: string) => link);
             
-            if (pageLinks.length === 0) {
+            if (pageLinks?.length === 0) {
                 throw new Error('No pages found in manifest');
             }
             
             
             return {
                 pageLinks,
-                totalPages: pageLinks.length,
+                totalPages: pageLinks?.length,
                 library: 'vatlib',
                 displayName: displayName,
                 originalUrl: vatLibUrl,
             };
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             throw new Error(`Failed to load Vatican Library manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
@@ -636,17 +636,17 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
             // Parse the HTML to find the navigation structure and determine total pages
             const pageLinks = await this.extractFlorusImageUrls(html, cote, currentVue);
             
-            if (pageLinks.length === 0) {
+            if (pageLinks?.length === 0) {
                 throw new Error('No pages found in Florus manuscript');
             }
             
             // Find actual total pages from navigation
-            let actualTotalPages = pageLinks.length;
+            let actualTotalPages = pageLinks?.length;
             const navNumbers = [...html.matchAll(/naviguer\((\d+)\)/g)]
-                .map(match => parseInt(match[1]))
+                .map(match => parseInt(match?.[1] || '0'))
                 .filter(num => !isNaN(num) && num > 0);
             
-            if (navNumbers.length > 0) {
+            if (navNumbers?.length > 0) {
                 actualTotalPages = Math.max(...navNumbers);
             }
             
@@ -658,7 +658,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 originalUrl: florusUrl,
             };
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             throw new Error(`Failed to load Florus manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
@@ -669,7 +669,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
             const client = urlObj.protocol === 'https:' ? https : http;
 
             const req = client.request(url, {
-                timeout: 30000,
+                
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 }
@@ -704,7 +704,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
         const highResPattern = /href="(https:\/\/gallica\.bnf\.fr\/ark:\/12148\/[^"]+\.highres)"/g;
         let match;
         while ((match = highResPattern.exec(html)) !== null) {
-            imageLinks.push(match[1]);
+            imageLinks.push(match?.[1] || '');
         }
         
         // Pattern 2: Alternative image patterns if needed
@@ -723,12 +723,12 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
         if (menuBarDataMatch) {
             try {
                 const menuBarDataJson = menuBarDataMatch[1];
-                const menuBarData = JSON.parse(menuBarDataJson);
+                const menuBarData = JSON.parse(menuBarDataJson || '{}');
                 if (menuBarData.canvases && Array.isArray(menuBarData.canvases)) {
                     return menuBarData.canvases.map((canvas: Record<string, unknown>) => {
-                        if (!canvas.src) throw new Error('Canvas missing src field');
+                        if (!canvas['src']) throw new Error('Canvas missing src field');
                         // Convert thumbnails to full-resolution images
-                        const imageUrl = (canvas.src as string).replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
+                        const imageUrl = (canvas['src'] as string).replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
                             .replace(/\/full\/,\d+\//g, '/full/full/')
                             .replace(/\/default\/jpg$/, '/default.jpg');
                         return imageUrl;
@@ -743,13 +743,13 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
         const viewerDataStart = html.indexOf(':viewer-data=\'');
         if (viewerDataStart !== -1) {
             try {
-                const jsonStart = viewerDataStart + ':viewer-data=\''.length;
+                const jsonStart = viewerDataStart + ':viewer-data=\''?.length;
                 let jsonEnd = jsonStart;
                 let quoteCount = 1; // We already passed one opening quote
                 
                 // Find the matching closing quote by tracking escape sequences
                 // Add safety limit to prevent infinite loops on malformed HTML
-                const maxSearchLength = Math.min(html.length, jsonStart + 1000000); // Max 1MB of characters to search
+                const maxSearchLength = Math.min(html?.length, jsonStart + 1000000); // Max 1MB of characters to search
                 for (let i = jsonStart; i < maxSearchLength && quoteCount > 0; i++) {
                     const char = html[i];
                     const prevChar = i > 0 ? html[i - 1] : '';
@@ -773,8 +773,8 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                     const viewerData = JSON.parse(viewerDataJson);
                     if (viewerData.canvases && Array.isArray(viewerData.canvases)) {
                         return viewerData.canvases.map((canvas: Record<string, unknown>) => {
-                            if (!canvas.src) throw new Error('Canvas missing src field');
-                            const imageUrl = (canvas.src as string).replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
+                            if (!canvas['src']) throw new Error('Canvas missing src field');
+                            const imageUrl = (canvas['src'] as string).replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
                                 .replace(/\/full\/,\d+\//g, '/full/full/')
                                 .replace(/\/default\/jpg$/, '/default.jpg');
                             return imageUrl;
@@ -790,12 +790,15 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
         const legacyViewerDataMatch = html.match(/:viewer-data=["']([^"']+)["']/);
         if (legacyViewerDataMatch) {
             try {
-                const viewerDataJson = legacyViewerDataMatch[1].replace(/\\"/g, '"').replace(/\\\//g, '/');
+                const viewerDataJson = legacyViewerDataMatch[1]?.replace(/\\"/g, '"').replace(/\\\//g, '/');
+                if (!viewerDataJson) {
+                    throw new Error('Viewer data JSON is empty');
+                }
                 const viewerData = JSON.parse(viewerDataJson);
                 if (viewerData.canvases && Array.isArray(viewerData.canvases)) {
                     return viewerData.canvases.map((canvas: Record<string, unknown>) => {
-                        if (!canvas.src) throw new Error('Canvas missing src field');
-                        const imageUrl = (canvas.src as string).replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
+                        if (!canvas['src']) throw new Error('Canvas missing src field');
+                        const imageUrl = (canvas['src'] as string).replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
                             .replace(/\/full\/,\d+\//g, '/full/full/')
                             .replace(/\/default\/jpg$/, '/default.jpg');
                         return imageUrl;
@@ -811,11 +814,11 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
         if (altMenuBarDataMatch) {
             try {
                 const menuBarDataJson = altMenuBarDataMatch[1];
-                const menuBarData = JSON.parse(menuBarDataJson);
+                const menuBarData = JSON.parse(menuBarDataJson || '{}');
                 if (menuBarData.canvases && Array.isArray(menuBarData.canvases)) {
                     return menuBarData.canvases.map((canvas: Record<string, unknown>) => {
-                        if (!canvas.src) throw new Error('Canvas missing src field');
-                        const imageUrl = (canvas.src as string).replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
+                        if (!canvas['src']) throw new Error('Canvas missing src field');
+                        const imageUrl = (canvas['src'] as string).replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
                             .replace(/\/full\/,\d+\//g, '/full/full/')
                             .replace(/\/default\/jpg$/, '/default.jpg');
                         return imageUrl;
@@ -828,10 +831,10 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
 
         // Fallback: extract all IIIF image URLs from src attributes
         const iiifImageMatches = html.matchAll(/src="([^"]*\.jp2[^"]*)"/g);
-        const iiifUrls = Array.from(iiifImageMatches, (match) => match[1]);
+        const iiifUrls = Array.from(iiifImageMatches, (match) => match?.[1]);
         
-        if (iiifUrls.length > 0) {
-            return iiifUrls.map((url) => {
+        if (iiifUrls?.length > 0) {
+            return iiifUrls.filter((url): url is string => !!url).map((url) => {
                 const imageUrl = url.replace('https://www.e-codices.unifr.ch', 'https://www.e-codices.ch')
                     .replace(/\/full\/,\d+\//g, '/full/full/')
                     .replace(/\/default\/jpg$/, '/default.jpg');
@@ -848,7 +851,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                               html.match(/image\s*:\s*'([^']+)'/) ||
                               html.match(/image\s*:\s*"([^"]+)"/);
         
-        if (!imagePathMatch) {
+        if (!imagePathMatch || !imagePathMatch[1]) {
             throw new Error('Could not find image path pattern in Florus page');
         }
         
@@ -866,10 +869,10 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
         let maxPage = currentVue + 20; // Conservative fallback
         
         const navNumbers = [...html.matchAll(/naviguer\((\d+)\)/g)]
-            .map(match => parseInt(match[1]))
+            .map(match => parseInt(match?.[1] || '0'))
             .filter(num => !isNaN(num) && num > 0);
         
-        if (navNumbers.length > 0) {
+        if (navNumbers?.length > 0) {
             maxPage = Math.max(...navNumbers);
         }
         
@@ -899,7 +902,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
             }
         }
         
-        if (imageUrls.length === 0) {
+        if (imageUrls?.length === 0) {
             throw new Error('Could not extract any valid image URLs from Florus manuscript');
         }
         
@@ -917,8 +920,8 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
         await this.downloadManuscriptPagesWithOptions(pageLinks, {
             displayName: 'manuscript',
             startPage: 1,
-            endPage: pageLinks.length,
-            totalPages: pageLinks.length,
+            endPage: pageLinks?.length,
+            totalPages: pageLinks?.length,
             ...callbacks
         });
     }
@@ -944,7 +947,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 onProgress: (progress) => {
                     options.onProgress?.({
                         downloadedPages: progress.downloadedPages,
-                        totalPages: progress.totalPages,
+                        totalPages: progress?.totalPages,
                         estimatedTimeRemaining: progress.estimatedTimeRemaining,
                     });
                 },
@@ -981,7 +984,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 displayName: options.displayName,
                 startPage: options.startPage,
                 endPage: options.endPage,
-                totalPages: options.totalPages,
+                totalPages: options?.totalPages,
                 autoSplit: options.autoSplit,
                 maxPagesPerPart: options.maxPagesPerPart,
                 onProgress: (_UNUSED_progress) => {
@@ -995,7 +998,7 @@ const pdfPath = await this.pdfMerger.createPDFFromImages({
                 message: `PDF saved to: ${pdfPath}` 
             });
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             options.onError?.(error instanceof Error ? error.message : 'Unknown error');
             throw error;
         }

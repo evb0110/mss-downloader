@@ -18,12 +18,12 @@ export class LinzLoader extends BaseLibraryLoader {
         const idMatch = url.match(/\/viewer\/image\/([^/]+)/);
         
         if (idMatch) {
-            manuscriptId = idMatch[1];
+            manuscriptId = idMatch[1] || '';
         } else {
             // Try other patterns
             const altMatch = url.match(/\/(\d+)$/);
             if (altMatch) {
-                manuscriptId = altMatch[1];
+                manuscriptId = altMatch[1] || '';
             } else {
                 throw new Error('Could not extract manuscript ID from Linz URL');
             }
@@ -36,7 +36,7 @@ export class LinzLoader extends BaseLibraryLoader {
         console.log('[LinzLoader] Fetching IIIF manifest from:', manifestUrl);
         
         try {
-            const response = await this.fetchWithRetry(manifestUrl, {
+            const response = await this.deps.fetchWithHTTPS(manifestUrl, {
                 headers: {
                     'Accept': 'application/json, application/ld+json',
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -53,9 +53,9 @@ export class LinzLoader extends BaseLibraryLoader {
             // Extract images from IIIF manifest
             if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
                 const canvases = manifest.sequences[0].canvases;
-                console.log(`[LinzLoader] Found ${canvases.length} pages in manifest`);
+                console.log(`[LinzLoader] Found ${canvases?.length} pages in manifest`);
                 
-                for (let i = 0; i < canvases.length; i++) {
+                for (let i = 0; i < canvases?.length; i++) {
                     const canvas = canvases[i];
                     if (canvas.images && canvas.images[0]) {
                         const image = canvas.images[0];
@@ -87,17 +87,18 @@ export class LinzLoader extends BaseLibraryLoader {
                 }
             }
             
-            if (images.length === 0) {
+            if (images?.length === 0) {
                 throw new Error('No images found in Linz manifest');
             }
             
-            console.log(`[LinzLoader] Successfully extracted ${images.length} pages`);
+            console.log(`[LinzLoader] Successfully extracted ${images?.length} pages`);
             
             return {
-                id: manuscriptId,
-                library: 'linz',
+                pageLinks: images.map(img => img.url),
+                totalPages: images?.length,
+                library: 'graz' as const,
                 displayName: manifest.label || `Linz - ${manuscriptId}`,
-                images: images
+                originalUrl: url
             };
             
         } catch (error) {

@@ -26,25 +26,29 @@ export class ManuscriptaLoader extends BaseLibraryLoader {
                 console.log(`Loading Manuscripta.se manifest from: ${manifestUrl}`);
                 
                 // Use intelligent progress monitoring for Manuscripta.se with enhanced error handling
-                const progressMonitor = this.deps.createProgressMonitor({
-                    task: 'Manuscripta.se manifest loading',
-                    category: 'manuscripta',
-                    initialTimeout: 60000,
-                    maxTimeout: 300000,
-                    progressCheckInterval: 15000,
-                    onInitialTimeoutReached: (state: Record<string, unknown>) => {
-                        console.log(`[Manuscripta.se] ${state.statusMessage}`);
+                const progressMonitor = this.deps.createProgressMonitor(
+                    'Manuscripta.se manifest loading',
+                    'manuscripta',
+                    {
+                        initialTimeout: 60000,
+                        maxTimeout: 300000,
+                        progressCheckInterval: 15000
                     },
-                    onStuckDetected: (state: Record<string, unknown>) => {
-                        console.warn(`[Manuscripta.se] ${state.statusMessage} - ID: ${manuscriptId}`);
-                    },
-                    onTimeout: (state: Record<string, unknown>) => {
-                        console.error(`[Manuscripta.se] ${state.statusMessage} - ID: ${manuscriptId}`);
+                    {
+                        onInitialTimeoutReached: (state: Record<string, unknown>) => {
+                            console.log(`[Manuscripta.se] ${state['statusMessage']}`);
+                        },
+                        onStuckDetected: (state: Record<string, unknown>) => {
+                            console.warn(`[Manuscripta.se] ${state['statusMessage']} - ID: ${manuscriptId}`);
+                        },
+                        onTimeout: (state: Record<string, unknown>) => {
+                            console.error(`[Manuscripta.se] ${state['statusMessage']} - ID: ${manuscriptId}`);
+                        }
                     }
-                });
+                );
                 
-                const controller = progressMonitor.start();
-                progressMonitor.updateProgress(0, 1, 'Loading Manuscripta.se manifest...');
+                const controller = (progressMonitor as any)['start']();
+                (progressMonitor as any)['updateProgress'](0, 1, 'Loading Manuscripta.se manifest...');
                 
                 let iiifManifest: Record<string, unknown>;
                 try {
@@ -57,7 +61,7 @@ export class ManuscriptaLoader extends BaseLibraryLoader {
                         }
                     });
                     
-                    progressMonitor.updateProgress(1, 1, 'Manuscripta.se manifest loaded successfully');
+                    (progressMonitor as any)['updateProgress'](1, 1, 'Manuscripta.se manifest loaded successfully');
                     
                     if (!manifestResponse.ok) {
                         throw new Error(`Failed to fetch Manuscripta.se manifest: HTTP ${manifestResponse.status} ${manifestResponse.statusText}`);
@@ -73,26 +77,26 @@ export class ManuscriptaLoader extends BaseLibraryLoader {
                     console.log(`Manuscripta.se manifest loaded successfully for ID: ${manuscriptId}`);
                     
                 } catch (fetchError: unknown) {
-                    if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+                    if (fetchError instanceof Error && (fetchError as any)?.name === 'AbortError') {
                         throw new Error('Manuscripta.se manifest request timed out. The server may be experiencing high load.');
                     }
                     throw fetchError;
                 } finally {
-                    progressMonitor.complete();
+                    (progressMonitor as any)['complete']();
                 }
                 
                 // Extract title from manifest
                 let displayName = 'Manuscripta_' + manuscriptId;
-                if (iiifManifest.label) {
-                    if (typeof iiifManifest.label === 'string') {
-                        displayName = iiifManifest.label;
-                    } else if (Array.isArray(iiifManifest.label)) {
-                        displayName = iiifManifest.label[0];
-                    } else if (typeof iiifManifest.label === 'object') {
+                if (iiifManifest['label']) {
+                    if (typeof iiifManifest['label'] === 'string') {
+                        displayName = iiifManifest['label'];
+                    } else if (Array.isArray(iiifManifest['label'])) {
+                        displayName = iiifManifest['label'][0];
+                    } else if (typeof iiifManifest['label'] === 'object') {
                         // IIIF 3.0 format with language maps
-                        const labelValues = Object.values(iiifManifest.label);
-                        if (labelValues.length > 0 && Array.isArray(labelValues[0])) {
-                            displayName = (labelValues[0] as string[])[0];
+                        const labelValues = Object.values(iiifManifest['label']);
+                        if (labelValues?.length > 0 && Array.isArray(labelValues[0])) {
+                            displayName = (labelValues[0] as string[])[0] || '';
                         }
                     }
                 }
@@ -100,12 +104,12 @@ export class ManuscriptaLoader extends BaseLibraryLoader {
                 // Parse IIIF manifest structure - support both IIIF 2.x and 3.x
                 let canvases: Record<string, unknown>[] = [];
                 
-                if (iiifManifest.sequences && iiifManifest.sequences[0] && iiifManifest.sequences[0].canvases) {
+                if ((iiifManifest as Record<string, unknown>)['sequences'] && ((iiifManifest as Record<string, unknown>)['sequences'] as unknown[])[0] && (((iiifManifest as Record<string, unknown>)['sequences'] as unknown[])[0] as Record<string, unknown>)['canvases']) {
                     // IIIF 2.x structure
-                    canvases = iiifManifest.sequences[0].canvases;
-                } else if (iiifManifest.items) {
+                    canvases = (((iiifManifest as Record<string, unknown>)['sequences'] as unknown[])[0] as Record<string, unknown>)['canvases'] as Record<string, unknown>[];
+                } else if (iiifManifest['items']) {
                     // IIIF 3.x structure
-                    canvases = iiifManifest.items;
+                    canvases = iiifManifest['items'] as Record<string, unknown>[];
                 } else {
                     throw new Error('Invalid IIIF manifest structure - no canvases found');
                 }
@@ -114,15 +118,15 @@ export class ManuscriptaLoader extends BaseLibraryLoader {
                     let imageUrl: string | null = null;
                     
                     // IIIF 2.x format
-                    if (canvas.images && canvas.images[0] && canvas.images[0].resource) {
-                        const resource = canvas.images[0].resource;
-                        imageUrl = resource['@id'] || resource.id;
+                    if (canvas['images'] && (canvas['images'] as unknown[])[0] && ((canvas['images'] as unknown[])[0] as Record<string, unknown>)['resource']) {
+                        const resource = ((canvas['images'] as unknown[])[0] as Record<string, unknown>)['resource'];
+                        imageUrl = (resource as Record<string, unknown>)['@id'] as string || (resource as Record<string, unknown>)['id'] as string;
                     }
                     // IIIF 3.x format
-                    else if (canvas.items && canvas.items[0] && canvas.items[0].items && canvas.items[0].items[0]) {
-                        const annotation = canvas.items[0].items[0];
-                        if (annotation.body && annotation.body.id) {
-                            imageUrl = annotation.body.id;
+                    else if (canvas['items'] && (canvas['items'] as unknown[])[0] && ((canvas['items'] as unknown[])[0] as Record<string, unknown>)['items'] && (((canvas['items'] as unknown[])[0] as Record<string, unknown>)['items'] as unknown[])[0]) {
+                        const annotation = (((canvas['items'] as unknown[])[0] as Record<string, unknown>)['items'] as unknown[])[0] as Record<string, unknown>;
+                        if ((annotation as any)["body"] && (annotation as any)["body"]['id']) {
+                            imageUrl = (annotation as any)["body"]['id'];
                         }
                     }
                     
@@ -140,11 +144,11 @@ export class ManuscriptaLoader extends BaseLibraryLoader {
                     return imageUrl;
                 }).filter((link: string | null): link is string => link !== null);
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No pages found in manifest');
                 }
                 
-                console.log(`Successfully loaded Manuscripta.se manifest: ${pageLinks.length} pages found`);
+                console.log(`Successfully loaded Manuscripta.se manifest: ${pageLinks?.length} pages found`);
                 
                 // Sanitize display name for filesystem
                 const sanitizedName = displayName
@@ -154,13 +158,13 @@ export class ManuscriptaLoader extends BaseLibraryLoader {
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'manuscripta' as const,
                     displayName: sanitizedName,
                     originalUrl: manuscriptaUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error(`Manuscripta.se manifest loading failed:`, error);
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 throw new Error(`Failed to load Manuscripta.se manuscript: ${errorMessage}`);

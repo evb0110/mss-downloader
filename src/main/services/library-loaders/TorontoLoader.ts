@@ -25,14 +25,14 @@ export class TorontoLoader extends BaseLibraryLoader {
                         
                         // Try different manifest URL patterns
                         const manifestPatterns = [
-                            `https://iiif.library.utoronto.ca/presentation/v2/${itemId}/manifest`,
-                            `https://iiif.library.utoronto.ca/presentation/v2/${itemId.replace(':', '%3A')}/manifest`,
-                            `https://iiif.library.utoronto.ca/presentation/v3/${itemId}/manifest`,
-                            `https://iiif.library.utoronto.ca/presentation/v3/${itemId.replace(':', '%3A')}/manifest`,
+                            `https://iiif.library.utoronto.ca/presentation/v2/${itemId || ''}/manifest`,
+                            `https://iiif.library.utoronto.ca/presentation/v2/${itemId?.replace(':', '%3A') || ''}/manifest`,
+                            `https://iiif.library.utoronto.ca/presentation/v3/${itemId || ''}/manifest`,
+                            `https://iiif.library.utoronto.ca/presentation/v3/${itemId?.replace(':', '%3A') || ''}/manifest`,
                             `https://collections.library.utoronto.ca/iiif/${itemId}/manifest`,
-                            `https://collections.library.utoronto.ca/iiif/${itemId.replace(':', '%3A')}/manifest`,
+                            `https://collections.library.utoronto.ca/iiif/${itemId!.replace(':', '%3A')}/manifest`,
                             `https://collections.library.utoronto.ca/api/iiif/${itemId}/manifest`,
-                            `https://collections.library.utoronto.ca/api/iiif/${itemId.replace(':', '%3A')}/manifest`
+                            `https://collections.library.utoronto.ca/api/iiif/${itemId!.replace(':', '%3A')}/manifest`
                         ];
                         
                         let manifestFound = false;
@@ -89,12 +89,12 @@ export class TorontoLoader extends BaseLibraryLoader {
                 const pageLinks: string[] = [];
                 
                 // Handle IIIF v2 structure
-                if (manifest.sequences && manifest.sequences.length > 0) {
+                if (manifest.sequences && manifest.sequences?.length > 0) {
                     const sequence = manifest.sequences[0];
                     if (sequence.canvases && Array.isArray(sequence.canvases)) {
                         // Extract image URLs with maximum resolution
                         for (const canvas of sequence.canvases) {
-                            if (canvas.images && canvas.images.length > 0) {
+                            if (canvas.images && canvas.images?.length > 0) {
                                 const image = canvas.images[0];
                                 if (image.resource && image.resource['@id']) {
                                     let maxResUrl = image.resource['@id'];
@@ -117,11 +117,11 @@ export class TorontoLoader extends BaseLibraryLoader {
                 }
                 
                 // Handle IIIF v3 structure
-                else if (manifest.items && manifest.items.length > 0) {
+                else if (manifest.items && manifest.items?.length > 0) {
                     for (const item of manifest.items) {
-                        if (item.items && item.items.length > 0) {
+                        if (item.items && item.items?.length > 0) {
                             const annotationPage = item.items[0];
-                            if (annotationPage.items && annotationPage.items.length > 0) {
+                            if (annotationPage.items && annotationPage.items?.length > 0) {
                                 const annotation = annotationPage.items[0];
                                 if (annotation.body) {
                                     let maxResUrl = annotation.body.id;
@@ -140,13 +140,13 @@ export class TorontoLoader extends BaseLibraryLoader {
                     }
                 }
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No pages found in IIIF manifest');
                 }
                 
                 const torontoManifest = {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'toronto' as const,
                     displayName,
                     originalUrl: torontoUrl,
@@ -157,7 +157,7 @@ export class TorontoLoader extends BaseLibraryLoader {
                 
                 return torontoManifest;
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load University of Toronto manuscript: ${(error as Error).message}`);
             }
         }

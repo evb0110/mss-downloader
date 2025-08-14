@@ -11,7 +11,7 @@ export class DurhamLoader extends BaseLibraryLoader {
     }
         async loadManifest(url: string): Promise<ManuscriptManifest> {
             const manifestMatch = url.match(/[?&]manifest=([^&]+)/);
-            if (!manifestMatch) {
+            if (!manifestMatch || !manifestMatch[1]) {
                 throw new Error('Invalid Durham URL format - could not extract manifest ID');
             }
             
@@ -20,7 +20,7 @@ export class DurhamLoader extends BaseLibraryLoader {
             // Durham University IIIF manifest URL pattern:
             // https://iiif.durham.ac.uk/manifests/trifle/32150/[first-2-chars]/[next-2-chars]/[next-2-chars]/[full-id]/manifest
             // Example: t1mp2676v52p -> t1/mp/26/t1mp2676v52p/manifest
-            if (manifestId.length < 6) {
+            if (manifestId?.length < 6) {
                 throw new Error(`Invalid Durham manifest ID format: ${manifestId}`);
             }
             

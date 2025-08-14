@@ -49,8 +49,8 @@ export class GenericIiifLoader extends BaseLibraryLoader {
                 let foundImages = false;
                 
                 // Check if this looks like IIIF v2 (has canvas.images)
-                if (canvas.images && Array.isArray(canvas.images)) {
-                    for (const image of canvas.images) {
+                if (canvas['images'] && Array.isArray(canvas['images'])) {
+                    for (const image of canvas['images']) {
                         let imageUrl;
                         
                         // IIIF v2 format
@@ -73,8 +73,8 @@ export class GenericIiifLoader extends BaseLibraryLoader {
                 }
                 
                 // Check if this looks like IIIF v3 (has canvas.items with AnnotationPages)
-                if (!foundImages && canvas.items && Array.isArray(canvas.items)) {
-                    for (const item of canvas.items) {
+                if (!foundImages && canvas['items'] && Array.isArray(canvas['items'])) {
+                    for (const item of canvas['items']) {
                         if (item.type === 'AnnotationPage' && item.items && Array.isArray(item.items)) {
                             for (const annotation of item.items) {
                                 if (annotation.body && annotation.body.id) {
@@ -108,8 +108,8 @@ export class GenericIiifLoader extends BaseLibraryLoader {
                 } else if (typeof manifest.label === 'object') {
                     // Try to extract any language variant
                     const languages = Object.keys(manifest.label);
-                    if (languages.length > 0 && Array.isArray(manifest.label[languages[0]])) {
-                        displayName = manifest.label[languages[0]][0];
+                    if (languages?.length > 0 && languages[0] && Array.isArray(manifest.label[languages[0]])) {
+                        displayName = manifest.label[languages[0]]![0];
                     }
                 }
             }
@@ -117,8 +117,8 @@ export class GenericIiifLoader extends BaseLibraryLoader {
             // Fallback to metadata if no label found
             if (displayName === 'IIIF Document' && manifest.metadata) {
                 const titleMetadata = manifest.metadata.find((m: Record<string, unknown>) => 
-                    m.label === 'Title' || 
-                    (typeof m.label === 'object' && (m.label.en?.[0] === 'Title' || m.label.none?.[0] === 'Title'))
+                    m['label'] === 'Title' || 
+                    (typeof m['label'] === 'object' && ((m['label'] as any).en?.[0] === 'Title' || (m['label'] as any).none?.[0] === 'Title'))
                 );
                 if (titleMetadata?.value) {
                     if (typeof titleMetadata.value === 'string') {
@@ -134,9 +134,9 @@ export class GenericIiifLoader extends BaseLibraryLoader {
             
             return {
                 pageLinks,
-                totalPages: pageLinks.length,
+                totalPages: pageLinks?.length,
                 displayName: displayName || 'IIIF Document',
-                library: '' as string,
+                library: 'gallica' as const,
                 originalUrl: ''
             };
         }

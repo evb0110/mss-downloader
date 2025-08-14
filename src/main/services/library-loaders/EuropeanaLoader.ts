@@ -57,7 +57,7 @@ export class EuropeanaLoader extends BaseLibraryLoader {
                                                 throw new Error('Generic IIIF manifest loader not available');
                                             }
                                             const externalManifest = await this.deps.loadGenericIIIFManifest(manifestUrl);
-                                            console.log(`Europeana: Successfully loaded external manifest with ${externalManifest.totalPages} pages`);
+                                            console.log(`Europeana: Successfully loaded external manifest with ${externalManifest?.totalPages} pages`);
                                             return externalManifest;
                                         }
                                     }
@@ -67,7 +67,7 @@ export class EuropeanaLoader extends BaseLibraryLoader {
                         
                         console.log(`Europeana: No external IIIF manifest found in Record API, falling back to Europeana's own IIIF`);
                     }
-                } catch (error: unknown) {
+                } catch (error: any) {
                     console.log(`Europeana: Record API failed (${error instanceof Error ? error.message : String(error)}), falling back to Europeana's own IIIF`);
                 }
                 
@@ -87,7 +87,7 @@ export class EuropeanaLoader extends BaseLibraryLoader {
                 }
                 
                 const canvases = iiifManifest.sequences[0].canvases;
-                console.log(`Europeana: Processing ${canvases.length} pages from Europeana's own IIIF manifest`);
+                console.log(`Europeana: Processing ${canvases?.length} pages from Europeana's own IIIF manifest`);
                 
                 // Extract image URLs from IIIF manifest
                 const pageLinks = canvases.map((canvas: EuropeanaCanvas) => {
@@ -106,7 +106,7 @@ export class EuropeanaLoader extends BaseLibraryLoader {
                     return null;
                 }).filter((url: string | null): url is string => url !== null);
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No image URLs found in Europeana IIIF manifest');
                 }
                 
@@ -128,7 +128,7 @@ export class EuropeanaLoader extends BaseLibraryLoader {
                     } else if (typeof iiifManifest.label === 'object') {
                         // Handle multilingual labels (IIIF 3.0 format)
                         const labelValues = Object.values(iiifManifest.label);
-                        if (labelValues.length > 0 && Array.isArray(labelValues[0])) {
+                        if (labelValues?.length > 0 && Array.isArray(labelValues[0])) {
                             displayName = (labelValues[0] as string[])[0] || displayName;
                         }
                     }
@@ -136,16 +136,16 @@ export class EuropeanaLoader extends BaseLibraryLoader {
                 
                 const europeanaManifest = {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'europeana' as const,
                     displayName,
                     originalUrl: europeanaUrl,
                 };
                 
-                console.log(`Europeana: Created manifest for "${displayName}" with ${pageLinks.length} pages`);
+                console.log(`Europeana: Created manifest for "${displayName}" with ${pageLinks?.length} pages`);
                 return europeanaManifest;
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error(`Failed to load Europeana manifest: ${error instanceof Error ? error.message : String(error)}`);
                 throw error;
             }

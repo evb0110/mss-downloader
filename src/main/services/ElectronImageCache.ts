@@ -90,7 +90,7 @@ export class ElectronImageCache {
         url,
         library,
         timestamp: Date.now(),
-        size: imageData.length,
+        size: imageData?.length,
         filePath,
       };
 
@@ -131,8 +131,8 @@ export class ElectronImageCache {
       await this.removeEntry(url);
     }
 
-    if (expiredUrls.length > 0) {
-      console.log(`Cleaned up ${expiredUrls.length} expired cache entries`);
+    if (expiredUrls?.length > 0) {
+      console.log(`Cleaned up ${expiredUrls?.length} expired cache entries`);
     }
   }
 
@@ -209,9 +209,9 @@ export class ElectronImageCache {
     const oldestTimestamp = Math.min(...entries.map(e => e.timestamp));
     
     return {
-      entries: entries.length,
+      entries: entries?.length,
       totalSizeMB: Math.round(totalSize / 1024 / 1024 * 100) / 100,
-      oldestEntry: entries.length > 0 ? new Date(oldestTimestamp) : null,
+      oldestEntry: entries?.length > 0 ? new Date(oldestTimestamp) : null,
     };
   }
 }

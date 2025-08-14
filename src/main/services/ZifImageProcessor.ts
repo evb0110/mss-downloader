@@ -263,7 +263,7 @@ export class ZifImageProcessor {
     private async processZifFileInternal(zifUrl: string, outputDir?: string): Promise<Buffer> {
         // Download ZIF file
         const zifBuffer = await this.downloadZifFile(zifUrl);
-        console.log(`Downloaded ZIF file: ${(zifBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+        console.log(`Downloaded ZIF file: ${(zifBuffer?.length / 1024 / 1024).toFixed(2)} MB`);
         
         // Parse header
         const header = this.readTiffHeader(zifBuffer);
@@ -279,7 +279,7 @@ export class ZifImageProcessor {
         
         // Extract tiles
         const tiles = this.extractTiles(zifBuffer, entries, imageInfo, isBigTiff);
-        console.log(`Extracted ${tiles.length} tiles`);
+        console.log(`Extracted ${tiles?.length} tiles`);
         
         if (outputDir) {
             // Save analysis data
@@ -287,9 +287,9 @@ export class ZifImageProcessor {
             
             const analysisData = {
                 sourceUrl: zifUrl,
-                fileSize: zifBuffer.length,
+                fileSize: zifBuffer?.length,
                 imageInfo,
-                tileCount: tiles.length,
+                tileCount: tiles?.length,
                 compression: imageInfo.compression,
                 megapixels: (imageInfo.width * imageInfo.height) / 1000000,
                 timestamp: new Date().toISOString()
@@ -301,15 +301,18 @@ export class ZifImageProcessor {
             );
             
             // Save first few tiles as samples
-            for (let i = 0; i < Math.min(3, tiles.length); i++) {
-                const tilePath = path.join(outputDir, `tile-${i}-${tiles[i].x}-${tiles[i].y}.jpg`);
-                await fs.writeFile(tilePath, tiles[i].data);
+            for (let i = 0; i < Math.min(3, tiles?.length); i++) {
+                const tilePath = path.join(outputDir, `tile-${i}-${tiles[i]?.x}-${tiles[i]?.y}.jpg`);
+                const tileData = tiles[i]?.data;
+                if (tileData) {
+                    await fs.writeFile(tilePath, tileData);
+                }
             }
         }
         
         // Stitch tiles into full-resolution image
         const stitchedImage = await this.stitchTiles(tiles, imageInfo);
-        console.log(`Stitched full-resolution image: ${(stitchedImage.length / 1024 / 1024).toFixed(2)} MB`);
+        console.log(`Stitched full-resolution image: ${(stitchedImage?.length / 1024 / 1024)?.toFixed(2)} MB`);
         
         return stitchedImage;
     }
@@ -319,7 +322,7 @@ export class ZifImageProcessor {
      */
     private async stitchTiles(tiles: ExtractedTile[], imageInfo: ImageInfo): Promise<Buffer> {
         try {
-            console.log(`Stitching ${tiles.length} tiles into ${imageInfo.width}x${imageInfo.height} image...`);
+            console.log(`Stitching ${tiles?.length} tiles into ${imageInfo.width}x${imageInfo.height} image...`);
             
             // Try to import Canvas dynamically
             let Canvas: CanvasModule;
@@ -328,7 +331,7 @@ export class ZifImageProcessor {
             } catch {
                 // Canvas not available (e.g., ARM64 build) - return first tile as fallback
                 console.warn('Canvas dependency not available on this platform. Morgan Library .zif processing limited to first tile only.');
-                if (tiles.length > 0) {
+                if (tiles?.length > 0 && tiles[0]?.data) {
                     console.log('Returning first tile as fallback image...');
                     return tiles[0].data;
                 } else {
@@ -350,8 +353,8 @@ export class ZifImageProcessor {
             const batchSize = 10; // Reduced batch size for better timeout handling
             let processedTiles = 0;
             
-            for (let batchStart = 0; batchStart < tiles.length; batchStart += batchSize) {
-                const batch = tiles.slice(batchStart, Math.min(batchStart + batchSize, tiles.length));
+            for (let batchStart = 0; batchStart < tiles?.length; batchStart += batchSize) {
+                const batch = tiles.slice(batchStart, Math.min(batchStart + batchSize, tiles?.length));
                 
                 // Add timeout protection for batch processing
                 const batchTimeout = 30000; // 30 seconds per batch
@@ -367,8 +370,8 @@ export class ZifImageProcessor {
                     processedTiles += processedCount;
                     
                     // Log progress
-                    const progress = Math.round((processedTiles / tiles.length) * 100);
-                    console.log(`Stitching progress: ${progress}% (${processedTiles}/${tiles.length} tiles)`);
+                    const progress = Math.round((processedTiles / tiles?.length) * 100);
+                    console.log(`Stitching progress: ${progress}% (${processedTiles}/${tiles?.length} tiles)`);
                     
                     // Yield control to prevent hanging
                     await new Promise(resolve => setTimeout(resolve, 1));
@@ -377,18 +380,18 @@ export class ZifImageProcessor {
                 }
             }
             
-            console.log(`Stitching complete: ${processedTiles}/${tiles.length} tiles successfully processed`);
+            console.log(`Stitching complete: ${processedTiles}/${tiles?.length} tiles successfully processed`);
             
             // Convert canvas to JPEG buffer (high quality)
-            const jpegBuffer = canvas.toBuffer('image/jpeg', { quality: 0.95 });
+            const jpegBuffer = canvas.toBuffer();
             
-            console.log(`Final image size: ${(jpegBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+            console.log(`Final image size: ${(jpegBuffer?.length / 1024 / 1024).toFixed(2)} MB`);
             
             return jpegBuffer;
             
-        } catch (error: unknown) {
+        } catch (error: any) {
             console.error('Error stitching tiles:', error);
-            throw new Error(`Failed to stitch tiles: ${error.message}`);
+            throw new Error(`Failed to stitch tiles: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 
@@ -423,7 +426,7 @@ export class ZifImageProcessor {
         let processedCount = 0;
         for (const tileData of loadedTiles) {
             if (tileData) {
-                ctx.drawImage(tileData.image, tileData.x, tileData.y, tileData.tileWidth, tileData.tileHeight);
+                ctx.drawImage(tileData.image as any, tileData.x, tileData.y, tileData.tileWidth, tileData.tileHeight);
                 processedCount++;
             }
         }

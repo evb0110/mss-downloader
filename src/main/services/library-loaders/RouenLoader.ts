@@ -72,17 +72,17 @@ export class RouenLoader extends BaseLibraryLoader {
                                 if (typeof obj !== 'object' || obj === null) return null;
                                 
                                 // Check current level for page count fields
-                                if (typeof obj.totalNumberPage === 'number' && obj.totalNumberPage > 0) {
-                                    return obj.totalNumberPage;
+                                if (typeof obj['totalNumberPage'] === 'number' && obj['totalNumberPage'] > 0) {
+                                    return obj['totalNumberPage'];
                                 }
-                                if (typeof obj.totalVues === 'number' && obj.totalVues > 0) {
-                                    return obj.totalVues;
+                                if (typeof obj['totalVues'] === 'number' && obj['totalVues'] > 0) {
+                                    return obj['totalVues'];
                                 }
                                 
                                 // Recursively search nested objects and arrays
                                 for (const key in obj) {
                                     if (Object.prototype.hasOwnProperty.call(obj, key)) {
-                                        const result = findPageCount(obj[key]);
+                                        const result = findPageCount(obj[key] as Record<string, unknown>);
                                         if (result !== null) return result;
                                     }
                                 }
@@ -90,7 +90,7 @@ export class RouenLoader extends BaseLibraryLoader {
                                 return null;
                             };
                             
-                            foundPageCount = findPageCount(manifestData);
+                            foundPageCount = findPageCount(manifestData as Record<string, unknown>);
                             if (foundPageCount) {
                                 console.log(`Found page count via recursive search: ${foundPageCount}`);
                             }
@@ -113,8 +113,11 @@ export class RouenLoader extends BaseLibraryLoader {
                                 // Recursively search
                                 for (const key in obj) {
                                     if (Object.prototype.hasOwnProperty.call(obj, key)) {
-                                        const result = findTitle(obj[key], keys);
-                                        if (result) return result;
+                                        const value = obj[key];
+                                        if (typeof value === 'object' && value !== null) {
+                                            const result = findTitle(value as Record<string, unknown>, keys);
+                                            if (result) return result;
+                                        }
                                     }
                                 }
                                 
@@ -158,8 +161,8 @@ export class RouenLoader extends BaseLibraryLoader {
                             
                             for (const pattern of patterns) {
                                 const match = viewerHtml.match(pattern);
-                                if (match && match[1]) {
-                                    totalPages = parseInt(match[1], 10);
+                                if (match && match?.[1]) {
+                                    totalPages = parseInt(match?.[1], 10);
                                     console.log(`Found page count via viewer page pattern: ${totalPages}`);
                                     break;
                                 }
@@ -182,17 +185,17 @@ export class RouenLoader extends BaseLibraryLoader {
                     pageLinks.push(imageUrl);
                 }
                 
-                console.log(`Generated ${pageLinks.length} page URLs for Rouen manuscript`);
+                console.log(`Generated ${pageLinks?.length} page URLs for Rouen manuscript`);
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'rouen' as const,
                     displayName,
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load Rouen manuscript: ${(error as Error).message}`);
             }
         }

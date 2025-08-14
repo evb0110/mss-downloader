@@ -12,6 +12,7 @@ export interface LogContext {
     timestamp: string;
     level: LogLevel;
     category: LogCategory;
+    message?: string; // Log message content
     
     // Request context
     library?: string;
@@ -73,7 +74,7 @@ export class ComprehensiveLogger {
     private readonly MAX_MEMORY_LOGS = 5000; // Keep last 5k logs in memory
     
     // System info captured once per session
-    private systemInfo: Record<string, unknown>;
+    private systemInfo: Record<string, unknown> = {};
     
     private constructor() {
         this.initializeLogger();
@@ -120,7 +121,7 @@ export class ComprehensiveLogger {
             appVersion: app.getVersion(),
             osRelease: os.release(),
             totalMemory: os.totalmem(),
-            cpuCount: os.cpus().length,
+            cpuCount: os.cpus()?.length,
             locale: app.getLocale(),
             userDataPath: app.getPath('userData'),
             tempPath: app.getPath('temp')
@@ -134,7 +135,7 @@ export class ComprehensiveLogger {
     }
     
     private async flushLogs() {
-        if (this.logBuffer.length === 0) return;
+        if (this.logBuffer?.length === 0) return;
         
         const logsToWrite = [...this.logBuffer];
         this.logBuffer = [];
@@ -188,7 +189,7 @@ export class ComprehensiveLogger {
             .sort()
             .reverse();
         
-        if (logFiles.length > this.rotationConfig.maxFiles) {
+        if (logFiles?.length > this.rotationConfig.maxFiles) {
             const filesToDelete = logFiles.slice(this.rotationConfig.maxFiles);
             for (const file of filesToDelete) {
                 await fs.promises.unlink(path.join(logsDir, file));
@@ -206,7 +207,7 @@ export class ComprehensiveLogger {
         
         // Add to memory buffer
         this.logs.push(fullContext);
-        if (this.logs.length > this.MAX_MEMORY_LOGS) {
+        if (this.logs?.length > this.MAX_MEMORY_LOGS) {
             this.logs = this.logs.slice(-this.MAX_MEMORY_LOGS);
         }
         
@@ -219,7 +220,7 @@ export class ComprehensiveLogger {
     
     private consoleOutput(context: LogContext) {
         const prefix = `[${context.category}${context.library ? ':' + context.library : ''}]`;
-        const message = context.errorMessage || context.details?.message || 'Log entry';
+        const message = context.errorMessage || context.details?.['message'] || 'Log entry';
         
         switch (context.level) {
             case 'fatal':
@@ -230,7 +231,7 @@ export class ComprehensiveLogger {
                 console.warn(prefix, message, context.details);
                 break;
             case 'debug':
-                if (process.env.DEBUG) {
+                if (process.env['DEBUG']) {
                     console.debug(prefix, message, context.details);
                 }
                 break;
@@ -298,16 +299,16 @@ export class ComprehensiveLogger {
             library: context.library,
             attemptNumber: context.attemptNumber,
             duration: context.duration,
-            errorCode: error.code,
-            errorMessage: error.message,
-            errorStack: error.stack,
-            errorType: error.constructor.name,
+            errorCode: (error as any)?.code,
+            errorMessage: error instanceof Error ? error.message : String(error),
+            errorStack: (error as any)?.stack,
+            errorType: error instanceof Error ? error.constructor.name : typeof error,
             details: {
                 message: 'Network request failed',
-                errno: error.errno,
-                syscall: error.syscall,
-                address: error.address,
-                port: error.port
+                errno: (error as any)?.errno,
+                syscall: (error as any)?.syscall,
+                address: (error as any)?.address,
+                port: (error as any)?.port
             }
         });
     }
@@ -349,7 +350,7 @@ export class ComprehensiveLogger {
             diskSpace,
             errorMessage: result.error?.message,
             errorStack: result.error?.stack,
-            errorCode: result.error && typeof result.error === 'object' && 'code' in result.error ? (result.error as {code: unknown}).code : undefined,
+            errorCode: result.error && typeof result.error === 'object' && 'code' in result.error ? String((result.error as {code: unknown}).code) : undefined,
             details: {
                 message: `File ${operation} ${result.success ? 'succeeded' : 'failed'}`,
                 operation,
@@ -399,8 +400,8 @@ export class ComprehensiveLogger {
         this.log({
             level: 'fatal',
             category: 'system',
-            errorMessage: reason?.message || String(reason),
-            errorStack: reason?.stack,
+            errorMessage: (reason as any)?.message || String(reason),
+            errorStack: (reason as any)?.stack,
             errorType: 'UnhandledPromiseRejection',
             details: {
                 message: 'Unhandled promise rejection',
@@ -419,7 +420,7 @@ export class ComprehensiveLogger {
             errorType: 'UncaughtException',
             details: {
                 message: 'Uncaught exception',
-                errorName: error.name
+                errorName: (error as any)?.name
             }
         });
     }
@@ -460,7 +461,7 @@ export class ComprehensiveLogger {
                 startTime: new Date(this.sessionStartTime).toISOString(),
                 exportTime: new Date().toISOString(),
                 duration: Date.now() - this.sessionStartTime,
-                totalLogs: filteredLogs.length,
+                totalLogs: filteredLogs?.length,
                 appVersion: app.getVersion()
             },
             systemInfo: this.systemInfo,
@@ -492,14 +493,14 @@ export class ComprehensiveLogger {
         let output = '=== MSS DOWNLOADER LOG EXPORT ===\n\n';
         
         output += 'SESSION INFORMATION:\n';
-        output += `  Start Time: ${data.sessionInfo.startTime}\n`;
-        output += `  Export Time: ${data.sessionInfo.exportTime}\n`;
-        output += `  Duration: ${Math.round(data.sessionInfo.duration / 1000)}s\n`;
-        output += `  Total Logs: ${data.sessionInfo.totalLogs}\n`;
-        output += `  App Version: ${data.sessionInfo.appVersion}\n\n`;
+        output += `  Start Time: ${(data as any).sessionInfo.startTime}\n`;
+        output += `  Export Time: ${(data as any).sessionInfo.exportTime}\n`;
+        output += `  Duration: ${Math.round((data as any).sessionInfo.duration / 1000)}s\n`;
+        output += `  Total Logs: ${(data as any).sessionInfo.totalLogs}\n`;
+        output += `  App Version: ${(data as any).sessionInfo.appVersion}\n\n`;
         
         output += 'SYSTEM INFORMATION:\n';
-        for (const [key, value] of Object.entries(data.systemInfo)) {
+        for (const [key, value] of Object.entries((data as any).systemInfo)) {
             output += `  ${key}: ${value}\n`;
         }
         output += '\n';
@@ -507,7 +508,7 @@ export class ComprehensiveLogger {
         output += 'LOG ENTRIES:\n';
         output += '─'.repeat(80) + '\n';
         
-        for (const log of data.logs) {
+        for (const log of (data as any).logs) {
             output += `[${log.timestamp}] [${log.level.toUpperCase()}] [${log.category}]\n`;
             
             if (log.library) output += `  Library: ${log.library}\n`;
@@ -562,7 +563,7 @@ export class ComprehensiveLogger {
             library: 'e-manuscripta',
             details: {
                 phase,
-                ...data,
+                ...(data as object),
                 timestamp: new Date().toISOString()
             }
         });

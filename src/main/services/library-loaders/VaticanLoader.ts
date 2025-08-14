@@ -18,7 +18,7 @@ export class VaticanLoader extends BaseLibraryLoader {
                     throw new Error('Invalid Vatican Library URL format');
                 }
                 
-                const manuscriptName = nameMatch[1];
+                const manuscriptName = nameMatch[1] || '';
                 
                 // Extract cleaner manuscript name according to patterns:
                 // MSS_Vat.lat.7172 -> Vat.lat.7172
@@ -50,12 +50,12 @@ export class VaticanLoader extends BaseLibraryLoader {
                 }
                 
                 const pageLinks = iiifManifest.sequences[0].canvases.map((canvas: Record<string, unknown>) => {
-                    const resource = canvas.images[0].resource;
+                    const resource = ((canvas['images'] as unknown[])[0] as Record<string, unknown>)['resource'] as Record<string, unknown>;
                     
                     // Vatican Library uses a service object with @id pointing to the image service
-                    if (resource.service && resource.service['@id']) {
+                    if (resource['service'] && (resource['service'] as any)["@id"]) {
                         // Extract the base service URL and construct full resolution image URL
-                        const serviceId = resource.service['@id'];
+                        const serviceId = (resource['service'] as any)["@id"];
                         return `${serviceId}/full/full/0/native.jpg`;
                     }
                     
@@ -67,20 +67,20 @@ export class VaticanLoader extends BaseLibraryLoader {
                     return null;
                 }).filter((link: string) => link);
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No pages found in manifest');
                 }
                 
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'vatlib',
                     displayName: displayName,
                     originalUrl: vatLibUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 throw new Error(`Failed to load Vatican Library manuscript: ${(error as Error).message}`);
             }
         }

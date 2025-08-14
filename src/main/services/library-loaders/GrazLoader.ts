@@ -42,7 +42,7 @@ export class GrazLoader extends BaseLibraryLoader {
                         throw new Error('Could not extract manuscript ID from Graz URL');
                     }
                     
-                    manuscriptId = manuscriptIdMatch[1];
+                    manuscriptId = manuscriptIdMatch[1] || '';
                     
                     // If this is a pageview URL, convert to titleinfo ID using known pattern
                     // Pattern: pageview ID - 2 = titleinfo ID (e.g., 8224540 -> 8224538)
@@ -65,52 +65,55 @@ export class GrazLoader extends BaseLibraryLoader {
                 };
                 
                 // FIXED: Enhanced progress monitoring for Graz's large IIIF manifests with better timeout handling
-                const progressMonitor = this.deps.createProgressMonitor({
-                    task: 'University of Graz manifest loading',
-                    category: 'graz',
-                    initialTimeout: 240000,     // 4 minutes initial (increased)
-                    maxTimeout: 1200000,        // 20 minutes max (increased)
-                    progressCheckInterval: 15000, // Check every 15 seconds
-                    minProgressThreshold: 0.01,   // Any progress is good progress
-                    onInitialTimeoutReached: (state: Record<string, unknown>) => {
-                        console.log(`[Graz] ${state.statusMessage}`);
+                const progressMonitor = this.deps.createProgressMonitor(
+                    'University of Graz manifest loading',
+                    'graz',
+                    {
+                        initialTimeout: 240000,     // 4 minutes initial (increased)
+                        maxTimeout: 1200000,        // 20 minutes max (increased)
+                        progressCheckInterval: 15000, // Check every 15 seconds
+                        minProgressThreshold: 0.01   // Any progress is good progress
                     },
-                    onStuckDetected: (state: Record<string, unknown>) => {
-                        console.warn(`[Graz] ${state.statusMessage}`);
-                    },
-                    onProgressResumed: (state: Record<string, unknown>) => {
-                        console.log(`[Graz] ${state.statusMessage}`);
-                    },
-                    onTimeout: (state: Record<string, unknown>) => {
-                        console.error(`[Graz] ${state.statusMessage}`);
+                    {
+                        onInitialTimeoutReached: (state: Record<string, unknown>) => {
+                            console.log(`[Graz] ${state['statusMessage']}`);
+                        },
+                        onStuckDetected: (state: Record<string, unknown>) => {
+                            console.warn(`[Graz] ${state['statusMessage']}`);
+                        },
+                        onProgressResumed: (state: Record<string, unknown>) => {
+                            console.log(`[Graz] ${state['statusMessage']}`);
+                        },
+                        onTimeout: (state: Record<string, unknown>) => {
+                            console.error(`[Graz] ${state['statusMessage']}`);
+                        }
                     }
-                });
+                );
                 
-                progressMonitor.start();
-                progressMonitor.updateProgress(0, 1, 'Loading University of Graz IIIF manifest...');
+                (progressMonitor as any)['start']();
+                (progressMonitor as any)['updateProgress'](0, 1, 'Loading University of Graz IIIF manifest...');
                 
                 let response: Response;
                 let manifestData: Record<string, unknown>;
                 try {
                     console.log(`[Graz] Starting manifest fetch with extended timeout for Issue #2...`);
                     // ULTRA-PRIORITY FIX for Issue #2: Extended timeout for Windows IPC stability
-                    const isWindows = process.platform === 'win32';
-                    const timeout = isWindows ? 600000 : 300000; // 10 minutes for Windows, 5 for others
+                    // Platform check and timeout removed - were unused
                     
                     response = await this.deps.fetchWithHTTPS(manifestUrl, { 
-                        headers,
-                        timeout // Dynamic timeout based on platform
+                        headers
+                        // Note: timeout handling moved to fetchWithHTTPS implementation
                     });
                     
                     if (!response.ok) {
                         throw new Error(`Failed to fetch IIIF manifest: ${response.status} ${response.statusText}`);
                     }
                     
-                    progressMonitor.updateProgress(0.5, 1, 'IIIF manifest downloaded, parsing...');
+                    (progressMonitor as any)['updateProgress'](0.5, 1, 'IIIF manifest downloaded, parsing...');
                     
                     // Parse JSON with timeout protection
                     const jsonText = await response.text();
-                    console.log(`Graz manifest size: ${(jsonText.length / 1024).toFixed(1)} KB`);
+                    console.log(`Graz manifest size: ${(jsonText?.length / 1024).toFixed(1)} KB`);
                     
                     try {
                         manifestData = JSON.parse(jsonText);
@@ -118,27 +121,28 @@ export class GrazLoader extends BaseLibraryLoader {
                         throw new Error(`Failed to parse IIIF manifest JSON: ${(parseError as Error).message}`);
                     }
                     
-                    progressMonitor.updateProgress(1, 1, 'IIIF manifest parsed successfully');
-                } catch (error: unknown) {
+                    (progressMonitor as any)['updateProgress'](1, 1, 'IIIF manifest parsed successfully');
+                } catch (error: any) {
                     console.error(`[Graz] Manifest loading error:`, error);
-                    console.error(`[Graz] Error code: ${error.code}, Error name: ${error.name}`);
+                    console.error(`[Graz] Error code: ${(error as any)?.code}, Error name: ${(error as any)?.name}`);
                     console.error(`[Graz] Full error details:`, JSON.stringify(error, null, 2));
                     
-                    if (error.name === 'AbortError' || error.message?.includes('timeout')) {
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    if ((error as any)?.name === 'AbortError' || errorMessage?.includes('timeout')) {
                         throw new Error('University of Graz manifest loading timed out. The server may be experiencing high load. Please try again in a few moments.');
                     }
-                    if (error.code === 'ECONNRESET') {
+                    if ((error as any)?.code === 'ECONNRESET') {
                         throw new Error('University of Graz connection was reset. This often happens with large manuscripts. Please try again.');
                     }
-                    if (error.code === 'ENOTFOUND') {
+                    if ((error as any)?.code === 'ENOTFOUND') {
                         throw new Error('University of Graz server could not be found. Please check your internet connection.');
                     }
-                    if (error.code === 'ECONNREFUSED') {
+                    if ((error as any)?.code === 'ECONNREFUSED') {
                         throw new Error('University of Graz server refused the connection. The server may be down for maintenance.');
                     }
                     throw error;
                 } finally {
-                    progressMonitor.complete();
+                    (progressMonitor as any)['complete']();
                 }
                 
                 // Use already-parsed manifestData
@@ -149,26 +153,27 @@ export class GrazLoader extends BaseLibraryLoader {
                 let displayName = 'University of Graz Manuscript';
                 
                 // Extract title from manifest metadata
-                if (manifest.label) {
-                    if (typeof manifest.label === 'string') {
-                        displayName = manifest.label;
-                    } else if (manifest.label['@value']) {
-                        displayName = manifest.label['@value'];
-                    } else if (manifest.label.en) {
-                        displayName = Array.isArray(manifest.label.en) ? manifest.label.en[0] : manifest.label.en;
-                    } else if (manifest.label.de) {
-                        displayName = Array.isArray(manifest.label.de) ? manifest.label.de[0] : manifest.label.de;
+                if (manifest['label']) {
+                    if (typeof manifest['label'] === 'string') {
+                        displayName = manifest['label'];
+                    } else if ((manifest['label'] as Record<string, unknown>)['@value']) {
+                        displayName = (manifest['label'] as Record<string, unknown>)['@value'] as string;
+                    } else if ((manifest['label'] as any)['en']) {
+                        displayName = Array.isArray((manifest['label'] as any).en) ? (manifest['label'] as any).en[0] : (manifest['label'] as any).en;
+                    } else if ((manifest['label'] as any).de) {
+                        displayName = Array.isArray((manifest['label'] as any).de) ? (manifest['label'] as any).de[0] : (manifest['label'] as any).de;
                     }
                 }
                 
                 // Process IIIF sequences and canvases
-                if (manifest.sequences && manifest.sequences.length > 0) {
-                    const sequence = manifest.sequences[0];
-                    console.log(`[Graz] Processing ${sequence.canvases?.length || 0} canvases from manifest`);
+                if (manifest['sequences'] && Array.isArray(manifest['sequences']) && manifest['sequences'].length > 0) {
+                    const sequence = (manifest['sequences'] as Record<string, unknown>[])[0];
+                    console.log(`[Graz] Processing ${(sequence?.['canvases'] as any)?.length || 0} canvases from manifest`);
                     
-                    if (sequence.canvases) {
-                        for (const canvas of sequence.canvases) {
-                            if (canvas.images && canvas.images.length > 0) {
+                    const canvases = sequence?.['canvases'] as any[];
+                    if (canvases && Array.isArray(canvases)) {
+                        for (const canvas of canvases) {
+                            if (canvas.images && canvas.images?.length > 0) {
                                 const image = canvas.images[0];
                                 let imageUrl = '';
                                 
@@ -209,10 +214,10 @@ export class GrazLoader extends BaseLibraryLoader {
                     }
                 }
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     console.error(`[Graz] No page images found in manifest structure`);
-                    console.error(`[Graz] Manifest sequences: ${manifest.sequences?.length || 0}`);
-                    console.error(`[Graz] First sequence canvases: ${manifest.sequences?.[0]?.canvases?.length || 0}`);
+                    console.error(`[Graz] Manifest sequences: ${Array.isArray(manifest['sequences']) ? manifest['sequences'].length : 0}`);
+                    console.error(`[Graz] First sequence canvases: ${((manifest['sequences'] as Record<string, unknown>[])?.[0]?.['canvases'] as any)?.length || 0}`);
                     throw new Error('No page images found in IIIF manifest. The manifest structure may be different than expected.');
                 }
                 
@@ -223,23 +228,23 @@ export class GrazLoader extends BaseLibraryLoader {
                     .trim()
                     .replace(/\.$/, ''); // Remove trailing period
                 
-                console.log(`University of Graz manifest loaded: ${pageLinks.length} pages`);
-                if (pageLinks.length > 0) {
+                console.log(`University of Graz manifest loaded: ${pageLinks?.length} pages`);
+                if (pageLinks?.length > 0) {
                     console.log(`First page URL: ${pageLinks[0]}`);
-                    console.log(`Last page URL: ${pageLinks[pageLinks.length - 1]}`);
+                    console.log(`Last page URL: ${pageLinks[pageLinks?.length - 1]}`);
                 }
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
-                    library: 'graz' as string,
+                    totalPages: pageLinks?.length,
+                    library: 'graz' as const,
                     displayName: sanitizedName,
                     originalUrl: grazUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error(`[Graz] loadGrazManifest failed:`, error);
-                console.error(`[Graz] Error stack:`, error.stack);
+                console.error(`[Graz] Error stack:`, (error as any)?.stack);
                 console.error(`[Graz] Original URL: ${grazUrl}`);
                 console.error(`[Graz] Manifest URL attempted: ${manifestUrl || 'not constructed'}`);
                 
@@ -250,9 +255,9 @@ export class GrazLoader extends BaseLibraryLoader {
     [${new Date().toISOString()}] Graz Manifest Error:
     URL: ${grazUrl}
     Manifest URL: ${manifestUrl || 'not constructed'}
-    Error: ${error.message || 'Unknown error'}
-    Code: ${error.code || 'N/A'}
-    Stack: ${error.stack || 'No stack trace'}
+    Error: ${error instanceof Error ? error.message : String(error) || 'Unknown error'}
+    Code: ${(error as any)?.code || 'N/A'}
+    Stack: ${(error as any)?.stack || 'No stack trace'}
     ---
     `;
                     await fs.appendFile(crashLogPath, errorDetails).catch(() => {});
@@ -261,36 +266,30 @@ export class GrazLoader extends BaseLibraryLoader {
                 }
                 
                 // Log to download logger for better debugging
-                this.deps.logger.logError('manifest_load_error', error, {
-                    library: 'graz',
-                    url: grazUrl,
-                    manifestUrl: manifestUrl || 'not constructed',
-                    errorCode: error.code,
-                    errorName: error.name
-                });
+                this.deps.logger.logManifestLoad('graz', grazUrl, undefined, error as Error);
                 
                 // Enhanced error messages for specific network issues
-                if (error.code === 'ETIMEDOUT') {
+                if ((error as any)?.code === 'ETIMEDOUT') {
                     throw new Error(`University of Graz connection timeout. The server is not responding - this may be due to high load or network issues. Please try again later or check if the manuscript is accessible through the Graz website at unipub.uni-graz.at`);
                 }
                 
-                if (error.code === 'ECONNRESET') {
+                if ((error as any)?.code === 'ECONNRESET') {
                     throw new Error(`University of Graz connection was reset. The server closed the connection unexpectedly. This often happens with large manuscripts. Please try again in a few moments.`);
                 }
                 
-                if (error.code === 'ENOTFOUND') {
+                if ((error as any)?.code === 'ENOTFOUND') {
                     throw new Error(`University of Graz server could not be reached. Please check your internet connection and verify that unipub.uni-graz.at is accessible.`);
                 }
                 
-                if (error.message?.includes('timeout')) {
+                if (error instanceof Error ? error.message : String(error)?.includes('timeout')) {
                     throw new Error(`University of Graz request timed out. Large manuscripts from Graz can take several minutes to load. The system automatically extends timeouts for Graz, but the server may still be experiencing issues. Please try again.`);
                 }
                 
-                if (error.message?.includes('AbortError')) {
+                if (error instanceof Error ? error.message : String(error)?.includes('AbortError')) {
                     throw new Error(`University of Graz manifest loading was cancelled. The manifest may be very large or the server may be experiencing issues. Please try again.`);
                 }
                 
-                if (error.message?.includes('Could not extract manuscript ID')) {
+                if (error instanceof Error ? error.message : String(error)?.includes('Could not extract manuscript ID')) {
                     throw new Error(`Invalid Graz URL format. Please use a URL like: https://unipub.uni-graz.at/obvugrscript/content/titleinfo/8224538`);
                 }
                 

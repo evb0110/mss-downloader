@@ -27,7 +27,7 @@ export interface LoaderDependencies {
     sharedManifestAdapter?: SharedManifestAdapter;
     ultraBDLService?: UltraReliableBDLService;
     // Progress monitoring
-    createProgressMonitor: (options: Record<string, unknown>) => Record<string, unknown>;
+    createProgressMonitor: (operationName: string, library?: string, customConfig?: any, callbacks?: any) => any;
     // Helper for validation
     validateInternetCulturaleImage?: (buffer: ArrayBuffer, url: string) => Promise<void>;
     // Other loaders for dependencies
@@ -67,11 +67,11 @@ export abstract class BaseLibraryLoader implements LibraryLoader {
     protected createManifest(title: string, pages: Array<{ url: string, label?: string }>): ManuscriptManifest {
         return {
             title,
-            totalPages: pages.length,
-            pages: pages.map((page, index) => ({
-                url: page.url,
-                label: page.label || `Page ${index + 1}`
-            }))
+            totalPages: pages?.length,
+            pageLinks: pages.map(page => page.url),
+            library: 'generic' as any, // Placeholder, will be overridden by specific loaders
+            displayName: title,
+            originalUrl: ''
         };
     }
 }

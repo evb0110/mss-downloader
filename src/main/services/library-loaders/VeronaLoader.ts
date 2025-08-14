@@ -11,6 +11,7 @@ export class VeronaLoader extends BaseLibraryLoader {
     }
     
     async loadManifest(originalUrl: string): Promise<ManuscriptManifest> {
+            const startTime = Date.now();
             try {
                 let manifestUrl: string;
                 let displayName: string;
@@ -103,14 +104,14 @@ export class VeronaLoader extends BaseLibraryLoader {
                 }
                 
                 const canvases = manifestData.sequences[0].canvases;
-                console.log(`Found ${canvases.length} pages in Verona manuscript`);
+                console.log(`Found ${canvases?.length} pages in Verona manuscript`);
                 this.deps.logger.log({
                     level: 'info',
                     library: 'verona',
                     url: manifestUrl,
                     message: 'Verona manifest loaded successfully',
                     details: {
-                        totalPages: canvases.length,
+                        totalPages: canvases?.length,
                         manuscriptLabel: manifestData.label || 'Unknown',
                         manifestSize: JSON.stringify(manifestData).length
                     }
@@ -122,11 +123,11 @@ export class VeronaLoader extends BaseLibraryLoader {
                 // Extract page URLs with maximum quality
                 const pageLinks = canvases.map((canvas: Record<string, unknown>, index: number) => {
                     try {
-                        const resource = canvas.images[0].resource;
+                        const resource = ((canvas['images'] as unknown[])[0] as Record<string, unknown>)['resource'] as Record<string, unknown>;
                         
                         // NBM uses IIIF Image API - construct highest quality URL
-                        if (resource.service && resource.service['@id']) {
-                            const serviceId = resource.service['@id'].replace(/\/$/, ''); // Remove trailing slash to avoid double slashes
+                        if (resource['service'] && (resource['service'] as any)["@id"]) {
+                            const serviceId = (resource['service'] as any)["@id"].replace(/\/$/, ''); // Remove trailing slash to avoid double slashes
                             // Use full/full for maximum native resolution
                             const imageUrl = `${serviceId}/full/full/0/native.jpg`;
                             
@@ -140,8 +141,8 @@ export class VeronaLoader extends BaseLibraryLoader {
                                     message: 'Processing page URLs',
                                     details: {
                                         processed: index + 1,
-                                        total: canvases.length,
-                                        percentage: Math.round(((index + 1) / canvases.length) * 100)
+                                        total: canvases?.length,
+                                        percentage: Math.round(((index + 1) / canvases?.length) * 100)
                                     }
                                 });
                             }
@@ -160,40 +161,37 @@ export class VeronaLoader extends BaseLibraryLoader {
                     }
                 }).filter((link: string) => link);
                 
-                if (pageLinks.length === 0) {
+                if (pageLinks?.length === 0) {
                     throw new Error('No valid page images found in manifest');
                 }
                 
-                this.deps.logger.logDownloadComplete('verona', manifestUrl, {
-                    validPages: pageLinks.length,
-                    skippedPages: canvases.length - pageLinks.length,
-                    firstPageUrl: pageLinks[0]?.substring(0, 100) + '...'
-                });
+                this.deps.logger.logDownloadComplete('verona', manifestUrl, Date.now() - startTime, pageLinks?.length || 0);
                 
                 // Extract title from manifest
                 const title = manifestData.label || manifestData['@label'] || displayName;
                 
                 return {
                     pageLinks,
-                    totalPages: pageLinks.length,
+                    totalPages: pageLinks?.length,
                     library: 'verona',
                     displayName: title || displayName,
                     originalUrl: originalUrl,
                 };
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 // Provide specific error messages for common issues
-                if (error.message.includes('timeout') || error.message.includes('ETIMEDOUT') || 
-                    error.code === 'ETIMEDOUT' || error.code === 'ECONNREFUSED' || error.code === 'ECONNRESET') {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                if (errorMessage.includes('timeout') || errorMessage.includes('ETIMEDOUT') || 
+                    (error as any)?.code === 'ETIMEDOUT' || (error as any)?.code === 'ECONNREFUSED' || (error as any)?.code === 'ECONNRESET') {
                     // Check if this is actually a processing timeout vs connection timeout
-                    if (error.message.includes('Verona server is not responding')) {
+                    if (error instanceof Error ? error.message : String(error).includes('Verona server is not responding')) {
                         throw new Error(
                             `Verona NBM processing timeout. The manuscript may contain too many pages for initial loading. ` +
                             `Please try using the direct IIIF manifest URL from https://nbm.regione.veneto.it/ instead.`
                         );
                     }
                     throw new Error(
-                        `Verona NBM server connection failed (${error.code || 'TIMEOUT'}). The server may be temporarily unavailable. ` +
+                        `Verona NBM server connection failed (${(error as any)?.code || 'TIMEOUT'}). The server may be temporarily unavailable. ` +
                         `Please try again in a few minutes. If the problem persists, the server may be undergoing maintenance.`
                     );
                 }

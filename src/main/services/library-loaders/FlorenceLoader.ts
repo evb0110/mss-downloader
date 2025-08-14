@@ -84,7 +84,7 @@ export class FlorenceLoader extends BaseLibraryLoader {
             }
 
             const html = await pageResponse.text();
-            console.log(`📄 Page HTML retrieved (${html.length} characters)`);
+            console.log(`📄 Page HTML retrieved (${html?.length} characters)`);
 
             // Extract __INITIAL_STATE__ from the HTML
             const stateMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*JSON\.parse\("(.+?)"\);/);
@@ -94,8 +94,11 @@ export class FlorenceLoader extends BaseLibraryLoader {
 
             // Unescape the JSON string
             const escapedJson = stateMatch[1];
+            if (!escapedJson) {
+                throw new Error('Florence state match found but content is empty');
+            }
             const unescapedJson = escapedJson
-                .replace(/\\"/g, '"')
+                ?.replace(/\\"/g, '"')
                 .replace(/\\\\/g, '\\')
                 .replace(/\\u0026/g, '&')
                 .replace(/\\u003c/g, '<')
@@ -123,7 +126,7 @@ export class FlorenceLoader extends BaseLibraryLoader {
             if (itemData.parentId && itemData.parentId !== -1) {
                 // This is a child page - get all siblings from parent
                 if (itemData.parent && itemData.parent.children && Array.isArray(itemData.parent.children)) {
-                    console.log(`📄 Found ${itemData.parent.children.length} pages in parent compound object`);
+                    console.log(`📄 Found ${itemData.parent.children?.length} pages in parent compound object`);
                     
                     // Filter out non-page items (like Color Chart, Dorso, etc.)
                     pages = itemData.parent.children
@@ -153,7 +156,7 @@ export class FlorenceLoader extends BaseLibraryLoader {
                             
                             // Add shortened title if available
                             if (titleField && titleField.value) {
-                                const shortTitle = titleField.value.split('.')[0].substring(0, 50);
+                                const shortTitle = titleField.value?.split('.')[0]?.substring(0, 50);
                                 displayName = `${subjecField.value} - ${shortTitle}`;
                             }
                         } else if (identField && identField.value) {
@@ -171,8 +174,8 @@ export class FlorenceLoader extends BaseLibraryLoader {
                 // This might be a parent itself or a single page
                 // Check the current page for children
                 const currentPageChildren = state?.item?.children;
-                if (currentPageChildren && Array.isArray(currentPageChildren) && currentPageChildren.length > 0) {
-                    console.log(`📄 Found ${currentPageChildren.length} child pages in current item`);
+                if (currentPageChildren && Array.isArray(currentPageChildren) && currentPageChildren?.length > 0) {
+                    console.log(`📄 Found ${currentPageChildren?.length} child pages in current item`);
                     
                     pages = currentPageChildren
                         .filter((child: FlorenceChild) => {
@@ -200,7 +203,7 @@ export class FlorenceLoader extends BaseLibraryLoader {
                             
                             // Add shortened title if available
                             if (titleField && titleField.value) {
-                                const shortTitle = titleField.value.split('.')[0].substring(0, 50);
+                                const shortTitle = titleField.value?.split('.')[0]?.substring(0, 50);
                                 displayName = `${subjecField.value} - ${shortTitle}`;
                             }
                         } else if (identField && identField.value) {
@@ -214,7 +217,7 @@ export class FlorenceLoader extends BaseLibraryLoader {
                 } else {
                     // Single page manuscript
                     pages = [{
-                        id: itemId,
+                        id: itemId || '',
                         title: itemData.title || 'Page 1'
                     }];
                     
@@ -223,11 +226,11 @@ export class FlorenceLoader extends BaseLibraryLoader {
                 }
             }
 
-            if (pages.length === 0) {
+            if (pages?.length === 0) {
                 throw new Error('No pages found in Florence manuscript');
             }
 
-            console.log(`📄 Extracted ${pages.length} manuscript pages (excluding binding/charts)`);
+            console.log(`📄 Extracted ${pages?.length} manuscript pages (excluding binding/charts)`);
 
             // Generate IIIF URLs for all pages
             // Florence uses format: https://cdm21059.contentdm.oclc.org/iiif/2/plutei:{id}/full/{width},/0/default.jpg
@@ -236,17 +239,17 @@ export class FlorenceLoader extends BaseLibraryLoader {
                 return `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${page.id}/full/6000,/0/default.jpg`;
             });
 
-            console.log(`📄 Florence manuscript processed: ${pages.length} pages with maximum resolution (6000px width)`);
+            console.log(`📄 Florence manuscript processed: ${pages?.length} pages with maximum resolution (6000px width)`);
 
             return {
                 pageLinks,
-                totalPages: pageLinks.length,
+                totalPages: pageLinks?.length,
                 library: 'florence',
                 displayName: displayName,
                 originalUrl: originalUrl,
             };
 
-        } catch (error: unknown) {
+        } catch (error: any) {
             this.deps.logger.logDownloadError('florence', originalUrl, error as Error);
             throw new Error(`Failed to load Florence manuscript: ${error instanceof Error ? error.message : String(error)}`);
         }

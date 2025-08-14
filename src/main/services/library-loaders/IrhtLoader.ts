@@ -21,7 +21,7 @@ export class IrhtLoader extends BaseLibraryLoader {
             let lastError: Error = new Error('Unknown error');
             for (let attempt = 1; attempt <= 3; attempt++) {
                 try {
-                    const response = await this.deps.fetchDirect(url, {}, attempt);
+                    const response = await this.deps.fetchDirect(url, {});
                     
                     if (response.status === 500) {
                         throw new Error(`IRHT server error (HTTP 500) - this appears to be a server-side issue with the IRHT digital archive. The manuscript may be temporarily unavailable. Please try again later or verify the URL: ${url}`);
@@ -48,14 +48,14 @@ export class IrhtLoader extends BaseLibraryLoader {
                     let imageIds: string[] = [];
                     for (const pattern of patterns) {
                         const matches = [...html.matchAll(pattern)];
-                        const ids = matches.map((m) => m[1]);
+                        const ids = matches.map((m) => m[1] || '');
                         imageIds.push(...ids);
                     }
                     
                     // Remove duplicates and filter out invalid IDs
-                    imageIds = [...new Set(imageIds)].filter(id => id && id.length > 5);
+                    imageIds = [...new Set(imageIds)].filter(id => id && id?.length > 5);
                     
-                    if (imageIds.length === 0) {
+                    if (imageIds?.length === 0) {
                         throw new Error(`No IIIF images found in IRHT page. The manuscript may not be digitized or may require authentication. URL: ${url}`);
                     }
                     
@@ -63,17 +63,17 @@ export class IrhtLoader extends BaseLibraryLoader {
                         `https://iiif.irht.cnrs.fr/iiif/ark:/${authority}/${id}/full/max/0/default.jpg`,
                     );
                     
-                    console.log(`IRHT: Successfully extracted ${pageLinks.length} pages from ${url}`);
+                    console.log(`IRHT: Successfully extracted ${pageLinks?.length} pages from ${url}`);
                     
                     return {
                         pageLinks,
-                        totalPages: pageLinks.length,
+                        totalPages: pageLinks?.length,
                         displayName: `IRHT_${name}`,
                         library: 'irht',
                         originalUrl: url
                     };
                     
-                } catch (error: unknown) {
+                } catch (error: any) {
                     lastError = error;
                     
                     // Only retry for server errors (5xx), not client errors (4xx)

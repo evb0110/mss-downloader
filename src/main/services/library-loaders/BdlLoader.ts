@@ -25,13 +25,17 @@ export class BdlLoader extends BaseLibraryLoader {
                     // Format: https://www.bdl.servizirl.it/vufind/Record/BDL-OGGETTO-3903
                     const match = bdlUrl.match(/BDL-OGGETTO-(\d+)/);
                     if (match) {
-                        manuscriptId = match[1];
+                        manuscriptId = match?.[1] || null;
                         console.log(`Extracted manuscript ID from vufind URL: ${manuscriptId}`);
                     }
                 } else if (bdlUrl.includes('/bdl/bookreader/')) {
                     // Format: https://www.bdl.servizirl.it/bdl/bookreader/index.html?path=fe&cdOggetto=3903
                     const urlWithoutHash = bdlUrl.split('#')[0];
-                    const urlParams = new URLSearchParams(urlWithoutHash.split('?')[1]);
+                    const queryString = urlWithoutHash?.split('?')[1];
+                    if (!queryString) {
+                        throw new Error('BDL URL missing query parameters');
+                    }
+                    const urlParams = new URLSearchParams(queryString);
                     manuscriptId = urlParams.get('cdOggetto');
                     pathType = urlParams.get('path') || 'fe';
                 } else {
@@ -50,18 +54,22 @@ export class BdlLoader extends BaseLibraryLoader {
                 console.log(`Fetching pages from: ${pagesApiUrl}`);
                 
                 // Use intelligent progress monitoring for BDL API call with enhanced timeouts
-                const progressMonitor = this.deps.createProgressMonitor({
-                    task: 'BDL manifest loading',
-                    category: 'bdl',
-                    initialTimeout: 30000,
-                    maxTimeout: 90000,
-                    onStuckDetected: (state: { consecutive: number; threshold: number }) => {
-                        console.warn(`[BDL] ${state.statusMessage}`);
+                const progressMonitor = this.deps.createProgressMonitor(
+                    'BDL manifest loading',
+                    'bdl',
+                    {
+                        initialTimeout: 30000,
+                        maxTimeout: 90000
+                    },
+                    {
+                        onStuckDetected: (state: { consecutive: number; threshold: number }) => {
+                            console.warn(`[BDL] ${(state as any).statusMessage}`);
+                        }
                     }
-                });
+                );
                 
-                const controller = progressMonitor.start();
-                progressMonitor.updateProgress(0, 1, 'Loading BDL pages data...');
+                const controller = (progressMonitor as any)['start']();
+                (progressMonitor as any)['updateProgress'](0, 1, 'Loading BDL pages data...');
                 
                 try {
                     const response = await this.deps.fetchWithProxyFallback(pagesApiUrl, {
@@ -72,7 +80,7 @@ export class BdlLoader extends BaseLibraryLoader {
                         }
                     });
                     
-                    progressMonitor.updateProgress(1, 1, 'BDL pages data loaded successfully');
+                    (progressMonitor as any)['updateProgress'](1, 1, 'BDL pages data loaded successfully');
                     
                     if (!response.ok) {
                         throw new Error(`Failed to fetch BDL pages: HTTP ${response.status} ${response.statusText}`);
@@ -80,11 +88,11 @@ export class BdlLoader extends BaseLibraryLoader {
                     
                     const pagesData = await response.json();
                     
-                    if (!Array.isArray(pagesData) || pagesData.length === 0) {
+                    if (!Array.isArray(pagesData) || pagesData?.length === 0) {
                         throw new Error('Invalid or empty pages data from BDL API');
                     }
                     
-                    console.log(`Found ${pagesData.length} pages in BDL manuscript`);
+                    console.log(`Found ${pagesData?.length} pages in BDL manuscript`);
                     
                     // Extract image URLs from pages data with validation
                     const pageLinks: string[] = [];
@@ -105,42 +113,42 @@ export class BdlLoader extends BaseLibraryLoader {
                         }
                     }
                     
-                    if (pageLinks.length === 0) {
+                    if (pageLinks?.length === 0) {
                         throw new Error('No valid image URLs found in BDL pages data');
                     }
                     
                     // PERFORMANCE NOTE: Using 1024px width for 10x faster downloads
                     // Full resolution can be enabled in settings if needed
                     console.log('BDL configured for optimized performance (1024px width)');
-                    console.log(`Performance mode: Reduced size for ${pageLinks.length} pages (10x faster downloads)`);
+                    console.log(`Performance mode: Reduced size for ${pageLinks?.length} pages (10x faster downloads)`);
                     
                     const displayName = `BDL_${manuscriptId}`;
-                    console.log(`Generated ${pageLinks.length} page URLs for "${displayName}"`);
+                    console.log(`Generated ${pageLinks?.length} page URLs for "${displayName}"`);
                     
                     return {
                         pageLinks,
-                        totalPages: pageLinks.length,
+                        totalPages: pageLinks?.length,
                         library: 'bdl',
                         displayName,
                         originalUrl: bdlUrl
                     };
                     
                 } catch (fetchError: unknown) {
-                    if (fetchError.name === 'AbortError') {
+                    if ((fetchError as any)?.name === 'AbortError') {
                         throw new Error('BDL API request timed out. The BDL server (bdl.servizirl.it) may be experiencing high load or temporary connectivity issues. Please try again later.');
                     }
-                    if (fetchError.message?.includes('fetch failed')) {
+                    if (fetchError instanceof Error ? fetchError instanceof Error ? fetchError.message : String(fetchError) : String(fetchError)?.includes('fetch failed')) {
                         throw new Error('BDL server is currently unreachable. The BDL service (bdl.servizirl.it) may be temporarily down. Please check your internet connection and try again later.');
                     }
-                    if (fetchError.message?.includes('HTTP 5')) {
+                    if (fetchError instanceof Error ? fetchError instanceof Error ? fetchError.message : String(fetchError) : String(fetchError)?.includes('HTTP 5')) {
                         throw new Error('BDL server is experiencing internal errors. Please try again in a few minutes.');
                     }
                     throw fetchError;
                 } finally {
-                    progressMonitor.complete();
+                    (progressMonitor as any)['complete']();
                 }
                 
-            } catch (error: unknown) {
+            } catch (error: any) {
                 console.error('Error loading BDL manuscript manifest:', error);
                 throw new Error(`Failed to load BDL manuscript: ${(error as Error).message}`);
             }

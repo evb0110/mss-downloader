@@ -14,7 +14,7 @@ export class BneLoader extends BaseLibraryLoader {
         try {
             // Extract manuscript ID from URL using regex
             const idMatch = originalUrl.match(/[?&]id=(\d+)/);
-            if (!idMatch) {
+            if (!idMatch || !idMatch[1]) {
                 throw new Error('Could not extract manuscript ID from BNE URL');
             }
 
@@ -47,7 +47,7 @@ export class BneLoader extends BaseLibraryLoader {
                 originalUrl: originalUrl,
             };
 
-        } catch (error: unknown) {
+        } catch (error: any) {
             throw new Error(`Failed to load BNE manuscript: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
@@ -135,7 +135,6 @@ export class BneLoader extends BaseLibraryLoader {
 
             const response = await fetchFn(sanitizedUrl, {
                 method: 'HEAD',
-                timeout: 3000, // Short timeout for HEAD requests
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                     'Accept': 'application/pdf',
@@ -147,8 +146,8 @@ export class BneLoader extends BaseLibraryLoader {
                 const contentLength = response.headers.get('content-length');
 
                 // Valid PDF should be application/pdf and have reasonable size
-                return contentType && contentType.includes('pdf') &&
-                       contentLength && parseInt(contentLength) > 1000;
+                return !!(contentType && contentType.includes('pdf') &&
+                         contentLength && parseInt(contentLength || '0') > 1000);
             }
 
             return false;

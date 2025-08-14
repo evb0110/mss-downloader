@@ -65,13 +65,13 @@ export class UnifrLoader extends BaseLibraryLoader {
                 }
             }
             
-            if (pageLinks.length === 0) {
+            if (pageLinks?.length === 0) {
                 throw new Error('No page links found in IIIF manifest');
             }
             
             return {
                 pageLinks,
-                totalPages: pageLinks.length,
+                totalPages: pageLinks?.length,
                 displayName: `UNIFR_${collection}_${manuscript}`,
                 library: 'unifr',
                 originalUrl: url
