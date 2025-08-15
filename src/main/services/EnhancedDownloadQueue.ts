@@ -240,6 +240,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
         if (url.includes('bdl.servizirl.it')) return 'bdl';
         if (url.includes('mss.bmlonline.it')) return 'florence';
         if (url.includes('bne.es')) return 'bne';
+        // CRITICAL FIX for Issue #29: Add missing Linz and e-rara detection
+        if (url.includes('digi.landesbibliothek.at')) return 'linz';
+        if (url.includes('e-rara.ch')) return 'e_rara';
         return null;
     }
 
@@ -945,8 +948,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     }
                 }
                 
-                // CRITICAL FIX for Issue #29: Prevent infinite restart loops for Linz and e-rara
-                if ((item.library === 'linz' || item.library === 'e_rara')) {
+                // CRITICAL FIX for Issue #29: Prevent infinite restart loops for Linz, e-rara, and Graz
+                if ((item.library === 'linz' || item.library === 'e_rara' || item.library === 'graz')) {
                     const maxRetries = 3; // Standard retry limit for newly implemented libraries
                     if (item.retryCount >= maxRetries) {
                         item.error = `${error instanceof Error ? error.message : String(error)} (Max ${maxRetries} retries exceeded to prevent infinite loops)`;
@@ -2085,8 +2088,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     }
                 }
                 
-                // CRITICAL FIX for Issue #29: Prevent infinite restart loops for Linz and e-rara
-                if ((item.library === 'linz' || item.library === 'e_rara')) {
+                // CRITICAL FIX for Issue #29: Prevent infinite restart loops for Linz, e-rara, and Graz
+                if ((item.library === 'linz' || item.library === 'e_rara' || item.library === 'graz')) {
                     const maxRetries = 3; // Standard retry limit for newly implemented libraries
                     if (item.retryCount >= maxRetries) {
                         item.error = `${error instanceof Error ? error.message : String(error)} (Max ${maxRetries} retries exceeded to prevent infinite loops)`;
