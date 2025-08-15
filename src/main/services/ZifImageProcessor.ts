@@ -339,8 +339,20 @@ export class ZifImageProcessor {
                 }
             }
             
-            // Create canvas with full image dimensions
-            const canvas = Canvas.createCanvas(imageInfo.width, imageInfo.height);
+            // Calculate safe canvas dimensions to prevent RangeError: Invalid array length
+            const MAX_CANVAS_SIZE = 16384; // Safe limit for most systems
+            const safeWidth = Math.min(imageInfo.width, MAX_CANVAS_SIZE);
+            const safeHeight = Math.min(imageInfo.height, MAX_CANVAS_SIZE);
+
+            console.log(`[ZIF] Original dimensions: ${imageInfo.width}x${imageInfo.height}`);
+            console.log(`[ZIF] Safe dimensions: ${safeWidth}x${safeHeight}`);
+
+            if (safeWidth !== imageInfo.width || safeHeight !== imageInfo.height) {
+                console.warn(`[ZIF] Dimensions reduced to prevent memory allocation error`);
+            }
+
+            // Create canvas with safe image dimensions
+            const canvas = Canvas.createCanvas(safeWidth, safeHeight);
             const ctx = canvas.getContext('2d');
             
             // Calculate grid dimensions

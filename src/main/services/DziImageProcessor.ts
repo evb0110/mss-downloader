@@ -189,7 +189,19 @@ export class DziImageProcessor {
                 throw new Error('Canvas dependency required for DZI tile assembly. Please install canvas package.');
             }
             
-            const canvas = Canvas.createCanvas(metadata.width, metadata.height);
+            // Calculate safe canvas dimensions to prevent RangeError: Invalid array length
+            const MAX_CANVAS_SIZE = 16384; // Safe limit for most systems
+            const safeWidth = Math.min(metadata.width, MAX_CANVAS_SIZE);
+            const safeHeight = Math.min(metadata.height, MAX_CANVAS_SIZE);
+
+            console.log(`[DZI] Original dimensions: ${metadata.width}x${metadata.height}`);
+            console.log(`[DZI] Safe dimensions: ${safeWidth}x${safeHeight}`);
+
+            if (safeWidth !== metadata.width || safeHeight !== metadata.height) {
+                console.warn(`[DZI] Dimensions reduced to prevent memory allocation error`);
+            }
+
+            const canvas = Canvas.createCanvas(safeWidth, safeHeight);
             const ctx = canvas.getContext('2d');
             
             // Process tiles

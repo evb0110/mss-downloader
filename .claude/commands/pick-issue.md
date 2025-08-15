@@ -232,9 +232,41 @@ mkdir -p .devkit/ultra-priority/issue-$TARGET_ISSUE/{logs,attachments,analysis}
 # Download all comments and attachments
 gh issue view $TARGET_ISSUE --comments > .devkit/ultra-priority/issue-$TARGET_ISSUE/full-thread.txt
 
-# Parse and download any attached files
-# Extract logs from comments
+# CRITICAL: Download ALL attached log files using curl/fetch
+# For open repositories, GitHub attachment URLs are publicly accessible
+echo "📥 Downloading attached log files..."
+
+# Extract GitHub attachment URLs from comments
+ATTACHMENT_URLS=$(grep -oP 'https://github\.com/user-attachments/files/[0-9]+/[^)]+' .devkit/ultra-priority/issue-$TARGET_ISSUE/full-thread.txt || echo "")
+
+if [ ! -z "$ATTACHMENT_URLS" ]; then
+    echo "Found attachment URLs:"
+    echo "$ATTACHMENT_URLS"
+    
+    # Download each attachment
+    ATTACHMENT_COUNT=1
+    while IFS= read -r url; do
+        if [ ! -z "$url" ]; then
+            FILENAME=$(basename "$url")
+            echo "📄 Downloading attachment $ATTACHMENT_COUNT: $FILENAME"
+            
+            # Use curl to download the file
+            curl -L -f -o ".devkit/ultra-priority/issue-$TARGET_ISSUE/logs/attachment-$ATTACHMENT_COUNT-$FILENAME" "$url" \
+                || echo "⚠️  Failed to download $url"
+            
+            ATTACHMENT_COUNT=$((ATTACHMENT_COUNT + 1))
+        fi
+    done <<< "$ATTACHMENT_URLS"
+else
+    echo "ℹ️  No attachment URLs found in issue comments"
+fi
+
+# Parse and extract any inline logs or error messages from comments
+echo "🔍 Extracting inline error messages and logs..."
+grep -E "(Error|Exception|RangeError|TypeError|Invalid array length)" .devkit/ultra-priority/issue-$TARGET_ISSUE/full-thread.txt > .devkit/ultra-priority/issue-$TARGET_ISSUE/logs/extracted-errors.txt || echo "No inline errors found"
+
 # Save everything for deep analysis
+echo "✅ All attachments and logs downloaded to .devkit/ultra-priority/issue-$TARGET_ISSUE/"
 ```
 
 ## 🎯 AUTONOMOUS WORKFLOW EXECUTION 🎯
