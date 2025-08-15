@@ -142,12 +142,24 @@ export class DirectTileProcessor {
         
         console.log(`[DirectTile] Grid size at level ${maxLevel}: ${maxCol + 1} x ${maxRow + 1} tiles`);
         
-        // Calculate estimated dimensions
+        // Calculate estimated dimensions with memory validation
         const scale = Math.pow(2, maxLevel);
         const levelWidth = (maxCol + 1) * tileSize;
         const levelHeight = (maxRow + 1) * tileSize;
-        const estimatedWidth = Math.ceil(levelWidth * scale / Math.pow(2, maxLevel));
-        const estimatedHeight = Math.ceil(levelHeight * scale / Math.pow(2, maxLevel));
+        let estimatedWidth = Math.ceil(levelWidth * scale / Math.pow(2, maxLevel));
+        let estimatedHeight = Math.ceil(levelHeight * scale / Math.pow(2, maxLevel));
+
+        // Validate against memory limits to prevent RangeError: Invalid array length
+        const pixelCount = estimatedWidth * estimatedHeight;
+        const estimatedMemory = pixelCount * 4; // 4 bytes per RGBA pixel
+        const MAX_SAFE_MEMORY = 1024 * 1024 * 1024; // 1GB safe limit
+
+        if (estimatedMemory > MAX_SAFE_MEMORY) {
+            const scaleFactor = Math.sqrt(MAX_SAFE_MEMORY / estimatedMemory);
+            estimatedWidth = Math.floor(estimatedWidth * scaleFactor);
+            estimatedHeight = Math.floor(estimatedHeight * scaleFactor);
+            console.warn(`[DirectTile] Dimensions scaled down to prevent memory allocation error: ${estimatedWidth}x${estimatedHeight} (was ${Math.ceil(levelWidth * scale / Math.pow(2, maxLevel))}x${Math.ceil(levelHeight * scale / Math.pow(2, maxLevel))})`);
+        }
         
         return {
             baseUrl,
@@ -257,8 +269,19 @@ export class DirectTileProcessor {
                 throw new Error('Canvas dependency required for tile assembly. Please install canvas package.');
             }
             
-            // Use estimated dimensions
-            const canvas = Canvas.createCanvas(tileInfo.estimatedDimensions.width, tileInfo.estimatedDimensions.height);
+            // Calculate safe canvas dimensions to prevent RangeError: Invalid array length
+            const MAX_CANVAS_SIZE = 16384; // Safe limit for most systems
+            const safeWidth = Math.min(tileInfo.estimatedDimensions.width, MAX_CANVAS_SIZE);
+            const safeHeight = Math.min(tileInfo.estimatedDimensions.height, MAX_CANVAS_SIZE);
+
+            console.log(`[DirectTile] Original dimensions: ${tileInfo.estimatedDimensions.width}x${tileInfo.estimatedDimensions.height}`);
+            console.log(`[DirectTile] Safe dimensions: ${safeWidth}x${safeHeight}`);
+
+            if (safeWidth !== tileInfo.estimatedDimensions.width || safeHeight !== tileInfo.estimatedDimensions.height) {
+                console.warn(`[DirectTile] Dimensions reduced to prevent memory allocation error`);
+            }
+
+            const canvas = Canvas.createCanvas(safeWidth, safeHeight);
             const ctx = canvas.getContext('2d');
             
             let processedTiles = 0;

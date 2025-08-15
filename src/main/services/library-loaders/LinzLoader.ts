@@ -77,7 +77,7 @@ export class LinzLoader extends BaseLibraryLoader {
                             imageUrl = imageUrl.replace('/info.json', '/full/max/0/default.jpg');
                         } else if (imageUrl && imageUrl.includes('/full/!')) {
                             // Linz returns URLs with size restrictions like /full/!400,400/, change to full resolution
-                            imageUrl = imageUrl.replace(/\/full\/![^\/]+\//, '/full/max/');
+                            imageUrl = imageUrl.replace(/\/full\/![^/]+\//, '/full/max/');
                         }
                         
                         if (imageUrl) {

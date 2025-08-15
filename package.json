@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.192",
+  "version": "1.4.193",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (69+ libraries worldwide)",
   "changelog": [
-    "v1.4.192: CRITICAL FIXES - Infinite Loops & Morgan Library",
-    "CRITICAL: Fixed infinite download loops affecting ALL libraries",
-    "CRITICAL: Fixed Morgan Library ReferenceError crashes",
-    "RESOLVED: Download queue now correctly detects successful completions",
-    "RESOLVED: Morgan imagesByPriority undefined variable errors",
-    "ENHANCED: All manuscript libraries now complete downloads properly"
+    "v1.4.193: ULTRA-PRIORITY FIX - Bordeaux Library Memory Error",
+    "CRITICAL: Fixed 'Invalid array length' RangeError for high-resolution manuscripts",
+    "RESOLVED: Bordeaux Library now works with large manuscripts (195+ pages)",
+    "ENHANCED: Memory-safe processing prevents crashes during image download",
+    "IMPROVED: Automatic dimension scaling for ultra-high resolution DZI images",
+    "STABILITY: Canvas allocation errors eliminated across all tile-based libraries"
   ],
   "main": "dist/main/main.js",
   "scripts": {
