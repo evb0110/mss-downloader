@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.191",
+  "version": "1.4.192",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (69+ libraries worldwide)",
   "changelog": [
-    "v1.4.191: LINZ LIBRARY FIXES - Page Counter & Time Display",
-    "FIXED: Linz page counter not moving during downloads",
-    "FIXED: Time display showing microseconds (10 decimal places)",
-    "CORRECTED: LinzLoader library identifier from 'graz' to 'linz'",
-    "IMPROVED: ETA calculations now round to whole seconds",
-    "ENHANCED: Proper Linz library type support in manifest types"
+    "v1.4.192: CRITICAL FIXES - Infinite Loops & Morgan Library",
+    "CRITICAL: Fixed infinite download loops affecting ALL libraries",
+    "CRITICAL: Fixed Morgan Library ReferenceError crashes",
+    "RESOLVED: Download queue now correctly detects successful completions",
+    "RESOLVED: Morgan imagesByPriority undefined variable errors",
+    "ENHANCED: All manuscript libraries now complete downloads properly"
   ],
   "main": "dist/main/main.js",
   "scripts": {

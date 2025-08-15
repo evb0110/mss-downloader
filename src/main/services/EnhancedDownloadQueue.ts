@@ -869,26 +869,27 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 queueItem: item,
             });
 
-            if (typeof result === 'object' && (result as any).success) {
+            // CRITICAL FIX for Issue #29: downloadManuscript returns STRING (filepath) on success, not object
+            if (typeof result === 'string' && result.length > 0) {
                 // Verify the output file actually exists before marking as completed
                 const fs = await import('fs/promises');
                 const path = await import('path');
                 
                 try {
                     // Check if file exists and has reasonable size
-                    const stats = await fs.stat((result as any).outputPath || '');
+                    const stats = await fs.stat(result);
                     const minExpectedSize = Math.max(1024 * 100, (item?.totalPages || 1) * 50 * 1024); // At least 100KB or ~50KB per page
                     
                     if (stats.size < minExpectedSize) {
                         throw new Error(`Output file too small: ${stats.size} bytes (expected at least ${minExpectedSize})`);
                     }
                     
-                    console.log(`✅ Download verified: ${path.basename((result as any).outputPath || '')} (${(stats.size / (1024 * 1024)).toFixed(1)}MB)`);
+                    console.log(`✅ Download verified: ${path.basename(result)} (${(stats.size / (1024 * 1024)).toFixed(1)}MB)`);
                     
                     item.status = 'completed';
                     item.completedAt = Date.now();
                     item.progress = 1;
-                    item.outputPath = (result as any).outputPath;
+                    item.outputPath = result;
                     // Do NOT update totalPages here - it should always reflect the manifest total, not download count
                     
                 } catch (verificationError: unknown) {
@@ -2038,26 +2039,27 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 queueItem: item,
             });
             
-            if (typeof result === 'object' && (result as any).success) {
+            // CRITICAL FIX for Issue #29: downloadManuscript returns STRING (filepath) on success, not object
+            if (typeof result === 'string' && result.length > 0) {
                 // Verify the output file actually exists before marking as completed
                 const fs = await import('fs/promises');
                 const path = await import('path');
                 
                 try {
                     // Check if file exists and has reasonable size
-                    const stats = await fs.stat((result as any).outputPath || '');
+                    const stats = await fs.stat(result);
                     const minExpectedSize = Math.max(1024 * 100, (item?.totalPages || 1) * 50 * 1024); // At least 100KB or ~50KB per page
                     
                     if (stats.size < minExpectedSize) {
                         throw new Error(`Output file too small: ${stats.size} bytes (expected at least ${minExpectedSize})`);
                     }
                     
-                    console.log(`✅ Download verified: ${path.basename((result as any).outputPath || '')} (${(stats.size / (1024 * 1024)).toFixed(1)}MB)`);
+                    console.log(`✅ Download verified: ${path.basename(result)} (${(stats.size / (1024 * 1024)).toFixed(1)}MB)`);
                     
                     item.status = 'completed';
                     item.completedAt = Date.now();
                     item.progress = undefined;
-                    item.outputPath = (result as any).outputPath;
+                    item.outputPath = result;
                     
                 } catch (verificationError: unknown) {
                     const errorMessage = verificationError instanceof Error ? verificationError.message : String(verificationError);

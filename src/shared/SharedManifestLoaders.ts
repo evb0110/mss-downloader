@@ -1943,7 +1943,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                     const imageId = match?.[1];
                     if (imageId && validImagePattern.test(imageId) && !imageId.includes('front-cover')) {
                         const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptId}/${imageId}.zif`;
-                        imagesByPriority[0]?.push(zifUrl);
+                        if (imagesByPriority && imagesByPriority[0]) {
+                            imagesByPriority[0].push(zifUrl);
+                        }
                     }
                 }
             }
@@ -1993,12 +1995,12 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 
                 const results = await Promise.allSettled(pagePromises);
                 results.forEach(result => {
-                    if (result.status === 'fulfilled' && result.value) {
-                        imagesByPriority[1]?.push(result.value);
+                    if (result.status === 'fulfilled' && result.value && imagesByPriority && imagesByPriority[1]) {
+                        imagesByPriority[1].push(result.value);
                     }
                 });
                 
-                if (imagesByPriority[1]?.length === 0) {
+                if (imagesByPriority && imagesByPriority[1] && imagesByPriority[1].length === 0) {
                     console.log('[Morgan] No high-res images from individual pages (non-critical, using fallbacks)');
                 }
             } catch (error: any) {
@@ -2011,7 +2013,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             const fullSizeRegex = /\/sites\/default\/files\/images\/collection\/[^"'?]+\.jpg/g;
             const fullSizeMatches = html.match(fullSizeRegex) || [];
             for (const match of fullSizeMatches) {
-                imagesByPriority[2]?.push(`${baseUrl}${match}`);
+                if (imagesByPriority && imagesByPriority[2]) {
+                    imagesByPriority[2].push(`${baseUrl}${match}`);
+                }
             }
             
             // Priority 3: Styled images (convert to original)
@@ -2019,14 +2023,18 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             const styledMatches = html.match(styledRegex) || [];
             for (const match of styledMatches) {
                 const originalPath = match.replace(/\/styles\/[^/]+\/public\//, '/');
-                imagesByPriority[3]?.push(`${baseUrl}${originalPath}`);
+                if (imagesByPriority && imagesByPriority[3]) {
+                    imagesByPriority[3].push(`${baseUrl}${originalPath}`);
+                }
             }
             
             // Priority 4: Legacy facsimile
             const facsimileRegex = /\/sites\/default\/files\/facsimile\/[^"']+\.jpg/g;
             const facsimileMatches = html.match(facsimileRegex) || [];
             for (const match of facsimileMatches) {
-                imagesByPriority[4]?.push(`${baseUrl}${match}`);
+                if (imagesByPriority && imagesByPriority[4]) {
+                    imagesByPriority[4].push(`${baseUrl}${match}`);
+                }
             }
             
             // ULTRA-PRIORITY FIX for Issue #4: Enhanced image selection
@@ -2034,11 +2042,12 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             
             // First try to use high-priority images
             for (let priority = 0; priority <= 5; priority++) {
-                if ((imagesByPriority[priority]?.length ?? 0) > 0) {
-                    console.log(`[Morgan] Using priority ${priority} images: ${imagesByPriority[priority]?.length} found`);
-                    for (let i = 0; i < imagesByPriority[priority]!.length; i++) {
+                const priorityArray = imagesByPriority?.[priority];
+                if (imagesByPriority && priorityArray && priorityArray.length > 0) {
+                    console.log(`[Morgan] Using priority ${priority} images: ${priorityArray.length} found`);
+                    for (let i = 0; i < priorityArray.length; i++) {
                         images.push({
-                            url: imagesByPriority[priority]?.[i] || '',
+                            url: priorityArray[i] || '',
                             label: `Page ${i + 1}`
                         });
                     }
