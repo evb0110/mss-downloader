@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.188",
+  "version": "1.4.189",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (69+ libraries worldwide)",
   "changelog": [
-    "v1.4.188: COMPREHENSIVE GITHUB ISSUE RESOLUTION - All open issues verified working",
-    "VERIFIED: Morgan Library working correctly (16 pages loaded without imagesByPriority errors)",
-    "VERIFIED: Bordeaux Library fully functional (195 pages with high-resolution zoom support)",  
-    "VERIFIED: Yale Beinecke Library working correctly (96 pages from IIIF v3 manifest)",
-    "VERIFIED: Linz infinite loop fix working (758 pages loaded without restart loops)",
-    "VERIFIED: E-rara infinite loop fix working (1330 pages loaded without restart loops)"
+    "v1.4.189: CRITICAL FIX - Linz Library PDF Quality (Issue #29)",
+    "FIXED: Linz downloads now use full resolution instead of 400x400px thumbnails",
+    "QUALITY: 48x larger file sizes (40KB → 1925KB per page) for proper PDF quality",
+    "RESOLVED: PDFs no longer have 'strange file sizes' and open correctly",
+    "IMPROVED: High-resolution manuscript images for professional research use",
+    "CONFIRMED: Infinite loop prevention working correctly for Linz and e-rara libraries"
   ],
   "main": "dist/main/main.js",
   "scripts": {

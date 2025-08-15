@@ -1494,6 +1494,11 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                             imageUrl = imageUrl.replace('/info.json', '/full/full/0/default.jpg');
                         }
                         
+                        // Fix Linz low resolution issue: upgrade !400,400 to full resolution
+                        if (imageUrl && imageUrl.includes('!400,400')) {
+                            imageUrl = imageUrl.replace('!400,400', 'full');
+                        }
+                        
                         if (imageUrl) {
                             images.push({
                                 url: imageUrl || '',
