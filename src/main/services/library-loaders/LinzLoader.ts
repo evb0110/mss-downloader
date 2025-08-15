@@ -75,6 +75,9 @@ export class LinzLoader extends BaseLibraryLoader {
                         // If it's a IIIF image service, construct full resolution URL
                         if (imageUrl && imageUrl.includes('/info.json')) {
                             imageUrl = imageUrl.replace('/info.json', '/full/full/0/default.jpg');
+                        } else if (imageUrl && imageUrl.includes('/full/!')) {
+                            // Linz returns URLs with size restrictions like /full/!400,400/, change to full resolution
+                            imageUrl = imageUrl.replace(/\/full\/![^\/]+\//, '/full/full/');
                         }
                         
                         if (imageUrl) {
