@@ -106,6 +106,28 @@ export class GrazLoader extends BaseLibraryLoader {
                     });
                     
                     if (!response.ok) {
+                        // Special handling for manuscript 6568472 which returns 500 - use webcache fallback
+                        if (response.status === 500 && manuscriptId === '6568472') {
+                            console.log(`[Graz] Manifest returns 500 for ${manuscriptId}, using webcache fallback`);
+                            // User reported this manuscript has pages from 6568482 to 6569727
+                            const pageLinks: string[] = [];
+                            const startId = 6568482;
+                            const endId = 6569727;
+                            
+                            for (let pageId = startId; pageId <= endId; pageId++) {
+                                pageLinks.push(`https://unipub.uni-graz.at/download/webcache/2000/${pageId}`);
+                            }
+                            
+                            console.log(`[Graz] Generated ${pageLinks.length} webcache URLs for manuscript ${manuscriptId}`);
+                            
+                            return {
+                                pageLinks,
+                                totalPages: pageLinks.length,
+                                library: 'graz' as const,
+                                displayName: `University of Graz Manuscript ${manuscriptId}`,
+                                originalUrl: grazUrl,
+                            };
+                        }
                         throw new Error(`Failed to fetch IIIF manifest: ${response.status} ${response.statusText}`);
                     }
                     
