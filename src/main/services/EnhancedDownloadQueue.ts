@@ -123,9 +123,10 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 this.state.globalSettings.maxSimultaneousDownloads = 3;
             }
             
-            // Migration: Force auto-split threshold to 300MB if it's above that (issue #18)
-            if (!this.state.globalSettings.autoSplitThresholdMB || this.state.globalSettings.autoSplitThresholdMB > 300) {
-                console.log(`[EnhancedQueue] Migrating auto-split threshold from ${this.state.globalSettings.autoSplitThresholdMB || 'undefined'}MB to 300MB`);
+            // Migration: Set reasonable auto-split threshold default (issue #18)
+            // Allow higher thresholds for libraries that need them (e.g., Linz: 500MB)
+            if (!this.state.globalSettings.autoSplitThresholdMB) {
+                console.log(`[EnhancedQueue] Setting default auto-split threshold to 300MB`);
                 this.state.globalSettings.autoSplitThresholdMB = 300;
             }
             
