@@ -189,16 +189,42 @@ export class DziImageProcessor {
                 throw new Error('Canvas dependency required for DZI tile assembly. Please install canvas package.');
             }
             
-            // Calculate safe canvas dimensions to prevent RangeError: Invalid array length
+            // ULTRA-SAFE canvas dimensions to prevent RangeError: Invalid array length
             const MAX_CANVAS_SIZE = 16384; // Safe limit for most systems
-            const safeWidth = Math.min(metadata.width, MAX_CANVAS_SIZE);
-            const safeHeight = Math.min(metadata.height, MAX_CANVAS_SIZE);
-
+            
+            // Comprehensive dimension validation to handle NaN, negative, and non-integer values
+            let safeWidth = metadata.width;
+            let safeHeight = metadata.height;
+            
+            // Handle invalid numbers (NaN, Infinity, negative)
+            if (!Number.isFinite(safeWidth) || safeWidth <= 0) {
+                console.warn(`[DZI] Invalid width detected (${safeWidth}), using fallback`);
+                safeWidth = 1000; // Fallback to reasonable size
+            }
+            
+            if (!Number.isFinite(safeHeight) || safeHeight <= 0) {
+                console.warn(`[DZI] Invalid height detected (${safeHeight}), using fallback`);
+                safeHeight = 1000; // Fallback to reasonable size
+            }
+            
+            // Ensure integers (Canvas requires integer dimensions)
+            safeWidth = Math.floor(safeWidth);
+            safeHeight = Math.floor(safeHeight);
+            
+            // Apply size limits
+            safeWidth = Math.min(safeWidth, MAX_CANVAS_SIZE);
+            safeHeight = Math.min(safeHeight, MAX_CANVAS_SIZE);
+            
             console.log(`[DZI] Original dimensions: ${metadata.width}x${metadata.height}`);
             console.log(`[DZI] Safe dimensions: ${safeWidth}x${safeHeight}`);
 
             if (safeWidth !== metadata.width || safeHeight !== metadata.height) {
-                console.warn(`[DZI] Dimensions reduced to prevent memory allocation error`);
+                console.warn(`[DZI] Dimensions adjusted to prevent memory allocation error`);
+            }
+            
+            // Final validation before Canvas creation
+            if (safeWidth <= 0 || safeHeight <= 0 || !Number.isInteger(safeWidth) || !Number.isInteger(safeHeight)) {
+                throw new Error(`Cannot create canvas with invalid dimensions ${safeWidth}x${safeHeight}`);
             }
 
             const canvas = Canvas.createCanvas(safeWidth, safeHeight);

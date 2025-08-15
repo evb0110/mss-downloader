@@ -91,7 +91,27 @@ export class MorganLoader extends BaseLibraryLoader {
                         const redirectUrl = pageResponse.headers.get('location');
                         if (redirectUrl) {
                             console.log(`Morgan: Following redirect from ${pageUrl} to ${redirectUrl}`);
-                            const fullRedirectUrl = redirectUrl.startsWith('http') ? redirectUrl : `${baseUrl}${redirectUrl}`;
+                            // FIXED: Robust redirect URL handling to prevent URL concatenation bugs
+                            const cleanRedirectUrl = redirectUrl.trim();
+                            let fullRedirectUrl: string;
+                            
+                            if (cleanRedirectUrl.startsWith('http://') || cleanRedirectUrl.startsWith('https://')) {
+                                // Absolute URL - use as-is
+                                fullRedirectUrl = cleanRedirectUrl;
+                            } else if (cleanRedirectUrl.startsWith('/')) {
+                                // Relative URL starting with / - prepend base domain only
+                                fullRedirectUrl = `${baseUrl}${cleanRedirectUrl}`;
+                            } else {
+                                // Relative URL without / - this is unusual but handle it
+                                fullRedirectUrl = `${baseUrl}/${cleanRedirectUrl}`;
+                            }
+                            
+                            // Safety check: prevent URL duplication
+                            if (fullRedirectUrl.includes(pageUrl)) {
+                                console.warn(`Morgan: Potential URL duplication detected, using original pageUrl`);
+                                fullRedirectUrl = pageUrl;
+                            }
+                            
                             pageResponse = await this.deps.fetchDirect(fullRedirectUrl, {
                                 redirect: 'follow'
                             });

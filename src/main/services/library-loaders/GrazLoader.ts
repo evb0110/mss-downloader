@@ -120,6 +120,9 @@ export class GrazLoader extends BaseLibraryLoader {
                             
                             console.log(`[Graz] Generated ${pageLinks.length} webcache URLs for manuscript ${manuscriptId}`);
                             
+                            // CRITICAL FIX: Update progress monitor before returning to prevent infinite loading
+                            (progressMonitor as any)['updateProgress'](1, 1, 'Webcache fallback completed successfully');
+                            
                             return {
                                 pageLinks,
                                 totalPages: pageLinks.length,

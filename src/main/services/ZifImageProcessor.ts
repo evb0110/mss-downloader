@@ -339,16 +339,42 @@ export class ZifImageProcessor {
                 }
             }
             
-            // Calculate safe canvas dimensions to prevent RangeError: Invalid array length
+            // ULTRA-SAFE canvas dimensions to prevent RangeError: Invalid array length
             const MAX_CANVAS_SIZE = 16384; // Safe limit for most systems
-            const safeWidth = Math.min(imageInfo.width, MAX_CANVAS_SIZE);
-            const safeHeight = Math.min(imageInfo.height, MAX_CANVAS_SIZE);
-
+            
+            // Comprehensive dimension validation to handle NaN, negative, and non-integer values
+            let safeWidth = imageInfo.width;
+            let safeHeight = imageInfo.height;
+            
+            // Handle invalid numbers (NaN, Infinity, negative)
+            if (!Number.isFinite(safeWidth) || safeWidth <= 0) {
+                console.warn(`[ZIF] Invalid width detected (${safeWidth}), using fallback`);
+                safeWidth = 1000; // Fallback to reasonable size
+            }
+            
+            if (!Number.isFinite(safeHeight) || safeHeight <= 0) {
+                console.warn(`[ZIF] Invalid height detected (${safeHeight}), using fallback`);
+                safeHeight = 1000; // Fallback to reasonable size
+            }
+            
+            // Ensure integers (Canvas requires integer dimensions)
+            safeWidth = Math.floor(safeWidth);
+            safeHeight = Math.floor(safeHeight);
+            
+            // Apply size limits
+            safeWidth = Math.min(safeWidth, MAX_CANVAS_SIZE);
+            safeHeight = Math.min(safeHeight, MAX_CANVAS_SIZE);
+            
             console.log(`[ZIF] Original dimensions: ${imageInfo.width}x${imageInfo.height}`);
             console.log(`[ZIF] Safe dimensions: ${safeWidth}x${safeHeight}`);
 
             if (safeWidth !== imageInfo.width || safeHeight !== imageInfo.height) {
-                console.warn(`[ZIF] Dimensions reduced to prevent memory allocation error`);
+                console.warn(`[ZIF] Dimensions adjusted to prevent memory allocation error`);
+            }
+            
+            // Final validation before Canvas creation
+            if (safeWidth <= 0 || safeHeight <= 0 || !Number.isInteger(safeWidth) || !Number.isInteger(safeHeight)) {
+                throw new Error(`Cannot create canvas with invalid dimensions ${safeWidth}x${safeHeight}`);
             }
 
             // Create canvas with safe image dimensions
