@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.190",
+  "version": "1.4.191",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (69+ libraries worldwide)",
   "changelog": [
-    "v1.4.190: ACTUAL INFINITE LOOP FIX - Library Detection Bug (Issue #29)",
-    "FIXED: Library detection bug that prevented retry limits from working",
-    "RESOLVED: Linz, e-rara, and Graz infinite restart loops now properly stopped",
-    "ROOT CAUSE: detectLibraryFromUrl() was missing Linz and e-rara entries",
-    "RETRY LIMITS: Now correctly applied - max 3 attempts before stopping loops",
-    "COMPREHENSIVE: Addresses both PDF quality (v1.4.189) and infinite loops"
+    "v1.4.191: LINZ LIBRARY FIXES - Page Counter & Time Display",
+    "FIXED: Linz page counter not moving during downloads",
+    "FIXED: Time display showing microseconds (10 decimal places)",
+    "CORRECTED: LinzLoader library identifier from 'graz' to 'linz'",
+    "IMPROVED: ETA calculations now round to whole seconds",
+    "ENHANCED: Proper Linz library type support in manifest types"
   ],
   "main": "dist/main/main.js",
   "scripts": {

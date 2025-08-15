@@ -96,7 +96,7 @@ export class LinzLoader extends BaseLibraryLoader {
             return {
                 pageLinks: images.map(img => img.url),
                 totalPages: images?.length,
-                library: 'graz' as const,
+                library: 'linz' as const,
                 displayName: manifest.label || `Linz - ${manuscriptId}`,
                 originalUrl: url
             };

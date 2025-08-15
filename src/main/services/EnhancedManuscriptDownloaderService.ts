@@ -2706,7 +2706,7 @@ export class EnhancedManuscriptDownloaderService {
                 const progress = completedPages / totalPagesToDownload;
                 const elapsed = (Date.now() - startTime) / 1000;
                 const rate = completedPages / elapsed;
-                const eta = rate > 0 ? (totalPagesToDownload - completedPages) / rate : 0;
+                const eta = rate > 0 ? Math.round((totalPagesToDownload - completedPages) / rate) : 0;
                 onProgress({
                     totalPages: totalPagesToDownload,
                     downloadedPages: completedPages,
@@ -2806,7 +2806,7 @@ export class EnhancedManuscriptDownloaderService {
 
                                 const elapsed = (Date.now() - startTime) / 1000;
                                 const rate = (completedPages + pageProgress) / elapsed;
-                                const eta = rate > 0 ? (totalPagesToDownload - completedPages - pageProgress) / rate : 0;
+                                const eta = rate > 0 ? Math.round((totalPagesToDownload - completedPages - pageProgress) / rate) : 0;
 
                                 onProgress({
                                     totalPages: totalPagesToDownload,
@@ -2880,7 +2880,7 @@ export class EnhancedManuscriptDownloaderService {
                                     const tileProgress = completedPages + ((progress as Record<string, unknown>)['percentage'] as number / 100);
                                     const elapsed = (Date.now() - startTime) / 1000;
                                     const rate = tileProgress / elapsed;
-                                    const eta = rate > 0 ? (totalPagesToDownload - tileProgress) / rate : 0;
+                                    const eta = rate > 0 ? Math.round((totalPagesToDownload - tileProgress) / rate) : 0;
 
                                     onProgress({
                                         progress: tileProgress / totalPagesToDownload,
