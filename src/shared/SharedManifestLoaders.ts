@@ -5594,6 +5594,10 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             
             const [, collectionType, manuscriptId1, manuscriptId2] = urlMatch;
             
+            if (!collectionType || !manuscriptId1 || !manuscriptId2) {
+                throw new Error('Could not extract manuscript details from Rome URL');
+            }
+            
             // Verify that both parts of the manuscript ID are the same
             if (manuscriptId1 !== manuscriptId2) {
                 throw new Error('Inconsistent manuscript ID in Rome URL');
@@ -5602,13 +5606,12 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             const manuscriptId = manuscriptId1;
             console.log(`[Rome] Processing ${collectionType} manuscript: ${manuscriptId}`);
             
-            // ULTRATHINK FIX: Remove blocking HTML fetch - use dynamic discovery instead
-            // The HTML fetching was causing timeout issues. RomeLoader will handle dynamic page discovery.
+            // ULTRATHINK FIX: Dynamic page discovery through binary search
+            // No more hardcoded limits or HTML fetching!
             let displayName = `Rome National Library - ${manuscriptId}`;
             
-            // Start with a reasonable default that RomeLoader will expand dynamically
-            // Most manuscripts have 100-500 pages, RomeLoader will discover actual count
-            const totalPages = 500; // Higher default to avoid missing pages
+            // Binary search to find actual page count
+            const totalPages = await this.discoverRomePageCount(collectionType, manuscriptId);
             console.log(`[Rome] Detected ${totalPages} total pages`);
             
             // Build image URLs for all pages using the predictable URL pattern
@@ -5639,6 +5642,84 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         } catch (error) {
             console.error('[Rome] Error loading manifest:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Binary search to discover Rome page count dynamically
+     * No more hardcoded limits!
+     */
+    private async discoverRomePageCount(collectionType: string, manuscriptId: string): Promise<number> {
+        console.log(`[Rome] Starting binary search for ${manuscriptId}`);
+        
+        // Phase 1: Exponential search to find upper bound
+        let upperBound = 1;
+        let attempts = 0;
+        const maxAttempts = 20;
+        
+        while (attempts < maxAttempts) {
+            const pageExists = await this.checkRomePageExists(collectionType, manuscriptId, upperBound);
+            if (!pageExists) {
+                console.log(`[Rome] Found upper bound at page ${upperBound}`);
+                break;
+            }
+            upperBound *= 2;
+            attempts++;
+            
+            if (upperBound > 5000) {
+                console.log(`[Rome] Reached maximum search limit at ${upperBound} pages`);
+                break;
+            }
+        }
+        
+        // Phase 2: Binary search between known bounds
+        let low = Math.floor(upperBound / 2);
+        let high = upperBound;
+        
+        console.log(`[Rome] Binary search between pages ${low} and ${high}`);
+        
+        while (low < high - 1) {
+            const mid = Math.floor((low + high) / 2);
+            const exists = await this.checkRomePageExists(collectionType, manuscriptId, mid);
+            
+            if (exists) {
+                low = mid;
+            } else {
+                high = mid;
+            }
+        }
+        
+        // Final check
+        const finalPage = await this.checkRomePageExists(collectionType, manuscriptId, high) ? high : low;
+        console.log(`[Rome] Final page count: ${finalPage}`);
+        
+        if (finalPage === 0) {
+            throw new Error('Rome manuscript appears to have no pages or is inaccessible');
+        }
+        
+        return finalPage;
+    }
+    
+    /**
+     * Check if a Rome page exists using HEAD request
+     */
+    private async checkRomePageExists(collectionType: string, manuscriptId: string, pageNum: number): Promise<boolean> {
+        const imageUrl = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/${pageNum}/original`;
+        
+        try {
+            const response = await this.fetchWithRetry(imageUrl, {
+                method: 'HEAD'
+            }, 1); // Single attempt for existence check
+            
+            if (response.ok) {
+                // Note: fetchWithRetry doesn't give us headers directly
+                // So we just check if response is ok
+                return true;
+            }
+            
+            return false;
+        } catch (error) {
+            return false;
         }
     }
 

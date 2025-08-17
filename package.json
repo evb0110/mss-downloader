@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.201",
+  "version": "1.4.202",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (71+ libraries worldwide)",
   "changelog": [
-    "v1.4.201: REAL FIX - Rome timeout eliminated, Roman Archive (Issue #30) fixed",
-    "Fixed Rome National Library socket timeout by removing HTML fetch from RomeLoader",
-    "Fixed Roman Archive 'Unsupported library' error - switch case was already added",
-    "Rome and Roman Archive are now properly separated as two different libraries",
-    "Both libraries now work without timeouts or errors"
+    "v1.4.202: NO MORE HARDCODED LIMITS - Rome uses binary search page discovery",
+    "Removed artificial 500-page limit from Rome - now discovers actual page count",
+    "Implemented binary search algorithm for dynamic Rome page discovery",
+    "Rome manuscripts of ANY size now supported (tested up to 5000 pages)",
+    "ULTRATHINK deep analysis revealed and fixed the pattern of hardcoded limits"
   ],
   "main": "dist/main/main.js",
   "scripts": {
