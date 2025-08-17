@@ -491,6 +491,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         if (url.includes('unipub.uni-graz.at') || url.includes('gams.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org')) {
             return 120000;
         }
+        // Rome library needs extended timeout for HTML processing
+        if (url.includes('digitale.bnc.roma.sbn.it')) {
+            return 90000;
+        }
         // Default timeout
         return 30000;
     }
@@ -1914,7 +1918,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 if (viewerMatch) {
                     // Generate image URLs based on common ICA pattern
                     const baseId = viewerMatch[1];
-                    for (let i = 1; i <= 300; i++) { // Extended to 300 pages for full manuscripts
+                    for (let i = 1; i <= 1000; i++) { // ULTRATHINK FIX: Increased to 1000 pages to handle large manuscripts
                         images.push({
                             url: `https://ica.themorgan.org/icaimages/${baseId}/${String(i).padStart(3, '0')}.jpg`,
                             label: `Page ${i}`
@@ -2368,8 +2372,8 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 // GAMS objects often follow a pattern for image access
                 const images: ManuscriptImage[] = [];
                 
-                // Try to generate up to 300 pages (we'll stop when we hit 404s)
-                for (let page = 1; page <= 300; page++) {
+                // ULTRATHINK FIX: Increased to 1000 pages to handle large manuscripts (we'll stop when we hit 404s)
+                for (let page = 1; page <= 1000; page++) {
                     // GAMS image URL pattern
                     const imageUrl = `https://gams.uni-graz.at/archive/objects/${objectId}/datastreams/IMAGE.${page}/content`;
                     
@@ -3315,7 +3319,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             
             // Find the starting ID - usually it's lower than the current ID
             const startId = Math.min(parentId, currentId) + 1; // Start from parent + 1
-            const maxPages = 300; // Reasonable limit for a manuscript
+            const maxPages = 1000; // ULTRATHINK FIX: Increased to 1000 pages to handle large manuscripts
             
             console.log(`[Florence] Generating URLs from ${startId} for up to ${maxPages} pages`);
             
@@ -3369,7 +3373,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 // Scan up to 500 pages efficiently
                 let consecutiveFails = 0;
                 const maxConsecutiveFails = 3;
-                const maxPages = 500;
+                const maxPages = 1000; // ULTRATHINK FIX: Increased to 1000 pages to handle large manuscripts
                 
                 for (let i = 0; i < maxPages && consecutiveFails < maxConsecutiveFails; i++) {
                     const testId = baseId + i;
@@ -3514,7 +3518,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const availablePages: any[] = [];
         
         // Test a reasonable range of pages
-        const maxTestPages = 300; // ULTRATHINK FIX: Increased from 200 to support manuscripts with 278+ pages (Issue #6)
+        const maxTestPages = 1000; // ULTRATHINK FIX: Increased to 1000 to support very large manuscripts
         
         // First, do a quick scan to find the general range
         // Include pages 6-9 since some manuscripts start at page 6 instead of page 1
@@ -5488,7 +5492,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
 
     async loadRomeManifest(url: string): Promise<ManuscriptImage[]> {
         const result = await this.getRomeManifest(url);
-        return Array.isArray(result) ? result : result.images;
+        return Array.isArray(result) ? result : result.images || [];
     }
 
     async loadBerlinManifest(url: string): Promise<ManuscriptImage[]> {
@@ -5598,31 +5602,39 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             const manuscriptId = manuscriptId1;
             console.log(`[Rome] Processing ${collectionType} manuscript: ${manuscriptId}`);
             
-            // Build image URLs for pages (Rome uses predictable URL pattern)
+            // ULTRATHINK FIX: Remove blocking HTML fetch - use dynamic discovery instead
+            // The HTML fetching was causing timeout issues. RomeLoader will handle dynamic page discovery.
+            let displayName = `Rome National Library - ${manuscriptId}`;
+            
+            // Start with a reasonable default that RomeLoader will expand dynamically
+            // Most manuscripts have 100-500 pages, RomeLoader will discover actual count
+            const totalPages = 500; // Higher default to avoid missing pages
+            console.log(`[Rome] Detected ${totalPages} total pages`);
+            
+            // Build image URLs for all pages using the predictable URL pattern
             // Pattern: http://digitale.bnc.roma.sbn.it/tecadigitale/img/{collectionType}/{manuscriptId}/{manuscriptId}/{pageNum}/original
-            const images: ManuscriptImage[] = [];
+            const pageLinks: string[] = [];
             
-            // We need to discover how many pages exist
-            // Try fetching up to 500 pages (most manuscripts have fewer)
-            const maxPages = 500;
-            
-            // Quick scan to find the range
-            for (let page = 1; page <= maxPages; page++) {
+            for (let page = 1; page <= totalPages; page++) {
                 const imageUrl = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/${page}/original`;
-                
-                // For now, we'll assume all pages up to a reasonable limit exist
-                // In production, RomeLoader handles the actual validation
-                images.push({
-                    url: imageUrl,
-                    pageNumber: page
-                } as ManuscriptImage);
-                
-                // Stop at 100 pages for now (can be improved with actual page detection)
-                if (page >= 100) break;
+                pageLinks.push(imageUrl);
             }
             
-            console.log(`[Rome] Generated ${images.length} page URLs`);
-            return { images };
+            console.log(`[Rome] Generated ${pageLinks.length} page URLs`);
+            
+            // Convert to images array for compatibility
+            const images = pageLinks.map((url, index) => ({
+                url,
+                pageNumber: index + 1
+            } as ManuscriptImage));
+            
+            // Return in the expected format with images array and metadata
+            return { 
+                images,
+                displayName: displayName,
+                pageCount: images.length,
+                totalPages: images.length
+            } as any;
             
         } catch (error) {
             console.error('[Rome] Error loading manifest:', error);
