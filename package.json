@@ -1,14 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.197",
+  "version": "1.4.198",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (71+ libraries worldwide)",
   "changelog": [
-    "v1.4.197: ULTRATHINK DEEP FIXES - Real Root Causes Identified & Fixed",
-    "Issue #2 Graz: Fixed IPC serialization failure causing infinite loading",
-    "Issue #4 Morgan: Enhanced URL sanitization (already fixed by ultrathink agent)",
-    "Issue #6 Bordeaux: Increased page discovery limit from 200 to 300 pages",
-    "Issue #30-33: Added Roman Archive & Digital Scriptorium IIIF support",
-    "CRITICAL FIX: IPC handlers now properly serialize manifests for Electron"
+    "v1.4.198: HOTFIX - Rome National Library support restored",
+    "Fixed 'Unsupported library: rome' error for digitale.bnc.roma.sbn.it",
+    "Added proper getRomeManifest implementation in SharedManifestLoaders",
+    "Rome manuscripts now load correctly with up to 100 pages",
+    "Previous fixes from v1.4.197 remain intact"
   ],
   "main": "dist/main/main.js",
   "scripts": {

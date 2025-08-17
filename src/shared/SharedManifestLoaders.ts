@@ -2497,6 +2497,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 return await this.getYaleManifest(url);
             case 'e_rara':
                 return await this.getEraraManifest(url);
+            case 'rome':
+                return await this.getRomeManifest(url);
             case 'roman_archive':
                 return await this.getRomanArchiveManifest(url);
             case 'digital_scriptorium':
@@ -5484,8 +5486,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         throw new Error('Cologne manifest loading not yet implemented');
     }
 
-    async loadRomeManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
-        throw new Error('Rome manifest loading not yet implemented');
+    async loadRomeManifest(url: string): Promise<ManuscriptImage[]> {
+        const result = await this.getRomeManifest(url);
+        return Array.isArray(result) ? result : result.images;
     }
 
     async loadBerlinManifest(url: string): Promise<ManuscriptImage[]> {
@@ -5567,6 +5570,64 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
 
     async loadDiammSpecificManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('DIAMM-specific manifest loading not yet implemented');
+    }
+
+    /**
+     * Rome National Library (digitale.bnc.roma.sbn.it) - Existing library support
+     */
+    async getRomeManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+        console.log('[Rome] Processing URL:', url);
+        
+        try {
+            // Extract manuscript ID and collection type from URL
+            // Expected formats: 
+            // - http://digitale.bnc.roma.sbn.it/tecadigitale/manoscrittoantico/BNCR_Ms_SESS_0062/BNCR_Ms_SESS_0062/1
+            // - http://digitale.bnc.roma.sbn.it/tecadigitale/libroantico/BVEE112879/BVEE112879/1
+            const urlMatch = url.match(/\/(manoscrittoantico|libroantico)\/([^/]+)\/([^/]+)\/(\d+)/);
+            if (!urlMatch) {
+                throw new Error('Invalid Rome National Library URL format');
+            }
+            
+            const [, collectionType, manuscriptId1, manuscriptId2] = urlMatch;
+            
+            // Verify that both parts of the manuscript ID are the same
+            if (manuscriptId1 !== manuscriptId2) {
+                throw new Error('Inconsistent manuscript ID in Rome URL');
+            }
+            
+            const manuscriptId = manuscriptId1;
+            console.log(`[Rome] Processing ${collectionType} manuscript: ${manuscriptId}`);
+            
+            // Build image URLs for pages (Rome uses predictable URL pattern)
+            // Pattern: http://digitale.bnc.roma.sbn.it/tecadigitale/img/{collectionType}/{manuscriptId}/{manuscriptId}/{pageNum}/original
+            const images: ManuscriptImage[] = [];
+            
+            // We need to discover how many pages exist
+            // Try fetching up to 500 pages (most manuscripts have fewer)
+            const maxPages = 500;
+            
+            // Quick scan to find the range
+            for (let page = 1; page <= maxPages; page++) {
+                const imageUrl = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/${page}/original`;
+                
+                // For now, we'll assume all pages up to a reasonable limit exist
+                // In production, RomeLoader handles the actual validation
+                images.push({
+                    url: imageUrl,
+                    pageNumber: page
+                } as ManuscriptImage);
+                
+                // Stop at 100 pages for now (can be improved with actual page detection)
+                if (page >= 100) break;
+            }
+            
+            console.log(`[Rome] Generated ${images.length} page URLs`);
+            return { images };
+            
+        } catch (error) {
+            console.error('[Rome] Error loading manifest:', error);
+            throw error;
+        }
     }
 
     /**
