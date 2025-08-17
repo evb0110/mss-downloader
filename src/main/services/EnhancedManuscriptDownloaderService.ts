@@ -1278,11 +1278,11 @@ export class EnhancedManuscriptDownloaderService {
                 headers
             };
 
-            // Verona, Grenoble, Graz, MDC Catalonia, Florence, and BNE domains benefit from full HTTPS module bypass for better reliability
+            // Verona, Grenoble, Graz, MDC Catalonia, Florence, BNE, and Rome domains benefit from full HTTPS module bypass for better reliability
             if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') ||
                 url.includes('pagella.bm-grenoble.fr') || url.includes('unipub.uni-graz.at') ||
                 url.includes('mdc.csuc.cat') || url.includes('cdm21059.contentdm.oclc.org') ||
-                url.includes('bdh-rd.bne.es')) {
+                url.includes('bdh-rd.bne.es') || url.includes('digitale.bnc.roma.sbn.it')) {
                 try {
                     const response = await this.fetchWithHTTPS(url, fetchOptions);
                     if (timeoutId) clearTimeout(timeoutId);
@@ -2065,6 +2065,12 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'e_rara':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('e_rara', originalUrl);
+                    break;
+                case 'roman_archive':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('roman_archive', originalUrl);
+                    break;
+                case 'digital_scriptorium':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('digital_scriptorium', originalUrl);
                     break;
 
                 default:
