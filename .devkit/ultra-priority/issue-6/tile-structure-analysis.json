@@ -1,0 +1,31 @@
+{
+  "timestamp": "2025-08-17T12:50:03.727Z",
+  "pageId": "330636101_MS0778_0010",
+  "maxLevel": 13,
+  "gridSize": {
+    "cols": 22,
+    "rows": 17
+  },
+  "dimensions": {
+    "level": {
+      "width": 5632,
+      "height": 4352
+    },
+    "estimated": {
+      "width": 5632,
+      "height": 4352
+    }
+  },
+  "memory": {
+    "pixelCount": 24510464,
+    "estimatedMemory": 98041856,
+    "memoryMB": 93.5,
+    "memoryGB": 0.09130859375,
+    "exceedsLimit": false
+  },
+  "tileStructure": {
+    "tileSize": 256,
+    "scale": 8192,
+    "totalTiles": 374
+  }
+}

@@ -399,6 +399,27 @@ export class EnhancedManuscriptDownloaderService {
     private sanitizeUrl(url: string): string {
         if (!url || typeof url !== 'string') return url;
 
+        // ENHANCED Pattern: Detect morgan-specific malformation first
+        const morganMalformedPattern = /thumbs?(https?:\/\/.+)/i;
+        const morganMatch = url.match(morganMalformedPattern);
+        if (morganMatch) {
+            const extractedUrl = morganMatch[1] || url;
+            console.error(`[URL SANITIZER] Morgan malformed URL detected: ${url}`);
+            console.error(`[URL SANITIZER] Extracted clean URL: ${extractedUrl}`);
+            comprehensiveLogger.log({
+                level: 'error',
+                category: 'url-sanitizer',
+                library: 'morgan',
+                url: extractedUrl,
+                details: {
+                    message: 'Fixed Morgan malformed URL',
+                    malformedUrl: url,
+                    fixedUrl: extractedUrl
+                }
+            });
+            return extractedUrl;
+        }
+
         // Pattern 1: hostname directly concatenated with protocol (most common)
         // Example: pagella.bm-grenoble.frhttps://pagella.bm-grenoble.fr/...
         const concatenatedPattern = /^([a-z0-9.-]+)(https?:\/\/.+)$/i;
@@ -984,6 +1005,10 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('digital.bodleian.ox.ac.uk')) return 'bodleian';
         if (url.includes('digi.ub.uni-heidelberg.de') || url.includes('doi.org/10.11588/diglit')) return 'heidelberg';
         if (url.includes('digi.landesbibliothek.at')) return 'linz';
+        // Issue #30: Roman Archive support
+        if (url.includes('imagoarchiviodistatoroma.cultura.gov.it') || url.includes('archiviostorico.senato.it')) return 'roman_archive';
+        // Issue #33: Digital Scriptorium support  
+        if (url.includes('digital-scriptorium.org') || url.includes('colenda.library.upenn.edu')) return 'digital_scriptorium';
 
         return null;
     }

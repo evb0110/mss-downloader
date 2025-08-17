@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.196",
-  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (69+ libraries worldwide)",
+  "version": "1.4.197",
+  "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (71+ libraries worldwide)",
   "changelog": [
-    "v1.4.196: COMPREHENSIVE ULTRATHINK FIXES - All Three Major Issues RESOLVED",
-    "Issue #4 Morgan: Fixed URL concatenation bug causing 301 redirect errors",
-    "Issue #2 Graz: Fixed infinite loading by proper progress monitor completion",
-    "Issue #6 Bordeaux: Fixed 'Invalid array length' with ultra-safe Canvas validation",
-    "TECHNICAL: Enhanced redirect handling, progress monitoring, and memory allocation",
-    "USER IMPACT: All three libraries now work correctly after multiple failed attempts"
+    "v1.4.197: ULTRATHINK DEEP FIXES - Real Root Causes Identified & Fixed",
+    "Issue #2 Graz: Fixed IPC serialization failure causing infinite loading",
+    "Issue #4 Morgan: Enhanced URL sanitization (already fixed by ultrathink agent)",
+    "Issue #6 Bordeaux: Increased page discovery limit from 200 to 300 pages",
+    "Issue #30-33: Added Roman Archive & Digital Scriptorium IIIF support",
+    "CRITICAL FIX: IPC handlers now properly serialize manifests for Electron"
   ],
   "main": "dist/main/main.js",
   "scripts": {

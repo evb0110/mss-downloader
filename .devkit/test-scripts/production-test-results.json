@@ -1,0 +1,4512 @@
+{
+  "issue_29": {
+    "success": true,
+    "manifest": {
+      "images": [
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000001.tif/full/full/0/default.jpg",
+          "label": " - "
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000002.tif/full/full/0/default.jpg",
+          "label": " - "
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000003.tif/full/full/0/default.jpg",
+          "label": "[I]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000004.tif/full/full/0/default.jpg",
+          "label": "[I]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000005.tif/full/full/0/default.jpg",
+          "label": "IIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000006.tif/full/full/0/default.jpg",
+          "label": "IIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000007.tif/full/full/0/default.jpg",
+          "label": "IIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000008.tif/full/full/0/default.jpg",
+          "label": "IIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000009.tif/full/full/0/default.jpg",
+          "label": "IVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000010.tif/full/full/0/default.jpg",
+          "label": "IVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000011.tif/full/full/0/default.jpg",
+          "label": "Vr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000012.tif/full/full/0/default.jpg",
+          "label": "Vv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000013.tif/full/full/0/default.jpg",
+          "label": "VIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000014.tif/full/full/0/default.jpg",
+          "label": "VIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000015.tif/full/full/0/default.jpg",
+          "label": "VIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000016.tif/full/full/0/default.jpg",
+          "label": "VIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000017.tif/full/full/0/default.jpg",
+          "label": "r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000018.tif/full/full/0/default.jpg",
+          "label": "v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000019.tif/full/full/0/default.jpg",
+          "label": "VIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000020.tif/full/full/0/default.jpg",
+          "label": "VIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000021.tif/full/full/0/default.jpg",
+          "label": "IXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000022.tif/full/full/0/default.jpg",
+          "label": "IXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000023.tif/full/full/0/default.jpg",
+          "label": "Xr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000024.tif/full/full/0/default.jpg",
+          "label": "Xv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000025.tif/full/full/0/default.jpg",
+          "label": "XIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000026.tif/full/full/0/default.jpg",
+          "label": "XIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000027.tif/full/full/0/default.jpg",
+          "label": "XIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000028.tif/full/full/0/default.jpg",
+          "label": "XIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000029.tif/full/full/0/default.jpg",
+          "label": "XIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000030.tif/full/full/0/default.jpg",
+          "label": "XIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000031.tif/full/full/0/default.jpg",
+          "label": "XIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000032.tif/full/full/0/default.jpg",
+          "label": "XIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000033.tif/full/full/0/default.jpg",
+          "label": "XVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000034.tif/full/full/0/default.jpg",
+          "label": "XVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000035.tif/full/full/0/default.jpg",
+          "label": "XVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000036.tif/full/full/0/default.jpg",
+          "label": "XVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000037.tif/full/full/0/default.jpg",
+          "label": "XVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000038.tif/full/full/0/default.jpg",
+          "label": "XVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000039.tif/full/full/0/default.jpg",
+          "label": "XVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000040.tif/full/full/0/default.jpg",
+          "label": "XVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000041.tif/full/full/0/default.jpg",
+          "label": "XIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000042.tif/full/full/0/default.jpg",
+          "label": "XIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000043.tif/full/full/0/default.jpg",
+          "label": "XXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000044.tif/full/full/0/default.jpg",
+          "label": "XXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000045.tif/full/full/0/default.jpg",
+          "label": "XXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000046.tif/full/full/0/default.jpg",
+          "label": "XXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000047.tif/full/full/0/default.jpg",
+          "label": "XXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000048.tif/full/full/0/default.jpg",
+          "label": "XXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000049.tif/full/full/0/default.jpg",
+          "label": "XXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000050.tif/full/full/0/default.jpg",
+          "label": "XXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000051.tif/full/full/0/default.jpg",
+          "label": "XXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000052.tif/full/full/0/default.jpg",
+          "label": "XXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000053.tif/full/full/0/default.jpg",
+          "label": "XXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000054.tif/full/full/0/default.jpg",
+          "label": "XXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000055.tif/full/full/0/default.jpg",
+          "label": "XXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000056.tif/full/full/0/default.jpg",
+          "label": "XXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000057.tif/full/full/0/default.jpg",
+          "label": "XXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000058.tif/full/full/0/default.jpg",
+          "label": "XXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000059.tif/full/full/0/default.jpg",
+          "label": "XXVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000060.tif/full/full/0/default.jpg",
+          "label": "XXVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000061.tif/full/full/0/default.jpg",
+          "label": "XXIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000062.tif/full/full/0/default.jpg",
+          "label": "XXIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000063.tif/full/full/0/default.jpg",
+          "label": "XXXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000064.tif/full/full/0/default.jpg",
+          "label": "XXXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000065.tif/full/full/0/default.jpg",
+          "label": "XXXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000066.tif/full/full/0/default.jpg",
+          "label": "XXXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000067.tif/full/full/0/default.jpg",
+          "label": "XXXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000068.tif/full/full/0/default.jpg",
+          "label": "XXXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000069.tif/full/full/0/default.jpg",
+          "label": "XXXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000070.tif/full/full/0/default.jpg",
+          "label": "XXXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000071.tif/full/full/0/default.jpg",
+          "label": "XXXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000072.tif/full/full/0/default.jpg",
+          "label": "XXXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000073.tif/full/full/0/default.jpg",
+          "label": "XXXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000074.tif/full/full/0/default.jpg",
+          "label": "XXXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000075.tif/full/full/0/default.jpg",
+          "label": "XXXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000076.tif/full/full/0/default.jpg",
+          "label": "XXXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000077.tif/full/full/0/default.jpg",
+          "label": "XXXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000078.tif/full/full/0/default.jpg",
+          "label": "XXXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000079.tif/full/full/0/default.jpg",
+          "label": "XXXVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000080.tif/full/full/0/default.jpg",
+          "label": "XXXVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000081.tif/full/full/0/default.jpg",
+          "label": "XXXIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000082.tif/full/full/0/default.jpg",
+          "label": "XXXIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000083.tif/full/full/0/default.jpg",
+          "label": "XLr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000084.tif/full/full/0/default.jpg",
+          "label": "XLv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000085.tif/full/full/0/default.jpg",
+          "label": "XLIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000086.tif/full/full/0/default.jpg",
+          "label": "XLIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000087.tif/full/full/0/default.jpg",
+          "label": "XLIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000088.tif/full/full/0/default.jpg",
+          "label": "XLIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000089.tif/full/full/0/default.jpg",
+          "label": "XLIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000090.tif/full/full/0/default.jpg",
+          "label": "XLIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000091.tif/full/full/0/default.jpg",
+          "label": "XLIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000092.tif/full/full/0/default.jpg",
+          "label": "XLIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000093.tif/full/full/0/default.jpg",
+          "label": "XLVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000094.tif/full/full/0/default.jpg",
+          "label": "XLVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000095.tif/full/full/0/default.jpg",
+          "label": "XLVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000096.tif/full/full/0/default.jpg",
+          "label": "XLVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000097.tif/full/full/0/default.jpg",
+          "label": "XLVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000098.tif/full/full/0/default.jpg",
+          "label": "XLVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000099.tif/full/full/0/default.jpg",
+          "label": "XLVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000100.tif/full/full/0/default.jpg",
+          "label": "XLVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000101.tif/full/full/0/default.jpg",
+          "label": "XLIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000102.tif/full/full/0/default.jpg",
+          "label": "XLIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000103.tif/full/full/0/default.jpg",
+          "label": "Lr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000104.tif/full/full/0/default.jpg",
+          "label": "Lv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000105.tif/full/full/0/default.jpg",
+          "label": "LIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000106.tif/full/full/0/default.jpg",
+          "label": "LIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000107.tif/full/full/0/default.jpg",
+          "label": "LIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000108.tif/full/full/0/default.jpg",
+          "label": "LIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000109.tif/full/full/0/default.jpg",
+          "label": "LIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000110.tif/full/full/0/default.jpg",
+          "label": "LIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000111.tif/full/full/0/default.jpg",
+          "label": "LIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000112.tif/full/full/0/default.jpg",
+          "label": "LIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000113.tif/full/full/0/default.jpg",
+          "label": "LVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000114.tif/full/full/0/default.jpg",
+          "label": "LVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000115.tif/full/full/0/default.jpg",
+          "label": "LVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000116.tif/full/full/0/default.jpg",
+          "label": "LVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000117.tif/full/full/0/default.jpg",
+          "label": "LVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000118.tif/full/full/0/default.jpg",
+          "label": "LVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000119.tif/full/full/0/default.jpg",
+          "label": "LVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000120.tif/full/full/0/default.jpg",
+          "label": "LVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000121.tif/full/full/0/default.jpg",
+          "label": "LIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000122.tif/full/full/0/default.jpg",
+          "label": "LIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000123.tif/full/full/0/default.jpg",
+          "label": "LXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000124.tif/full/full/0/default.jpg",
+          "label": "LXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000125.tif/full/full/0/default.jpg",
+          "label": "LXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000126.tif/full/full/0/default.jpg",
+          "label": "LXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000127.tif/full/full/0/default.jpg",
+          "label": "LXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000128.tif/full/full/0/default.jpg",
+          "label": "LXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000129.tif/full/full/0/default.jpg",
+          "label": "LXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000130.tif/full/full/0/default.jpg",
+          "label": "LXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000131.tif/full/full/0/default.jpg",
+          "label": "LXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000132.tif/full/full/0/default.jpg",
+          "label": "LXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000133.tif/full/full/0/default.jpg",
+          "label": "LXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000134.tif/full/full/0/default.jpg",
+          "label": "LXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000135.tif/full/full/0/default.jpg",
+          "label": "LXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000136.tif/full/full/0/default.jpg",
+          "label": "LXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000137.tif/full/full/0/default.jpg",
+          "label": "LXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000138.tif/full/full/0/default.jpg",
+          "label": "LXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000139.tif/full/full/0/default.jpg",
+          "label": "LXVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000140.tif/full/full/0/default.jpg",
+          "label": "LXVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000141.tif/full/full/0/default.jpg",
+          "label": "LXIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000142.tif/full/full/0/default.jpg",
+          "label": "LXIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000143.tif/full/full/0/default.jpg",
+          "label": "LXXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000144.tif/full/full/0/default.jpg",
+          "label": "LXXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000145.tif/full/full/0/default.jpg",
+          "label": "LXXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000146.tif/full/full/0/default.jpg",
+          "label": "LXXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000147.tif/full/full/0/default.jpg",
+          "label": "LXXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000148.tif/full/full/0/default.jpg",
+          "label": "LXXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000149.tif/full/full/0/default.jpg",
+          "label": "LXXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000150.tif/full/full/0/default.jpg",
+          "label": "LXXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000151.tif/full/full/0/default.jpg",
+          "label": "LXXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000152.tif/full/full/0/default.jpg",
+          "label": "LXXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000153.tif/full/full/0/default.jpg",
+          "label": "LXXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000154.tif/full/full/0/default.jpg",
+          "label": "LXXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000155.tif/full/full/0/default.jpg",
+          "label": "LXXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000156.tif/full/full/0/default.jpg",
+          "label": "LXXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000157.tif/full/full/0/default.jpg",
+          "label": "LXXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000158.tif/full/full/0/default.jpg",
+          "label": "LXXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000159.tif/full/full/0/default.jpg",
+          "label": "LXXVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000160.tif/full/full/0/default.jpg",
+          "label": "LXXVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000161.tif/full/full/0/default.jpg",
+          "label": "LXXIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000162.tif/full/full/0/default.jpg",
+          "label": "LXXIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000163.tif/full/full/0/default.jpg",
+          "label": "LXXXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000164.tif/full/full/0/default.jpg",
+          "label": "LXXXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000165.tif/full/full/0/default.jpg",
+          "label": "LXXXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000166.tif/full/full/0/default.jpg",
+          "label": "LXXXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000167.tif/full/full/0/default.jpg",
+          "label": "LXXXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000168.tif/full/full/0/default.jpg",
+          "label": "LXXXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000169.tif/full/full/0/default.jpg",
+          "label": "LXXXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000170.tif/full/full/0/default.jpg",
+          "label": "LXXXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000171.tif/full/full/0/default.jpg",
+          "label": "LXXXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000172.tif/full/full/0/default.jpg",
+          "label": "LXXXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000173.tif/full/full/0/default.jpg",
+          "label": "LXXXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000174.tif/full/full/0/default.jpg",
+          "label": "LXXXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000175.tif/full/full/0/default.jpg",
+          "label": "LXXXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000176.tif/full/full/0/default.jpg",
+          "label": "LXXXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000177.tif/full/full/0/default.jpg",
+          "label": "LXXXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000178.tif/full/full/0/default.jpg",
+          "label": "LXXXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000179.tif/full/full/0/default.jpg",
+          "label": "LXXXVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000180.tif/full/full/0/default.jpg",
+          "label": "LXXXVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000181.tif/full/full/0/default.jpg",
+          "label": "LXXXIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000182.tif/full/full/0/default.jpg",
+          "label": "LXXXIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000183.tif/full/full/0/default.jpg",
+          "label": "XCr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000184.tif/full/full/0/default.jpg",
+          "label": "XCv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000185.tif/full/full/0/default.jpg",
+          "label": "XCIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000186.tif/full/full/0/default.jpg",
+          "label": "XCIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000187.tif/full/full/0/default.jpg",
+          "label": "XCIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000188.tif/full/full/0/default.jpg",
+          "label": "XCIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000189.tif/full/full/0/default.jpg",
+          "label": "XCIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000190.tif/full/full/0/default.jpg",
+          "label": "XCIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000191.tif/full/full/0/default.jpg",
+          "label": "XCIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000192.tif/full/full/0/default.jpg",
+          "label": "XCIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000193.tif/full/full/0/default.jpg",
+          "label": "XCVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000194.tif/full/full/0/default.jpg",
+          "label": "XCVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000195.tif/full/full/0/default.jpg",
+          "label": "XCVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000196.tif/full/full/0/default.jpg",
+          "label": "XCVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000197.tif/full/full/0/default.jpg",
+          "label": "XCVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000198.tif/full/full/0/default.jpg",
+          "label": "XCVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000199.tif/full/full/0/default.jpg",
+          "label": "XCVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000200.tif/full/full/0/default.jpg",
+          "label": "XCVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000201.tif/full/full/0/default.jpg",
+          "label": "XCIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000202.tif/full/full/0/default.jpg",
+          "label": "XCIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000203.tif/full/full/0/default.jpg",
+          "label": "Cr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000204.tif/full/full/0/default.jpg",
+          "label": "Cv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000205.tif/full/full/0/default.jpg",
+          "label": "CIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000206.tif/full/full/0/default.jpg",
+          "label": "CIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000207.tif/full/full/0/default.jpg",
+          "label": "CIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000208.tif/full/full/0/default.jpg",
+          "label": "CIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000209.tif/full/full/0/default.jpg",
+          "label": "CIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000210.tif/full/full/0/default.jpg",
+          "label": "CIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000211.tif/full/full/0/default.jpg",
+          "label": "CIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000212.tif/full/full/0/default.jpg",
+          "label": "CIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000213.tif/full/full/0/default.jpg",
+          "label": "CVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000214.tif/full/full/0/default.jpg",
+          "label": "CVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000215.tif/full/full/0/default.jpg",
+          "label": "CVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000216.tif/full/full/0/default.jpg",
+          "label": "CVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000217.tif/full/full/0/default.jpg",
+          "label": "CVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000218.tif/full/full/0/default.jpg",
+          "label": "CVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000219.tif/full/full/0/default.jpg",
+          "label": "CVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000220.tif/full/full/0/default.jpg",
+          "label": "CVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000221.tif/full/full/0/default.jpg",
+          "label": "CIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000222.tif/full/full/0/default.jpg",
+          "label": "CIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000223.tif/full/full/0/default.jpg",
+          "label": "CXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000224.tif/full/full/0/default.jpg",
+          "label": "CXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000225.tif/full/full/0/default.jpg",
+          "label": "CXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000226.tif/full/full/0/default.jpg",
+          "label": "CXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000227.tif/full/full/0/default.jpg",
+          "label": "CXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000228.tif/full/full/0/default.jpg",
+          "label": "CXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000229.tif/full/full/0/default.jpg",
+          "label": "CXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000230.tif/full/full/0/default.jpg",
+          "label": "CXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000231.tif/full/full/0/default.jpg",
+          "label": "CXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000232.tif/full/full/0/default.jpg",
+          "label": "CXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000233.tif/full/full/0/default.jpg",
+          "label": "CXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000234.tif/full/full/0/default.jpg",
+          "label": "CXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000235.tif/full/full/0/default.jpg",
+          "label": "CXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000236.tif/full/full/0/default.jpg",
+          "label": "CXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000237.tif/full/full/0/default.jpg",
+          "label": "CXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000238.tif/full/full/0/default.jpg",
+          "label": "CXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000239.tif/full/full/0/default.jpg",
+          "label": "CXVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000240.tif/full/full/0/default.jpg",
+          "label": "CXVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000241.tif/full/full/0/default.jpg",
+          "label": "CXIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000242.tif/full/full/0/default.jpg",
+          "label": "CXIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000243.tif/full/full/0/default.jpg",
+          "label": "CXXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000244.tif/full/full/0/default.jpg",
+          "label": "CXXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000245.tif/full/full/0/default.jpg",
+          "label": "CXXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000246.tif/full/full/0/default.jpg",
+          "label": "CXXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000247.tif/full/full/0/default.jpg",
+          "label": "CXXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000248.tif/full/full/0/default.jpg",
+          "label": "CXXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000249.tif/full/full/0/default.jpg",
+          "label": "CXXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000250.tif/full/full/0/default.jpg",
+          "label": "CXXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000251.tif/full/full/0/default.jpg",
+          "label": "CXXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000252.tif/full/full/0/default.jpg",
+          "label": "CXXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000253.tif/full/full/0/default.jpg",
+          "label": "CXXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000254.tif/full/full/0/default.jpg",
+          "label": "CXXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000255.tif/full/full/0/default.jpg",
+          "label": "CXXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000256.tif/full/full/0/default.jpg",
+          "label": "CXXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000257.tif/full/full/0/default.jpg",
+          "label": "CXXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000258.tif/full/full/0/default.jpg",
+          "label": "CXXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000259.tif/full/full/0/default.jpg",
+          "label": "CXXVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000260.tif/full/full/0/default.jpg",
+          "label": "CXXVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000261.tif/full/full/0/default.jpg",
+          "label": "CXXIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000262.tif/full/full/0/default.jpg",
+          "label": "CXXIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000263.tif/full/full/0/default.jpg",
+          "label": "CXXXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000264.tif/full/full/0/default.jpg",
+          "label": "CXXXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000265.tif/full/full/0/default.jpg",
+          "label": "CXXXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000266.tif/full/full/0/default.jpg",
+          "label": "CXXXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000267.tif/full/full/0/default.jpg",
+          "label": "CXXXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000268.tif/full/full/0/default.jpg",
+          "label": "CXXXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000269.tif/full/full/0/default.jpg",
+          "label": "CXXXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000270.tif/full/full/0/default.jpg",
+          "label": "CXXXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000271.tif/full/full/0/default.jpg",
+          "label": "CXXXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000272.tif/full/full/0/default.jpg",
+          "label": "CXXXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000273.tif/full/full/0/default.jpg",
+          "label": "CXXXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000274.tif/full/full/0/default.jpg",
+          "label": "CXXXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000275.tif/full/full/0/default.jpg",
+          "label": "CXXXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000276.tif/full/full/0/default.jpg",
+          "label": "CXXXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000277.tif/full/full/0/default.jpg",
+          "label": "CXXXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000278.tif/full/full/0/default.jpg",
+          "label": "CXXXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000279.tif/full/full/0/default.jpg",
+          "label": "CXXXVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000280.tif/full/full/0/default.jpg",
+          "label": "CXXXVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000281.tif/full/full/0/default.jpg",
+          "label": "CXXXIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000282.tif/full/full/0/default.jpg",
+          "label": "CXXXIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000283.tif/full/full/0/default.jpg",
+          "label": "CXLr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000284.tif/full/full/0/default.jpg",
+          "label": "CXLv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000285.tif/full/full/0/default.jpg",
+          "label": "CXLIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000286.tif/full/full/0/default.jpg",
+          "label": "CXLIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000287.tif/full/full/0/default.jpg",
+          "label": "CXLIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000288.tif/full/full/0/default.jpg",
+          "label": "CXLIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000289.tif/full/full/0/default.jpg",
+          "label": "CXLIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000290.tif/full/full/0/default.jpg",
+          "label": "CXLIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000291.tif/full/full/0/default.jpg",
+          "label": "CXLIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000292.tif/full/full/0/default.jpg",
+          "label": "CXLIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000293.tif/full/full/0/default.jpg",
+          "label": "CXLVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000294.tif/full/full/0/default.jpg",
+          "label": "CXLVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000295.tif/full/full/0/default.jpg",
+          "label": "CXLVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000296.tif/full/full/0/default.jpg",
+          "label": "CXLVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000297.tif/full/full/0/default.jpg",
+          "label": "CXLVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000298.tif/full/full/0/default.jpg",
+          "label": "CXLVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000299.tif/full/full/0/default.jpg",
+          "label": "CXLVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000300.tif/full/full/0/default.jpg",
+          "label": "CXLVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000301.tif/full/full/0/default.jpg",
+          "label": "CXLIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000302.tif/full/full/0/default.jpg",
+          "label": "CXLIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000303.tif/full/full/0/default.jpg",
+          "label": "CLr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000304.tif/full/full/0/default.jpg",
+          "label": "CLv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000305.tif/full/full/0/default.jpg",
+          "label": "CLIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000306.tif/full/full/0/default.jpg",
+          "label": "CLIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000307.tif/full/full/0/default.jpg",
+          "label": "CLIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000308.tif/full/full/0/default.jpg",
+          "label": "CLIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000309.tif/full/full/0/default.jpg",
+          "label": "CLIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000310.tif/full/full/0/default.jpg",
+          "label": "CLIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000311.tif/full/full/0/default.jpg",
+          "label": "CLIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000312.tif/full/full/0/default.jpg",
+          "label": "CLIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000313.tif/full/full/0/default.jpg",
+          "label": "CLVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000314.tif/full/full/0/default.jpg",
+          "label": "CLVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000315.tif/full/full/0/default.jpg",
+          "label": "CLVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000316.tif/full/full/0/default.jpg",
+          "label": "CLVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000317.tif/full/full/0/default.jpg",
+          "label": "CLVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000318.tif/full/full/0/default.jpg",
+          "label": "CLVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000319.tif/full/full/0/default.jpg",
+          "label": "CLVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000320.tif/full/full/0/default.jpg",
+          "label": "CLVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000321.tif/full/full/0/default.jpg",
+          "label": "CLIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000322.tif/full/full/0/default.jpg",
+          "label": "CLIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000323.tif/full/full/0/default.jpg",
+          "label": "CLXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000324.tif/full/full/0/default.jpg",
+          "label": "CLXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000325.tif/full/full/0/default.jpg",
+          "label": "CLXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000326.tif/full/full/0/default.jpg",
+          "label": "CLXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000327.tif/full/full/0/default.jpg",
+          "label": "CLXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000328.tif/full/full/0/default.jpg",
+          "label": "CLXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000329.tif/full/full/0/default.jpg",
+          "label": "CLXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000330.tif/full/full/0/default.jpg",
+          "label": "CLXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000331.tif/full/full/0/default.jpg",
+          "label": "CLXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000332.tif/full/full/0/default.jpg",
+          "label": "CLXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000333.tif/full/full/0/default.jpg",
+          "label": "CLXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000334.tif/full/full/0/default.jpg",
+          "label": "CLXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000335.tif/full/full/0/default.jpg",
+          "label": "CLXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000336.tif/full/full/0/default.jpg",
+          "label": "CLXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000337.tif/full/full/0/default.jpg",
+          "label": "CLXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000338.tif/full/full/0/default.jpg",
+          "label": "CLXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000339.tif/full/full/0/default.jpg",
+          "label": "CLXVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000340.tif/full/full/0/default.jpg",
+          "label": "CLXVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000341.tif/full/full/0/default.jpg",
+          "label": "CLXIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000342.tif/full/full/0/default.jpg",
+          "label": "CLXIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000343.tif/full/full/0/default.jpg",
+          "label": "CLXXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000344.tif/full/full/0/default.jpg",
+          "label": "CLXXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000345.tif/full/full/0/default.jpg",
+          "label": "CLXXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000346.tif/full/full/0/default.jpg",
+          "label": "CLXXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000347.tif/full/full/0/default.jpg",
+          "label": "CLXXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000348.tif/full/full/0/default.jpg",
+          "label": "CLXXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000349.tif/full/full/0/default.jpg",
+          "label": "CLXXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000350.tif/full/full/0/default.jpg",
+          "label": "CLXXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000351.tif/full/full/0/default.jpg",
+          "label": "CLXXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000352.tif/full/full/0/default.jpg",
+          "label": "CLXXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000353.tif/full/full/0/default.jpg",
+          "label": "CLXXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000354.tif/full/full/0/default.jpg",
+          "label": "CLXXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000355.tif/full/full/0/default.jpg",
+          "label": "CLXXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000356.tif/full/full/0/default.jpg",
+          "label": "CLXXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000357.tif/full/full/0/default.jpg",
+          "label": "CLXXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000358.tif/full/full/0/default.jpg",
+          "label": "CLXXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000359.tif/full/full/0/default.jpg",
+          "label": "CLXXVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000360.tif/full/full/0/default.jpg",
+          "label": "CLXXVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000361.tif/full/full/0/default.jpg",
+          "label": "CLXXIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000362.tif/full/full/0/default.jpg",
+          "label": "CLXXIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000363.tif/full/full/0/default.jpg",
+          "label": "CLXXXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000364.tif/full/full/0/default.jpg",
+          "label": "CLXXXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000365.tif/full/full/0/default.jpg",
+          "label": "CLXXXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000366.tif/full/full/0/default.jpg",
+          "label": "CLXXXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000367.tif/full/full/0/default.jpg",
+          "label": "CLXXXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000368.tif/full/full/0/default.jpg",
+          "label": "CLXXXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000369.tif/full/full/0/default.jpg",
+          "label": "CLXXXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000370.tif/full/full/0/default.jpg",
+          "label": "CLXXXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000371.tif/full/full/0/default.jpg",
+          "label": "CLXXXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000372.tif/full/full/0/default.jpg",
+          "label": "CLXXXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000373.tif/full/full/0/default.jpg",
+          "label": "CLXXXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000374.tif/full/full/0/default.jpg",
+          "label": "CLXXXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000375.tif/full/full/0/default.jpg",
+          "label": "CLXXXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000376.tif/full/full/0/default.jpg",
+          "label": "CLXXXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000377.tif/full/full/0/default.jpg",
+          "label": "CLXXXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000378.tif/full/full/0/default.jpg",
+          "label": "CLXXXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000379.tif/full/full/0/default.jpg",
+          "label": "CLXXXVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000380.tif/full/full/0/default.jpg",
+          "label": "CLXXXVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000381.tif/full/full/0/default.jpg",
+          "label": "CLXXXIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000382.tif/full/full/0/default.jpg",
+          "label": "CLXXXIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000383.tif/full/full/0/default.jpg",
+          "label": "CXCr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000384.tif/full/full/0/default.jpg",
+          "label": "CXCv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000385.tif/full/full/0/default.jpg",
+          "label": "CXCIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000386.tif/full/full/0/default.jpg",
+          "label": "CXCIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000387.tif/full/full/0/default.jpg",
+          "label": "CXCIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000388.tif/full/full/0/default.jpg",
+          "label": "CXCIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000389.tif/full/full/0/default.jpg",
+          "label": "CXCIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000390.tif/full/full/0/default.jpg",
+          "label": "CXCIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000391.tif/full/full/0/default.jpg",
+          "label": "CXCIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000392.tif/full/full/0/default.jpg",
+          "label": "CXCIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000393.tif/full/full/0/default.jpg",
+          "label": "CXCVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000394.tif/full/full/0/default.jpg",
+          "label": "CXCVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000395.tif/full/full/0/default.jpg",
+          "label": "CXCVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000396.tif/full/full/0/default.jpg",
+          "label": "CXCVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000397.tif/full/full/0/default.jpg",
+          "label": "CXCVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000398.tif/full/full/0/default.jpg",
+          "label": "CXCVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000399.tif/full/full/0/default.jpg",
+          "label": "CXCVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000400.tif/full/full/0/default.jpg",
+          "label": "CXCVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000401.tif/full/full/0/default.jpg",
+          "label": "CXCIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000402.tif/full/full/0/default.jpg",
+          "label": "CXCIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000403.tif/full/full/0/default.jpg",
+          "label": "CCr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000404.tif/full/full/0/default.jpg",
+          "label": "CCv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000405.tif/full/full/0/default.jpg",
+          "label": "CCIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000406.tif/full/full/0/default.jpg",
+          "label": "CCIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000407.tif/full/full/0/default.jpg",
+          "label": "CCIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000408.tif/full/full/0/default.jpg",
+          "label": "CCIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000409.tif/full/full/0/default.jpg",
+          "label": "CCIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000410.tif/full/full/0/default.jpg",
+          "label": "CCIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000411.tif/full/full/0/default.jpg",
+          "label": "CCIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000412.tif/full/full/0/default.jpg",
+          "label": "CCIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000413.tif/full/full/0/default.jpg",
+          "label": "CCVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000414.tif/full/full/0/default.jpg",
+          "label": "CCVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000415.tif/full/full/0/default.jpg",
+          "label": "CCVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000416.tif/full/full/0/default.jpg",
+          "label": "CCVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000417.tif/full/full/0/default.jpg",
+          "label": "CCVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000418.tif/full/full/0/default.jpg",
+          "label": "CCVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000419.tif/full/full/0/default.jpg",
+          "label": "CCVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000420.tif/full/full/0/default.jpg",
+          "label": "CCVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000421.tif/full/full/0/default.jpg",
+          "label": "CCIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000422.tif/full/full/0/default.jpg",
+          "label": "CCIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000423.tif/full/full/0/default.jpg",
+          "label": "CCXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000424.tif/full/full/0/default.jpg",
+          "label": "CCXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000425.tif/full/full/0/default.jpg",
+          "label": "CCXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000426.tif/full/full/0/default.jpg",
+          "label": "CCXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000427.tif/full/full/0/default.jpg",
+          "label": "CCXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000428.tif/full/full/0/default.jpg",
+          "label": "CCXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000429.tif/full/full/0/default.jpg",
+          "label": "CCXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000430.tif/full/full/0/default.jpg",
+          "label": "CCXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000431.tif/full/full/0/default.jpg",
+          "label": "CCXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000432.tif/full/full/0/default.jpg",
+          "label": "CCXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000433.tif/full/full/0/default.jpg",
+          "label": "CCXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000434.tif/full/full/0/default.jpg",
+          "label": "CCXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000435.tif/full/full/0/default.jpg",
+          "label": "CCXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000436.tif/full/full/0/default.jpg",
+          "label": "CCXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000437.tif/full/full/0/default.jpg",
+          "label": "CCXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000438.tif/full/full/0/default.jpg",
+          "label": "CCXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000439.tif/full/full/0/default.jpg",
+          "label": "CCXVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000440.tif/full/full/0/default.jpg",
+          "label": "CCXVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000441.tif/full/full/0/default.jpg",
+          "label": "CCXIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000442.tif/full/full/0/default.jpg",
+          "label": "CCXIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000443.tif/full/full/0/default.jpg",
+          "label": "CCXXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000444.tif/full/full/0/default.jpg",
+          "label": "CCXXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000445.tif/full/full/0/default.jpg",
+          "label": "CCXXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000446.tif/full/full/0/default.jpg",
+          "label": "CCXXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000447.tif/full/full/0/default.jpg",
+          "label": "CCXXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000448.tif/full/full/0/default.jpg",
+          "label": "CCXXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000449.tif/full/full/0/default.jpg",
+          "label": "CCXXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000450.tif/full/full/0/default.jpg",
+          "label": "CCXXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000451.tif/full/full/0/default.jpg",
+          "label": "CCXXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000452.tif/full/full/0/default.jpg",
+          "label": "CCXXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000453.tif/full/full/0/default.jpg",
+          "label": "CCXXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000454.tif/full/full/0/default.jpg",
+          "label": "CCXXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000455.tif/full/full/0/default.jpg",
+          "label": "CCXXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000456.tif/full/full/0/default.jpg",
+          "label": "CCXXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000457.tif/full/full/0/default.jpg",
+          "label": "CCXXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000458.tif/full/full/0/default.jpg",
+          "label": "CCXXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000459.tif/full/full/0/default.jpg",
+          "label": "CCXXVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000460.tif/full/full/0/default.jpg",
+          "label": "CCXXVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000461.tif/full/full/0/default.jpg",
+          "label": "CCXXIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000462.tif/full/full/0/default.jpg",
+          "label": "CCXXIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000463.tif/full/full/0/default.jpg",
+          "label": "CCXXXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000464.tif/full/full/0/default.jpg",
+          "label": "CCXXXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000465.tif/full/full/0/default.jpg",
+          "label": "CCXXXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000466.tif/full/full/0/default.jpg",
+          "label": "CCXXXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000467.tif/full/full/0/default.jpg",
+          "label": "CCXXXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000468.tif/full/full/0/default.jpg",
+          "label": "CCXXXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000469.tif/full/full/0/default.jpg",
+          "label": "CCXXXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000470.tif/full/full/0/default.jpg",
+          "label": "CCXXXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000471.tif/full/full/0/default.jpg",
+          "label": "CCXXXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000472.tif/full/full/0/default.jpg",
+          "label": "CCXXXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000473.tif/full/full/0/default.jpg",
+          "label": "CCXXXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000474.tif/full/full/0/default.jpg",
+          "label": "CCXXXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000475.tif/full/full/0/default.jpg",
+          "label": "CCXXXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000476.tif/full/full/0/default.jpg",
+          "label": "CCXXXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000477.tif/full/full/0/default.jpg",
+          "label": "CCXXXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000478.tif/full/full/0/default.jpg",
+          "label": "CCXXXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000479.tif/full/full/0/default.jpg",
+          "label": "CCXXXVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000480.tif/full/full/0/default.jpg",
+          "label": "CCXXXVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000481.tif/full/full/0/default.jpg",
+          "label": "CCXXXIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000482.tif/full/full/0/default.jpg",
+          "label": "CCXXXIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000483.tif/full/full/0/default.jpg",
+          "label": "CCXLr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000484.tif/full/full/0/default.jpg",
+          "label": "CCXLv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000485.tif/full/full/0/default.jpg",
+          "label": "CCXLIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000486.tif/full/full/0/default.jpg",
+          "label": "CCXLIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000487.tif/full/full/0/default.jpg",
+          "label": "CCXLIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000488.tif/full/full/0/default.jpg",
+          "label": "CCXLIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000489.tif/full/full/0/default.jpg",
+          "label": "CCXLIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000490.tif/full/full/0/default.jpg",
+          "label": "CCXLIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000491.tif/full/full/0/default.jpg",
+          "label": "CCXLIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000492.tif/full/full/0/default.jpg",
+          "label": "CCXLIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000493.tif/full/full/0/default.jpg",
+          "label": "CCXLVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000494.tif/full/full/0/default.jpg",
+          "label": "CCXLVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000495.tif/full/full/0/default.jpg",
+          "label": "CCXLVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000496.tif/full/full/0/default.jpg",
+          "label": "CCXLVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000497.tif/full/full/0/default.jpg",
+          "label": "CCXLVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000498.tif/full/full/0/default.jpg",
+          "label": "CCXLVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000499.tif/full/full/0/default.jpg",
+          "label": "CCXLVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000500.tif/full/full/0/default.jpg",
+          "label": "CCXLVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000501.tif/full/full/0/default.jpg",
+          "label": "CCXLIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000502.tif/full/full/0/default.jpg",
+          "label": "CCXLIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000503.tif/full/full/0/default.jpg",
+          "label": "CCLr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000504.tif/full/full/0/default.jpg",
+          "label": "CCLv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000505.tif/full/full/0/default.jpg",
+          "label": "CCLIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000506.tif/full/full/0/default.jpg",
+          "label": "CCLIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000507.tif/full/full/0/default.jpg",
+          "label": "CCLIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000508.tif/full/full/0/default.jpg",
+          "label": "CCLIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000509.tif/full/full/0/default.jpg",
+          "label": "CCLIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000510.tif/full/full/0/default.jpg",
+          "label": "CCLIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000511.tif/full/full/0/default.jpg",
+          "label": "CCLIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000512.tif/full/full/0/default.jpg",
+          "label": "CCLIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000513.tif/full/full/0/default.jpg",
+          "label": "CCLVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000514.tif/full/full/0/default.jpg",
+          "label": "CCLVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000515.tif/full/full/0/default.jpg",
+          "label": "CCLVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000516.tif/full/full/0/default.jpg",
+          "label": "CCLVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000517.tif/full/full/0/default.jpg",
+          "label": "CCLVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000518.tif/full/full/0/default.jpg",
+          "label": "CCLVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000519.tif/full/full/0/default.jpg",
+          "label": "CCLVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000520.tif/full/full/0/default.jpg",
+          "label": "CCLVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000521.tif/full/full/0/default.jpg",
+          "label": "CCLIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000522.tif/full/full/0/default.jpg",
+          "label": "CCLIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000523.tif/full/full/0/default.jpg",
+          "label": "CCLXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000524.tif/full/full/0/default.jpg",
+          "label": "CCLXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000525.tif/full/full/0/default.jpg",
+          "label": "CCLXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000526.tif/full/full/0/default.jpg",
+          "label": "CCLXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000527.tif/full/full/0/default.jpg",
+          "label": "CCLXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000528.tif/full/full/0/default.jpg",
+          "label": "CCLXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000529.tif/full/full/0/default.jpg",
+          "label": "CCLXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000530.tif/full/full/0/default.jpg",
+          "label": "CCLXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000531.tif/full/full/0/default.jpg",
+          "label": "CCLXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000532.tif/full/full/0/default.jpg",
+          "label": "CCLXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000533.tif/full/full/0/default.jpg",
+          "label": "CCLXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000534.tif/full/full/0/default.jpg",
+          "label": "CCLXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000535.tif/full/full/0/default.jpg",
+          "label": "CCLXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000536.tif/full/full/0/default.jpg",
+          "label": "CCLXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000537.tif/full/full/0/default.jpg",
+          "label": "CCLXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000538.tif/full/full/0/default.jpg",
+          "label": "CCLXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000539.tif/full/full/0/default.jpg",
+          "label": "CCLXVIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000540.tif/full/full/0/default.jpg",
+          "label": "CCLXVIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000541.tif/full/full/0/default.jpg",
+          "label": "CCLXIXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000542.tif/full/full/0/default.jpg",
+          "label": "CCLXIXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000543.tif/full/full/0/default.jpg",
+          "label": "CCLXXr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000544.tif/full/full/0/default.jpg",
+          "label": "CCLXXv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000545.tif/full/full/0/default.jpg",
+          "label": "r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000546.tif/full/full/0/default.jpg",
+          "label": "v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000547.tif/full/full/0/default.jpg",
+          "label": "CCLXXIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000548.tif/full/full/0/default.jpg",
+          "label": "CCLXXIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000549.tif/full/full/0/default.jpg",
+          "label": "CCLXXIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000550.tif/full/full/0/default.jpg",
+          "label": "CCLXXIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000551.tif/full/full/0/default.jpg",
+          "label": "CCLXXIIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000552.tif/full/full/0/default.jpg",
+          "label": "CCLXXIIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000553.tif/full/full/0/default.jpg",
+          "label": "CCLXXIVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000554.tif/full/full/0/default.jpg",
+          "label": "CCLXXIVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000555.tif/full/full/0/default.jpg",
+          "label": "CCLXXVr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000556.tif/full/full/0/default.jpg",
+          "label": "CCLXXVv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000557.tif/full/full/0/default.jpg",
+          "label": "CCLXXVIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000558.tif/full/full/0/default.jpg",
+          "label": "CCLXXVIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000559.tif/full/full/0/default.jpg",
+          "label": "CCLXXVIIr"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000560.tif/full/full/0/default.jpg",
+          "label": "CCLXXVIIv"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000561.tif/full/full/0/default.jpg",
+          "label": "[CCLXXVIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000562.tif/full/full/0/default.jpg",
+          "label": "[CCLXXVIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000563.tif/full/full/0/default.jpg",
+          "label": "[CCLXXIX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000564.tif/full/full/0/default.jpg",
+          "label": "[CCLXXIX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000565.tif/full/full/0/default.jpg",
+          "label": "[CCLXXX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000566.tif/full/full/0/default.jpg",
+          "label": "[CCLXXX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000567.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000568.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000569.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000570.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000571.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000572.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000573.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXIV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000574.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXIV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000575.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000576.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000577.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXVI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000578.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXVI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000579.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXVII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000580.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXVII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000581.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXVIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000582.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXVIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000583.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXIX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000584.tif/full/full/0/default.jpg",
+          "label": "[CCLXXXIX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000585.tif/full/full/0/default.jpg",
+          "label": "[CCXC]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000586.tif/full/full/0/default.jpg",
+          "label": "[CCXC]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000587.tif/full/full/0/default.jpg",
+          "label": "[CCXCI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000588.tif/full/full/0/default.jpg",
+          "label": "[CCXCI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000589.tif/full/full/0/default.jpg",
+          "label": "[CCXCII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000590.tif/full/full/0/default.jpg",
+          "label": "[CCXCII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000591.tif/full/full/0/default.jpg",
+          "label": "[CCXCIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000592.tif/full/full/0/default.jpg",
+          "label": "[CCXCIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000593.tif/full/full/0/default.jpg",
+          "label": "[CCXCIV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000594.tif/full/full/0/default.jpg",
+          "label": "[CCXCIV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000595.tif/full/full/0/default.jpg",
+          "label": "[CCXCV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000596.tif/full/full/0/default.jpg",
+          "label": "[CCXCV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000597.tif/full/full/0/default.jpg",
+          "label": "[CCXCVI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000598.tif/full/full/0/default.jpg",
+          "label": "[CCXCVI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000599.tif/full/full/0/default.jpg",
+          "label": "[CCXCVII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000600.tif/full/full/0/default.jpg",
+          "label": "[CCXCVII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000601.tif/full/full/0/default.jpg",
+          "label": "[CCXCVIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000602.tif/full/full/0/default.jpg",
+          "label": "[CCXCVIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000603.tif/full/full/0/default.jpg",
+          "label": "[CCXCIX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000604.tif/full/full/0/default.jpg",
+          "label": "[CCXCIX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000605.tif/full/full/0/default.jpg",
+          "label": "[CCC]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000606.tif/full/full/0/default.jpg",
+          "label": "[CCC]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000607.tif/full/full/0/default.jpg",
+          "label": "[CCCI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000608.tif/full/full/0/default.jpg",
+          "label": "[CCCI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000609.tif/full/full/0/default.jpg",
+          "label": "[CCCII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000610.tif/full/full/0/default.jpg",
+          "label": "[CCCII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000611.tif/full/full/0/default.jpg",
+          "label": "[CCCIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000612.tif/full/full/0/default.jpg",
+          "label": "[CCCIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000613.tif/full/full/0/default.jpg",
+          "label": "[CCCIV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000614.tif/full/full/0/default.jpg",
+          "label": "[CCCIV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000615.tif/full/full/0/default.jpg",
+          "label": "[CCCV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000616.tif/full/full/0/default.jpg",
+          "label": "[CCCV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000617.tif/full/full/0/default.jpg",
+          "label": "[CCCVI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000618.tif/full/full/0/default.jpg",
+          "label": "[CCCVI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000619.tif/full/full/0/default.jpg",
+          "label": "[CCCVII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000620.tif/full/full/0/default.jpg",
+          "label": "[CCCVII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000621.tif/full/full/0/default.jpg",
+          "label": "[CCCVIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000622.tif/full/full/0/default.jpg",
+          "label": "[CCCVIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000623.tif/full/full/0/default.jpg",
+          "label": "[CCCIX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000624.tif/full/full/0/default.jpg",
+          "label": "[CCCIX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000625.tif/full/full/0/default.jpg",
+          "label": "[CCCX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000626.tif/full/full/0/default.jpg",
+          "label": "[CCCX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000627.tif/full/full/0/default.jpg",
+          "label": "[CCCXI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000628.tif/full/full/0/default.jpg",
+          "label": "[CCCXI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000629.tif/full/full/0/default.jpg",
+          "label": "[CCCXII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000630.tif/full/full/0/default.jpg",
+          "label": "[CCCXII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000631.tif/full/full/0/default.jpg",
+          "label": "[CCCXIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000632.tif/full/full/0/default.jpg",
+          "label": "[CCCXIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000633.tif/full/full/0/default.jpg",
+          "label": "[CCCXIV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000634.tif/full/full/0/default.jpg",
+          "label": "[CCCXIV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000635.tif/full/full/0/default.jpg",
+          "label": "[CCCXV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000636.tif/full/full/0/default.jpg",
+          "label": "[CCCXV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000637.tif/full/full/0/default.jpg",
+          "label": "[CCCXVI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000638.tif/full/full/0/default.jpg",
+          "label": "[CCCXVI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000639.tif/full/full/0/default.jpg",
+          "label": "[CCCXVII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000640.tif/full/full/0/default.jpg",
+          "label": "[CCCXVII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000641.tif/full/full/0/default.jpg",
+          "label": "[CCCXVIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000642.tif/full/full/0/default.jpg",
+          "label": "[CCCXVIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000643.tif/full/full/0/default.jpg",
+          "label": "[CCCXIX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000644.tif/full/full/0/default.jpg",
+          "label": "[CCCXIX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000645.tif/full/full/0/default.jpg",
+          "label": "[CCCXX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000646.tif/full/full/0/default.jpg",
+          "label": "[CCCXX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000647.tif/full/full/0/default.jpg",
+          "label": "[CCCXXI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000648.tif/full/full/0/default.jpg",
+          "label": "[CCCXXI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000649.tif/full/full/0/default.jpg",
+          "label": "[CCCXXII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000650.tif/full/full/0/default.jpg",
+          "label": "[CCCXXII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000651.tif/full/full/0/default.jpg",
+          "label": "[CCCXXIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000652.tif/full/full/0/default.jpg",
+          "label": "[CCCXXIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000653.tif/full/full/0/default.jpg",
+          "label": "[CCCXXIV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000654.tif/full/full/0/default.jpg",
+          "label": "[CCCXXIV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000655.tif/full/full/0/default.jpg",
+          "label": "[CCCXXV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000656.tif/full/full/0/default.jpg",
+          "label": "[CCCXXV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000657.tif/full/full/0/default.jpg",
+          "label": "[CCCXXVI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000658.tif/full/full/0/default.jpg",
+          "label": "[CCCXXVI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000659.tif/full/full/0/default.jpg",
+          "label": "[CCCXXVII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000660.tif/full/full/0/default.jpg",
+          "label": "[CCCXXVII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000661.tif/full/full/0/default.jpg",
+          "label": "[CCCXXVIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000662.tif/full/full/0/default.jpg",
+          "label": "[CCCXXVIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000663.tif/full/full/0/default.jpg",
+          "label": "[CCCXXIX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000664.tif/full/full/0/default.jpg",
+          "label": "[CCCXXIX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000665.tif/full/full/0/default.jpg",
+          "label": "[CCCXXX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000666.tif/full/full/0/default.jpg",
+          "label": "[CCCXXX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000667.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000668.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000669.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000670.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000671.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000672.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000673.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXIV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000674.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXIV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000675.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000676.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000677.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXVI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000678.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXVI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000679.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXVII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000680.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXVII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000681.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXVIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000682.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXVIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000683.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXIX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000684.tif/full/full/0/default.jpg",
+          "label": "[CCCXXXIX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000685.tif/full/full/0/default.jpg",
+          "label": "[CCCXL]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000686.tif/full/full/0/default.jpg",
+          "label": "[CCCXL]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000687.tif/full/full/0/default.jpg",
+          "label": "[CCCXLI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000688.tif/full/full/0/default.jpg",
+          "label": "[CCCXLI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000689.tif/full/full/0/default.jpg",
+          "label": "[CCCXLII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000690.tif/full/full/0/default.jpg",
+          "label": "[CCCXLII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000691.tif/full/full/0/default.jpg",
+          "label": "[CCCXLIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000692.tif/full/full/0/default.jpg",
+          "label": "[CCCXLIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000693.tif/full/full/0/default.jpg",
+          "label": "[CCCXLIV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000694.tif/full/full/0/default.jpg",
+          "label": "[CCCXLIV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000695.tif/full/full/0/default.jpg",
+          "label": "[CCCXLV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000696.tif/full/full/0/default.jpg",
+          "label": "[CCCXLV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000697.tif/full/full/0/default.jpg",
+          "label": "[CCCXLVI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000698.tif/full/full/0/default.jpg",
+          "label": "[CCCXLVI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000699.tif/full/full/0/default.jpg",
+          "label": "[CCCXLVII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000700.tif/full/full/0/default.jpg",
+          "label": "[CCCXLVII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000701.tif/full/full/0/default.jpg",
+          "label": "[CCCXLVIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000702.tif/full/full/0/default.jpg",
+          "label": "[CCCXLVIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000703.tif/full/full/0/default.jpg",
+          "label": "[CCCXLIX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000704.tif/full/full/0/default.jpg",
+          "label": "[CCCXLIX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000705.tif/full/full/0/default.jpg",
+          "label": "[CCCL]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000706.tif/full/full/0/default.jpg",
+          "label": "[CCCL]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000707.tif/full/full/0/default.jpg",
+          "label": "[CCCLI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000708.tif/full/full/0/default.jpg",
+          "label": "[CCCLI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000709.tif/full/full/0/default.jpg",
+          "label": "[CCCLII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000710.tif/full/full/0/default.jpg",
+          "label": "[CCCLII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000711.tif/full/full/0/default.jpg",
+          "label": "[CCCLIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000712.tif/full/full/0/default.jpg",
+          "label": "[CCCLIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000713.tif/full/full/0/default.jpg",
+          "label": "[CCCLIV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000714.tif/full/full/0/default.jpg",
+          "label": "[CCCLIV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000715.tif/full/full/0/default.jpg",
+          "label": "[CCCLV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000716.tif/full/full/0/default.jpg",
+          "label": "[CCCLV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000717.tif/full/full/0/default.jpg",
+          "label": "[CCCLVI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000718.tif/full/full/0/default.jpg",
+          "label": "[CCCLVI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000719.tif/full/full/0/default.jpg",
+          "label": "[CCCLVII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000720.tif/full/full/0/default.jpg",
+          "label": "[CCCLVII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000721.tif/full/full/0/default.jpg",
+          "label": "[CCCLVIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000722.tif/full/full/0/default.jpg",
+          "label": "[CCCLVIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000723.tif/full/full/0/default.jpg",
+          "label": "[CCCLIX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000724.tif/full/full/0/default.jpg",
+          "label": "[CCCLIX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000725.tif/full/full/0/default.jpg",
+          "label": "[CCCLX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000726.tif/full/full/0/default.jpg",
+          "label": "[CCCLX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000727.tif/full/full/0/default.jpg",
+          "label": "[CCCLXI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000728.tif/full/full/0/default.jpg",
+          "label": "[CCCLXI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000729.tif/full/full/0/default.jpg",
+          "label": "[CCCLXII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000730.tif/full/full/0/default.jpg",
+          "label": "[CCCLXII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000731.tif/full/full/0/default.jpg",
+          "label": "[CCCLXIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000732.tif/full/full/0/default.jpg",
+          "label": "[CCCLXIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000733.tif/full/full/0/default.jpg",
+          "label": "[CCCLXIV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000734.tif/full/full/0/default.jpg",
+          "label": "[CCCLXIV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000735.tif/full/full/0/default.jpg",
+          "label": "[CCCLXV]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000736.tif/full/full/0/default.jpg",
+          "label": "[CCCLXV]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000737.tif/full/full/0/default.jpg",
+          "label": "[CCCLXVI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000738.tif/full/full/0/default.jpg",
+          "label": "[CCCLXVI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000739.tif/full/full/0/default.jpg",
+          "label": "[CCCLXVII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000740.tif/full/full/0/default.jpg",
+          "label": "[CCCLXVII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000741.tif/full/full/0/default.jpg",
+          "label": "[CCCLXVIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000742.tif/full/full/0/default.jpg",
+          "label": "[CCCLXVIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000743.tif/full/full/0/default.jpg",
+          "label": "[CCCLXIX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000744.tif/full/full/0/default.jpg",
+          "label": "[CCCLXIX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000745.tif/full/full/0/default.jpg",
+          "label": "[CCCLXX]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000746.tif/full/full/0/default.jpg",
+          "label": "[CCCLXX]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000747.tif/full/full/0/default.jpg",
+          "label": "[CCCLXXI]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000748.tif/full/full/0/default.jpg",
+          "label": "[CCCLXXI]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000749.tif/full/full/0/default.jpg",
+          "label": "[CCCLXXII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000750.tif/full/full/0/default.jpg",
+          "label": "[CCCLXXII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000751.tif/full/full/0/default.jpg",
+          "label": "[CCCLXXIII]r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000752.tif/full/full/0/default.jpg",
+          "label": "[CCCLXXIII]v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000753.tif/full/full/0/default.jpg",
+          "label": "r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000754.tif/full/full/0/default.jpg",
+          "label": "v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000755.tif/full/full/0/default.jpg",
+          "label": "r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000756.tif/full/full/0/default.jpg",
+          "label": "v"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000757.tif/full/full/0/default.jpg",
+          "label": "r"
+        },
+        {
+          "url": "https://digi.landesbibliothek.at/viewer/api/v1/records/116/files/images/00000758.tif/full/full/0/default.jpg",
+          "label": "v"
+        }
+      ]
+    },
+    "pagesFound": 758
+  },
+  "issue_28": {
+    "success": true,
+    "manifest": {
+      "images": [
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242983/full/full/0/default.jpg",
+          "label": "[Front cover]"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242984/full/full/0/default.jpg",
+          "label": "[Inside front cover]"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242985/full/full/0/default.jpg",
+          "label": "[Front flyleaf recto]"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242986/full/full/0/default.jpg",
+          "label": "[Front flyleaf verso]"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242987/full/full/0/default.jpg",
+          "label": "[ii recto]"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242988/full/full/0/default.jpg",
+          "label": "[ii verso]"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242989/full/full/0/default.jpg",
+          "label": "[iii recto]"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242990/full/full/0/default.jpg",
+          "label": "[iii verso]"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242991/full/full/0/default.jpg",
+          "label": "1r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242992/full/full/0/default.jpg",
+          "label": "1v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242993/full/full/0/default.jpg",
+          "label": "2r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242994/full/full/0/default.jpg",
+          "label": "2v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242995/full/full/0/default.jpg",
+          "label": "3r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242996/full/full/0/default.jpg",
+          "label": "3v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242997/full/full/0/default.jpg",
+          "label": "4r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242998/full/full/0/default.jpg",
+          "label": "4v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33242999/full/full/0/default.jpg",
+          "label": "5r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243000/full/full/0/default.jpg",
+          "label": "5v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243001/full/full/0/default.jpg",
+          "label": "6r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243002/full/full/0/default.jpg",
+          "label": "6v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243003/full/full/0/default.jpg",
+          "label": "7r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243004/full/full/0/default.jpg",
+          "label": "7v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243005/full/full/0/default.jpg",
+          "label": "8r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243006/full/full/0/default.jpg",
+          "label": "8v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243007/full/full/0/default.jpg",
+          "label": "9r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243008/full/full/0/default.jpg",
+          "label": "9v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243009/full/full/0/default.jpg",
+          "label": "10r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243010/full/full/0/default.jpg",
+          "label": "10v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243011/full/full/0/default.jpg",
+          "label": "11r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243012/full/full/0/default.jpg",
+          "label": "11v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243013/full/full/0/default.jpg",
+          "label": "12r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243014/full/full/0/default.jpg",
+          "label": "12v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243015/full/full/0/default.jpg",
+          "label": "13r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243016/full/full/0/default.jpg",
+          "label": "13v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243017/full/full/0/default.jpg",
+          "label": "14r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243018/full/full/0/default.jpg",
+          "label": "14v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243019/full/full/0/default.jpg",
+          "label": "15r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243020/full/full/0/default.jpg",
+          "label": "15v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243021/full/full/0/default.jpg",
+          "label": "16r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243022/full/full/0/default.jpg",
+          "label": "16v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243023/full/full/0/default.jpg",
+          "label": "17r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243024/full/full/0/default.jpg",
+          "label": "17v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243025/full/full/0/default.jpg",
+          "label": "18r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243026/full/full/0/default.jpg",
+          "label": "18v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243027/full/full/0/default.jpg",
+          "label": "19r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243028/full/full/0/default.jpg",
+          "label": "19v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243029/full/full/0/default.jpg",
+          "label": "20r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243030/full/full/0/default.jpg",
+          "label": "20v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243031/full/full/0/default.jpg",
+          "label": "21r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243032/full/full/0/default.jpg",
+          "label": "21v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243033/full/full/0/default.jpg",
+          "label": "22r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243034/full/full/0/default.jpg",
+          "label": "22v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243035/full/full/0/default.jpg",
+          "label": "23r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243036/full/full/0/default.jpg",
+          "label": "23v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243037/full/full/0/default.jpg",
+          "label": "24r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243038/full/full/0/default.jpg",
+          "label": "24v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243039/full/full/0/default.jpg",
+          "label": "25r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243040/full/full/0/default.jpg",
+          "label": "25v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243041/full/full/0/default.jpg",
+          "label": "26r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243042/full/full/0/default.jpg",
+          "label": "26v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243043/full/full/0/default.jpg",
+          "label": "27r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243044/full/full/0/default.jpg",
+          "label": "27v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243045/full/full/0/default.jpg",
+          "label": "28r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243046/full/full/0/default.jpg",
+          "label": "28v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243047/full/full/0/default.jpg",
+          "label": "29r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243048/full/full/0/default.jpg",
+          "label": "29v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243049/full/full/0/default.jpg",
+          "label": "30r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243050/full/full/0/default.jpg",
+          "label": "30v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243051/full/full/0/default.jpg",
+          "label": "31r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243052/full/full/0/default.jpg",
+          "label": "31v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243053/full/full/0/default.jpg",
+          "label": "32r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243054/full/full/0/default.jpg",
+          "label": "32v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243055/full/full/0/default.jpg",
+          "label": "33r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243056/full/full/0/default.jpg",
+          "label": "33v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243057/full/full/0/default.jpg",
+          "label": "34r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243058/full/full/0/default.jpg",
+          "label": "34v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243059/full/full/0/default.jpg",
+          "label": "35r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243060/full/full/0/default.jpg",
+          "label": "35v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243061/full/full/0/default.jpg",
+          "label": "36r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243062/full/full/0/default.jpg",
+          "label": "36v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243063/full/full/0/default.jpg",
+          "label": "37r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243064/full/full/0/default.jpg",
+          "label": "37v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243065/full/full/0/default.jpg",
+          "label": "38r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243066/full/full/0/default.jpg",
+          "label": "38v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243067/full/full/0/default.jpg",
+          "label": "39r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243068/full/full/0/default.jpg",
+          "label": "39v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243069/full/full/0/default.jpg",
+          "label": "40r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243070/full/full/0/default.jpg",
+          "label": "40v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243071/full/full/0/default.jpg",
+          "label": "41r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243072/full/full/0/default.jpg",
+          "label": "41v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243073/full/full/0/default.jpg",
+          "label": "42r"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243074/full/full/0/default.jpg",
+          "label": "42v"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243075/full/full/0/default.jpg",
+          "label": "[Back flyleaf recto]"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243076/full/full/0/default.jpg",
+          "label": "[Back flyleaf verso]"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243077/full/full/0/default.jpg",
+          "label": "[Inside back cover]"
+        },
+        {
+          "url": "https://collections.library.yale.edu/iiif/2/33243078/full/full/0/default.jpg",
+          "label": "[Back cover]"
+        }
+      ],
+      "displayName": "Lectionary"
+    },
+    "pagesFound": 96
+  },
+  "issue_6": {
+    "success": true,
+    "manifest": {
+      "images": [
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0006_files/13/0_0.jpg",
+          "label": "Page 6"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0007_files/13/0_0.jpg",
+          "label": "Page 7"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0008_files/13/0_0.jpg",
+          "label": "Page 8"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0009_files/13/0_0.jpg",
+          "label": "Page 9"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0010_files/13/0_0.jpg",
+          "label": "Page 10"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0011_files/13/0_0.jpg",
+          "label": "Page 11"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0012_files/13/0_0.jpg",
+          "label": "Page 12"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0013_files/13/0_0.jpg",
+          "label": "Page 13"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0014_files/13/0_0.jpg",
+          "label": "Page 14"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0015_files/13/0_0.jpg",
+          "label": "Page 15"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0016_files/13/0_0.jpg",
+          "label": "Page 16"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0017_files/13/0_0.jpg",
+          "label": "Page 17"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0018_files/13/0_0.jpg",
+          "label": "Page 18"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0019_files/13/0_0.jpg",
+          "label": "Page 19"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0020_files/13/0_0.jpg",
+          "label": "Page 20"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0021_files/13/0_0.jpg",
+          "label": "Page 21"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0022_files/13/0_0.jpg",
+          "label": "Page 22"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0023_files/13/0_0.jpg",
+          "label": "Page 23"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0024_files/13/0_0.jpg",
+          "label": "Page 24"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0025_files/13/0_0.jpg",
+          "label": "Page 25"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0026_files/13/0_0.jpg",
+          "label": "Page 26"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0027_files/13/0_0.jpg",
+          "label": "Page 27"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0028_files/13/0_0.jpg",
+          "label": "Page 28"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0029_files/13/0_0.jpg",
+          "label": "Page 29"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0030_files/13/0_0.jpg",
+          "label": "Page 30"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0031_files/13/0_0.jpg",
+          "label": "Page 31"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0032_files/13/0_0.jpg",
+          "label": "Page 32"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0033_files/13/0_0.jpg",
+          "label": "Page 33"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0034_files/13/0_0.jpg",
+          "label": "Page 34"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0035_files/13/0_0.jpg",
+          "label": "Page 35"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0036_files/13/0_0.jpg",
+          "label": "Page 36"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0037_files/13/0_0.jpg",
+          "label": "Page 37"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0038_files/13/0_0.jpg",
+          "label": "Page 38"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0039_files/13/0_0.jpg",
+          "label": "Page 39"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0040_files/13/0_0.jpg",
+          "label": "Page 40"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0041_files/13/0_0.jpg",
+          "label": "Page 41"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0042_files/13/0_0.jpg",
+          "label": "Page 42"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0043_files/13/0_0.jpg",
+          "label": "Page 43"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0044_files/13/0_0.jpg",
+          "label": "Page 44"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0045_files/13/0_0.jpg",
+          "label": "Page 45"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0046_files/13/0_0.jpg",
+          "label": "Page 46"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0047_files/13/0_0.jpg",
+          "label": "Page 47"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0048_files/13/0_0.jpg",
+          "label": "Page 48"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0049_files/13/0_0.jpg",
+          "label": "Page 49"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0050_files/13/0_0.jpg",
+          "label": "Page 50"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0051_files/13/0_0.jpg",
+          "label": "Page 51"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0052_files/13/0_0.jpg",
+          "label": "Page 52"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0053_files/13/0_0.jpg",
+          "label": "Page 53"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0054_files/13/0_0.jpg",
+          "label": "Page 54"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0055_files/13/0_0.jpg",
+          "label": "Page 55"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0056_files/13/0_0.jpg",
+          "label": "Page 56"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0057_files/13/0_0.jpg",
+          "label": "Page 57"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0058_files/13/0_0.jpg",
+          "label": "Page 58"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0059_files/13/0_0.jpg",
+          "label": "Page 59"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0060_files/13/0_0.jpg",
+          "label": "Page 60"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0061_files/13/0_0.jpg",
+          "label": "Page 61"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0062_files/13/0_0.jpg",
+          "label": "Page 62"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0063_files/13/0_0.jpg",
+          "label": "Page 63"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0064_files/13/0_0.jpg",
+          "label": "Page 64"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0065_files/13/0_0.jpg",
+          "label": "Page 65"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0066_files/13/0_0.jpg",
+          "label": "Page 66"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0067_files/13/0_0.jpg",
+          "label": "Page 67"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0068_files/13/0_0.jpg",
+          "label": "Page 68"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0069_files/13/0_0.jpg",
+          "label": "Page 69"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0070_files/13/0_0.jpg",
+          "label": "Page 70"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0071_files/13/0_0.jpg",
+          "label": "Page 71"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0072_files/13/0_0.jpg",
+          "label": "Page 72"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0073_files/13/0_0.jpg",
+          "label": "Page 73"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0074_files/13/0_0.jpg",
+          "label": "Page 74"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0075_files/13/0_0.jpg",
+          "label": "Page 75"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0076_files/13/0_0.jpg",
+          "label": "Page 76"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0077_files/13/0_0.jpg",
+          "label": "Page 77"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0078_files/13/0_0.jpg",
+          "label": "Page 78"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0079_files/13/0_0.jpg",
+          "label": "Page 79"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0080_files/13/0_0.jpg",
+          "label": "Page 80"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0081_files/13/0_0.jpg",
+          "label": "Page 81"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0082_files/13/0_0.jpg",
+          "label": "Page 82"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0083_files/13/0_0.jpg",
+          "label": "Page 83"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0084_files/13/0_0.jpg",
+          "label": "Page 84"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0085_files/13/0_0.jpg",
+          "label": "Page 85"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0086_files/13/0_0.jpg",
+          "label": "Page 86"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0087_files/13/0_0.jpg",
+          "label": "Page 87"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0088_files/13/0_0.jpg",
+          "label": "Page 88"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0089_files/13/0_0.jpg",
+          "label": "Page 89"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0090_files/13/0_0.jpg",
+          "label": "Page 90"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0091_files/13/0_0.jpg",
+          "label": "Page 91"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0092_files/13/0_0.jpg",
+          "label": "Page 92"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0093_files/13/0_0.jpg",
+          "label": "Page 93"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0094_files/13/0_0.jpg",
+          "label": "Page 94"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0095_files/13/0_0.jpg",
+          "label": "Page 95"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0096_files/13/0_0.jpg",
+          "label": "Page 96"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0097_files/13/0_0.jpg",
+          "label": "Page 97"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0098_files/13/0_0.jpg",
+          "label": "Page 98"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0099_files/13/0_0.jpg",
+          "label": "Page 99"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0100_files/13/0_0.jpg",
+          "label": "Page 100"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0101_files/13/0_0.jpg",
+          "label": "Page 101"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0102_files/13/0_0.jpg",
+          "label": "Page 102"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0103_files/13/0_0.jpg",
+          "label": "Page 103"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0104_files/13/0_0.jpg",
+          "label": "Page 104"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0105_files/13/0_0.jpg",
+          "label": "Page 105"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0106_files/13/0_0.jpg",
+          "label": "Page 106"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0107_files/13/0_0.jpg",
+          "label": "Page 107"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0108_files/13/0_0.jpg",
+          "label": "Page 108"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0109_files/13/0_0.jpg",
+          "label": "Page 109"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0110_files/13/0_0.jpg",
+          "label": "Page 110"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0111_files/13/0_0.jpg",
+          "label": "Page 111"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0112_files/13/0_0.jpg",
+          "label": "Page 112"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0113_files/13/0_0.jpg",
+          "label": "Page 113"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0114_files/13/0_0.jpg",
+          "label": "Page 114"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0115_files/13/0_0.jpg",
+          "label": "Page 115"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0116_files/13/0_0.jpg",
+          "label": "Page 116"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0117_files/13/0_0.jpg",
+          "label": "Page 117"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0118_files/13/0_0.jpg",
+          "label": "Page 118"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0119_files/13/0_0.jpg",
+          "label": "Page 119"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0120_files/13/0_0.jpg",
+          "label": "Page 120"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0121_files/13/0_0.jpg",
+          "label": "Page 121"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0122_files/13/0_0.jpg",
+          "label": "Page 122"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0123_files/13/0_0.jpg",
+          "label": "Page 123"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0124_files/13/0_0.jpg",
+          "label": "Page 124"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0125_files/13/0_0.jpg",
+          "label": "Page 125"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0126_files/13/0_0.jpg",
+          "label": "Page 126"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0127_files/13/0_0.jpg",
+          "label": "Page 127"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0128_files/13/0_0.jpg",
+          "label": "Page 128"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0129_files/13/0_0.jpg",
+          "label": "Page 129"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0130_files/13/0_0.jpg",
+          "label": "Page 130"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0131_files/13/0_0.jpg",
+          "label": "Page 131"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0132_files/13/0_0.jpg",
+          "label": "Page 132"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0133_files/13/0_0.jpg",
+          "label": "Page 133"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0134_files/13/0_0.jpg",
+          "label": "Page 134"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0135_files/13/0_0.jpg",
+          "label": "Page 135"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0136_files/13/0_0.jpg",
+          "label": "Page 136"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0137_files/13/0_0.jpg",
+          "label": "Page 137"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0138_files/13/0_0.jpg",
+          "label": "Page 138"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0139_files/13/0_0.jpg",
+          "label": "Page 139"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0140_files/13/0_0.jpg",
+          "label": "Page 140"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0141_files/13/0_0.jpg",
+          "label": "Page 141"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0142_files/13/0_0.jpg",
+          "label": "Page 142"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0143_files/13/0_0.jpg",
+          "label": "Page 143"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0144_files/13/0_0.jpg",
+          "label": "Page 144"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0145_files/13/0_0.jpg",
+          "label": "Page 145"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0146_files/13/0_0.jpg",
+          "label": "Page 146"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0147_files/13/0_0.jpg",
+          "label": "Page 147"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0148_files/13/0_0.jpg",
+          "label": "Page 148"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0149_files/13/0_0.jpg",
+          "label": "Page 149"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0150_files/13/0_0.jpg",
+          "label": "Page 150"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0151_files/13/0_0.jpg",
+          "label": "Page 151"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0152_files/13/0_0.jpg",
+          "label": "Page 152"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0153_files/13/0_0.jpg",
+          "label": "Page 153"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0154_files/13/0_0.jpg",
+          "label": "Page 154"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0155_files/13/0_0.jpg",
+          "label": "Page 155"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0156_files/13/0_0.jpg",
+          "label": "Page 156"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0157_files/13/0_0.jpg",
+          "label": "Page 157"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0158_files/13/0_0.jpg",
+          "label": "Page 158"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0159_files/13/0_0.jpg",
+          "label": "Page 159"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0160_files/13/0_0.jpg",
+          "label": "Page 160"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0161_files/13/0_0.jpg",
+          "label": "Page 161"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0162_files/13/0_0.jpg",
+          "label": "Page 162"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0163_files/13/0_0.jpg",
+          "label": "Page 163"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0164_files/13/0_0.jpg",
+          "label": "Page 164"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0165_files/13/0_0.jpg",
+          "label": "Page 165"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0166_files/13/0_0.jpg",
+          "label": "Page 166"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0167_files/13/0_0.jpg",
+          "label": "Page 167"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0168_files/13/0_0.jpg",
+          "label": "Page 168"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0169_files/13/0_0.jpg",
+          "label": "Page 169"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0170_files/13/0_0.jpg",
+          "label": "Page 170"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0171_files/13/0_0.jpg",
+          "label": "Page 171"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0172_files/13/0_0.jpg",
+          "label": "Page 172"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0173_files/13/0_0.jpg",
+          "label": "Page 173"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0174_files/13/0_0.jpg",
+          "label": "Page 174"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0175_files/13/0_0.jpg",
+          "label": "Page 175"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0176_files/13/0_0.jpg",
+          "label": "Page 176"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0177_files/13/0_0.jpg",
+          "label": "Page 177"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0178_files/13/0_0.jpg",
+          "label": "Page 178"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0179_files/13/0_0.jpg",
+          "label": "Page 179"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0180_files/13/0_0.jpg",
+          "label": "Page 180"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0181_files/13/0_0.jpg",
+          "label": "Page 181"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0182_files/13/0_0.jpg",
+          "label": "Page 182"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0183_files/13/0_0.jpg",
+          "label": "Page 183"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0184_files/13/0_0.jpg",
+          "label": "Page 184"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0185_files/13/0_0.jpg",
+          "label": "Page 185"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0186_files/13/0_0.jpg",
+          "label": "Page 186"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0187_files/13/0_0.jpg",
+          "label": "Page 187"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0188_files/13/0_0.jpg",
+          "label": "Page 188"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0189_files/13/0_0.jpg",
+          "label": "Page 189"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0190_files/13/0_0.jpg",
+          "label": "Page 190"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0191_files/13/0_0.jpg",
+          "label": "Page 191"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0192_files/13/0_0.jpg",
+          "label": "Page 192"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0193_files/13/0_0.jpg",
+          "label": "Page 193"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0194_files/13/0_0.jpg",
+          "label": "Page 194"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0195_files/13/0_0.jpg",
+          "label": "Page 195"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0196_files/13/0_0.jpg",
+          "label": "Page 196"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0197_files/13/0_0.jpg",
+          "label": "Page 197"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0198_files/13/0_0.jpg",
+          "label": "Page 198"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0199_files/13/0_0.jpg",
+          "label": "Page 199"
+        },
+        {
+          "url": "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0200_files/13/0_0.jpg",
+          "label": "Page 200"
+        }
+      ],
+      "displayName": "Bordeaux - 330636101_MS_0778",
+      "type": "bordeaux_tiles",
+      "baseId": 330636101,
+      "publicId": "330636101_MS_0778",
+      "startPage": 6,
+      "pageCount": 195,
+      "tileBaseUrl": "https://selene.bordeaux.fr/in/dz",
+      "requiresTileProcessor": true,
+      "tileConfig": {
+        "baseId": "330636101_MS0778",
+        "startPage": 6,
+        "pageCount": 195,
+        "tileBaseUrl": "https://selene.bordeaux.fr/in/dz",
+        "pageRange": {
+          "firstPage": 6,
+          "lastPage": 200,
+          "totalPages": 195,
+          "availablePages": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            73,
+            74,
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            82,
+            83,
+            84,
+            85,
+            86,
+            87,
+            88,
+            89,
+            90,
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114,
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131,
+            132,
+            133,
+            134,
+            135,
+            136,
+            137,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143,
+            144,
+            145,
+            146,
+            147,
+            148,
+            149,
+            150,
+            151,
+            152,
+            153,
+            154,
+            155,
+            156,
+            157,
+            158,
+            159,
+            160,
+            161,
+            162,
+            163,
+            164,
+            165,
+            166,
+            167,
+            168,
+            169,
+            170,
+            171,
+            172,
+            173,
+            174,
+            175,
+            176,
+            177,
+            178,
+            179,
+            180,
+            181,
+            182,
+            183,
+            184,
+            185,
+            186,
+            187,
+            188,
+            189,
+            190,
+            191,
+            192,
+            193,
+            194,
+            195,
+            196,
+            197,
+            198,
+            199,
+            200
+          ]
+        }
+      }
+    },
+    "pagesFound": 195
+  },
+  "issue_4": {
+    "success": true,
+    "manifest": {
+      "images": [
+        {
+          "url": "https://www.themorgan.org/sites/default/files/facsimile/76874/m1-front-cover.jpg",
+          "label": "Page 1"
+        },
+        {
+          "url": "https://www.themorgan.org/sites/default/files/facsimile/76874/76874v_0487-0001.jpg",
+          "label": "Page 2"
+        },
+        {
+          "url": "https://www.themorgan.org/sites/default/files/facsimile/76874/76874v_0002-0003.jpg",
+          "label": "Page 3"
+        },
+        {
+          "url": "https://www.themorgan.org/sites/default/files/facsimile/76874/76874v_0004_0005.jpg",
+          "label": "Page 4"
+        },
+        {
+          "url": "https://www.themorgan.org/sites/default/files/facsimile/76874/76874v_0006-0007.jpg",
+          "label": "Page 5"
+        },
+        {
+          "url": "https://www.themorgan.org/sites/default/files/styles/morgan_hero_1x/public/images/collection/lindau-gospels_6.jpg",
+          "label": "Page 6"
+        },
+        {
+          "url": "https://www.themorgan.org/sites/default/files/styles/morgan_hero_1x/public/images/collection/lindau-gospels_7.jpg",
+          "label": "Page 7"
+        },
+        {
+          "url": "https://www.themorgan.org/sites/default/files/styles/morgan_hero_1x/public/images/collection/lindau-gospels_8.jpg",
+          "label": "Page 8"
+        },
+        {
+          "url": "https://www.themorgan.org/sites/default/files/styles/morgan_hero_1x/public/images/collection/lindau-gospels_9.jpg",
+          "label": "Page 9"
+        },
+        {
+          "url": "https://www.themorgan.org/sites/default/files/styles/morgan_hero_1x/public/images/collection/lindau-gospels_10.jpg",
+          "label": "Page 10"
+        },
+        {
+          "url": "https://www.themorgan.org/sites/default/files/styles/morgan_hero_1x/public/images/collection/lindau-gospels_11.jpg",
+          "label": "Page 11"
+        },
+        {
+          "url": "https://www.themorgan.org/sites/default/files/styles/morgan_hero_1x/public/images/collection/lindau-gospels_12.jpg",
+          "label": "Page 12"
+        },
+        {
+          "url": "https://www.themorgan.org/sites/default/files/styles/morgan_hero_1x/public/images/collection/lindau-gospels_13.jpg",
+          "label": "Page 13"
+        },
+        {
+          "url": "https://www.themorgan.org/sites/default/files/styles/morgan_hero_1x/public/images/collection/lindau-gospels_14.jpg",
+          "label": "Page 14"
+        },
+        {
+          "url": "https://www.themorgan.org/sites/default/files/styles/morgan_hero_1x/public/images/collection/lindau-gospels_15.jpg",
+          "label": "Page 15"
+        },
+        {
+          "url": "https://www.themorgan.org/sites/default/files/styles/morgan_hero_1x/public/images/collection/lindau-gospels_16.jpg",
+          "label": "Page 16"
+        }
+      ],
+      "displayName": "Lindau Gospels | (MS M.1)"
+    },
+    "pagesFound": 16
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "total": 7,
+  "success": 0,
+  "failed": 7,
+  "needsUltrathink": [],
+  "newIssues": [
+    "issue_30",
+    "issue_31",
+    "issue_32",
+    "issue_33"
+  ],
+  "report": {
+    "issue_2": {
+      "success": false,
+      "error": "this.manifestLoaders.detectLibrary is not a function. (In 'this.manifestLoaders.detectLibrary(config.url)', 'this.manifestLoaders.detectLibrary' is undefined)",
+      "isKnownIssue": false
+    },
+    "issue_4": {
+      "success": false,
+      "error": "this.manifestLoaders.detectLibrary is not a function. (In 'this.manifestLoaders.detectLibrary(config.url)', 'this.manifestLoaders.detectLibrary' is undefined)",
+      "isKnownIssue": false
+    },
+    "issue_6": {
+      "success": false,
+      "error": "this.manifestLoaders.detectLibrary is not a function. (In 'this.manifestLoaders.detectLibrary(config.url)', 'this.manifestLoaders.detectLibrary' is undefined)",
+      "isKnownIssue": false
+    },
+    "issue_30": {
+      "success": false,
+      "error": "this.manifestLoaders.detectLibrary is not a function. (In 'this.manifestLoaders.detectLibrary(config.url)', 'this.manifestLoaders.detectLibrary' is undefined)",
+      "isKnownIssue": false
+    },
+    "issue_31": {
+      "success": false,
+      "error": "this.manifestLoaders.detectLibrary is not a function. (In 'this.manifestLoaders.detectLibrary(config.url)', 'this.manifestLoaders.detectLibrary' is undefined)",
+      "isKnownIssue": false
+    },
+    "issue_32": {
+      "success": false,
+      "error": "this.manifestLoaders.detectLibrary is not a function. (In 'this.manifestLoaders.detectLibrary(config.url)', 'this.manifestLoaders.detectLibrary' is undefined)",
+      "isKnownIssue": false
+    },
+    "issue_33": {
+      "success": false,
+      "error": "this.manifestLoaders.detectLibrary is not a function. (In 'this.manifestLoaders.detectLibrary(config.url)', 'this.manifestLoaders.detectLibrary' is undefined)",
+      "isKnownIssue": false
+    }
+  }
+}

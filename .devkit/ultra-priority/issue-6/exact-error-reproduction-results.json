@@ -1,0 +1,95 @@
+{
+  "timestamp": "2025-08-17T12:48:30.012Z",
+  "userUrl": "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+  "testResults": [
+    {
+      "step": "Bordeaux URL Processing",
+      "success": true,
+      "details": {
+        "publicId": "330636101_MS_0778",
+        "internalId": "330636101_MS0778",
+        "baseId": "330636101_MS0778",
+        "bordeauxDetected": true
+      }
+    },
+    {
+      "step": "Page Discovery Analysis",
+      "success": true,
+      "details": {
+        "maxTestPages": 200,
+        "availablePages": [
+          10,
+          50,
+          100,
+          150,
+          195,
+          200,
+          250,
+          278
+        ],
+        "page278Available": true,
+        "limitReached": true,
+        "issueFound": true
+      }
+    },
+    {
+      "step": "Tile Structure Probing",
+      "success": false,
+      "error": "No valid tiles found",
+      "details": null
+    },
+    {
+      "step": "Canvas Creation Testing",
+      "success": false,
+      "error": "Previous tile structure test required",
+      "details": {
+        "errorType": "Error",
+        "errorMessage": "Previous tile structure test required",
+        "isRangeError": false
+      }
+    },
+    {
+      "step": "Other Buffer Allocation Points",
+      "success": true,
+      "details": {
+        "testedScenarios": [
+          {
+            "scenario": "Tile data storage",
+            "success": true
+          },
+          {
+            "scenario": "Concatenated chunks",
+            "success": true
+          },
+          {
+            "scenario": "JPEG encoding buffer",
+            "success": true
+          },
+          {
+            "scenario": "Ultra-large buffer",
+            "success": true
+          },
+          {
+            "scenario": "Tile array storage",
+            "success": true
+          },
+          {
+            "scenario": "Pixel data array",
+            "success": true
+          },
+          {
+            "scenario": "Ultra-large array",
+            "success": true
+          }
+        ],
+        "rangeErrorsFound": 0
+      }
+    }
+  ],
+  "summary": {
+    "totalTests": 5,
+    "passed": 3,
+    "failed": 2,
+    "memoryIssues": 0
+  }
+}

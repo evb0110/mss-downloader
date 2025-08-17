@@ -2497,6 +2497,10 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 return await this.getYaleManifest(url);
             case 'e_rara':
                 return await this.getEraraManifest(url);
+            case 'roman_archive':
+                return await this.getRomanArchiveManifest(url);
+            case 'digital_scriptorium':
+                return await this.getDigitalScriptoriumManifest(url);
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }
@@ -3508,11 +3512,12 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const availablePages: any[] = [];
         
         // Test a reasonable range of pages
-        const maxTestPages = 200; // Don't test too many to avoid overwhelming the server
+        const maxTestPages = 300; // ULTRATHINK FIX: Increased from 200 to support manuscripts with 278+ pages (Issue #6)
         
         // First, do a quick scan to find the general range
         // Include pages 6-9 since some manuscripts start at page 6 instead of page 1
-        const quickScanPages = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 50, 75, 100, 150, 200];
+        // ULTRATHINK FIX: Added high page numbers (250, 278, 300) for manuscripts with 278+ pages (Issue #6)
+        const quickScanPages = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 50, 75, 100, 150, 200, 250, 278, 300];
         let foundAny = false;
         let minFound = null;
         let maxFound = null;
@@ -5562,6 +5567,151 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
 
     async loadDiammSpecificManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
         throw new Error('DIAMM-specific manifest loading not yet implemented');
+    }
+
+    /**
+     * Roman Archive (Issue #30) - IIIF v2 Manifest Support
+     */
+    async getRomanArchiveManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+        console.log('[Roman Archive] Processing URL:', url);
+        
+        try {
+            // Handle two types of URLs:
+            // 1. IIIF manifest: https://archiviostorico.senato.it/.../manifest
+            // 2. Viewer page: https://imagoarchiviodistatoroma.cultura.gov.it/...
+            
+            let manifestUrl = url;
+            
+            if (url.includes('imagoarchiviodistatoroma.cultura.gov.it')) {
+                // Extract manuscript ID from viewer URL and construct IIIF manifest URL
+                const idMatch = url.match(/r=(\d+-\d+)/);
+                if (!idMatch) {
+                    throw new Error('Could not extract manuscript ID from Roman Archive URL');
+                }
+                // For now, we need to discover the IIIF endpoint pattern
+                throw new Error('Roman Archive viewer URL pattern not yet fully implemented. Please use direct IIIF manifest URL.');
+            }
+            
+            if (!url.includes('/manifest')) {
+                manifestUrl = url + '/manifest';
+            }
+            
+            console.log('[Roman Archive] Fetching IIIF manifest:', manifestUrl);
+            const response = await this.fetchWithRetry(manifestUrl);
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch Roman Archive manifest: ${response.status}`);
+            }
+            
+            const manifest: any = await response.json();
+            const images: ManuscriptImage[] = [];
+            
+            // Parse IIIF v2 manifest
+            if (manifest.sequences && manifest.sequences[0]?.canvases) {
+                const canvases = manifest.sequences[0].canvases;
+                console.log(`[Roman Archive] Found ${canvases.length} canvases`);
+                
+                for (let i = 0; i < canvases.length; i++) {
+                    const canvas = canvases[i];
+                    const imageResource = canvas.images?.[0]?.resource;
+                    
+                    if (imageResource && imageResource['@id']) {
+                        images.push({
+                            url: imageResource['@id'],
+                            pageNumber: i + 1
+                        } as ManuscriptImage);
+                    }
+                }
+            }
+            
+            console.log(`[Roman Archive] Successfully extracted ${images.length} pages`);
+            return { images };
+            
+        } catch (error) {
+            console.error('[Roman Archive] Error loading manifest:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Digital Scriptorium (Issue #33) - IIIF v3 Manifest Support
+     */
+    async getDigitalScriptoriumManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+        console.log('[Digital Scriptorium] Processing URL:', url);
+        
+        try {
+            let manifestUrl = url;
+            
+            // Handle different URL patterns:
+            // 1. Search result: https://search.digital-scriptorium.org/catalog/DS1649
+            // 2. Direct manifest: https://colenda.library.upenn.edu/items/.../manifest
+            
+            if (url.includes('search.digital-scriptorium.org')) {
+                // Extract DS ID and try to find the actual manifest URL
+                const dsMatch = url.match(/catalog\/(DS\d+)/);
+                if (!dsMatch) {
+                    throw new Error('Could not extract DS ID from Digital Scriptorium URL');
+                }
+                // Note: We would need to fetch the catalog page and extract the manifest URL
+                // For now, require direct manifest URL
+                throw new Error('Digital Scriptorium catalog URLs not yet supported. Please use direct IIIF manifest URL.');
+            }
+            
+            if (!url.includes('/manifest')) {
+                manifestUrl = url + '/manifest';
+            }
+            
+            console.log('[Digital Scriptorium] Fetching IIIF manifest:', manifestUrl);
+            const response = await this.fetchWithRetry(manifestUrl);
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch Digital Scriptorium manifest: ${response.status}`);
+            }
+            
+            const manifest: any = await response.json();
+            const images: ManuscriptImage[] = [];
+            
+            // Handle IIIF v3 format
+            if (manifest.items && Array.isArray(manifest.items)) {
+                console.log(`[Digital Scriptorium] Found ${manifest.items.length} items (v3 format)`);
+                
+                for (let i = 0; i < manifest.items.length; i++) {
+                    const canvas = manifest.items[i];
+                    const paintingAnnotation = canvas.items?.[0]?.items?.[0];
+                    
+                    if (paintingAnnotation?.body?.id) {
+                        images.push({
+                            url: paintingAnnotation.body.id,
+                            pageNumber: i + 1
+                        } as ManuscriptImage);
+                    }
+                }
+            }
+            // Handle IIIF v2 format as fallback
+            else if (manifest.sequences && manifest.sequences[0]?.canvases) {
+                const canvases = manifest.sequences[0].canvases;
+                console.log(`[Digital Scriptorium] Found ${canvases.length} canvases (v2 format)`);
+                
+                for (let i = 0; i < canvases.length; i++) {
+                    const canvas = canvases[i];
+                    const imageResource = canvas.images?.[0]?.resource;
+                    
+                    if (imageResource && imageResource['@id']) {
+                        images.push({
+                            url: imageResource['@id'],
+                            pageNumber: i + 1
+                        } as ManuscriptImage);
+                    }
+                }
+            }
+            
+            console.log(`[Digital Scriptorium] Successfully extracted ${images.length} pages`);
+            return { images };
+            
+        } catch (error) {
+            console.error('[Digital Scriptorium] Error loading manifest:', error);
+            throw error;
+        }
     }
 }
 

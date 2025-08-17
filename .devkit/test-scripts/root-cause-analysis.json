@@ -1,0 +1,57 @@
+[
+  {
+    "issueNumber": 29,
+    "title": "зацикливание в конце загрузки",
+    "userUrl": "https://digi.landesbibliothek.at/viewer/image/116/",
+    "productionCodeWorks": true,
+    "pagesFound": 758,
+    "userReportedError": "доводят закачку до конца, но потом начинают все с самого начала",
+    "realProblem": "Download workflow restarts after completion - not a manifest loading issue",
+    "category": "workflow",
+    "actionNeeded": "Fix download completion logic to prevent restart loop"
+  },
+  {
+    "issueNumber": 28,
+    "title": "Yale",
+    "userUrl": "https://collections.library.yale.edu/catalog/33242982",
+    "productionCodeWorks": true,
+    "pagesFound": 96,
+    "userReportedError": "ECONNRESET, в списке библиотек не отражается",
+    "realProblem": "Network timeouts + Yale not visible in UI library list",
+    "category": "connection",
+    "actionNeeded": "Add network retry logic + ensure Yale appears in library dropdown"
+  },
+  {
+    "issueNumber": 6,
+    "title": "Бордо",
+    "userUrl": "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+    "productionCodeWorks": true,
+    "pagesFound": 195,
+    "userReportedError": "не работает, ошибка прежняя",
+    "realProblem": "UI hangs during page calculation - manifest loads fine but UI becomes unresponsive",
+    "category": "ui-display",
+    "actionNeeded": "Fix UI responsiveness during page discovery, add progress indicators"
+  },
+  {
+    "issueNumber": 4,
+    "title": "морган",
+    "userUrl": "https://www.themorgan.org/collection/lindau-gospels/thumbs",
+    "productionCodeWorks": true,
+    "pagesFound": 16,
+    "userReportedError": "не работает, ошибка прежняя",
+    "realProblem": "Production code works fine - likely UI or workflow issue",
+    "category": "ui-display",
+    "actionNeeded": "Need specific error details from user - manifest loads correctly"
+  },
+  {
+    "issueNumber": 2,
+    "title": "грац",
+    "userUrl": "No URL provided (screenshot only)",
+    "productionCodeWorks": false,
+    "pagesFound": 0,
+    "userReportedError": "Screenshot of error only",
+    "realProblem": "Cannot analyze without actual manuscript URL",
+    "category": "unknown",
+    "actionNeeded": "Request actual manuscript URL from user"
+  }
+]

@@ -71,6 +71,18 @@ export class MorganLoader extends BaseLibraryLoader {
                     const collectionMatch = morganUrl.match(/\/collection\/([^/]+)/);
                     if (collectionMatch) {
                         manuscriptId = collectionMatch[1] || '';
+                        
+                        // CRITICAL VALIDATION: Ensure manuscriptId doesn't contain URLs
+                        if (manuscriptId.includes('://') || manuscriptId.includes('http')) {
+                            console.error(`Morgan: Invalid manuscriptId detected: ${manuscriptId}`);
+                            throw new Error(`Morgan: Malformed URL - manuscriptId contains URL fragments: ${manuscriptId}`);
+                        }
+                        
+                        if (manuscriptId.length > 100) {
+                            console.error(`Morgan: Suspiciously long manuscriptId: ${manuscriptId}`);
+                            throw new Error(`Morgan: Malformed URL - manuscriptId too long: ${manuscriptId.length} chars`);
+                        }
+                        
                         // Ensure we have the thumbs page
                         if (!pageUrl.includes('/thumbs')) {
                             pageUrl = `${baseUrl}/collection/${manuscriptId}/thumbs`;
@@ -91,24 +103,44 @@ export class MorganLoader extends BaseLibraryLoader {
                         const redirectUrl = pageResponse.headers.get('location');
                         if (redirectUrl) {
                             console.log(`Morgan: Following redirect from ${pageUrl} to ${redirectUrl}`);
-                            // FIXED: Robust redirect URL handling to prevent URL concatenation bugs
+                            // ULTRA-ROBUST redirect URL handling to prevent URL concatenation bugs
                             const cleanRedirectUrl = redirectUrl.trim();
                             let fullRedirectUrl: string;
                             
-                            if (cleanRedirectUrl.startsWith('http://') || cleanRedirectUrl.startsWith('https://')) {
-                                // Absolute URL - use as-is
+                            console.log(`Morgan: Processing redirect URL: "${cleanRedirectUrl}"`);
+                            
+                            // ENHANCED VALIDATION: Check for malformed URLs first
+                            if (cleanRedirectUrl.includes('thumbshttps://') || cleanRedirectUrl.includes('thumbhttp://')) {
+                                console.error(`Morgan: Detected malformed redirect URL: ${cleanRedirectUrl}`);
+                                // Extract the actual URL from the malformed string
+                                const urlMatch = cleanRedirectUrl.match(/(https?:\/\/[^\s]+)/);
+                                if (urlMatch) {
+                                    fullRedirectUrl = urlMatch[1] || pageUrl;
+                                    console.log(`Morgan: Recovered clean URL: ${fullRedirectUrl}`);
+                                } else {
+                                    // Fallback to original pageUrl
+                                    fullRedirectUrl = pageUrl;
+                                    console.log(`Morgan: Using fallback URL: ${fullRedirectUrl}`);
+                                }
+                            } else if (cleanRedirectUrl.startsWith('http://') || cleanRedirectUrl.startsWith('https://')) {
+                                // Normal absolute URL
                                 fullRedirectUrl = cleanRedirectUrl;
                             } else if (cleanRedirectUrl.startsWith('/')) {
-                                // Relative URL starting with / - prepend base domain only
+                                // Normal relative URL with /
                                 fullRedirectUrl = `${baseUrl}${cleanRedirectUrl}`;
                             } else {
-                                // Relative URL without / - this is unusual but handle it
-                                fullRedirectUrl = `${baseUrl}/${cleanRedirectUrl}`;
+                                // Relative URL without / - validate it's safe
+                                if (cleanRedirectUrl.includes('://') || cleanRedirectUrl.length > 100) {
+                                    console.error(`Morgan: Suspicious relative redirect: ${cleanRedirectUrl}`);
+                                    fullRedirectUrl = pageUrl; // Use original URL as fallback
+                                } else {
+                                    fullRedirectUrl = `${baseUrl}/${cleanRedirectUrl}`;
+                                }
                             }
                             
-                            // Safety check: prevent URL duplication
-                            if (fullRedirectUrl.includes(pageUrl)) {
-                                console.warn(`Morgan: Potential URL duplication detected, using original pageUrl`);
+                            // ENHANCED SAFETY CHECK: More sophisticated validation
+                            if (fullRedirectUrl.includes('thumbshttps://') || fullRedirectUrl.includes('thumbhttp://')) {
+                                console.error(`Morgan: Final URL still malformed, using original: ${pageUrl}`);
                                 fullRedirectUrl = pageUrl;
                             }
                             

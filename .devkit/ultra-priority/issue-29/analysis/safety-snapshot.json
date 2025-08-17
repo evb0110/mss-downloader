@@ -1,0 +1,10 @@
+{
+    "timestamp": "2025-08-14T20:06:47Z",
+    "issue": 29,
+    "title": "зацикливание в конце загрузки",
+    "rootCause": "Missing retry limit enforcement for Linz and e-rara libraries",
+    "approach": "Add specific retry limits like manuscripta library",
+    "affectedFiles": ["src/main/services/EnhancedDownloadQueue.ts"],
+    "riskLevel": "LOW",
+    "confidence": "95%"
+}

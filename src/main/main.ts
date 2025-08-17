@@ -667,7 +667,22 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
     }
     
     // Small manifest, return directly
-    return { isChunked: false, manifest };
+    // ULTRATHINK FIX for Issue #2: Ensure manifest is serializable for IPC
+    try {
+      const testSerialization = JSON.stringify(manifest);
+      const cleanManifest = JSON.parse(testSerialization);
+      return { isChunked: false, manifest: cleanManifest };
+    } catch (serializationError) {
+      // Return minimal safe manifest if serialization fails
+      const safeManifest = {
+        pageLinks: Array.isArray(manifest.pageLinks) ? manifest.pageLinks : [],
+        totalPages: typeof manifest.totalPages === 'number' ? manifest.totalPages : 0,
+        library: manifest.library || 'unknown',
+        displayName: typeof manifest.displayName === 'string' ? manifest.displayName : 'Manuscript',
+        originalUrl: url
+      };
+      return { isChunked: false, manifest: safeManifest };
+    }
   } catch (error: any) {
     const err = error instanceof Error ? error : new Error(String(error));
     comprehensiveLogger.log({
@@ -885,8 +900,24 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
     const manifestPromise = enhancedManuscriptDownloader.loadManifest(url);
     
     // Race between manifest loading and timeout
-    const result = await Promise.race([manifestPromise, timeoutPromise]);
-    return result;
+    const manifest = await Promise.race([manifestPromise, timeoutPromise]) as any;
+    
+    // ULTRATHINK FIX for Issue #2: Ensure manifest is serializable for IPC
+    try {
+      const testSerialization = JSON.stringify(manifest);
+      const cleanManifest = JSON.parse(testSerialization);
+      return cleanManifest;
+    } catch (serializationError) {
+      // Return minimal safe manifest if serialization fails
+      const safeManifest = {
+        pageLinks: Array.isArray(manifest?.pageLinks) ? manifest.pageLinks : [],
+        totalPages: typeof manifest?.totalPages === 'number' ? manifest.totalPages : 0,
+        library: manifest?.library || 'unknown',
+        displayName: typeof manifest?.displayName === 'string' ? manifest.displayName : 'Manuscript',
+        originalUrl: url
+      };
+      return safeManifest;
+    }
   } catch (error: any) {
     const err = error instanceof Error ? error : new Error(String(error));
     // ULTRA-PRIORITY FIX for Issue #2: Enhanced error handling to ensure reply is sent

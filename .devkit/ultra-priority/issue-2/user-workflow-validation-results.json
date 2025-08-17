@@ -1,0 +1,46 @@
+{
+  "timestamp": "2025-08-17T12:30:42.360Z",
+  "testResults": {
+    "currentState": {
+      "status": "BASIC_SERIALIZATION_OK",
+      "manuscriptId": "6568472",
+      "totalPages": 1246,
+      "serializedSizeKB": 73.189453125
+    },
+    "ipcSerialization": {
+      "circular": {
+        "success": false,
+        "error": "JSON.stringify cannot serialize cyclic structures."
+      },
+      "functions": {
+        "success": true,
+        "beforeProps": 3,
+        "afterProps": 2,
+        "lostFunctions": 1
+      },
+      "complex": {
+        "success": true,
+        "originalSize": 232,
+        "lostKeys": [
+          "progressMonitor.callbacks.onProgress",
+          "progressMonitor.callbacks.onComplete"
+        ],
+        "survivedSerialization": false
+      }
+    },
+    "expectedBehavior": {
+      "status": "SUCCESS",
+      "cleanManifestSizeKB": 73.189453125,
+      "chunkedResponseSizeKB": 73.2197265625,
+      "pagesPreserved": true,
+      "totalPages": 1246
+    }
+  },
+  "errors": [],
+  "summary": {
+    "currentStateOK": true,
+    "expectedBehaviorOK": true,
+    "serializationIssuesDetected": false,
+    "totalErrors": 0
+  }
+}

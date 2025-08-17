@@ -1,16 +1,24 @@
 #!/bin/bash
 
-# Handle-Issues v4.0 - Orchestrated Sequential Ultra-Resolution
-# This command processes issues SEQUENTIALLY with UNLIMITED thinking time
+# Handle-Issues v5.0 - Multi-Layer Validation with Ultrathink
+# Based on lessons learned from v1.4.192 critical bug discoveries
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🎭 HANDLE-ISSUES v4.0 - ORCHESTRATED RESOLUTION"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔥 HANDLE-ISSUES v5.0 - MULTI-LAYER VALIDATION WITH ULTRATHINK AGENTS"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "This command will:"
-echo "1. Analyze ALL open issues"
-echo "2. Process each issue SEQUENTIALLY with UNLIMITED thinking"
-echo "3. Create a SINGLE consolidated release"
+echo "⚠️  CRITICAL PRINCIPLE: If users report problems after fixes, PROBLEMS EXIST ⚠️"
+echo ""
+echo "Lessons from v1.4.192:"
+echo "- Superficial testing missed critical download queue bugs"
+echo "- Users were RIGHT about infinite loops after 'fixes'"  
+echo "- Need multi-layer validation: Component → Workflow → Production → Ultrathink"
+echo ""
+echo "This command uses 4-layer approach:"
+echo "1. BASIC TESTING - Component functionality verification"
+echo "2. USER WORKFLOW - Complete end-to-end experience simulation"  
+echo "3. PRODUCTION ENV - Electron/platform-specific testing"
+echo "4. ULTRATHINK - Deep agent analysis for persistent complaints"
 echo ""
 
 # Check for required tools
@@ -332,17 +340,22 @@ echo "🤖 LAUNCHING CLAUDE ORCHESTRATOR"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 echo "Claude will now:"
-echo "1. Process each issue SEQUENTIALLY"
-echo "2. Give each issue UNLIMITED thinking time"
-echo "3. Validate each fix EXHAUSTIVELY"
-echo "4. Create a SINGLE consolidated release"
+echo "1. LAYER 1: Basic component testing (manifest loading)"
+echo "2. LAYER 2: Complete user workflow simulation"
+echo "3. LAYER 3: Production environment validation"
+echo "4. LAYER 4: Deploy ultrathink agents if users persist"
+echo "5. Apply ONLY genuine fixes with version bump"
 echo ""
-echo "This is the ORCHESTRATED approach - quality over speed!"
+echo "CRITICAL RULES:"
+echo "- NEVER dismiss user complaints after supposed fixes"
+echo "- ALWAYS use ultrathink agents when users report persistent problems"
+echo "- Version bump ONLY when real code fixes are applied"
 echo ""
 
-# Signal to Claude that orchestrated mode should be used
-echo "ORCHESTRATED_MODE=true"
+# Signal to Claude that v5.0 multi-layer mode should be used
+echo "MULTILAYER_MODE=true"
+echo "ULTRATHINK_ENABLED=true"
 echo "ISSUES_TO_FIX=$ISSUE_COUNT"
 echo "ORCHESTRATOR_PATH=$ORCHESTRATOR"
 echo ""
-echo "Claude, please proceed with orchestrated sequential resolution."
+echo "Claude, please proceed with multi-layer validation and ultrathink analysis."
