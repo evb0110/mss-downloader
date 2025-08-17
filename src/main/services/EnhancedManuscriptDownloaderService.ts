@@ -223,7 +223,8 @@ export class EnhancedManuscriptDownloaderService {
         this.dziProcessor = new DziImageProcessor();
         this.tileEngineService = new TileEngineService();
         this.directTileProcessor = new DirectTileProcessor();
-        this.sharedManifestAdapter = new SharedManifestAdapter(this.fetchWithHTTPS.bind(this));
+        // Use fetchDirect for SharedManifestAdapter - it handles both HTTP and HTTPS correctly
+        this.sharedManifestAdapter = new SharedManifestAdapter(this.fetchDirect.bind(this));
         this.logger = DownloadLogger.getInstance();
         this.ultraBDLService = UltraReliableBDLService.getInstance();
 
@@ -324,6 +325,9 @@ export class EnhancedManuscriptDownloaderService {
 
         // Clear Graz cache to resolve persistent issues reported by users
         this.clearGrazCacheOnStartup();
+
+        // Clear Rome cache to fix incorrect 150-page cached values
+        this.clearRomeCacheOnStartup();
     }
 
     /**
@@ -355,6 +359,28 @@ export class EnhancedManuscriptDownloaderService {
                     message: 'Failed to clear Florence cache on startup'
                 }
             });
+        }
+    }
+
+    /**
+     * Clear Rome cache on startup to fix page count detection issues
+     * Old cache may contain incorrect 150-page fallback values
+     */
+    private async clearRomeCacheOnStartup(): Promise<void> {
+        try {
+            await this.manifestCache.clearDomain('digitale.bnc.roma.sbn.it');
+            console.log('✅ Rome cache cleared on startup - fixing page count detection');
+            comprehensiveLogger.log({
+                level: 'info',
+                category: 'system',
+                library: 'Rome',
+                details: {
+                    message: 'Rome cache cleared on startup',
+                    reason: 'Fix incorrect 150-page cached values'
+                }
+            });
+        } catch (error) {
+            console.warn('⚠️ Failed to clear Rome cache on startup:', (error as Error).message);
         }
     }
 
@@ -1278,11 +1304,12 @@ export class EnhancedManuscriptDownloaderService {
                 headers
             };
 
-            // Verona, Grenoble, Graz, MDC Catalonia, Florence, BNE, and Rome domains benefit from full HTTPS module bypass for better reliability
+            // Verona, Grenoble, Graz, MDC Catalonia, Florence, and BNE domains benefit from full HTTPS module bypass for better reliability  
+            // NOTE: Rome REMOVED from fetchWithHTTPS due to server hanging issues - now uses simpler fetchDirect
             if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') ||
                 url.includes('pagella.bm-grenoble.fr') || url.includes('unipub.uni-graz.at') ||
                 url.includes('mdc.csuc.cat') || url.includes('cdm21059.contentdm.oclc.org') ||
-                url.includes('bdh-rd.bne.es') || url.includes('digitale.bnc.roma.sbn.it')) {
+                url.includes('bdh-rd.bne.es')) {
                 try {
                     const response = await this.fetchWithHTTPS(url, fetchOptions);
                     if (timeoutId) clearTimeout(timeoutId);
@@ -1522,6 +1549,46 @@ export class EnhancedManuscriptDownloaderService {
             }
         }
 
+        // Special handling for Rome National Library to resolve socket timeout issues
+        if (url.includes('digitale.bnc.roma.sbn.it')) {
+            const dnsStartTime = Date.now();
+            try {
+                // Pre-resolve DNS to avoid resolution timeouts
+                console.log(`[Rome] Pre-resolving DNS for ${urlObj.hostname}`);
+                const addresses = await dns.resolve4(urlObj.hostname);
+                if (addresses.length > 0) {
+                    console.log(`[Rome] Resolved to ${addresses[0]}`);
+                    comprehensiveLogger.log({
+                        level: 'debug',
+                        category: 'network',
+                        library: 'Rome',
+                        url,
+                        dnsLookupTime: Date.now() - dnsStartTime,
+                        details: {
+                            message: 'DNS pre-resolution successful',
+                            hostname: urlObj.hostname,
+                            addresses
+                        }
+                    });
+                }
+            } catch (dnsError: unknown) {
+                console.warn(`[Rome] DNS resolution failed, proceeding anyway:`, dnsError);
+                comprehensiveLogger.log({
+                    level: 'warn',
+                    category: 'network',
+                    library: 'Rome',
+                    url,
+                    dnsLookupTime: Date.now() - dnsStartTime,
+                    errorCode: (dnsError as any)?.code,
+                    errorMessage: dnsError instanceof Error ? dnsError.message : String(dnsError),
+                    details: {
+                        message: 'DNS pre-resolution failed, proceeding anyway',
+                        hostname: urlObj.hostname
+                    }
+                });
+            }
+        }
+
         // Special handling for MDC Catalonia to resolve timeout issues
         if (url.includes('mdc.csuc.cat')) {
             const dnsStartTime = Date.now();
@@ -1562,15 +1629,16 @@ export class EnhancedManuscriptDownloaderService {
             }
         }
 
-        // Create agent with connection pooling for Graz, Florence, and Verona
+        // Create agent with connection pooling for Graz, Florence, Verona, and Rome
         const agent = (url.includes('unipub.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org') ||
-                      url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ?
+                      url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') ||
+                      url.includes('digitale.bnc.roma.sbn.it')) ?
             new https.Agent({
                 keepAlive: true,
                 keepAliveMsecs: 1000,
                 maxSockets: 10,
                 maxFreeSockets: 5,
-                timeout: 120000,
+                timeout: url.includes('digitale.bnc.roma.sbn.it') ? 15000 : 120000, // Rome: 15s (responds instantly), others: 120s
                 rejectUnauthorized: false
             }) : undefined;
 
@@ -1594,7 +1662,8 @@ export class EnhancedManuscriptDownloaderService {
         }
 
         const requestTimeout = (options as any).timeout || (url.includes('unipub.uni-graz.at') ? 120000 :
-                    (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 60000 : 30000);
+                    (url.includes('digitale.bnc.roma.sbn.it') ? 15000 : // Rome responds instantly - 15s is plenty
+                    (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 60000 : 30000));
         
         const requestOptions = {
             hostname: hostname,
@@ -1617,7 +1686,8 @@ export class EnhancedManuscriptDownloaderService {
 
         // Implement retry logic for connection timeouts
         const maxRetries = url.includes('unipub.uni-graz.at') ? 5 :
-                         (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 3 : 1;
+                         (url.includes('digitale.bnc.roma.sbn.it') ? 3 : // Rome needs retries for socket issues
+                         (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 3 : 1);
         let retryCount = 0;
         const overallStartTime = Date.now(); // Track total time from first attempt
 
@@ -3040,6 +3110,16 @@ export class EnhancedManuscriptDownloaderService {
                         completedPages++; // Only increment on successful download
                         
                         console.log(`💾 Downloaded: ${imgFile} (${fileType.extension.toUpperCase()}, ${fileType.mimeType})`);
+                        
+                        // RATE LIMITING: Add delay after successful Rome downloads to prevent server blocking
+                        if (library === 'rome') {
+                            const rateLimit = LibraryOptimizationService.getOptimizationsForLibrary('rome');
+                            if (rateLimit.enableProgressiveBackoff) {
+                                const delay = 500; // 500ms delay between Rome downloads
+                                console.log(`[Rome] Rate limiting: waiting ${delay}ms before next download...`);
+                                await this.sleep(delay);
+                            }
+                        }
                     }
                 } catch (error: unknown) {
                     console.error(`\n❌ Failed to download page ${pageIndex + 1}: ${(error as Error).message}`);

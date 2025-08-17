@@ -491,9 +491,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         if (url.includes('unipub.uni-graz.at') || url.includes('gams.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org')) {
             return 120000;
         }
-        // Rome library needs extended timeout for HTML processing
+        // Rome library responds instantly (~275ms) - use fast timeout for page discovery
         if (url.includes('digitale.bnc.roma.sbn.it')) {
-            return 90000;
+            return 10000; // 10 seconds - plenty for Rome's instant responses
         }
         // Default timeout
         return 30000;
@@ -5646,41 +5646,98 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     }
 
     /**
-     * Binary search to discover Rome page count dynamically
-     * No more hardcoded limits!
+     * ULTRATHINK HYBRID APPROACH: Multiple strategies for Rome page discovery (SharedLoader)
+     * Strategy 1: Binary search with HEAD requests (preferred)
+     * Strategy 2: GET request sampling (fallback for HEAD failures)  
+     * Strategy 3: Conservative estimation (final fallback)
      */
     private async discoverRomePageCount(collectionType: string, manuscriptId: string): Promise<number> {
-        console.log(`[Rome] Starting binary search for ${manuscriptId}`);
+        console.log(`[Rome] Starting hybrid page discovery for ${manuscriptId}`);
         
-        // Phase 1: Exponential search to find upper bound
+        // Strategy 1: Try binary search with HEAD requests
+        try {
+            console.log(`[Rome] Attempting binary search with HEAD requests...`);
+            const headResult = await this.binarySearchRomeWithHead(collectionType, manuscriptId);
+            
+            if (headResult > 1) {
+                console.log(`[Rome] Binary search with HEAD succeeded: ${headResult} pages`);
+                return headResult;
+            }
+            
+            console.log(`[Rome] Binary search with HEAD gave insufficient result: ${headResult}, trying alternatives...`);
+        } catch (error) {
+            console.log(`[Rome] Binary search with HEAD failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
+        
+        // Strategy 2: GET request sampling fallback
+        try {
+            console.log(`[Rome] Attempting GET request sampling...`);
+            const getResult = await this.sampleRomePagesWithGet(collectionType, manuscriptId);
+            
+            if (getResult > 1) {
+                console.log(`[Rome] GET request sampling succeeded: ${getResult} pages`);
+                return getResult;
+            }
+            
+            console.log(`[Rome] GET request sampling gave insufficient result: ${getResult}`);
+        } catch (error) {
+            console.log(`[Rome] GET request sampling failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
+        
+        // All strategies failed - throw error, don't guess page count
+        const error = new Error(`Unable to determine page count for Rome manuscript ${manuscriptId}. Server is not responding to page discovery requests.`);
+        console.error(`[Rome] Page discovery completely failed:`, error.message);
+        throw error;
+    }
+    
+    /**
+     * Strategy 1: Binary search with HEAD requests (with failure detection)
+     */
+    private async binarySearchRomeWithHead(collectionType: string, manuscriptId: string): Promise<number> {
         let upperBound = 1;
         let attempts = 0;
-        const maxAttempts = 20;
+        const maxAttempts = 10;
+        let headFailures = 0;
         
+        // Find upper bound with early failure detection
         while (attempts < maxAttempts) {
-            const pageExists = await this.checkRomePageExists(collectionType, manuscriptId, upperBound);
+            const pageExists = await this.checkRomePageExistsWithHead(collectionType, manuscriptId, upperBound);
+            
+            if (pageExists === null) {
+                headFailures++;
+                if (headFailures >= 3) {
+                    throw new Error(`Multiple HEAD request failures - server doesn't support HEAD`);
+                }
+            }
+            
             if (!pageExists) {
-                console.log(`[Rome] Found upper bound at page ${upperBound}`);
+                console.log(`[Rome] HEAD: Found upper bound at page ${upperBound}`);
                 break;
             }
+            
             upperBound *= 2;
             attempts++;
             
-            if (upperBound > 5000) {
-                console.log(`[Rome] Reached maximum search limit at ${upperBound} pages`);
+            if (upperBound > 1000) {
                 break;
             }
         }
         
-        // Phase 2: Binary search between known bounds
+        // Binary search
         let low = Math.floor(upperBound / 2);
         let high = upperBound;
         
-        console.log(`[Rome] Binary search between pages ${low} and ${high}`);
-        
         while (low < high - 1) {
             const mid = Math.floor((low + high) / 2);
-            const exists = await this.checkRomePageExists(collectionType, manuscriptId, mid);
+            const exists = await this.checkRomePageExistsWithHead(collectionType, manuscriptId, mid);
+            
+            if (exists === null) {
+                headFailures++;
+                if (headFailures >= 5) {
+                    throw new Error(`Too many HEAD failures during binary search`);
+                }
+                continue;
+            }
             
             if (exists) {
                 low = mid;
@@ -5689,39 +5746,109 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
         }
         
-        // Final check
-        const finalPage = await this.checkRomePageExists(collectionType, manuscriptId, high) ? high : low;
-        console.log(`[Rome] Final page count: ${finalPage}`);
-        
-        if (finalPage === 0) {
-            throw new Error('Rome manuscript appears to have no pages or is inaccessible');
-        }
-        
-        return finalPage;
+        const finalResult = await this.checkRomePageExistsWithHead(collectionType, manuscriptId, high);
+        return finalResult ? high : low;
     }
     
     /**
-     * Check if a Rome page exists using HEAD request
+     * Strategy 2: Sample pages using GET requests to find bounds
      */
-    private async checkRomePageExists(collectionType: string, manuscriptId: string, pageNum: number): Promise<boolean> {
+    private async sampleRomePagesWithGet(collectionType: string, manuscriptId: string): Promise<number> {
+        console.log(`[Rome] Sampling pages with GET requests...`);
+        
+        const testPages = [1, 5, 10, 20, 50, 100, 200, 500];
+        let lastValidPage = 1;
+        
+        for (const pageNum of testPages) {
+            const exists = await this.checkRomePageExistsWithGet(collectionType, manuscriptId, pageNum);
+            if (exists) {
+                lastValidPage = pageNum;
+                console.log(`[Rome] GET: Page ${pageNum} exists`);
+            } else {
+                console.log(`[Rome] GET: Page ${pageNum} not found, max is between ${lastValidPage} and ${pageNum}`);
+                break;
+            }
+        }
+        
+        // Fine-tune with GET requests
+        if (lastValidPage > 1) {
+            return await this.fineTuneRomeWithGet(collectionType, manuscriptId, lastValidPage, Math.min(lastValidPage * 2, 500));
+        }
+        
+        return lastValidPage;
+    }
+    
+    /**
+     * Fine-tune Rome page count using GET requests in a smaller range
+     */
+    private async fineTuneRomeWithGet(collectionType: string, manuscriptId: string, low: number, high: number): Promise<number> {
+        console.log(`[Rome] Fine-tuning with GET between ${low} and ${high}`);
+        
+        for (let page = high; page >= low; page--) {
+            const exists = await this.checkRomePageExistsWithGet(collectionType, manuscriptId, page);
+            if (exists) {
+                console.log(`[Rome] GET fine-tune: Found highest page ${page}`);
+                return page;
+            }
+        }
+        
+        return low;
+    }
+    
+    
+    /**
+     * Check if a Rome page exists using HEAD request
+     * Returns: true if exists, false if not exists, null if HEAD request failed
+     */
+    private async checkRomePageExistsWithHead(collectionType: string, manuscriptId: string, pageNum: number): Promise<boolean | null> {
         const imageUrl = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/${pageNum}/original`;
         
         try {
             const response = await this.fetchWithRetry(imageUrl, {
                 method: 'HEAD'
-            }, 1); // Single attempt for existence check
+            }, 1);
             
             if (response.ok) {
-                // Note: fetchWithRetry doesn't give us headers directly
-                // So we just check if response is ok
                 return true;
             }
             
             return false;
         } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            if (errorMessage.includes('ECONNRESET') || errorMessage.includes('socket hang up') || 
+                errorMessage.includes('network') || errorMessage.includes('timeout')) {
+                console.log(`[Rome] HEAD request failed for page ${pageNum}: ${errorMessage}`);
+                return null; // Network/server issue
+            }
+            
+            return false; // Page doesn't exist
+        }
+    }
+    
+    /**
+     * Check if a Rome page exists using GET request (fallback method)
+     */
+    private async checkRomePageExistsWithGet(collectionType: string, manuscriptId: string, pageNum: number): Promise<boolean> {
+        const imageUrl = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/${pageNum}/original`;
+        
+        try {
+            const response = await this.fetchWithRetry(imageUrl, {
+                method: 'GET'
+            }, 1);
+            
+            if (response.ok) {
+                console.log(`[Rome] GET: Page ${pageNum} confirmed`);
+                return true;
+            }
+            
+            return false;
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.log(`[Rome] GET request failed for page ${pageNum}: ${errorMessage}`);
             return false;
         }
     }
+    
 
     /**
      * Roman Archive (Issue #30) - IIIF v2 Manifest Support

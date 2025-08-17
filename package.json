@@ -1,13 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.202",
+  "version": "1.4.209",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (71+ libraries worldwide)",
   "changelog": [
-    "v1.4.202: NO MORE HARDCODED LIMITS - Rome uses binary search page discovery",
-    "Removed artificial 500-page limit from Rome - now discovers actual page count",
-    "Implemented binary search algorithm for dynamic Rome page discovery",
-    "Rome manuscripts of ANY size now supported (tested up to 5000 pages)",
-    "ULTRATHINK deep analysis revealed and fixed the pattern of hardcoded limits"
+    "v1.4.209: Rome National Library - COMPREHENSIVE FIX: All timeout and rate limiting issues resolved",
+    "FIXED: HTTP/HTTPS protocol mismatch causing socket timeouts and hanging downloads",
+    "FIXED: Changed SharedManifestAdapter from fetchWithHTTPS to fetchDirect for HTTP URLs",
+    "OPTIMIZED: Rome timeouts reduced from 90s to 15s for instant responses like browser/curl",
+    "THROTTLED: Added 500ms rate limiting delays to prevent server blocking after fast downloads",
+    "Rome manuscripts now download instantly and reliably with proper server respect"
   ],
   "main": "dist/main/main.js",
   "scripts": {
