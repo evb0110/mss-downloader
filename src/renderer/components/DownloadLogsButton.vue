@@ -90,6 +90,7 @@ const downloadLogs = async () => {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
   
   &:hover:not(:disabled) {
     background-color: #2d3748;

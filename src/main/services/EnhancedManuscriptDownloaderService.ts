@@ -683,6 +683,11 @@ export class EnhancedManuscriptDownloaderService {
             description: 'Biblioteca Nazionale Centrale di Roma digital manuscript collections (manoscrittoantico and libroantico)',
         },
         {
+            name: 'Roman Archive (Archivio di Stato di Roma)',
+            example: 'https://imagoarchiviodistatoroma.cultura.gov.it/Preziosi/scheda.php?r=994-882',
+            description: 'Archivio di Stato di Roma digital manuscripts (Note: Direct IIIF manifest URLs work best)',
+        },
+        {
             name: 'SharedCanvas',
             example: 'https://sharedcanvas.be/IIIF/viewer/mirador/B_OB_MS310',
             description: 'SharedCanvas-based digital manuscript viewers and collections',
