@@ -1483,7 +1483,7 @@ function getTotalPagesText(group: { parent: QueuedManuscript; parts: QueuedManus
         }
         
         if (item.downloadOptions && (item.downloadOptions.startPage !== 1 || item.downloadOptions.endPage !== item.totalPages)) {
-            return `Pages ${item.downloadOptions.startPage || 1}–${item.downloadOptions.endPage || item.totalPages} (${(item.downloadOptions.endPage || item.totalPages) - (item.downloadOptions.startPage || 1) + 1} of ${item.totalPages})`;
+            return `Pages ${item.downloadOptions.startPage || 1}–${item.downloadOptions.endPage || item.totalPages} (${(item.downloadOptions.endPage || item.totalPages) - (item.downloadOptions.startPage || 1) + 1} pages)`;
         } else {
             return `All ${item.totalPages} Pages`;
         }

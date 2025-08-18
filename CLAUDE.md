@@ -5,6 +5,31 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 
 ## 🚨 ABSOLUTE MANDATORY RULES - NO EXCEPTIONS 🚨
 
+### -1. TWO ROME LIBRARIES - CRITICAL WARNING
+- **TWO IMPLEMENTATIONS EXIST:** RomeLoader.ts AND SharedManifestLoaders.getRomeManifest()
+- **ONLY SharedManifestLoaders IS USED:** Due to routing in EnhancedManuscriptDownloaderService line 2071
+- **RomeLoader.ts IS NEVER CALLED:** Despite being registered, it's bypassed entirely
+- **FIX BOTH IF UNSURE:** When fixing Rome issues, check BOTH implementations
+- **SharedManifestLoaders PATH:** src/shared/SharedManifestLoaders.ts (getRomeManifest, discoverRomePageCount)
+- **RomeLoader PATH:** src/main/services/library-loaders/RomeLoader.ts (NOT USED but exists)
+- **ROUTING BUG:** EnhancedManuscriptDownloaderService sends Rome directly to SharedManifestAdapter
+
+### 0. NO ARTIFICIAL LIMITS OR CAPS - EVER
+- **NEVER SET PAGE CAPS:** Do NOT limit pages to 256, 512, 1024 or ANY number
+- **NEVER HARDCODE LIMITS:** No manuscript is "too large" - users decide what to download
+- **DYNAMIC DISCOVERY ONLY:** Always discover actual page count through proper detection
+- **FIX ROOT CAUSES:** If getting wrong page counts, fix the detection logic, don't cap results
+- **NO ASSUMPTIONS:** Don't assume "most manuscripts are < X pages" - detect actual count
+- **USER CONTROLS LIMITS:** Only users can set page ranges, never impose artificial restrictions
+
+### 0.5. CACHE PURGE ON DELETION - ABSOLUTELY MANDATORY
+- **ALWAYS CLEAR CACHE:** When ANY manuscript is deleted, its cache MUST be cleared
+- **100% COVERAGE REQUIRED:** clearCompleted, clearFailed, clearAll, removeManuscript - ALL must clear cache
+- **NO EXCEPTIONS:** Every library, every deletion method, every scenario - cache MUST be purged
+- **PREVENTS DATA CORRUPTION:** Old/wrong cached data causes "unfixable" manuscript issues
+- **SILENT BUG KILLER:** Missing cache clear = users stuck with corrupted data forever
+- **CRITICAL FOR USER EXPERIENCE:** Without cache purge, deleted manuscripts retain bad data
+
 ### 1. ELECTRON EXECUTION - ABSOLUTELY FORBIDDEN
 - **NEVER RUN ELECTRON DIRECTLY:** Do NOT execute `electron`, `npm run dev`, `npm run dev:headless` or ANY Electron commands
 - **USER RUNS THE APP:** The user will run the application themselves when needed

@@ -13,6 +13,18 @@ export class RomeLoader extends BaseLibraryLoader {
     async loadManifest(romeUrl: string): Promise<ManuscriptManifest> {
             console.log('Loading Rome National Library manifest for:', romeUrl);
             
+            // ULTRATHINK FIX: Clear suspicious cached Rome data before loading
+            // If cache has 1 page or 1024 pages, it's definitely wrong
+            const cachedManifest = await this.deps.manifestCache.get(romeUrl);
+            if (cachedManifest) {
+                const cachedPages = cachedManifest['totalPages'] as number;
+                const suspiciousPageCounts = [1, 512, 1024, 2048, 4096];
+                if (suspiciousPageCounts.includes(cachedPages)) {
+                    console.log(`[Rome] CACHE CORRUPTION DETECTED: ${cachedPages} pages cached - clearing and rediscovering...`);
+                    await this.deps.manifestCache.clearUrl(romeUrl);
+                }
+            }
+            
             try {
                 // Extract manuscript ID and collection type from URL
                 // Expected formats: 
@@ -112,30 +124,37 @@ export class RomeLoader extends BaseLibraryLoader {
         private async discoverPageCount(collectionType: string, manuscriptId: string): Promise<number> {
             console.log(`[Rome] Starting hybrid page discovery for ${manuscriptId}`);
             
-            // Strategy 1: Try binary search with HEAD requests (current approach)
+            // ULTRATHINK FIX: Skip HEAD requests for Rome - they don't provide Content-Length for phantom pages
+            // Go straight to GET requests which properly distinguish real vs phantom pages
+            /*
             try {
                 console.log(`[Rome] Attempting binary search with HEAD requests...`);
                 const headResult = await this.binarySearchWithHead(collectionType, manuscriptId);
                 
-                // If we get a reasonable result (not 0 or 1), use it
+                // If we get a reasonable result (not 0 or 1), validate content quality
                 if (headResult > 1) {
                     console.log(`[Rome] Binary search with HEAD succeeded: ${headResult} pages`);
-                    return headResult;
+                    // ULTRATHINK ENHANCEMENT: Apply content quality validation
+                    const qualityValidatedPages = await this.validateContentQuality(collectionType, manuscriptId, headResult);
+                    return qualityValidatedPages;
                 }
                 
                 console.log(`[Rome] Binary search with HEAD gave insufficient result: ${headResult}, trying alternatives...`);
             } catch (error) {
                 console.log(`[Rome] Binary search with HEAD failed: ${error instanceof Error ? error.message : String(error)}`);
             }
+            */
             
-            // Strategy 2: GET request sampling fallback
+            // ULTRATHINK: Start with GET requests for Rome since HEAD doesn't provide Content-Length
             try {
                 console.log(`[Rome] Attempting GET request sampling...`);
                 const getResult = await this.samplePagesWithGet(collectionType, manuscriptId);
                 
                 if (getResult > 1) {
                     console.log(`[Rome] GET request sampling succeeded: ${getResult} pages`);
-                    return getResult;
+                    // ULTRATHINK ENHANCEMENT: Apply content quality validation to GET results too
+                    const qualityValidatedPages = await this.validateContentQuality(collectionType, manuscriptId, getResult);
+                    return qualityValidatedPages;
                 }
                 
                 console.log(`[Rome] GET request sampling gave insufficient result: ${getResult}`);
@@ -151,8 +170,9 @@ export class RomeLoader extends BaseLibraryLoader {
         
         /**
          * Strategy 1: Original binary search with HEAD requests
+         * DISABLED: HEAD requests don't provide Content-Length for Rome phantom pages
          */
-        private async binarySearchWithHead(collectionType: string, manuscriptId: string): Promise<number> {
+        /* private async binarySearchWithHead(collectionType: string, manuscriptId: string): Promise<number> {
             let upperBound = 1;
             let attempts = 0;
             const maxAttempts = 10; // Reduced attempts for faster fallback
@@ -178,10 +198,6 @@ export class RomeLoader extends BaseLibraryLoader {
                 
                 upperBound *= 2;
                 attempts++;
-                
-                if (upperBound > 1000) { // Reduced limit for faster processing
-                    break;
-                }
             }
             
             // Binary search
@@ -210,60 +226,88 @@ export class RomeLoader extends BaseLibraryLoader {
             
             const finalResult = await this.checkPageExistsWithHead(collectionType, manuscriptId, high);
             return finalResult ? high : low;
-        }
+        } */
         
         /**
-         * Strategy 2: Sample pages using GET requests to find bounds
+         * Strategy 2: Binary search using GET requests (more reliable for Rome)
          */
         private async samplePagesWithGet(collectionType: string, manuscriptId: string): Promise<number> {
-            console.log(`[Rome] Sampling pages with GET requests...`);
+            console.log(`[Rome] Using GET-based binary search for accurate page detection...`);
             
-            // Test common page ranges to find bounds
+            // First verify page 1 exists
+            const page1Exists = await this.checkPageExists(collectionType, manuscriptId, 1);
+            if (!page1Exists) {
+                console.log(`[Rome] GET: Page 1 doesn't exist or returns HTML - manuscript may be invalid`);
+                // Still try to find if any pages exist
+            }
+            
+            // Find upper bound with exponential search - NO CAPS!
+            let upperBound = 1;
+            let attempts = 0;
+            const maxAttempts = 20; // Reasonable iteration limit, not page limit
+            
+            // Start searching from a reasonable initial bound
+            while (attempts < maxAttempts) {
+                const exists = await this.checkPageExists(collectionType, manuscriptId, upperBound);
+                if (!exists) {
+                    console.log(`[Rome] GET: Found upper bound at page ${upperBound} (does not exist)`);
+                    break;
+                }
+                console.log(`[Rome] GET: Page ${upperBound} exists, continuing search...`);
+                upperBound *= 2;
+                attempts++;
+            }
+            
+            // If we never found a non-existent page, use the last tested upperBound
+            if (attempts >= maxAttempts) {
+                console.log(`[Rome] GET: Reached max attempts, using upperBound ${upperBound}`);
+            }
+            
+            // Edge case: if upperBound is 1 and page 1 doesn't exist
+            if (upperBound === 1 && !page1Exists) {
+                console.log(`[Rome] GET: No valid pages found, returning 0`);
+                return 0;
+            }
+            
+            // Binary search for exact count
+            let low = upperBound === 1 ? 1 : Math.floor(upperBound / 2);
+            let high = upperBound;
+            
+            while (low < high - 1) {
+                const mid = Math.floor((low + high) / 2);
+                const exists = await this.checkPageExists(collectionType, manuscriptId, mid);
+                
+                if (exists) {
+                    low = mid;
+                } else {
+                    high = mid;
+                }
+            }
+            
+            // Final check
+            const finalExists = await this.checkPageExists(collectionType, manuscriptId, high);
+            const result = finalExists ? high : low;
+            
+            console.log(`[Rome] GET binary search complete: ${result} pages`);
+            return result;
+            
+            /* OLD sampling code - replaced with proper binary search
             const testPages = [1, 5, 10, 20, 50, 100, 200, 500];
             let lastValidPage = 1;
             
-            for (const pageNum of testPages) {
-                const exists = await this.checkPageExistsWithGet(collectionType, manuscriptId, pageNum);
-                if (exists) {
-                    lastValidPage = pageNum;
-                    console.log(`[Rome] GET: Page ${pageNum} exists`);
-                } else {
-                    console.log(`[Rome] GET: Page ${pageNum} not found, max is between ${lastValidPage} and ${pageNum}`);
-                    break;
-                }
-            }
-            
-            // If we found a range, do a smaller binary search with GET
-            if (lastValidPage > 1) {
-                return await this.fineTuneWithGet(collectionType, manuscriptId, lastValidPage, Math.min(lastValidPage * 2, 500));
-            }
-            
-            return lastValidPage;
+            // Removed old sampling code
+            */
         }
         
-        /**
-         * Fine-tune page count using GET requests in a smaller range
-         */
-        private async fineTuneWithGet(collectionType: string, manuscriptId: string, low: number, high: number): Promise<number> {
-            console.log(`[Rome] Fine-tuning with GET between ${low} and ${high}`);
-            
-            for (let page = high; page >= low; page--) {
-                const exists = await this.checkPageExistsWithGet(collectionType, manuscriptId, page);
-                if (exists) {
-                    console.log(`[Rome] GET fine-tune: Found highest page ${page}`);
-                    return page;
-                }
-            }
-            
-            return low;
-        }
+        // fineTuneWithGet method removed - using proper binary search instead
         
         
         /**
          * Check if a specific page exists using HEAD request
          * Returns: true if exists, false if not exists, null if HEAD request failed
+         * DISABLED: HEAD requests unreliable for Rome
          */
-        private async checkPageExistsWithHead(collectionType: string, manuscriptId: string, pageNum: number): Promise<boolean | null> {
+        /* private async checkPageExistsWithHead(collectionType: string, manuscriptId: string, pageNum: number): Promise<boolean | null> {
             const imageUrl = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/${pageNum}/original`;
             
             try {
@@ -275,11 +319,17 @@ export class RomeLoader extends BaseLibraryLoader {
                     const contentLength = response.headers.get('content-length');
                     const contentType = response.headers.get('content-type');
                     
-                    // Valid image should be > 1KB and have image content type
-                    const isValidImage = contentLength && parseInt(contentLength) > 1000 && 
-                                        contentType && contentType.includes('image');
+                    // ULTRATHINK FIX: Rome returns HTTP 200 with text/html for non-existent pages
+                    // Only accept image/* content types, reject text/html phantom pages
+                    const isValidImage = contentType && contentType.includes('image') &&
+                                        contentLength && parseInt(contentLength) > 1000;
                     
-                    return isValidImage || false;
+                    if (!isValidImage && response.ok) {
+                        // Log phantom page detection for debugging
+                        console.log(`[Rome] Phantom page ${pageNum} detected: ${contentType || 'no content-type'}, ${contentLength || '0'} bytes`);
+                    }
+                    
+                    return isValidImage ? true : false;
                 }
                 
                 return false;
@@ -294,40 +344,135 @@ export class RomeLoader extends BaseLibraryLoader {
                 
                 return false; // Page doesn't exist
             }
-        }
+        } */
         
         /**
-         * Check if a specific page exists using GET request (fallback method)
-         * More reliable but slower than HEAD requests
+         * Check if a specific page exists using HEAD request
+         * Faster than GET and properly distinguishes HTML error pages from real images
          */
-        private async checkPageExistsWithGet(collectionType: string, manuscriptId: string, pageNum: number): Promise<boolean> {
+        private async checkPageExists(collectionType: string, manuscriptId: string, pageNum: number): Promise<boolean> {
             const imageUrl = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/${pageNum}/original`;
             
             try {
+                // ULTRATHINK FIX: Use HEAD for existence check, GET was downloading entire images
                 const response = await this.deps.fetchDirect(imageUrl, {
-                    method: 'GET'
+                    method: 'HEAD'
                 });
                 
                 if (response.ok) {
-                    // For GET requests, we can check more thoroughly
                     const contentType = response.headers.get('content-type');
-                    const contentLength = response.headers.get('content-length');
                     
-                    // Valid image content
-                    const isValidImage = contentType && contentType.includes('image') &&
-                                        contentLength && parseInt(contentLength) > 1000;
+                    // Rome returns 200 OK with text/html for non-existent pages
+                    // Real pages have image/jpeg content type
+                    if (contentType && contentType.includes('text/html')) {
+                        console.log(`[Rome] Phantom page ${pageNum} detected - HTML response`);
+                        return false;
+                    }
+                    
+                    // Valid image if it has image content type
+                    // Don't rely on content-length as it's not always provided by HEAD
+                    const isValidImage = contentType && contentType.includes('image');
                     
                     if (isValidImage) {
-                        console.log(`[Rome] GET: Page ${pageNum} confirmed (${contentLength} bytes, ${contentType})`);
+                        console.log(`[Rome] Page ${pageNum} exists (${contentType})`);
                         return true;
+                    } else {
+                        console.log(`[Rome] Page ${pageNum} invalid (${contentType || 'no type'})`);
+                        return false;
                     }
                 }
                 
                 return false;
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
-                console.log(`[Rome] GET request failed for page ${pageNum}: ${errorMessage}`);
+                console.log(`[Rome] Request failed for page ${pageNum}: ${errorMessage}`);
                 return false;
+            }
+        }
+        
+        /**
+         * ULTRATHINK ENHANCEMENT: Content quality validation for more accurate page counts
+         * Analyzes final pages to detect minimal content (appendices, blank pages) 
+         */
+        private async validateContentQuality(collectionType: string, manuscriptId: string, detectedPages: number): Promise<number> {
+            console.log(`[Rome] Validating content quality for ${detectedPages} pages...`);
+            
+            // Skip validation for small manuscripts (< 10 pages)
+            if (detectedPages < 10) {
+                return detectedPages;
+            }
+            
+            // Sample 3 representative pages from middle section to establish baseline
+            const sampleIndices = [
+                Math.floor(detectedPages * 0.3),
+                Math.floor(detectedPages * 0.5), 
+                Math.floor(detectedPages * 0.7)
+            ];
+            
+            let totalSampleSize = 0;
+            let validSamples = 0;
+            
+            for (const pageNum of sampleIndices) {
+                const size = await this.getPageContentSize(collectionType, manuscriptId, pageNum);
+                if (size > 0) {
+                    totalSampleSize += size;
+                    validSamples++;
+                }
+            }
+            
+            if (validSamples === 0) {
+                console.log(`[Rome] No valid samples for content quality analysis`);
+                return detectedPages;
+            }
+            
+            const averagePageSize = totalSampleSize / validSamples;
+            const minAcceptableSize = averagePageSize * 0.3; // 30% of average
+            
+            console.log(`[Rome] Average content size: ${Math.round(averagePageSize / 1024)}KB, minimum acceptable: ${Math.round(minAcceptableSize / 1024)}KB`);
+            
+            // Check final 15 pages for minimal content
+            const finalCheckStart = Math.max(1, detectedPages - 14);
+            let lastSubstantialPage = detectedPages;
+            
+            for (let pageNum = detectedPages; pageNum >= finalCheckStart; pageNum--) {
+                const size = await this.getPageContentSize(collectionType, manuscriptId, pageNum);
+                
+                if (size >= minAcceptableSize) {
+                    lastSubstantialPage = pageNum;
+                    break;
+                }
+            }
+            
+            if (lastSubstantialPage < detectedPages) {
+                console.log(`[Rome] Content quality filter: ${detectedPages} → ${lastSubstantialPage} pages (filtered ${detectedPages - lastSubstantialPage} minimal-content pages)`);
+                return lastSubstantialPage;
+            }
+            
+            console.log(`[Rome] All ${detectedPages} pages have substantial content`);
+            return detectedPages;
+        }
+        
+        /**
+         * Get content size for a specific page (helper for content quality validation)
+         */
+        private async getPageContentSize(collectionType: string, manuscriptId: string, pageNum: number): Promise<number> {
+            const imageUrl = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/${pageNum}/original`;
+            
+            try {
+                const response = await this.deps.fetchDirect(imageUrl, { method: 'HEAD' });
+                
+                if (response.ok) {
+                    const contentLength = response.headers.get('content-length');
+                    const contentType = response.headers.get('content-type');
+                    
+                    if (contentType && contentType.includes('image') && contentLength) {
+                        return parseInt(contentLength);
+                    }
+                }
+                
+                return 0;
+            } catch {
+                return 0;
             }
         }
         

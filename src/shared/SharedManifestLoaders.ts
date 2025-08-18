@@ -5654,6 +5654,10 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     private async discoverRomePageCount(collectionType: string, manuscriptId: string): Promise<number> {
         console.log(`[Rome] Starting hybrid page discovery for ${manuscriptId}`);
         
+        // ULTRATHINK FIX: Skip HEAD requests - they find 1024 phantom pages
+        // HEAD returns 200 OK with text/html for non-existent pages
+        // Go directly to GET request sampling which properly detects ~175 real pages
+        /*
         // Strategy 1: Try binary search with HEAD requests
         try {
             console.log(`[Rome] Attempting binary search with HEAD requests...`);
@@ -5668,10 +5672,11 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         } catch (error) {
             console.log(`[Rome] Binary search with HEAD failed: ${error instanceof Error ? error.message : String(error)}`);
         }
+        */
         
-        // Strategy 2: GET request sampling fallback
+        // Strategy 2: GET request sampling - PRIMARY METHOD for Rome
         try {
-            console.log(`[Rome] Attempting GET request sampling...`);
+            console.log(`[Rome] Using GET request sampling (HEAD disabled due to phantom pages)...`);
             const getResult = await this.sampleRomePagesWithGet(collectionType, manuscriptId);
             
             if (getResult > 1) {
@@ -5692,8 +5697,9 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     
     /**
      * Strategy 1: Binary search with HEAD requests (with failure detection)
+     * DISABLED: Not used - HEAD requests unreliable for Rome
      */
-    private async binarySearchRomeWithHead(collectionType: string, manuscriptId: string): Promise<number> {
+    /* private async binarySearchRomeWithHead(collectionType: string, manuscriptId: string): Promise<number> {
         let upperBound = 1;
         let attempts = 0;
         const maxAttempts = 10;
@@ -5748,40 +5754,60 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         const finalResult = await this.checkRomePageExistsWithHead(collectionType, manuscriptId, high);
         return finalResult ? high : low;
-    }
+    } */
     
     /**
      * Strategy 2: Sample pages using GET requests to find bounds
      */
     private async sampleRomePagesWithGet(collectionType: string, manuscriptId: string): Promise<number> {
-        console.log(`[Rome] Sampling pages with GET requests...`);
+        console.log(`[Rome] Binary search with GET requests for accurate page detection...`);
         
-        const testPages = [1, 5, 10, 20, 50, 100, 200, 500];
-        let lastValidPage = 1;
+        // ULTRATHINK FIX: Proper binary search without artificial caps
+        // First, find upper bound with exponential search
+        let upperBound = 1;
+        let attempts = 0;
+        const maxAttempts = 20; // Reasonable iteration limit, not page limit
         
-        for (const pageNum of testPages) {
-            const exists = await this.checkRomePageExistsWithGet(collectionType, manuscriptId, pageNum);
-            if (exists) {
-                lastValidPage = pageNum;
-                console.log(`[Rome] GET: Page ${pageNum} exists`);
-            } else {
-                console.log(`[Rome] GET: Page ${pageNum} not found, max is between ${lastValidPage} and ${pageNum}`);
+        // Exponential search to find upper bound
+        while (attempts < maxAttempts) {
+            const exists = await this.checkRomePageExistsWithGet(collectionType, manuscriptId, upperBound);
+            if (!exists) {
+                console.log(`[Rome] GET: Found upper bound at page ${upperBound} (does not exist)`);
                 break;
+            }
+            console.log(`[Rome] GET: Page ${upperBound} exists, continuing search...`);
+            upperBound *= 2;
+            attempts++;
+        }
+        
+        // Binary search for exact count
+        let low = upperBound === 1 ? 1 : Math.floor(upperBound / 2);
+        let high = upperBound;
+        
+        while (low < high - 1) {
+            const mid = Math.floor((low + high) / 2);
+            const exists = await this.checkRomePageExistsWithGet(collectionType, manuscriptId, mid);
+            
+            if (exists) {
+                low = mid;
+            } else {
+                high = mid;
             }
         }
         
-        // Fine-tune with GET requests
-        if (lastValidPage > 1) {
-            return await this.fineTuneRomeWithGet(collectionType, manuscriptId, lastValidPage, Math.min(lastValidPage * 2, 500));
-        }
+        // Final check
+        const finalExists = await this.checkRomePageExistsWithGet(collectionType, manuscriptId, high);
+        const result = finalExists ? high : low;
         
-        return lastValidPage;
+        console.log(`[Rome] GET binary search complete: ${result} pages`);
+        return result;
     }
     
     /**
      * Fine-tune Rome page count using GET requests in a smaller range
+     * DISABLED: Not used - replaced with proper binary search
      */
-    private async fineTuneRomeWithGet(collectionType: string, manuscriptId: string, low: number, high: number): Promise<number> {
+    /* private async fineTuneRomeWithGet(collectionType: string, manuscriptId: string, low: number, high: number): Promise<number> {
         console.log(`[Rome] Fine-tuning with GET between ${low} and ${high}`);
         
         for (let page = high; page >= low; page--) {
@@ -5793,14 +5819,15 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         }
         
         return low;
-    }
+    } */
     
     
     /**
      * Check if a Rome page exists using HEAD request
      * Returns: true if exists, false if not exists, null if HEAD request failed
+     * DISABLED: Not used - HEAD requests unreliable for Rome
      */
-    private async checkRomePageExistsWithHead(collectionType: string, manuscriptId: string, pageNum: number): Promise<boolean | null> {
+    /* private async checkRomePageExistsWithHead(collectionType: string, manuscriptId: string, pageNum: number): Promise<boolean | null> {
         const imageUrl = `http://digitale.bnc.roma.sbn.it/tecadigitale/img/${collectionType}/${manuscriptId}/${manuscriptId}/${pageNum}/original`;
         
         try {
@@ -5823,7 +5850,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             
             return false; // Page doesn't exist
         }
-    }
+    } */
     
     /**
      * Check if a Rome page exists using GET request (fallback method)
@@ -5833,18 +5860,35 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         try {
             const response = await this.fetchWithRetry(imageUrl, {
-                method: 'GET'
+                method: 'HEAD' // ULTRATHINK: Use HEAD for existence check, faster than GET
             }, 1);
             
             if (response.ok) {
-                console.log(`[Rome] GET: Page ${pageNum} confirmed`);
-                return true;
+                // CRITICAL FIX: Rome returns 200 OK with text/html for non-existent pages
+                // Only accept image/* content types, reject everything else
+                const contentType = typeof response.headers.get === 'function' 
+                    ? response.headers.get('content-type') 
+                    : (response.headers as any)['content-type'] || null;
+                
+                if (contentType && contentType.includes('text/html')) {
+                    console.log(`[Rome] Phantom page ${pageNum} detected - HTML response instead of image`);
+                    return false;
+                }
+                
+                // Valid if it's an image
+                if (contentType && contentType.includes('image')) {
+                    console.log(`[Rome] Page ${pageNum} exists (${contentType})`);
+                    return true;
+                } else {
+                    console.log(`[Rome] Page ${pageNum} invalid (${contentType || 'no type'})`);
+                    return false;
+                }
             }
             
             return false;
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
-            console.log(`[Rome] GET request failed for page ${pageNum}: ${errorMessage}`);
+            console.log(`[Rome] Request failed for page ${pageNum}: ${errorMessage}`);
             return false;
         }
     }

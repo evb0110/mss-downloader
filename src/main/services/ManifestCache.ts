@@ -9,7 +9,7 @@ export class ManifestCache {
     private cache = new Map<string, { manifest: Record<string, unknown>; timestamp: number; version: number }>();
     private maxAge = 24 * 60 * 60 * 1000; // 24 hours
     private initialized = false;
-    private static readonly CACHE_VERSION = 4; // Increment when URL processing logic changes
+    private static readonly CACHE_VERSION = 5; // v5: Rome phantom pages fix - force fresh discovery
 
     constructor() {
         const userDataPath = app.getPath('userData');
@@ -64,6 +64,22 @@ export class ManifestCache {
     async get(url: string): Promise<Record<string, unknown> | null> {
         try {
             await this.init();
+            
+            // FIX: Clear any Rome manifests with suspicious page counts (likely phantom pages)
+            // We check for common phantom page counts that indicate failed detection
+            if (url.includes('digitale.bnc.roma.sbn.it')) {
+                const key = this.getCacheKey(url);
+                const cached = this.cache.get(key);
+                const totalPages = cached?.manifest?.['totalPages'];
+                // Common phantom page counts: powers of 2 from binary search hitting limits
+                const suspiciousPageCounts = [512, 1024, 2048, 4096];
+                if (totalPages && suspiciousPageCounts.includes(totalPages as number)) {
+                    console.warn(`[Rome] Clearing cached manifest with suspicious ${totalPages} pages for: ${url}`);
+                    this.cache.delete(key);
+                    await this.save();
+                    return null; // Force fresh discovery
+                }
+            }
             
             const key = this.getCacheKey(url);
             const cached = this.cache.get(key);

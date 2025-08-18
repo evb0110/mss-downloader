@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.209",
+  "version": "1.4.210",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (71+ libraries worldwide)",
   "changelog": [
-    "v1.4.209: Rome National Library - COMPREHENSIVE FIX: All timeout and rate limiting issues resolved",
-    "FIXED: HTTP/HTTPS protocol mismatch causing socket timeouts and hanging downloads",
-    "FIXED: Changed SharedManifestAdapter from fetchWithHTTPS to fetchDirect for HTTP URLs",
-    "OPTIMIZED: Rome timeouts reduced from 90s to 15s for instant responses like browser/curl",
-    "THROTTLED: Added 500ms rate limiting delays to prevent server blocking after fast downloads",
-    "Rome manuscripts now download instantly and reliably with proper server respect"
+    "v1.4.210: Rome National Library - ULTRATHINK fixes for page detection and manuscript naming",
+    "FIXED: Rome now correctly detects ~175 pages instead of 1024 phantom pages",
+    "FIXED: Binary search with content-type validation to reject HTML phantom pages",
+    "FIXED: Manuscript names now display properly instead of 'undefined_Part_1'",
+    "FIXED: Cache purging on deletion for ALL libraries to prevent data corruption",
+    "Rome manuscripts now load with accurate page counts and proper naming"
   ],
   "main": "dist/main/main.js",
   "scripts": {

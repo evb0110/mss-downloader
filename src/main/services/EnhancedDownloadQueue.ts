@@ -416,9 +416,29 @@ export class EnhancedDownloadQueue extends EventEmitter {
         const item = this.state.items.find((item) => item.id === id);
         if (!item) return false;
 
-        // If currently downloading, abort it
+        // If currently downloading (sequential mode), abort it
         if (this.state.currentItemId === id && this.processingAbortController) {
             this.processingAbortController.abort();
+        }
+
+        // ULTRATHINK FIX: Cancel simultaneous downloads too
+        if (this.activeDownloadControllers.has(id)) {
+            const controller = this.activeDownloadControllers.get(id);
+            controller?.abort();
+            this.activeDownloadControllers.delete(id);
+            console.log(`Cancelled simultaneous download for ${id}`);
+        }
+
+        if (this.activeDownloaders.has(id)) {
+            this.activeDownloaders.delete(id);
+            // Update activeItemIds array
+            if (this.state.activeItemIds) {
+                const index = this.state.activeItemIds.indexOf(id);
+                if (index > -1) {
+                    this.state.activeItemIds.splice(index, 1);
+                }
+            }
+            console.log(`Removed ${id} from active downloaders`);
         }
 
         // Clear manifest cache for this item
@@ -460,7 +480,14 @@ export class EnhancedDownloadQueue extends EventEmitter {
     }
 
     clearCompleted(): void {
-        // const completedCount = this.state.items.filter((item) => item.status === 'completed')?.length;
+        // CRITICAL FIX: Clear cache for completed items before removing them
+        const completedItems = this.state.items.filter((item) => item.status === 'completed');
+        completedItems.forEach(item => {
+            this.manifestCache.clearUrl(item.url).catch((error: any) => {
+                console.warn(`Failed to clear manifest cache for ${item.url}:`, error instanceof Error ? error.message : String(error));
+            });
+        });
+        
         this.state.items = this.state.items.filter((item) => item.status !== 'completed');
         this.saveToStorage();
         this.notifyListeners();
@@ -468,7 +495,14 @@ export class EnhancedDownloadQueue extends EventEmitter {
     }
 
     clearFailed(): void {
-        // const failedCount = this.state.items.filter((item) => item.status === 'failed')?.length;
+        // CRITICAL FIX: Clear cache for failed items before removing them
+        const failedItems = this.state.items.filter((item) => item.status === 'failed');
+        failedItems.forEach(item => {
+            this.manifestCache.clearUrl(item.url).catch((error: any) => {
+                console.warn(`Failed to clear manifest cache for ${item.url}:`, error instanceof Error ? error.message : String(error));
+            });
+        });
+        
         this.state.items = this.state.items.filter((item) => item.status !== 'failed');
         this.saveToStorage();
         this.notifyListeners();
@@ -839,7 +873,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                         item.progress = progress;
                     } else if (progress && typeof progress === 'object') {
                         item.progress = {
-                            current: progress.completedPages || 0,
+                            current: progress.downloadedPages || 0,
                             total: progress?.totalPages || item?.totalPages || 0,
                             percentage: Math.round((progress.progress || 0) * 100 * 100) / 100, // Round to 2 decimal places
                             eta: progress.eta || 'calculating...',
@@ -1306,13 +1340,20 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 console.log(`Manifest loaded: ${manifest?.totalPages} pages, library: ${manifest.library}`);
             } else {
                 console.log(`Using cached manifest data: ${item?.totalPages} pages, library: ${item.library}`);
-                // Need to reload manifest to get pageLinks for size estimation
-                manifest = await this.currentDownloader!.loadManifest(item.url);
+                // ULTRATHINK FIX: Don't reload manifest when we already have the data!
+                // This was causing Rome to show 1024 pages from stale cache
+                // We already have totalPages and library from loadManifestForItem
+                manifest = {
+                    totalPages: item.totalPages,
+                    library: item.library,
+                    displayName: item.displayName,  // FIX: Use displayName, not title
+                    title: item.displayName
+                } as any;
             }
             
             // For Florus, Orleans, Internet Culturale, Manuscripta, Graz, Cologne, Rome, NYPL, Czech, Modena, and Morgan - skip first page download and use estimated size calculation
             // BDL removed from this list to enable proper multi-page sampling for size estimation
-            if (manifest.library === 'florus' || manifest.library === 'orleans' || manifest.library === 'internet_culturale' || manifest.library === 'manuscripta' || manifest.library === 'graz' || manifest.library === 'cologne' || manifest.library === 'rome' || manifest.library === 'nypl' || manifest.library === 'czech' || manifest.library === 'modena' || manifest.library === 'morgan') {
+            if (manifest && (manifest.library === 'florus' || manifest.library === 'orleans' || manifest.library === 'internet_culturale' || manifest.library === 'manuscripta' || manifest.library === 'graz' || manifest.library === 'cologne' || manifest.library === 'rome' || manifest.library === 'nypl' || manifest.library === 'czech' || manifest.library === 'modena' || manifest.library === 'morgan')) {
                 console.log(`${manifest.library} manuscript detected, using estimated size calculation (bypassing first page download)`);
                 // Estimate based on typical manuscript page size
                 const avgPageSizeMB = manifest.library === 'orleans' ? 0.6 : 
@@ -1348,7 +1389,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
             // For BDL and similar libraries with variable page sizes, use multi-page sampling
             let estimatedTotalSizeMB: number;
             
-            if (manifest.library === 'bdl' || manifest.library === 'vatican' || manifest.library === 'bne') {
+            if (manifest && (manifest.library === 'bdl' || manifest.library === 'vatican' || manifest.library === 'bne')) {
                 // Multi-page sampling for more accurate size estimation
                 console.log(`[${manifest.library}] Using multi-page sampling for accurate size estimation`);
                 
@@ -1445,8 +1486,10 @@ export class EnhancedDownloadQueue extends EventEmitter {
                                      this.state.globalSettings.autoSplitThresholdMB;
             
             if (estimatedTotalSizeMB > effectiveThreshold) {
-                await this.splitQueueItem(item, manifest, estimatedTotalSizeMB);
-                return true;
+                if (manifest) {
+                    await this.splitQueueItem(item, manifest, estimatedTotalSizeMB);
+                    return true;
+                }
             }
             
             return false;
@@ -2009,7 +2052,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                         item.progress = progress;
                     } else if (progress && typeof progress === 'object') {
                         item.progress = {
-                            current: progress.completedPages || 0,
+                            current: progress.downloadedPages || 0,
                             total: progress?.totalPages || item?.totalPages || 0,
                             percentage: Math.round((progress.progress || 0) * 100 * 100) / 100, // Round to 2 decimal places
                             eta: progress.eta || 'calculating...',
