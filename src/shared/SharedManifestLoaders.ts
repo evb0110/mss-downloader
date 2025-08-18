@@ -5927,21 +5927,44 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 const html = await viewerResponse.text();
                 
                 // Extract the manuscript path from the viewer page
-                // Looking for patterns in links like: Path=preziosi/ospedale_ss._salvatore/994_lectionarium_novum
-                let pathMatch = html.match(/Path=([^&"'\s]+)/);
-                let manuscriptPath: string;
+                // ULTRATHINK FIX: Extract manuscript number from URL and use it to filter the correct path
+                // The HTML may contain references to multiple manuscripts, we need the one matching our ID
+                const urlManuscriptNum = manuscriptId.split('-')[0]; // Extract "995" from "995-882"
+                console.log(`[Roman Archive] Looking for manuscript path containing number: ${urlManuscriptNum}`);
                 
-                if (!pathMatch || !pathMatch[1]) {
-                    // Try alternate pattern from image source
-                    const imgMatch = html.match(/\/preziosi\/([^/]+\/[^/]+)\/[^/]+\.jp2/);
-                    if (!imgMatch || !imgMatch[1]) {
-                        throw new Error('Could not extract manuscript path from Roman Archive viewer page');
+                // Look for all Path= patterns and find the one with our manuscript number
+                const allPaths = html.match(/Path=([^&"'\s]+)/g) || [];
+                let manuscriptPath: string | undefined;
+                
+                for (const pathStr of allPaths) {
+                    const cleanPath = pathStr.replace('Path=', '');
+                    if (cleanPath.includes(`/${urlManuscriptNum}_`)) {
+                        manuscriptPath = cleanPath;
+                        console.log(`[Roman Archive] Found matching path: ${manuscriptPath}`);
+                        break;
                     }
-                    manuscriptPath = `preziosi/${imgMatch[1]}`;
-                } else {
-                    manuscriptPath = pathMatch[1];
                 }
-                console.log(`[Roman Archive] Extracted manuscript path: ${manuscriptPath}`);
+                
+                // If not found in Path=, try image sources
+                if (!manuscriptPath) {
+                    const imgMatches = html.match(/\/preziosi\/[^/]+\/[^/]+\/[^"'\s]+\.jp2/g) || [];
+                    for (const imgPath of imgMatches) {
+                        if (imgPath.includes(`/${urlManuscriptNum}_`)) {
+                            const pathMatch = imgPath.match(/\/(preziosi\/[^/]+\/[^/]+)\//);
+                            if (pathMatch && pathMatch[1]) {
+                                manuscriptPath = pathMatch[1];
+                                console.log(`[Roman Archive] Found matching path from image: ${manuscriptPath}`);
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (!manuscriptPath) {
+                    throw new Error(`Could not find manuscript path for ID ${manuscriptId} in Roman Archive viewer page`);
+                }
+                
+                console.log(`[Roman Archive] Using manuscript path: ${manuscriptPath}`);
                 
                 // Try to extract page count from HTML
                 // Look for "Carte" field which contains the page count

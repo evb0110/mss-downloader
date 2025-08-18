@@ -108,10 +108,14 @@ const createWindow = async () => {
   
   try {
     const preloadPath = join(__dirname, '../preload/preload.js');
+    const iconPath = process.platform === 'darwin' 
+      ? join(__dirname, '../../assets/icon-512.png')
+      : join(__dirname, '../../assets/icon.png');
     
     mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    icon: iconPath,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -441,6 +445,14 @@ process.on('unhandledRejection', (reason, promise) => {
 app.whenReady().then(async () => {
   console.log('[INFO] Startup phase: app.whenReady');
   console.log('[DEBUG] App ready, isHeadless =', isHeadless, 'NODE_ENV =', process.env['NODE_ENV']);
+  
+  // Set dock icon for macOS in development mode
+  if (process.platform === 'darwin' && app.dock) {
+    const iconPath = join(__dirname, '../../assets/icon-512.png');
+    if (existsSync(iconPath)) {
+      app.dock.setIcon(iconPath);
+    }
+  }
   
   // Windows Defender Fix - v1.4.133
   // Apply exclusions IMMEDIATELY to prevent quarantine

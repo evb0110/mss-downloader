@@ -2491,7 +2491,11 @@ export class EnhancedManuscriptDownloaderService {
                     LibraryOptimizationService.getOptimizationsForLibrary(retryLibrary).enableProgressiveBackoff;
 
                 const delay = useProgressiveBackoff
-                    ? LibraryOptimizationService.calculateProgressiveBackoff(attempt + 1)
+                    ? LibraryOptimizationService.calculateProgressiveBackoff(
+                        attempt + 1,
+                        retryLibrary === 'roman_archive' ? 2000 : 1000, // Longer base delay for Roman Archive
+                        retryLibrary === 'roman_archive' ? 60000 : 30000 // Longer max delay for Roman Archive
+                    )
                     : this.calculateRetryDelay(attempt);
 
                 this.logger.logRetry(retryLibrary || 'unknown', url, attempt + 2, delay);
@@ -3122,6 +3126,16 @@ export class EnhancedManuscriptDownloaderService {
                             if (rateLimit.enableProgressiveBackoff) {
                                 const delay = 500; // 500ms delay between Rome downloads
                                 console.log(`[Rome] Rate limiting: waiting ${delay}ms before next download...`);
+                                await this.sleep(delay);
+                            }
+                        }
+                        
+                        // Rate limiting for Roman Archive IIPImage server
+                        if (library === 'roman_archive') {
+                            const rateLimit = LibraryOptimizationService.getOptimizationsForLibrary('roman_archive');
+                            if (rateLimit.enableProgressiveBackoff) {
+                                const delay = 1000; // 1 second delay between Roman Archive downloads
+                                console.log(`[Roman Archive] Rate limiting: waiting ${delay}ms before next download...`);
                                 await this.sleep(delay);
                             }
                         }
