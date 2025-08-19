@@ -6020,16 +6020,23 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         console.log('[Roman Archive] Processing URL:', url);
         
         try {
+            // CRITICAL FIX: Ensure URL has proper protocol
+            let normalizedUrl = url;
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                normalizedUrl = 'https://' + url;
+                console.log(`[Roman Archive] Added https:// prefix to URL: ${normalizedUrl}`);
+            }
+            
             // Handle two types of URLs:
             // 1. IIIF manifest: https://archiviostorico.senato.it/.../manifest
             // 2. Viewer page: https://imagoarchiviodistatoroma.cultura.gov.it/...
             
-            let manifestUrl = url;
+            let manifestUrl = normalizedUrl;
             
-            if (url.includes('imagoarchiviodistatoroma.cultura.gov.it')) {
+            if (normalizedUrl.includes('imagoarchiviodistatoroma.cultura.gov.it')) {
                 // Handle viewer URLs from imagoarchiviodistatoroma.cultura.gov.it
                 // Extract manuscript ID from URL like: scheda.php?r=994-882
-                const idMatch = url.match(/r=(\d+-\d+)/);
+                const idMatch = normalizedUrl.match(/r=(\d+-\d+)/);
                 if (!idMatch) {
                     throw new Error('Could not extract manuscript ID from Roman Archive URL');
                 }
@@ -6038,18 +6045,123 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 console.log(`[Roman Archive] Extracted manuscript ID: ${manuscriptId}`);
                 
                 // Fetch the viewer page to discover the manuscript structure
-                const viewerResponse = await this.fetchWithRetry(url);
+                const viewerResponse = await this.fetchWithRetry(normalizedUrl);
                 if (!viewerResponse.ok) {
                     throw new Error(`Failed to fetch Roman Archive viewer page: ${viewerResponse.status}`);
                 }
                 
                 const html = await viewerResponse.text();
                 
+                // MANDATORY RULE 0.6: FILENAME DISCOVERY - NO PATTERN ASSUMPTIONS
+                // First, try to find IIIF manifest URL or JSON API in the viewer page
+                // Look for manifest URLs, JSON APIs, or file listing endpoints
+                console.log(`[Roman Archive] Searching for IIIF manifest or file listing API in viewer page...`);
+                
+                // Look for IIIF manifest references in HTML
+                const manifestMatches = html.match(/(?:manifest|iiif)[^"']*(?:\.json|\/manifest)[^"']*/gi) || [];
+                let foundManifestUrl: string | undefined;
+                
+                for (const match of manifestMatches) {
+                    if (match.includes('http') || match.startsWith('/')) {
+                        const cleanUrl = match.startsWith('/') 
+                            ? `https://imagoarchiviodistatoroma.cultura.gov.it${match}` 
+                            : match;
+                        console.log(`[Roman Archive] Found potential manifest URL: ${cleanUrl}`);
+                        foundManifestUrl = cleanUrl;
+                        break;
+                    }
+                }
+                
+                // Look for JSON API endpoints that might list files
+                const apiMatches = html.match(/(?:api|json)[^"']*(?:\.(?:php|json))[^"']*/gi) || [];
+                for (const match of apiMatches) {
+                    if (match.includes('files') || match.includes('list') || match.includes('pages')) {
+                        console.log(`[Roman Archive] Found potential file listing API: ${match}`);
+                    }
+                }
+                
+                // Look for IIPImage server directory listing or info endpoints
+                // IIPImage servers often expose file listings via FIF parameter queries
+                const iipMatches = html.match(/iipsrv[^"']*\?[^"']*/gi) || [];
+                let iipBaseUrl: string | undefined;
+                let manuscriptPathFromIIP: string | undefined;
+                
+                for (const match of iipMatches) {
+                    const fifMatch = match.match(/FIF=([^&"'\s]+)/);
+                    if (fifMatch && fifMatch[1]) {
+                        const fifPath = fifMatch[1];
+                        console.log(`[Roman Archive] Found IIPImage FIF path: ${fifPath}`);
+                        
+                        // Extract the base path and manuscript folder
+                        const pathParts = fifPath.split('/');
+                        if (pathParts.length > 2) {
+                            manuscriptPathFromIIP = pathParts.slice(-2, -1)[0]; // Get parent directory
+                            iipBaseUrl = match.split('?')[0]; // Get base IIPImage URL
+                            console.log(`[Roman Archive] Extracted manuscript path from IIP: ${manuscriptPathFromIIP}`);
+                            break;
+                        }
+                    }
+                }
+                
+                // If we found IIPImage info, try to query the server for available files
+                if (iipBaseUrl && manuscriptPathFromIIP) {
+                    console.log(`[Roman Archive] Attempting to query IIPImage server for file list...`);
+                    try {
+                        // Try IIPImage OBJ=IIP,1.0&OBJ=Resolution-number to get image info
+                        // This might reveal actual available files
+                        const infoUrl = `${iipBaseUrl}?FIF=${manuscriptPathFromIIP}&OBJ=IIP,1.0&OBJ=Max-size`;
+                        const infoResponse = await this.fetchWithRetry(infoUrl, { method: 'HEAD' }, 1);
+                        if (infoResponse.ok) {
+                            console.log(`[Roman Archive] IIPImage server responds to queries`);
+                        }
+                    } catch (iipError: any) {
+                        console.warn(`[Roman Archive] IIPImage query failed:`, iipError?.message || iipError);
+                    }
+                }
+                
+                // If we found a manifest URL, try to use it
+                if (foundManifestUrl) {
+                    console.log(`[Roman Archive] Attempting to fetch IIIF manifest from: ${foundManifestUrl}`);
+                    try {
+                        const manifestResponse = await this.fetchWithRetry(foundManifestUrl);
+                        if (manifestResponse.ok) {
+                            const manifest = await manifestResponse.json();
+                            if (manifest.sequences?.[0]?.canvases) {
+                                console.log(`[Roman Archive] Successfully loaded IIIF manifest with ${manifest.sequences[0].canvases.length} canvases`);
+                                const canvases = manifest.sequences[0].canvases;
+                                const images: ManuscriptImage[] = [];
+                                
+                                for (let i = 0; i < canvases.length; i++) {
+                                    const canvas = canvases[i];
+                                    const imageResource = canvas.images?.[0]?.resource;
+                                    
+                                    if (imageResource && imageResource['@id']) {
+                                        images.push({
+                                            url: imageResource['@id'],
+                                            pageNumber: i + 1
+                                        } as ManuscriptImage);
+                                    }
+                                }
+                                
+                                if (images.length > 0) {
+                                    return {
+                                        images,
+                                        displayName: `Roman Archive - ${manuscriptId} (${images.length} pages from IIIF manifest)`,
+                                        totalPages: images.length
+                                    } as any;
+                                }
+                            }
+                        }
+                    } catch (manifestError: any) {
+                        console.warn(`[Roman Archive] IIIF manifest loading failed:`, manifestError?.message || manifestError);
+                    }
+                }
+                
                 // Extract the manuscript path from the viewer page
                 // ULTRATHINK FIX: Extract manuscript number from URL and use it to filter the correct path
                 // The HTML may contain references to multiple manuscripts, we need the one matching our ID
                 const urlManuscriptNum = manuscriptId.split('-')[0]; // Extract "995" from "995-882"
-                console.log(`[Roman Archive] Looking for manuscript path containing number: ${urlManuscriptNum}`);
+                console.log(`[Roman Archive] No IIIF manifest found, looking for manuscript path containing number: ${urlManuscriptNum}`);
                 
                 // Look for all Path= patterns and find the one with our manuscript number
                 const allPaths = html.match(/Path=([^&"'\s]+)/g) || [];
@@ -6162,37 +6274,20 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                     
                                     console.log(`[Roman Archive] Generated ${images.length} page URLs using alternative format`);
                                 } else {
-                                    // Standard format: extract folio numbers and generate recto/verso pairs
-                                    const folios = new Set<number>();
+                                    // Standard format: use ONLY server-discovered filenames from menu
+                                    // RULE 0.6: NEVER generate patterns, only use actual server-provided names
+                                    console.log(`[Roman Archive] Using ONLY server-discovered filenames from menu (${pageMatches.length} pages)`);
+                                    
                                     pageMatches.forEach(match => {
-                                        const folioMatch = match.match(/r1=(\d{3})[rv]\.jp2/);
-                                        if (folioMatch && folioMatch[1]) {
-                                            folios.add(parseInt(folioMatch[1]));
+                                        const pageNameMatch = match.match(/r1=(\d{3}[rv]\.jp2)/);
+                                        if (pageNameMatch && pageNameMatch[1]) {
+                                            const pageName = pageNameMatch[1];
+                                            images.push({
+                                                url: `https://imagoarchiviodistatoroma.cultura.gov.it/iipsrv/iipsrv.fcgi?FIF=/images/Patrimonio/Archivi/AS_Roma/Imago//${manuscriptPath}/${pageName}&WID=2000&QLT=95&CVT=jpeg`,
+                                                pageNumber: images.length + 1
+                                            } as ManuscriptImage);
                                         }
                                     });
-                                    
-                                    const folioNumbers = Array.from(folios).sort((a, b) => a - b);
-                                    const startFolio = folioNumbers[0];
-                                    const endFolio = folioNumbers[folioNumbers.length - 1];
-                                    
-                                    console.log(`[Roman Archive] Dynamic range discovered: folios ${startFolio}-${endFolio} (${folioNumbers.length} folios)`);
-                                    
-                                    // Generate URLs using actual folio range
-                                    for (const folio of folioNumbers) {
-                                        const paddedFolio = String(folio).padStart(3, '0');
-                                        
-                                        // Add recto page
-                                        images.push({
-                                            url: `https://imagoarchiviodistatoroma.cultura.gov.it/iipsrv/iipsrv.fcgi?FIF=/images/Patrimonio/Archivi/AS_Roma/Imago//${manuscriptPath}/${paddedFolio}r.jp2&WID=2000&QLT=95&CVT=jpeg`,
-                                            pageNumber: images.length + 1
-                                        } as ManuscriptImage);
-                                        
-                                        // Add verso page
-                                        images.push({
-                                            url: `https://imagoarchiviodistatoroma.cultura.gov.it/iipsrv/iipsrv.fcgi?FIF=/images/Patrimonio/Archivi/AS_Roma/Imago//${manuscriptPath}/${paddedFolio}v.jp2&WID=2000&QLT=95&CVT=jpeg`,
-                                            pageNumber: images.length + 1
-                                        } as ManuscriptImage);
-                                    }
                                 }
                                 
                                 // Return results based on format used
@@ -6219,89 +6314,13 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                             }
                         }
                     } catch (menuError) {
-                        console.warn(`[Roman Archive] Failed to fetch page menu, falling back to folio 1-N assumption:`, menuError);
-                    }
-                    
-                    // Fallback: Use old logic if menu parsing fails
-                    console.log(`[Roman Archive] Using fallback: assuming folios 1-${totalPages}`);
-                    for (let i = 1; i <= totalPages; i++) {
-                        const padded = String(i).padStart(3, '0');
-                        
-                        // Add recto page - use IIPImage server format for JPEG output
-                        images.push({
-                            url: `https://imagoarchiviodistatoroma.cultura.gov.it/iipsrv/iipsrv.fcgi?FIF=/images/Patrimonio/Archivi/AS_Roma/Imago//${manuscriptPath}/${padded}r.jp2&WID=2000&QLT=95&CVT=jpeg`,
-                            pageNumber: images.length + 1
-                        } as ManuscriptImage);
-                        
-                        // Add verso page - use IIPImage server format for JPEG output
-                        images.push({
-                            url: `https://imagoarchiviodistatoroma.cultura.gov.it/iipsrv/iipsrv.fcgi?FIF=/images/Patrimonio/Archivi/AS_Roma/Imago//${manuscriptPath}/${padded}v.jp2&WID=2000&QLT=95&CVT=jpeg`,
-                            pageNumber: images.length + 1
-                        } as ManuscriptImage);
-                    }
-                    
-                    console.log(`[Roman Archive] Generated ${images.length} page URLs from fallback logic`);
-                    return { 
-                        images,
-                        displayName: `Roman Archive - ${manuscriptId}`,
-                        totalPages: images.length
-                    } as any;
-                }
-                
-                // Fallback: Try to discover pages by probing common patterns
-                console.log('[Roman Archive] No pages found in HTML, attempting pattern-based discovery');
-                const maxProbe = 500; // Reasonable limit for probing
-                
-                // Common page naming patterns: 001r.jp2, 001v.jp2, 002r.jp2, etc.
-                for (let i = 1; i <= maxProbe; i++) {
-                    const padded = String(i).padStart(3, '0');
-                    
-                    // Try recto page - use IIPImage server format
-                    const rectoCheckUrl = `https://imagoarchiviodistatoroma.cultura.gov.it/iipsrv/iipsrv.fcgi?FIF=/images/Patrimonio/Archivi/AS_Roma/Imago//${manuscriptPath}/${padded}r.jp2&OBJ=IIP,1.0&OBJ=Max-size`;
-                    const rectoUrl = `https://imagoarchiviodistatoroma.cultura.gov.it/iipsrv/iipsrv.fcgi?FIF=/images/Patrimonio/Archivi/AS_Roma/Imago//${manuscriptPath}/${padded}r.jp2&WID=2000&QLT=95&CVT=jpeg`;
-                    try {
-                        const checkResponse = await this.fetchWithRetry(rectoCheckUrl, { method: 'HEAD' }, 1);
-                        if (checkResponse.ok) {
-                            images.push({
-                                url: rectoUrl,
-                                pageNumber: images.length + 1
-                            } as ManuscriptImage);
-                        }
-                    } catch {
-                        // Page doesn't exist, might be end of manuscript
-                        if (i > 10 && images.length === 0) break; // Stop if no pages found after 10 attempts
-                    }
-                    
-                    // Try verso page - use IIPImage server format
-                    const versoCheckUrl = `https://imagoarchiviodistatoroma.cultura.gov.it/iipsrv/iipsrv.fcgi?FIF=/images/Patrimonio/Archivi/AS_Roma/Imago//${manuscriptPath}/${padded}v.jp2&OBJ=IIP,1.0&OBJ=Max-size`;
-                    const versoUrl = `https://imagoarchiviodistatoroma.cultura.gov.it/iipsrv/iipsrv.fcgi?FIF=/images/Patrimonio/Archivi/AS_Roma/Imago//${manuscriptPath}/${padded}v.jp2&WID=2000&QLT=95&CVT=jpeg`;
-                    try {
-                        const checkResponse = await this.fetchWithRetry(versoCheckUrl, { method: 'HEAD' }, 1);
-                        if (checkResponse.ok) {
-                            images.push({
-                                url: versoUrl,
-                                pageNumber: images.length + 1
-                            } as ManuscriptImage);
-                        }
-                    } catch {
-                        // Page doesn't exist
-                    }
-                    
-                    // If we've found pages and then hit 5 consecutive missing pages, assume we're done
-                    if (images.length > 0 && i > images.length / 2 + 5) {
-                        break;
+                        console.error(`[Roman Archive] RULE 0.6 VIOLATION: Cannot proceed without server-discovered filenames. Menu fetch failed:`, menuError);
+                        throw new Error(`Roman Archive requires actual filenames from server menu response. NEVER assume patterns. Menu error: ${menuError}`);
                     }
                 }
                 
-                if (images.length === 0) {
-                    throw new Error('Could not discover any pages from Roman Archive viewer URL');
-                }
-                
-                console.log(`[Roman Archive] Discovered ${images.length} pages through pattern probing`);
-                return { 
-                    images,
-                    displayName: `Roman Archive - ${manuscriptId}`
-                } as any;
+                // RULE 0.6 COMPLIANCE: NO pattern-based fallbacks allowed
+                throw new Error(`Roman Archive: No pages found in HTML and menu fetch failed. RULE 0.6 prevents pattern assumptions - server must provide actual filenames.`);
             }
             
             if (!url.includes('/manifest')) {

@@ -12,7 +12,7 @@ import { DirectTileProcessor } from './DirectTileProcessor';
 import { SharedManifestAdapter } from './SharedManifestAdapter';
 import { DownloadLogger } from './DownloadLogger';
 import { comprehensiveLogger } from './ComprehensiveLogger';
-import { enhancedLogger, ManuscriptContext, PerformanceMetrics, LibrarySpecificData } from './EnhancedLogger';
+import { enhancedLogger, ManuscriptContext, PerformanceMetrics } from './EnhancedLogger';
 import { UltraReliableBDLService } from './UltraReliableBDLService';
 import { createProgressMonitor } from './IntelligentProgressMonitor';
 import {
@@ -2854,6 +2854,9 @@ export class EnhancedManuscriptDownloaderService {
             await fs.mkdir(downloadsDir, { recursive: true });
 
             // Always create a subfolder with the manuscript base name (strip part/page suffixes)
+            // Check if this is an auto-split part BEFORE sanitization strips the page info
+            const isAutoSplitPart = queueItem?.isAutoPart && sanitizedName.includes('_Part_') && sanitizedName.includes('_pages_');
+            
             const folderBase = sanitizedName
                 .replace(/_Part_\d+.*$/i, '')
                 .replace(/_pages_\d+-\d+.*$/i, '');
@@ -2865,8 +2868,13 @@ export class EnhancedManuscriptDownloaderService {
                 filename = `${sanitizedName}_part_${partNumber}_pages_${actualStartPage}-${actualEndPage}.pdf`;
                 filepath = path.join(targetDir, filename);
             } else {
-                // Always include page numbers for clarity
-                filename = `${sanitizedName}_pages_${actualStartPage}-${actualEndPage}.pdf`;
+                if (isAutoSplitPart) {
+                    // Auto-split part already has page range in name, just add .pdf
+                    filename = `${sanitizedName}.pdf`;
+                } else {
+                    // Always include page numbers for clarity
+                    filename = `${sanitizedName}_pages_${actualStartPage}-${actualEndPage}.pdf`;
+                }
                 filepath = path.join(targetDir, filename);
             }
 

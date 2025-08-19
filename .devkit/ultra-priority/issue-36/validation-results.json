@@ -1,0 +1,50 @@
+{
+  "urlDetection": [
+    {
+      "url": "https://collections.library.yale.edu/catalog/2003630",
+      "detected": "yale"
+    },
+    {
+      "url": "https://collections.library.yale.edu/catalog/10621988",
+      "detected": "yale"
+    }
+  ],
+  "manifestLoading": [
+    {
+      "url": "https://collections.library.yale.edu/manifests/2003630",
+      "success": true,
+      "pages": 44,
+      "title": "Noted Breviary (fragment)."
+    },
+    {
+      "url": "https://collections.library.yale.edu/manifests/10621988",
+      "success": true,
+      "pages": 215,
+      "title": "Gospel Lectionary"
+    }
+  ],
+  "imageExtraction": [
+    {
+      "manifest": "https://collections.library.yale.edu/manifests/2003630",
+      "imageCount": 44,
+      "valid": true
+    },
+    {
+      "manifest": "https://collections.library.yale.edu/manifests/10621988",
+      "imageCount": 215,
+      "valid": true
+    }
+  ],
+  "totalResults": {
+    "url1": {
+      "pages": 44,
+      "title": "Noted Breviary (fragment).",
+      "success": true
+    },
+    "url2": {
+      "pages": 215,
+      "title": "Gospel Lectionary",
+      "success": true
+    }
+  }
+}

@@ -1,0 +1,16 @@
+author:	textorhub
+association:	collaborator
+edited:	false
+status:	none
+--
+[logs-Roman_Archive___995_882_Part_2_pages_124_246-1755587984750.txt](https://github.com/user-attachments/files/21850733/logs-Roman_Archive___995_882_Part_2_pages_124_246-1755587984750.txt)
+[logs-Roman_Archive___995_882_Part_3_pages_247_367-1755587977730.txt](https://github.com/user-attachments/files/21850734/logs-Roman_Archive___995_882_Part_3_pages_247_367-1755587977730.txt)
+[logs-Roman_Archive___995_882_Part_1_pages_1_123-1755587942287.txt](https://github.com/user-attachments/files/21850735/logs-Roman_Archive___995_882_Part_1_pages_1_123-1755587942287.txt)
+--
+author:	textorhub
+association:	collaborator
+edited:	false
+status:	none
+--
+Download appeared successful but file verification failed: Output file too small: 1339550 bytes (expected at least 18790400)
+--

@@ -1,5 +1,5 @@
 import { DownloadLogger } from './DownloadLogger';
-import { comprehensiveLogger, LogLevel } from './ComprehensiveLogger';
+import { comprehensiveLogger } from './ComprehensiveLogger';
 
 /**
  * Enhanced Logging System for MSS Downloader
@@ -300,6 +300,32 @@ export class EnhancedLogger {
                 iteration,
                 range,
                 result
+            }
+        });
+    }
+    
+    logRomanArchiveFolioProbing(context: ManuscriptContext, probingInfo: { testPoints: number[]; validFolios: number[]; discoveredRange?: { min: number; max: number } }) {
+        const validCount = probingInfo.validFolios.length;
+        const rangeInfo = probingInfo.discoveredRange 
+            ? ` (range ${probingInfo.discoveredRange.min}-${probingInfo.discoveredRange.max})`
+            : '';
+            
+        console.log(`[ROMAN-ARCHIVE] ${context.title || context.id}: Folio probing found ${validCount} valid folios${rangeInfo} - prevents 404 errors`);
+        
+        if (validCount > 0) {
+            console.log(`[ROMAN-ARCHIVE] ${context.title || context.id}: Valid folios: [${probingInfo.validFolios.join(', ')}]`);
+        }
+        
+        this.downloadLogger.log({
+            level: 'info',
+            library: 'Roman Archive',
+            message: `Intelligent folio probing completed`,
+            details: {
+                manuscriptId: context.id,
+                testPointsChecked: probingInfo.testPoints.length,
+                validFoliosFound: validCount,
+                validFolios: probingInfo.validFolios,
+                discoveredRange: probingInfo.discoveredRange
             }
         });
     }
