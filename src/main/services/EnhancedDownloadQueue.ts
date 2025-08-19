@@ -9,7 +9,6 @@ import { configService } from './ConfigService';
 import { ManifestCache } from './ManifestCache';
 import { LibraryOptimizationService } from './LibraryOptimizationService';
 import { DownloadLogger } from './DownloadLogger';
-import { enhancedLogger, ManuscriptContext, PerformanceMetrics } from './EnhancedLogger';
 import type { QueuedManuscript, QueueState, TLibrary, TStage, TSimultaneousMode } from '../../shared/queueTypes';
 
 export class EnhancedDownloadQueue extends EventEmitter {
@@ -921,7 +920,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 try {
                     // Check if file exists and has reasonable size
                     const stats = await fs.stat(result);
-                    const minExpectedSize = Math.max(1024 * 100, (item?.totalPages || 1) * 50 * 1024); // At least 100KB or ~50KB per page
+                    // For auto-split chunks, use chunk's actual page count, not manifest total
+                    const actualPageCount = item.isChunk && item.chunkInfo ? 
+                        (item.chunkInfo.endPage - item.chunkInfo.startPage + 1) : 
+                        (item?.totalPages || 1);
+                    const minExpectedSize = Math.max(1024 * 100, actualPageCount * 50 * 1024); // At least 100KB or ~50KB per page
                     
                     if (stats.size < minExpectedSize) {
                         throw new Error(`Output file too small: ${stats.size} bytes (expected at least ${minExpectedSize})`);
@@ -2146,7 +2149,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 try {
                     // Check if file exists and has reasonable size
                     const stats = await fs.stat(result);
-                    const minExpectedSize = Math.max(1024 * 100, (item?.totalPages || 1) * 50 * 1024); // At least 100KB or ~50KB per page
+                    // For auto-split chunks, use chunk's actual page count, not manifest total
+                    const actualPageCount = item.isChunk && item.chunkInfo ? 
+                        (item.chunkInfo.endPage - item.chunkInfo.startPage + 1) : 
+                        (item?.totalPages || 1);
+                    const minExpectedSize = Math.max(1024 * 100, actualPageCount * 50 * 1024); // At least 100KB or ~50KB per page
                     
                     if (stats.size < minExpectedSize) {
                         throw new Error(`Output file too small: ${stats.size} bytes (expected at least ${minExpectedSize})`);

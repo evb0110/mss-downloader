@@ -71,6 +71,49 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         return fallback;
     }
 
+    /**
+     * Standardized IIIF title extraction utility
+     * Extracts and formats manuscript titles from IIIF manifests with consistent naming patterns
+     */
+    private extractIIIFTitle(manifest: any, libraryName: string, manuscriptId: string, fallbackTemplate?: string): string {
+        let displayName = fallbackTemplate || `${libraryName} Manuscript ${manuscriptId}`;
+        
+        // Extract title from IIIF manifest label (supports both v2 string and v3 object formats)
+        if (manifest.label) {
+            const extractedLabel = this.localizedStringToString(manifest.label);
+            if (extractedLabel) {
+                displayName = extractedLabel;
+                // Include manuscript ID if not already present in the label
+                if (manuscriptId && !extractedLabel.toLowerCase().includes(manuscriptId.toLowerCase())) {
+                    displayName = `${extractedLabel} (${manuscriptId})`;
+                }
+            }
+        }
+        
+        // Try metadata fields for additional title information if manifest.label wasn't sufficient
+        if (manifest.metadata && Array.isArray(manifest.metadata) && displayName === fallbackTemplate) {
+            for (const metadataItem of manifest.metadata) {
+                const labelText = this.localizedStringToString(metadataItem.label);
+                const valueText = this.localizedStringToString(metadataItem.value);
+                
+                // Look for title, name, or similar fields
+                if (labelText && valueText && 
+                    (labelText.toLowerCase().includes('title') || 
+                     labelText.toLowerCase().includes('name') ||
+                     labelText.toLowerCase().includes('werk'))) {
+                    displayName = valueText;
+                    // Include manuscript ID if not already present
+                    if (manuscriptId && !valueText.toLowerCase().includes(manuscriptId.toLowerCase())) {
+                        displayName = `${valueText} (${manuscriptId})`;
+                    }
+                    break;
+                }
+            }
+        }
+        
+        return displayName;
+    }
+
     constructor(fetchFunction: FetchFunction | null = null) {
         // Use provided fetch function or default Node.js implementation
         this.fetchWithRetry = fetchFunction || this.defaultNodeFetch.bind(this);
@@ -1079,8 +1122,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * Karlsruhe - Working
      */
-    async getKarlsruheManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+    async getKarlsruheManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
         let manifestUrl;
+        let manuscriptId = '';
         
         // Handle proxy URLs from i3f.vls.io
         if (url.includes('i3f.vls.io')) {
@@ -1110,6 +1154,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             }
             
             const titleId = match?.[1];
+            manuscriptId = titleId || '';
             manifestUrl = `https://digital.blb-karlsruhe.de/i3f/v20/${titleId}/manifest`;
         }
         
@@ -1147,8 +1192,11 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             }
         }
         
-        console.log(`[Karlsruhe] Successfully extracted ${images?.length} pages`);
-        return { images };
+        // Extract display name using the standardized utility
+        const displayName = this.extractIIIFTitle(manifest, 'Karlsruhe', manuscriptId, `Karlsruhe Manuscript ${manuscriptId}`);
+        
+        console.log(`[Karlsruhe] Successfully extracted ${images?.length} pages - "${displayName}"`);
+        return { images, displayName };
     }
 
     /**
@@ -1194,7 +1242,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     /**
      * University of Graz - Fixed with streaming page processing and memory-efficient JSON parsing
      */
-    async getGrazManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
+    async getGrazManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
         console.log(`[Graz] Processing URL: ${url}`);
         
         // Extract manuscript ID from URL - handle multiple patterns
@@ -1392,10 +1440,17 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 throw new Error('No images found in Graz manifest');
             }
             
-            console.log(`[Graz] Successfully extracted ${images?.length} pages using memory-efficient approach`);
+            // Extract display name using the standardized utility
+            let displayName = `Graz Manuscript ${manuscriptId}`;
+            if (manifest) {
+                displayName = this.extractIIIFTitle(manifest, 'Graz', manuscriptId, `Graz Manuscript ${manuscriptId}`);
+            }
+            
+            console.log(`[Graz] Successfully extracted ${images?.length} pages - "${displayName}"`);
             
             return { 
-                images
+                images,
+                displayName
             };
             
         } catch (error: any) {
@@ -6338,8 +6393,11 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 throw new Error('No valid images found in ONB manifest');
             }
             
-            console.log(`[ONB] Successfully extracted ${images.length} pages`);
-            return { images };
+            // Extract title from manifest using standardized utility
+            const displayName = this.extractIIIFTitle(manifestData, 'ONB', manuscriptId);
+            
+            console.log(`[ONB] Successfully extracted ${images.length} pages - "${displayName}"`);
+            return { images, displayName };
             
         } catch (error) {
             console.error('[ONB] Error loading manifest:', error);

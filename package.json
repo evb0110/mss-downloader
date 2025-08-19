@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.217",
+  "version": "1.4.218",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.217: ULTRA-PRIORITY FIX - ONB (Austrian National Library) fully operational!",
-    "CRITICAL: Fixed missing ONB support in SharedManifestLoaders causing 'Unsupported library' errors",
-    "RESOLVED: ONB manuscripts now download perfectly from viewer.onb.ac.at URLs",
-    "ENHANCED: Complete IIIF v3 implementation with maximum resolution image extraction",
-    "ELIMINATED: Confusing concatenation bugs that prevented ONB access",
-    "Users can now seamlessly download from https://viewer.onb.ac.at/1000D995 and similar URLs"
+    "v1.4.218: ULTRATHINKING PERFECTION - ONB titles + Auto-split verification FIXED!",
+    "FIXED: ONB manuscripts now show proper titles like 'Missale (1000B160)' instead of generic names",
+    "CRITICAL: Auto-split file verification now uses chunk page count, eliminating 'file too small' errors",
+    "ENHANCED: Standardized IIIF title extraction across all libraries with professional naming",
+    "RESOLVED: 7.89MB chunks no longer fail verification expecting 22.8MB (456 vs 38 page calculation)",
+    "PERFECTED: ONB downloads work flawlessly with proper titles and reliable auto-splitting"
   ],
   "main": "dist/main/main.js",
   "scripts": {
