@@ -2512,6 +2512,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 return await this.getRomanArchiveManifest(url);
             case 'digital_scriptorium':
                 return await this.getDigitalScriptoriumManifest(url);
+            case 'onb':
+                return await this.getOnbManifest(url);
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }
@@ -5670,7 +5672,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             
             // ULTRATHINK FIX: Dynamic page discovery through binary search
             // No more hardcoded limits or HTML fetching!
-            let displayName = `Rome National Library - ${manuscriptId}`;
+            const displayName = `Rome National Library - ${manuscriptId}`;
             
             // Binary search to find actual page count
             const totalPages = await this.discoverRomePageCount(collectionType, manuscriptId);
@@ -6255,6 +6257,92 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             
         } catch (error) {
             console.error('[Digital Scriptorium] Error loading manifest:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * ONB (Austrian National Library) - IIIF v3 manifest loader
+     */
+    async getOnbManifest(url: string): Promise<{ images: ManuscriptImage[] }> {
+        console.log('[ONB] Processing URL:', url);
+        
+        try {
+            // Extract manuscript ID from URL pattern: https://viewer.onb.ac.at/1000B160
+            const manuscriptMatch = url.match(/viewer\.onb\.ac\.at\/([^/?&]+)/);
+            if (!manuscriptMatch) {
+                throw new Error('Invalid ONB URL format. Expected format: https://viewer.onb.ac.at/MANUSCRIPT_ID');
+            }
+            
+            const manuscriptId = manuscriptMatch[1];
+            console.log(`[ONB] Extracting manuscript ID: ${manuscriptId}`);
+            
+            // Construct the IIIF v3 manifest URL based on the API pattern
+            const manifestUrl = `https://api.onb.ac.at/iiif/presentation/v3/manifest/${manuscriptId}`;
+            console.log(`[ONB] Fetching IIIF v3 manifest: ${manifestUrl}`);
+            
+            const response = await this.fetchWithRetry(manifestUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch ONB manifest: ${response.status} ${response.statusText}`);
+            }
+            
+            let manifestData: any;
+            try {
+                manifestData = await response.json();
+            } catch (parseError) {
+                throw new Error(`Failed to parse ONB manifest JSON: ${(parseError as Error).message}`);
+            }
+            
+            // Extract pages from IIIF v3 manifest
+            const images: ManuscriptImage[] = [];
+            
+            if (!manifestData.items || !Array.isArray(manifestData.items)) {
+                throw new Error('Invalid ONB manifest: no items array found');
+            }
+            
+            console.log(`[ONB] Processing manifest with ${manifestData.items?.length} canvases`);
+            
+            for (const canvas of manifestData.items) {
+                if (!canvas.items || !Array.isArray(canvas.items)) {
+                    console.warn(`[ONB] Skipping canvas without items: ${canvas.id}`);
+                    continue;
+                }
+                
+                for (const annotationPage of canvas.items) {
+                    if (!annotationPage.items || !Array.isArray(annotationPage.items)) {
+                        continue;
+                    }
+                    
+                    for (const annotation of annotationPage.items) {
+                        if (annotation.body && annotation.body.service && Array.isArray(annotation.body.service)) {
+                            // Find IIIF Image API service
+                            const imageService = annotation.body.service.find((service: Record<string, unknown>) => 
+                                service['type'] === 'ImageService3' || service['@type'] === 'ImageService'
+                            );
+                            
+                            if (imageService && imageService.id) {
+                                // Use maximum resolution: /full/max/0/default.jpg
+                                const imageUrl = `${imageService.id}/full/max/0/default.jpg`;
+                                images.push({
+                                    url: imageUrl,
+                                    page: images.length + 1
+                                } as ManuscriptImage);
+                                break; // Take the first valid image from this canvas
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (images.length === 0) {
+                throw new Error('No valid images found in ONB manifest');
+            }
+            
+            console.log(`[ONB] Successfully extracted ${images.length} pages`);
+            return { images };
+            
+        } catch (error) {
+            console.error('[ONB] Error loading manifest:', error);
             throw error;
         }
     }

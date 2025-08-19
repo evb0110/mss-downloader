@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.216",
+  "version": "1.4.217",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.216: Yale Auto-Split Naming PERFECTED - Call numbers in split parts!",
-    "FIXED: Auto-split parts now use enhanced Yale names (Beinecke MS 1000 - Lectionary_Part_1)",
-    "ENHANCED: Display names update throughout the download pipeline",
-    "IMPROVED: Manifest display names properly propagate to queue items",
-    "FIXED: Auto-split no longer loses call numbers and descriptive titles",
-    "Users see 'Beinecke MS 1000 - Lectionary_Part_1' instead of 'Lectionary_Part_1'"
+    "v1.4.217: ULTRA-PRIORITY FIX - ONB (Austrian National Library) fully operational!",
+    "CRITICAL: Fixed missing ONB support in SharedManifestLoaders causing 'Unsupported library' errors",
+    "RESOLVED: ONB manuscripts now download perfectly from viewer.onb.ac.at URLs",
+    "ENHANCED: Complete IIIF v3 implementation with maximum resolution image extraction",
+    "ELIMINATED: Confusing concatenation bugs that prevented ONB access",
+    "Users can now seamlessly download from https://viewer.onb.ac.at/1000D995 and similar URLs"
   ],
   "main": "dist/main/main.js",
   "scripts": {

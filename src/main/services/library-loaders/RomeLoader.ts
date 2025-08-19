@@ -63,7 +63,7 @@ export class RomeLoader extends BaseLibraryLoader {
                 }
                 
                 // Use manuscript ID as title (better than generic name)
-                let title = manuscriptId;
+                const title = manuscriptId;
                 
                 // Use the maximum resolution /original URL pattern for highest quality
                 // /original provides 3-5x larger images compared to /full (tested 2025-07-02)
