@@ -1,0 +1,40 @@
+{
+  "timestamp": "2025-08-19T14:40:52.092Z",
+  "summary": {
+    "totalTests": 4,
+    "successfulTests": 1,
+    "failedTests": 3,
+    "successRate": "25.0%"
+  },
+  "results": [
+    {
+      "library": "vatican",
+      "url": "https://digi.vatlib.it/view/MSS_Ott.lat.74",
+      "success": false,
+      "responseTime": 343,
+      "error": "HTTP 404: Unknown Reason"
+    },
+    {
+      "library": "bodleian",
+      "url": "https://digital.bodleian.ox.ac.uk/objects/748a9d5b-5c54-4c2b-86f3-3f97b09b0379/",
+      "success": false,
+      "responseTime": 381,
+      "error": "HTTP 404: Not Found"
+    },
+    {
+      "library": "parker",
+      "url": "https://parker.stanford.edu/parker/catalog/kx448qw5222",
+      "success": false,
+      "responseTime": 1295,
+      "error": "Failed to parse JSON"
+    },
+    {
+      "library": "british_library",
+      "url": "https://bl.digirati.io/iiif/view/ark:/81055/vdc_100055984026.0x000001",
+      "success": true,
+      "responseTime": 291,
+      "pageCount": 535,
+      "displayName": "add ms 18032"
+    }
+  ]
+}

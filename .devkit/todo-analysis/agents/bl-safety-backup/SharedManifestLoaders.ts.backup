@@ -1376,12 +1376,11 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             }
             
             // Final fallback: parse minimal JSON structure
-            let manifest: IIIFManifest | null = null;
             if (images?.length === 0) {
                 console.log('[Graz] Falling back to JSON parsing...');
                 try {
-                    manifest = JSON.parse(manifestText);
-                    if (manifest?.sequences?.[0]?.canvases) {
+                    const manifest: IIIFManifest = JSON.parse(manifestText);
+                    if (manifest.sequences?.[0]?.canvases) {
                         const canvases = manifest.sequences[0].canvases;
                         console.log(`[Graz] Found ${canvases?.length} pages in manifest`);
                         
@@ -1445,7 +1444,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             // Extract display name using the standardized utility
             let displayName = `Graz Manuscript ${manuscriptId}`;
             if (manifest) {
-                displayName = this.extractIIIFTitle(manifest, 'Graz', manuscriptId || '', `Graz Manuscript ${manuscriptId || 'Unknown'}`);
+                displayName = this.extractIIIFTitle(manifest, 'Graz', manuscriptId, `Graz Manuscript ${manuscriptId}`);
             }
             
             console.log(`[Graz] Successfully extracted ${images?.length} pages - "${displayName}"`);
@@ -2565,8 +2564,6 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 return await this.getEraraManifest(url);
             case 'rome':
                 return await this.getRomeManifest(url);
-            case 'cudl':
-                return await this.loadCudlManifest(url);
             case 'roman_archive':
                 return await this.getRomanArchiveManifest(url);
             case 'digital_scriptorium':
@@ -2576,8 +2573,6 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             case 'arca':
                 // ARCA URLs use IRHT infrastructure with IIIF v2/v3
                 return await this.getArcaManifest(url);
-            case 'british_library':
-                return await this.getBritishLibraryManifest(url);
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }
@@ -5574,71 +5569,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         throw new Error('Unicatt manifest loading not yet implemented');
     }
 
-    async loadCudlManifest(url: string): Promise<ManuscriptImage[]> {
-        console.log('[CUDL] Processing URL:', url);
-        
-        try {
-            // Extract manuscript ID from CUDL viewer URL
-            const idMatch = url.match(/\/view\/([^/]+)/);
-            if (!idMatch) {
-                throw new Error('Invalid Cambridge CUDL URL format. Expected: https://cudl.lib.cam.ac.uk/view/MANUSCRIPT_ID');
-            }
-            
-            const manuscriptId = idMatch[1];
-            const manifestUrl = `https://cudl.lib.cam.ac.uk/iiif/${manuscriptId}`;
-            console.log(`[CUDL] Fetching manifest for ${manuscriptId} from ${manifestUrl}`);
-            
-            // Use SharedManifestLoaders fetchWithRetry for consistency
-            const manifestResponse = await this.fetchWithRetry(manifestUrl);
-            if (!manifestResponse.ok) {
-                throw new Error(`Failed to fetch CUDL manifest: HTTP ${manifestResponse.status}`);
-            }
-            
-            const iiifManifest = await manifestResponse.json() as any;
-            
-            // Validate IIIF manifest structure
-            if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
-                throw new Error('Invalid IIIF manifest structure - missing sequences or canvases');
-            }
-            
-            const canvases = iiifManifest.sequences[0].canvases;
-            
-            // Extract images with enhanced resolution (Agent 1's finding: use /full/max/ for 2.2x better quality)
-            const images = canvases.map((canvas: any, index: number) => {
-                const resource = canvas.images?.[0]?.resource;
-                const rawUrl = resource?.['@id'] || resource?.id;
-                
-                if (!rawUrl) {
-                    console.warn(`[CUDL] No image URL found for page ${index + 1}`);
-                    return null;
-                }
-                
-                // Convert IIIF identifier to high-resolution image URL
-                let imageUrl = rawUrl;
-                if (rawUrl.includes('images.lib.cam.ac.uk/iiif/')) {
-                    // Use maximum resolution (Agent 1 confirmed this works and provides 2.2x better quality)
-                    imageUrl = rawUrl + '/full/max/0/default.jpg';
-                }
-                
-                return {
-                    url: imageUrl,
-                    filename: `Cambridge_${manuscriptId}_page_${String(index + 1).padStart(3, '0')}.jpg`,
-                    pageNumber: index + 1,
-                    success: false
-                };
-            }).filter((image: any) => image !== null);
-            
-            if (images.length === 0) {
-                throw new Error('No pages found in IIIF manifest - manifest may be empty or corrupted');
-            }
-            
-            console.log(`[CUDL] Successfully loaded ${images.length} pages for ${manuscriptId} at maximum resolution`);
-            return images;
-            
-        } catch (error: any) {
-            console.error('[CUDL] Error loading manifest:', error.message);
-            throw new Error(`Failed to load Cambridge CUDL manuscript: ${error.message}`);
-        }
+    async loadCudlManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
+        throw new Error('CUDL manifest loading not yet implemented');
     }
 
     async loadTrinityCamManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
@@ -6439,7 +6371,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Digital Scriptorium (Issue #33) - IIIF v3 Manifest Support
      */
-    async getDigitalScriptoriumManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
+    async getDigitalScriptoriumManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
         console.log('[Digital Scriptorium] Processing URL:', url);
         
         try {
@@ -6627,7 +6559,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
             
             // Build comprehensive title
-            const parts = [];
+            let parts = [];
             if (codexNumber) parts.push(codexNumber);
             if (origin) parts.push(origin);
             if (title && !title.includes('Digital Scriptorium')) {
@@ -6667,7 +6599,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * ONB (Austrian National Library) - IIIF v3 manifest loader
      */
-    async getOnbManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string }> {
+    async getOnbManifest(url: string): Promise<{ images: ManuscriptImage[] }> {
         console.log('[ONB] Processing URL:', url);
         
         try {
@@ -6872,117 +6804,6 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             
         } catch (error) {
             console.error('[ARCA] Error loading manifest:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * British Library - IIIF v3 manifest with Digirati infrastructure
-     */
-    async getBritishLibraryManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string }> {
-        console.log('[British Library] Processing URL:', url);
-        
-        try {
-            // Extract ARK identifier from URL pattern: https://bl.digirati.io/iiif/view/ark:/81055/vdc_100055984026.0x000001
-            const arkMatch = url.match(/ark:\/([0-9]+)\/([^/?#]+)/i);
-            if (!arkMatch) {
-                throw new Error('Invalid British Library URL - no ARK identifier found');
-            }
-            
-            const arkId = `ark:/${arkMatch[1]}/${arkMatch[2]}`;
-            console.log('[British Library] Extracted ARK ID:', arkId);
-            
-            // CRITICAL: British Library uses bl.digirati.io URL directly as manifest (no /manifest.json suffix)
-            const manifestUrl = `https://bl.digirati.io/iiif/${arkId}`;
-            
-            console.log('[British Library] Fetching IIIF manifest from:', manifestUrl);
-            
-            const response = await this.fetchWithRetry(manifestUrl);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch British Library manifest: ${response.status} ${response.statusText}`);
-            }
-            
-            const manifest = await response.json() as IIIFManifest;
-            const images: ManuscriptImage[] = [];
-            
-            // British Library uses IIIF v3 format - process items first
-            if (manifest.items && Array.isArray(manifest.items)) {
-                console.log(`[British Library] Processing ${manifest.items.length} pages from IIIF v3 manifest`);
-                
-                for (let i = 0; i < manifest.items.length; i++) {
-                    const canvas = manifest.items[i];
-                    if (canvas && canvas.items && canvas.items[0] && canvas.items[0].items) {
-                        for (const annotation of canvas.items[0].items) {
-                            const body = (annotation as any).body;
-                            if (body && body.service) {
-                                const service = Array.isArray(body.service) ? body.service[0] : body.service;
-                                if (service && (service.id || service['@id'])) {
-                                    // British Library supports high resolution - use max resolution
-                                    const serviceId = service.id || service['@id'];
-                                    const imageUrl = `${serviceId}/full/max/0/default.jpg`;
-                                    images.push({
-                                        url: imageUrl,
-                                        label: this.localizedStringToString(canvas.label, `Page ${i + 1}`)
-                                    });
-                                    break; // Only take first valid image per canvas
-                                }
-                            } else if (body && (body.id || body['@id'])) {
-                                // Fallback to direct body URL
-                                const bodyId = body.id || body['@id'];
-                                images.push({
-                                    url: bodyId,
-                                    label: this.localizedStringToString(canvas.label, `Page ${i + 1}`)
-                                });
-                                break; // Only take first valid image per canvas
-                            }
-                        }
-                    }
-                }
-            }
-            // Fallback to IIIF v2 format if needed
-            else if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
-                const canvases = manifest.sequences[0].canvases;
-                console.log(`[British Library] Processing ${canvases.length} pages from IIIF v2 manifest`);
-                
-                for (let i = 0; i < canvases.length; i++) {
-                    const canvas = canvases[i];
-                    if (canvas && canvas.images && canvas.images[0] && canvas.images[0].resource) {
-                        const resource = canvas.images[0].resource;
-                        const service = resource.service;
-                        
-                        if (service && (service as IIIFService)['@id']) {
-                            // British Library supports high resolution - use max resolution
-                            const imageUrl = `${(service as IIIFService)['@id']}/full/max/0/default.jpg`;
-                            images.push({
-                                url: imageUrl,
-                                label: this.localizedStringToString(canvas.label, `Page ${i + 1}`)
-                            });
-                        } else if (resource['@id']) {
-                            // Fallback to direct resource URL
-                            images.push({
-                                url: resource['@id'],
-                                label: this.localizedStringToString(canvas.label, `Page ${i + 1}`)
-                            });
-                        }
-                    }
-                }
-            }
-            else {
-                throw new Error('Invalid British Library IIIF manifest structure - no canvases or items found');
-            }
-            
-            if (images.length === 0) {
-                throw new Error('No images found in British Library manifest');
-            }
-            
-            // Extract display name from manifest
-            const displayName = this.localizedStringToString(manifest.label, arkId);
-            
-            console.log(`[British Library] Successfully extracted ${images.length} pages - "${displayName}"`);
-            return { images, displayName };
-            
-        } catch (error) {
-            console.error('[British Library] Error loading manifest:', error);
             throw error;
         }
     }

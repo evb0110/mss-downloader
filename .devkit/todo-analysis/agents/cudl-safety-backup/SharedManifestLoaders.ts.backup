@@ -2565,8 +2565,6 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 return await this.getEraraManifest(url);
             case 'rome':
                 return await this.getRomeManifest(url);
-            case 'cudl':
-                return await this.loadCudlManifest(url);
             case 'roman_archive':
                 return await this.getRomanArchiveManifest(url);
             case 'digital_scriptorium':
@@ -5574,71 +5572,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         throw new Error('Unicatt manifest loading not yet implemented');
     }
 
-    async loadCudlManifest(url: string): Promise<ManuscriptImage[]> {
-        console.log('[CUDL] Processing URL:', url);
-        
-        try {
-            // Extract manuscript ID from CUDL viewer URL
-            const idMatch = url.match(/\/view\/([^/]+)/);
-            if (!idMatch) {
-                throw new Error('Invalid Cambridge CUDL URL format. Expected: https://cudl.lib.cam.ac.uk/view/MANUSCRIPT_ID');
-            }
-            
-            const manuscriptId = idMatch[1];
-            const manifestUrl = `https://cudl.lib.cam.ac.uk/iiif/${manuscriptId}`;
-            console.log(`[CUDL] Fetching manifest for ${manuscriptId} from ${manifestUrl}`);
-            
-            // Use SharedManifestLoaders fetchWithRetry for consistency
-            const manifestResponse = await this.fetchWithRetry(manifestUrl);
-            if (!manifestResponse.ok) {
-                throw new Error(`Failed to fetch CUDL manifest: HTTP ${manifestResponse.status}`);
-            }
-            
-            const iiifManifest = await manifestResponse.json() as any;
-            
-            // Validate IIIF manifest structure
-            if (!iiifManifest.sequences || !iiifManifest.sequences[0] || !iiifManifest.sequences[0].canvases) {
-                throw new Error('Invalid IIIF manifest structure - missing sequences or canvases');
-            }
-            
-            const canvases = iiifManifest.sequences[0].canvases;
-            
-            // Extract images with enhanced resolution (Agent 1's finding: use /full/max/ for 2.2x better quality)
-            const images = canvases.map((canvas: any, index: number) => {
-                const resource = canvas.images?.[0]?.resource;
-                const rawUrl = resource?.['@id'] || resource?.id;
-                
-                if (!rawUrl) {
-                    console.warn(`[CUDL] No image URL found for page ${index + 1}`);
-                    return null;
-                }
-                
-                // Convert IIIF identifier to high-resolution image URL
-                let imageUrl = rawUrl;
-                if (rawUrl.includes('images.lib.cam.ac.uk/iiif/')) {
-                    // Use maximum resolution (Agent 1 confirmed this works and provides 2.2x better quality)
-                    imageUrl = rawUrl + '/full/max/0/default.jpg';
-                }
-                
-                return {
-                    url: imageUrl,
-                    filename: `Cambridge_${manuscriptId}_page_${String(index + 1).padStart(3, '0')}.jpg`,
-                    pageNumber: index + 1,
-                    success: false
-                };
-            }).filter((image: any) => image !== null);
-            
-            if (images.length === 0) {
-                throw new Error('No pages found in IIIF manifest - manifest may be empty or corrupted');
-            }
-            
-            console.log(`[CUDL] Successfully loaded ${images.length} pages for ${manuscriptId} at maximum resolution`);
-            return images;
-            
-        } catch (error: any) {
-            console.error('[CUDL] Error loading manifest:', error.message);
-            throw new Error(`Failed to load Cambridge CUDL manuscript: ${error.message}`);
-        }
+    async loadCudlManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
+        throw new Error('CUDL manifest loading not yet implemented');
     }
 
     async loadTrinityCamManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {

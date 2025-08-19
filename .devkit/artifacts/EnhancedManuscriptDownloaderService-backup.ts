@@ -1985,13 +1985,13 @@ export class EnhancedManuscriptDownloaderService {
         try {
             switch (library) {
                 case 'nypl':
-                    manifest = await this.loadNyplManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('nypl', originalUrl);
                     break;
                 case 'morgan':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('morgan', originalUrl);
                     break;
                 case 'gallica':
-                    manifest = await this.loadGallicaManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('gallica', originalUrl);
                     break;
                 case 'grenoble':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('grenoble', originalUrl);
@@ -2009,35 +2009,35 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('norwegian', originalUrl);
                     break;
                 case 'unifr':
-                    manifest = await this.loadUnifrManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('unifr', originalUrl);
                     break;
                 case 'vatlib':
                     // Use shared loader for Vatican Library
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('vatican', originalUrl);
                     break;
                 case 'cecilia':
-                    manifest = await this.loadCeciliaManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('cecilia', originalUrl);
                     break;
                 case 'irht':
-                    manifest = await this.loadIrhtManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('irht', originalUrl);
                     break;
                 case 'loc':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('loc', originalUrl);
                     break;
                 case 'dijon':
-                    manifest = await this.loadDijonManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('dijon', originalUrl);
                     break;
                 case 'laon':
-                    manifest = await this.loadLaonManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('laon', originalUrl);
                     break;
                 case 'durham':
-                    manifest = await this.loadDurhamManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('durham', originalUrl);
                     break;
                 case 'sharedcanvas':
-                    manifest = await this.loadSharedCanvasManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('sharedcanvas', originalUrl);
                     break;
                 case 'saint_omer':
-                    manifest = await this.loadSaintOmerManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('saint_omer', originalUrl);
                     break;
                 case 'ugent':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('ugent', originalUrl);
@@ -2046,7 +2046,7 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('bl', originalUrl);
                     break;
                 case 'florus':
-                    manifest = await this.loadFlorusManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('florus', originalUrl);
                     break;
                 case 'unicatt':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('unicatt', originalUrl);
@@ -2055,31 +2055,31 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('cudl', originalUrl);
                     break;
                 case 'trinity_cam':
-                    manifest = await this.loadTrinityCamManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('trinity_cam', originalUrl);
                     break;
                 case 'toronto':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('toronto', originalUrl);
                     break;
                 case 'isos':
-                    manifest = await this.loadIsosManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('isos', originalUrl);
                     break;
                 case 'mira':
-                    manifest = await this.loadMiraManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('mira', originalUrl);
                     break;
                 case 'arca':
-                    manifest = await this.loadIrhtManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('arca', originalUrl);
                     break;
                 case 'rbme':
-                    manifest = await this.loadRbmeManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('rbme', originalUrl);
                     break;
                 case 'parker':
-                    manifest = await this.loadParkerManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('parker', originalUrl);
                     break;
                 case 'manuscripta':
-                    manifest = await this.loadManuscriptaManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('manuscripta', originalUrl);
                     break;
                 case 'internet_culturale':
-                    manifest = await this.loadInternetCulturaleManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('internet_culturale', originalUrl);
                     break;
                 case 'graz':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('graz', originalUrl);
@@ -2112,22 +2112,22 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('cambridge', originalUrl);
                     break;
                 case 'cologne':
-                    manifest = await this.loadCologneManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('cologne', originalUrl);
                     break;
                 case 'czech':
-                    manifest = await this.loadCzechManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('czech', originalUrl);
                     break;
                 case 'emanuscripta':
-                    manifest = await this.loadEManuscriptaManifest(originalUrl);
-                    break;
-                case 'e_manuscripta':
-                    manifest = await this.loadEManuscriptaManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('emanuscripta', originalUrl);
                     break;
                 case 'florence':
-                    manifest = await this.loadFlorenceManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('florence', originalUrl);
+                    break;
+                case 'internetculturale':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('internetculturale', originalUrl);
                     break;
                 case 'modena':
-                    manifest = await this.loadModenaManifest(originalUrl);
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('modena', originalUrl);
                     break;
                 case 'rome':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('rome', originalUrl);
@@ -4344,190 +4344,6 @@ export class EnhancedManuscriptDownloaderService {
             return loader.loadManifest(url);
         }
         throw new Error('BNE loader not available');
-    }
-
-    private async loadCeciliaManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('cecilia');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Cecilia loader not available');
-    }
-
-    private async loadGallicaManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('gallica');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Gallica loader not available');
-    }
-
-    private async loadCologneManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('cologne');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Cologne loader not available');
-    }
-
-    private async loadCzechManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('czech');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Czech loader not available');
-    }
-
-    private async loadDijonManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('dijon');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Dijon loader not available');
-    }
-
-    private async loadIsosManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('isos');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('ISOS loader not available');
-    }
-
-    private async loadMiraManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('mira');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('MIRA loader not available');
-    }
-
-    private async loadFlorusManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('florus');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Florus loader not available');
-    }
-
-    private async loadInternetCulturaleManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('internetculturale');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Internet Culturale loader not available');
-    }
-
-    private async loadLaonManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('laon');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Laon loader not available');
-    }
-
-    private async loadModenaManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('modena');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Modena loader not available');
-    }
-
-    private async loadNyplManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('nypl');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('NYPL loader not available');
-    }
-
-    private async loadRbmeManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('rbme');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('RBME loader not available');
-    }
-
-    private async loadSharedCanvasManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('sharedcanvas');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('SharedCanvas loader not available');
-    }
-
-    private async loadSaintOmerManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('saintomer');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Saint-Omer loader not available');
-    }
-
-    private async loadParkerManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('parker');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Parker loader not available');
-    }
-
-    private async loadTrinityCamManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('trinity_cam');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Trinity Cambridge loader not available');
-    }
-
-    private async loadManuscriptaManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('manuscripta');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Manuscripta loader not available');
-    }
-
-    private async loadDurhamManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('durham');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Durham loader not available');
-    }
-
-    private async loadUnifrManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('unifr');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Unifr loader not available');
-    }
-
-    private async loadEManuscriptaManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('emanuscripta');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('EManuscripta loader not available');
-    }
-
-    private async loadFlorenceManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('florence');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('Florence loader not available');
-    }
-
-    private async loadIrhtManifest(url: string): Promise<ManuscriptManifest> {
-        const loader = this.libraryLoaders.get('irht');
-        if (loader) {
-            return loader.loadManifest(url);
-        }
-        throw new Error('IRHT loader not available');
     }
 
     abort() {
