@@ -147,7 +147,28 @@ My initial testing only verified manifest loading, missing the real bugs in down
 6. **USER VALIDATION FOLDER:** Create SINGLE clean `.devkit/validation/READY-FOR-USER/` with ONLY final PDFs
 7. **VERSION BUMP:** User saying "bump" or "approved" IS the approval - execute full workflow immediately
 
-### 6. FILE ORGANIZATION - ZERO ROOT CLUTTER
+### 6. AUTO-SPLIT CONFIGURATION - CRITICAL FOR LARGE MANUSCRIPTS
+**MANDATORY: All libraries MUST be included in auto-split logic to prevent download failures**
+
+**Location:** `src/main/services/EnhancedDownloadQueue.ts` lines 1354-1403
+
+**When adding a new library:**
+1. Add library name to `estimatedSizeLibraries` array (line 1356-1363)
+2. Add page size estimation in `avgPageSizeMB` calculation (lines 1368-1403)
+3. Use realistic estimates based on library's typical resolution:
+   - High-res archives (Parker, Roman Archive): 2.0-2.2 MB/page
+   - Major libraries (BL, LoC, Bodleian): 1.2-1.5 MB/page  
+   - Standard IIIF libraries: 0.6-1.0 MB/page
+   - Mobile/compressed: 0.3-0.5 MB/page
+
+**Why this matters:**
+- Without auto-split: Downloads fail for manuscripts > 300MB
+- Users see: 800MB single downloads that crash (Mac) or 1.5MB incomplete files (Windows)
+- With auto-split: Large manuscripts split into 30MB chunks that download reliably
+
+**Common mistake:** Forgetting to add new libraries causes catastrophic download failures
+
+### 7. FILE ORGANIZATION - ZERO ROOT CLUTTER
 **MANDATORY Structure:**
 ```
 .devkit/
@@ -175,7 +196,7 @@ My initial testing only verified manifest loading, missing the real bugs in down
 - **CLEANUP:** Delete after EVERY task completion
 - **PWD CHECK:** If files "missing", IMMEDIATELY run `pwd` to verify location
 
-### 7. PRE-PUSH QUALITY GATES - NO EXCEPTIONS
+### 8. PRE-PUSH QUALITY GATES - NO EXCEPTIONS
 **MUST run before EVERY commit:**
 1. `npm run precommit` - Type safety check (MANDATORY)
 2. `npm run lint` - MUST pass with zero errors
@@ -192,12 +213,12 @@ My initial testing only verified manifest loading, missing the real bugs in down
 2. Check telegram notifications sent
 3. If build fails: fix, commit, push fixes
 
-### 8. OUTPUT DISCIPLINE - MINIMAL VERBOSITY
+### 9. OUTPUT DISCIPLINE - MINIMAL VERBOSITY
 - **NEVER display:** Raw tool outputs, full file contents, verbose logs
 - **ALWAYS summarize:** "Found X changes", "Command successful", specific errors only
 - **CRITICAL errors only:** Maximum 3-5 lines when troubleshooting
 
-### 9. TELEGRAM CHANGELOG - USER-FACING CLARITY
+### 10. TELEGRAM CHANGELOG - USER-FACING CLARITY
 **MUST provide specific benefits:**
 - ✅ "Added Vatican Library manuscript downloads"
 - ✅ "Fixed hanging downloads for large Graz manuscripts"
@@ -206,7 +227,39 @@ My initial testing only verified manifest loading, missing the real bugs in down
 
 **Parse semantically:** Convert technical → user benefits
 
-### 10. DEVELOPMENT SERVER POLICY
+### 11. MEANINGFUL LOGGING - NO MORE USELESS MESSAGES
+**MANDATORY: All logs must answer WHO/WHAT/WHERE/WHEN/WHY/HOW**
+
+**Location:** `src/main/services/EnhancedLogger.ts`
+
+**BAD logging (current state):**
+```
+[INFO] Download started
+[INFO] Download completed
+```
+
+**GOOD logging (required):**
+```
+[QUEUE] Adding Roman Archive: Lectionarium Novum (383 pages, ~843MB, will split into 28 parts)
+[MANIFEST] Roman Archive: Found 383 pages via HTML parsing in 0.4s
+[DOWNLOAD] Starting Roman Archive - Part 1/28 (pages 1-14) (~30.1MB)
+[PROGRESS] Roman Archive - Part 1/28: 50% (7/14 pages, 15.4MB, 1.2MB/s, ETA 6s)
+[ERROR] Roman Archive - Part 2/28: SocketError after 5.2s, retrying (attempt 2/11)
+[SUCCESS] Roman Archive - Part 1/28 complete: 30.1MB in 25.3s (1.2MB/s)
+[COMPLETE] Roman Archive: 383 pages (841.7MB) in 12m 34s (1.1MB/s, 3 retries)
+```
+
+**Required information in logs:**
+- Library name and manuscript ID
+- Total pages and size
+- Chunk information (current/total)
+- Progress percentage and speed
+- Error details with retry info
+- Duration and performance metrics
+
+**Common mistake:** Using console.log('Download started') instead of enhancedLogger
+
+### 12. DEVELOPMENT SERVER POLICY
 - **NEVER start automatically** - requires explicit user request
 - `npm run dev` - ONLY when user requests UI
 - `npm run dev:headless` - ONLY for explicit validation

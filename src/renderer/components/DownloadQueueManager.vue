@@ -1370,7 +1370,8 @@ const effectiveConcurrencyNote = computed(() => {
   // Only show a note if the library explicitly defines a cap; if undefined, there's no cap
   const cap = candidate.libraryOptimizations?.maxConcurrentDownloads;
   if (typeof cap === 'number' && cap > 0 && perItem > cap) {
-    return `capped to ${cap} for ${candidate.library?.toUpperCase()}`;
+    const libraryName = candidate.library || 'unknown library';
+    return `capped to ${cap} for ${libraryName.toUpperCase()}`;
   }
   return '';
 });

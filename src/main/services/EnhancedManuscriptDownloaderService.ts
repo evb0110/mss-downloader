@@ -12,6 +12,7 @@ import { DirectTileProcessor } from './DirectTileProcessor';
 import { SharedManifestAdapter } from './SharedManifestAdapter';
 import { DownloadLogger } from './DownloadLogger';
 import { comprehensiveLogger } from './ComprehensiveLogger';
+import { enhancedLogger, ManuscriptContext, PerformanceMetrics, LibrarySpecificData } from './EnhancedLogger';
 import { UltraReliableBDLService } from './UltraReliableBDLService';
 import { createProgressMonitor } from './IntelligentProgressMonitor';
 import {
@@ -1067,6 +1068,62 @@ export class EnhancedManuscriptDownloaderService {
     ];
 
     /**
+     * Extract manuscript ID from URL for logging purposes
+     */
+    private extractManuscriptId(url: string): string {
+        try {
+            // Extract meaningful ID from URL
+            const urlObj = new URL(url);
+            const pathParts = urlObj.pathname.split('/').filter(part => part.length > 0);
+            
+            // Try to find manuscript-like identifiers
+            for (const part of pathParts) {
+                // Look for common manuscript ID patterns
+                if (/^(ms|MS|Cod|cod|Vat|vat|lat|gr|arab|heb|syr|arm|eth|copt|pal|mss|MSS)[-._]?\d+/i.test(part)) {
+                    return part;
+                }
+                // Look for simple numeric or alphanumeric IDs
+                if (/^[a-zA-Z0-9-_]{3,}$/.test(part) && part !== 'manifest' && part !== 'viewer' && part !== 'digital') {
+                    return part;
+                }
+            }
+            
+            // Fallback: use last meaningful path segment
+            return pathParts.length > 0 ? pathParts[pathParts.length - 1] : 'unknown';
+        } catch {
+            return 'unknown';
+        }
+    }
+
+    /**
+     * Calculate estimated size for a manuscript
+     */
+    private calculateEstimatedSize(manifest: ManuscriptManifest): number {
+        if (!manifest.totalPages) return 0;
+        
+        // Estimate based on library and page count
+        // Average page sizes observed from real downloads
+        const avgPageSizeKB: Record<string, number> = {
+            'vatlib': 800,     // High resolution Vatican manuscripts
+            'vatican': 800,
+            'bdl': 700,        // BDL high quality images
+            'roman_archive': 1200, // Very high resolution
+            'gallica': 600,    // Good quality
+            'morgan': 500,     // Medium quality
+            'nypl': 400,       // Compressed images
+            'munich': 300,     // Compressed images
+            'e_manuscripta': 250, // Smaller images
+            'florence': 200,   // Smaller images
+            'default': 400     // Default assumption
+        };
+        
+        const library = manifest.library || 'default';
+        const pageSize = avgPageSizeKB[library] || avgPageSizeKB['default'];
+        
+        return (manifest.totalPages * pageSize) / 1024; // Convert to MB
+    }
+
+    /**
      * Fetch with automatic proxy fallback
      */
     async fetchWithProxyFallback(url: string, options: RequestInit = {}): Promise<Response> {
@@ -1909,6 +1966,8 @@ export class EnhancedManuscriptDownloaderService {
      * Load manifest for different library types
      */
     async loadManifest(originalUrl: string, _UNUSED_progressCallback?: (current: number, total: number, message?: string) => void): Promise<ManuscriptManifest> {
+        const manifestStartTime = Date.now();
+        
         // ULTRA-PRIORITY FIX for Issue #9: Sanitize URL at the earliest entry point
         originalUrl = this.sanitizeUrl(originalUrl);
 
@@ -1922,6 +1981,16 @@ export class EnhancedManuscriptDownloaderService {
         if (!library) {
             throw new Error(`Unsupported library for URL: ${originalUrl}`);
         }
+
+        // Create manuscript context for logging
+        const context: ManuscriptContext = {
+            id: this.extractManuscriptId(originalUrl),
+            library: library,
+            url: originalUrl
+        };
+
+        // Log manifest loading start
+        enhancedLogger.logManifestStart(context);
 
         let manifest: ManuscriptManifest;
 
@@ -2154,6 +2223,15 @@ export class EnhancedManuscriptDownloaderService {
 
             manifest.library = library as ManuscriptManifest['library'];
             manifest.originalUrl = originalUrl;
+
+            // Update context with loaded manifest data
+            context.title = manifest.displayName;
+            context.totalPages = manifest.totalPages;
+            context.estimatedSizeMB = this.calculateEstimatedSize(manifest);
+
+            // Log successful manifest completion
+            const manifestDuration = Date.now() - manifestStartTime;
+            enhancedLogger.logManifestComplete(context, { duration: manifestDuration });
 
             // Cache the manifest
             await this.manifestCache.set(originalUrl, manifest as unknown as Record<string, unknown>);
@@ -2669,6 +2747,7 @@ export class EnhancedManuscriptDownloaderService {
         let manifest: ManuscriptManifest | undefined;
         let filepath: string | undefined;
         let validImagePaths: string[] = [];
+        let context: ManuscriptContext;
 
         try {
             // Use provided pageLinks if available, otherwise load manifest
@@ -2701,20 +2780,18 @@ export class EnhancedManuscriptDownloaderService {
                 throw new Error('Bordeaux manuscript requires tileConfig but none provided');
             }
 
-            // Log manifest loading completion
-            const usingCachedManifest = await this.manifestCache.get(url) !== null;
-            this.logger.log({
-                level: 'info',
+            // Create manuscript context for enhanced logging
+            context = {
+                id: this.extractManuscriptId(url),
+                title: manifest.displayName,
                 library: manifest.library || 'unknown',
-                url,
-                message: `Manifest loaded: ${manifest.totalPages} pages found${usingCachedManifest ? ' (from cache)' : ''}`,
-                duration: manifestLoadDuration,
-                details: {
-                    totalPages: manifest.totalPages,
-                    cached: usingCachedManifest,
-                    displayName: manifest.displayName
-                }
-            });
+                url: url,
+                totalPages: manifest.totalPages,
+                estimatedSizeMB: this.calculateEstimatedSize(manifest)
+            };
+
+            // Log download start with enhanced information
+            enhancedLogger.logDownloadStart(context);
 
             onManifestLoaded();
 
@@ -3365,15 +3442,17 @@ export class EnhancedManuscriptDownloaderService {
                     }
                 }
 
-                // Log manuscript download complete
+                // Log manuscript download complete with enhanced information
                 const downloadDuration = Date.now() - downloadStartTime;
-                this.logger.logManuscriptDownloadComplete(
-                    manifest.library || 'unknown',
-                    url,
-                    manifest.totalPages,
-                    [filepath],
-                    downloadDuration
-                );
+                const stats = await fs.stat(filepath);
+                context.actualSizeMB = stats.size / (1024 * 1024);
+                
+                const metrics: PerformanceMetrics = {
+                    duration: downloadDuration,
+                    speedMbps: context.actualSizeMB ? (context.actualSizeMB / (downloadDuration / 1000)) : undefined
+                };
+                
+                enhancedLogger.logDownloadSuccess(context, metrics, filepath);
 
                 return filepath; // Return the created PDF filepath
             }
@@ -3397,12 +3476,24 @@ export class EnhancedManuscriptDownloaderService {
                 failedStage = 'processing';
             }
 
-            this.logger.logManuscriptDownloadFailed(
-                (manifest as any)?.library || this.detectLibrary(url) || 'unknown',
-                url,
-                error as Error,
-                failedStage
-            );
+            // Log enhanced error information
+            if (context) {
+                const errorMetrics: PerformanceMetrics = {
+                    duration: Date.now() - downloadStartTime
+                };
+                enhancedLogger.logDownloadError(context, error as Error, errorMetrics);
+            } else {
+                // Fallback for early errors before context is created
+                const fallbackContext: ManuscriptContext = {
+                    id: this.extractManuscriptId(url),
+                    library: this.detectLibrary(url) || 'unknown',
+                    url: url
+                };
+                const errorMetrics: PerformanceMetrics = {
+                    duration: Date.now() - downloadStartTime
+                };
+                enhancedLogger.logDownloadError(fallbackContext, error as Error, errorMetrics);
+            }
 
             throw error;
         }
