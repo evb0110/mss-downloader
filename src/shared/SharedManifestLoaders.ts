@@ -92,9 +92,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             retries = 15; // Increased from 9 to 15 for maximum reliability against server issues
         }
         
-        // Increase retries for Yale due to frequent ECONNRESET errors
+        // Increase retries for Yale due to frequent ECONNRESET and DNS issues
         if (url.includes('collections.library.yale.edu')) {
-            retries = 8; // Yale-specific retry count for connection resets
+            retries = 12; // Increased from 8 to 12 for DNS resolution issues and connection resets
         }
         
         for (let i = 0; i < retries; i++) {
@@ -109,10 +109,15 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 if (i === retries - 1) {
                     // Enhanced error messages for specific error types
                     if (errorCode === 'ENOTFOUND' || errorCode === 'EAI_AGAIN') {
-                        // ULTRA-PRIORITY FIX: Sanitize URL before extracting hostname
+                        // ULTRA-PRIORITY FIX: Library-specific DNS resolution error messages
                         const sanitizedUrl = this.sanitizeUrl(url);
                         const domain = new URL(sanitizedUrl).hostname;
-                        throw new Error(`DNS resolution failed for ${domain}. This may be due to:\n1. Network connectivity issues\n2. DNS server problems\n3. Firewall blocking the domain\n4. The server may be temporarily down\n\nPlease check your internet connection and try again.`);
+                        
+                        if (url.includes('collections.library.yale.edu')) {
+                            throw new Error(`Yale library DNS resolution failed after ${retries} attempts. This is a network connectivity issue with Yale's domain (${domain}). The server is accessible but your network may have DNS resolution problems. Try: 1) Restart the application, 2) Check your internet connection, 3) Try again in a few minutes, or 4) Contact your network administrator if the problem persists.`);
+                        } else {
+                            throw new Error(`DNS resolution failed for ${domain}. This may be due to:\n1. Network connectivity issues\n2. DNS server problems\n3. Firewall blocking the domain\n4. The server may be temporarily down\n\nPlease check your internet connection and try again.`);
+                        }
                     }
                     
                     if (errorCode === 'ETIMEDOUT' || errorMessage.includes('timeout')) {

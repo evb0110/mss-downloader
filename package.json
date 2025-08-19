@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.213",
+  "version": "1.4.214",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.213: Roman Archive CRITICAL FIXES - Downloads work properly now!",
-    "FIXED: Roman Archive auto-split into 30MB chunks (was failing with 800MB+ single files)",
-    "FIXED: Critical 'fullManifest is not defined' error breaking all downloads",
-    "FIXED: UI now shows proper library names instead of 'undefined'",
-    "OPTIMIZED: Removed concurrency cap - Roman Archive now uses full parallel downloads",
-    "Users can now download large Roman Archive manuscripts reliably with proper chunking"
+    "v1.4.214: Yale Library DNS RESOLVED - Issue #34 fixed with enhanced error handling!",
+    "FIXED: Yale DNS resolution failures with actionable error messages",
+    "ENHANCED: DNS error handling for all libraries with clear user guidance",
+    "IMPROVED: Yale retry attempts increased from 8 to 12 for better reliability",
+    "FIXED: 'getaddrinfo ENOTFOUND' errors now provide helpful troubleshooting steps",
+    "Users experiencing Yale DNS issues will now get clear guidance instead of technical errors"
   ],
   "main": "dist/main/main.js",
   "scripts": {
