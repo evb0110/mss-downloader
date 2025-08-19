@@ -6488,10 +6488,13 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 }
             }
             
-            // Extract title from manifest
+            // Extract detailed title from manifest for Digital Scriptorium
             let title = 'Digital Scriptorium Manuscript';
+            let codexNumber = '';
+            let date = '';
+            let origin = '';
             
-            // Try different title fields in order of preference
+            // First, try basic label
             if (manifest.label) {
                 if (typeof manifest.label === 'string') {
                     title = manifest.label;
@@ -6502,30 +6505,83 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 } else if (Array.isArray(manifest.label) && manifest.label[0]) {
                     title = manifest.label[0];
                 }
-            } else if (manifest.metadata) {
-                // Look for title in metadata array
-                const titleEntry = manifest.metadata.find((entry: any) => 
-                    entry.label && (
-                        entry.label.toLowerCase().includes('title') || 
-                        entry.label.en?.[0]?.toLowerCase().includes('title')
-                    )
-                );
-                if (titleEntry && titleEntry.value) {
-                    if (typeof titleEntry.value === 'string') {
-                        title = titleEntry.value;
-                    } else if (titleEntry.value.en && titleEntry.value.en[0]) {
-                        title = titleEntry.value.en[0];
-                    } else if (Array.isArray(titleEntry.value) && titleEntry.value[0]) {
-                        title = titleEntry.value[0];
+            }
+            
+            // Extract additional metadata for more descriptive filename
+            if (manifest.metadata) {
+                for (const entry of manifest.metadata) {
+                    const label = entry.label?.toLowerCase() || entry.label?.en?.[0]?.toLowerCase() || '';
+                    let value = '';
+                    
+                    if (typeof entry.value === 'string') {
+                        value = entry.value;
+                    } else if (entry.value?.en && entry.value.en[0]) {
+                        value = entry.value.en[0];
+                    } else if (Array.isArray(entry.value) && entry.value[0]) {
+                        value = entry.value[0];
+                    }
+                    
+                    if (value) {
+                        // Extract codex/manuscript number
+                        if (label.includes('codex') || label.includes('manuscript') || label.includes('location') || label.includes('note')) {
+                            const codexMatch = value.match(/Ms\.?\s*Codex\s*\d+|Manuscript\s*\d+|Cod\.?\s*\d+/i);
+                            if (codexMatch) {
+                                codexNumber = codexMatch[0].replace(/\s+/g, '_').replace(/\./g, '');
+                            }
+                        }
+                        
+                        // Extract date
+                        if (label.includes('date') || label.includes('created')) {
+                            const dateMatch = value.match(/(\d{4}|\d{1,2}th\s+century|XV|XIV|XIII|XII|XI|\d{1,2}00s)/i);
+                            if (dateMatch) {
+                                date = dateMatch[1];
+                            }
+                        }
+                        
+                        // Extract origin/place - look for Avignon, Paris, etc.
+                        if (label.includes('origin') || label.includes('place') || label.includes('provenance') || label.includes('description')) {
+                            const placeMatch = value.match(/(?:Written in |from |of the |use of [^,]*of |in )\b([A-Z][a-z]{3,})\b/);
+                            if (placeMatch && placeMatch[1] && placeMatch[1] !== 'Office' && placeMatch[1] !== 'Provençe') {
+                                origin = placeMatch[1];
+                            }
+                        }
+                        
+                        // Look for detailed title if basic is just "[Breviary]"
+                        if (label.includes('description') && title.includes('Breviary')) {
+                            // Extract more specific type like "Breviary, use of the Franciscans"
+                            const typeMatch = value.match(/Breviary,\s*use\s+of\s+the\s+([^,;]+)/i);
+                            if (typeMatch && typeMatch[1]) {
+                                title = `${typeMatch[1]} Breviary`;
+                            }
+                        }
                     }
                 }
             }
             
-            // Clean up title - remove brackets and extra whitespace
-            title = title.replace(/^\[|\]$/g, '').trim();
-            if (title === '' || title === 'Digital Scriptorium Manuscript') {
-                title = 'Digital Scriptorium Manuscript';
+            // Build comprehensive title
+            let parts = [];
+            if (codexNumber) parts.push(codexNumber);
+            if (origin) parts.push(origin);
+            if (title && !title.includes('Digital Scriptorium')) {
+                parts.push(title.replace(/^\[|\]$/g, '').replace(/[,;].*$/, '').trim());
             }
+            if (date) parts.push(date);
+            
+            let finalTitle = parts.length > 0 ? parts.join('_') : title.replace(/^\[|\]$/g, '').trim();
+            
+            // Clean up filename - remove invalid characters
+            finalTitle = finalTitle
+                .replace(/[<>:"/\\|?*]/g, '_')
+                .replace(/[,;]/g, '')
+                .replace(/\s+/g, '_')
+                .replace(/_+/g, '_')
+                .replace(/^_|_$/g, '');
+            
+            if (!finalTitle || finalTitle === 'Digital_Scriptorium_Manuscript') {
+                finalTitle = 'Digital Scriptorium Manuscript';
+            }
+            
+            title = finalTitle;
             
             console.log(`[Digital Scriptorium] Successfully extracted ${images.length} pages from: ${title}`);
             
