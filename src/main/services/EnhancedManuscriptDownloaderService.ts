@@ -780,6 +780,11 @@ export class EnhancedManuscriptDownloaderService {
             description: 'Digital Image Archive of Medieval Music manuscripts (800-1650 AD) via IIIF',
         },
         {
+            name: 'Digital Scriptorium',
+            example: 'https://search.digital-scriptorium.org/catalog/DS1649',
+            description: 'Digital Scriptorium manuscript database with IIIF v3 support - catalog URLs automatically converted to manifest access',
+        },
+        {
             name: 'MDC Catalonia (Memòria Digital de Catalunya)',
             example: 'https://mdc.csuc.cat/digital/collection/incunableBC/id/175331/rec/1',
             description: 'Catalan digital manuscript collection with historical incunables via IIIF (Note: May require Spanish/Catalan IP)',
