@@ -6382,18 +6382,48 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             // 2. Direct manifest: https://colenda.library.upenn.edu/items/.../manifest
             
             if (url.includes('search.digital-scriptorium.org')) {
-                // Extract DS ID and try to find the actual manifest URL
-                const dsMatch = url.match(/catalog\/(DS\d+)/);
-                if (!dsMatch) {
-                    throw new Error('Could not extract DS ID from Digital Scriptorium URL');
+                // ULTRA-PRIORITY FIX Issue #33: Implement catalog URL parsing
+                console.log('[Digital Scriptorium] Processing catalog URL:', url);
+                
+                try {
+                    const response = await this.fetchWithRetry(url);
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch catalog page: ${response.status}`);
+                    }
+                    
+                    const html = await response.text();
+                    
+                    // Extract manifest URL from HTML - multiple patterns for robustness
+                    const manifestPatterns = [
+                        /https:\/\/colenda\.library\.upenn\.edu\/items\/[^"'\s]+\/manifest/,
+                        /"loadedManifest":\s*"([^"]+)"/,
+                        /data-manifest="([^"]+)"/,
+                        /"manifest":\s*"([^"]+)"/i,
+                        /manifest["\s]*:["\s]*"([^"]+)"/i
+                    ];
+                    
+                    for (const pattern of manifestPatterns) {
+                        const match = html.match(pattern);
+                        if (match) {
+                            manifestUrl = match[1] || match[0];
+                            console.log('[Digital Scriptorium] Extracted manifest URL:', manifestUrl);
+                            break;
+                        }
+                    }
+                    
+                    if (!manifestUrl || manifestUrl === url) {
+                        throw new Error('Could not extract IIIF manifest URL from Digital Scriptorium catalog page');
+                    }
+                    
+                } catch (error) {
+                    console.error('[Digital Scriptorium] Failed to parse catalog URL:', error);
+                    throw new Error(`Failed to extract manifest from Digital Scriptorium catalog: ${error instanceof Error ? error.message : String(error)}`);
                 }
-                // Note: We would need to fetch the catalog page and extract the manifest URL
-                // For now, require direct manifest URL
-                throw new Error('Digital Scriptorium catalog URLs not yet supported. Please use direct IIIF manifest URL.');
-            }
-            
-            if (!url.includes('/manifest')) {
-                manifestUrl = url + '/manifest';
+            } else {
+                // For direct manifest URLs, use as-is or append /manifest if needed
+                if (!url.includes('/manifest')) {
+                    manifestUrl = url + '/manifest';
+                }
             }
             
             console.log('[Digital Scriptorium] Fetching IIIF manifest:', manifestUrl);

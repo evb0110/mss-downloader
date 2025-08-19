@@ -1362,7 +1362,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
             // These libraries have predictable page sizes and benefit from immediate size estimation
             const estimatedSizeLibraries = [
                 'florus', 'arca', 'internet_culturale', 'manuscripta', 'graz', 'cologne', 
-                'rome', 'roman_archive', 'nypl', 'czech', 'modena', 'morgan',
+                'rome', 'roman_archive', 'digital_scriptorium', 'nypl', 'czech', 'modena', 'morgan',
                 // Major libraries that should use auto-split
                 'bl', 'bodleian', 'gallica', 'parker', 'cudl', 'loc', 'yale', 'toronto',
                 'berlin', 'onb', 'e_manuscripta', 'unifr', 'vatlib', 'florence', 'hhu',
@@ -1381,6 +1381,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     manifest.library === 'cologne' ? 0.5 :
                     manifest.library === 'rome' ? 0.3 :
                     manifest.library === 'roman_archive' ? 2.2 : // Roman Archive high-res JP2 ~2.2MB
+                    manifest.library === 'digital_scriptorium' ? 0.9 : // Digital Scriptorium IIIF v3 quality
                     manifest.library === 'nypl' ? 1.2 :
                     manifest.library === 'czech' ? 0.5 :
                     manifest.library === 'modena' ? 0.4 :

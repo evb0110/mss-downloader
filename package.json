@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.225",
+  "version": "1.4.226",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.225: 🎨 UI/CSS FIXES - Button Text & Log Level Styling",
-    "FIXED: Button text wrapping - icon+text combinations now stay together (📋 Logs, Show in Finder)",
-    "FIXED: Invalid CSS selectors - replaced :contains() with proper class-based log level styling",
-    "FIXED: ARCA URL detection - removed duplicate URL mapping causing library detection errors",
-    "IMPROVED: Better visual consistency across all UI buttons with white-space: nowrap",
+    "v1.4.226: 🔥 ULTRA-PRIORITY FIX - Digital Scriptorium Catalog URL Support",
+    "FIXED: Digital Scriptorium catalog URLs now work (Issue #33) - implemented HTML parsing to extract manifest URLs",
+    "ADDED: Full catalog URL support for https://search.digital-scriptorium.org/catalog/DS**** patterns",
+    "FIXED: Previous v1.4.197 'fix' was incomplete - this provides ACTUAL functionality for 353-page manuscripts",
+    "IMPROVED: Auto-split configuration for Digital Scriptorium to prevent large manuscript download failures",
     "ENHANCED: Log viewer now properly colorizes ERROR (red), WARN (yellow), INFO (blue), DEBUG (gray)"
   ],
   "main": "dist/main/main.js",
