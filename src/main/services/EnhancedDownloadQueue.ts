@@ -889,6 +889,10 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     if (item && manifest) {
                         item.totalPages = manifest.totalPages;
                         item.library = manifest.library as TLibrary;
+                        // Update display name if manifest provides a better one (e.g., Yale with call numbers)
+                        if (manifest.displayName && manifest.displayName !== item.displayName) {
+                            item.displayName = manifest.displayName;
+                        }
                     }
                     this.notifyListeners();
                 },
@@ -1340,8 +1344,13 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 // Update item with manifest info
                 if (item) item.totalPages = manifest?.totalPages ?? 0;
                 item.library = manifest.library as TLibrary;
+                // Update display name if manifest provides a better one (e.g., Yale with call numbers)
+                if (manifest.displayName && manifest.displayName !== item.displayName) {
+                    console.log(`Updating display name from "${item.displayName}" to "${manifest.displayName}"`);
+                    item.displayName = manifest.displayName;
+                }
                 
-                console.log(`Manifest loaded: ${manifest?.totalPages} pages, library: ${manifest.library}`);
+                console.log(`Manifest loaded: ${manifest?.totalPages} pages, library: ${manifest.library}, displayName: ${manifest.displayName}`);
             } else {
                 console.log(`Using cached manifest data: ${item?.totalPages} pages, library: ${item.library}`);
                 // ULTRATHINK FIX: Don't reload manifest when we already have the data!
@@ -1571,7 +1580,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
             const partItem = {
                 ...originalItem, // Copy all original properties
                 id: partId,
-                displayName: `${(manifest as any).displayName}_Part_${partNumber}_pages_${startPage}-${endPage}`,
+                displayName: `${originalItem.displayName}_Part_${partNumber}_pages_${startPage}-${endPage}`,
                 status: 'pending',
                 parentId: originalItem.id,
                 isAutoPart: true,
@@ -2105,6 +2114,10 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     if (item && manifest) {
                         item.totalPages = manifest.totalPages;
                         item.library = manifest.library as TLibrary;
+                        // Update display name if manifest provides a better one (e.g., Yale with call numbers)
+                        if (manifest.displayName && manifest.displayName !== item.displayName) {
+                            item.displayName = manifest.displayName;
+                        }
                     }
                     this.notifyListeners();
                 },

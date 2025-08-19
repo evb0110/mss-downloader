@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.215",
+  "version": "1.4.216",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.215: Yale Manuscript Naming ENHANCED - Professional titles instead of generic names!",
-    "IMPROVED: Yale manuscripts now use proper call numbers (e.g., 'Beinecke MS 481.25')",
-    "ENHANCED: Descriptive titles extracted from IIIF metadata instead of generic 'Lectionary_Part_X'",
-    "ADDED: Intelligent title parsing combines call numbers with manuscript descriptions",
-    "FIXED: Yale folder names are now professional and meaningful for better organization",
-    "Users will see 'Beinecke MS 481.25 - Noted Breviary' instead of 'Lectionary_Part_2_pages_25-48'"
+    "v1.4.216: Yale Auto-Split Naming PERFECTED - Call numbers in split parts!",
+    "FIXED: Auto-split parts now use enhanced Yale names (Beinecke MS 1000 - Lectionary_Part_1)",
+    "ENHANCED: Display names update throughout the download pipeline",
+    "IMPROVED: Manifest display names properly propagate to queue items",
+    "FIXED: Auto-split no longer loses call numbers and descriptive titles",
+    "Users see 'Beinecke MS 1000 - Lectionary_Part_1' instead of 'Lectionary_Part_1'"
   ],
   "main": "dist/main/main.js",
   "scripts": {
