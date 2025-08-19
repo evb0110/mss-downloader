@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.221",
+  "version": "1.4.222",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.221: 🔧 CRITICAL FIX - Auto-Split Chunking Logic Corrected",
-    "FIXED: Chunking bug causing negative page ranges (Pages 393-383, -9 pages)",
-    "IMPROVED: Auto-split logic now calculates parts based on threshold-safe page counts",
-    "ENHANCED: Safety checks prevent invalid page ranges in large manuscript downloads",
-    "RESOLVED: Roman Archive and other large manuscripts now split correctly into valid parts",
-    "VALIDATED: Chunking logic tested with 383-page manuscripts creating proper 30-part splits"
+    "v1.4.222: 🇫🇷 ORLEANS LIBRARY SUPPORT - Issue #31 Resolved",
+    "NEW: Full support for Médiathèque d'Orléans manuscripts via IRHT/ARCA infrastructure",
+    "SUPPORTED: Direct ARCA URLs (arca.irht.cnrs.fr) and IIIF manifests (api.irht.cnrs.fr)",
+    "TESTED: Successfully downloads 189-page manuscripts with high-resolution images (5436x4080)",
+    "VALIDATED: PDF generation confirmed working with Orleans manuscripts",
+    "NOTE: Orleans catalog URLs with anti-bot protection require using direct ARCA links"
   ],
   "main": "dist/main/main.js",
   "scripts": {

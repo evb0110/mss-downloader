@@ -2569,6 +2569,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 return await this.getDigitalScriptoriumManifest(url);
             case 'onb':
                 return await this.getOnbManifest(url);
+            case 'orleans':
+                return await this.getOrleansManifest(url);
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }
@@ -6530,6 +6532,226 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             
         } catch (error) {
             console.error('[ONB] Error loading manifest:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Orleans (Médiathèque d'Orléans via IRHT/ARCA) - Supports IIIF v2 manifests
+     * Orleans manuscripts are hosted on the IRHT-CNRS infrastructure
+     * Supports multiple URL formats:
+     * - Orleans catalog: https://mediatheques.orleans.fr/recherche/viewnotice/...
+     * - ARCA viewer: https://arca.irht.cnrs.fr/ark:/63955/...
+     * - Direct manifest: https://api.irht.cnrs.fr/ark:/63955/.../manifest.json
+     */
+    async getOrleansManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string }> {
+        console.log('[Orleans] Processing URL:', url);
+        
+        try {
+            let manifestUrl: string;
+            let manuscriptId: string = '';
+            
+            // Check if this is already a direct manifest URL
+            if (url.includes('api.irht.cnrs.fr') && url.includes('manifest.json')) {
+                manifestUrl = url;
+                const arkMatch = url.match(/ark:\/63955\/([^/]+)/);
+                if (arkMatch) {
+                    manuscriptId = arkMatch[1];
+                }
+                console.log('[Orleans] Direct manifest URL provided');
+            }
+            // Check if this is an ARCA viewer URL
+            else if (url.includes('arca.irht.cnrs.fr/ark:/63955/')) {
+                const arkMatch = url.match(/ark:\/63955\/([^/?#]+)/);
+                if (!arkMatch) {
+                    throw new Error('Could not extract ARK ID from ARCA URL');
+                }
+                manuscriptId = arkMatch[1];
+                manifestUrl = `https://api.irht.cnrs.fr/ark:/63955/${manuscriptId}/manifest.json`;
+                console.log(`[Orleans] ARCA URL detected, ARK ID: ${manuscriptId}`);
+            }
+            // Check if this is a Biblissima URL  
+            else if (url.includes('biblissima') || url.includes('bvmm.irht.cnrs.fr')) {
+                // Try to extract ARK or manuscript ID
+                const arkMatch = url.match(/ark:\/63955\/([^/?#]+)/);
+                if (arkMatch) {
+                    manuscriptId = arkMatch[1];
+                    manifestUrl = `https://api.irht.cnrs.fr/ark:/63955/${manuscriptId}/manifest.json`;
+                } else {
+                    throw new Error('Could not extract ARK ID from Biblissima URL');
+                }
+                console.log(`[Orleans] Biblissima URL detected, ARK ID: ${manuscriptId}`);
+            }
+            // Orleans local catalog URL - need to fetch page and extract viewer link
+            else if (url.includes('mediatheques.orleans.fr')) {
+                console.log('[Orleans] Local catalog URL detected, attempting to extract IRHT link...');
+                
+                // Fetch the Orleans catalog page
+                const pageResponse = await this.fetchWithRetry(url, {
+                    headers: {
+                        'Accept': 'text/html,application/xhtml+xml',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                });
+                
+                if (!pageResponse.ok) {
+                    throw new Error(`Failed to fetch Orleans catalog page: ${pageResponse.status}`);
+                }
+                
+                const html = await pageResponse.text();
+                
+                // Check if this is an Anubis anti-bot page
+                if (html.includes('Anubis') && html.includes('anti-bot')) {
+                    throw new Error('Orleans catalog page is protected by anti-bot system. Please use a direct ARCA or IRHT link instead, or try accessing the manuscript directly from https://arca.irht.cnrs.fr');
+                }
+                
+                // Look for IRHT/ARCA links in the page
+                // Common patterns: href="https://arca.irht.cnrs.fr/ark:/63955/..."
+                // or links to bvmm.irht.cnrs.fr
+                const ircaLinkMatch = html.match(/https?:\/\/arca\.irht\.cnrs\.fr\/ark:\/63955\/[^"'\s<>]+/i);
+                const bvmmLinkMatch = html.match(/https?:\/\/bvmm\.irht\.cnrs\.fr\/[^"'\s<>]+ark[^"'\s<>]+/i);
+                
+                if (ircaLinkMatch) {
+                    const ircaUrl = ircaLinkMatch[0];
+                    const arkMatch = ircaUrl.match(/ark:\/63955\/([^/?#]+)/);
+                    if (arkMatch) {
+                        manuscriptId = arkMatch[1];
+                        manifestUrl = `https://api.irht.cnrs.fr/ark:/63955/${manuscriptId}/manifest.json`;
+                        console.log(`[Orleans] Found ARCA link in catalog, ARK ID: ${manuscriptId}`);
+                    } else {
+                        throw new Error('Could not extract ARK ID from ARCA link found in Orleans catalog');
+                    }
+                } else if (bvmmLinkMatch) {
+                    // Try to extract from BVMM link
+                    const bvmmUrl = bvmmLinkMatch[0];
+                    const arkMatch = bvmmUrl.match(/ark[=:\/]+63955[\/=]+([^/?&#]+)/i);
+                    if (arkMatch) {
+                        manuscriptId = arkMatch[1];
+                        manifestUrl = `https://api.irht.cnrs.fr/ark:/63955/${manuscriptId}/manifest.json`;
+                        console.log(`[Orleans] Found BVMM link in catalog, ARK ID: ${manuscriptId}`);
+                    } else {
+                        throw new Error('Could not extract ARK ID from BVMM link found in Orleans catalog');
+                    }
+                } else {
+                    // Last resort: look for any iframe or embedded viewer
+                    const iframeMatch = html.match(/<iframe[^>]*src=["']([^"']*arca\.irht\.cnrs\.fr[^"']*)/i);
+                    if (iframeMatch) {
+                        const iframeUrl = iframeMatch[1];
+                        if (iframeUrl) {
+                            const arkMatch = iframeUrl.match(/ark:\/63955\/([^/?#]+)/);
+                            if (arkMatch) {
+                                manuscriptId = arkMatch[1] || '';
+                            manifestUrl = `https://api.irht.cnrs.fr/ark:/63955/${manuscriptId}/manifest.json`;
+                            console.log(`[Orleans] Found ARCA iframe in catalog, ARK ID: ${manuscriptId}`);
+                            } else {
+                                throw new Error('Could not extract ARK ID from iframe URL');
+                            }
+                        }
+                    } else {
+                        throw new Error('Could not find IRHT/ARCA viewer link in Orleans catalog page. This manuscript may not be digitized or may use a different viewer.');
+                    }
+                }
+            }
+            else {
+                throw new Error('Unsupported Orleans URL format. Please provide an Orleans catalog URL, ARCA viewer URL, or direct manifest URL.');
+            }
+            
+            console.log(`[Orleans] Fetching IIIF manifest from: ${manifestUrl}`);
+            
+            // Fetch the IIIF manifest
+            const manifestResponse = await this.fetchWithRetry(manifestUrl, {
+                headers: {
+                    'Accept': 'application/json, application/ld+json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            });
+            
+            if (!manifestResponse.ok) {
+                throw new Error(`Failed to fetch Orleans/IRHT manifest: ${manifestResponse.status}`);
+            }
+            
+            const manifest = await manifestResponse.json() as IIIFManifest;
+            const images: ManuscriptImage[] = [];
+            
+            // Process IIIF v2 manifest (IRHT uses v2)
+            if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+                const canvases = manifest.sequences[0].canvases;
+                console.log(`[Orleans] Processing ${canvases.length} pages from IIIF v2 manifest`);
+                
+                for (let i = 0; i < canvases.length; i++) {
+                    const canvas = canvases[i];
+                    if (canvas && canvas.images && canvas.images[0] && canvas.images[0].resource) {
+                        const resource = canvas.images[0].resource;
+                        const service = resource.service;
+                        
+                        if (service && (service as IIIFService)['@id']) {
+                            // Request maximum resolution available
+                            // IRHT supports: full/full, full/max, full/2000, full/4000
+                            const imageUrl = `${(service as IIIFService)['@id']}/full/max/0/default.jpg`;
+                            images.push({
+                                url: imageUrl,
+                                label: this.localizedStringToString(canvas.label, `Page ${i + 1}`)
+                            });
+                        } else if (resource['@id']) {
+                            // Fallback to direct resource URL
+                            images.push({
+                                url: resource['@id'],
+                                label: this.localizedStringToString(canvas.label, `Page ${i + 1}`)
+                            });
+                        }
+                    }
+                }
+            }
+            // Also check for IIIF v3 format (items instead of sequences)
+            else if (manifest.items && Array.isArray(manifest.items)) {
+                console.log(`[Orleans] Processing ${manifest.items.length} pages from IIIF v3 manifest`);
+                
+                for (let i = 0; i < manifest.items.length; i++) {
+                    const canvas = manifest.items[i];
+                    if (canvas && canvas.items && canvas.items[0] && canvas.items[0].items) {
+                        for (const annotation of canvas.items[0].items) {
+                            const body = (annotation as any).body;
+                            if (body) {
+                                // Check for service with image URL
+                                if (body.service && Array.isArray(body.service)) {
+                                    const imageService = body.service.find((s: any) => 
+                                        s.type === 'ImageService3' || s['@type'] === 'ImageService'
+                                    );
+                                    if (imageService && imageService.id) {
+                                        const imageUrl = `${imageService.id}/full/max/0/default.jpg`;
+                                        images.push({
+                                            url: imageUrl,
+                                            label: this.localizedStringToString(canvas.label, `Page ${i + 1}`)
+                                        });
+                                        break;
+                                    }
+                                } else if (body.id) {
+                                    // Direct image URL
+                                    images.push({
+                                        url: body.id,
+                                        label: this.localizedStringToString(canvas.label, `Page ${i + 1}`)
+                                    });
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (images.length === 0) {
+                throw new Error('No images found in Orleans/IRHT manifest');
+            }
+            
+            // Extract title from manifest
+            const displayName = this.extractIIIFTitle(manifest, 'Orleans', manuscriptId, 
+                manifest.label ? this.localizedStringToString(manifest.label) : undefined);
+            
+            console.log(`[Orleans] Successfully extracted ${images.length} pages - "${displayName}"`);
+            return { images, displayName };
+            
+        } catch (error) {
+            console.error('[Orleans] Error loading manifest:', error);
             throw error;
         }
     }
