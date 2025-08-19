@@ -983,7 +983,6 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('collections.library.yale.edu')) return 'yale';
         if (url.includes('digi.vatlib.it')) return 'vatlib';
         if (url.includes('cecilia.mediatheques.grand-albigeois.fr')) return 'cecilia';
-        if (url.includes('arca.irht.cnrs.fr')) return 'irht';
         if (url.includes('www.loc.gov') || url.includes('tile.loc.gov')) return 'loc';
         if (url.includes('patrimoine.bm-dijon.fr')) return 'dijon';
         if (url.includes('bibliotheque-numerique.ville-laon.fr')) return 'laon';
