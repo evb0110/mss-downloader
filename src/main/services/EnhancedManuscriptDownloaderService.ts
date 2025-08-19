@@ -42,7 +42,6 @@ import {
     TrinityCamLoader,
     IsosLoader,
     MiraLoader,
-    OrleansLoader,
     RbmeLoader,
     ParkerLoader,
     ManuscriptaLoader,
@@ -281,7 +280,6 @@ export class EnhancedManuscriptDownloaderService {
         this.libraryLoaders.set('trinity_cam', new TrinityCamLoader(loaderDeps));
         this.libraryLoaders.set('isos', new IsosLoader(loaderDeps));
         this.libraryLoaders.set('mira', new MiraLoader(loaderDeps));
-        this.libraryLoaders.set('orleans', new OrleansLoader(loaderDeps));
         this.libraryLoaders.set('rbme', new RbmeLoader(loaderDeps));
         this.libraryLoaders.set('parker', new ParkerLoader(loaderDeps));
         this.libraryLoaders.set('manuscripta', new ManuscriptaLoader(loaderDeps));
@@ -669,9 +667,9 @@ export class EnhancedManuscriptDownloaderService {
             description: 'New York Public Library digital manuscript collections',
         },
         {
-            name: 'Orléans Médiathèques (Aurelia)',
-            example: 'https://mediatheques.orleans.fr/recherche/viewnotice/clef/FRAGMENTSDEDIFFERENTSLIVRESDELECRITURESAINTE--AUGUSTINSAINT----28/id/745380',
-            description: 'Médiathèques d\'Orléans digital heritage library via IIIF/Omeka',
+            name: 'ARCA (IRHT Digital Archives)',
+            example: 'https://arca.irht.cnrs.fr/ark:/63955/fykkvnm8wkpd',
+            description: 'IRHT (CNRS) digital manuscript archives with IIIF v3.0 support',
         },
         {
             name: 'Real Biblioteca del Monasterio de El Escorial (RBME)',
@@ -1002,7 +1000,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('iiif.library.utoronto.ca') || url.includes('collections.library.utoronto.ca')) return 'toronto';
         if (url.includes('isos.dias.ie')) return 'isos';
         if (url.includes('mira.ie')) return 'mira';
-        if (url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr')) return 'orleans';
+        if (url.includes('arca.irht.cnrs.fr')) return 'arca';
         if (url.includes('rbme.patrimonionacional.es')) return 'rbme';
         if (url.includes('parker.stanford.edu')) return 'parker';
         if (url.includes('manuscripta.se')) return 'manuscripta';
@@ -1120,7 +1118,7 @@ export class EnhancedManuscriptDownloaderService {
         const library = manifest.library || 'default';
         const pageSize = avgPageSizeKB[library] || avgPageSizeKB['default'];
         
-        return (manifest.totalPages * pageSize) / 1024; // Convert to MB
+        return (manifest?.totalPages * pageSize) / 1024; // Convert to MB
     }
 
     /**
@@ -1269,20 +1267,6 @@ export class EnhancedManuscriptDownloaderService {
             } as any;
         }
 
-        // Special headers for Orleans IIIF to avoid timeout/hanging issues
-        if (url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr')) {
-            headers = {
-                ...headers,
-                'Referer': 'https://aurelia.orleans.fr/',
-                'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Cache-Control': 'no-cache',
-                'Connection': 'keep-alive',
-                'Sec-Fetch-Dest': 'image',
-                'Sec-Fetch-Mode': 'no-cors',
-                'Sec-Fetch-Site': 'cross-site'
-            } as any;
-        }
 
         // Special headers for Stanford Parker Library IIIF to avoid HTTP 406 errors
         if (url.includes('stacks.stanford.edu') || url.includes('dms-data.stanford.edu')) {
@@ -2078,8 +2062,8 @@ export class EnhancedManuscriptDownloaderService {
                 case 'mira':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('mira', originalUrl);
                     break;
-                case 'orleans':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('orleans', originalUrl);
+                case 'arca':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('arca', originalUrl);
                     break;
                 case 'rbme':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('rbme', originalUrl);
@@ -2383,8 +2367,6 @@ export class EnhancedManuscriptDownloaderService {
             }
 
             const needsProxyFallback = url.includes('digitallibrary.unicatt.it') ||
-                                     url.includes('mediatheques.orleans.fr') ||
-                                     url.includes('aurelia.orleans.fr') ||
                                      isNorwegianContent ||  // Always use proxy for Norwegian content
                                      url.includes('bdl.servizirl.it');
 

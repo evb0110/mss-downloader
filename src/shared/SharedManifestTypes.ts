@@ -167,7 +167,7 @@ export type LibraryIdentifier =
   | 'manchester' | 'munich' | 'unifr' | 'e_manuscripta' | 'vatlib' 
   | 'cecilia' | 'irht' | 'loc' | 'dijon' | 'laon' | 'durham' 
   | 'florus' | 'unicatt' | 'cudl' | 'trinity_cam' | 'toronto' 
-  | 'fulda' | 'isos' | 'mira' | 'orleans' | 'rbme' | 'parker' 
+  | 'fulda' | 'isos' | 'mira' | 'arca' | 'rbme' | 'parker' 
   | 'manuscripta' | 'internet_culturale' | 'graz' | 'gams' 
   | 'cologne' | 'vienna_manuscripta' | 'rome' | 'berlin' | 'czech' 
   | 'modena' | 'bdl' | 'europeana' | 'monte_cassino' | 'vallicelliana' 

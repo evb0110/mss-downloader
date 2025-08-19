@@ -109,12 +109,12 @@ export class IntelligentProgressMonitor {
                 optimized.minProgressThreshold = 0.5; // Reasonable progress expected
                 break;
             
-            case 'orleans':
-                // Orleans can be slow but reliable
-                optimized.initialTimeout = 90000; // 1.5 minutes
-                optimized.progressCheckInterval = 20000; // 20 seconds
-                optimized.maxTimeout = 480000; // 8 minutes
-                optimized.minProgressThreshold = 0.5;
+            case 'arca':
+                // ARCA has good IIIF v3.0 performance
+                optimized.initialTimeout = 30000; // 30 seconds
+                optimized.progressCheckInterval = 10000; // 10 seconds
+                optimized.maxTimeout = 180000; // 3 minutes
+                optimized.minProgressThreshold = 1.0;
                 break;
             
             case 'internet-culturale':

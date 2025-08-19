@@ -29,11 +29,11 @@ export class LibraryOptimizationService {
             enableProgressiveBackoff: true,
             optimizationDescription: 'University of Toronto optimizations: 4 concurrent downloads, IIIF v2.0 compliant, Thomas Fisher Rare Book Library'
         },
-        'orleans': {
-            maxConcurrentDownloads: 2, // Moderate rate limiting
-            timeoutMultiplier: 2.0, // Double timeout
-            enableProgressiveBackoff: true,
-            optimizationDescription: 'Orléans Médiathèques optimizations: 2 concurrent downloads, extended timeouts with backoff'
+        'arca': {
+            maxConcurrentDownloads: 4, // IIIF v3.0 standard performance
+            timeoutMultiplier: 1.5, 
+            enableProgressiveBackoff: false,
+            optimizationDescription: 'ARCA (IRHT) optimizations: 4 concurrent downloads, IIIF v3.0 compliant, CNRS infrastructure'
         },
         'unicatt': {
             maxConcurrentDownloads: 2, // Geo-restricted, needs careful handling

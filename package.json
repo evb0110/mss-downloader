@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.223",
+  "version": "1.4.224",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.223: 🔐 ANUBIS ANTI-BOT CHALLENGE SOLVER - Advanced Orleans Protection",
-    "IMPLEMENTED: Complete Anubis proof-of-work challenge solver (SHA256, difficulty 4)",
-    "TECHNICAL: Successfully solves cryptographic puzzles at ~100k H/s in 1-2 seconds",
-    "WORKAROUND: Clear instructions for accessing Orleans via ARCA when catalog is protected",
-    "ENHANCED: Orleans error messages now provide step-by-step access alternatives",
-    "RESOLVED: Users can access all Orleans manuscripts via direct ARCA URLs"
+    "v1.4.224: 🔄 LIBRARY REPLACEMENT - Orleans → ARCA Direct Access",
+    "REPLACED: Orleans library with ARCA (IRHT Digital Archives) for direct access",
+    "SIMPLIFIED: Removed Anubis anti-bot solver - users access Orleans manuscripts via ARCA URLs",
+    "ENHANCED: ARCA library supports IIIF v2/v3 manifests from IRHT infrastructure",
+    "IMPROVED: Better performance and reliability accessing Orleans collections",
+    "EXAMPLE: Use https://arca.irht.cnrs.fr/ark:/63955/... URLs instead of Orleans catalog links"
   ],
   "main": "dist/main/main.js",
   "scripts": {

@@ -248,17 +248,6 @@ export class EnhancedDownloadQueue extends EventEmitter {
     }
 
     private notifyListeners(): void {
-        // Debug logging for Orleans progress data
-        const orleansItems = this.state.items?.filter(item => item.url?.includes('orleans') || item.status === 'loading');
-        if (orleansItems && orleansItems?.length > 0) {
-            console.log('Main process sending queue state - Orleans items:', orleansItems.map(item => ({
-                id: item.id,
-                status: item.status,
-                hasProgress: !!item.progress,
-                progressData: item.progress,
-                url: item.url
-            })));
-        }
         
         this.emit('stateChanged', this.state);
     }
@@ -295,7 +284,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
             // Create progress callback that updates the item
             const progressCallback = (current: number, total: number, _UNUSED_message?: string) => {
                 // Only show progress for slow-loading manifests (> 30 items) or Orleans library
-                if (total > 30 || item.url.includes('orleans')) {
+                if (total > 30) {
                     hasShownProgress = true;
                     item.progress = {
                         current,
@@ -1372,7 +1361,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
             // Libraries using estimated size calculation (bypassing first page download for efficiency)
             // These libraries have predictable page sizes and benefit from immediate size estimation
             const estimatedSizeLibraries = [
-                'florus', 'orleans', 'internet_culturale', 'manuscripta', 'graz', 'cologne', 
+                'florus', 'arca', 'internet_culturale', 'manuscripta', 'graz', 'cologne', 
                 'rome', 'roman_archive', 'nypl', 'czech', 'modena', 'morgan',
                 // Major libraries that should use auto-split
                 'bl', 'bodleian', 'gallica', 'parker', 'cudl', 'loc', 'yale', 'toronto',
@@ -1385,7 +1374,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 // Estimate based on typical manuscript page size
                 const avgPageSizeMB = 
                     // Existing libraries with known page sizes
-                    manifest.library === 'orleans' ? 0.6 : 
+                    manifest.library === 'arca' ? 1.0 : 
                     manifest.library === 'internet_culturale' ? 0.8 : 
                     manifest.library === 'manuscripta' ? 0.7 :
                     manifest.library === 'graz' ? 0.8 :
@@ -1669,20 +1658,6 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 };
             }
             
-            // Special headers for Orleans IIIF to avoid timeout/hanging issues
-            if (url.includes('mediatheques.orleans.fr') || url.includes('aurelia.orleans.fr')) {
-                headers = {
-                    ...headers,
-                    'Referer': 'https://aurelia.orleans.fr/',
-                    'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-                    'Accept-Language': 'en-US,en;q=0.9',
-                    'Cache-Control': 'no-cache',
-                    'Connection': 'keep-alive',
-                    'Sec-Fetch-Dest': 'image',
-                    'Sec-Fetch-Mode': 'no-cors',
-                    'Sec-Fetch-Site': 'cross-site'
-                };
-            }
 
             // Prepare request options
             const requestOptions: { headers: Record<string, string>; rejectUnauthorized?: boolean } = { 

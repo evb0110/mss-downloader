@@ -25,7 +25,6 @@ export { CudlLoader } from './CudlLoader';
 export { TrinityCamLoader } from './TrinityCamLoader';
 export { IsosLoader } from './IsosLoader';
 export { MiraLoader } from './MiraLoader';
-export { OrleansLoader } from './OrleansLoader';
 export { RbmeLoader } from './RbmeLoader';
 export { ParkerLoader } from './ParkerLoader';
 export { ManuscriptaLoader } from './ManuscriptaLoader';
