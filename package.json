@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.224",
+  "version": "1.4.225",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.224: 🔄 LIBRARY REPLACEMENT - Orleans → ARCA Direct Access",
-    "REPLACED: Orleans library with ARCA (IRHT Digital Archives) for direct access",
-    "SIMPLIFIED: Removed Anubis anti-bot solver - users access Orleans manuscripts via ARCA URLs",
-    "ENHANCED: ARCA library supports IIIF v2/v3 manifests from IRHT infrastructure",
-    "IMPROVED: Better performance and reliability accessing Orleans collections",
-    "EXAMPLE: Use https://arca.irht.cnrs.fr/ark:/63955/... URLs instead of Orleans catalog links"
+    "v1.4.225: 🎨 UI/CSS FIXES - Button Text & Log Level Styling",
+    "FIXED: Button text wrapping - icon+text combinations now stay together (📋 Logs, Show in Finder)",
+    "FIXED: Invalid CSS selectors - replaced :contains() with proper class-based log level styling",
+    "FIXED: ARCA URL detection - removed duplicate URL mapping causing library detection errors",
+    "IMPROVED: Better visual consistency across all UI buttons with white-space: nowrap",
+    "ENHANCED: Log viewer now properly colorizes ERROR (red), WARN (yellow), INFO (blue), DEBUG (gray)"
   ],
   "main": "dist/main/main.js",
   "scripts": {
