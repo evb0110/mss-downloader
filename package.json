@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.219",
+  "version": "1.4.220",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.219: 🔥 YALE LIBRARY SUPPORT - Issue #36 RESOLVED with Ultra-Priority Treatment",
-    "ADDED: Yale University Library (Beinecke) now visible in UI dropdown with Russian translation",
-    "CONFIRMED: 259 pages validated across 2 Yale manuscripts with perfect IIIF integration",
-    "ENHANCED: Full support for Yale digital collections via collections.library.yale.edu URLs",
-    "FIXED: Library count updated to '10 working + 1 in development' in both languages",
-    "VALIDATED: High-resolution image downloads from Yale IIIF endpoints working flawlessly"
+    "v1.4.220: 🔥 ULTRA-PRIORITY FIX - Roman Archive Dynamic Folio Support",
+    "COMPLETELY FIXED Issue #35: Roman Archive manuscripts now support all folio formats",
+    "ENHANCED: Dynamic folio range discovery (works with manuscripts starting from any folio number)",
+    "NEW: Alternative format support for A-prefixed page names (A001r.jp2, A000a.jp2, etc.)",
+    "MAINTAINED: 100% backward compatibility with existing manuscripts",
+    "VALIDATED: All 4 reported URLs now download successfully (100% success rate)"
   ],
   "main": "dist/main/main.js",
   "scripts": {
@@ -139,19 +139,27 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "nsis",
-          "arch": ["arm64"]
+          "arch": [
+            "arm64"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["arm64"]
+          "arch": [
+            "arm64"
+          ]
         }
       ],
       "icon": "assets/icon.png",

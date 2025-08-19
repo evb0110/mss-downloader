@@ -6111,9 +6111,119 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     pageNumber: 1
                 } as ManuscriptImage);
                 
-                // If we have a page count, generate URLs for all pages
+                // ULTRA-FIX Issue #35: Dynamic folio range discovery
+                // Don't assume manuscripts start from folio 1 - fetch actual page menu to discover real range
                 if (totalPages > 0) {
-                    // Generate page URLs based on the pattern: 001r.jp2, 001v.jp2, etc.
+                    console.log(`[Roman Archive] Discovering dynamic folio range for ${totalPages} folios...`);
+                    
+                    // Fetch the page menu to discover actual folio numbers
+                    const menuUrl = `https://imagoarchiviodistatoroma.cultura.gov.it/Preziosi/menu_sfoglia_brogliardi.php?Path=${manuscriptPath}`;
+                    console.log(`[Roman Archive] Fetching page menu: ${menuUrl}`);
+                    
+                    try {
+                        const menuResponse = await this.fetchWithRetry(menuUrl);
+                        if (menuResponse.ok) {
+                            const menuHtml = await menuResponse.text();
+                            
+                            // Extract all page names from menu HTML
+                            // Pattern: r1=192r.jp2, r1=192v.jp2, r1=193r.jp2, etc.
+                            // ENHANCED: Also supports r1=A001r.jp2, r1=A000a.jp2 formats (Issue #35 - 1001-882)
+                            let pageMatches = menuHtml.match(/r1=(\d{3}[rv]\.jp2)/g) || [];
+                            let useAlternativeFormat = false;
+                            
+                            // If no standard numeric pages found, try alternative formats
+                            if (pageMatches.length === 0) {
+                                // Try A-prefixed format: A001r.jp2, A000a.jp2, A001v_A002r.jp2, etc.
+                                const alternativeMatches = menuHtml.match(/r1=([A-Z][^&"'\s]+\.jp2)/g) || [];
+                                if (alternativeMatches.length > 0) {
+                                    console.log(`[Roman Archive] Using alternative page format: found ${alternativeMatches.length} A-prefixed pages`);
+                                    pageMatches = alternativeMatches;
+                                    useAlternativeFormat = true;
+                                }
+                            }
+                            
+                            if (pageMatches.length > 0) {
+                                console.log(`[Roman Archive] Found ${pageMatches.length} page references in menu`);
+                                
+                                if (useAlternativeFormat) {
+                                    // Alternative format: use actual page names from menu (A000a.jp2, A001r.jp2, A001v_A002r.jp2, etc.)
+                                    console.log(`[Roman Archive] Processing alternative format pages`);
+                                    
+                                    pageMatches.forEach(match => {
+                                        const pageNameMatch = match.match(/r1=([A-Z][^&"'\s]+\.jp2)/);
+                                        if (pageNameMatch && pageNameMatch[1]) {
+                                            const pageName = pageNameMatch[1];
+                                            images.push({
+                                                url: `https://imagoarchiviodistatoroma.cultura.gov.it/iipsrv/iipsrv.fcgi?FIF=/images/Patrimonio/Archivi/AS_Roma/Imago//${manuscriptPath}/${pageName}&WID=2000&QLT=95&CVT=jpeg`,
+                                                pageNumber: images.length + 1
+                                            } as ManuscriptImage);
+                                        }
+                                    });
+                                    
+                                    console.log(`[Roman Archive] Generated ${images.length} page URLs using alternative format`);
+                                } else {
+                                    // Standard format: extract folio numbers and generate recto/verso pairs
+                                    const folios = new Set<number>();
+                                    pageMatches.forEach(match => {
+                                        const folioMatch = match.match(/r1=(\d{3})[rv]\.jp2/);
+                                        if (folioMatch && folioMatch[1]) {
+                                            folios.add(parseInt(folioMatch[1]));
+                                        }
+                                    });
+                                    
+                                    const folioNumbers = Array.from(folios).sort((a, b) => a - b);
+                                    const startFolio = folioNumbers[0];
+                                    const endFolio = folioNumbers[folioNumbers.length - 1];
+                                    
+                                    console.log(`[Roman Archive] Dynamic range discovered: folios ${startFolio}-${endFolio} (${folioNumbers.length} folios)`);
+                                    
+                                    // Generate URLs using actual folio range
+                                    for (const folio of folioNumbers) {
+                                        const paddedFolio = String(folio).padStart(3, '0');
+                                        
+                                        // Add recto page
+                                        images.push({
+                                            url: `https://imagoarchiviodistatoroma.cultura.gov.it/iipsrv/iipsrv.fcgi?FIF=/images/Patrimonio/Archivi/AS_Roma/Imago//${manuscriptPath}/${paddedFolio}r.jp2&WID=2000&QLT=95&CVT=jpeg`,
+                                            pageNumber: images.length + 1
+                                        } as ManuscriptImage);
+                                        
+                                        // Add verso page
+                                        images.push({
+                                            url: `https://imagoarchiviodistatoroma.cultura.gov.it/iipsrv/iipsrv.fcgi?FIF=/images/Patrimonio/Archivi/AS_Roma/Imago//${manuscriptPath}/${paddedFolio}v.jp2&WID=2000&QLT=95&CVT=jpeg`,
+                                            pageNumber: images.length + 1
+                                        } as ManuscriptImage);
+                                    }
+                                }
+                                
+                                // Return results based on format used
+                                if (useAlternativeFormat) {
+                                    return { 
+                                        images,
+                                        displayName: `Roman Archive - ${manuscriptId} (${images.length} pages)`,
+                                        totalPages: images.length
+                                    } as any;
+                                } else {
+                                    const folioNumbers = Array.from(new Set(pageMatches.map(match => {
+                                        const folioMatch = match.match(/r1=(\d{3})[rv]\.jp2/);
+                                        return folioMatch ? parseInt(folioMatch[1]) : 0;
+                                    }).filter(f => f > 0))).sort((a, b) => a - b);
+                                    const startFolio = folioNumbers[0];
+                                    const endFolio = folioNumbers[folioNumbers.length - 1];
+                                    
+                                    return { 
+                                        images,
+                                        displayName: `Roman Archive - ${manuscriptId} (folios ${startFolio}-${endFolio})`,
+                                        totalPages: images.length
+                                    } as any;
+                                }
+                            }
+                        }
+                    } catch (menuError) {
+                        console.warn(`[Roman Archive] Failed to fetch page menu, falling back to folio 1-N assumption:`, menuError);
+                    }
+                    
+                    // Fallback: Use old logic if menu parsing fails
+                    console.log(`[Roman Archive] Using fallback: assuming folios 1-${totalPages}`);
                     for (let i = 1; i <= totalPages; i++) {
                         const padded = String(i).padStart(3, '0');
                         
@@ -6130,7 +6240,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         } as ManuscriptImage);
                     }
                     
-                    console.log(`[Roman Archive] Generated ${images.length} page URLs from page count`);
+                    console.log(`[Roman Archive] Generated ${images.length} page URLs from fallback logic`);
                     return { 
                         images,
                         displayName: `Roman Archive - ${manuscriptId}`,
