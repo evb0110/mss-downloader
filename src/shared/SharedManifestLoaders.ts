@@ -5065,9 +5065,66 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         console.log(`[Yale] Successfully extracted ${images?.length} pages`);
         
+        // Enhanced Yale title extraction with call number and descriptive title
+        let displayName = `Yale - ${manuscriptId}`;
+        const manifestTitle = this.localizedStringToString(manifest.label);
+        
+        // Extract call number and other metadata for better naming
+        let callNumber = '';
+        let detailedTitle = manifestTitle || '';
+        
+        if (manifest.metadata && Array.isArray(manifest.metadata)) {
+            for (const metadataItem of manifest.metadata) {
+                const labelText = this.localizedStringToString(metadataItem.label);
+                const valueText = this.localizedStringToString(metadataItem.value);
+                
+                // Look for call number
+                if (labelText && labelText.toLowerCase().includes('call number') && valueText) {
+                    callNumber = valueText;
+                }
+                
+                // Look for more detailed title information (prioritize actual titles over names)
+                if (labelText && labelText.toLowerCase().includes('title') && valueText) {
+                    if (valueText.length > detailedTitle.length) {
+                        detailedTitle = valueText;
+                    }
+                }
+            }
+        }
+        
+        // Build enhanced display name
+        if (callNumber && detailedTitle) {
+            // Use both call number and title: "Beinecke MS 481.25 - Noted Breviary (fragment)"
+            displayName = `${callNumber} - ${detailedTitle}`;
+        } else if (callNumber) {
+            // Use call number: "Beinecke MS 481.25"  
+            displayName = callNumber;
+        } else if (detailedTitle) {
+            // Use detailed title: "Noted Breviary (fragment)"
+            displayName = detailedTitle;
+        }
+        
+        // Fallback: if we only have call number, that's perfect for Yale manuscripts
+        if (callNumber && !detailedTitle) {
+            displayName = callNumber;
+        } else if (callNumber && detailedTitle) {
+            // For Yale, prefer shorter, cleaner names - use call number + short title
+            if (detailedTitle.length < 50) {
+                displayName = `${callNumber} - ${detailedTitle}`;
+            } else {
+                // If title is too long, just use call number
+                displayName = callNumber;
+            }
+        }
+        
+        // Clean up the display name
+        displayName = displayName.replace(/\.$/, ''); // Remove trailing period
+        
+        console.log(`[Yale] Display name: ${displayName}`);
+        
         return {
             images,
-            displayName: this.localizedStringToString(manifest.label) || `Yale - ${manuscriptId}`
+            displayName: displayName
         };
     }
 

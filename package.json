@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.214",
+  "version": "1.4.215",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.214: Yale Library DNS RESOLVED - Issue #34 fixed with enhanced error handling!",
-    "FIXED: Yale DNS resolution failures with actionable error messages",
-    "ENHANCED: DNS error handling for all libraries with clear user guidance",
-    "IMPROVED: Yale retry attempts increased from 8 to 12 for better reliability",
-    "FIXED: 'getaddrinfo ENOTFOUND' errors now provide helpful troubleshooting steps",
-    "Users experiencing Yale DNS issues will now get clear guidance instead of technical errors"
+    "v1.4.215: Yale Manuscript Naming ENHANCED - Professional titles instead of generic names!",
+    "IMPROVED: Yale manuscripts now use proper call numbers (e.g., 'Beinecke MS 481.25')",
+    "ENHANCED: Descriptive titles extracted from IIIF metadata instead of generic 'Lectionary_Part_X'",
+    "ADDED: Intelligent title parsing combines call numbers with manuscript descriptions",
+    "FIXED: Yale folder names are now professional and meaningful for better organization",
+    "Users will see 'Beinecke MS 481.25 - Noted Breviary' instead of 'Lectionary_Part_2_pages_25-48'"
   ],
   "main": "dist/main/main.js",
   "scripts": {
