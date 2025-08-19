@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.212",
+  "version": "1.4.213",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.212: Roman Archive performance FIXED - No more socket errors!",
-    "FIXED: Roman Archive downloads now stable at 1-2 Mbps (was 0.1 Mbps with errors)",
-    "FIXED: Added single-threaded download mode to prevent IIPImage server overload",
-    "FIXED: Implemented 1-second delays between downloads for server stability",
-    "FIXED: Extended timeouts (60s) and progressive backoff for Roman Archive",
-    "Users can now reliably download large Roman Archive manuscripts without interruptions"
+    "v1.4.213: Roman Archive CRITICAL FIXES - Downloads work properly now!",
+    "FIXED: Roman Archive auto-split into 30MB chunks (was failing with 800MB+ single files)",
+    "FIXED: Critical 'fullManifest is not defined' error breaking all downloads",
+    "FIXED: UI now shows proper library names instead of 'undefined'",
+    "OPTIMIZED: Removed concurrency cap - Roman Archive now uses full parallel downloads",
+    "Users can now download large Roman Archive manuscripts reliably with proper chunking"
   ],
   "main": "dist/main/main.js",
   "scripts": {

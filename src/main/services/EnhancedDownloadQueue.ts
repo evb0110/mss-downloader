@@ -9,6 +9,7 @@ import { configService } from './ConfigService';
 import { ManifestCache } from './ManifestCache';
 import { LibraryOptimizationService } from './LibraryOptimizationService';
 import { DownloadLogger } from './DownloadLogger';
+import { enhancedLogger, ManuscriptContext, PerformanceMetrics } from './EnhancedLogger';
 import type { QueuedManuscript, QueueState, TLibrary, TStage, TSimultaneousMode } from '../../shared/queueTypes';
 
 export class EnhancedDownloadQueue extends EventEmitter {
@@ -883,9 +884,12 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     item.eta = typeof progress === 'object' ? (progress as any).eta : undefined;
                     this.notifyListeners();
                 },
-                onManifestLoaded: () => {
-                    if (item) item.totalPages = ({} as any)?.totalPages;
-                    item.library = ({} as any).library as TLibrary;
+                onManifestLoaded: (manifest?: any) => {
+                    // Update item with manifest data when available
+                    if (item && manifest) {
+                        item.totalPages = manifest.totalPages;
+                        item.library = manifest.library as TLibrary;
+                    }
                     this.notifyListeners();
                 },
                 maxConcurrent: effectiveConcurrent,
@@ -1351,22 +1355,56 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 } as any;
             }
             
-            // For Florus, Orleans, Internet Culturale, Manuscripta, Graz, Cologne, Rome, NYPL, Czech, Modena, and Morgan - skip first page download and use estimated size calculation
-            // BDL removed from this list to enable proper multi-page sampling for size estimation
-            if (manifest && (manifest.library === 'florus' || manifest.library === 'orleans' || manifest.library === 'internet_culturale' || manifest.library === 'manuscripta' || manifest.library === 'graz' || manifest.library === 'cologne' || manifest.library === 'rome' || manifest.library === 'nypl' || manifest.library === 'czech' || manifest.library === 'modena' || manifest.library === 'morgan')) {
+            // Libraries using estimated size calculation (bypassing first page download for efficiency)
+            // These libraries have predictable page sizes and benefit from immediate size estimation
+            const estimatedSizeLibraries = [
+                'florus', 'orleans', 'internet_culturale', 'manuscripta', 'graz', 'cologne', 
+                'rome', 'roman_archive', 'nypl', 'czech', 'modena', 'morgan',
+                // Major libraries that should use auto-split
+                'bl', 'bodleian', 'gallica', 'parker', 'cudl', 'loc', 'yale', 'toronto',
+                'berlin', 'onb', 'e_manuscripta', 'unifr', 'vatlib', 'florence', 'hhu',
+                'wolfenbuettel', 'freiburg', 'bordeaux', 'e_rara', 'vienna_manuscripta'
+            ];
+            
+            if (manifest && manifest.library && estimatedSizeLibraries.includes(manifest.library)) {
                 console.log(`${manifest.library} manuscript detected, using estimated size calculation (bypassing first page download)`);
                 // Estimate based on typical manuscript page size
-                const avgPageSizeMB = manifest.library === 'orleans' ? 0.6 : 
-                                    manifest.library === 'internet_culturale' ? 0.8 : 
-                                    manifest.library === 'manuscripta' ? 0.7 :
-                                    manifest.library === 'graz' ? 0.8 :
-                                    manifest.library === 'cologne' ? 0.5 :
-                                    manifest.library === 'rome' ? 0.3 :
-                                    manifest.library === 'nypl' ? 1.2 :
-                                    manifest.library === 'czech' ? 0.5 :
-                                    manifest.library === 'modena' ? 0.4 :
-                                    manifest.library === 'morgan' ? 5.0 : // Morgan .zif files reduced estimate (5MB per stitched image)
-                                    0.4; // 600KB for Orleans IIIF, 800KB for Internet Culturale IIIF, 700KB for Manuscripta IIIF, 800KB for Graz IIIF, 500KB for Cologne webcache, 300KB for Rome, 1.2MB for NYPL IIIF, 500KB for Czech, 400KB for Modena mobile, 5MB for Morgan .zif, 400KB for Florus
+                const avgPageSizeMB = 
+                    // Existing libraries with known page sizes
+                    manifest.library === 'orleans' ? 0.6 : 
+                    manifest.library === 'internet_culturale' ? 0.8 : 
+                    manifest.library === 'manuscripta' ? 0.7 :
+                    manifest.library === 'graz' ? 0.8 :
+                    manifest.library === 'cologne' ? 0.5 :
+                    manifest.library === 'rome' ? 0.3 :
+                    manifest.library === 'roman_archive' ? 2.2 : // Roman Archive high-res JP2 ~2.2MB
+                    manifest.library === 'nypl' ? 1.2 :
+                    manifest.library === 'czech' ? 0.5 :
+                    manifest.library === 'modena' ? 0.4 :
+                    manifest.library === 'morgan' ? 5.0 : // Morgan .zif files ~5MB
+                    // Major international libraries
+                    manifest.library === 'bl' ? 1.5 : // British Library high-res
+                    manifest.library === 'bodleian' ? 1.2 : // Oxford Bodleian
+                    manifest.library === 'gallica' ? 0.8 : // BnF Gallica
+                    manifest.library === 'parker' ? 2.0 : // Parker Library high-res
+                    manifest.library === 'cudl' ? 1.0 : // Cambridge Digital Library
+                    manifest.library === 'loc' ? 1.5 : // Library of Congress
+                    manifest.library === 'yale' ? 1.2 : // Yale University
+                    manifest.library === 'toronto' ? 1.0 : // University of Toronto
+                    // European libraries
+                    manifest.library === 'berlin' ? 0.9 : // Berlin State Library
+                    manifest.library === 'onb' ? 0.8 : // Austrian National Library
+                    manifest.library === 'vienna_manuscripta' ? 0.8 : // Vienna Manuscripta
+                    manifest.library === 'e_manuscripta' ? 0.7 : // Swiss e-manuscripta
+                    manifest.library === 'unifr' ? 0.6 : // University of Fribourg
+                    manifest.library === 'vatlib' ? 0.5 : // Vatican Library
+                    manifest.library === 'florence' ? 0.7 : // Florence libraries
+                    manifest.library === 'hhu' ? 0.6 : // Heinrich Heine University
+                    manifest.library === 'wolfenbuettel' ? 0.8 : // Wolfenbüttel
+                    manifest.library === 'freiburg' ? 0.6 : // Freiburg
+                    manifest.library === 'bordeaux' ? 0.7 : // Bordeaux
+                    manifest.library === 'e_rara' ? 0.9 : // e-rara Swiss
+                    0.5; // Default fallback for any other library
                 const estimatedTotalSizeMB = avgPageSizeMB * (manifest?.totalPages || 0);
                 item.estimatedSizeMB = estimatedTotalSizeMB;
                 
@@ -2062,9 +2100,12 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     item.eta = typeof progress === 'object' ? (progress as any).eta : undefined;
                     this.notifyListeners();
                 },
-                onManifestLoaded: () => {
-                    if (item) item.totalPages = ({} as any)?.totalPages;
-                    item.library = ({} as any).library as TLibrary;
+                onManifestLoaded: (manifest?: any) => {
+                    // Update item with manifest data when available
+                    if (item && manifest) {
+                        item.totalPages = manifest.totalPages;
+                        item.library = manifest.library as TLibrary;
+                    }
                     this.notifyListeners();
                 },
                 maxConcurrent: effectiveConcurrent2,

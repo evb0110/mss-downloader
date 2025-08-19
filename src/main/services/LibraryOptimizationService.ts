@@ -125,10 +125,10 @@ export class LibraryOptimizationService {
             optimizationDescription: 'Rome National Library optimizations: 1 concurrent download with delays, fast timeouts for instant HTTP responses, throttled to respect server rate limits'
         },
         'roman_archive': {
-            maxConcurrentDownloads: 1, // Single-threaded downloads to prevent IIPImage server throttling
-            timeoutMultiplier: 2.0, // Extended timeout for large JP2 processing
-            enableProgressiveBackoff: true, // Enable delays between requests to prevent server blocking
-            optimizationDescription: 'Roman Archive optimizations: 1 concurrent download with 1s delays, extended timeouts for IIPImage server stability'
+            // No concurrency cap - allow full parallel downloads for Roman Archive
+            timeoutMultiplier: 2.0, // Extended timeout for large JP2 processing  
+            enableProgressiveBackoff: false, // Disable delays for faster downloads
+            optimizationDescription: 'Roman Archive optimizations: Full concurrency allowed, extended timeouts for IIPImage server JP2 processing'
         },
         'berlin': {
             maxConcurrentDownloads: 3, // German State Library server, moderate limits
