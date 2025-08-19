@@ -6445,8 +6445,18 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     const paintingAnnotation = canvas.items?.[0]?.items?.[0];
                     
                     if (paintingAnnotation?.body?.id) {
+                        let imageUrl = paintingAnnotation.body.id;
+                        
+                        // CRITICAL FIX: Convert thumbnail URLs to full resolution
+                        // Original: .../full/!200,200/0/default.jpg (thumbnail)
+                        // Fixed: .../full/full/0/default.jpg (full resolution)
+                        if (imageUrl.includes('/full/!')) {
+                            imageUrl = imageUrl.replace(/\/full\/![0-9,]+\//, '/full/full/');
+                            console.log(`[Digital Scriptorium] Converting thumbnail to full resolution: ${imageUrl}`);
+                        }
+                        
                         images.push({
-                            url: paintingAnnotation.body.id,
+                            url: imageUrl,
                             pageNumber: i + 1
                         } as ManuscriptImage);
                     }
@@ -6462,8 +6472,16 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     const imageResource = canvas.images?.[0]?.resource;
                     
                     if (imageResource && imageResource['@id']) {
+                        let imageUrl = imageResource['@id'];
+                        
+                        // CRITICAL FIX: Convert thumbnail URLs to full resolution (v2 format)
+                        if (imageUrl.includes('/full/!')) {
+                            imageUrl = imageUrl.replace(/\/full\/![0-9,]+\//, '/full/full/');
+                            console.log(`[Digital Scriptorium] Converting v2 thumbnail to full resolution: ${imageUrl}`);
+                        }
+                        
                         images.push({
-                            url: imageResource['@id'],
+                            url: imageUrl,
                             pageNumber: i + 1
                         } as ManuscriptImage);
                     }
