@@ -6488,8 +6488,51 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 }
             }
             
-            console.log(`[Digital Scriptorium] Successfully extracted ${images.length} pages`);
-            return { images };
+            // Extract title from manifest
+            let title = 'Digital Scriptorium Manuscript';
+            
+            // Try different title fields in order of preference
+            if (manifest.label) {
+                if (typeof manifest.label === 'string') {
+                    title = manifest.label;
+                } else if (manifest.label.en && manifest.label.en[0]) {
+                    title = manifest.label.en[0];
+                } else if (manifest.label['@value']) {
+                    title = manifest.label['@value'];
+                } else if (Array.isArray(manifest.label) && manifest.label[0]) {
+                    title = manifest.label[0];
+                }
+            } else if (manifest.metadata) {
+                // Look for title in metadata array
+                const titleEntry = manifest.metadata.find((entry: any) => 
+                    entry.label && (
+                        entry.label.toLowerCase().includes('title') || 
+                        entry.label.en?.[0]?.toLowerCase().includes('title')
+                    )
+                );
+                if (titleEntry && titleEntry.value) {
+                    if (typeof titleEntry.value === 'string') {
+                        title = titleEntry.value;
+                    } else if (titleEntry.value.en && titleEntry.value.en[0]) {
+                        title = titleEntry.value.en[0];
+                    } else if (Array.isArray(titleEntry.value) && titleEntry.value[0]) {
+                        title = titleEntry.value[0];
+                    }
+                }
+            }
+            
+            // Clean up title - remove brackets and extra whitespace
+            title = title.replace(/^\[|\]$/g, '').trim();
+            if (title === '' || title === 'Digital Scriptorium Manuscript') {
+                title = 'Digital Scriptorium Manuscript';
+            }
+            
+            console.log(`[Digital Scriptorium] Successfully extracted ${images.length} pages from: ${title}`);
+            
+            return { 
+                images,
+                displayName: title
+            };
             
         } catch (error) {
             console.error('[Digital Scriptorium] Error loading manifest:', error);
