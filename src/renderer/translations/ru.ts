@@ -1,7 +1,7 @@
 export default {
   app: {
     title: 'Загрузчик Рукописей',
-    description: 'Загрузка рукописей из 7 рабочих цифровых библиотек + 1 в разработке',
+    description: 'Загрузка рукописей из 10 рабочих цифровых библиотек + 1 в разработке',
     footer: 'Настольное приложение для загрузки рукописей'
   },
   downloader: {
@@ -26,7 +26,7 @@ export default {
     clearCache: 'Очистить Кэш',
     cacheStats: 'Статистика Кэша',
     cacheCleared: 'Кэш успешно очищен',
-    workingLibraries: '7 рабочих + 1 в разработке',
+    workingLibraries: '10 рабочих + 1 в разработке',
     searchLibraries: 'Поиск библиотек...',
     noLibrariesFound: 'Библиотеки по вашему запросу не найдены'
   },
@@ -62,6 +62,14 @@ export default {
     durham: {
       name: 'Durham University',
       description: 'Цифровые рукописи Библиотеки Дархемского университета через IIIF'
+    },
+    unicatt: {
+      name: 'Unicatt (Ambrosiana)',
+      description: 'Цифровые рукописи библиотеки Амброзианы'
+    },
+    yale: {
+      name: 'Йельский Университет',
+      description: 'Цифровые коллекции библиотеки редких книг и рукописей Бейнеке (IIIF)'
     }
   },
   settings: {

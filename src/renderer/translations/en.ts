@@ -1,7 +1,7 @@
 export default {
   app: {
     title: 'Manuscript Downloader',
-    description: 'Download manuscripts from 8 working digital libraries + 1 in development',
+    description: 'Download manuscripts from 9 working digital libraries + 1 in development',
     footer: 'Desktop application for manuscript downloading'
   },
   downloader: {
@@ -26,7 +26,7 @@ export default {
     clearCache: 'Clear Cache',
     cacheStats: 'Cache Statistics',
     cacheCleared: 'Cache cleared successfully',
-    workingLibraries: '8 working + 1 in development',
+    workingLibraries: '9 working + 1 in development',
     searchLibraries: 'Search libraries...',
     noLibrariesFound: 'No libraries found matching your search'
   },
@@ -66,6 +66,10 @@ export default {
     unicatt: {
       name: 'Unicatt (Ambrosiana)',
       description: 'Biblioteca Ambrosiana digital manuscripts'
+    },
+    yale: {
+      name: 'Yale University Library',
+      description: 'Yale Beinecke Rare Book & Manuscript Library digital collections (IIIF)'
     }
   },
   settings: {
