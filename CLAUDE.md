@@ -30,6 +30,16 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 - **SILENT BUG KILLER:** Missing cache clear = users stuck with corrupted data forever
 - **CRITICAL FOR USER EXPERIENCE:** Without cache purge, deleted manuscripts retain bad data
 
+### 0.6. FILENAME DISCOVERY - NO PATTERN ASSUMPTIONS
+- **NEVER ASSUME FILENAME PATTERNS:** NEVER guess "001r.jp2", "002v.jp2" or ANY filename patterns
+- **DISCOVER FROM SOURCE:** Always get actual filenames from manifests, server responses, or directory listings
+- **NO SEMANTIC ASSUMPTIONS:** Don't assume "recto/verso", "page1/page2", or any naming conventions
+- **SERVER IS AUTHORITY:** Only the server knows what files actually exist - trust server responses only
+- **MANIFEST-FIRST APPROACH:** Parse IIIF manifests, JSON responses, HTML listings, or API endpoints for real filenames
+- **404 = WRONG APPROACH:** If getting 404s, you're assuming patterns instead of discovering actual files
+- **EXAMPLES OF WRONG:** Generating "058r.jp2" because you expect recto/verso pairs
+- **EXAMPLES OF RIGHT:** Parsing manifest JSON to get "ms_fragment_a_side1.tiff" as the actual filename
+
 ### 1. ELECTRON EXECUTION - ABSOLUTELY FORBIDDEN
 - **NEVER RUN ELECTRON DIRECTLY:** Do NOT execute `electron`, `npm run dev`, `npm run dev:headless` or ANY Electron commands
 - **USER RUNS THE APP:** The user will run the application themselves when needed
@@ -351,6 +361,7 @@ For each persistent issue:
 - **Development:** `.devkit/docs/development-guide.md`
 - **Architecture:** `ARCHITECTURE.md`
 - **Testing:** `TESTING.md`
+- **Playwright MCP Testing:** `.devkit/docs/playwright-mcp-testing-guide.md`
 - **Telegram Bot:** `.devkit/docs/telegram-bot-workflow-documentation.md`
 - **Active Todos:** `.devkit/tasks/TODOS.md`
 - **Handle-Issues v4:** `.devkit/docs/handle-issues-v4-orchestrated.md`
