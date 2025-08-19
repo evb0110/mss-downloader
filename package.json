@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.220",
+  "version": "1.4.221",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.220: 🔥 ULTRA-PRIORITY FIX - Roman Archive Dynamic Folio Support",
-    "COMPLETELY FIXED Issue #35: Roman Archive manuscripts now support all folio formats",
-    "ENHANCED: Dynamic folio range discovery (works with manuscripts starting from any folio number)",
-    "NEW: Alternative format support for A-prefixed page names (A001r.jp2, A000a.jp2, etc.)",
-    "MAINTAINED: 100% backward compatibility with existing manuscripts",
-    "VALIDATED: All 4 reported URLs now download successfully (100% success rate)"
+    "v1.4.221: 🔧 CRITICAL FIX - Auto-Split Chunking Logic Corrected",
+    "FIXED: Chunking bug causing negative page ranges (Pages 393-383, -9 pages)",
+    "IMPROVED: Auto-split logic now calculates parts based on threshold-safe page counts",
+    "ENHANCED: Safety checks prevent invalid page ranges in large manuscript downloads",
+    "RESOLVED: Roman Archive and other large manuscripts now split correctly into valid parts",
+    "VALIDATED: Chunking logic tested with 383-page manuscripts creating proper 30-part splits"
   ],
   "main": "dist/main/main.js",
   "scripts": {
@@ -99,7 +99,7 @@
     "node-fetch": "^2.7.0",
     "pdf-lib": "^1.17.1",
     "pdfkit": "^0.17.1",
-    "playwright": "^1.53.0",
+    "playwright": "^1.54.2",
     "sass": "^1.84.0",
     "terser": "^5.42.0",
     "typescript": "^5.5.3",

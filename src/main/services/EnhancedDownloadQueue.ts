@@ -921,9 +921,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     // Check if file exists and has reasonable size
                     const stats = await fs.stat(result);
                     // For auto-split chunks, use chunk's actual page count, not manifest total
-                    const actualPageCount = item.isChunk && item.chunkInfo ? 
-                        (item.chunkInfo.endPage - item.chunkInfo.startPage + 1) : 
-                        (item?.totalPages || 1);
+                    const actualPageCount = ((item as any).isChunk && (item as any).chunkInfo) ? 
+                        ((item as any).chunkInfo.endPage - (item as any).chunkInfo.startPage + 1) : 
+                        (item.isAutoPart && item.partInfo) ? 
+                            (item.partInfo.pageRange.end - item.partInfo.pageRange.start + 1) :
+                            (item?.totalPages || 1);
                     const minExpectedSize = Math.max(1024 * 100, actualPageCount * 50 * 1024); // At least 100KB or ~50KB per page
                     
                     if (stats.size < minExpectedSize) {
@@ -1560,12 +1562,16 @@ export class EnhancedDownloadQueue extends EventEmitter {
     
     private async splitQueueItem(
         originalItem: QueuedManuscript, 
-        manifest: { totalPages?: number; library?: string; title?: string }, 
+        manifest: { totalPages?: number; library?: string; title?: string; displayName?: string }, 
         estimatedSizeMB: number
     ): Promise<void> {
         const thresholdMB = this.state.globalSettings.autoSplitThresholdMB;
-        const numberOfParts = Math.ceil(estimatedSizeMB / thresholdMB);
-        const pagesPerPart = Math.ceil((manifest?.totalPages || 0) / numberOfParts);
+        const totalPages = manifest?.totalPages || 0;
+        const avgPageSizeMB = estimatedSizeMB / totalPages;
+        
+        // Calculate pages per part to stay under threshold
+        const pagesPerPart = Math.floor(thresholdMB / avgPageSizeMB);
+        const numberOfParts = Math.ceil(totalPages / pagesPerPart);
         
         // Remove original item from queue
         const originalIndex = this.state.items.findIndex(item => item.id === originalItem.id);
@@ -1576,8 +1582,14 @@ export class EnhancedDownloadQueue extends EventEmitter {
         // Create parts
         for (let i = 0; i < (numberOfParts || 0); i++) {
             const startPage = i * pagesPerPart + 1;
-            const endPage = Math.min((i + 1) * pagesPerPart, manifest?.totalPages || 0);
+            const endPage = Math.min((i + 1) * pagesPerPart, totalPages);
             const partNumber = i + 1;
+            
+            // Safety check: skip if startPage exceeds totalPages
+            if (startPage > totalPages) {
+                console.warn(`Skipping part ${partNumber}: startPage ${startPage} exceeds totalPages ${totalPages}`);
+                continue;
+            }
             
             const partId = `${originalItem.id}_part_${partNumber}`;
             const partItem = {
@@ -2150,9 +2162,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     // Check if file exists and has reasonable size
                     const stats = await fs.stat(result);
                     // For auto-split chunks, use chunk's actual page count, not manifest total
-                    const actualPageCount = item.isChunk && item.chunkInfo ? 
-                        (item.chunkInfo.endPage - item.chunkInfo.startPage + 1) : 
-                        (item?.totalPages || 1);
+                    const actualPageCount = ((item as any).isChunk && (item as any).chunkInfo) ? 
+                        ((item as any).chunkInfo.endPage - (item as any).chunkInfo.startPage + 1) : 
+                        (item.isAutoPart && item.partInfo) ? 
+                            (item.partInfo.pageRange.end - item.partInfo.pageRange.start + 1) :
+                            (item?.totalPages || 1);
                     const minExpectedSize = Math.max(1024 * 100, actualPageCount * 50 * 1024); // At least 100KB or ~50KB per page
                     
                     if (stats.size < minExpectedSize) {
