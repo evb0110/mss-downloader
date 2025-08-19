@@ -931,7 +931,7 @@ https://digi.vatlib.it/..."
             :class="['log-entry', `log-${log.level}`]"
           >
             <span class="log-time">{{ formatLogTime(log.timestamp) }}</span>
-            <span class="log-level">[{{ log.level.toUpperCase() }}]</span>
+            <span :class="['log-level', log.level.toLowerCase()]">[{{ log.level.toUpperCase() }}]</span>
             <span class="log-message">{{ log.message }}</span>
             <div
               v-if="log.details"
@@ -3358,19 +3358,19 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     margin-right: 10px;
 }
 
-.log-level:contains("ERROR") {
+.log-level.error {
     color: #dc3545;
 }
 
-.log-level:contains("WARN") {
+.log-level.warn {
     color: #ffc107;
 }
 
-.log-level:contains("INFO") {
+.log-level.info {
     color: #17a2b8;
 }
 
-.log-level:contains("DEBUG") {
+.log-level.debug {
     color: #6c757d;
 }
 
@@ -3525,7 +3525,6 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 .manuscript-title-link {
     color: inherit;
     text-decoration: none;
-    border-bottom: 1px dotted currentColor;
     transition: color 0.2s ease, border-color 0.2s ease;
     display: inline-block;
     max-width: fit-content;
@@ -3540,7 +3539,6 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 .manuscript-error-link {
     color: #dc3545;
     text-decoration: none;
-    border-bottom: 1px dotted #dc3545;
     transition: color 0.2s ease, border-color 0.2s ease;
     word-break: break-all;
     display: inline-block;
@@ -3649,6 +3647,7 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 .queue-item-controls {
     display: flex;
     gap: 8px;
+    margin-left: 20px;
 }
 
 .edit-btn {
@@ -3935,6 +3934,10 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 12px;
+}
+
+.queue-group {
+  border-bottom: solid lightgray;
 }
 
 /* Buttons are now inline in page-range, no separate edit-actions needed */
