@@ -3187,6 +3187,7 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     cursor: pointer;
     font-size: 13px;
     transition: background-color 0.2s;
+    white-space: nowrap;
 }
 
 .view-logs-btn:hover {
@@ -4662,6 +4663,11 @@ label {
     transform: none;
     box-shadow: none;
     opacity: 0.6;
+}
+
+/* Prevent text wrapping in buttons with icon + text combinations */
+button {
+    white-space: nowrap;
 }
 
 </style>
