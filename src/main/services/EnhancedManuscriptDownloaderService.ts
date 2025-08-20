@@ -60,7 +60,6 @@ import {
     MonteCassinoLoader,
     VallicellianLoader,
     OmnesVallicellianLoader,
-    IccuLoader,
     VeronaLoader,
     DiammLoader,
     BneLoader,
@@ -298,7 +297,6 @@ export class EnhancedManuscriptDownloaderService {
         this.libraryLoaders.set('montecassino', new MonteCassinoLoader(loaderDeps));
         this.libraryLoaders.set('vallicelliana', new VallicellianLoader(loaderDeps));
         this.libraryLoaders.set('omnesvallicelliana', new OmnesVallicellianLoader(loaderDeps));
-        this.libraryLoaders.set('iccu', new IccuLoader(loaderDeps));
         this.libraryLoaders.set('verona', new VeronaLoader(loaderDeps));
         this.libraryLoaders.set('diamm', new DiammLoader(loaderDeps));
         this.libraryLoaders.set('bne', new BneLoader(loaderDeps));
@@ -808,7 +806,7 @@ export class EnhancedManuscriptDownloaderService {
         },
         {
             name: 'University of Freiburg',
-            example: 'https://dl.ub.uni-freiburg.de/diglit/codal_25',
+            example: 'https://dl.ub.uni-freiburg.de/diglit/brant1494',
             description: 'University of Freiburg digital manuscript collection with METS/MODS metadata and maximum resolution IIIF support',
         },
         {
@@ -1017,10 +1015,10 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('archiviodiocesano.mo.it')) return 'modena';
         if (url.includes('bdl.servizirl.it')) return 'bdl';
         if (url.includes('europeana.eu')) return 'europeana';
-        if (url.includes('omnes.dbseret.com/montecassino')) return 'monte_cassino';
+        if (url.includes('omnes.dbseret.com/montecassino')) return 'montecassino';
         if (url.includes('dam.iccu.sbn.it') || url.includes('jmms.iccu.sbn.it')) return 'vallicelliana';
         if (url.includes('omnes.dbseret.com/vallicelliana')) return 'omnes_vallicelliana';
-        if (url.includes('manus.iccu.sbn.it')) return 'iccu_api';
+        if (url.includes('manus.iccu.sbn.it')) return 'montecassino';
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) return 'verona';
         if (url.includes('bvpb.mcu.es')) return 'bvpb';
         if (url.includes('diamm.ac.uk') || url.includes('iiif.diamm.net') || url.includes('musmed.eu/visualiseur-iiif')) return 'diamm';
@@ -2075,7 +2073,7 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadLibraryManifest('sharedcanvas', originalUrl);
                     break;
                 case 'saint_omer':
-                    manifest = await this.loadLibraryManifest('saint_omer', originalUrl);
+                    manifest = await this.loadLibraryManifest('saintomer', originalUrl);
                     break;
                 case 'ugent':
                     manifest = await this.loadLibraryManifest('ugent', originalUrl);
@@ -2096,7 +2094,7 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadLibraryManifest('trinity_cam', originalUrl);
                     break;
                 case 'toronto':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('toronto', originalUrl);
+                    manifest = await this.loadLibraryManifest('toronto', originalUrl);
                     break;
                 case 'isos':
                     manifest = await this.loadLibraryManifest('isos', originalUrl);
@@ -2182,9 +2180,6 @@ export class EnhancedManuscriptDownloaderService {
                 case 'rome':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('rome', originalUrl);
                     break;
-                case 'saintomer':
-                    manifest = await this.loadLibraryManifest('saintomer', originalUrl);
-                    break;
                 case 'fulda':
                     manifest = await this.loadLibraryManifest('fulda', originalUrl);
                     break;
@@ -2232,9 +2227,6 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'gams':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('gams', originalUrl);
-                    break;
-                case 'iccu':
-                    manifest = await this.loadLibraryManifest('iccu', originalUrl);
                     break;
                 case 'generic_iiif':
                     manifest = await this.useLoaderOrFallback('generic_iiif', originalUrl, (url: string) => this.loadLibraryManifest('generic_iiif', url));

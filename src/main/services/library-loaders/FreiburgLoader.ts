@@ -16,8 +16,8 @@ export class FreiburgLoader extends BaseLibraryLoader {
                 console.log(`Loading Freiburg manuscript from: ${originalUrl}`);
                 
                 // Extract manuscript ID from URL - matches patterns like:
-                // https://dl.ub.uni-freiburg.de/diglit/codal_25
-                // https://dl.ub.uni-freiburg.de/diglit/codal_25/0001
+                // https://dl.ub.uni-freiburg.de/diglit/brant1494
+                // https://dl.ub.uni-freiburg.de/diglit/brant1494/0001
                 const manuscriptMatch = originalUrl.match(/\/diglit\/([^/?]+)/);
                 if (!manuscriptMatch) {
                     throw new Error('Invalid Freiburg URL format - cannot extract manuscript ID');
