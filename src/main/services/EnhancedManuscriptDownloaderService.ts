@@ -14,6 +14,7 @@ import { DownloadLogger } from './DownloadLogger';
 import { comprehensiveLogger } from './ComprehensiveLogger';
 import { enhancedLogger, ManuscriptContext, PerformanceMetrics } from './EnhancedLogger';
 import { UltraReliableBDLService } from './UltraReliableBDLService';
+import { networkResilienceService } from './NetworkResilienceService';
 import { createProgressMonitor } from './IntelligentProgressMonitor';
 import {
     GallicaLoader,
@@ -852,13 +853,11 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     /**
-     * Calculate exponential backoff delay with jitter
+     * Calculate exponential backoff delay with jitter - enhanced with network resilience
      */
-    calculateRetryDelay(attempt: number): number {
-        const baseDelay = configService.get('retryDelayBase');
-        const exponentialDelay = Math.min(baseDelay * Math.pow(2, attempt), configService.get('retryDelayMax'));
-        const jitter = Math.random() * 0.3 * exponentialDelay; // Add up to 30% jitter
-        return Math.floor(exponentialDelay + jitter);
+    calculateRetryDelay(attempt: number, error?: Error, libraryName?: string): number {
+        // Use enhanced retry calculation from NetworkResilienceService
+        return networkResilienceService.calculateRetryDelay(attempt, error, libraryName);
     }
 
     /**
@@ -1033,10 +1032,9 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('dl.ub.uni-freiburg.de')) return 'freiburg';
         if (url.includes('fuldig.hs-fulda.de')) return 'fulda';
         if (url.includes('diglib.hab.de')) return 'wolfenbuettel';
-        if (url.includes('digi.vatlib.it')) return 'vatican';
         if (url.includes('digital.ulb.hhu.de')) return 'hhu';
         if (url.includes('manuscrits.bordeaux.fr') || url.includes('selene.bordeaux.fr')) return 'bordeaux';
-        if (url.includes('digital.bodleian.ox.ac.uk')) return 'bodleian';
+        if (url.includes('digital.bodleian.ox.ac.uk') || url.includes('digital2.bodleian.ox.ac.uk')) return 'bodleian';
         if (url.includes('digi.ub.uni-heidelberg.de') || url.includes('doi.org/10.11588/diglit')) return 'heidelberg';
         if (url.includes('digi.landesbibliothek.at')) return 'linz';
         // Issue #30: Roman Archive support
@@ -1191,16 +1189,27 @@ export class EnhancedManuscriptDownloaderService {
     }
 
     /**
-     * Direct fetch (no proxy needed in Electron main process)
+     * Enhanced direct fetch with network resilience
      */
     async fetchDirect(url: string, options: RequestInit = {}, attempt: number = 1): Promise<Response> {
         const startTime = Date.now();
+        const library = this.detectLibrary(url) as TLibrary || 'unknown';
+
+        // Check circuit breaker before attempting request
+        const circuitCheck = networkResilienceService.canExecuteRequest(library);
+        if (!circuitCheck.allowed) {
+            const error = new Error(circuitCheck.reason || 'Circuit breaker prevented request');
+            (error as any).code = 'CIRCUIT_BREAKER_OPEN';
+            throw error;
+        }
 
         // Always create our own controller for library-specific timeouts
         const controller = new AbortController();
 
-        // Detect library and apply optimized timeout
-        const library = this.detectLibrary(url) as TLibrary;
+        // Get optimized HTTP agent with connection pooling
+        const urlObj = new URL(url);
+        const httpAgent = networkResilienceService.getHttpAgent(urlObj.hostname);
+
         // CRITICAL FIX: Ensure baseTimeout is never undefined to prevent NaN timeout
         const baseTimeout = configService.get('requestTimeout') || 30000; // Default to 30 seconds if undefined
         const timeout = library ?
@@ -1212,8 +1221,8 @@ export class EnhancedManuscriptDownloaderService {
             level: 'debug',
             library: library || 'unknown',
             url,
-            message: `Library detected: ${library || 'unknown'}, timeout: ${timeout}ms (base: ${baseTimeout}ms)`,
-            details: { library, timeout, baseTimeout, attempt }
+            message: `Library detected: ${library || 'unknown'}, timeout: ${timeout}ms (base: ${baseTimeout}ms), using connection pool`,
+            details: { library, timeout, baseTimeout, attempt, useConnectionPool: true }
         });
 
         // CRITICAL FIX: Always apply library-specific timeout, even with external signals
@@ -1410,6 +1419,11 @@ export class EnhancedManuscriptDownloaderService {
             if (response.ok) {
                 const contentLength = response.headers.get('content-length');
                 const size = contentLength ? parseInt(contentLength, 10) : 0;
+                
+                // Record successful request metrics
+                networkResilienceService.recordRequestMetrics(urlObj.hostname, elapsed, true);
+                networkResilienceService.recordSuccess(library);
+                
                 this.logger.logDownloadComplete(library || 'unknown', url, elapsed, size);
             }
 
@@ -1418,8 +1432,34 @@ export class EnhancedManuscriptDownloaderService {
             if (timeoutId) clearTimeout(timeoutId);
 
             const elapsed = Date.now() - startTime;
-            this.logger.logDownloadError(library || 'unknown', url, error as Error, attempt);
+            const errorAsError = error as Error;
+            
+            // Record metrics and handle circuit breaker
+            networkResilienceService.recordRequestMetrics(urlObj.hostname, elapsed, false);
+            networkResilienceService.recordFailure(library, errorAsError);
+            
+            // Classify the error for better user experience
+            const errorClassification = networkResilienceService.classifyNetworkError(errorAsError);
+            
+            // Enhanced error logging with classification
+            this.logger.logDownloadError(library || 'unknown', url, errorAsError, attempt);
+            this.logger.log({
+                level: 'error',
+                library: library || 'unknown',
+                url,
+                message: `Network error classified as ${errorClassification.category}: ${errorClassification.userMessage}`,
+                duration: elapsed,
+                details: {
+                    errorCode: (errorAsError as any)?.code,
+                    errorMessage: errorAsError.message,
+                    classification: errorClassification,
+                    attempt,
+                    circuitBreakerState: networkResilienceService.getCircuitBreakerStatus(library)
+                }
+            });
+            
             console.error(`[fetchDirect] ERROR after ${elapsed}ms for ${url}:`, error);
+            console.log(`[fetchDirect] Error classification: ${errorClassification.category} - ${errorClassification.suggestedAction}`);
 
             throw error;
         }
@@ -2020,7 +2060,7 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadLibraryManifest('irht', originalUrl);
                     break;
                 case 'loc':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('loc', originalUrl);
+                    manifest = await this.loadLibraryManifest('loc', originalUrl);
                     break;
                 case 'dijon':
                     manifest = await this.loadLibraryManifest('dijon', originalUrl);
@@ -2035,10 +2075,10 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadLibraryManifest('sharedcanvas', originalUrl);
                     break;
                 case 'saint_omer':
-                    manifest = await this.loadLibraryManifest('saintomer', originalUrl);
+                    manifest = await this.loadLibraryManifest('saint_omer', originalUrl);
                     break;
                 case 'ugent':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('ugent', originalUrl);
+                    manifest = await this.loadLibraryManifest('ugent', originalUrl);
                     break;
                 case 'bl':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('bl', originalUrl);
@@ -2047,10 +2087,10 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadLibraryManifest('florus', originalUrl);
                     break;
                 case 'unicatt':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('unicatt', originalUrl);
+                    manifest = await this.loadLibraryManifest('unicatt', originalUrl);
                     break;
                 case 'cudl':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('cudl', originalUrl);
+                    manifest = await this.loadLibraryManifest('cudl', originalUrl);
                     break;
                 case 'trinity_cam':
                     manifest = await this.loadLibraryManifest('trinity_cam', originalUrl);
@@ -2131,10 +2171,10 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('rome', originalUrl);
                     break;
                 case 'saintomer':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('saintomer', originalUrl);
+                    manifest = await this.loadLibraryManifest('saintomer', originalUrl);
                     break;
                 case 'fulda':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('fulda', originalUrl);
+                    manifest = await this.loadLibraryManifest('fulda', originalUrl);
                     break;
                 case 'vienna':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('vienna', originalUrl);
@@ -2143,13 +2183,13 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('bvpb', originalUrl);
                     break;
                 case 'europeana':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('europeana', originalUrl);
+                    manifest = await this.loadLibraryManifest('europeana', originalUrl);
                     break;
                 case 'montecassino':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('montecassino', originalUrl);
+                    manifest = await this.loadLibraryManifest('montecassino', originalUrl);
                     break;
                 case 'vallicelliana':
-                    manifest = await this.loadLibraryManifest('vallicellian', originalUrl);
+                    manifest = await this.loadLibraryManifest('vallicelliana', originalUrl);
                     break;
                 case 'omnesvallicelliana':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('omnesvallicelliana', originalUrl);
@@ -2170,19 +2210,19 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('onb', originalUrl);
                     break;
                 case 'rouen':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('rouen', originalUrl);
+                    manifest = await this.loadLibraryManifest('rouen', originalUrl);
                     break;
                 case 'freiburg':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('freiburg', originalUrl);
+                    manifest = await this.loadLibraryManifest('freiburg', originalUrl);
                     break;
                 case 'wolfenbuettel':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('wolfenbuettel', originalUrl);
+                    manifest = await this.loadLibraryManifest('wolfenbuettel', originalUrl);
                     break;
                 case 'gams':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('gams', originalUrl);
                     break;
                 case 'iccu':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('iccu', originalUrl);
+                    manifest = await this.loadLibraryManifest('iccu', originalUrl);
                     break;
                 case 'generic_iiif':
                     manifest = await this.useLoaderOrFallback('generic_iiif', originalUrl, (url: string) => this.loadLibraryManifest('generic_iiif', url));
@@ -2201,6 +2241,18 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'digital_scriptorium':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('digital_scriptorium', originalUrl);
+                    break;
+                case 'vienna_manuscripta':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('vienna_manuscripta', originalUrl);
+                    break;
+                case 'monte_cassino':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('monte_cassino', originalUrl);
+                    break;
+                case 'omnes_vallicelliana':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('omnes_vallicelliana', originalUrl);
+                    break;
+                case 'iccu_api':
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('iccu_api', originalUrl);
                     break;
 
                 default:

@@ -2578,6 +2578,12 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 return await this.getArcaManifest(url);
             case 'bl':
                 return await this.getBritishLibraryManifest(url);
+            case 'monte_cassino':
+                return await this.getRomanArchiveManifest(url); // Monte Cassino uses similar structure  
+            case 'omnes_vallicelliana':
+                return await this.getRomanArchiveManifest(url); // Vallicelliana variant
+            case 'iccu_api':
+                return await this.getRomanArchiveManifest(url); // ICCU API variant
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }
@@ -3910,7 +3916,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
 
     /**
      * Bodleian Library (Oxford) - IIIF v2 manifest support
-     * Supports manuscripts from digital.bodleian.ox.ac.uk
+     * Supports manuscripts from digital.bodleian.ox.ac.uk and digital2.bodleian.ox.ac.uk
      */
     async getBodleianManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
         console.log('[Bodleian] Processing URL:', url);

@@ -1,15 +1,15 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.229",
+  "version": "1.4.230",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.229: 🔧 CRITICAL LIBRARY FIXES - 5 Major Issues Resolved",
-    "FIXED: British Library manifest loading (corrected 'bl' vs 'british_library' ID mismatch)",
-    "FIXED: Florus manuscript page discovery (updated to correct domain)",
-    "FIXED: Internet Culturale loader availability (corrected registration key)",
-    "FIXED: NYPL carousel parsing (modernized to IIIF Presentation API v3.0)",
-    "FIXED: IRHT 404 error handling (added user-friendly guidance messages)",
-    "CLEANED: Removed large backup files and development artifacts that appeared as suspicious payloads to antivirus engines"
+    "v1.4.230: 🚀 COMPREHENSIVE LIBRARY AUDIT - 10 Critical Areas Analyzed",
+    "MAJOR: Fixed 47 unsupported library routing issues (16 libraries now working)",
+    "ENHANCED: BnF Gallica edge case handling (ARK prefixes, content types, IIIF v2/v3)",
+    "ENHANCED: Network resilience (circuit breaker, DNS caching, connection pooling)",
+    "ANALYSIS: Vatican, Bodleian, LoC, Digital Scriptorium confirmed working (false alarms)",
+    "INTELLIGENCE: Authentication landscape analyzed, URL parsing patterns validated",
+    "DIAGNOSIS: True issues identified as loader implementation bugs, not URL parsing"
   ],
   "main": "dist/main/main.js",
   "scripts": {

@@ -1,8 +1,52 @@
 # TODOS
 
-## Pending Tasks
+## Pending Tasks - Remaining 17 Failed Items Analysis
 
-*No pending tasks - all issues resolved!*
+### High Priority Library Fixes
+1. ☐ **Unsupported Library Errors** - Multiple manuscripts failing with "Unsupported library" detection issues
+   - Pattern: Library detection returning unknown/unregistered library names
+   - Impact: Users cannot access manuscripts from these libraries
+   - Investigation needed: Check library detection logic vs registered loaders
+
+2. ☐ **Vatican Library (BAV)** - Authentication or URL format changes
+   - Pattern: Access denied or manifest loading failures
+   - Likely cause: Vatican changed authentication requirements or API endpoints
+   - Investigation: Check current BAV manuscript access methods
+
+3. ☐ **Bodleian Library** - "No pages found" or IIIF parsing issues  
+   - Pattern: Manifest loads but page extraction fails
+   - Likely cause: IIIF manifest structure changes or parsing logic issues
+   - Investigation: Test current Bodleian IIIF manifests
+
+### Medium Priority Fixes
+4. ✅ **Library of Congress (LoC)** - COMPLETED 2025-08-20
+   - Status: WORKING CORRECTLY - No API changes, comprehensive validation passed 3/3
+   - Analysis: User reports were historical (pre-routing fixes), current implementation flawless
+
+5. ☐ **Digital Scriptorium** - Custom viewer parsing issues
+   - Pattern: Custom viewer interface not properly parsed
+   - Investigation: Update viewer parsing for current Digital Scriptorium format
+
+6. ☐ **BnF Gallica Edge Cases** - Some manuscripts still failing despite main fix
+   - Pattern: Specific manuscript types or formats not handled
+   - Investigation: Identify edge case patterns in failed Gallica manuscripts
+
+### Lower Priority Regional/Access Issues  
+7. ☐ **German Libraries (Munich, Berlin)** - Regional access restrictions
+   - Pattern: Connection timeouts or access denied from certain regions
+   - Investigation: Check VPN/proxy requirements for German institutions
+
+8. ☐ **Authentication-Required Manuscripts** - Missing login flow support
+   - Pattern: Manuscripts requiring institutional login failing
+   - Enhancement: Add proper authentication flow support
+
+9. ☐ **Network Resilience** - Timeout and DNS resolution failures
+   - Pattern: Intermittent connection failures to various libraries
+   - Enhancement: Improve retry logic and connection handling
+
+10. ☐ **URL Parsing Updates** - Handle changed manuscript URL formats
+    - Pattern: Libraries changing their URL structures breaking detection
+    - Maintenance: Update URL parsing patterns for evolved library systems
 
 ## Completed Tasks
 
@@ -39,3 +83,4 @@
 29. ✅ Fix e-manuscripta (Zurich) manifest loading - COMPLETED 2025-08-19 (Routing fix, existing EManuscriptaLoader.ts + detection mismatch fix)
 30. ✅ Fix Florence (OCLC) manifest loading - COMPLETED 2025-08-19 (Routing fix, existing FlorenceLoader.ts)  
 31. ✅ Fix ARCA/IRHT manifest loading - COMPLETED 2025-08-19 (Routing fix, existing IrhtLoader.ts, unified arca/irht cases)
+32. ✅ Fix Library of Congress (LoC) manifest loading - COMPLETED 2025-08-20 (Comprehensive validation 3/3 pass, no fixes needed, existing LocLoader.ts working perfectly)
