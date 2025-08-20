@@ -587,27 +587,16 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const images: ManuscriptImage[] = [];
         const seenMediaIds = new Set<string>(); // Track unique media IDs to prevent duplicates
         
-        // Extract all pages - prefer PDF if available, fallback to IIIF
+        // Extract all pages - use IIIF for individual page downloads (PDFs are for full document downloads)
         for (let i = 0; i < data?.length; i++) {
             const page = data[i];
             if (!page) continue;
             
-            // Check if PDF is available for this page
-            const idMediaServerPdf = page['idMediaServerPdf'] as string | undefined;
-            const mediaServerPdf = page['mediaServerPdf'] as string | undefined;
+            // Always use IIIF for individual pages - PDFs are for complete document downloads
             const idMediaServer = page['idMediaServer'] as string | undefined;
             const cantaloupeUrl = page['cantaloupeUrl'] as string | undefined;
             
-            if (idMediaServerPdf && mediaServerPdf) {
-                const pdfUrl = `${mediaServerPdf}${idMediaServerPdf}.pdf`;
-                if (!seenMediaIds.has(`pdf_${idMediaServerPdf}`)) {
-                    seenMediaIds.add(`pdf_${idMediaServerPdf}`);
-                    images.push({
-                        url: pdfUrl,
-                        label: `Page ${images?.length + 1}`
-                    });
-                }
-            } else if (idMediaServer && !seenMediaIds.has(idMediaServer)) {
+            if (idMediaServer && !seenMediaIds.has(idMediaServer)) {
                 // Fallback to IIIF if no PDF available
                 seenMediaIds.add(idMediaServer);
                 

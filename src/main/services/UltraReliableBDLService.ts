@@ -30,6 +30,8 @@ interface BDLDownloadOptions {
     minDelayMs?: number;
     maxDelayMs?: number;
     pageVerificationSize?: number; // Min bytes for valid image
+    globalTimeoutMs?: number; // Overall timeout to prevent infinite blocking
+    yieldToQueue?: boolean; // Allow other downloads to proceed if stuck
 }
 
 export class UltraReliableBDLService {
@@ -245,9 +247,20 @@ export class UltraReliableBDLService {
         pageIndex: number,
         options: BDLDownloadOptions = {}
     ): Promise<Buffer | null> {
+        // Set global timeout to prevent infinite blocking (default 10 minutes)
+        const globalTimeoutMs = options.globalTimeoutMs || 10 * 60 * 1000;
+        const startTime = Date.now();
+        
         const maxRetries = options.ultraReliableMode ? -1 : (options.maxRetries || 50);
         let attempt = 0;
         let lastError: Error | null = null;
+        
+        // Reject PDF URLs immediately - they're invalid for individual page downloads
+        if (url.includes('/mediaserver-server-pdf/') && url.endsWith('.pdf')) {
+            console.error(`[BDL Ultra] INVALID URL: PDF URLs cannot be downloaded as individual pages: ${url}`);
+            console.error(`[BDL Ultra] This indicates a manifest generation bug - should use IIIF URLs instead`);
+            return null;
+        }
         
         // Check if this page is in the retry queue
         const queueKey = `${url}_${pageIndex}`;
@@ -367,9 +380,18 @@ export class UltraReliableBDLService {
                 }
             }
             
-            // Calculate delay for next attempt
-            const delay = this.calculateRetryDelay(attempt, options);
-            console.log(`[BDL Ultra] Waiting ${delay}ms before retry ${attempt + 1}...`);
+            // Calculate delay for next attempt with timeout awareness
+            let delay = this.calculateRetryDelay(attempt, options);
+            
+            // If approaching global timeout, reduce delay to make more attempts
+            const elapsed = Date.now() - startTime;
+            const remainingTime = globalTimeoutMs - elapsed;
+            if (remainingTime < delay * 3) {
+                delay = Math.max(1000, remainingTime / 6); // Give at least 6 more quick attempts
+                console.log(`[BDL Ultra] Approaching timeout, reducing delay to ${Math.round(delay)}ms`);
+            }
+            
+            console.log(`[BDL Ultra] Waiting ${Math.round(delay)}ms before retry ${attempt + 1}...`);
             
             // Log progress for long-running downloads
             if (attempt % 50 === 0) {
@@ -389,12 +411,19 @@ export class UltraReliableBDLService {
             await new Promise(resolve => setTimeout(resolve, delay));
         }
         
-        // This point should NEVER be reached if maxRetries === -1
+        // This point should NEVER be reached if maxRetries === -1 unless timeout occurred
         if (maxRetries === -1) {
-            console.error(`[BDL Ultra] CRITICAL ERROR: Unlimited mode exited loop! This should never happen!`);
-            console.error(`[BDL Ultra] Forcing continuation...`);
-            // Force retry forever - recursive call
-            return this.ultraReliableDownload(url, pageIndex, options);
+            const elapsed = Date.now() - startTime;
+            
+            if (elapsed >= globalTimeoutMs) {
+                console.warn(`[BDL Ultra] Stopped after ${attempt} attempts due to global timeout (${Math.round(globalTimeoutMs/1000)}s)`);
+                console.log(`[BDL Ultra] This prevents infinite blocking - other downloads can now proceed`);
+                return null;
+            }
+            
+            console.error(`[BDL Ultra] CRITICAL ERROR: Unlimited mode exited loop unexpectedly!`);
+            console.error(`[BDL Ultra] Last error: ${lastError?.message}`);
+            return null; // Don't create infinite recursion
         }
         
         // Final failure (only if not unlimited mode)
@@ -466,11 +495,21 @@ export class UltraReliableBDLService {
             }
         }
         
-        // Process any remaining items in retry queue
+        // Process any remaining items in retry queue - but skip invalid PDF URLs
         if (this.retryQueue.size > 0) {
             console.log(`[BDL Ultra] Processing ${this.retryQueue.size} items in retry queue...`);
-            for (const [_key, item] of this.retryQueue) {
+            const itemsToRemove: string[] = [];
+            
+            for (const [key, item] of this.retryQueue) {
                 if (item.url.includes('bdl.servizirl.it')) {
+                    // Skip PDF URLs that are invalid for individual page downloads
+                    if (item.url.includes('/mediaserver-server-pdf/') && item.url.endsWith('.pdf')) {
+                        console.log(`[BDL Ultra] Removing invalid PDF URL from retry queue: ${item.url}`);
+                        itemsToRemove.push(key);
+                        continue;
+                    }
+                    
+                    console.log(`[BDL Ultra] Resuming download for page ${item.pageIndex} (attempt ${item.attemptCount})`);
                     const buffer = await this.ultraReliableDownload(
                         item.url, 
                         item.pageIndex, 
@@ -483,6 +522,16 @@ export class UltraReliableBDLService {
                         verifiedPaths[item.pageIndex] = path;
                     }
                 }
+            }
+            
+            // Remove invalid PDF URLs from retry queue
+            for (const key of itemsToRemove) {
+                this.retryQueue.delete(key);
+            }
+            
+            if (itemsToRemove.length > 0) {
+                await this.saveRetryQueue();
+                console.log(`[BDL Ultra] Removed ${itemsToRemove.length} invalid PDF URLs from retry queue`);
             }
         }
         

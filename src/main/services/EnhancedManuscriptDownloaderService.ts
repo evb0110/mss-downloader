@@ -326,6 +326,9 @@ export class EnhancedManuscriptDownloaderService {
 
         // Clear Rome cache to fix incorrect 150-page cached values
         this.clearRomeCacheOnStartup();
+        
+        // Clear BDL cache to fix PDF URL vs IIIF URL issue
+        this.clearBdlCacheOnStartup();
     }
 
     /**
@@ -411,6 +414,38 @@ export class EnhancedManuscriptDownloaderService {
                 errorStack: (error as Error).stack,
                 details: {
                     message: 'Failed to clear Graz cache on startup'
+                }
+            });
+        }
+    }
+
+    /**
+     * Clear BDL cache on startup to fix PDF URL vs IIIF URL issue
+     * Old cached manifests contain PDF URLs that cause infinite download loops
+     */
+    private async clearBdlCacheOnStartup(): Promise<void> {
+        try {
+            await this.manifestCache.clearDomain('bdl.servizirl.it');
+            console.log('✅ BDL cache cleared on startup - fixing PDF URL vs IIIF URL issue');
+            comprehensiveLogger.log({
+                level: 'info',
+                category: 'system',
+                library: 'BDL',
+                details: {
+                    message: 'BDL cache cleared on startup',
+                    reason: 'Fix PDF URL vs IIIF URL infinite download loops'
+                }
+            });
+        } catch (error) {
+            console.warn('⚠️ Failed to clear BDL cache on startup:', (error as Error).message);
+            comprehensiveLogger.log({
+                level: 'error',
+                category: 'system',
+                library: 'BDL',
+                errorMessage: (error as Error).message,
+                errorStack: (error as Error).stack,
+                details: {
+                    message: 'Failed to clear BDL cache on startup'
                 }
             });
         }

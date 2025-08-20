@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.231",
+  "version": "1.4.232",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.231: 🛡️ CRITICAL: Rome Library HTTP/HTTPS Protocol Fix",
-    "FIXED: Rome National Library manuscripts now working (HTTP protocol support restored)",
-    "FIXED: Rome manifest loading crash - BNCR_Ms_SESS_0062 and all Rome manuscripts now functional",
-    "PRESERVED: ICCU catalog → Monte Cassino routing still works correctly",
-    "TECHNICAL: SharedManifestLoaders now properly detects HTTP vs HTTPS protocols for requests",
-    "TESTED: Verified Rome library loads 175 pages correctly without routing conflicts"
+    "v1.4.232: 🔧 CRITICAL: BDL Infinite Download Loop Fix",
+    "FIXED: BDL manuscripts no longer get stuck in infinite retry loops (PDF URL vs IIIF URL issue)",
+    "FIXED: BDL downloads now complete properly instead of showing 100% but never finishing",
+    "RESOLVED: Cache corruption with PDF URLs - fresh IIIF URLs generated on restart",
+    "ENHANCED: Automatic cleanup of invalid retry queue entries for faster completion",
+    "TECHNICAL: SharedManifestLoaders prioritizes IIIF over PDF for individual page downloads"
   ],
   "main": "dist/main/main.js",
   "scripts": {
