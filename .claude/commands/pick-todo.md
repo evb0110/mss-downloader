@@ -1,4 +1,5 @@
 Pick and handle the first pending todo from .devkit/tasks/TODOS.md following the complete project workflow with ULTRA-DEEP analysis and comprehensive validation.
+## ultrathink
 
 **⚡ ULTRA-THINK TODO EXECUTION ⚡**: This command applies maximum analytical depth and comprehensive testing to todo implementation with thorough validation protocols.
 
