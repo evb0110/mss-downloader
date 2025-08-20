@@ -2105,7 +2105,19 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadLibraryManifest('mira', originalUrl);
                     break;
                 case 'arca':
-                    manifest = await this.loadLibraryManifest('irht', originalUrl);
+                    try {
+                        // Try IIIF manifest first (IIIF-ONLY manuscripts like fykkvnm8wkpd)
+                        manifest = await this.sharedManifestAdapter.getManifestForLibrary('arca', originalUrl);
+                    } catch (error: any) {
+                        // If IIIF manifest returns 404, fall back to web parsing (WEB-ONLY manuscripts like md14nk323d72)
+                        if (error.message && error.message.includes('404')) {
+                            console.log(`[ARCA] IIIF manifest not found for ${originalUrl}, falling back to web parsing via IrhtLoader`);
+                            manifest = await this.loadLibraryManifest('irht', originalUrl);
+                        } else {
+                            // Propagate other errors (network, auth, etc.)
+                            throw error;
+                        }
+                    }
                     break;
                 case 'rbme':
                     manifest = await this.loadLibraryManifest('rbme', originalUrl);
