@@ -349,16 +349,21 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             }
         }
         
-        // Fallback to Node.js https module
+        // Fallback to Node.js http/https modules based on protocol
         // Use dynamic import to avoid eval warning  
         let httpsLib: typeof https;
+        let httpLib: any; // HTTP module for Rome library HTTP URLs
+        
         try {
             const httpsModule = await import('https');
             httpsLib = httpsModule.default || httpsModule;
+            const httpModule = await import('http');
+            httpLib = httpModule.default || httpModule;
         } catch {
             // If dynamic import fails, try indirect eval as last resort
             const requireFunc = (0, eval)('require');
             httpsLib = requireFunc('https');
+            httpLib = requireFunc('http');
         }
         
         return new Promise((resolve, reject) => {
@@ -434,7 +439,12 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 }
             }
 
-            const req = httpsLib.request(requestOptions, (res: http.IncomingMessage) => {
+            // CRITICAL FIX: Use correct module based on protocol (Rome library uses HTTP)
+            const isHttps = urlObj.protocol === 'https:';
+            const requestLib = isHttps ? httpsLib : httpLib;
+            console.log(`[SharedManifestLoaders] Using ${isHttps ? 'HTTPS' : 'HTTP'} module for ${url}`);
+            
+            const req = requestLib.request(requestOptions, (res: http.IncomingMessage) => {
                 if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400) {
                     if (res.headers.location) {
                         let redirectUrl: string;
@@ -1688,86 +1698,154 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
 
     /**
      * BVPB (Biblioteca Virtual del Patrimonio Bibliográfico) - Spain
-     * Uses direct image ID access pattern
+     * Supports both URL formats:
+     * - registro.do?id= (catalog record page)
+     * - grupo.do?path= (direct image gallery page)
      */
     async getBVPBManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
-        // Extract registro ID from URL
-        const match = url.match(/registro\.do\?id=(\d+)/);
-        if (!match) throw new Error('Invalid BVPB URL');
+        // Handle both URL formats
+        const registroMatch = url.match(/registro\.do\?id=(\d+)/);
+        const grupoMatch = url.match(/grupo\.do\?path=(\d+)/);
         
-        // const _registroId = match?.[1]; // Extracted but not used
+        let grupoPath: string;
         
-        // Fetch the registro page to find image viewer links
-        const response = await this.fetchWithRetry(url);
-        if (!response.ok) throw new Error(`Failed to fetch BVPB page: ${response.status}`);
-        
-        const html = await response.text();
-        
-        // Look for all catalogo_imagenes grupo.do paths
-        const grupoMatches = [...html.matchAll(/catalogo_imagenes\/grupo\.do\?path=(\d+)"[^>]*data-analytics-grouptitle="([^"]+)"/g)];
-        
-        let grupoPath = null;
-        
-        // First, try to find "Copia digital" (digital copy) path
-        for (const match of grupoMatches) {
-            if (match?.[2] && match?.[2].includes('Copia digital')) {
-                grupoPath = match?.[1];
-                break;
-            }
-        }
-        
-        // If not found, look for any non-PDF path
-        if (!grupoPath) {
+        if (grupoMatch) {
+            // Direct grupo.do?path= format - use path directly
+            grupoPath = grupoMatch[1] || '';
+            if (!grupoPath) throw new Error('Invalid BVPB grupo URL: missing path parameter');
+            console.log(`BVPB: Direct grupo URL detected, path=${grupoPath}`);
+        } else if (registroMatch) {
+            // registro.do?id= format - extract grupo path from catalog page
+            console.log(`BVPB: Registro URL detected, extracting grupo path...`);
+            
+            // Fetch the registro page to find image viewer links
+            const response = await this.fetchWithRetry(url);
+            if (!response.ok) throw new Error(`Failed to fetch BVPB page: ${response.status}`);
+            
+            const html = await response.text();
+            
+            // Look for all catalogo_imagenes grupo.do paths
+            const grupoMatches = [...html.matchAll(/catalogo_imagenes\/grupo\.do\?path=(\d+)"[^>]*data-analytics-grouptitle="([^"]+)"/g)];
+            
+            let foundGrupoPath = null;
+            
+            // First, try to find "Copia digital" (digital copy) path
             for (const match of grupoMatches) {
-                if (match?.[2] && !match?.[2].toUpperCase().includes('PDF')) {
-                    grupoPath = match?.[1];
+                if (match?.[2] && match?.[2].includes('Copia digital')) {
+                    foundGrupoPath = match?.[1];
                     break;
                 }
             }
-        }
-        
-        // Fallback to simple pattern
-        if (!grupoPath) {
-            const simpleMatch = html.match(/catalogo_imagenes\/grupo\.do\?path=(\d+)/);
-            if (simpleMatch) {
-                grupoPath = simpleMatch[1];
+            
+            // If not found, look for any non-PDF path
+            if (!foundGrupoPath) {
+                for (const match of grupoMatches) {
+                    if (match?.[2] && !match?.[2].toUpperCase().includes('PDF')) {
+                        foundGrupoPath = match?.[1];
+                        break;
+                    }
+                }
             }
-        }
-        
-        if (!grupoPath) throw new Error('No digital copy found for this BVPB manuscript');
-        
-        // First, fetch the main grupo page to see all thumbnails/pages
-        const grupoUrl = `https://bvpb.mcu.es/es/catalogo_imagenes/grupo.do?path=${grupoPath}`;
-        const grupoResponse = await this.fetchWithRetry(grupoUrl);
-        if (!grupoResponse.ok) throw new Error(`Failed to fetch grupo page: ${grupoResponse.status}`);
-        
-        const grupoHtml = await grupoResponse.text();
-        
-        // Extract all image object IDs from miniature links
-        const miniaturePattern = /object-miniature\.do\?id=(\d+)/g;
-        const imageIdPattern = /idImagen=(\d+)/g;
-        const imageIds: string[] = [];
-        let idMatch;
-        
-        // Try miniature pattern first
-        while ((idMatch = miniaturePattern.exec(grupoHtml)) !== null) {
-            if (idMatch[1] && !imageIds.includes(idMatch[1])) {
-                imageIds.push(idMatch[1] || '');
+            
+            // Fallback to simple pattern
+            if (!foundGrupoPath) {
+                const simpleMatch = html.match(/catalogo_imagenes\/grupo\.do\?path=(\d+)/);
+                if (simpleMatch) {
+                    foundGrupoPath = simpleMatch[1];
+                }
             }
+            
+            if (!foundGrupoPath) throw new Error('No digital copy found for this BVPB manuscript');
+            grupoPath = foundGrupoPath;
+        } else {
+            throw new Error('Invalid BVPB URL: must contain either registro.do?id= or grupo.do?path=');
         }
         
-        // If no miniatures found, try direct image ID pattern
-        if (imageIds?.length === 0) {
+        // Fetch all pages with pagination (BVPB shows 12 images per page)
+        const allImageIds: string[] = [];
+        let currentPosition = 1;
+        let hasMorePages = true;
+        let totalPages = 0;
+        let pageTitle = 'BVPB Manuscript';
+        
+        while (hasMorePages) {
+            const grupoUrl = `https://bvpb.mcu.es/es/catalogo_imagenes/grupo.do?path=${grupoPath}&posicion=${currentPosition}`;
+            console.log(`BVPB: Fetching page starting at position ${currentPosition}...`);
+            
+            const grupoResponse = await this.fetchWithRetry(grupoUrl);
+            if (!grupoResponse.ok) throw new Error(`Failed to fetch grupo page: ${grupoResponse.status}`);
+            
+            const grupoHtml = await grupoResponse.text();
+            
+            // Extract title and total pages count from first page
+            if (currentPosition === 1) {
+                try {
+                    const titleMatch = grupoHtml.match(/<title[^>]*>([^<]*)<\/title>/i);
+                    if (titleMatch) {
+                        pageTitle = titleMatch[1]
+                            ?.replace(/Biblioteca Virtual del Patrimonio Bibliográfico[^>]*>\s*/gi, '')
+                            .replace(/^\s*Búsqueda[^>]*>\s*/gi, '')
+                            .replace(/\s*\(Objetos digitales\)\s*/gi, '')
+                            .replace(/&gt;/g, '>')
+                            .replace(/&rsaquo;/g, '›')
+                            .replace(/&[^;]+;/g, ' ')
+                            .replace(/\s+/g, ' ')
+                            .trim() || pageTitle;
+                    }
+                } catch (titleError) {
+                    console.warn('Could not extract BVPB title:', (titleError as Error).message);
+                }
+                
+                // Extract total pages count (e.g., "1 al 12 de 209")
+                const totalMatch = grupoHtml.match(/(\d+)\s*de\s*(\d+)/);
+                if (totalMatch) {
+                    totalPages = parseInt(totalMatch[2] || '0');
+                    console.log(`BVPB: Found total pages: ${totalPages}`);
+                }
+            }
+            
+            // Extract image IDs from current page
+            const imageIdPattern = /object-miniature\.do\?id=(\d+)/g;
+            const pageImageIds: string[] = [];
+            let idMatch;
             while ((idMatch = imageIdPattern.exec(grupoHtml)) !== null) {
-                if (idMatch[1] && !imageIds.includes(idMatch[1])) {
-                    imageIds.push(idMatch[1] || '');
+                const imageId = idMatch?.[1] || '';
+                if (imageId && !pageImageIds.includes(imageId)) {
+                    pageImageIds.push(imageId);
+                }
+            }
+            
+            console.log(`BVPB: Found ${pageImageIds?.length} images on page starting at position ${currentPosition}`);
+            allImageIds.push(...pageImageIds);
+            
+            // Check if there are more pages
+            if (totalPages > 0 && allImageIds?.length >= totalPages) {
+                hasMorePages = false;
+                console.log(`BVPB: Reached total pages limit: ${totalPages}`);
+            } else if (pageImageIds?.length === 0) {
+                hasMorePages = false;
+                console.log('BVPB: No more images found, stopping pagination');
+            } else {
+                // Move to next page (BVPB shows 12 images per page)
+                currentPosition += 12;
+                
+                // Safety check - don't go beyond reasonable limits
+                if (currentPosition > 10000) {
+                    console.warn('BVPB: Reached safety limit, stopping pagination');
+                    hasMorePages = false;
                 }
             }
         }
         
-        if (imageIds?.length === 0) {
+        if (allImageIds?.length === 0) {
             throw new Error('No image IDs found in BVPB viewer');
         }
+        
+        console.log(`BVPB: Manuscript discovery completed: ${allImageIds?.length} pages found`);
+        
+        // Remove duplicates and sort by numeric ID to ensure proper order
+        const imageIds = [...new Set(allImageIds)].sort((a, b) => parseInt(a) - parseInt(b));
+        console.log(`BVPB: Unique image IDs: ${imageIds?.length}`);
         
         const images: ManuscriptImage[] = [];
         
@@ -2198,14 +2276,28 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         // https://digital.ulb.hhu.de/content/titleinfo/7938251
         // https://digital.ulb.hhu.de/hs/content/titleinfo/259994
         // https://digital.ulb.hhu.de/ms/content/titleinfo/9400252
-        const match = url.match(/titleinfo\/(\d+)/);
-        if (!match) throw new Error('Invalid HHU URL format');
+        // https://digital.ulb.hhu.de/i3f/v20/7674176/manifest (direct IIIF manifest URLs)
+        let manuscriptId: string | null = null;
+        let manifestUrl: string;
+
+        // Try to match direct IIIF manifest URL first
+        let match = url.match(/\/i3f\/v20\/(\d+)\/manifest/);
+        if (match) {
+            manuscriptId = match[1];
+            manifestUrl = url; // Already a manifest URL
+            console.log(`[HHU] Using direct IIIF manifest URL, manuscript ID: ${manuscriptId}`);
+        } else {
+            // Try titleinfo format
+            match = url.match(/titleinfo\/(\d+)/);
+            if (!match) throw new Error('Invalid HHU URL format. Expected formats: /i3f/v20/[ID]/manifest or /content/titleinfo/[ID]');
+            
+            manuscriptId = match[1];
+            // HHU uses a unified IIIF v2.0 pattern for all collections
+            // All collections use the same /i3f/v20/ endpoint regardless of collection type
+            manifestUrl = `https://digital.ulb.hhu.de/i3f/v20/${manuscriptId}/manifest`;
+            console.log(`[HHU] Extracted manuscript ID from titleinfo: ${manuscriptId}, manifest URL: ${manifestUrl}`);
+        }
         
-        const manuscriptId = match?.[1];
-        
-        // HHU uses a unified IIIF v2.0 pattern for all collections
-        // All collections use the same /i3f/v20/ endpoint regardless of collection type
-        const manifestUrl = `https://digital.ulb.hhu.de/i3f/v20/${manuscriptId}/manifest`;
         console.log('[HHU] Fetching IIIF manifest from:', manifestUrl);
         
         try {
@@ -2582,8 +2674,6 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 return await this.getRomanArchiveManifest(url); // Monte Cassino uses similar structure  
             case 'omnes_vallicelliana':
                 return await this.getRomanArchiveManifest(url); // Vallicelliana variant
-            case 'iccu_api':
-                return await this.getRomanArchiveManifest(url); // ICCU API variant
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
         }

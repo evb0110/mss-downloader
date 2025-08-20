@@ -1,15 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.230",
+  "version": "1.4.231",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.230: 🚀 COMPREHENSIVE LIBRARY AUDIT - 10 Critical Areas Analyzed",
-    "MAJOR: Fixed 47 unsupported library routing issues (16 libraries now working)",
-    "ENHANCED: BnF Gallica edge case handling (ARK prefixes, content types, IIIF v2/v3)",
-    "ENHANCED: Network resilience (circuit breaker, DNS caching, connection pooling)",
-    "ANALYSIS: Vatican, Bodleian, LoC, Digital Scriptorium confirmed working (false alarms)",
-    "INTELLIGENCE: Authentication landscape analyzed, URL parsing patterns validated",
-    "DIAGNOSIS: True issues identified as loader implementation bugs, not URL parsing"
+    "v1.4.231: 🛡️ CRITICAL: Rome Library HTTP/HTTPS Protocol Fix",
+    "FIXED: Rome National Library manuscripts now working (HTTP protocol support restored)",
+    "FIXED: Rome manifest loading crash - BNCR_Ms_SESS_0062 and all Rome manuscripts now functional",
+    "PRESERVED: ICCU catalog → Monte Cassino routing still works correctly",
+    "TECHNICAL: SharedManifestLoaders now properly detects HTTP vs HTTPS protocols for requests",
+    "TESTED: Verified Rome library loads 175 pages correctly without routing conflicts"
   ],
   "main": "dist/main/main.js",
   "scripts": {
