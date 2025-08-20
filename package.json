@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.232",
+  "version": "1.4.234",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.232: 🔧 CRITICAL: BDL Infinite Download Loop Fix",
-    "FIXED: BDL manuscripts no longer get stuck in infinite retry loops (PDF URL vs IIIF URL issue)",
-    "FIXED: BDL downloads now complete properly instead of showing 100% but never finishing",
-    "RESOLVED: Cache corruption with PDF URLs - fresh IIIF URLs generated on restart",
-    "ENHANCED: Automatic cleanup of invalid retry queue entries for faster completion",
-    "TECHNICAL: SharedManifestLoaders prioritizes IIIF over PDF for individual page downloads"
+    "v1.4.234: 🔧 CRITICAL FIX: BDL Library Complete Resolution + Code Cleanup",
+    "FIXED: BDL manuscripts infinite loop issue - pageLinks regeneration now works properly",
+    "FIXED: BDL auto-start after document splitting - multi-part downloads now begin automatically",
+    "ENHANCED: BDL sequential mode - responsive sampling with non-blocking UI",
+    "CLEANUP: Removed 104 unnecessary debug logs (18% reduction) for cleaner console output",
+    "TECHNICAL: Intelligent log cleanup preserving essential operational visibility"
   ],
   "main": "dist/main/main.js",
   "scripts": {
