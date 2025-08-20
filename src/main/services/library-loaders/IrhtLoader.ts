@@ -27,6 +27,10 @@ export class IrhtLoader extends BaseLibraryLoader {
                         throw new Error(`IRHT server error (HTTP 500) - this appears to be a server-side issue with the IRHT digital archive. The manuscript may be temporarily unavailable. Please try again later or verify the URL: ${url}`);
                     }
                     
+                    if (response.status === 404) {
+                        throw new Error(`IRHT manuscript not found (HTTP 404) - the requested document may have been moved, removed, or the ARK identifier may be incorrect. Please verify the URL is correct: ${url}. You can search for the manuscript at: https://arca.irht.cnrs.fr/`);
+                    }
+                    
                     if (!response.ok) {
                         throw new Error(`Failed to load IRHT page: HTTP ${response.status} - ${response.statusText}`);
                     }

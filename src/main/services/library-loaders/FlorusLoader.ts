@@ -100,13 +100,13 @@ export class FlorusLoader extends BaseLibraryLoader {
 
             // Also check for pagination links
             const pageLinks: string[] = [];
-            const baseUrl = 'https://florus-app.huma-num.fr/fcgi-bin/iipsrv.fcgi';
+            const baseUrl = 'https://florus.bm-lyon.fr/fcgi-bin/iipsrv.fcgi';
 
             // Generate URLs for all pages
             for (let page = 1; page <= maxPage; page++) {
                 // Fetch each page to get its specific image URL
                 try {
-                    const pageUrl = `https://florus-app.huma-num.fr/florus.php?vue=${page}&cote=${cote}`;
+                    const pageUrl = `https://florus.bm-lyon.fr/visualisation.php?cote=${cote}&vue=${page}`;
                     const pageResponse = await this.deps.fetchDirect(pageUrl);
                     
                     if (pageResponse.ok) {

@@ -283,7 +283,7 @@ export class EnhancedManuscriptDownloaderService {
         this.libraryLoaders.set('rbme', new RbmeLoader(loaderDeps));
         this.libraryLoaders.set('parker', new ParkerLoader(loaderDeps));
         this.libraryLoaders.set('manuscripta', new ManuscriptaLoader(loaderDeps));
-        this.libraryLoaders.set('internetculturale', new InternetCulturaleLoader(loaderDeps));
+        this.libraryLoaders.set('internet_culturale', new InternetCulturaleLoader(loaderDeps));
         this.libraryLoaders.set('graz', new GrazLoader(loaderDeps));
         this.libraryLoaders.set('cologne', new CologneLoader(loaderDeps));
         this.libraryLoaders.set('vienna', new ViennaManuscriptaLoader(loaderDeps));

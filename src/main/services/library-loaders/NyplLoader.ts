@@ -19,122 +19,48 @@ export class NyplLoader extends BaseLibraryLoader {
                 }
                 
                 const uuid = uuidMatch[1];
+                console.log(`NYPL: Processing UUID ${uuid}`);
                 
-                // Fetch the main page to extract parent collection data
-                const pageResponse = await this.deps.fetchDirect(nyplUrl);
-                if (!pageResponse.ok) {
-                    throw new Error(`Failed to fetch NYPL page: ${pageResponse.status}`);
+                // Modern NYPL uses IIIF Presentation API v3.0 manifests
+                const manifestUrl = `https://api-collections.nypl.org/manifests/${uuid}`;
+                console.log(`NYPL: Fetching IIIF manifest from ${manifestUrl}`);
+                
+                const manifestResponse = await this.deps.fetchDirect(manifestUrl);
+                if (!manifestResponse.ok) {
+                    throw new Error(`Failed to fetch IIIF manifest: ${manifestResponse.status} ${manifestResponse.statusText}`);
                 }
                 
-                const pageContent = await pageResponse.text();
+                const iiifManifest = await manifestResponse.json();
                 
-                // Extract parent UUID from captures API endpoint in the page data
-                const capturesUrlMatch = pageContent.match(/data-fetch-url="([^"]*\/items\/([a-f0-9-]+)\/captures[^"]*)"/);
-                let pageLinks: string[] = [];
+                // Extract image URLs from IIIF manifest structure
+                if (!iiifManifest.items || !Array.isArray(iiifManifest.items)) {
+                    throw new Error('Invalid IIIF manifest structure - no items found');
+                }
+                
+                console.log(`NYPL: Processing ${iiifManifest.items.length} canvases from IIIF manifest`);
+                
+                const pageLinks = iiifManifest.items.map((canvas: any, index: number) => {
+                    const serviceId = canvas.items?.[0]?.items?.[0]?.body?.service?.[0]?.id;
+                    if (!serviceId) {
+                        throw new Error(`Missing image service ID in canvas ${index + 1}`);
+                    }
+                    
+                    // Extract image ID from service URL (format: https://iiif.nypl.org/iiif/3/{IMAGE_ID})
+                    const imageId = serviceId.split('/').pop();
+                    if (!imageId) {
+                        throw new Error(`Could not extract image ID from service URL: ${serviceId}`);
+                    }
+                    
+                    // Use IIIF Image API v3 for maximum resolution
+                    return `https://iiif.nypl.org/iiif/3/${imageId}/full/max/0/default.jpg`;
+                });
+                
+                // Extract display name from IIIF manifest
                 let displayName = `NYPL Document ${uuid}`;
-                
-                if (capturesUrlMatch) {
-                    const capturesPath = capturesUrlMatch[1];
-                    const parentUuid = capturesUrlMatch[2];
-                    
-                    console.log(`NYPL: Found parent collection ${parentUuid}, fetching complete manifest`);
-                    
-                    try {
-                        // Call the captures API to get all pages
-                        const capturesUrl = `https://digitalcollections.nypl.org${capturesPath}?per_page=500`;
-                        const capturesResponse = await this.deps.fetchDirect(capturesUrl);
-                        
-                        if (capturesResponse.ok) {
-                            const capturesData = await capturesResponse.json();
-                            
-                            if (capturesData.response?.captures && Array.isArray(capturesData.response.captures)) {
-                                const captures = capturesData.response.captures;
-                                
-                                console.log(`NYPL: Retrieved ${captures?.length} pages from captures API (total: ${capturesData.response.total})`);
-                                
-                                // Extract image IDs and construct high-resolution image URLs
-                                pageLinks = captures.map((item: Record<string, unknown>) => {
-                                    if (!item['image_id']) {
-                                        throw new Error(`Missing image_id for capture ${item['id'] || 'unknown'}`);
-                                    }
-                                    // Use iiif-prod.nypl.org format for full resolution images (&t=g parameter)
-                                    return `https://iiif-prod.nypl.org/index.php?id=${item['image_id']}&t=g`;
-                                });
-                                
-                                // Extract display name from the first capture
-                                if (captures[0]?.title) {
-                                    displayName = captures[0].title;
-                                }
-                            }
-                        }
-                    } catch (apiError: unknown) {
-                        const errorMessage = apiError instanceof Error ? apiError.message : String(apiError);
-                        console.warn(`NYPL: Captures API failed (${errorMessage}), falling back to carousel data`);
-                    }
-                }
-                
-                // Fallback to original carousel method if captures API failed or no data
-                if (pageLinks?.length === 0) {
-                    console.log('NYPL: Using fallback carousel data method');
-                    
-                    // Extract carousel data which contains image IDs
-                    const carouselMatch = pageContent.match(/data-items="([^"]+)"/);
-                    if (!carouselMatch) {
-                        throw new Error('Could not find carousel data in NYPL page');
-                    }
-                    
-                    // Decode HTML entities and parse JSON
-                    const carouselDataHtml = carouselMatch[1];
-                    const carouselDataJson = carouselDataHtml
-                        ?.replace(/&quot;/g, '"')
-                        .replace(/&#39;/g, "'")
-                        .replace(/&amp;/g, '&');
-                    
-                    if (!carouselDataJson) {
-                        throw new Error('Carousel data JSON is empty');
-                    }
-                    
-                    let carouselItems;
-                    try {
-                        carouselItems = JSON.parse(carouselDataJson);
-                    } catch (error: any) {
-                        throw new Error(`Failed to parse carousel JSON: ${(error as Error).message}`);
-                    }
-                    
-                    if (!Array.isArray(carouselItems) || carouselItems?.length === 0) {
-                        throw new Error('No carousel items found');
-                    }
-                    
-                    // Extract image IDs and construct high-resolution image URLs
-                    pageLinks = carouselItems.map((item: Record<string, unknown>) => {
-                        if (!item['image_id']) {
-                            throw new Error(`Missing image_id for item ${item['id'] || 'unknown'}`);
-                        }
-                        // Use iiif-prod.nypl.org format for full resolution images (&t=g parameter)
-                        return `https://iiif-prod.nypl.org/index.php?id=${item['image_id']}&t=g`;
-                    });
-                    
-                    // Extract display name from the first item or fallback to title from item_data
-                    if (carouselItems[0]?.title_full) {
-                        displayName = carouselItems[0].title_full;
-                    } else if (carouselItems[0]?.title) {
-                        displayName = carouselItems[0].title;
-                    } else {
-                        // Fallback: try to extract from item_data as well
-                        const itemDataMatch = pageContent.match(/var\s+item_data\s*=\s*({.*?});/s);
-                        if (itemDataMatch) {
-                            try {
-                                const itemData = JSON.parse(itemDataMatch[1] || '{}');
-                                if (itemData.title) {
-                                    displayName = Array.isArray(itemData.title) ? itemData.title[0] : itemData.title;
-                                }
-                            } catch {
-                                // Ignore parsing errors for fallback title
-                            }
-                        }
-                    }
-                    
-                    console.warn(`NYPL: Using carousel fallback method - got ${pageLinks?.length} pages. If this manuscript has more pages, there may be an issue with the captures API.`);
+                if (iiifManifest.label?.en?.[0]) {
+                    displayName = iiifManifest.label.en[0];
+                } else if (iiifManifest.label && typeof iiifManifest.label === 'string') {
+                    displayName = iiifManifest.label;
                 }
                 
                 if (pageLinks?.length === 0) {

@@ -2576,7 +2576,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             case 'arca':
                 // ARCA URLs use IRHT infrastructure with IIIF v2/v3
                 return await this.getArcaManifest(url);
-            case 'british_library':
+            case 'bl':
                 return await this.getBritishLibraryManifest(url);
             default:
                 throw new Error(`Unsupported library: ${libraryId}`);
@@ -5743,8 +5743,12 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         throw new Error('UGent manifest loading not yet implemented');
     }
 
-    async loadBritishLibraryManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
-        throw new Error('British Library manifest loading not yet implemented');
+    async loadBritishLibraryManifest(url: string): Promise<ManuscriptImage[]> {
+        const result = await this.getBritishLibraryManifest(url);
+        if (Array.isArray(result)) {
+            return result;
+        }
+        return result.images;
     }
 
     async loadWolfenbuettelManifest(_UNUSED_url: string): Promise<ManuscriptImage[]> {
