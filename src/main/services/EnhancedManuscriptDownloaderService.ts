@@ -709,7 +709,8 @@ export class EnhancedManuscriptDownloaderService {
         {
             name: 'University of Toronto (Fisher)',
             example: 'https://collections.library.utoronto.ca/view/fisher2:F6521',
-            description: 'University of Toronto Thomas Fisher Rare Book Library manuscripts via IIIF v2.0/v3.0',
+            description: 'University of Toronto Thomas Fisher Rare Book Library manuscripts via IIIF v2.0/v3.0 - Available from Russia',
+            geoBlocked: true,
         },
         {
             name: 'Fulda University of Applied Sciences',
@@ -2145,7 +2146,10 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('heidelberg', originalUrl);
                     break;
                 case 'bdl':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('bdl', originalUrl);
+                    // ROUTING: bdl → BdlLoader (more comprehensive than SharedManifest implementation)
+                    // WHY: BdlLoader properly handles IIIF URLs vs PDF URLs distinction
+                    // TESTED: 2024-08-20 with manuscript 3903 - fixes infinite PDF download loops
+                    manifest = await this.loadLibraryManifest('bdl', originalUrl);
                     break;
                 case 'berlin':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('berlin', originalUrl);
@@ -2358,7 +2362,9 @@ export class EnhancedManuscriptDownloaderService {
                         persistentQueue: true,
                         pageVerificationSize: 10240, // 10KB minimum
                         minDelayMs: 2000,
-                        maxDelayMs: 60000 // 1 minute max between attempts
+                        maxDelayMs: 60000, // 1 minute max between attempts
+                        globalTimeoutMs: 8 * 60 * 1000, // 8 minute timeout per page to prevent blocking
+                        yieldToQueue: true // Allow other downloads to proceed if stuck
                     }
                 );
 
