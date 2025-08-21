@@ -1367,7 +1367,12 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 // Major libraries that should use auto-split
                 'bl', 'bodleian', 'gallica', 'parker', 'cudl', 'loc', 'yale', 'toronto',
                 'berlin', 'onb', 'e_manuscripta', 'unifr', 'vatlib', 'florence', 'hhu',
-                'wolfenbuettel', 'freiburg', 'bordeaux', 'e_rara', 'vienna_manuscripta'
+                'wolfenbuettel', 'freiburg', 'bordeaux', 'e_rara', 'vienna_manuscripta',
+                // CRITICAL: High-res libraries that MUST use auto-split to prevent memory failures
+                'laon', // Laon Bibliothèque: 7.2MB pages - EXTREME memory risk without auto-split
+                'munich', // Munich Digital Collections: 3.8MB pages - HIGH memory risk without auto-split
+                'omnes_vallicelliana', // OMNES Vallicelliana: 2.3MB pages - HIGH priority fix for timeout issues
+                'ugent' // University of Ghent: 2.0MB pages - CRITICAL fix for "Array buffer allocation failed" errors
             ];
             
             if (manifest && manifest.library && estimatedSizeLibraries.includes(manifest.library)) {
@@ -1387,6 +1392,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     manifest.library === 'czech' ? 0.5 :
                     manifest.library === 'modena' ? 0.4 :
                     manifest.library === 'morgan' ? 5.0 : // Morgan .zif files ~5MB
+                    manifest.library === 'laon' ? 7.2 : // Laon Bibliothèque IIIF full resolution ~7.2MB (EXTREME)
+                    manifest.library === 'munich' ? 3.8 : // Munich Digital Collections IIIF /full/max/ ~3.8MB (HIGH)
                     // Major international libraries
                     manifest.library === 'bl' ? 1.5 : // British Library high-res
                     manifest.library === 'bodleian' ? 1.2 : // Oxford Bodleian
@@ -1409,6 +1416,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     manifest.library === 'freiburg' ? 0.6 : // Freiburg
                     manifest.library === 'bordeaux' ? 0.7 : // Bordeaux
                     manifest.library === 'e_rara' ? 0.9 : // e-rara Swiss
+                    manifest.library === 'omnes_vallicelliana' ? 2.3 : // OMNES Vallicelliana IIIF v2 ~2.3MB (TIMEOUT FIX)
+                    manifest.library === 'ugent' ? 2.0 : // University of Ghent IIIF Belgian manuscripts ~2.0MB (ARRAY BUFFER FIX)
                     0.5; // Default fallback for any other library
                 const estimatedTotalSizeMB = avgPageSizeMB * (manifest?.totalPages || 0);
                 item.estimatedSizeMB = estimatedTotalSizeMB;

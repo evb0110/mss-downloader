@@ -1,0 +1,1094 @@
+{
+  "timestamp": "2025-08-21T17:04:50.887Z",
+  "summary": {
+    "totalLibraries": 65,
+    "librariesWithIssues": 35,
+    "totalTests": 15,
+    "failedTests": 0,
+    "successRate": "100.0",
+    "twoImplementationsBugs": 12,
+    "criticalIssueCount": 17
+  },
+  "criticalIssues": [
+    "morgan: TWO_IMPLEMENTATIONS_BUG: Has individual morganLoader but routes to SharedManifest - should use individual loader for better features",
+    "grenoble: TWO_IMPLEMENTATIONS_BUG: Has individual grenobleLoader but routes to SharedManifest - should use individual loader for better features",
+    "karlsruhe: TWO_IMPLEMENTATIONS_BUG: Has individual karlsruheLoader but routes to SharedManifest - should use individual loader for better features",
+    "manchester: TWO_IMPLEMENTATIONS_BUG: Has individual manchesterLoader but routes to SharedManifest - should use individual loader for better features",
+    "e_manuscripta: NO_IMPLEMENTATION: No loader or SharedManifest method found for e_manuscripta",
+    "e_manuscripta: KEY_MISMATCH: detectLibrary returns \"e_manuscripta\" but routes to \"emanuscripta\"",
+    "vatlib: NO_IMPLEMENTATION: No loader or SharedManifest method found for vatlib",
+    "vatlib: KEY_MISMATCH: detectLibrary returns \"vatlib\" but routes to \"vatican\"",
+    "bl: TWO_IMPLEMENTATIONS_BUG: Has individual blLoader but routes to SharedManifest - should use individual loader for better features",
+    "gams: TWO_IMPLEMENTATIONS_BUG: Has individual gamsLoader but routes to SharedManifest - should use individual loader for better features",
+    "vienna_manuscripta: TWO_IMPLEMENTATIONS_BUG: Has individual vienna_manuscriptaLoader but routes to SharedManifest - should use individual loader for better features",
+    "rome: TWO_IMPLEMENTATIONS_BUG: Has individual romeLoader but routes to SharedManifest - should use individual loader for better features",
+    "omnes_vallicelliana: MISSING_ROUTING: No routing case found in switch statement for omnes_vallicelliana",
+    "verona: TWO_IMPLEMENTATIONS_BUG: Has individual veronaLoader but routes to SharedManifest - should use individual loader for better features",
+    "bvpb: TWO_IMPLEMENTATIONS_BUG: Has individual bvpbLoader but routes to SharedManifest - should use individual loader for better features",
+    "mdc_catalonia: TWO_IMPLEMENTATIONS_BUG: Has individual mdc_cataloniaLoader but routes to SharedManifest - should use individual loader for better features",
+    "onb: TWO_IMPLEMENTATIONS_BUG: Has individual onbLoader but routes to SharedManifest - should use individual loader for better features"
+  ],
+  "libraryPatterns": [
+    {
+      "key": "nypl",
+      "urlPatterns": [
+        "digitalcollections.nypl.org"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "morgan",
+      "urlPatterns": [
+        "themorgan.org"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "TWO_IMPLEMENTATIONS_BUG: Has individual morganLoader but routes to SharedManifest - should use individual loader for better features"
+      ]
+    },
+    {
+      "key": "gallica",
+      "urlPatterns": [
+        "gallica.bnf.fr"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "grenoble",
+      "urlPatterns": [
+        "pagella.bm-grenoble.fr"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "TWO_IMPLEMENTATIONS_BUG: Has individual grenobleLoader but routes to SharedManifest - should use individual loader for better features"
+      ]
+    },
+    {
+      "key": "karlsruhe",
+      "urlPatterns": [
+        "i3f.vls.io && blb-karlsruhe.de",
+        "digital.blb-karlsruhe.de"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "TWO_IMPLEMENTATIONS_BUG: Has individual karlsruheLoader but routes to SharedManifest - should use individual loader for better features"
+      ]
+    },
+    {
+      "key": "manchester",
+      "urlPatterns": [
+        "digitalcollections.manchester.ac.uk"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "FRAGILE_PATTERN: \"digitalcollections.manchester.ac.uk\" too specific, may break with minor changes",
+        "TWO_IMPLEMENTATIONS_BUG: Has individual manchesterLoader but routes to SharedManifest - should use individual loader for better features"
+      ]
+    },
+    {
+      "key": "munich",
+      "urlPatterns": [
+        "digitale-sammlungen.de"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "POTENTIAL_REDUNDANCY: Has both individual loader and SharedManifest method - consider removing SharedManifest method"
+      ]
+    },
+    {
+      "key": "norwegian",
+      "urlPatterns": [
+        "nb.no"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": false,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "TOO_GENERIC: \"nb.no\" may match unintended URLs"
+      ]
+    },
+    {
+      "key": "unifr",
+      "urlPatterns": [
+        "e-codices.unifr.ch",
+        "e-codices.ch"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "e_manuscripta",
+      "urlPatterns": [
+        "e-manuscripta.ch"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": false,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest->emanuscripta",
+      "issues": [
+        "NO_IMPLEMENTATION: No loader or SharedManifest method found for e_manuscripta",
+        "KEY_MISMATCH: detectLibrary returns \"e_manuscripta\" but routes to \"emanuscripta\""
+      ]
+    },
+    {
+      "key": "e_rara",
+      "urlPatterns": [
+        "e-rara.ch"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": false,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "TOO_GENERIC: \"e-rara.ch\" may match unintended URLs"
+      ]
+    },
+    {
+      "key": "yale",
+      "urlPatterns": [
+        "collections.library.yale.edu"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": false,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": []
+    },
+    {
+      "key": "vatlib",
+      "urlPatterns": [
+        "digi.vatlib.it"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": false,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest->vatican",
+      "issues": [
+        "NO_IMPLEMENTATION: No loader or SharedManifest method found for vatlib",
+        "KEY_MISMATCH: detectLibrary returns \"vatlib\" but routes to \"vatican\""
+      ]
+    },
+    {
+      "key": "cecilia",
+      "urlPatterns": [
+        "cecilia.mediatheques.grand-albigeois.fr"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "loc",
+      "urlPatterns": [
+        "www.loc.gov",
+        "tile.loc.gov"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "FRAGILE_PATTERN: \"www.loc.gov\" too specific, may break with minor changes",
+        "POTENTIAL_REDUNDANCY: Has both individual loader and SharedManifest method - consider removing SharedManifest method"
+      ]
+    },
+    {
+      "key": "dijon",
+      "urlPatterns": [
+        "patrimoine.bm-dijon.fr"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "laon",
+      "urlPatterns": [
+        "bibliotheque-numerique.ville-laon.fr"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "durham",
+      "urlPatterns": [
+        "iiif.durham.ac.uk"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "FRAGILE_PATTERN: \"iiif.durham.ac.uk\" too specific, may break with minor changes"
+      ]
+    },
+    {
+      "key": "sharedcanvas",
+      "urlPatterns": [
+        "sharedcanvas.be"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "saintomer",
+      "urlPatterns": [
+        "bibliotheque-agglo-stomer.fr"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest->saintomer",
+      "issues": []
+    },
+    {
+      "key": "ugent",
+      "urlPatterns": [
+        "lib.ugent.be"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "bl",
+      "urlPatterns": [
+        "iiif.bl.uk",
+        "bl.digirati.io"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "TWO_IMPLEMENTATIONS_BUG: Has individual blLoader but routes to SharedManifest - should use individual loader for better features"
+      ]
+    },
+    {
+      "key": "florus",
+      "urlPatterns": [
+        "florus.bm-lyon.fr"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "unicatt",
+      "urlPatterns": [
+        "digitallibrary.unicatt.it"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "internet_culturale",
+      "urlPatterns": [
+        "internetculturale.it"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "cudl",
+      "urlPatterns": [
+        "cudl.lib.cam.ac.uk"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "FRAGILE_PATTERN: \"cudl.lib.cam.ac.uk\" too specific, may break with minor changes"
+      ]
+    },
+    {
+      "key": "trinity_cam",
+      "urlPatterns": [
+        "mss-cat.trin.cam.ac.uk"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "FRAGILE_PATTERN: \"mss-cat.trin.cam.ac.uk\" too specific, may break with minor changes"
+      ]
+    },
+    {
+      "key": "toronto",
+      "urlPatterns": [
+        "iiif.library.utoronto.ca",
+        "collections.library.utoronto.ca"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "POTENTIAL_REDUNDANCY: Has both individual loader and SharedManifest method - consider removing SharedManifest method"
+      ]
+    },
+    {
+      "key": "isos",
+      "urlPatterns": [
+        "isos.dias.ie"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "mira",
+      "urlPatterns": [
+        "mira.ie"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "TOO_GENERIC: \"mira.ie\" may match unintended URLs"
+      ]
+    },
+    {
+      "key": "arca",
+      "urlPatterns": [
+        "arca.irht.cnrs.fr"
+      ],
+      "routingMethod": "mixed",
+      "loaderExists": false,
+      "sharedManifestExists": true,
+      "routingCase": "COMPLEX_FALLBACK_LOGIC",
+      "issues": []
+    },
+    {
+      "key": "rbme",
+      "urlPatterns": [
+        "rbme.patrimonionacional.es"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "parker",
+      "urlPatterns": [
+        "parker.stanford.edu"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "manuscripta",
+      "urlPatterns": [
+        "manuscripta.se"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "graz",
+      "urlPatterns": [
+        "unipub.uni-graz.at"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "POTENTIAL_REDUNDANCY: Has both individual loader and SharedManifest method - consider removing SharedManifest method"
+      ]
+    },
+    {
+      "key": "gams",
+      "urlPatterns": [
+        "gams.uni-graz.at"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "TWO_IMPLEMENTATIONS_BUG: Has individual gamsLoader but routes to SharedManifest - should use individual loader for better features"
+      ]
+    },
+    {
+      "key": "cologne",
+      "urlPatterns": [
+        "digital.dombibliothek-koeln.de"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "vienna_manuscripta",
+      "urlPatterns": [
+        "manuscripta.at"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "TWO_IMPLEMENTATIONS_BUG: Has individual vienna_manuscriptaLoader but routes to SharedManifest - should use individual loader for better features"
+      ]
+    },
+    {
+      "key": "rome",
+      "urlPatterns": [
+        "digitale.bnc.roma.sbn.it"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "TWO_IMPLEMENTATIONS_BUG: Has individual romeLoader but routes to SharedManifest - should use individual loader for better features"
+      ]
+    },
+    {
+      "key": "berlin",
+      "urlPatterns": [
+        "digital.staatsbibliothek-berlin.de"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "POTENTIAL_REDUNDANCY: Has both individual loader and SharedManifest method - consider removing SharedManifest method"
+      ]
+    },
+    {
+      "key": "czech",
+      "urlPatterns": [
+        "dig.vkol.cz"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "modena",
+      "urlPatterns": [
+        "archiviodiocesano.mo.it"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "bdl",
+      "urlPatterns": [
+        "bdl.servizirl.it"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "POTENTIAL_REDUNDANCY: Has both individual loader and SharedManifest method - consider removing SharedManifest method"
+      ]
+    },
+    {
+      "key": "europeana",
+      "urlPatterns": [
+        "europeana.eu"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "montecassino",
+      "urlPatterns": [
+        "omnes.dbseret.com/montecassino",
+        "manus.iccu.sbn.it"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "HARDCODED_ASSUMPTIONS: \"omnes.dbseret.com/montecassino\" assumes specific URL structure"
+      ]
+    },
+    {
+      "key": "vallicelliana",
+      "urlPatterns": [
+        "dam.iccu.sbn.it",
+        "jmms.iccu.sbn.it"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "omnes_vallicelliana",
+      "urlPatterns": [
+        "omnes.dbseret.com/vallicelliana"
+      ],
+      "routingMethod": "mixed",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "MISSING",
+      "issues": [
+        "HARDCODED_ASSUMPTIONS: \"omnes.dbseret.com/vallicelliana\" assumes specific URL structure",
+        "MISSING_ROUTING: No routing case found in switch statement for omnes_vallicelliana"
+      ]
+    },
+    {
+      "key": "verona",
+      "urlPatterns": [
+        "nuovabibliotecamanoscritta.it",
+        "nbm.regione.veneto.it"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "TWO_IMPLEMENTATIONS_BUG: Has individual veronaLoader but routes to SharedManifest - should use individual loader for better features"
+      ]
+    },
+    {
+      "key": "bvpb",
+      "urlPatterns": [
+        "bvpb.mcu.es"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "TWO_IMPLEMENTATIONS_BUG: Has individual bvpbLoader but routes to SharedManifest - should use individual loader for better features"
+      ]
+    },
+    {
+      "key": "diamm",
+      "urlPatterns": [
+        "diamm.ac.uk",
+        "iiif.diamm.net",
+        "musmed.eu/visualiseur-iiif"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "FRAGILE_PATTERN: \"diamm.ac.uk\" too specific, may break with minor changes",
+        "HARDCODED_ASSUMPTIONS: \"musmed.eu/visualiseur-iiif\" assumes specific URL structure"
+      ]
+    },
+    {
+      "key": "bne",
+      "urlPatterns": [
+        "bdh-rd.bne.es"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "POTENTIAL_REDUNDANCY: Has both individual loader and SharedManifest method - consider removing SharedManifest method"
+      ]
+    },
+    {
+      "key": "mdc_catalonia",
+      "urlPatterns": [
+        "mdc.csuc.cat/digital/collection"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "HARDCODED_ASSUMPTIONS: \"mdc.csuc.cat/digital/collection\" assumes specific URL structure",
+        "TWO_IMPLEMENTATIONS_BUG: Has individual mdc_cataloniaLoader but routes to SharedManifest - should use individual loader for better features"
+      ]
+    },
+    {
+      "key": "florence",
+      "urlPatterns": [
+        "cdm21059.contentdm.oclc.org/digital/collection/plutei"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "FRAGILE_PATTERN: \"cdm21059.contentdm.oclc.org/digital/collection/plutei\" too specific, may break with minor changes",
+        "HARDCODED_ASSUMPTIONS: \"cdm21059.contentdm.oclc.org/digital/collection/plutei\" assumes specific URL structure",
+        "POTENTIAL_REDUNDANCY: Has both individual loader and SharedManifest method - consider removing SharedManifest method"
+      ]
+    },
+    {
+      "key": "onb",
+      "urlPatterns": [
+        "viewer.onb.ac.at"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "TWO_IMPLEMENTATIONS_BUG: Has individual onbLoader but routes to SharedManifest - should use individual loader for better features"
+      ]
+    },
+    {
+      "key": "rouen",
+      "urlPatterns": [
+        "rotomagus.fr"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "freiburg",
+      "urlPatterns": [
+        "dl.ub.uni-freiburg.de"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "fulda",
+      "urlPatterns": [
+        "fuldig.hs-fulda.de"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "wolfenbuettel",
+      "urlPatterns": [
+        "diglib.hab.de"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": false,
+      "routingCase": "loadLibraryManifest",
+      "issues": []
+    },
+    {
+      "key": "hhu",
+      "urlPatterns": [
+        "digital.ulb.hhu.de"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "POTENTIAL_REDUNDANCY: Has both individual loader and SharedManifest method - consider removing SharedManifest method"
+      ]
+    },
+    {
+      "key": "bordeaux",
+      "urlPatterns": [
+        "manuscrits.bordeaux.fr",
+        "selene.bordeaux.fr"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": false,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": []
+    },
+    {
+      "key": "bodleian",
+      "urlPatterns": [
+        "digital.bodleian.ox.ac.uk",
+        "digital2.bodleian.ox.ac.uk"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": false,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "FRAGILE_PATTERN: \"digital.bodleian.ox.ac.uk\" too specific, may break with minor changes",
+        "FRAGILE_PATTERN: \"digital2.bodleian.ox.ac.uk\" too specific, may break with minor changes"
+      ]
+    },
+    {
+      "key": "heidelberg",
+      "urlPatterns": [
+        "digi.ub.uni-heidelberg.de",
+        "doi.org/10.11588/diglit"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": false,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": [
+        "HARDCODED_ASSUMPTIONS: \"doi.org/10.11588/diglit\" assumes specific URL structure"
+      ]
+    },
+    {
+      "key": "linz",
+      "urlPatterns": [
+        "digi.landesbibliothek.at"
+      ],
+      "routingMethod": "individual",
+      "loaderExists": true,
+      "sharedManifestExists": true,
+      "routingCase": "loadLibraryManifest",
+      "issues": [
+        "POTENTIAL_REDUNDANCY: Has both individual loader and SharedManifest method - consider removing SharedManifest method"
+      ]
+    },
+    {
+      "key": "roman_archive",
+      "urlPatterns": [
+        "imagoarchiviodistatoroma.cultura.gov.it",
+        "archiviostorico.senato.it"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": false,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": []
+    },
+    {
+      "key": "digital_scriptorium",
+      "urlPatterns": [
+        "digital-scriptorium.org",
+        "colenda.library.upenn.edu"
+      ],
+      "routingMethod": "shared",
+      "loaderExists": false,
+      "sharedManifestExists": true,
+      "routingCase": "sharedManifestAdapter",
+      "issues": []
+    }
+  ],
+  "testResults": [
+    {
+      "url": "https://iiif.bl.uk/viewer/ark:/81055/vdc_100000000789.0x000001",
+      "expectedLibrary": "bl",
+      "detectedLibrary": "bl",
+      "routingPath": "shared",
+      "success": true,
+      "issues": []
+    },
+    {
+      "url": "https://bl.digirati.io/viewer/ark:/81055/vdc_100000000789.0x000001",
+      "expectedLibrary": "bl",
+      "detectedLibrary": "bl",
+      "routingPath": "shared",
+      "success": true,
+      "issues": []
+    },
+    {
+      "url": "https://gallica.bnf.fr/ark:/12148/btv1b8451636m/f1.item",
+      "expectedLibrary": "gallica",
+      "detectedLibrary": "gallica",
+      "routingPath": "individual",
+      "success": true,
+      "issues": []
+    },
+    {
+      "url": "https://digi.vatlib.it/view/MSS_Vat.lat.3225",
+      "expectedLibrary": "vatlib",
+      "detectedLibrary": "vatlib",
+      "routingPath": "individual",
+      "success": true,
+      "issues": []
+    },
+    {
+      "url": "https://cudl.lib.cam.ac.uk/view/MS-DD-00001-00017/1",
+      "expectedLibrary": "cudl",
+      "detectedLibrary": "cudl",
+      "routingPath": "individual",
+      "success": true,
+      "issues": []
+    },
+    {
+      "url": "https://e-manuscripta.ch/bau/content/pageview/837049",
+      "expectedLibrary": "e_manuscripta",
+      "detectedLibrary": "e_manuscripta",
+      "routingPath": "individual",
+      "success": true,
+      "issues": []
+    },
+    {
+      "url": "https://digital.bodleian.ox.ac.uk/objects/748a9d5a-7c1a-4916-91ad-39d65fa1e2e6/",
+      "expectedLibrary": "bodleian",
+      "detectedLibrary": "bodleian",
+      "routingPath": "shared",
+      "success": true,
+      "issues": []
+    },
+    {
+      "url": "https://digital2.bodleian.ox.ac.uk/objects/748a9d5a-7c1a-4916-91ad-39d65fa1e2e6/",
+      "expectedLibrary": "bodleian",
+      "detectedLibrary": "bodleian",
+      "routingPath": "shared",
+      "success": true,
+      "issues": []
+    },
+    {
+      "url": "https://collections.library.yale.edu/catalog/2002826",
+      "expectedLibrary": "yale",
+      "detectedLibrary": "yale",
+      "routingPath": "shared",
+      "success": true,
+      "issues": []
+    },
+    {
+      "url": "https://collections.library.utoronto.ca/view/fisher2:F6521",
+      "expectedLibrary": "toronto",
+      "detectedLibrary": "toronto",
+      "routingPath": "individual",
+      "success": true,
+      "issues": []
+    },
+    {
+      "url": "https://iiif.library.utoronto.ca/presentation/v2/fisher:F6521/manifest",
+      "expectedLibrary": "toronto",
+      "detectedLibrary": "toronto",
+      "routingPath": "individual",
+      "success": true,
+      "issues": []
+    },
+    {
+      "url": "https://digital.ulb.hhu.de/i3f/v20/7674176/manifest",
+      "expectedLibrary": "hhu",
+      "detectedLibrary": "hhu",
+      "routingPath": "individual",
+      "success": true,
+      "issues": []
+    },
+    {
+      "url": "https://www.themorgan.org/manuscript/76873",
+      "expectedLibrary": "morgan",
+      "detectedLibrary": "morgan",
+      "routingPath": "shared",
+      "success": true,
+      "issues": []
+    },
+    {
+      "url": "http://digitale.bnc.roma.sbn.it/tecadigitale/manoscrittoantico/BNCR_Ms_SESS_0062/BNCR_Ms_SESS_0062/1",
+      "expectedLibrary": "rome",
+      "detectedLibrary": "rome",
+      "routingPath": "shared",
+      "success": true,
+      "issues": []
+    },
+    {
+      "url": "https://bdl.servizirl.it/vufind/Record/TO00170_MS0864/Details",
+      "expectedLibrary": "bdl",
+      "detectedLibrary": "bdl",
+      "routingPath": "individual",
+      "success": true,
+      "issues": []
+    }
+  ],
+  "evolutionAnalysis": [
+    {
+      "library": "bl",
+      "urlChanges": [
+        "Migration from iiif.bl.uk to bl.digirati.io for some manuscripts",
+        "IIIF v3 manifest format changes"
+      ],
+      "backwardCompatible": true,
+      "recommendedFix": "Ensure both iiif.bl.uk and bl.digirati.io patterns are supported"
+    },
+    {
+      "library": "gallica",
+      "urlChanges": [
+        "ARK identifier format evolution",
+        "IIIF manifest URL structure updates"
+      ],
+      "backwardCompatible": false,
+      "recommendedFix": "Update ARK identifier parsing logic"
+    },
+    {
+      "library": "vatlib",
+      "urlChanges": [
+        "DigiVatLib URL structure evolution",
+        "Authentication system changes"
+      ],
+      "backwardCompatible": true,
+      "recommendedFix": "Test current digi.vatlib.it URL patterns"
+    },
+    {
+      "library": "e_manuscripta",
+      "urlChanges": [
+        "Platform migration affecting URL structure",
+        "IIIF manifest URL changes"
+      ],
+      "backwardCompatible": false,
+      "recommendedFix": "Update e-manuscripta.ch URL parsing"
+    },
+    {
+      "library": "cudl",
+      "urlChanges": [
+        "Cambridge Digital Library URL format updates",
+        "Viewer URL structure changes"
+      ],
+      "backwardCompatible": true,
+      "recommendedFix": "Test cudl.lib.cam.ac.uk current URL patterns"
+    },
+    {
+      "library": "bodleian",
+      "urlChanges": [
+        "Migration to digital2.bodleian.ox.ac.uk for some collections",
+        "IIIF v3 compliance changes"
+      ],
+      "backwardCompatible": true,
+      "recommendedFix": "Ensure both digital.bodleian and digital2.bodleian patterns work"
+    },
+    {
+      "library": "yale",
+      "urlChanges": [
+        "No specific evolution data available - requires manual research"
+      ],
+      "backwardCompatible": true,
+      "recommendedFix": "Research current yale URL patterns manually"
+    },
+    {
+      "library": "loc",
+      "urlChanges": [
+        "No specific evolution data available - requires manual research"
+      ],
+      "backwardCompatible": true,
+      "recommendedFix": "Research current loc URL patterns manually"
+    },
+    {
+      "library": "toronto",
+      "urlChanges": [
+        "No specific evolution data available - requires manual research"
+      ],
+      "backwardCompatible": true,
+      "recommendedFix": "Research current toronto URL patterns manually"
+    },
+    {
+      "library": "morgan",
+      "urlChanges": [
+        "No specific evolution data available - requires manual research"
+      ],
+      "backwardCompatible": true,
+      "recommendedFix": "Research current morgan URL patterns manually"
+    },
+    {
+      "library": "bdl",
+      "urlChanges": [
+        "No specific evolution data available - requires manual research"
+      ],
+      "backwardCompatible": true,
+      "recommendedFix": "Research current bdl URL patterns manually"
+    },
+    {
+      "library": "rome",
+      "urlChanges": [
+        "No specific evolution data available - requires manual research"
+      ],
+      "backwardCompatible": true,
+      "recommendedFix": "Research current rome URL patterns manually"
+    },
+    {
+      "library": "hhu",
+      "urlChanges": [
+        "HHU Düsseldorf digital platform updates",
+        "IIIF manifest URL structure changes"
+      ],
+      "backwardCompatible": true,
+      "recommendedFix": "Test digital.ulb.hhu.de current patterns"
+    }
+  ],
+  "recommendations": [
+    "PRIORITY 1: Fix 12 Two Implementations Bugs - Route to individual loaders instead of SharedManifest for better performance",
+    "PRIORITY 2: Fix 2 routing key mismatches - Align detectLibrary() output with switch case routing",
+    "PRIORITY 3: Update 8 fragile URL patterns to be more robust to future changes",
+    "PRIORITY 4: Update URL patterns for 2 libraries with breaking URL format changes"
+  ],
+  "futureProofingStrategies": [
+    "Use domain-based detection over path-based detection when possible",
+    "Implement multiple pattern matching per library for redundancy",
+    "Create flexible pattern matching with regex instead of simple string matching",
+    "Add automated URL pattern validation testing to CI/CD pipeline",
+    "Monitor library websites for URL structure changes",
+    "Implement graceful fallback detection for pattern mismatches",
+    "Create library-agnostic IIIF manifest detection for standards-compliant libraries",
+    "Add pattern versioning to handle gradual migration periods"
+  ]
+}

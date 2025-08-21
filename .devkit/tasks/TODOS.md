@@ -54,6 +54,36 @@
     - Pattern: Network connection reset during manifest loading
     - Investigation: Check Florence library server stability and connection handling
 
+12. ☐ **Laon PDF Creation Memory Error** - Array buffer allocation failed
+    - URL: https://bibliotheque-numerique.ville-laon.fr/viewer/1459/?offset=#page=1&viewer=picture&o=download&n=0&q=
+    - Error: PDF creation failed: Array buffer allocation failed
+    - Pattern: Memory allocation failure during PDF assembly
+    - Investigation: Check memory usage, PDF size limits, and buffer management for large manuscripts
+
+13. ☐ **PDF creation failed for part 01: Array buffer allocation failed** - Digital collections memory error
+    - URL: https://www.digitale-sammlungen.de/en/view/bsb00050763?page=1
+    - Error: Array buffer allocation failed during PDF creation for part 01
+    - Pattern: Memory allocation failure during PDF assembly for digital collections
+    - Investigation: Check memory usage, PDF size limits, and buffer management for large Bavaria/Munich manuscripts
+
+14. ☐ **Vallicelliana Timeout Error** - Large manuscript download timeout
+    - URL: https://omnes.dbseret.com/vallicelliana/iiif/IT-RM0281_D5/manifest
+    - Error: Download timeout - exceeded 54 minutes for 339 pages
+    - Pattern: Large manuscripts timing out before completion, may require manual splitting
+    - Investigation: Check auto-split configuration for Vallicelliana library, adjust timeout multipliers for 339-page manuscripts
+
+15. ☐ **University of Ghent PDF Creation Error** - Array buffer allocation failed
+    - URL: https://lib.ugent.be/viewer/archive.ugent.be%3A644DCADE-4FE7-11E9-9AC5-81E62282636C
+    - Error: PDF creation failed: Array buffer allocation failed
+    - Pattern: Memory allocation failure during PDF assembly for Belgian manuscripts
+    - Investigation: Check memory usage, PDF size limits, and buffer management for University of Ghent digital collections
+
+16. ☐ **No images were successfully downloaded** - Manuscripta.at download failure
+    - URL: https://manuscripta.at/diglit/AT5000-1013/0001
+    - Error: No images were successfully downloaded
+    - Pattern: Image download failure from Austrian manuscripts
+    - Investigation: Check Manuscripta.at library implementation and image URL extraction
+
 ## Completed Tasks
 
 1. ✅ check unneeded files in the project, especially in root. delete unneeded, put needed ones into .devkit. Organize .devkit. top priority is not to break anything. ultrathink - COMPLETED 2025-08-13

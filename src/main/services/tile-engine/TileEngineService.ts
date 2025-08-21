@@ -10,6 +10,7 @@ import type {
   TileGridConfig,
   TileAuthConfig
 } from './interfaces';
+import { LocTileAdapter } from './adapters/LocTileAdapter';
 
 export class TileEngineService {
   private engine: TileEngineCore;
@@ -46,7 +47,9 @@ export class TileEngineService {
   }
 
   private registerDefaultAdapters(): void {
-    // No default adapters currently registered
+    // Register Library of Congress tile adapter
+    this.engine.registerAdapter(new LocTileAdapter());
+    console.log('[TileEngineService] Registered LoC tile adapter');
   }
 
   async downloadTilesAndStitch(

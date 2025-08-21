@@ -1,0 +1,57 @@
+{
+  "agent": "DNS Resilience Agent",
+  "timestamp": "2025-08-21T16:58:43.432Z",
+  "findings": [
+    {
+      "category": "DNS_SERVER_PERFORMANCE",
+      "severity": "MEDIUM",
+      "finding": "Cloudflare DNS shows inconsistent performance for manuscript libraries",
+      "details": [
+        "System Default DNS: 90ms average (86.7% success)",
+        "Google DNS: 98ms average (85.7% success)",
+        "Cloudflare DNS: 2059ms average for some domains (86.7% success)",
+        "Some domains fail across all DNS servers"
+      ],
+      "impact": "Inconsistent DNS resolution leading to connection delays"
+    },
+    {
+      "category": "DNS_CACHING_INEFFICIENT",
+      "severity": "MEDIUM",
+      "finding": "Current DNS cache TTL may be suboptimal",
+      "details": [
+        "NetworkResilienceService uses 5-minute TTL",
+        "No differentiation between fast/slow resolving domains",
+        "Cache cleanup every 10 minutes may be too frequent",
+        "No pre-resolution for known problematic domains"
+      ],
+      "impact": "Repeated DNS lookups for slow domains causing delays"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "title": "Smart DNS Server Selection",
+      "description": "Implement DNS server fallback with performance-based selection",
+      "implementation": [
+        "Start with System Default DNS (best performance)",
+        "Fallback to Google DNS, then Cloudflare",
+        "Track per-domain DNS server performance",
+        "Cache best DNS server per domain"
+      ],
+      "estimatedImpact": "30% faster DNS resolution"
+    },
+    {
+      "priority": "MEDIUM",
+      "title": "Enhanced DNS Caching Strategy",
+      "description": "Optimize DNS cache TTL based on domain characteristics",
+      "implementation": [
+        "Use 15-minute TTL for slow-resolving domains",
+        "Standard 5-minute TTL for normal domains",
+        "Implement DNS pre-warming for known problematic domains",
+        "Reduce cache cleanup frequency to 30 minutes"
+      ],
+      "estimatedImpact": "20% reduction in DNS-related delays"
+    }
+  ],
+  "criticalIssues": []
+}

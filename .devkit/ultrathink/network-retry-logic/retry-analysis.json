@@ -1,0 +1,57 @@
+{
+  "agent": "Retry Logic Agent",
+  "timestamp": "2025-08-21T16:58:43.433Z",
+  "findings": [
+    {
+      "category": "RETRY_INCONSISTENCY",
+      "severity": "HIGH",
+      "finding": "Multiple retry systems with inconsistent behavior",
+      "details": [
+        "NetworkResilienceService.calculateRetryDelay() - smart retry with error classification",
+        "EnhancedManuscriptDownloaderService hardcoded retry counts per library",
+        "fetchWithHTTPS has separate retry logic for specific domains",
+        "EnhancedDownloadQueue has its own retry mechanism (maxRetries: 3)"
+      ],
+      "impact": "Unpredictable retry behavior, potential retry storms, resource waste"
+    },
+    {
+      "category": "CIRCUIT_BREAKER_INTEGRATION",
+      "severity": "MEDIUM",
+      "finding": "Retry logic not fully integrated with circuit breaker state",
+      "details": [
+        "NetworkResilienceService.shouldRetry() checks circuit breaker",
+        "But fetchWithHTTPS and other retry points bypass this check",
+        "No coordination between different retry mechanisms",
+        "Circuit breaker state not propagated to all retry decisions"
+      ],
+      "impact": "Retries continue even when service is circuit-broken"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "CRITICAL",
+      "title": "Unified Retry Coordination System",
+      "description": "Centralize all retry decisions through NetworkResilienceService",
+      "implementation": [
+        "Create RetryCoordinator class that all components use",
+        "Integrate circuit breaker state in all retry decisions",
+        "Implement global retry budget to prevent retry storms",
+        "Add retry correlation IDs for debugging"
+      ],
+      "estimatedImpact": "50% reduction in unnecessary retry attempts"
+    },
+    {
+      "priority": "HIGH",
+      "title": "Smart Error Classification Retry",
+      "description": "Enhance error classification for better retry decisions",
+      "implementation": [
+        "Expand error classification beyond network errors",
+        "Add HTTP status code specific retry logic",
+        "Implement server health-based retry scheduling",
+        "Add retry budgets per error type"
+      ],
+      "estimatedImpact": "35% improvement in retry success rate"
+    }
+  ],
+  "criticalIssues": []
+}

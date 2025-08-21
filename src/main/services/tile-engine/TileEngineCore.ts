@@ -291,13 +291,7 @@ export class TileEngineCore extends EventEmitter {
     outputPath: string,
     _UNUSED_tempDir: string
   ): Promise<string> {
-    const montageArgs = [
-      '-mode', 'concatenate',
-      '-tile', `${gridConfig.gridWidth}x${gridConfig.gridHeight}`,
-      '-geometry', `${gridConfig.tileWidth}x${gridConfig.tileHeight}+0+0`,
-      '-background', 'white'
-    ];
-
+    // Sort tiles in correct order (row by row, left to right)
     const sortedTiles = tiles.sort((a, b) => {
       if (a.coordinate.y !== b.coordinate.y) {
         return a.coordinate.y - b.coordinate.y;
@@ -311,25 +305,51 @@ export class TileEngineCore extends EventEmitter {
       throw new Error('Output path is required for tile stitching');
     }
     
-    const args = [...montageArgs, ...inputPaths, outputPath];
+    if (inputPaths.length === 0) {
+      throw new Error('No tile images found for stitching');
+    }
+
+    console.log(`[TileEngineCore] Stitching ${inputPaths.length} tiles into ${gridConfig.gridWidth}x${gridConfig.gridHeight} grid`);
+    
+    // Use montage command with correct syntax for ImageMagick v7+
+    const args = [
+      'montage',
+      ...inputPaths,
+      '-tile', `${gridConfig.gridWidth}x${gridConfig.gridHeight}`,
+      '-geometry', `+0+0`, // No spacing between tiles
+      '-background', 'white',
+      outputPath
+    ];
 
     return new Promise((resolve, reject) => {
       const process = spawn('magick', args);
       
       let stderr = '';
+      let stdout = '';
+      
+      process.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
+      
       process.stderr.on('data', (data) => {
         stderr += data.toString();
       });
       
       process.on('close', (code) => {
         if (code === 0) {
+          console.log(`[TileEngineCore] Successfully stitched tiles to: ${outputPath}`);
           resolve(outputPath);
         } else {
-          reject(new Error(`ImageMagick failed with code ${code}: ${stderr}`));
+          console.error(`[TileEngineCore] ImageMagick montage failed with code ${code}`);
+          console.error(`[TileEngineCore] Command: magick ${args.join(' ')}`);
+          console.error(`[TileEngineCore] Stderr: ${stderr}`);
+          console.error(`[TileEngineCore] Stdout: ${stdout}`);
+          reject(new Error(`ImageMagick montage failed with code ${code}: ${stderr}`));
         }
       });
       
       process.on('error', (error) => {
+        console.error(`[TileEngineCore] Failed to spawn ImageMagick:`, error);
         reject(new Error(`Failed to spawn ImageMagick: ${error.message}`));
       });
     });

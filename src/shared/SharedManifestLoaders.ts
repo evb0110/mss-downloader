@@ -3977,46 +3977,89 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     }
 
     /**
-     * Bodleian Library (Oxford) - IIIF v2 manifest support
+     * Bodleian Library (Oxford) - Enhanced IIIF v2 manifest support with improved error handling
      * Supports manuscripts from digital.bodleian.ox.ac.uk and digital2.bodleian.ox.ac.uk
+     * 
+     * FIXED: Better error messages to distinguish between:
+     * - Invalid URL format
+     * - Manuscript not found on server
+     * - Network/connection issues  
+     * - Empty manifests vs parsing failures
      */
     async getBodleianManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
         console.log('[Bodleian] Processing URL:', url);
         
-        // Extract object ID from URL
+        // Enhanced URL validation with clearer error message
         const match = url.match(/objects\/([^/?]+)/);
-        if (!match) throw new Error('Invalid Bodleian URL');
+        if (!match) {
+            throw new Error('Invalid Bodleian URL format. Expected: https://digital.bodleian.ox.ac.uk/objects/{id}/');
+        }
         
-        const objectId = match?.[1];
+        const objectId = match[1];
         const manifestUrl = `https://iiif.bodleian.ox.ac.uk/iiif/manifest/${objectId}.json`;
         
         console.log('[Bodleian] Fetching IIIF manifest from:', manifestUrl);
         
-        const response = await this.fetchWithRetry(manifestUrl);
-        if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
+        let response: Response;
+        let manifest: IIIFManifest;
         
-        const manifest = await response.json() as IIIFManifest;
+        try {
+            response = await this.fetchWithRetry(manifestUrl) as Response;
+        } catch (error: any) {
+            if (error.message?.includes('timeout') || error.message?.includes('ETIMEDOUT')) {
+                throw new Error(`Bodleian Library connection timeout. The server may be experiencing high load. Please try again in a few minutes.`);
+            } else if (error.message?.includes('socket') || error.message?.includes('ECONNRESET')) {
+                throw new Error(`Bodleian Library connection failed. Please check your internet connection and try again.`);
+            } else {
+                throw new Error(`Bodleian Library server error: ${error.message}`);
+            }
+        }
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error(`Manuscript not found on Bodleian Library servers. Object ID '${objectId}' may not exist or may not be publicly available.`);
+            } else if (response.status >= 500) {
+                throw new Error(`Bodleian Library server error (${response.status}). Please try again later.`);
+            } else {
+                throw new Error(`Failed to fetch Bodleian manifest: HTTP ${response.status}`);
+            }
+        }
+        
+        try {
+            const responseText = await response.text();
+            
+            // Check for Bodleian's specific "not found" response
+            if (responseText.includes('An object of ID') && responseText.includes('was not found')) {
+                throw new Error(`Manuscript '${objectId}' is not available in the Bodleian IIIF collection. It may be under processing, restricted access, or not yet digitized.`);
+            }
+            
+            manifest = JSON.parse(responseText) as IIIFManifest;
+        } catch (parseError: any) {
+            if (parseError.message.includes('not available')) {
+                throw parseError; // Re-throw our custom message
+            }
+            throw new Error(`Invalid IIIF manifest format from Bodleian Library. The server may be experiencing issues.`);
+        }
+        
         const images: ManuscriptImage[] = [];
         
-        // Process IIIF v2 manifest
+        // Process IIIF v2 manifest (current format for Bodleian)
         if (manifest.sequences?.[0]?.canvases) {
             const canvases = manifest.sequences[0].canvases;
-            console.log(`[Bodleian] Processing ${canvases?.length} pages from IIIF manifest`);
+            console.log(`[Bodleian] Processing ${canvases.length} pages from IIIF v2 manifest`);
             
-            // Process all canvases (Bodleian manuscripts can be quite long)
-            const maxPages = canvases?.length; // Reasonable limit
-            
-            for (let i = 0; i < maxPages; i++) {
+            for (let i = 0; i < canvases.length; i++) {
                 const canvas = canvases[i];
                 if (canvas && canvas.images && canvas.images[0] && canvas.images[0].resource) {
                     const resource = canvas.images[0].resource;
                     const service = resource.service;
                     
                     if (service && (service as IIIFService)['@id']) {
-                        // Request maximum resolution available
-                        const imageUrl = `${(service as IIIFService)['@id']}/full/max/0/default.jpg`;
+                        // Use full/full for maximum resolution (tested and verified)
+                        const serviceId = (service as IIIFService)['@id'];
+                        const imageUrl = `${serviceId}/full/full/0/default.jpg`;
                         images.push({
-                            url: imageUrl || '',
+                            url: imageUrl,
                             label: this.localizedStringToString(canvas?.label, `Page ${i + 1}`)
                         });
                     } else if (resource['@id']) {
@@ -4029,35 +4072,38 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 }
             }
         }
-        // Handle IIIF v3 if needed
+        // Handle IIIF v3 if Bodleian upgrades (future-proofing)
         else if (manifest.items) {
-            console.log(`[Bodleian] Processing ${manifest.items?.length} items from IIIF v3 manifest`);
+            console.log(`[Bodleian] Processing ${manifest.items.length} items from IIIF v3 manifest`);
             
-            const maxPages = manifest.items?.length;
-            
-            for (let i = 0; i < maxPages; i++) {
+            for (let i = 0; i < manifest.items.length; i++) {
                 const item = manifest.items[i] as IIIFCanvas;
                 if (item.items && item.items[0] && item.items[0].items && item.items[0].items[0]) {
                     const annotation = item.items[0].items[0];
                     const body = Array.isArray(annotation.body) ? annotation.body[0] : annotation.body;
                     if (body && body.service && (Array.isArray(body.service) ? body.service[0] : body.service)) {
                         const service = Array.isArray(body.service) ? body.service[0] : body.service;
-                        if (service!.id) {
+                        const serviceId = service?.id || service?.['@id'];
+                        
+                        if (serviceId) {
+                            const imageUrl = `${serviceId}/full/full/0/default.jpg`;
                             images.push({
-                                url: `${service!.id}/full/max/0/default.jpg`,
+                                url: imageUrl,
                                 label: this.localizedStringToString((item as any).label, `Page ${i + 1}`)
                             });
                         }
                     }
                 }
             }
+        } else {
+            throw new Error(`Bodleian IIIF manifest has unexpected structure. It may be using a format not yet supported or may be corrupted.`);
         }
         
-        if (images?.length === 0) {
-            throw new Error('No images found in Bodleian manifest');
+        if (images.length === 0) {
+            throw new Error(`No images found in Bodleian manuscript '${objectId}'. The manifest exists but contains no downloadable pages. This may indicate the manuscript is still being processed or has restricted access.`);
         }
         
-        console.log(`[Bodleian] Successfully extracted ${images?.length} pages`);
+        console.log(`[Bodleian] Successfully extracted ${images.length} pages`);
         
         return {
             images,
@@ -6653,7 +6699,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         value = entry.value[0];
                     }
                     
-                    if (value) {
+                    if (value && typeof value === 'string') {
                         // Extract codex/manuscript number
                         if (label.includes('codex') || label.includes('manuscript') || label.includes('location') || label.includes('note')) {
                             const codexMatch = value.match(/Ms\.?\s*Codex\s*\d+|Manuscript\s*\d+|Cod\.?\s*\d+/i);

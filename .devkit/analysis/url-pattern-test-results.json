@@ -1,0 +1,1166 @@
+{
+  "timestamp": "2025-08-21T17:08:12.977Z",
+  "summary": {
+    "totalTests": 34,
+    "passed": 30,
+    "failed": 4,
+    "categories": {
+      "basic": [
+        {
+          "testCase": {
+            "library": "bl",
+            "url": "https://iiif.bl.uk/viewer/ark:/81055/vdc_100000000789.0x000001",
+            "expectedDetection": "bl",
+            "expectedRouting": "individual",
+            "category": "basic",
+            "description": "British Library - IIIF URL format"
+          },
+          "actualDetection": "bl",
+          "actualRouting": "shared",
+          "success": false,
+          "issues": [
+            "ROUTING_MISMATCH: Expected 'individual', got 'shared'"
+          ],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "gallica",
+            "url": "https://gallica.bnf.fr/ark:/12148/btv1b8451636m/f1.item",
+            "expectedDetection": "gallica",
+            "expectedRouting": "individual",
+            "category": "basic",
+            "description": "Gallica BnF - Standard ARK identifier"
+          },
+          "actualDetection": "gallica",
+          "actualRouting": "individual",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "cudl",
+            "url": "https://cudl.lib.cam.ac.uk/view/MS-DD-00001-00017/1",
+            "expectedDetection": "cudl",
+            "expectedRouting": "individual",
+            "category": "basic",
+            "description": "Cambridge CUDL - Standard viewer URL"
+          },
+          "actualDetection": "cudl",
+          "actualRouting": "individual",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "bodleian",
+            "url": "https://digital.bodleian.ox.ac.uk/objects/748a9d5a-7c1a-4916-91ad-39d65fa1e2e6/",
+            "expectedDetection": "bodleian",
+            "expectedRouting": "shared",
+            "category": "basic",
+            "description": "Bodleian - Standard digital subdomain"
+          },
+          "actualDetection": "bodleian",
+          "actualRouting": "shared",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "yale",
+            "url": "https://collections.library.yale.edu/catalog/2002826",
+            "expectedDetection": "yale",
+            "expectedRouting": "shared",
+            "category": "basic",
+            "description": "Yale - Collections platform URL"
+          },
+          "actualDetection": "yale",
+          "actualRouting": "shared",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "toronto",
+            "url": "https://collections.library.utoronto.ca/view/fisher2:F6521",
+            "expectedDetection": "toronto",
+            "expectedRouting": "individual",
+            "category": "basic",
+            "description": "Toronto - Collections viewer URL"
+          },
+          "actualDetection": "toronto",
+          "actualRouting": "individual",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "toronto",
+            "url": "https://iiif.library.utoronto.ca/presentation/v2/fisher:F6521/manifest",
+            "expectedDetection": "toronto",
+            "expectedRouting": "individual",
+            "category": "basic",
+            "description": "Toronto - Direct IIIF manifest URL"
+          },
+          "actualDetection": "toronto",
+          "actualRouting": "individual",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "hhu",
+            "url": "https://digital.ulb.hhu.de/i3f/v20/7674176/manifest",
+            "expectedDetection": "hhu",
+            "expectedRouting": "individual",
+            "category": "basic",
+            "description": "HHU Düsseldorf - IIIF v2 manifest"
+          },
+          "actualDetection": "hhu",
+          "actualRouting": "individual",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "bdl",
+            "url": "https://bdl.servizirl.it/vufind/Record/TO00170_MS0864/Details",
+            "expectedDetection": "bdl",
+            "expectedRouting": "individual",
+            "category": "basic",
+            "description": "BDL - VuFind record URL"
+          },
+          "actualDetection": "bdl",
+          "actualRouting": "individual",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "norwegian",
+            "url": "https://www.nb.no/items/a8b7c6d5e4f3",
+            "expectedDetection": "norwegian",
+            "expectedRouting": "shared",
+            "category": "basic",
+            "description": "Norwegian National Library - Items URL"
+          },
+          "actualDetection": "norwegian",
+          "actualRouting": "shared",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "karlsruhe",
+            "url": "https://i3f.vls.io/blb-karlsruhe.de/viewer/manuscript/12345",
+            "expectedDetection": "karlsruhe",
+            "expectedRouting": "shared",
+            "category": "basic",
+            "description": "Karlsruhe - Complex AND pattern (i3f.vls.io && blb-karlsruhe.de)"
+          },
+          "actualDetection": "karlsruhe",
+          "actualRouting": "shared",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "karlsruhe",
+            "url": "https://digital.blb-karlsruhe.de/manuscript/12345",
+            "expectedDetection": "karlsruhe",
+            "expectedRouting": "shared",
+            "category": "basic",
+            "description": "Karlsruhe - Alternative direct domain pattern"
+          },
+          "actualDetection": "karlsruhe",
+          "actualRouting": "shared",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        }
+      ],
+      "evolution": [
+        {
+          "testCase": {
+            "library": "bl",
+            "url": "https://bl.digirati.io/viewer/ark:/81055/vdc_100000000789.0x000001",
+            "expectedDetection": "bl",
+            "expectedRouting": "individual",
+            "category": "evolution",
+            "description": "British Library - New Digirati URL format"
+          },
+          "actualDetection": "bl",
+          "actualRouting": "shared",
+          "success": false,
+          "issues": [
+            "ROUTING_MISMATCH: Expected 'individual', got 'shared'"
+          ],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "gallica",
+            "url": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b8451636m/manifest.json",
+            "expectedDetection": "gallica",
+            "expectedRouting": "individual",
+            "category": "evolution",
+            "description": "Gallica BnF - Direct IIIF manifest URL"
+          },
+          "actualDetection": "gallica",
+          "actualRouting": "individual",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "emanuscripta",
+            "url": "https://e-manuscripta.ch/viewer/content/pageview/837049",
+            "expectedDetection": "e_manuscripta",
+            "expectedRouting": "individual",
+            "category": "evolution",
+            "description": "e-manuscripta - Evolved URL structure"
+          },
+          "actualDetection": "e_manuscripta",
+          "actualRouting": "individual",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "bodleian",
+            "url": "https://digital2.bodleian.ox.ac.uk/objects/748a9d5a-7c1a-4916-91ad-39d65fa1e2e6/",
+            "expectedDetection": "bodleian",
+            "expectedRouting": "shared",
+            "category": "evolution",
+            "description": "Bodleian - New digital2 subdomain"
+          },
+          "actualDetection": "bodleian",
+          "actualRouting": "shared",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "hhu",
+            "url": "https://digital.ulb.hhu.de/viewer/object/HHU_19234/",
+            "expectedDetection": "hhu",
+            "expectedRouting": "individual",
+            "category": "evolution",
+            "description": "HHU Düsseldorf - Viewer URL format"
+          },
+          "actualDetection": "hhu",
+          "actualRouting": "individual",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        }
+      ],
+      "edge_case": [
+        {
+          "testCase": {
+            "library": "bl",
+            "url": "https://bl.digirati.io/manuscripts/manuscript-1001",
+            "expectedDetection": "bl",
+            "expectedRouting": "individual",
+            "category": "edge_case",
+            "description": "British Library - Alternative URL structure"
+          },
+          "actualDetection": "bl",
+          "actualRouting": "shared",
+          "success": false,
+          "issues": [
+            "ROUTING_MISMATCH: Expected 'individual', got 'shared'"
+          ],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "gallica",
+            "url": "https://gallica.bnf.fr/ark:/12148/btv1b8451636m.r=manuscript",
+            "expectedDetection": "gallica",
+            "expectedRouting": "individual",
+            "category": "edge_case",
+            "description": "Gallica BnF - ARK with search parameters"
+          },
+          "actualDetection": "gallica",
+          "actualRouting": "individual",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "vatican",
+            "url": "https://digi.vatlib.it/mss/detail/Vat.lat.3225",
+            "expectedDetection": "vatlib",
+            "expectedRouting": "individual",
+            "category": "edge_case",
+            "description": "Vatican Library - Alternative URL format"
+          },
+          "actualDetection": "vatlib",
+          "actualRouting": "individual",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "cudl",
+            "url": "https://cudl.lib.cam.ac.uk/collections/manuscripts",
+            "expectedDetection": "cudl",
+            "expectedRouting": "individual",
+            "category": "edge_case",
+            "description": "Cambridge CUDL - Collection browse URL"
+          },
+          "actualDetection": "cudl",
+          "actualRouting": "individual",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "yale",
+            "url": "https://collections.library.yale.edu/iiif/2002826/manifest",
+            "expectedDetection": "yale",
+            "expectedRouting": "shared",
+            "category": "edge_case",
+            "description": "Yale - IIIF manifest URL"
+          },
+          "actualDetection": "yale",
+          "actualRouting": "shared",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "morgan",
+            "url": "https://themorgan.org/iiif/manuscripts/76873/manifest",
+            "expectedDetection": "morgan",
+            "expectedRouting": "shared",
+            "category": "edge_case",
+            "description": "Morgan Library - IIIF URL variation"
+          },
+          "actualDetection": "morgan",
+          "actualRouting": "shared",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "rome",
+            "url": "https://digitale.bnc.roma.sbn.it/tecadigitale/codex/4534",
+            "expectedDetection": "rome",
+            "expectedRouting": "shared",
+            "category": "edge_case",
+            "description": "Rome Library - Alternative URL structure"
+          },
+          "actualDetection": "rome",
+          "actualRouting": "shared",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "bdl",
+            "url": "https://bdl.servizirl.it/iiif/presentation/TO00170_MS0864/manifest",
+            "expectedDetection": "bdl",
+            "expectedRouting": "individual",
+            "category": "edge_case",
+            "description": "BDL - IIIF presentation URL"
+          },
+          "actualDetection": "bdl",
+          "actualRouting": "individual",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "norwegian",
+            "url": "https://api.nb.no/catalog/v1/iiif/a8b7c6d5e4f3/manifest",
+            "expectedDetection": "norwegian",
+            "expectedRouting": "shared",
+            "category": "edge_case",
+            "description": "Norwegian National Library - API IIIF URL"
+          },
+          "actualDetection": "norwegian",
+          "actualRouting": "shared",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "none",
+            "url": "https://example.com/manuscript/12345",
+            "expectedDetection": "",
+            "expectedRouting": "unknown",
+            "category": "edge_case",
+            "description": "Unknown domain - should not be detected"
+          },
+          "actualDetection": null,
+          "actualRouting": "unknown",
+          "success": true,
+          "issues": [],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "none",
+            "url": "https://gallica.bnf.fr.fake-domain.com/ark:/12148/btv1b8451636m",
+            "expectedDetection": "",
+            "expectedRouting": "unknown",
+            "category": "edge_case",
+            "description": "Domain spoofing attempt - should not be detected"
+          },
+          "actualDetection": "gallica",
+          "actualRouting": "individual",
+          "success": false,
+          "issues": [
+            "UNEXPECTED_DETECTION: Expected no detection, got 'gallica'",
+            "ROUTING_MISMATCH: Expected 'unknown', got 'individual'"
+          ],
+          "timing": 0
+        }
+      ],
+      "regression": [
+        {
+          "testCase": {
+            "library": "vatican",
+            "url": "https://digi.vatlib.it/view/MSS_Vat.lat.3225",
+            "expectedDetection": "vatlib",
+            "expectedRouting": "individual",
+            "category": "regression",
+            "description": "Vatican Library - Key mismatch issue"
+          },
+          "actualDetection": "vatlib",
+          "actualRouting": "individual",
+          "success": true,
+          "issues": [
+            "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+          ],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "emanuscripta",
+            "url": "https://e-manuscripta.ch/bau/content/pageview/837049",
+            "expectedDetection": "e_manuscripta",
+            "expectedRouting": "individual",
+            "category": "regression",
+            "description": "e-manuscripta - Key mismatch issue"
+          },
+          "actualDetection": "e_manuscripta",
+          "actualRouting": "individual",
+          "success": true,
+          "issues": [
+            "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+          ],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "morgan",
+            "url": "https://www.themorgan.org/manuscript/76873",
+            "expectedDetection": "morgan",
+            "expectedRouting": "shared",
+            "category": "regression",
+            "description": "Morgan Library - Two Implementations Bug (should use individual)"
+          },
+          "actualDetection": "morgan",
+          "actualRouting": "shared",
+          "success": true,
+          "issues": [
+            "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+          ],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "rome",
+            "url": "http://digitale.bnc.roma.sbn.it/tecadigitale/manoscrittoantico/BNCR_Ms_SESS_0062/BNCR_Ms_SESS_0062/1",
+            "expectedDetection": "rome",
+            "expectedRouting": "shared",
+            "category": "regression",
+            "description": "Rome Library - Two Implementations Bug (should use individual)"
+          },
+          "actualDetection": "rome",
+          "actualRouting": "shared",
+          "success": true,
+          "issues": [
+            "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+          ],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "norwegian",
+            "url": "https://some-other-site.nb.no/unrelated",
+            "expectedDetection": "norwegian",
+            "expectedRouting": "shared",
+            "category": "regression",
+            "description": "Norwegian - False positive from generic pattern"
+          },
+          "actualDetection": "norwegian",
+          "actualRouting": "shared",
+          "success": true,
+          "issues": [
+            "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+          ],
+          "timing": 0
+        },
+        {
+          "testCase": {
+            "library": "omnes_vallicelliana",
+            "url": "https://omnes.dbseret.com/vallicelliana/manuscript/12345",
+            "expectedDetection": "omnes_vallicelliana",
+            "expectedRouting": "error",
+            "category": "regression",
+            "description": "Omnes Vallicelliana - Missing routing case"
+          },
+          "actualDetection": "omnes_vallicelliana",
+          "actualRouting": "error",
+          "success": true,
+          "issues": [
+            "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+          ],
+          "timing": 0
+        }
+      ]
+    }
+  },
+  "results": [
+    {
+      "testCase": {
+        "library": "bl",
+        "url": "https://iiif.bl.uk/viewer/ark:/81055/vdc_100000000789.0x000001",
+        "expectedDetection": "bl",
+        "expectedRouting": "individual",
+        "category": "basic",
+        "description": "British Library - IIIF URL format"
+      },
+      "actualDetection": "bl",
+      "actualRouting": "shared",
+      "success": false,
+      "issues": [
+        "ROUTING_MISMATCH: Expected 'individual', got 'shared'"
+      ],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "bl",
+        "url": "https://bl.digirati.io/viewer/ark:/81055/vdc_100000000789.0x000001",
+        "expectedDetection": "bl",
+        "expectedRouting": "individual",
+        "category": "evolution",
+        "description": "British Library - New Digirati URL format"
+      },
+      "actualDetection": "bl",
+      "actualRouting": "shared",
+      "success": false,
+      "issues": [
+        "ROUTING_MISMATCH: Expected 'individual', got 'shared'"
+      ],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "bl",
+        "url": "https://bl.digirati.io/manuscripts/manuscript-1001",
+        "expectedDetection": "bl",
+        "expectedRouting": "individual",
+        "category": "edge_case",
+        "description": "British Library - Alternative URL structure"
+      },
+      "actualDetection": "bl",
+      "actualRouting": "shared",
+      "success": false,
+      "issues": [
+        "ROUTING_MISMATCH: Expected 'individual', got 'shared'"
+      ],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "gallica",
+        "url": "https://gallica.bnf.fr/ark:/12148/btv1b8451636m/f1.item",
+        "expectedDetection": "gallica",
+        "expectedRouting": "individual",
+        "category": "basic",
+        "description": "Gallica BnF - Standard ARK identifier"
+      },
+      "actualDetection": "gallica",
+      "actualRouting": "individual",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "gallica",
+        "url": "https://gallica.bnf.fr/ark:/12148/btv1b8451636m.r=manuscript",
+        "expectedDetection": "gallica",
+        "expectedRouting": "individual",
+        "category": "edge_case",
+        "description": "Gallica BnF - ARK with search parameters"
+      },
+      "actualDetection": "gallica",
+      "actualRouting": "individual",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "gallica",
+        "url": "https://gallica.bnf.fr/iiif/ark:/12148/btv1b8451636m/manifest.json",
+        "expectedDetection": "gallica",
+        "expectedRouting": "individual",
+        "category": "evolution",
+        "description": "Gallica BnF - Direct IIIF manifest URL"
+      },
+      "actualDetection": "gallica",
+      "actualRouting": "individual",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "vatican",
+        "url": "https://digi.vatlib.it/view/MSS_Vat.lat.3225",
+        "expectedDetection": "vatlib",
+        "expectedRouting": "individual",
+        "category": "regression",
+        "description": "Vatican Library - Key mismatch issue"
+      },
+      "actualDetection": "vatlib",
+      "actualRouting": "individual",
+      "success": true,
+      "issues": [
+        "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+      ],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "vatican",
+        "url": "https://digi.vatlib.it/mss/detail/Vat.lat.3225",
+        "expectedDetection": "vatlib",
+        "expectedRouting": "individual",
+        "category": "edge_case",
+        "description": "Vatican Library - Alternative URL format"
+      },
+      "actualDetection": "vatlib",
+      "actualRouting": "individual",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "emanuscripta",
+        "url": "https://e-manuscripta.ch/bau/content/pageview/837049",
+        "expectedDetection": "e_manuscripta",
+        "expectedRouting": "individual",
+        "category": "regression",
+        "description": "e-manuscripta - Key mismatch issue"
+      },
+      "actualDetection": "e_manuscripta",
+      "actualRouting": "individual",
+      "success": true,
+      "issues": [
+        "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+      ],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "emanuscripta",
+        "url": "https://e-manuscripta.ch/viewer/content/pageview/837049",
+        "expectedDetection": "e_manuscripta",
+        "expectedRouting": "individual",
+        "category": "evolution",
+        "description": "e-manuscripta - Evolved URL structure"
+      },
+      "actualDetection": "e_manuscripta",
+      "actualRouting": "individual",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "cudl",
+        "url": "https://cudl.lib.cam.ac.uk/view/MS-DD-00001-00017/1",
+        "expectedDetection": "cudl",
+        "expectedRouting": "individual",
+        "category": "basic",
+        "description": "Cambridge CUDL - Standard viewer URL"
+      },
+      "actualDetection": "cudl",
+      "actualRouting": "individual",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "cudl",
+        "url": "https://cudl.lib.cam.ac.uk/collections/manuscripts",
+        "expectedDetection": "cudl",
+        "expectedRouting": "individual",
+        "category": "edge_case",
+        "description": "Cambridge CUDL - Collection browse URL"
+      },
+      "actualDetection": "cudl",
+      "actualRouting": "individual",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "bodleian",
+        "url": "https://digital.bodleian.ox.ac.uk/objects/748a9d5a-7c1a-4916-91ad-39d65fa1e2e6/",
+        "expectedDetection": "bodleian",
+        "expectedRouting": "shared",
+        "category": "basic",
+        "description": "Bodleian - Standard digital subdomain"
+      },
+      "actualDetection": "bodleian",
+      "actualRouting": "shared",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "bodleian",
+        "url": "https://digital2.bodleian.ox.ac.uk/objects/748a9d5a-7c1a-4916-91ad-39d65fa1e2e6/",
+        "expectedDetection": "bodleian",
+        "expectedRouting": "shared",
+        "category": "evolution",
+        "description": "Bodleian - New digital2 subdomain"
+      },
+      "actualDetection": "bodleian",
+      "actualRouting": "shared",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "yale",
+        "url": "https://collections.library.yale.edu/catalog/2002826",
+        "expectedDetection": "yale",
+        "expectedRouting": "shared",
+        "category": "basic",
+        "description": "Yale - Collections platform URL"
+      },
+      "actualDetection": "yale",
+      "actualRouting": "shared",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "yale",
+        "url": "https://collections.library.yale.edu/iiif/2002826/manifest",
+        "expectedDetection": "yale",
+        "expectedRouting": "shared",
+        "category": "edge_case",
+        "description": "Yale - IIIF manifest URL"
+      },
+      "actualDetection": "yale",
+      "actualRouting": "shared",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "toronto",
+        "url": "https://collections.library.utoronto.ca/view/fisher2:F6521",
+        "expectedDetection": "toronto",
+        "expectedRouting": "individual",
+        "category": "basic",
+        "description": "Toronto - Collections viewer URL"
+      },
+      "actualDetection": "toronto",
+      "actualRouting": "individual",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "toronto",
+        "url": "https://iiif.library.utoronto.ca/presentation/v2/fisher:F6521/manifest",
+        "expectedDetection": "toronto",
+        "expectedRouting": "individual",
+        "category": "basic",
+        "description": "Toronto - Direct IIIF manifest URL"
+      },
+      "actualDetection": "toronto",
+      "actualRouting": "individual",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "morgan",
+        "url": "https://www.themorgan.org/manuscript/76873",
+        "expectedDetection": "morgan",
+        "expectedRouting": "shared",
+        "category": "regression",
+        "description": "Morgan Library - Two Implementations Bug (should use individual)"
+      },
+      "actualDetection": "morgan",
+      "actualRouting": "shared",
+      "success": true,
+      "issues": [
+        "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+      ],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "morgan",
+        "url": "https://themorgan.org/iiif/manuscripts/76873/manifest",
+        "expectedDetection": "morgan",
+        "expectedRouting": "shared",
+        "category": "edge_case",
+        "description": "Morgan Library - IIIF URL variation"
+      },
+      "actualDetection": "morgan",
+      "actualRouting": "shared",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "rome",
+        "url": "http://digitale.bnc.roma.sbn.it/tecadigitale/manoscrittoantico/BNCR_Ms_SESS_0062/BNCR_Ms_SESS_0062/1",
+        "expectedDetection": "rome",
+        "expectedRouting": "shared",
+        "category": "regression",
+        "description": "Rome Library - Two Implementations Bug (should use individual)"
+      },
+      "actualDetection": "rome",
+      "actualRouting": "shared",
+      "success": true,
+      "issues": [
+        "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+      ],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "rome",
+        "url": "https://digitale.bnc.roma.sbn.it/tecadigitale/codex/4534",
+        "expectedDetection": "rome",
+        "expectedRouting": "shared",
+        "category": "edge_case",
+        "description": "Rome Library - Alternative URL structure"
+      },
+      "actualDetection": "rome",
+      "actualRouting": "shared",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "hhu",
+        "url": "https://digital.ulb.hhu.de/i3f/v20/7674176/manifest",
+        "expectedDetection": "hhu",
+        "expectedRouting": "individual",
+        "category": "basic",
+        "description": "HHU Düsseldorf - IIIF v2 manifest"
+      },
+      "actualDetection": "hhu",
+      "actualRouting": "individual",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "hhu",
+        "url": "https://digital.ulb.hhu.de/viewer/object/HHU_19234/",
+        "expectedDetection": "hhu",
+        "expectedRouting": "individual",
+        "category": "evolution",
+        "description": "HHU Düsseldorf - Viewer URL format"
+      },
+      "actualDetection": "hhu",
+      "actualRouting": "individual",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "bdl",
+        "url": "https://bdl.servizirl.it/vufind/Record/TO00170_MS0864/Details",
+        "expectedDetection": "bdl",
+        "expectedRouting": "individual",
+        "category": "basic",
+        "description": "BDL - VuFind record URL"
+      },
+      "actualDetection": "bdl",
+      "actualRouting": "individual",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "bdl",
+        "url": "https://bdl.servizirl.it/iiif/presentation/TO00170_MS0864/manifest",
+        "expectedDetection": "bdl",
+        "expectedRouting": "individual",
+        "category": "edge_case",
+        "description": "BDL - IIIF presentation URL"
+      },
+      "actualDetection": "bdl",
+      "actualRouting": "individual",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "norwegian",
+        "url": "https://www.nb.no/items/a8b7c6d5e4f3",
+        "expectedDetection": "norwegian",
+        "expectedRouting": "shared",
+        "category": "basic",
+        "description": "Norwegian National Library - Items URL"
+      },
+      "actualDetection": "norwegian",
+      "actualRouting": "shared",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "norwegian",
+        "url": "https://api.nb.no/catalog/v1/iiif/a8b7c6d5e4f3/manifest",
+        "expectedDetection": "norwegian",
+        "expectedRouting": "shared",
+        "category": "edge_case",
+        "description": "Norwegian National Library - API IIIF URL"
+      },
+      "actualDetection": "norwegian",
+      "actualRouting": "shared",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "norwegian",
+        "url": "https://some-other-site.nb.no/unrelated",
+        "expectedDetection": "norwegian",
+        "expectedRouting": "shared",
+        "category": "regression",
+        "description": "Norwegian - False positive from generic pattern"
+      },
+      "actualDetection": "norwegian",
+      "actualRouting": "shared",
+      "success": true,
+      "issues": [
+        "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+      ],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "omnes_vallicelliana",
+        "url": "https://omnes.dbseret.com/vallicelliana/manuscript/12345",
+        "expectedDetection": "omnes_vallicelliana",
+        "expectedRouting": "error",
+        "category": "regression",
+        "description": "Omnes Vallicelliana - Missing routing case"
+      },
+      "actualDetection": "omnes_vallicelliana",
+      "actualRouting": "error",
+      "success": true,
+      "issues": [
+        "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+      ],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "none",
+        "url": "https://example.com/manuscript/12345",
+        "expectedDetection": "",
+        "expectedRouting": "unknown",
+        "category": "edge_case",
+        "description": "Unknown domain - should not be detected"
+      },
+      "actualDetection": null,
+      "actualRouting": "unknown",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "none",
+        "url": "https://gallica.bnf.fr.fake-domain.com/ark:/12148/btv1b8451636m",
+        "expectedDetection": "",
+        "expectedRouting": "unknown",
+        "category": "edge_case",
+        "description": "Domain spoofing attempt - should not be detected"
+      },
+      "actualDetection": "gallica",
+      "actualRouting": "individual",
+      "success": false,
+      "issues": [
+        "UNEXPECTED_DETECTION: Expected no detection, got 'gallica'",
+        "ROUTING_MISMATCH: Expected 'unknown', got 'individual'"
+      ],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "karlsruhe",
+        "url": "https://i3f.vls.io/blb-karlsruhe.de/viewer/manuscript/12345",
+        "expectedDetection": "karlsruhe",
+        "expectedRouting": "shared",
+        "category": "basic",
+        "description": "Karlsruhe - Complex AND pattern (i3f.vls.io && blb-karlsruhe.de)"
+      },
+      "actualDetection": "karlsruhe",
+      "actualRouting": "shared",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    },
+    {
+      "testCase": {
+        "library": "karlsruhe",
+        "url": "https://digital.blb-karlsruhe.de/manuscript/12345",
+        "expectedDetection": "karlsruhe",
+        "expectedRouting": "shared",
+        "category": "basic",
+        "description": "Karlsruhe - Alternative direct domain pattern"
+      },
+      "actualDetection": "karlsruhe",
+      "actualRouting": "shared",
+      "success": true,
+      "issues": [],
+      "timing": 0
+    }
+  ],
+  "analysis": {
+    "mostCommonIssues": [
+      [
+        "ROUTING_MISMATCH",
+        4
+      ],
+      [
+        "UNEXPECTED_DETECTION",
+        1
+      ]
+    ],
+    "librariesWithMostIssues": [
+      [
+        "bl",
+        [
+          "ROUTING_MISMATCH: Expected 'individual', got 'shared'",
+          "ROUTING_MISMATCH: Expected 'individual', got 'shared'",
+          "ROUTING_MISMATCH: Expected 'individual', got 'shared'"
+        ]
+      ],
+      [
+        "none",
+        [
+          "UNEXPECTED_DETECTION: Expected no detection, got 'gallica'",
+          "ROUTING_MISMATCH: Expected 'unknown', got 'individual'"
+        ]
+      ]
+    ],
+    "regressionTestAnalysis": {
+      "total": 6,
+      "stillFailing": 0,
+      "nowPassing": 6,
+      "details": [
+        {
+          "library": "vatican",
+          "description": "Vatican Library - Key mismatch issue",
+          "status": "FIXED",
+          "issues": [
+            "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+          ]
+        },
+        {
+          "library": "emanuscripta",
+          "description": "e-manuscripta - Key mismatch issue",
+          "status": "FIXED",
+          "issues": [
+            "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+          ]
+        },
+        {
+          "library": "morgan",
+          "description": "Morgan Library - Two Implementations Bug (should use individual)",
+          "status": "FIXED",
+          "issues": [
+            "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+          ]
+        },
+        {
+          "library": "rome",
+          "description": "Rome Library - Two Implementations Bug (should use individual)",
+          "status": "FIXED",
+          "issues": [
+            "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+          ]
+        },
+        {
+          "library": "norwegian",
+          "description": "Norwegian - False positive from generic pattern",
+          "status": "FIXED",
+          "issues": [
+            "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+          ]
+        },
+        {
+          "library": "omnes_vallicelliana",
+          "description": "Omnes Vallicelliana - Missing routing case",
+          "status": "FIXED",
+          "issues": [
+            "REGRESSION_RESOLVED: This test case was expected to fail but now passes - verify fix is complete"
+          ]
+        }
+      ]
+    }
+  }
+}

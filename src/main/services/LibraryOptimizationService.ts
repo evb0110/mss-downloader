@@ -89,7 +89,12 @@ export class LibraryOptimizationService {
         'laon': {},
         'durham': {},
         'sharedcanvas': {},
-        'ugent': {},
+        'ugent': {
+            maxConcurrentDownloads: 2, // Conservative concurrency for Belgian academic collections
+            timeoutMultiplier: 2.0, // Extended timeout for high-resolution Belgian manuscripts (43MB JP2 masters)
+            enableProgressiveBackoff: true, // Handle potential server load issues
+            autoSplitThresholdMB: 30 // Force split for large manuscripts to prevent "Array buffer allocation failed"
+        },
         'bl': {},
         'bodleian': {
             maxConcurrentDownloads: 3, // Bodleian Digital Library standard concurrency
@@ -136,11 +141,11 @@ export class LibraryOptimizationService {
             optimizationDescription: 'Berlin State Library optimizations: 3 concurrent downloads, 3x timeout for slow IIIF manifests'
         },
         'loc': {
-            maxConcurrentDownloads: 4, // Reduced from 8 for stability - prevents server throttling and hanging
-            timeoutMultiplier: 3.0, // Increased to 3.0 to handle large manifests (688KB+) and slower connections
-            enableProgressiveBackoff: true, // Enable adaptive retry delays for problematic pages
-            autoSplitThresholdMB: 500, // Split large manuscripts to prevent memory issues
-            optimizationDescription: 'Library of Congress optimizations: 4 concurrent downloads with progressive backoff, 90s timeout for large manifests, enhanced stability'
+            maxConcurrentDownloads: 1, // CRITICAL: Single-threaded to prevent HTTP 429 rate limiting
+            timeoutMultiplier: 4.0, // Extended timeout for rate-limited retries with exponential backoff
+            enableProgressiveBackoff: true, // Enable adaptive retry delays for rate limiting
+            autoSplitThresholdMB: 200, // Smaller splits to reduce manifest load frequency and prevent rate limiting
+            optimizationDescription: 'Library of Congress optimizations: Single-threaded downloads to prevent HTTP 429 rate limiting, exponential backoff retry logic, smaller auto-splits to reduce API calls'
         },
         'czech': {
             maxConcurrentDownloads: 2, // Czech library server, conservative limits
@@ -171,8 +176,8 @@ export class LibraryOptimizationService {
         },
         'omnes_vallicelliana': {
             maxConcurrentDownloads: 4, // Omnes Vallicelliana IIIF v2 service with good performance
-            timeoutMultiplier: 1.2, // Standard timeout, server responds well
-            optimizationDescription: 'Omnes Vallicelliana optimizations: 4 concurrent downloads, IIIF v2 manifest-based access with full resolution support'
+            timeoutMultiplier: 4.0, // Extended timeout for auto-split chunks and variable server performance (TIMEOUT FIX)
+            optimizationDescription: 'Omnes Vallicelliana optimizations: 4 concurrent downloads, IIIF v2 manifest-based access with full resolution support, extended timeouts for large manuscripts'
         },
         'verona': {
             maxConcurrentDownloads: 3, // Verona IIIF service via NBM
