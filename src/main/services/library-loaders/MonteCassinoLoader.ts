@@ -25,26 +25,26 @@ export class MonteCassinoLoader extends BaseLibraryLoader {
                     // Catalog ID to IIIF manuscript mapping based on OMNES platform
                     const catalogId = catalogMatch[1];
                     const catalogMappings: { [key: string]: string } = {
-                        // Existing mappings (verified)
-                        '0000313047': 'IT-FR0084_0339',
-                        '0000313194': 'IT-FR0084_0271', 
-                        '0000396781': 'IT-FR0084_0023',
+                        // Existing mappings (corrected with ams_ prefix)
+                        '0000313047': 'IT-FR0084_ams_0339',
+                        '0000313194': 'IT-FR0084_ams_0271', 
+                        '0000396781': 'IT-FR0084_ams_0023',
                         
-                        // Additional mappings discovered from OMNES catalog
-                        '0000313037': 'IT-FR0084_0003',
-                        '0000313038': 'IT-FR0084_0001',
-                        '0000313039': 'IT-FR0084_0002',
-                        '0000313048': 'IT-FR0084_0006',
-                        '0000313049': 'IT-FR0084_0015',
-                        '0000313053': 'IT-FR0084_0007',
-                        '0000313054': 'IT-FR0084_0008',
-                        '0000313055': 'IT-FR0084_0009',
-                        '0000313056': 'IT-FR0084_0010',
-                        '0000313057': 'IT-FR0084_0011',
-                        '0000313058': 'IT-FR0084_0012',
-                        '0000396666': 'IT-FR0084_0016',
-                        '0000396667': 'IT-FR0084_0017',
-                        '0000401004': 'IT-FR0084_0018'
+                        // Additional mappings discovered from OMNES catalog (corrected with ams_ prefix)
+                        '0000313037': 'IT-FR0084_ams_0003',
+                        '0000313038': 'IT-FR0084_ams_0001',
+                        '0000313039': 'IT-FR0084_ams_0002',
+                        '0000313048': 'IT-FR0084_ams_0006',
+                        '0000313049': 'IT-FR0084_ams_0015',
+                        '0000313053': 'IT-FR0084_ams_0007',
+                        '0000313054': 'IT-FR0084_ams_0008',
+                        '0000313055': 'IT-FR0084_ams_0009',
+                        '0000313056': 'IT-FR0084_ams_0010',
+                        '0000313057': 'IT-FR0084_ams_0011',
+                        '0000313058': 'IT-FR0084_ams_0012',
+                        '0000396666': 'IT-FR0084_ams_0016',
+                        '0000396667': 'IT-FR0084_ams_0017',
+                        '0000401004': 'IT-FR0084_ams_0018'
                     };
                     
                     if (catalogId && catalogMappings[catalogId]) {

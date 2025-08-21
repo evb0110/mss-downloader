@@ -10,6 +10,7 @@ import { ManifestCache } from './ManifestCache';
 import { LibraryOptimizationService } from './LibraryOptimizationService';
 import { DownloadLogger } from './DownloadLogger';
 import type { QueuedManuscript, QueueState, TLibrary, TStage, TSimultaneousMode } from '../../shared/queueTypes';
+import type { ManuscriptManifest } from '../../shared/types';
 
 export class EnhancedDownloadQueue extends EventEmitter {
     private static instance: EnhancedDownloadQueue | null = null;
@@ -865,7 +866,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                             current: progress.downloadedPages || 0,
                             total: progress?.totalPages || item?.totalPages || 0,
                             percentage: Math.round((progress.progress || 0) * 100 * 100) / 100, // Round to 2 decimal places
-                            eta: progress.eta || 'calculating...',
+                            eta: typeof progress.eta === 'number' ? this.formatTime(progress.eta * 1000) : (progress.eta || 'calculating...'),
                             stage: 'downloading' as TStage,
                         };
                     }
@@ -1328,7 +1329,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
     
     private async checkAndSplitLargeDocument(item: QueuedManuscript): Promise<boolean> {
         try {
-            let manifest: { totalPages?: number; library?: string; title?: string } | undefined;
+            let manifest: ManuscriptManifest | undefined;
             
             // Only load manifest if we don't already have the data (avoid double loading)
             if (!item?.totalPages || !item.library) {
@@ -1374,7 +1375,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 // Estimate based on typical manuscript page size
                 const avgPageSizeMB = 
                     // Existing libraries with known page sizes
-                    manifest.library === 'arca' ? 1.0 : 
+                    manifest.library === 'arca' ? 2.0 : // IRHT IIIF 4000px width ~2MB per page 
                     manifest.library === 'internet_culturale' ? 0.8 : 
                     manifest.library === 'manuscripta' ? 0.7 :
                     manifest.library === 'graz' ? 0.8 :
@@ -1435,6 +1436,22 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 // Multi-page sampling for more accurate size estimation
                 console.log(`[${manifest.library}] Using multi-page sampling for accurate size estimation`);
                 
+                // CRITICAL FIX: If pageLinks is missing, we need to regenerate the URLs
+                // This happens because the manifest gets cached/transformed and loses pageLinks
+                if (!manifest.pageLinks && manifest.library === 'bdl') {
+                    try {
+                        // Load fresh manifest to get pageLinks
+                        const downloader = new (await import('./EnhancedManuscriptDownloaderService')).EnhancedManuscriptDownloaderService(this.manifestCache);
+                        const freshManifest = await downloader.loadManifest(item.url);
+                        if (freshManifest && freshManifest.pageLinks) {
+                            manifest.pageLinks = freshManifest.pageLinks;
+                        }
+                    } catch (freshError) {
+                        console.error(`Failed to load fresh manifest for pageLinks:`, freshError);
+                        // Continue with fallback estimate since we can't sample
+                    }
+                }
+                
                 const totalPages = manifest?.totalPages || 0;
                 const samplesToTake = Math.min(10, totalPages); // Sample up to 10 pages
                 const sampleIndices: number[] = [];
@@ -1455,20 +1472,54 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 // Remove duplicates and sort
                 const uniqueIndices = [...new Set(sampleIndices)].sort((a, b) => a - b);
                 
-                console.log(`[${manifest.library}] Sampling ${uniqueIndices?.length} pages from total ${totalPages}`);
+                console.log(`[${manifest.library}] Sampling ${uniqueIndices?.length} pages from total ${totalPages} - this may take a moment...`);
                 const pageSizes: number[] = [];
                 
                 // Download sample pages
                 for (const index of uniqueIndices) {
+                    
+                    // Yield control to prevent blocking UI and other operations
+                    await new Promise(resolve => setImmediate(resolve));
+                    
                     try {
                         const pageUrl = (manifest as any).pageLinks[index];
-                        if (!pageUrl) continue;
+                        if (!pageUrl) {
+                            console.warn(`No pageUrl found for index ${index}, continuing...`);
+                            continue;
+                        }
                         
-                        const buffer = await this.downloadSinglePage(pageUrl);
-                        const sizeMB = buffer?.length / (1024 * 1024);
+                        let buffer;
+                        // Use UltraReliableBDLService for BDL URLs due to server unreliability
+                        if (manifest.library === 'bdl') {
+                            try {
+                                const { UltraReliableBDLService } = await import('./UltraReliableBDLService');
+                                const bdlService = new UltraReliableBDLService();
+                                buffer = await bdlService.ultraReliableDownload(pageUrl, index, { 
+                                    ultraReliableMode: false, // lightweight sampling
+                                    maxRetries: 2,
+                                    maxQualityFallbacks: true,
+                                    disableProxy: true, // avoid long proxy waits during sampling
+                                    directTimeoutMs: 12000, // faster timeout
+                                    proxyTimeoutMs: 12000,
+                                    globalTimeoutMs: 20000 // cap per-sample time
+                                });
+                            } catch (ultraError) {
+                                console.error(`UltraReliableBDLService failed for page ${index + 1}, falling back to basic method:`, ultraError);
+                                buffer = await this.downloadSinglePage(pageUrl);
+                            }
+                        } else {
+                            buffer = await this.downloadSinglePage(pageUrl);
+                        }
+                        
+                        if (!buffer || !buffer.length) {
+                            console.warn(`[${manifest.library}] Page ${index + 1} returned empty buffer, skipping...`);
+                            continue;
+                        }
+                        
+                        const sizeMB = buffer.length / (1024 * 1024);
                         pageSizes.push(sizeMB);
                         console.log(`[${manifest.library}] Page ${index + 1}: ${sizeMB.toFixed(2)} MB`);
-                    } catch {
+                    } catch (error) {
                         console.warn(`[${manifest.library}] Failed to sample page ${index + 1}, continuing...`);
                     }
                 }
@@ -1613,6 +1664,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
         
         this.saveToStorage();
         this.notifyListeners();
+        
+        // Auto-start processing the newly created parts
+        this.tryStartNextPendingItem();
     }
     
     private async downloadSinglePage(url: string): Promise<Buffer> {
@@ -1857,13 +1911,19 @@ export class EnhancedDownloadQueue extends EventEmitter {
     }
 
     async startAllSimultaneous(): Promise<void> {
-        if (this.state.isProcessing) return;
+        
+        if (this.state.isProcessing) {
+            return;
+        }
         
         const pendingItems = this.state.items.filter(item => 
             item.status === 'pending' || item.status === 'loading'
         );
         
-        if (pendingItems?.length === 0) return;
+        
+        if (pendingItems?.length === 0) {
+            return;
+        }
         
         this.state.isProcessing = true;
         this.state.isPaused = false;
@@ -1872,44 +1932,47 @@ export class EnhancedDownloadQueue extends EventEmitter {
         this.notifyListeners();
         
         try {
-            // Start all pending items simultaneously with resource limits
-            const itemsToStart = pendingItems.slice(0, this.state.globalSettings.maxSimultaneousDownloads);
+            // Start initial batch simultaneously
+            const maxConcurrent = this.state.globalSettings.maxSimultaneousDownloads;
+            const itemsToStart = pendingItems.slice(0, maxConcurrent);
             
-            if (itemsToStart?.length < pendingItems?.length) {
-                console.warn(`Starting ${itemsToStart?.length} of ${pendingItems?.length} items due to resource limits`);
-            }
+            console.log(`[Queue] Starting ${itemsToStart?.length} items simultaneously${pendingItems?.length > maxConcurrent ? ` (${pendingItems?.length - maxConcurrent} more will start as slots free up)` : ''}`);
             
-            const promises = itemsToStart.map(item => this.processItemConcurrently(item));
-            const results = await Promise.allSettled(promises);
-            
-            // Log any failures
-            results.forEach((result, index) => {
-                if (result.status === 'rejected') {
-                    console.error(`Failed to process item ${itemsToStart[index]?.id}:`, result.reason);
-                }
+            // Start all items concurrently - fire and forget (don't wait for completion)
+            itemsToStart.forEach(item => {
+                this.processItemConcurrently(item).catch(error => {
+                    console.error(`Error processing item ${item.id}:`, error);
+                });
             });
+            
+            // Start queue monitor to auto-start remaining items
+            this.startQueueMonitor();
+            
         } catch (error) {
-            console.error('Error in simultaneous processing:', error);
-        } finally {
+            console.error('Error starting simultaneous downloads:', error);
             this.state.isProcessing = false;
             this.state.currentItemId = undefined;
             this.state.activeItemIds = [];
-            this.activeDownloaders.clear();
             this.processingAbortController = null;
             this.notifyListeners();
         }
+        // Note: No finally block - let queue monitor handle completion
     }
 
     async startItemIndividually(id: string): Promise<void> {
         const item = this.state.items.find(item => item.id === id);
+        
         if (!item || (item.status !== 'pending' && item.status !== 'loading' && item.status !== 'paused')) {
+            console.warn(`Cannot start individual item ${id}: ${!item ? 'item not found' : `invalid status "${item.status}"`}`);
             return;
         }
         
         // Check resource availability
         const activeCount = this.activeDownloaders.size;
-        if (activeCount >= this.state.globalSettings.maxSimultaneousDownloads) {
-            console.warn(`Cannot start item ${id}: maximum simultaneous downloads reached`);
+        const maxAllowed = this.state.globalSettings.maxSimultaneousDownloads;
+        
+        if (activeCount >= maxAllowed) {
+            console.warn(`Cannot start individual item ${id}: maximum simultaneous downloads reached (${activeCount}/${maxAllowed})`);
             return;
         }
         
@@ -2082,8 +2145,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
             const libraryCap2 = item.libraryOptimizations?.maxConcurrentDownloads;
             const effectiveConcurrent2 = libraryCap2 ? Math.min(baseConcurrent2, libraryCap2) : baseConcurrent2;
 
-            // Actually download the manuscript
-            const result = await downloader.downloadManuscript(item.url, {
+            // Actually download the manuscript (non-blocking for true concurrency)
+            downloader.downloadManuscript(item.url, {
                 onProgress: (progress: any) => {
                     // Handle both simple progress (0-1) and detailed progress object
                     if (typeof progress === 'number') {
@@ -2093,7 +2156,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                             current: progress.downloadedPages || 0,
                             total: progress?.totalPages || item?.totalPages || 0,
                             percentage: Math.round((progress.progress || 0) * 100 * 100) / 100, // Round to 2 decimal places
-                            eta: progress.eta || 'calculating...',
+                            eta: typeof progress.eta === 'number' ? this.formatTime(progress.eta * 1000) : (progress.eta || 'calculating...'),
                             stage: 'downloading' as TStage,
                         };
                     }
@@ -2126,79 +2189,101 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 }),
                 // Pass the queue item for manual manifest data
                 queueItem: item,
+            })
+            .then(async (result) => {
+                // CRITICAL FIX for Issue #29: downloadManuscript returns STRING (filepath) on success, not object
+                if (typeof result === 'string' && result.length > 0) {
+                    // Verify the output file actually exists before marking as completed
+                    const fs = await import('fs/promises');
+                    const path = await import('path');
+                    
+                    try {
+                        // Check if file exists and has reasonable size
+                        const stats = await fs.stat(result);
+                        // For auto-split chunks, use chunk's actual page count, not manifest total
+                        const actualPageCount = ((item as any).isChunk && (item as any).chunkInfo) ? 
+                            ((item as any).chunkInfo.endPage - (item as any).chunkInfo.startPage + 1) : 
+                            (item.isAutoPart && item.partInfo) ? 
+                                (item.partInfo.pageRange.end - item.partInfo.pageRange.start + 1) :
+                                (item?.totalPages || 1);
+                        const minExpectedSize = Math.max(1024 * 100, actualPageCount * 50 * 1024); // At least 100KB or ~50KB per page
+                        
+                        if (stats.size < minExpectedSize) {
+                            throw new Error(`Output file too small: ${stats.size} bytes (expected at least ${minExpectedSize})`);
+                        }
+                        
+                        console.log(`✅ Download verified: ${path.basename(result)} (${(stats.size / (1024 * 1024)).toFixed(1)}MB)`);
+                        
+                        item.status = 'completed';
+                        item.completedAt = Date.now();
+                        item.progress = undefined;
+                        item.outputPath = result;
+                        
+                    } catch (verificationError: unknown) {
+                        const errorMessage = verificationError instanceof Error ? verificationError.message : String(verificationError);
+                        console.error(`❌ File verification failed for ${item.displayName}:`, errorMessage);
+                        throw new Error(`Download appeared successful but file verification failed: ${errorMessage}`);
+                    }
+                } else {
+                    throw new Error('Download failed without specific error');
+                }
+            })
+            .catch(async (error: any) => {
+                const isAbortError = error instanceof Error && ((error as any)?.name === 'AbortError' || error.message?.includes('abort'));
+                if (isAbortError) {
+                    item.status = 'paused';
+                    item.progress = undefined;
+                } else {
+                    console.error(`❌ Failed: ${item.displayName} - ${error instanceof Error ? error.message : String(error)}`);
+                    item.status = 'failed';
+                    item.error = error instanceof Error ? error.message : String(error);
+                    item.retryCount = (item.retryCount || 0) + 1;
+                    
+                    // For large manuscript infinite loop prevention
+                    if (item.library === 'manuscripta' && item?.totalPages && item?.totalPages > 300) {
+                        const maxRetries = 2; // Fewer retries for large manuscripta.se files
+                        if (item.retryCount >= maxRetries) {
+                            item.error = `${error instanceof Error ? error.message : String(error)} (Large manuscript - max ${maxRetries} retries exceeded to prevent infinite loops)`;
+                            console.error(`Large manuscripta.se manuscript retry limit reached: ${item.displayName}`);
+                        }
+                    }
+                    
+                    // CRITICAL FIX for Issue #29: Prevent infinite restart loops for Linz, e-rara, and Graz
+                    if ((item.library === 'linz' || item.library === 'e_rara' || item.library === 'graz')) {
+                        const maxRetries = 3; // Standard retry limit for newly implemented libraries
+                        if (item.retryCount >= maxRetries) {
+                            item.error = `${error instanceof Error ? error.message : String(error)} (Max ${maxRetries} retries exceeded to prevent infinite loops)`;
+                            console.error(`${item.library} library retry limit reached: ${item.displayName}`);
+                        }
+                    }
+                    
+                    // Perform error isolation and cache cleanup to prevent corruption spread
+                    await this.handleDownloadError(item, error);
+                }
+            })
+            .finally(() => {
+                // Clear timeout
+                clearTimeout(timeoutId);
+                
+                // Remove from active downloads
+                this.activeDownloaders.delete(item.id);
+                if (this.state.activeItemIds) {
+                    const index = this.state.activeItemIds.indexOf(item.id);
+                    if (index > -1) {
+                        this.state.activeItemIds.splice(index, 1);
+                    }
+                }
+                
+                // Auto-start next pending item if available
+                this.tryStartNextPendingItem();
+                
+                this.saveToStorage();
+                this.notifyListeners();
             });
             
-            // CRITICAL FIX for Issue #29: downloadManuscript returns STRING (filepath) on success, not object
-            if (typeof result === 'string' && result.length > 0) {
-                // Verify the output file actually exists before marking as completed
-                const fs = await import('fs/promises');
-                const path = await import('path');
-                
-                try {
-                    // Check if file exists and has reasonable size
-                    const stats = await fs.stat(result);
-                    // For auto-split chunks, use chunk's actual page count, not manifest total
-                    const actualPageCount = ((item as any).isChunk && (item as any).chunkInfo) ? 
-                        ((item as any).chunkInfo.endPage - (item as any).chunkInfo.startPage + 1) : 
-                        (item.isAutoPart && item.partInfo) ? 
-                            (item.partInfo.pageRange.end - item.partInfo.pageRange.start + 1) :
-                            (item?.totalPages || 1);
-                    const minExpectedSize = Math.max(1024 * 100, actualPageCount * 50 * 1024); // At least 100KB or ~50KB per page
-                    
-                    if (stats.size < minExpectedSize) {
-                        throw new Error(`Output file too small: ${stats.size} bytes (expected at least ${minExpectedSize})`);
-                    }
-                    
-                    console.log(`✅ Download verified: ${path.basename(result)} (${(stats.size / (1024 * 1024)).toFixed(1)}MB)`);
-                    
-                    item.status = 'completed';
-                    item.completedAt = Date.now();
-                    item.progress = undefined;
-                    item.outputPath = result;
-                    
-                } catch (verificationError: unknown) {
-                    const errorMessage = verificationError instanceof Error ? verificationError.message : String(verificationError);
-                    console.error(`❌ File verification failed for ${item.displayName}:`, errorMessage);
-                    throw new Error(`Download appeared successful but file verification failed: ${errorMessage}`);
-                }
-            } else {
-                throw new Error('Download failed without specific error');
-            }
-            
-        } catch (error: any) {
-            const isAbortError = error instanceof Error && ((error as any)?.name === 'AbortError' || error.message?.includes('abort'));
-            if (isAbortError) {
-                item.status = 'paused';
-                item.progress = undefined;
-            } else {
-                console.error(`❌ Failed: ${item.displayName} - ${error instanceof Error ? error.message : String(error)}`);
-                item.status = 'failed';
-                item.error = error instanceof Error ? error.message : String(error);
-                item.retryCount = (item.retryCount || 0) + 1;
-                
-                // For large manuscript infinite loop prevention
-                if (item.library === 'manuscripta' && item?.totalPages && item?.totalPages > 300) {
-                    const maxRetries = 2; // Fewer retries for large manuscripta.se files
-                    if (item.retryCount >= maxRetries) {
-                        item.error = `${error instanceof Error ? error.message : String(error)} (Large manuscript - max ${maxRetries} retries exceeded to prevent infinite loops)`;
-                        console.error(`Large manuscripta.se manuscript retry limit reached: ${item.displayName}`);
-                    }
-                }
-                
-                // CRITICAL FIX for Issue #29: Prevent infinite restart loops for Linz, e-rara, and Graz
-                if ((item.library === 'linz' || item.library === 'e_rara' || item.library === 'graz')) {
-                    const maxRetries = 3; // Standard retry limit for newly implemented libraries
-                    if (item.retryCount >= maxRetries) {
-                        item.error = `${error instanceof Error ? error.message : String(error)} (Max ${maxRetries} retries exceeded to prevent infinite loops)`;
-                        console.error(`${item.library} library retry limit reached: ${item.displayName}`);
-                    }
-                }
-                
-                // Perform error isolation and cache cleanup to prevent corruption spread
-                await this.handleDownloadError(item, error);
-            }
-        } finally {
-            // Clear timeout
+        } catch (setupError) {
+            // Handle errors in setup phase (manifest loading, auto-split checking, etc.)
+            console.error(`❌ Setup failed for ${item.displayName}:`, setupError);
             clearTimeout(timeoutId);
             
             // Remove from active downloads
@@ -2210,7 +2295,70 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 }
             }
             
+            item.status = 'failed';
+            item.error = `Setup failed: ${setupError instanceof Error ? setupError.message : String(setupError)}`;
             this.saveToStorage();
+            this.notifyListeners();
+            
+            // Auto-start next pending item if available
+            this.tryStartNextPendingItem();
+        }
+    }
+    
+    /**
+     * Format milliseconds into human-readable time string
+     */
+    private formatTime(milliseconds: number): string {
+        const seconds = Math.round(milliseconds / 1000);
+        if (seconds < 60) return `${seconds}s`;
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        if (minutes < 60) return `${minutes}m ${remainingSeconds}s`;
+        const hours = Math.floor(minutes / 60);
+        const remainingMinutes = minutes % 60;
+        return `${hours}h ${remainingMinutes}m`;
+    }
+    
+    /**
+     * Start monitoring queue to auto-progress through pending items
+     */
+    private startQueueMonitor(): void {
+        // Monitor is implicitly handled by tryStartNextPendingItem() calls in completion handlers
+        console.log('[Queue] Queue monitor active - will auto-start items as slots become available');
+    }
+    
+    /**
+     * Try to start next pending item when a slot becomes available
+     */
+    private tryStartNextPendingItem(): void {
+        if (!this.state.isProcessing || this.state.isPaused) {
+            return;
+        }
+        
+        const activeCount = this.activeDownloaders.size;
+        const maxAllowed = this.state.globalSettings.maxSimultaneousDownloads;
+        
+        if (activeCount >= maxAllowed) {
+            return; // No slots available
+        }
+        
+        // Find next pending item
+        const nextItem = this.state.items.find(item => 
+            item.status === 'pending' || item.status === 'loading'
+        );
+        
+        if (nextItem) {
+            console.log(`[Queue] Auto-starting next item: ${nextItem.displayName || nextItem.id}`);
+            this.processItemConcurrently(nextItem).catch(error => {
+                console.error(`Error auto-starting item ${nextItem.id}:`, error);
+            });
+        } else if (activeCount === 0) {
+            // No more pending items and no active downloads - we're done
+            console.log('[Queue] All simultaneous downloads completed');
+            this.state.isProcessing = false;
+            this.state.currentItemId = undefined;
+            this.state.activeItemIds = [];
+            this.processingAbortController = null;
             this.notifyListeners();
         }
     }

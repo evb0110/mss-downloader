@@ -198,6 +198,10 @@ const api = {
   // Captcha solving
   solveCaptcha: (url: string) => ipcRenderer.invoke('solve-captcha', url),
   
+  // Network health and resilience
+  getNetworkHealth: () => ipcRenderer.invoke('get-network-health'),
+  resetCircuitBreaker: (libraryName: string) => ipcRenderer.invoke('reset-circuit-breaker', libraryName),
+  
   // Negative converter methods
   convertNegativeToPositive: (data: { fileData: ArrayBuffer | Uint8Array | number[]; fileName: string; settings: ConversionSettings; outputDirectory?: string }) => 
     ipcRenderer.invoke('convert-negative-to-positive', data),

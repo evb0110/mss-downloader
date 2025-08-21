@@ -442,7 +442,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             // CRITICAL FIX: Use correct module based on protocol (Rome library uses HTTP)
             const isHttps = urlObj.protocol === 'https:';
             const requestLib = isHttps ? httpsLib : httpLib;
-            console.log(`[SharedManifestLoaders] Using ${isHttps ? 'HTTPS' : 'HTTP'} module for ${url}`);
             
             const req = requestLib.request(requestOptions, (res: http.IncomingMessage) => {
                 if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400) {
@@ -479,7 +478,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                             return;
                         }
                         
-                        console.log(`[SharedManifestLoaders] Redirect ${redirectCount + 1}/${MAX_REDIRECTS}: ${res.statusCode ?? 0} ${url} -> ${redirectUrl}`);
                         
                         this.fetchUrl(redirectUrl, options, redirectCount + 1).then(resolve).catch(reject);
                         return;
@@ -635,7 +633,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
      * Verona - NBM (Nuova Biblioteca Manoscritta) - Fixed with Electron-safe fetch and simplified timeout handling
      */
     async getVeronaManifest(url: string): Promise<{ images: ManuscriptImage[] }> {
-        console.log('[Verona] Processing URL:', url);
         
         // Perform server health check first (but don't fail completely if it fails)
         try {
@@ -661,7 +658,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const schedaMatch = url.match(/\/scheda\/id\/(\d+)/);
         if (schedaMatch) {
             codice = schedaMatch[1];
-            console.log('[Verona] Extracted codice from scheda URL:', codice);
         } else {
             // Pattern 2: Legacy patterns with query parameters
             const codiceMatch = url.match(/[?&]codice=(\d+)/);
@@ -673,11 +669,9 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             throw new Error('Invalid Verona URL - no manuscript ID found. Expected patterns: /scheda/id/XXXX or ?codice=XXXX');
         }
         
-        console.log('[Verona] Extracted codice:', codice);
         
         // Try to discover the manifest URL from the HTML page with enhanced error handling
         try {
-            console.log('[Verona] Attempting manifest URL discovery...');
             const manifestUrl = await this.discoverVeronaManifestUrl(url, codice);
             if (manifestUrl) {
                 console.log('[Verona] Discovered manifest URL:', manifestUrl);
@@ -711,7 +705,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
      * Discover Verona manifest URL from HTML page
      */
     async discoverVeronaManifestUrl(pageUrl: string, _UNUSED_codice: string): Promise<string | null> {
-        console.log('[Verona] Attempting to discover manifest URL from page');
         
         try {
             const response = await this.fetchWithRetry(pageUrl);
@@ -821,7 +814,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         });
         
         try {
-            console.log('[Verona] Starting manifest fetch with enhanced timeout handling...');
             
             // Use fetchWithRetry which already has Verona-specific retry logic
             const response: FetchResponse = await Promise.race([
@@ -997,7 +989,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         const images: ManuscriptImage[] = [];
         
         // ULTRA-PRIORITY FIX Issue #11: Detect actual page count from BNE HTML
-        console.log(`[BNE] Processing manuscript ID: ${docId}`);
         
         // First, try to get the actual page count from HTML
         let detectedPageCount = null;
@@ -1128,7 +1119,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         
         // Handle proxy URLs from i3f.vls.io
         if (url.includes('i3f.vls.io')) {
-            console.log('[Karlsruhe] Processing proxy URL from i3f.vls.io');
             
             // Extract the actual manifest URL from the id parameter
             const urlObj = new URL(url);
@@ -1140,7 +1130,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             
             // Decode the URL-encoded manifest URL
             manifestUrl = decodeURIComponent(manifestId);
-            console.log(`[Karlsruhe] Extracted manifest URL: ${manifestUrl}`);
             
             // Validate it's a Karlsruhe manifest URL
             if (!manifestUrl.includes('digital.blb-karlsruhe.de')) {
@@ -1243,7 +1232,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
      * University of Graz - Fixed with streaming page processing and memory-efficient JSON parsing
      */
     async getGrazManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string } | ManuscriptImage[]> {
-        console.log(`[Graz] Processing URL: ${url}`);
         
         // Extract manuscript ID from URL - handle multiple patterns
         let manuscriptId;
@@ -1493,7 +1481,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
      * Linz / Upper Austrian State Library - Uses Goobi viewer with IIIF
      */
     async getLinzManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
-        console.log(`[Linz] Processing URL: ${url}`);
         
         // Extract manuscript ID from URL pattern like /viewer/image/116/
         let manuscriptId;
@@ -1857,7 +1844,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
      * Morgan Library - Supports multiple URL patterns with high-resolution image extraction
      */
     async getMorganManifest(url: string): Promise<{ images: ManuscriptImage[] } | ManuscriptImage[]> {
-        console.log('[Morgan] Processing URL:', url);
         
         // Handle direct image URLs
         if (url.match(/\.(jpg|jpeg|png|gif)$/i)) {
@@ -1967,7 +1953,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                     // If redirect failed, try the URL without /thumbs as fallback
                     if (pageUrl.endsWith('/thumbs')) {
                         const fallbackUrl = pageUrl.replace('/thumbs', '');
-                        console.log(`[Morgan] Trying fallback URL without /thumbs: ${fallbackUrl}`);
                         const fallbackResponse = await this.fetchWithRetry(fallbackUrl);
                         if (fallbackResponse.ok) {
                             const html = await fallbackResponse.text();
@@ -2408,7 +2393,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 
                 // Convert to IIIF manifest URL
                 const manifestUrl = `https://gams.uni-graz.at/archive/objects/${objectId}/methods/sdef:IIIF/manifest`;
-                console.log('[GAMS] Trying IIIF manifest URL:', manifestUrl);
                 
                 try {
                     const response = await this.fetchWithRetry(manifestUrl, {}, 1);
@@ -2467,7 +2451,6 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             // Try to access the viewer page to get images directly
             // GAMS IIIF manifests often require authentication, so we use an alternative approach
             const viewerUrl = `https://gams.uni-graz.at/archive/objects/${objectId}/methods/sdef:IIIF/get`;
-            console.log('[GAMS] Trying viewer URL:', viewerUrl);
             
             try {
                 // First, try the IIIF manifest (might work for public objects)
@@ -4164,7 +4147,6 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         // Strategy 2: Check specific known patterns for this manuscript
         // Some manuscripts might have different patterns
         if (discoveredBlocks.size === 1) {
-            console.log(`[e-manuscripta] Trying alternative patterns...`);
             
             const alternativePatterns = [1, 10, 12, 20]; // Other common patterns
             
@@ -4219,7 +4201,6 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         // Strategy 3: ULTRA-FAST heuristic for known multi-series patterns
         // Critical fix for Issue #10: Use smart detection to avoid timeout
         if ((Date.now() - startTime) < maxDiscoveryTime) {
-            console.log(`[e-manuscripta] Checking for multi-series manuscripts...`);
         
             // Known patterns from Issue #10: e-manuscripta multi-series structure
             // User's manuscript has blocks at 5157232, 5157243, 5157254, etc (offset -384 from 5157616)
@@ -4414,7 +4395,6 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 // Check if we're missing block 5157615 (known technical block)
                 if (baseId === 5157616 && !technicalBlocks.includes(5157615) && !coreBlocks.includes(5157615)) {
                     // Try to fetch 5157615 - it's a known technical block for this manuscript
-                    console.log(`[e-manuscripta] Checking for missing technical block 5157615...`);
                     const testUrl = `https://www.e-manuscripta.ch/${library}/content/zoom/5157615`;
                     try {
                         const response = await this.fetchUrl(testUrl);
@@ -4948,7 +4928,6 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         if (!response.ok) {
             // Try v3 API as fallback
             const v3Url = `https://api.nb.no/catalog/v3/iiif/${itemId}/manifest`;
-            console.log(`[Norwegian] Trying v3 API: ${v3Url}`);
             const v3Response = await this.fetchWithRetry(v3Url);
             if (!v3Response.ok) {
                 throw new Error(`Failed to fetch manifest: ${response.status}`);
@@ -5932,7 +5911,6 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      * Strategy 3: Conservative estimation (final fallback)
      */
     private async discoverRomePageCount(collectionType: string, manuscriptId: string): Promise<number> {
-        console.log(`[Rome] Starting hybrid page discovery for ${manuscriptId}`);
         
         // ULTRATHINK FIX: Skip HEAD requests - they find 1024 phantom pages
         // HEAD returns 200 OK with text/html for non-existent pages
@@ -5940,7 +5918,6 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         /*
         // Strategy 1: Try binary search with HEAD requests
         try {
-            console.log(`[Rome] Attempting binary search with HEAD requests...`);
             const headResult = await this.binarySearchRomeWithHead(collectionType, manuscriptId);
             
             if (headResult > 1) {
@@ -6266,7 +6243,6 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 
                 // If we found IIPImage info, try to query the server for available files
                 if (iipBaseUrl && manuscriptPathFromIIP) {
-                    console.log(`[Roman Archive] Attempting to query IIPImage server for file list...`);
                     try {
                         // Try IIPImage OBJ=IIP,1.0&OBJ=Resolution-number to get image info
                         // This might reveal actual available files
@@ -6282,7 +6258,6 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 
                 // If we found a manifest URL, try to use it
                 if (foundManifestUrl) {
-                    console.log(`[Roman Archive] Attempting to fetch IIIF manifest from: ${foundManifestUrl}`);
                     try {
                         const manifestResponse = await this.fetchWithRetry(foundManifestUrl);
                         if (manifestResponse.ok) {

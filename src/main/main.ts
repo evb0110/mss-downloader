@@ -94,14 +94,6 @@ const isHeadless = process.argv.includes('--headless') ||
                    process.env['DISPLAY'] === ':99' || // Playwright test display
                    process.env['CI'] === 'true';
 
-console.log('[DEBUG] Headless detection:', {
-  isHeadless,
-  argv: process.argv,
-  hasHeadlessFlag: process.argv.includes('--headless'),
-  NODE_ENV: process.env['NODE_ENV'],
-  DISPLAY: process.env['DISPLAY'],
-  CI: process.env['CI']
-});
 
 const createWindow = async () => {
   // Creating main window
@@ -242,14 +234,11 @@ const createWindow = async () => {
 
   mainWindow.once('ready-to-show', () => {
     // Window ready to show
-    console.log('[DEBUG] Window ready-to-show event fired');
     // Show window in development mode regardless of headless detection
     if (isDev || (!isHeadless && process.env['NODE_ENV'] !== 'test')) {
-      console.log('[DEBUG] Showing window');
       mainWindow?.show();
       mainWindow?.maximize();
     } else {
-      console.log('[DEBUG] NOT showing window - headless or test mode');
     }
   });
 
@@ -444,7 +433,6 @@ process.on('unhandledRejection', (reason, promise) => {
 
 app.whenReady().then(async () => {
   console.log('[INFO] Startup phase: app.whenReady');
-  console.log('[DEBUG] App ready, isHeadless =', isHeadless, 'NODE_ENV =', process.env['NODE_ENV']);
   
   // Set dock icon for macOS in development mode
   if (process.platform === 'darwin' && app.dock) {
@@ -552,6 +540,16 @@ ipcMain.handle('config-reset', () => {
   const newConfig = configService.getAll();
   // Notify renderer of config reset
   mainWindow?.webContents.send('config-reset', newConfig);
+});
+
+ipcMain.handle('get-network-health', () => {
+  const { networkResilienceService } = require('./services/NetworkResilienceService');
+  return networkResilienceService.getHealthMetrics();
+});
+
+ipcMain.handle('reset-circuit-breaker', (_event, libraryName: string) => {
+  const { networkResilienceService } = require('./services/NetworkResilienceService');
+  networkResilienceService.resetCircuitBreaker(libraryName);
 });
 
 ipcMain.handle('download-manuscript', async (_event, url: string, _UNUSED_callbacks: unknown) => {

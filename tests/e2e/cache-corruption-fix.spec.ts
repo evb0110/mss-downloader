@@ -47,7 +47,7 @@ test.describe('Cache Corruption Fix', () => {
     await expect(page.getByTestId('queue-item')).toHaveCount(2);
 
     // Add another valid manuscript from different library
-    const validManuscriptUrl2 = 'https://digital.bodleian.ox.ac.uk/objects/748a9d13-3d98-4675-8705-5c1f0342cd73/';
+    const validManuscriptUrl2 = 'https://digital2.bodleian.ox.ac.uk/objects/3458fdcc-ac0b-4b2b-af9c-807f94761e39/';
     await page.getByTestId('url-input').fill(validManuscriptUrl2);
     await page.getByTestId('add-to-queue-btn').click();
 

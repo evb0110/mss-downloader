@@ -13,10 +13,10 @@ export class IccuLoader extends BaseLibraryLoader {
             try {
                 console.log(`Loading ICCU API manuscript from: ${originalUrl}`);
                 
-                // Extract manuscript ID from URL
-                const idMatch = originalUrl.match(/[?&]id=(\d+)/);
+                // Extract manuscript ID from URL (format: /cnmd/{id})
+                const idMatch = originalUrl.match(/\/cnmd\/(\d+)/);
                 if (!idMatch) {
-                    throw new Error('Invalid ICCU URL format - cannot extract manuscript ID');
+                    throw new Error('Invalid ICCU URL format - cannot extract manuscript ID from path');
                 }
                 
                 const manuscriptId = idMatch[1];

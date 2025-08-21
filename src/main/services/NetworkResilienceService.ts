@@ -400,6 +400,7 @@ export class NetworkResilienceService extends EventEmitter {
         suggestedAction: string;
     } {
         const errorCode = (error as any)?.code;
+        const causeCode = (error as any)?.cause?.code;
         const errorMessage = error.message.toLowerCase();
 
         // DNS and connection errors - usually temporary
@@ -411,10 +412,10 @@ export class NetworkResilienceService extends EventEmitter {
             };
         }
 
-        if (errorCode === 'ETIMEDOUT' || errorCode === 'ECONNRESET') {
+        if (errorCode === 'ETIMEDOUT' || errorCode === 'ECONNRESET' || errorCode === 'UND_ERR_CONNECT_TIMEOUT' || causeCode === 'UND_ERR_CONNECT_TIMEOUT') {
             return {
                 category: 'TEMPORARY',
-                userMessage: 'Connection timeout or reset. The server may be overloaded.',
+                userMessage: 'Connection timeout or reset. The server may be overloaded or unreachable.',
                 suggestedAction: 'The system will retry with longer delays. This usually resolves itself.'
             };
         }

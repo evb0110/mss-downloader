@@ -1558,10 +1558,8 @@ export class EnhancedManuscriptDownloaderService {
             const dnsStartTime = Date.now();
             try {
                 // Pre-resolve DNS to avoid resolution timeouts
-                console.log(`[Graz] Pre-resolving DNS for ${urlObj.hostname}`);
                 const addresses = await dns.resolve4(urlObj.hostname);
                 if (addresses.length > 0) {
-                    console.log(`[Graz] Resolved to ${addresses[0]}`);
                     comprehensiveLogger.log({
                         level: 'debug',
                         category: 'network',
@@ -1608,7 +1606,6 @@ export class EnhancedManuscriptDownloaderService {
                     const cleanMatch = hostname.match(/^([a-z0-9.-]+?)(?:https?|\/\/|$)/i);
                     if (cleanMatch && cleanMatch[1]) {
                         hostname = cleanMatch[1];
-                        console.log(`[Grenoble] Extracted clean hostname: ${hostname}`);
                     } else {
                         // Skip DNS resolution if hostname is invalid
                         console.error(`[Grenoble] Cannot extract valid hostname, skipping DNS resolution`);
@@ -1623,10 +1620,8 @@ export class EnhancedManuscriptDownloaderService {
                 }
 
                 // Pre-resolve DNS to avoid EAI_AGAIN errors
-                console.log(`[Grenoble] Pre-resolving DNS for ${hostname}`);
                 const addresses = await dns.resolve4(hostname);
                 if (addresses.length > 0) {
-                    console.log(`[Grenoble] Resolved to ${addresses[0]}`);
                 }
             } catch (dnsError: unknown) {
                 console.warn(`[Grenoble] DNS resolution failed, proceeding anyway:`, dnsError instanceof Error ? dnsError instanceof Error ? dnsError.message : String(dnsError) : String(dnsError));
@@ -1647,10 +1642,8 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('cdm21059.contentdm.oclc.org')) {
             try {
                 // Pre-resolve DNS to avoid resolution timeouts
-                console.log(`[Florence] Pre-resolving DNS for ${urlObj.hostname}`);
                 const addresses = await dns.resolve4(urlObj.hostname);
                 if (addresses.length > 0) {
-                    console.log(`[Florence] Resolved to ${addresses[0]}`);
                 }
             } catch (dnsError) {
                 console.warn(`[Florence] DNS resolution failed, proceeding anyway:`, dnsError);
@@ -1661,10 +1654,8 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
             try {
                 // Pre-resolve DNS to avoid resolution timeouts
-                console.log(`[Verona] Pre-resolving DNS for ${urlObj.hostname}`);
                 const addresses = await dns.resolve4(urlObj.hostname);
                 if (addresses.length > 0) {
-                    console.log(`[Verona] Resolved to ${addresses[0]}`);
                 }
             } catch (dnsError) {
                 console.warn(`[Verona] DNS resolution failed, proceeding anyway:`, dnsError);
@@ -1676,10 +1667,8 @@ export class EnhancedManuscriptDownloaderService {
             const dnsStartTime = Date.now();
             try {
                 // Pre-resolve DNS to avoid resolution timeouts
-                console.log(`[Rome] Pre-resolving DNS for ${urlObj.hostname}`);
                 const addresses = await dns.resolve4(urlObj.hostname);
                 if (addresses.length > 0) {
-                    console.log(`[Rome] Resolved to ${addresses[0]}`);
                     comprehensiveLogger.log({
                         level: 'debug',
                         category: 'network',
@@ -1716,10 +1705,8 @@ export class EnhancedManuscriptDownloaderService {
             const dnsStartTime = Date.now();
             try {
                 // Pre-resolve DNS to avoid resolution timeouts
-                console.log(`[MDC Catalonia] Pre-resolving DNS for ${urlObj.hostname}`);
                 const addresses = await dns.resolve4(urlObj.hostname);
                 if (addresses.length > 0) {
-                    console.log(`[MDC Catalonia] Resolved to ${addresses[0]}`);
                     comprehensiveLogger.log({
                         level: 'debug',
                         category: 'network',

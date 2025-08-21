@@ -64,7 +64,7 @@ export class IrhtLoader extends BaseLibraryLoader {
                     }
                     
                     const pageLinks = imageIds.map((id) =>
-                        `https://iiif.irht.cnrs.fr/iiif/ark:/${authority}/${id}/full/max/0/default.jpg`,
+                        `https://iiif.irht.cnrs.fr/iiif/ark:/${authority}/${id}/full/4000,/0/default.jpg`,
                     );
                     
                     console.log(`IRHT: Successfully extracted ${pageLinks?.length} pages from ${url}`);

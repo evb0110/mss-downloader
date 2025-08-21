@@ -32,6 +32,10 @@ interface BDLDownloadOptions {
     pageVerificationSize?: number; // Min bytes for valid image
     globalTimeoutMs?: number; // Overall timeout to prevent infinite blocking
     yieldToQueue?: boolean; // Allow other downloads to proceed if stuck
+    // Sampling-specific controls
+    disableProxy?: boolean; // If true, skip proxy strategy entirely
+    directTimeoutMs?: number; // Timeout for direct fetch/quality fallback
+    proxyTimeoutMs?: number; // Timeout when using proxy fetch
 }
 
 export class UltraReliableBDLService {
@@ -197,9 +201,10 @@ export class UltraReliableBDLService {
     /**
      * Download image with quality fallback
      */
-    private async downloadWithQualityFallback(
+private async downloadWithQualityFallback(
         url: string, 
-        qualityLevel: number = 0
+        qualityLevel: number = 0,
+        options: BDLDownloadOptions = {}
     ): Promise<{ buffer: Buffer; quality: number } | null> {
         if (qualityLevel >= this.qualityLevels?.length) {
             return null;
@@ -211,7 +216,8 @@ export class UltraReliableBDLService {
         
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            const directTimeout = options.directTimeoutMs ?? 30000;
+            const timeoutId = setTimeout(() => controller.abort(), directTimeout);
             
             const response = await fetch(modifiedUrl, {
                 signal: controller.signal,
@@ -236,7 +242,7 @@ export class UltraReliableBDLService {
         }
         
         // Try next quality level
-        return this.downloadWithQualityFallback(url, qualityLevel + 1);
+        return this.downloadWithQualityFallback(url, qualityLevel + 1, options);
     }
     
     /**
@@ -308,7 +314,7 @@ export class UltraReliableBDLService {
             try {
                 // Strategy 1: Direct download with quality fallback
                 if (attempt <= 3) {
-                    const result = await this.downloadWithQualityFallback(url, queueItem.qualityLevel);
+                    const result = await this.downloadWithQualityFallback(url, queueItem.qualityLevel, options);
                     if (result) {
                         console.log(`[BDL Ultra] SUCCESS: Page ${pageIndex} downloaded at quality level ${result.quality}`);
                         this.retryQueue.delete(queueKey);
@@ -317,15 +323,19 @@ export class UltraReliableBDLService {
                     }
                 }
                 
-                // Strategy 2: Use proxy with best health
-                const proxy = await this.getBestProxy();
-                if (proxy) {
+                // Strategy 2: Use proxy with best health (skip if disabled)
+                if (options.disableProxy) {
+                    // Skip proxy usage in lightweight sampling mode
+                } else {
+                    const proxy = await this.getBestProxy();
+                    if (proxy) {
                     queueItem.proxyUsed = proxy.url;
                     const proxyUrl = `${proxy.url}${encodeURIComponent(url)}`;
                     
                     const startTime = Date.now();
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 60000);
+                    const proxyTimeout = options.proxyTimeoutMs ?? 60000;
+                    const timeoutId = setTimeout(() => controller.abort(), proxyTimeout);
                     
                     const response = await fetch(proxyUrl, {
                         signal: controller.signal,
@@ -360,6 +370,7 @@ export class UltraReliableBDLService {
                         proxy.failureCount++;
                     }
                 }
+            }
                 
                 // Strategy 3: Try different quality level
                 if (options.maxQualityFallbacks && attempt % 10 === 0) {

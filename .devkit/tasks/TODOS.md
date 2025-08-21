@@ -48,6 +48,12 @@
     - Pattern: Libraries changing their URL structures breaking detection
     - Maintenance: Update URL parsing patterns for evolved library systems
 
+11. ☐ **Florence ECONNRESET Error** - Connection reset reading manuscript
+    - URL: https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/
+    - Error: read ECONNRESEThttps://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/317515/
+    - Pattern: Network connection reset during manifest loading
+    - Investigation: Check Florence library server stability and connection handling
+
 ## Completed Tasks
 
 1. ✅ check unneeded files in the project, especially in root. delete unneeded, put needed ones into .devkit. Organize .devkit. top priority is not to break anything. ultrathink - COMPLETED 2025-08-13
