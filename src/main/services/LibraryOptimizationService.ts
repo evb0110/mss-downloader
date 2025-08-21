@@ -30,10 +30,10 @@ export class LibraryOptimizationService {
             optimizationDescription: 'University of Toronto optimizations: 4 concurrent downloads, IIIF v2.0 compliant, Thomas Fisher Rare Book Library'
         },
         'arca': {
-            maxConcurrentDownloads: 4, // IIIF v3.0 standard performance
-            timeoutMultiplier: 1.5, 
-            enableProgressiveBackoff: false,
-            optimizationDescription: 'ARCA (IRHT) optimizations: 4 concurrent downloads, IIIF v3.0 compliant, CNRS infrastructure'
+            maxConcurrentDownloads: 2, // Reduced concurrent downloads for maximum resolution
+            timeoutMultiplier: 4.0, // 4x timeout for maximum resolution downloads (up to 3 hours for large manuscripts)
+            enableProgressiveBackoff: true,
+            optimizationDescription: 'ARCA (IRHT) optimizations: Maximum resolution priority, extended timeouts up to 3 hours for large manuscripts, reduced concurrency for server stability'
         },
         'unicatt': {
             maxConcurrentDownloads: 2, // Geo-restricted, needs careful handling

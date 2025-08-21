@@ -1375,7 +1375,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 // Estimate based on typical manuscript page size
                 const avgPageSizeMB = 
                     // Existing libraries with known page sizes
-                    manifest.library === 'arca' ? 2.0 : // IRHT IIIF 4000px width ~2MB per page 
+                    manifest.library === 'arca' ? 6.0 : // IRHT IIIF maximum resolution ~6MB per page 
                     manifest.library === 'internet_culturale' ? 0.8 : 
                     manifest.library === 'manuscripta' ? 0.7 :
                     manifest.library === 'graz' ? 0.8 :
