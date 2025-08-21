@@ -1,0 +1,147 @@
+{
+  "summary": {
+    "total": 9,
+    "successful": 8,
+    "failed": 1,
+    "reproducedUserErrors": 1,
+    "unsupportedAsExpected": 2,
+    "needsFixes": 1,
+    "needsNewLibraries": 2
+  },
+  "results": {
+    "issue_57": {
+      "success": true,
+      "status": "UNSUPPORTED_AS_EXPECTED",
+      "reason": "User requested new library - detection correctly returns null"
+    },
+    "issue_54": {
+      "success": true,
+      "status": "DETECTION_ROUTING_OK",
+      "detectedLibrary": "ambrosiana",
+      "routingDestination": "sharedManifestAdapter"
+    },
+    "issue_43": {
+      "success": true,
+      "status": "DETECTION_ROUTING_OK",
+      "detectedLibrary": "grenoble",
+      "routingDestination": "sharedManifestAdapter"
+    },
+    "issue_39": {
+      "success": true,
+      "status": "DETECTION_ROUTING_OK",
+      "detectedLibrary": "florence",
+      "routingDestination": "loadLibraryManifest"
+    },
+    "issue_38": {
+      "success": true,
+      "status": "UNSUPPORTED_AS_EXPECTED",
+      "reason": "User requested new library - detection correctly returns null"
+    },
+    "issue_37": {
+      "success": true,
+      "status": "DETECTION_ROUTING_OK",
+      "detectedLibrary": "linz",
+      "routingDestination": "loadLibraryManifest"
+    },
+    "issue_6": {
+      "success": true,
+      "status": "DETECTION_ROUTING_OK",
+      "detectedLibrary": "bordeaux",
+      "routingDestination": "sharedManifestAdapter"
+    },
+    "issue_4": {
+      "success": true,
+      "status": "DETECTION_ROUTING_OK",
+      "detectedLibrary": "morgan",
+      "routingDestination": "sharedManifestAdapter"
+    },
+    "issue_2": {
+      "success": false,
+      "error": "Library detection failed",
+      "reproduced_user_error": true
+    }
+  },
+  "testCases": {
+    "issue_57": {
+      "issue": "#57",
+      "title": "Codices",
+      "userUrl": "https://admont.codices.at/codices/169/90299",
+      "userError": "добавить библиотеку Codices\n\nhttps://admont.codices.at/codices/169/90299\n\nhttps://admont.codices.at/",
+      "author": "textorhub",
+      "fullBody": "добавить библиотеку Codices\n\nhttps://admont.codices.at/codices/169/90299\n\nhttps://admont.codices.at/iiif/9cec1d04-d5c3-4a2a-9aa8-4279b359e701\n\nhttps://admont.codices.at/iiif/image/9cec1d06-e05f-48d4-a36a-e220906a51fd/info.json\n\n\n",
+      "expectedBehavior": "Should handle Codices library correctly"
+    },
+    "issue_54": {
+      "issue": "#54",
+      "title": "амброзиана",
+      "userUrl": "https://ambrosiana.comperio.it/opac/detail/view/ambro:catalog:76502",
+      "userError": "Error: Unsupported library for URL:",
+      "author": "textorhub",
+      "fullBody": "https://ambrosiana.comperio.it/opac/detail/view/ambro:catalog:76502\n\nсломалась\n\nError invoking remote method 'parse-manuscript-url-chunked': Error: Unsupported library for URL: https://ambrosiana.comperio.it/opac/detail/view/ambro:catalog:76502https://ambrosiana.comperio.it/opac/detail/view/ambro:catalog:76502\n\n",
+      "expectedBehavior": "Should handle амброзиана library correctly"
+    },
+    "issue_43": {
+      "issue": "#43",
+      "title": "гренобль",
+      "userUrl": "https://pagella.bm-grenoble.fr/ark:/12148/btv1b106634178/f3.item.zoom",
+      "userError": "Failed to load grenoble manifest: Failed to fetch manifest: 429",
+      "author": "textorhub",
+      "fullBody": "сломался\nhttps://pagella.bm-grenoble.fr/ark:/12148/btv1b106634178/f3.item.zoom\n\nFailed to load grenoble manifest: Failed to fetch manifest: 429\n\n[logs-grenoble_Manuscript-1755637482935.txt](https://github.com/user-attachments/files/21868167/logs-grenoble_Manuscript-1755637482935.txt)\n\nсам сайт недоступен - Too Many Requests\nThe user has sent too many requests in a given amount of time.",
+      "expectedBehavior": "Should handle гренобль library correctly"
+    },
+    "issue_39": {
+      "issue": "#39",
+      "title": "флоренция",
+      "userUrl": "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/217923/rec/2",
+      "userError": "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/217923/rec/2\n\nвисит на калькуляции\n",
+      "author": "textorhub",
+      "fullBody": "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/217923/rec/2\n\nвисит на калькуляции\n\n[logs-Plut_16_39___Calendarium-1755636459234.txt](https://github.com/user-attachments/files/21867944/logs-Plut_16_39___Calendarium-1755636459234.txt)",
+      "expectedBehavior": "Should handle флоренция library correctly"
+    },
+    "issue_38": {
+      "issue": "#38",
+      "title": "Digital Walters",
+      "userUrl": "https://www.thedigitalwalters.org/Data/WaltersManuscripts/html/W33/",
+      "userError": "добавить новую библиотеку\nhttps://www.thedigitalwalters.org/Data/WaltersManuscripts/html/W33/\n\nфайлы",
+      "author": "textorhub",
+      "fullBody": "добавить новую библиотеку\nhttps://www.thedigitalwalters.org/Data/WaltersManuscripts/html/W33/\n\nфайлы картинок лежат каждый отдельно, начиная с:\nhttps://www.thedigitalwalters.org/Data/WaltersManuscripts/W33/data/W.33/sap/W33_000001_sap.jpg\nи до:\nhttps://www.thedigitalwalters.org/Data/WaltersManuscripts/W33/data/W.33/sap/W33_000584_sap.jpg\n",
+      "expectedBehavior": "Should handle Digital Walters library correctly"
+    },
+    "issue_37": {
+      "issue": "#37",
+      "title": "Линц",
+      "userUrl": "https://digi.landesbibliothek.at/viewer/image/154/",
+      "userError": "https://digi.landesbibliothek.at/viewer/image/154/\nдолго и медленно качает, доходит до конца и начин",
+      "author": "textorhub",
+      "fullBody": "https://digi.landesbibliothek.at/viewer/image/154/\nдолго и медленно качает, доходит до конца и начинает сначала\nфайл, видимо, тяжелый, но программа не разбивает его на части и пытается качать целиком сразу",
+      "expectedBehavior": "Should handle Линц library correctly"
+    },
+    "issue_6": {
+      "issue": "#6",
+      "title": "Бордо",
+      "userUrl": "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+      "userError": "необходимо добавить новую библиотеку\n\nhttps://selene.bordeaux.fr/ark:/27705/330636101_MS_0778\n\nhttps",
+      "author": "textorhub",
+      "fullBody": "необходимо добавить новую библиотеку\n\nhttps://selene.bordeaux.fr/ark:/27705/330636101_MS_0778\n\nhttps://selene.bordeaux.fr/in/dz/330636101_MS0778_0009_files/0/0_0.jpg\n\nhttps://selene.bordeaux.fr/ark:/27705/330636101_MS_0778/v0001.simple.selectedTab=thumbnail.hidesidebar\n\nнеобходимо учесть zoom, картинки с высоким разрешением собираются из кусков",
+      "expectedBehavior": "Should handle Бордо library correctly"
+    },
+    "issue_4": {
+      "issue": "#4",
+      "title": "морган",
+      "userUrl": "https://www.themorgan.org/collection/lindau-gospels/thumbs",
+      "userError": "ReferenceError: imagesByPriority is not defined",
+      "author": "textorhub",
+      "fullBody": "Error invoking remote method 'parse-manuscript-url': ReferenceError: imagesByPriority is not definedhttps://www.themorgan.org/collection/lindau-gospels/thumbs\nFailed\n\n[mss-downloader-logs-2025-07-27T09-35-06-593Z.json](https://github.com/user-attachments/files/21453101/mss-downloader-logs-2025-07-27T09-35-06-593Z.json)",
+      "expectedBehavior": "Should handle морган library correctly"
+    },
+    "issue_2": {
+      "issue": "#2",
+      "title": "грац",
+      "userUrl": "https://github.com/user-attachments/assets/b227ba31-4771-4077-9d94-028e652cd71d",
+      "userError": "ошибка во время добавления манифеста",
+      "author": "textorhub",
+      "fullBody": "![Image](https://github.com/user-attachments/assets/b227ba31-4771-4077-9d94-028e652cd71d)\n![Image](https://github.com/user-attachments/assets/cf6ad185-5cc9-4750-8072-eb1687594346)\n\nошибка во время добавления манифеста",
+      "expectedBehavior": "Should handle грац library correctly"
+    }
+  }
+}

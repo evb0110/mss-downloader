@@ -1071,6 +1071,8 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('digital.bodleian.ox.ac.uk') || url.includes('digital2.bodleian.ox.ac.uk')) return 'bodleian';
         if (url.includes('digi.ub.uni-heidelberg.de') || url.includes('doi.org/10.11588/diglit')) return 'heidelberg';
         if (url.includes('digi.landesbibliothek.at')) return 'linz';
+        // Issue #54: Ambrosiana library support
+        if (url.includes('ambrosiana.comperio.it')) return 'ambrosiana';
         // Issue #30: Roman Archive support
         if (url.includes('imagoarchiviodistatoroma.cultura.gov.it') || url.includes('archiviostorico.senato.it')) return 'roman_archive';
         // Issue #33: Digital Scriptorium support  
@@ -2282,6 +2284,11 @@ export class EnhancedManuscriptDownloaderService {
                     break;
                 case 'digital_scriptorium':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('digital_scriptorium', originalUrl);
+                    break;
+                case 'ambrosiana':
+                    // ROUTING: ambrosiana → SharedManifestAdapter for Issue #54 support
+                    // WHY: New library added by user request - using SharedManifest for initial implementation
+                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('ambrosiana', originalUrl);
                     break;
                 case 'vienna_manuscripta':
                     // ROUTING: vienna_manuscripta → ViennaManuscriptaLoader (registered as 'vienna')

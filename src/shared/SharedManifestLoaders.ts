@@ -2112,13 +2112,15 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
                 });
                 
                 const results = await Promise.allSettled(pagePromises);
+                // CRITICAL FIX Issue #4: Capture imagesByPriority in local variable to prevent ReferenceError in Electron
+                const priorityImages = imagesByPriority;
                 results.forEach(result => {
-                    if (result.status === 'fulfilled' && result.value && imagesByPriority && imagesByPriority[1]) {
-                        imagesByPriority[1].push(result.value);
+                    if (result.status === 'fulfilled' && result.value && priorityImages && priorityImages[1]) {
+                        priorityImages[1].push(result.value);
                     }
                 });
                 
-                if (imagesByPriority && imagesByPriority[1] && imagesByPriority[1].length === 0) {
+                if (priorityImages && priorityImages[1] && priorityImages[1].length === 0) {
                     console.log('[Morgan] No high-res images from individual pages (non-critical, using fallbacks)');
                 }
             } catch (error: any) {
@@ -2725,22 +2727,39 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 if ((itemData as any).parent && (itemData as any).parent.children && Array.isArray((itemData as any).parent.children)) {
                     console.log(`[Florence] Found ${(itemData as any).parent.children?.length} pages in parent compound object`);
                     
-                    // Filter out non-page items (like Color Chart, Dorso, etc.)
-                    pages = (itemData as any).parent.children
-                        .filter((child: Record<string, unknown>) => {
-                            const title = String(child['title'] || '').toLowerCase();
-                            // Include carta/folio pages, exclude color charts and binding parts
-                            return !title.includes('color chart') && 
-                                   !title.includes('dorso') && 
-                                   !title.includes('piatto') &&
-                                   !title.includes('controguardia') &&
-                                   !title.includes('guardia anteriore') &&
-                                   !title.includes('guardia posteriore');
-                        })
-                        .map((child: Record<string, unknown>) => ({
-                            id: String(child['id'] || ''),
-                            title: String(child['title'] || `Page ${child['id']}`)
-                        }));
+                    // CRITICAL FIX Issue #39: Add progress logging and filtering timeout to prevent hanging
+                    const allChildren = (itemData as any).parent.children;
+                    if (allChildren?.length > 1000) {
+                        console.warn(`[Florence] Very large manuscript (${allChildren.length} items) - this may take a while to process`);
+                    }
+                    
+                    // Filter out non-page items (like Color Chart, Dorso, etc.) with progress logging
+                    const filteredChildren = [];
+                    for (let i = 0; i < allChildren?.length; i++) {
+                        const child = allChildren[i];
+                        const title = String(child['title'] || '').toLowerCase();
+                        
+                        // Include carta/folio pages, exclude color charts and binding parts
+                        if (!title.includes('color chart') && 
+                            !title.includes('dorso') && 
+                            !title.includes('piatto') &&
+                            !title.includes('controguardia') &&
+                            !title.includes('guardia anteriore') &&
+                            !title.includes('guardia posteriore')) {
+                            filteredChildren.push({
+                                id: String(child['id'] || ''),
+                                title: String(child['title'] || `Page ${child['id']}`)
+                            });
+                        }
+                        
+                        // Progress logging every 100 items to show we're not hanging
+                        if (i % 100 === 0 && i > 0) {
+                            console.log(`[Florence] Processed ${i}/${allChildren.length} items (${filteredChildren.length} valid pages so far)...`);
+                        }
+                    }
+                    
+                    pages = filteredChildren;
+                    console.log(`[Florence] Filtering complete: ${pages.length} valid pages from ${allChildren?.length} total items`);
 
                     // Extract manuscript title from parent metadata
                     if ((itemData as any).parent.fields) {
@@ -2770,20 +2789,36 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 if (currentPageChildren && Array.isArray(currentPageChildren) && currentPageChildren?.length > 0) {
                     console.log(`[Florence] Found ${currentPageChildren?.length} child pages in current item`);
                     
-                    pages = currentPageChildren
-                        .filter((child: Record<string, unknown>) => {
-                            const title = String(child['title'] || '').toLowerCase();
-                            return !title.includes('color chart') && 
-                                   !title.includes('dorso') && 
-                                   !title.includes('piatto') &&
-                                   !title.includes('controguardia') &&
-                                   !title.includes('guardia anteriore') &&
-                                   !title.includes('guardia posteriore');
-                        })
-                        .map((child: Record<string, unknown>) => ({
-                            id: String(child['id'] || ''),
-                            title: String(child['title'] || `Page ${child['id']}`)
-                        }));
+                    // CRITICAL FIX Issue #39: Add progress logging for current page children too
+                    if (currentPageChildren?.length > 1000) {
+                        console.warn(`[Florence] Very large current item (${currentPageChildren.length} children) - processing with progress logging`);
+                    }
+                    
+                    const filteredCurrentChildren = [];
+                    for (let i = 0; i < currentPageChildren?.length; i++) {
+                        const child = currentPageChildren[i];
+                        const title = String(child['title'] || '').toLowerCase();
+                        
+                        if (!title.includes('color chart') && 
+                            !title.includes('dorso') && 
+                            !title.includes('piatto') &&
+                            !title.includes('controguardia') &&
+                            !title.includes('guardia anteriore') &&
+                            !title.includes('guardia posteriore')) {
+                            filteredCurrentChildren.push({
+                                id: String(child['id'] || ''),
+                                title: String(child['title'] || `Page ${child['id']}`)
+                            });
+                        }
+                        
+                        // Progress logging every 100 items
+                        if (i % 100 === 0 && i > 0) {
+                            console.log(`[Florence] Processed ${i}/${currentPageChildren.length} current children (${filteredCurrentChildren.length} valid pages so far)...`);
+                        }
+                    }
+                    
+                    pages = filteredCurrentChildren;
+                    console.log(`[Florence] Current children filtering complete: ${pages.length} valid pages from ${currentPageChildren?.length} total`);
 
                     // Extract manuscript title from current item
                     if ((itemData as any).fields) {
@@ -2853,10 +2888,32 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         const manifestUrl = `https://pagella.bm-grenoble.fr/iiif/ark:/12148/${documentId}/manifest.json`;
         
         // Fetch IIIF manifest (SSL bypass already configured in fetchUrl)
+        // CRITICAL FIX Issue #43: Add specific 429 rate limiting handling for Grenoble
         const response = await this.fetchWithRetry(manifestUrl);
-        if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
+        if (!response.ok) {
+            if (response.status === 429) {
+                // Rate limited - add delay and retry once
+                console.log('[Grenoble] Rate limited (429), waiting 5 seconds before retry...');
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                const retryResponse = await this.fetchWithRetry(manifestUrl);
+                if (!retryResponse.ok) {
+                    throw new Error(`Grenoble server is rate limiting requests. Please try again in a few minutes. (HTTP ${retryResponse.status})`);
+                }
+                const manifest = await retryResponse.json() as IIIFManifest;
+                return await this.processGrenobleManifest(manifest, documentId!);
+            }
+            throw new Error(`Failed to fetch manifest: ${response.status}`);
+        }
         
         const manifest = await response.json() as IIIFManifest;
+        return await this.processGrenobleManifest(manifest, documentId!);
+    }
+    
+    /**
+     * CRITICAL FIX Issue #43: Extract Grenoble manifest processing to avoid code duplication
+     * Used by both successful and retry paths in getGrenobleManifest
+     */
+    private async processGrenobleManifest(manifest: IIIFManifest, _documentId: string): Promise<{ images: ManuscriptImage[] }> {
         const images: ManuscriptImage[] = [];
         
         // Process IIIF v2 manifest
