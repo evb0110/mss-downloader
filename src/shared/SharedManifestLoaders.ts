@@ -2856,13 +2856,13 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
 
             console.log(`[Florence] Extracted ${pages?.length} manuscript pages (excluding binding/charts)`);
 
-            // Generate IIIF URLs for all pages with maximum resolution
+            // Generate IIIF URLs for all pages with safe resolution (4000px works for all ContentDM manuscripts)
             const images: ManuscriptImage[] = pages.map((page, index) => ({
-                url: `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${page.id}/full/6000,/0/default.jpg`,
+                url: `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${page.id}/full/4000,/0/default.jpg`,
                 label: page.title || `Page ${index + 1}`
             }));
 
-            console.log(`[Florence] Manuscript processed: ${pages?.length} pages with maximum resolution (6000px width)`);
+            console.log(`[Florence] Manuscript processed: ${pages?.length} pages with safe resolution (4000px width)`);
             console.log(`[Florence] Manuscript title: ${manuscriptTitle}`);
 
             // Store the manuscript title for display

@@ -1,0 +1,240 @@
+{
+  "timestamp": "2025-08-22T07:19:21.530Z",
+  "collection": "plutei",
+  "itemId": "217706",
+  "server": "cdm21059.contentdm.oclc.org",
+  "iiifInfo": {
+    "@context": "http://iiif.io/api/image/2/context.json",
+    "@id": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706",
+    "protocol": "http://iiif.io/api/image",
+    "width": 2112,
+    "height": 2652,
+    "sizes": [
+      {
+        "width": 66,
+        "height": 83
+      },
+      {
+        "width": 132,
+        "height": 166
+      },
+      {
+        "width": 264,
+        "height": 332
+      },
+      {
+        "width": 528,
+        "height": 663
+      },
+      {
+        "width": 1056,
+        "height": 1326
+      },
+      {
+        "width": 2112,
+        "height": 2652
+      }
+    ],
+    "tiles": [
+      {
+        "width": 512,
+        "height": 512,
+        "scaleFactors": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32
+        ]
+      }
+    ],
+    "profile": [
+      "http://iiif.io/api/image/2/level2.json",
+      {
+        "formats": [
+          "jpg",
+          "tif",
+          "gif",
+          "png"
+        ],
+        "maxArea": 11202048,
+        "qualities": [
+          "bitonal",
+          "default",
+          "gray",
+          "color"
+        ],
+        "supports": [
+          "regionByPx",
+          "sizeByW",
+          "sizeByWhListed",
+          "cors",
+          "regionSquare",
+          "sizeByDistortedWh",
+          "sizeAboveFull",
+          "canonicalLinkHeader",
+          "sizeByConfinedWh",
+          "sizeByPct",
+          "jsonldMediaType",
+          "regionByPct",
+          "rotationArbitrary",
+          "sizeByH",
+          "baseUriRedirect",
+          "rotationBy90s",
+          "profileLinkHeader",
+          "sizeByForcedWh",
+          "sizeByWh",
+          "mirroring"
+        ]
+      }
+    ]
+  },
+  "testResults": [
+    {
+      "size": "full/max/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/max/0/default.jpg",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "responseTime": 1422,
+      "contentType": "image/jpeg"
+    },
+    {
+      "size": "full/6000,/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/6000,/0/default.jpg",
+      "status": 403,
+      "statusText": "Forbidden",
+      "success": false,
+      "responseTime": 493,
+      "contentType": "text/plain;charset=utf-8",
+      "contentLength": 72
+    },
+    {
+      "size": "full/4000,/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/4000,/0/default.jpg",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "responseTime": 2117,
+      "contentType": "image/jpeg"
+    },
+    {
+      "size": "full/3000,/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/3000,/0/default.jpg",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "responseTime": 1597,
+      "contentType": "image/jpeg"
+    },
+    {
+      "size": "full/2000,/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/2000,/0/default.jpg",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "responseTime": 1270,
+      "contentType": "image/jpeg"
+    },
+    {
+      "size": "full/1500,/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/1500,/0/default.jpg",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "responseTime": 1073,
+      "contentType": "image/jpeg"
+    },
+    {
+      "size": "full/1000,/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/1000,/0/default.jpg",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "responseTime": 740,
+      "contentType": "image/jpeg"
+    },
+    {
+      "size": "full/800,/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/800,/0/default.jpg",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "responseTime": 876,
+      "contentType": "image/jpeg"
+    },
+    {
+      "size": "full/600,/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/600,/0/default.jpg",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "responseTime": 546,
+      "contentType": "image/jpeg"
+    },
+    {
+      "size": "full/400,/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/400,/0/default.jpg",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "responseTime": 424,
+      "contentType": "image/jpeg"
+    },
+    {
+      "size": "full/200,/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/200,/0/default.jpg",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "responseTime": 475,
+      "contentType": "image/jpeg"
+    },
+    {
+      "size": "full/100,/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/100,/0/default.jpg",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "responseTime": 408,
+      "contentType": "image/jpeg"
+    },
+    {
+      "size": "full/pct:100/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/pct:100/0/default.jpg",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "responseTime": 468,
+      "contentType": "image/jpeg"
+    },
+    {
+      "size": "full/pct:200/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/pct:200/0/default.jpg",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "responseTime": 2637,
+      "contentType": "image/jpeg"
+    },
+    {
+      "size": "full/pct:150/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/pct:150/0/default.jpg",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "responseTime": 2018,
+      "contentType": "image/jpeg"
+    },
+    {
+      "size": "full/pct:50/0/default.jpg",
+      "url": "https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217706/full/pct:50/0/default.jpg",
+      "status": 200,
+      "statusText": "OK",
+      "success": true,
+      "responseTime": 1287,
+      "contentType": "image/jpeg"
+    }
+  ]
+}

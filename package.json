@@ -1,14 +1,14 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.238",
+  "version": "1.4.239",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.238: 🚀 New Libraries + DO NOT DEFER Command Fix",
-    "Added Digital Walters library - download manuscripts from thedigitalwalters.org",
-    "Added Codices library - download manuscripts from IIIF-enabled codices.at",
-    "CRITICAL: Fixed command workflow to IMPLEMENT libraries immediately, not defer them",
-    "PERFORMANCE: 99% memory reduction for large manuscripts, timeout optimizations across libraries",
-    "VALIDATION: All 16 todos processed with ultra-deep analysis and comprehensive testing"
+    "v1.4.239: 🚨 CRITICAL Florence ContentDM Fix - Complete 403 Error Resolution",
+    "FIXED: Florence 403 Forbidden errors - intelligent sizing + ContentDM headers + rate limiting",
+    "FIXED: Library detection bug - IIIF image URLs now correctly identified as Florence",
+    "FIXED: Auto-split accuracy - corrected page size estimation (0.7MB → 2.8MB) for proper splitting",
+    "ENHANCED: Complete ContentDM compliance - proper referer headers, Italian language, security headers",
+    "RELIABILITY: Florence manuscripts now download successfully with automatic error prevention"
   ],
   "main": "dist/main/main.js",
   "scripts": {

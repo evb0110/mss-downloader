@@ -11,6 +11,8 @@ export interface LibraryOptimizationSettings {
     timeoutMultiplier?: number;
     // Progressive backoff settings
     enableProgressiveBackoff?: boolean;
+    // Request delay in milliseconds for rate limiting
+    requestDelayMs?: number;
     // Description of applied optimizations for UI display
     optimizationDescription?: string;
 }

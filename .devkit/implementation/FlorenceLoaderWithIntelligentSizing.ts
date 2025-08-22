@@ -1,5 +1,38 @@
-import { BaseLibraryLoader, type LoaderDependencies } from './types';
-import type { ManuscriptManifest } from '../../../shared/types';
+// Mock types for testing (would import from actual paths in real integration)
+interface ManuscriptManifest {
+    pageLinks: string[];
+    totalPages: number;
+    library: string;
+    displayName: string;
+    originalUrl: string;
+}
+
+interface LogEntry {
+    level: string;
+    library: string;
+    url?: string;
+    message: string;
+    details?: any;
+}
+
+interface LoaderDependencies {
+    logger: {
+        log: (entry: LogEntry) => void;
+        logDownloadError: (library: string, url: string, error: Error) => void;
+    };
+    fetchWithHTTPS: (url: string, options?: any) => Promise<Response>;
+}
+
+abstract class BaseLibraryLoader {
+    protected deps: LoaderDependencies;
+    
+    constructor(deps: LoaderDependencies) {
+        this.deps = deps;
+    }
+    
+    abstract getLibraryName(): string;
+    abstract loadManifest(originalUrl: string): Promise<ManuscriptManifest>;
+}
 
 interface FlorenceField {
     key: string;
@@ -35,10 +68,17 @@ interface FlorenceState {
     [key: string]: unknown;
 }
 
-export class FlorenceLoader extends BaseLibraryLoader {
+interface SizeTestResult {
+    width: number;
+    success: boolean;
+    error?: string;
+    responseTime?: number;
+}
+
+export class FlorenceLoaderWithIntelligentSizing extends BaseLibraryLoader {
     private readonly SIZE_PREFERENCES = [6000, 4000, 2048, 1024, 800];
     private readonly manuscriptSizeCache = new Map<string, number>();
-
+    
     constructor(deps: LoaderDependencies) {
         super(deps);
     }
@@ -46,33 +86,52 @@ export class FlorenceLoader extends BaseLibraryLoader {
     getLibraryName(): string {
         return 'florence';
     }
-
+    
     /**
      * Test a specific image size for availability and access permissions
      */
-    private async testImageSize(collection: string, pageId: string, width: number): Promise<{ success: boolean; error?: string }> {
+    private async testImageSize(collection: string, pageId: string, width: number): Promise<SizeTestResult> {
         const testUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${pageId}/full/${width},/0/default.jpg`;
+        const startTime = Date.now();
         
         try {
             const response = await this.deps.fetchWithHTTPS(testUrl, {
-                method: 'HEAD',
+                method: 'HEAD', // Use HEAD to avoid downloading actual image data
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
                     'Accept': 'image/*',
                     'Referer': 'https://cdm21059.contentdm.oclc.org/'
-                }
+                },
+                timeout: 5000 // Quick timeout for size testing
             });
             
+            const responseTime = Date.now() - startTime;
+            
             if (response.ok) {
-                return { success: true };
+                return {
+                    width,
+                    success: true,
+                    responseTime
+                };
             } else {
-                return { success: false, error: `HTTP ${response.status}: ${response.statusText}` };
+                return {
+                    width,
+                    success: false,
+                    error: `HTTP ${response.status}: ${response.statusText}`,
+                    responseTime
+                };
             }
         } catch (error: any) {
-            return { success: false, error: error.message || String(error) };
+            const responseTime = Date.now() - startTime;
+            return {
+                width,
+                success: false,
+                error: error.message || String(error),
+                responseTime
+            };
         }
     }
-
+    
     /**
      * Determine optimal image size for a manuscript using intelligent testing
      */
@@ -83,15 +142,17 @@ export class FlorenceLoader extends BaseLibraryLoader {
             this.deps.logger.log({
                 level: 'info',
                 library: 'florence',
-                message: `Using cached optimal size: ${cachedSize}px for manuscript ${manuscriptId}`
+                message: `Using cached optimal size: ${cachedSize}px for manuscript ${manuscriptId}`,
+                details: { cached: true, size: cachedSize }
             });
             return cachedSize;
         }
         
         this.deps.logger.log({
             level: 'info',
-            library: 'florence',
-            message: `Testing image sizes for manuscript ${manuscriptId} (sample page: ${samplePageId})`
+            library: 'florence', 
+            message: `Testing image sizes for manuscript ${manuscriptId} (sample page: ${samplePageId})`,
+            details: { sizesToTest: this.SIZE_PREFERENCES }
         });
         
         // Test sizes in order of preference (high to low)
@@ -105,7 +166,12 @@ export class FlorenceLoader extends BaseLibraryLoader {
                 this.deps.logger.log({
                     level: 'info',
                     library: 'florence',
-                    message: `Optimal size determined: ${width}px for manuscript ${manuscriptId}`
+                    message: `Optimal size determined: ${width}px for manuscript ${manuscriptId}`,
+                    details: { 
+                        size: width, 
+                        responseTime: result.responseTime,
+                        testedSizes: this.SIZE_PREFERENCES.slice(0, this.SIZE_PREFERENCES.indexOf(width) + 1)
+                    }
                 });
                 
                 return width;
@@ -113,20 +179,60 @@ export class FlorenceLoader extends BaseLibraryLoader {
                 this.deps.logger.log({
                     level: 'warn',
                     library: 'florence',
-                    message: `Size ${width}px failed for manuscript ${manuscriptId}: ${result.error}`
+                    message: `Size ${width}px failed for manuscript ${manuscriptId}: ${result.error}`,
+                    details: { 
+                        size: width, 
+                        error: result.error,
+                        responseTime: result.responseTime
+                    }
                 });
+                
+                // For 403/401 errors, immediately try smaller size
+                if (result.error?.includes('403') || result.error?.includes('401') || result.error?.includes('Forbidden')) {
+                    continue;
+                }
+                
+                // For other errors (500, network), try once more after brief delay
+                if (result.error?.includes('500') || result.error?.includes('timeout') || result.error?.includes('network')) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    const retryResult = await this.testImageSize(collection, samplePageId, width);
+                    if (retryResult.success) {
+                        this.manuscriptSizeCache.set(manuscriptId, width);
+                        
+                        this.deps.logger.log({
+                            level: 'info',
+                            library: 'florence',
+                            message: `Optimal size determined on retry: ${width}px for manuscript ${manuscriptId}`,
+                            details: { 
+                                size: width, 
+                                responseTime: retryResult.responseTime,
+                                retriedAfterError: result.error
+                            }
+                        });
+                        
+                        return width;
+                    }
+                }
             }
         }
         
-        // If all sizes fail, use the smallest as fallback
-        const fallbackSize = this.SIZE_PREFERENCES[this.SIZE_PREFERENCES.length - 1];
+        // If all sizes failed, fall back to smallest size without testing
+        const fallbackSize = 800;
+        this.manuscriptSizeCache.set(manuscriptId, fallbackSize);
+        
         this.deps.logger.log({
             level: 'error',
             library: 'florence',
-            message: `All size tests failed for manuscript ${manuscriptId}, using fallback size: ${fallbackSize}px`
+            message: `All size tests failed for manuscript ${manuscriptId}, using fallback size: ${fallbackSize}px`,
+            details: { 
+                fallbackSize,
+                allSizesTested: this.SIZE_PREFERENCES,
+                warning: 'This may result in lower quality images'
+            }
         });
         
-        return fallbackSize || 800;
+        return fallbackSize;
     }
     
     async loadManifest(originalUrl: string): Promise<ManuscriptManifest> {
@@ -135,8 +241,8 @@ export class FlorenceLoader extends BaseLibraryLoader {
             level: 'info',
             library: 'florence',
             url: originalUrl,
-            message: 'Starting Florence manifest load',
-            details: { method: 'loadFlorenceManifest' }
+            message: 'Starting Florence manifest load with intelligent sizing',
+            details: { method: 'loadFlorenceManifest', intelligentSizing: true }
         });
         
         try {
@@ -317,18 +423,17 @@ export class FlorenceLoader extends BaseLibraryLoader {
 
             console.log(`📄 Extracted ${pages?.length} manuscript pages (excluding binding/charts)`);
 
-            // Determine optimal image size using intelligent testing with first page
-            const manuscriptId = itemId || 'unknown';
-            const samplePageId = pages[0]?.id?.toString() || '317515';
-            const optimalSize = await this.determineOptimalSize(collection, samplePageId, manuscriptId);
-            
-            // Generate IIIF URLs for all pages using optimal size
-            // Florence uses format: https://cdm21059.contentdm.oclc.org/iiif/2/plutei:{id}/full/{width},/0/default.jpg
+            // 🚀 INTELLIGENT SIZING: Determine optimal size using first page as test sample
+            const firstPageId = pages[0].id;
+            const manuscriptId = `${collection}:${itemId}`;
+            const optimalWidth = await this.determineOptimalSize(collection, firstPageId, manuscriptId);
+
+            // Generate IIIF URLs for all pages using determined optimal size
             const pageLinks = pages.map(page => {
-                return `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${page.id}/full/${optimalSize},/0/default.jpg`;
+                return `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${page.id}/full/${optimalWidth},/0/default.jpg`;
             });
 
-            console.log(`📄 Florence manuscript processed: ${pages?.length} pages with intelligent size determination (${optimalSize}px width)`);
+            console.log(`📄 Florence manuscript processed: ${pages?.length} pages with intelligent sizing (${optimalWidth}px width)`);
 
             return {
                 pageLinks,

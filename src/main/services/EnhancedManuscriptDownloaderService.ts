@@ -1065,6 +1065,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('bdh-rd.bne.es')) return 'bne';
         if (url.includes('mdc.csuc.cat/digital/collection')) return 'mdc_catalonia';
         if (url.includes('cdm21059.contentdm.oclc.org/digital/collection/plutei')) return 'florence';
+        if (url.includes('cdm21059.contentdm.oclc.org/iiif/2/plutei:')) return 'florence'; // IIIF image URLs
         if (url.includes('viewer.onb.ac.at')) return 'onb';
         if (url.includes('rotomagus.fr')) return 'rouen';
         if (url.includes('dl.ub.uni-freiburg.de')) return 'freiburg';
@@ -1321,6 +1322,22 @@ export class EnhancedManuscriptDownloaderService {
                 'Accept-Language': 'en-US,en;q=0.9',
                 'Cache-Control': 'no-cache',
                 'Connection': 'keep-alive'
+            } as any;
+        }
+        
+        // Special headers for Florence ContentDM to avoid 403 Forbidden errors
+        if (url.includes('cdm21059.contentdm.oclc.org')) {
+            headers = {
+                ...headers,
+                'Referer': 'https://cdm21059.contentdm.oclc.org/',
+                'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+                'Sec-Fetch-Dest': 'image',
+                'Sec-Fetch-Mode': 'no-cors',
+                'Sec-Fetch-Site': 'cross-site',
+                'DNT': '1'
             } as any;
         }
 
@@ -1786,18 +1803,35 @@ export class EnhancedManuscriptDownloaderService {
                     (url.includes('digitale.bnc.roma.sbn.it') ? 15000 : // Rome responds instantly - 15s is plenty
                     (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 60000 : 30000));
         
+        // ContentDM Florence specific headers to prevent 403 errors
+        const baseHeaders = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Cache-Control': 'no-cache'
+        };
+
+        // Add ContentDM-specific headers for Florence manuscripts to prevent 403 errors
+        if (url.includes('cdm21059.contentdm.oclc.org')) {
+            Object.assign(baseHeaders, {
+                'Referer': 'https://cdm21059.contentdm.oclc.org/',
+                'Sec-Fetch-Dest': 'image',
+                'Sec-Fetch-Mode': 'no-cors',
+                'Sec-Fetch-Site': 'same-origin',
+                'DNT': '1',
+                'Accept-Language': 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7'
+            });
+        }
+
         const requestOptions = {
             hostname: hostname,
             port: urlObj.port || 443,
             path: urlObj.pathname + urlObj.search,
             method: options.method || 'GET',
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Connection': 'keep-alive',
-                'Cache-Control': 'no-cache',
+                ...baseHeaders,
                 ...(options.headers as Record<string, string> || {})
             },
             rejectUnauthorized: false,
@@ -2611,6 +2645,11 @@ export class EnhancedManuscriptDownloaderService {
                         throw new Error(`Norwegian National Library access denied (HTTP 403): Access to this manuscript may be restricted. This could be due to:\n1. Geographic IP restrictions (Norwegian IP required)\n2. Authentication requirements\n3. Copyright or access restrictions\n\nPlease verify the manuscript's access policy at nb.no`);
                     }
                 }
+                
+                // Enhanced error handling for Florence ContentDM 403 errors
+                if (url.includes('cdm21059.contentdm.oclc.org') && response.status === 403) {
+                    throw new Error(`Florence ContentDM access denied (HTTP 403): The ContentDM server is blocking this request. This is typically due to:\n1. Too many concurrent requests (rate limiting)\n2. Missing session/referer headers\n3. ContentDM security policies\n4. Temporary server restrictions\n\nThe download will retry automatically with enhanced headers and rate limiting. If the issue persists, try:\n1. Reducing concurrent downloads to 1-2\n2. Waiting a few minutes before retrying\n3. Checking if the manuscript requires authentication\n\nURL: ${url}`);
+                }
 
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
@@ -2690,8 +2729,10 @@ export class EnhancedManuscriptDownloaderService {
                 const delay = useProgressiveBackoff
                     ? LibraryOptimizationService.calculateProgressiveBackoff(
                         attempt + 1,
-                        retryLibrary === 'roman_archive' ? 2000 : 1000, // Longer base delay for Roman Archive
-                        retryLibrary === 'roman_archive' ? 60000 : 30000 // Longer max delay for Roman Archive
+                        retryLibrary === 'roman_archive' ? 2000 : 
+                        retryLibrary === 'florence' ? 1500 : 1000, // ContentDM requires longer delays
+                        retryLibrary === 'roman_archive' ? 60000 : 
+                        retryLibrary === 'florence' ? 45000 : 30000 // Florence needs extra recovery time
                     )
                     : this.calculateRetryDelay(attempt);
 
@@ -2716,6 +2757,13 @@ export class EnhancedManuscriptDownloaderService {
             });
             console.error(`[downloadImageWithRetries] FINAL FAILURE after ${maxRetries + 1} attempts for ${url}`);
             console.error(`[downloadImageWithRetries] Total time spent: ${totalTime}ms`);
+
+            // Enhanced error message for Florence ContentDM 403 failures
+            if (url.includes('cdm21059.contentdm.oclc.org')) {
+                if ((error as Error).message.includes('403') || (error as Error).message.includes('Forbidden')) {
+                    throw new Error(`Florence ContentDM access blocked: 403 Forbidden errors indicate the server detected bulk downloading patterns. This is often caused by requesting image sizes that exceed ContentDM's limits or downloading too quickly. The app now uses intelligent sizing (4000px max) and rate limiting (1.5s delays), but some manuscripts may still require manual intervention. Try reducing concurrent downloads to 1-2 and wait 5 minutes before retrying.`);
+                }
+            }
 
             // Enhanced error message for BNC Roma failures
             if (url.includes('digitale.bnc.roma.sbn.it')) {
@@ -3339,6 +3387,15 @@ export class EnhancedManuscriptDownloaderService {
                                 const delay = 1000; // 1 second delay between Roman Archive downloads
                                 console.log(`[Roman Archive] Rate limiting: waiting ${delay}ms before next download...`);
                                 await this.sleep(delay);
+                            }
+                        }
+                        
+                        // Rate limiting for Florence ContentDM server to prevent 403 errors
+                        if (library === 'florence') {
+                            const florenceOpts = LibraryOptimizationService.getOptimizationsForLibrary('florence');
+                            if (florenceOpts.requestDelayMs) {
+                                console.log(`[Florence ContentDM] Rate limiting: waiting ${florenceOpts.requestDelayMs}ms before next download to prevent 403 errors...`);
+                                await this.sleep(florenceOpts.requestDelayMs);
                             }
                         }
                     }

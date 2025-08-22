@@ -1413,7 +1413,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     manifest.library === 'e_manuscripta' ? 0.7 : // Swiss e-manuscripta
                     manifest.library === 'unifr' ? 0.6 : // University of Fribourg
                     manifest.library === 'vatlib' ? 0.5 : // Vatican Library
-                    manifest.library === 'florence' ? 0.7 : // Florence libraries
+                    manifest.library === 'florence' ? 2.8 : // Florence ContentDM with 4000px intelligent sizing ~2.8MB
                     manifest.library === 'hhu' ? 0.6 : // Heinrich Heine University
                     manifest.library === 'wolfenbuettel' ? 0.8 : // Wolfenbüttel
                     manifest.library === 'freiburg' ? 0.6 : // Freiburg
@@ -1724,6 +1724,22 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     'Accept-Language': 'en-US,en;q=0.9',
                     'Cache-Control': 'no-cache',
                     'Connection': 'keep-alive'
+                };
+            }
+            
+            // Special headers for Florence ContentDM to avoid 403 Forbidden errors
+            if (url.includes('cdm21059.contentdm.oclc.org')) {
+                headers = {
+                    ...headers,
+                    'Referer': 'https://cdm21059.contentdm.oclc.org/',
+                    'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive',
+                    'Sec-Fetch-Dest': 'image',
+                    'Sec-Fetch-Mode': 'no-cors',
+                    'Sec-Fetch-Site': 'cross-site',
+                    'DNT': '1'
                 };
             }
             

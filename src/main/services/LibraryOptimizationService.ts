@@ -250,10 +250,12 @@ export class LibraryOptimizationService {
             optimizationDescription: 'HHU Düsseldorf optimizations: 4 concurrent downloads, IIIF v2.0 with maximum resolution support (up to 4879x6273px)'
         },
         'florence': {
-            maxConcurrentDownloads: 3, // Florence ContentDM with progressive retry logic
-            timeoutMultiplier: 2.0, // Extended timeout for JavaScript execution timing
+            maxConcurrentDownloads: 2, // Reduced from 3 to 2 to prevent ContentDM 403 errors
+            timeoutMultiplier: 2.5, // Increased from 2.0 to 2.5 for ContentDM server response delays
             enableProgressiveBackoff: true,
-            optimizationDescription: 'Florence ContentDM optimizations: 3 concurrent downloads, progressive timeout increases, enhanced retry logic'
+            autoSplitThresholdMB: 300, // Lower threshold for ContentDM stability
+            requestDelayMs: 1500, // 1.5-second delay between requests for ContentDM rate limiting
+            optimizationDescription: 'Florence ContentDM optimizations: 2 concurrent downloads, 2.5x timeouts, 1.5s request delays, enhanced 403 error handling'
         },
         'gams': {
             maxConcurrentDownloads: 3, // GAMS University of Graz with context-based IIIF
