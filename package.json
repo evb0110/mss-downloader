@@ -1,14 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.239",
+  "version": "1.4.240",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.239: 🚨 CRITICAL Florence ContentDM Fix - Complete 403 Error Resolution",
-    "FIXED: Florence 403 Forbidden errors - intelligent sizing + ContentDM headers + rate limiting",
-    "FIXED: Library detection bug - IIIF image URLs now correctly identified as Florence",
-    "FIXED: Auto-split accuracy - corrected page size estimation (0.7MB → 2.8MB) for proper splitting",
-    "ENHANCED: Complete ContentDM compliance - proper referer headers, Italian language, security headers",
-    "RELIABILITY: Florence manuscripts now download successfully with automatic error prevention"
+    "v1.4.240: 🏛️ Florence Intelligent Gap Handling - Smart Missing Page Detection",
+    "ENHANCED: Florence loader now intelligently detects and skips missing pages with 'Nessun file è associato a questo item'",
+    "IMPROVED: Web scraping validation checks page content for missing file messages in Italian and English",
+    "SMART: Automatic gap filtering prevents download failures from pages without associated files",
+    "RELIABILITY: Florence manuscripts with missing pages now download only available content successfully"
   ],
   "main": "dist/main/main.js",
   "scripts": {

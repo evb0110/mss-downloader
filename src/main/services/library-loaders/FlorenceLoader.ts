@@ -36,8 +36,6 @@ interface FlorenceState {
 }
 
 export class FlorenceLoader extends BaseLibraryLoader {
-    private readonly SIZE_PREFERENCES = [6000, 4000, 2048, 1024, 800];
-    private readonly manuscriptSizeCache = new Map<string, number>();
     private sessionCookie: string | null = null;
 
     constructor(deps: LoaderDependencies) {
@@ -115,10 +113,10 @@ export class FlorenceLoader extends BaseLibraryLoader {
     }
 
     /**
-     * Test a specific image size for availability and access permissions
+     * Test ContentDM native API accessibility (no size variants needed)
      */
-    private async testImageSize(collection: string, pageId: string, width: number): Promise<{ success: boolean; error?: string }> {
-        const testUrl = `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${pageId}/full/${width},/0/default.jpg`;
+    private async testImageAccess(collection: string, pageId: string): Promise<{ success: boolean; error?: string }> {
+        const testUrl = `https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/${collection}/${pageId}/default.jpg`;
         
         try {
             const response = await this.deps.fetchWithHTTPS(testUrl, {
@@ -137,59 +135,241 @@ export class FlorenceLoader extends BaseLibraryLoader {
     }
 
     /**
-     * Determine optimal image size for a manuscript using intelligent testing
+     * Validate page accessibility to filter out 403/501 gaps and missing content in ContentDM sequence
      */
-    private async determineOptimalSize(collection: string, samplePageId: string, manuscriptId: string): Promise<number> {
-        // Check cache first
-        const cachedSize = this.manuscriptSizeCache.get(manuscriptId);
-        if (cachedSize) {
+    private async validatePageAccessibility(collection: string, pages: Array<{ id: string; title: string }>): Promise<Array<{ id: string; title: string }>> {
+        const maxValidation = 20; // Don't validate too many to avoid overwhelming server
+        const validatedPages: Array<{ id: string; title: string }> = [];
+        
+        // If there are many pages, sample validate first portion + random selection
+        const pagesToValidate = pages.length <= maxValidation ? pages : [
+            ...pages.slice(0, 10), // First 10 pages
+            ...pages.slice(-5),     // Last 5 pages
+            ...pages.filter((_, i) => i % Math.ceil(pages.length / 5) === 0).slice(0, 5) // Every ~20% sample
+        ];
+        
+        this.deps.logger.log({
+            level: 'info',
+            library: 'florence',
+            message: `Validating ${pagesToValidate.length} pages for accessibility (${pages.length} total pages)`
+        });
+        
+        const validationStart = Date.now();
+        let validCount = 0;
+        let invalidCount = 0;
+        
+        for (const page of pagesToValidate) {
+            try {
+                const testUrl = `https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/${collection}/${page.id}/default.jpg`;
+                
+                const response = await this.deps.fetchWithHTTPS(testUrl, {
+                    method: 'HEAD',
+                    headers: this.getSessionHeaders()
+                });
+                
+                if (response.ok) {
+                    validCount++;
+                } else if (response.status === 403 || response.status === 501) {
+                    invalidCount++;
+                    this.deps.logger.log({
+                        level: 'warn',
+                        library: 'florence',
+                        message: `Page ${page.id} inaccessible: ${response.status} ${response.statusText} - skipping`
+                    });
+                    continue; // Skip invalid pages
+                } else {
+                    // For other errors, check if it's a "no file associated" case by fetching the actual page
+                    const pageUrl = `https://cdm21059.contentdm.oclc.org/digital/collection/${collection}/id/${page.id}`;
+                    try {
+                        const pageResponse = await this.deps.fetchWithHTTPS(pageUrl, {
+                            headers: this.getSessionHeaders()
+                        });
+                        
+                        if (pageResponse.ok) {
+                            const pageHtml = await pageResponse.text();
+                            if (pageHtml.includes('Nessun file è associato a questo item') || 
+                                pageHtml.includes('No file is associated with this item')) {
+                                invalidCount++;
+                                this.deps.logger.log({
+                                    level: 'warn',
+                                    library: 'florence',
+                                    message: `Page ${page.id} has no associated file - skipping`
+                                });
+                                continue; // Skip pages with no associated files
+                            }
+                        }
+                    } catch (pageError) {
+                        // If page check fails, fall back to HTTP status handling
+                    }
+                    
+                    // Other errors might be temporary - include page but log warning
+                    this.deps.logger.log({
+                        level: 'warn',
+                        library: 'florence',
+                        message: `Page ${page.id} validation warning: ${response.status} ${response.statusText} - including anyway`
+                    });
+                }
+                
+                validatedPages.push(page);
+                
+            } catch (error) {
+                this.deps.logger.log({
+                    level: 'warn',
+                    library: 'florence',
+                    message: `Page ${page.id} validation error: ${error instanceof Error ? error.message : String(error)} - including anyway`
+                });
+                validatedPages.push(page); // Include on network errors
+            }
+            
+            // Rate limiting during validation
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        const validationDuration = Date.now() - validationStart;
+        
+        // If we validated a sample and found ANY invalid pages, we need to validate all for ContentDM
+        if (pagesToValidate.length < pages.length) {
+            const invalidRate = invalidCount / pagesToValidate.length;
+            
+            if (invalidCount > 0) {
+                // ANY invalid pages found - ContentDM requires full validation due to irregular gaps
+                this.deps.logger.log({
+                    level: 'warn',
+                    library: 'florence',
+                    message: `Invalid pages detected (${Math.round(invalidRate * 100)}% rate), validating all ${pages.length} pages to filter gaps...`
+                });
+                
+                return await this.validateAllPages(collection, pages);
+            }
+            
+            // No invalid pages in sample - assume all pages are valid
             this.deps.logger.log({
                 level: 'info',
                 library: 'florence',
-                message: `Using cached optimal size: ${cachedSize}px for manuscript ${manuscriptId}`
+                message: `Validation complete: ${validCount} valid, ${invalidCount} invalid in ${validationDuration}ms. All pages should be accessible.`
             });
-            return cachedSize;
+            return pages;
         }
         
         this.deps.logger.log({
             level: 'info',
             library: 'florence',
-            message: `Testing image sizes for manuscript ${manuscriptId} (sample page: ${samplePageId})`
+            message: `Page validation complete: ${validatedPages.length} valid pages in ${validationDuration}ms`
         });
         
-        // Test sizes in order of preference (high to low)
-        for (const width of this.SIZE_PREFERENCES) {
-            const result = await this.testImageSize(collection, samplePageId, width);
+        return validatedPages;
+    }
+    
+    /**
+     * Validate all pages when gaps detected - optimized for ContentDM patterns with intelligent gap detection
+     */
+    private async validateAllPages(collection: string, pages: Array<{ id: string; title: string }>): Promise<Array<{ id: string; title: string }>> {
+        console.log(`📄 Starting comprehensive validation of ${pages.length} pages...`);
+        const validatedPages: Array<{ id: string; title: string }> = [];
+        const batchSize = 20; // Larger batches for efficiency
+        
+        for (let i = 0; i < pages.length; i += batchSize) {
+            const batch = pages.slice(i, i + batchSize);
             
-            if (result.success) {
-                // Found working size - cache it and return
-                this.manuscriptSizeCache.set(manuscriptId, width);
-                
-                this.deps.logger.log({
-                    level: 'info',
-                    library: 'florence',
-                    message: `Optimal size determined: ${width}px for manuscript ${manuscriptId}`
-                });
-                
-                return width;
-            } else {
-                this.deps.logger.log({
-                    level: 'warn',
-                    library: 'florence',
-                    message: `Size ${width}px failed for manuscript ${manuscriptId}: ${result.error}`
-                });
-            }
+            // Process batch with limited concurrency
+            const validationPromises = batch.map(async (page, index) => {
+                try {
+                    const testUrl = `https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/${collection}/${page.id}/default.jpg`;
+                    
+                    // Stagger requests to avoid overwhelming server
+                    await new Promise(resolve => setTimeout(resolve, index * 20));
+                    
+                    const response = await this.deps.fetchWithHTTPS(testUrl, {
+                        method: 'HEAD',
+                        headers: this.getSessionHeaders()
+                    });
+                    
+                    if (response.ok) {
+                        return page;
+                    } else if (response.status === 403 || response.status === 501) {
+                        // Known error codes - skip immediately
+                        return null;
+                    } else {
+                        // For other errors, check if page has actual content by examining the viewer page
+                        const pageUrl = `https://cdm21059.contentdm.oclc.org/digital/collection/${collection}/id/${page.id}`;
+                        try {
+                            const pageResponse = await this.deps.fetchWithHTTPS(pageUrl, {
+                                headers: this.getSessionHeaders()
+                            });
+                            
+                            if (pageResponse.ok) {
+                                const pageHtml = await pageResponse.text();
+                                
+                                // Check for Italian and English "no file associated" messages
+                                if (pageHtml.includes('Nessun file è associato a questo item') || 
+                                    pageHtml.includes('No file is associated with this item') ||
+                                    pageHtml.includes('No file associated with this item')) {
+                                    return null; // Skip pages with no associated files
+                                }
+                                
+                                // If page loads but image fails, it might be a temporary issue - include it
+                                return page;
+                            }
+                        } catch (pageError) {
+                            // If page check fails, fall back to excluding the page to be safe
+                            return null;
+                        }
+                    }
+                    
+                    // Return null for any other error conditions to be conservative
+                    return null;
+                    
+                } catch (error) {
+                    // Return null for network errors too - be strict for ContentDM
+                    return null;
+                }
+            });
+            
+            const batchResults = await Promise.all(validationPromises);
+            const validPages = batchResults.filter((page): page is { id: string; title: string } => page !== null);
+            
+            validatedPages.push(...validPages);
+            
+            // Progress logging
+            const progress = Math.min(i + batchSize, pages.length);
+            const validRate = Math.round((validatedPages.length / progress) * 100);
+            console.log(`📄 Validated ${progress}/${pages.length} pages, ${validatedPages.length} valid (${validRate}% success rate)`);
+            
+            // Short delay between batches
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
         
-        // If all sizes fail, use the smallest as fallback
-        const fallbackSize = this.SIZE_PREFERENCES[this.SIZE_PREFERENCES.length - 1];
+        console.log(`✅ Validation complete: ${validatedPages.length} valid pages from ${pages.length} total`);
+        return validatedPages;
+    }
+
+    /**
+     * Test ContentDM native API accessibility - ContentDM serves full resolution automatically
+     */
+    private async validateNativeAPIAccess(collection: string, samplePageId: string, manuscriptId: string): Promise<boolean> {
         this.deps.logger.log({
-            level: 'error',
+            level: 'info',
             library: 'florence',
-            message: `All size tests failed for manuscript ${manuscriptId}, using fallback size: ${fallbackSize}px`
+            message: `Testing ContentDM native API access for manuscript ${manuscriptId} (sample page: ${samplePageId})`
         });
         
-        return fallbackSize || 800;
+        const result = await this.testImageAccess(collection, samplePageId);
+        
+        if (result.success) {
+            this.deps.logger.log({
+                level: 'info',
+                library: 'florence',
+                message: `ContentDM native API confirmed working for manuscript ${manuscriptId}`
+            });
+            return true;
+        } else {
+            this.deps.logger.log({
+                level: 'error',
+                library: 'florence',
+                message: `ContentDM native API failed for manuscript ${manuscriptId}: ${result.error}`
+            });
+            return false;
+        }
     }
     
     async loadManifest(originalUrl: string): Promise<ManuscriptManifest> {
@@ -382,18 +562,38 @@ export class FlorenceLoader extends BaseLibraryLoader {
 
             console.log(`📄 Extracted ${pages?.length} manuscript pages (excluding binding/charts)`);
 
-            // Determine optimal image size using intelligent testing with first page
-            const manuscriptId = itemId || 'unknown';
-            const samplePageId = pages[0]?.id ? pages[0].id.toString() : '217712';
-            const optimalSize = await this.determineOptimalSize(collection, samplePageId, manuscriptId);
+            // CRITICAL: Validate page accessibility to filter out 403/501 gaps
+            console.log('📄 Validating page accessibility to filter gaps...');
+            const validatedPages = await this.validatePageAccessibility(collection, pages);
             
-            // Generate IIIF URLs for all pages using optimal size
-            // Florence uses format: https://cdm21059.contentdm.oclc.org/iiif/2/plutei:{id}/full/{width},/0/default.jpg
+            if (validatedPages.length === 0) {
+                throw new Error('No accessible pages found after validation');
+            }
+            
+            const filteredCount = pages.length - validatedPages.length;
+            if (filteredCount > 0) {
+                console.log(`📄 Filtered out ${filteredCount} inaccessible pages, ${validatedPages.length} pages remaining`);
+            }
+
+            // Validate ContentDM native API access with first validated page
+            const manuscriptId = itemId || 'unknown';
+            const samplePageId = validatedPages[0]?.id ? validatedPages[0].id.toString() : '217712';
+            const nativeAPIWorks = await this.validateNativeAPIAccess(collection, samplePageId, manuscriptId);
+            
+            if (!nativeAPIWorks) {
+                throw new Error('ContentDM native API validation failed - cannot access manuscript images');
+            }
+            
+            // Use validated pages for URL generation
+            pages = validatedPages;
+            
+            // Generate ContentDM native API URLs for all pages - these actually work!
+            // ContentDM native API format: https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/{collection}/{id}/default.jpg
             const pageLinks = pages.map(page => {
-                return `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${page.id}/full/${optimalSize},/0/default.jpg`;
+                return `https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/${collection}/${page.id}/default.jpg`;
             });
 
-            console.log(`📄 Florence manuscript processed: ${pages?.length} pages with intelligent size determination (${optimalSize}px width)`);
+            console.log(`📄 Florence manuscript processed: ${pages?.length} pages using ContentDM native API (full resolution)`);
 
             return {
                 pageLinks,
