@@ -1647,7 +1647,13 @@ function getGroupProgress(group: { parent: QueuedManuscript; parts: QueuedManusc
     const partsWithProgress = group.parts.filter(part => part.progress);
     if (partsWithProgress.length === 0) return null;
     
-    const totalPages = group.parts.reduce((sum, part) => sum + (part.progress?.total || 0), 0);
+    const totalPages = group.parts.reduce((sum, part) => {
+        // Use expected chunk page count even before downloading starts
+        const expectedPages = part.partInfo ? 
+            (part.partInfo.pageRange.end - part.partInfo.pageRange.start + 1) : 
+            (part.progress?.total || 0);
+        return sum + expectedPages;
+    }, 0);
     const currentPages = group.parts.reduce((sum, part) => sum + (part.progress?.current || 0), 0);
     const percentage = totalPages > 0 ? Math.round((currentPages / totalPages) * 100) : 0;
     

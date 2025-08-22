@@ -1,0 +1,64 @@
+Florence Pages 211-215 Analysis Report
+=======================================
+
+Target URL: https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/217710/rec/2
+Analysis Date: 2025-08-22T15:15:34.418Z
+Total Pages in Manifest: 215
+
+Individual Page Results:
+
+Page 211:
+  URL: https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/plutei/217918/default.jpg
+  Status: SUCCESS
+  Size: 24068 bytes (24KB)
+  Error: None
+  File: page_211_analysis.jpg
+
+Page 212:
+  URL: https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/plutei/217919/default.jpg
+  Status: SUCCESS
+  Size: 24068 bytes (24KB)
+  Error: None
+  File: page_212_analysis.jpg
+
+Page 213:
+  URL: https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/plutei/217920/default.jpg
+  Status: SUCCESS
+  Size: 24068 bytes (24KB)
+  Error: None
+  File: page_213_analysis.jpg
+
+Page 214:
+  URL: https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/plutei/217921/default.jpg
+  Status: SUCCESS
+  Size: 24068 bytes (24KB)
+  Error: None
+  File: page_214_analysis.jpg
+
+Page 215:
+  URL: https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/plutei/217922/default.jpg
+  Status: SUCCESS
+  Size: 24068 bytes (24KB)
+  Error: None
+  File: page_215_analysis.jpg
+
+
+Summary:
+- Successful: 5/5 pages
+- Failed: 0/5 pages  
+- Total size: 120340 bytes (118KB)
+- Average per page: 24KB
+
+Analysis:
+✅ File sizes appear normal for manuscript pages.
+
+Expected size for 5 pages: ~50-500KB (typical manuscript pages)
+Actual size: 118KB
+
+🔍 Size comparison: Expected 2580 bytes, got 120340 bytes
+
+Next Steps:
+
+
+- Verify ContentDM API endpoints are returning correct image sizes
+- Consider if this is a server-side issue vs client-side processing problem

@@ -719,9 +719,15 @@ export class EnhancedDownloadQueue extends EventEmitter {
         this.state.currentItemId = item.id;
         item.status = 'downloading';
         item.startedAt = Date.now();
+        
+        // For chunked downloads, use chunk page count instead of full manuscript total
+        const totalPagesForProgress = (item.isAutoPart && item.partInfo) ? 
+            (item.partInfo.pageRange.end - item.partInfo.pageRange.start + 1) :
+            (item?.totalPages || 0);
+            
         item.progress = {
             current: 0,
-            total: item?.totalPages || 0,
+            total: totalPagesForProgress,
             percentage: 0,
             eta: 'calculating...',
             stage: 'downloading',
@@ -2058,9 +2064,14 @@ export class EnhancedDownloadQueue extends EventEmitter {
         item.startedAt = Date.now();
         item.error = undefined;
         
+        // For chunked downloads, use chunk page count instead of full manuscript total
+        const totalPagesForProgress = (item.isAutoPart && item.partInfo) ? 
+            (item.partInfo.pageRange.end - item.partInfo.pageRange.start + 1) :
+            (item?.totalPages || 1);
+        
         item.progress = {
             current: 0,
-            total: item?.totalPages || 1,
+            total: totalPagesForProgress,
             percentage: 0,
             eta: 'Calculating...',
             stage: 'downloading' as TStage,

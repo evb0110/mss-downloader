@@ -251,11 +251,11 @@ export class LibraryOptimizationService {
         },
         'florence': {
             maxConcurrentDownloads: 2, // Reduced from 3 to 2 to prevent ContentDM 403 errors
-            timeoutMultiplier: 2.5, // Increased from 2.0 to 2.5 for ContentDM server response delays
+            timeoutMultiplier: 4.0, // Increased to 4.0 (120s) for extremely slow ContentDM responses
             enableProgressiveBackoff: true,
             autoSplitThresholdMB: 300, // Lower threshold for ContentDM stability
-            requestDelayMs: 1500, // 1.5-second delay between requests for ContentDM rate limiting
-            optimizationDescription: 'Florence ContentDM optimizations: 2 concurrent downloads, 2.5x timeouts, 1.5s request delays, enhanced 403 error handling'
+            requestDelayMs: 500, // 0.5-second delay between requests for ContentDM rate limiting
+            optimizationDescription: 'Florence ContentDM optimizations: 2 concurrent downloads, 4.0x timeouts (120s), 0.5s request delays, enhanced 403 error handling'
         },
         'gams': {
             maxConcurrentDownloads: 3, // GAMS University of Graz with context-based IIIF

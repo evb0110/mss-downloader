@@ -35,11 +35,80 @@ interface FlorenceState {
     [key: string]: unknown;
 }
 
+interface ParsedFlorenceUrl {
+    collection: string;
+    itemId: string;
+    urlType: 'manuscript_viewer' | 'iiif_image' | 'iiif_manifest' | 'contentdm_api';
+    viewerUrl: string; // Always provide the manuscript viewer URL for processing
+}
+
 export class FlorenceLoader extends BaseLibraryLoader {
     private sessionCookie: string | null = null;
 
     constructor(deps: LoaderDependencies) {
         super(deps);
+    }
+
+    /**
+     * Intelligently parse various Florence URL formats
+     */
+    private parseFlorenceUrl(url: string): ParsedFlorenceUrl {
+        // Pattern 1: Manuscript viewer URLs
+        // https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/217702/rec/1
+        const viewerMatch = url.match(/cdm21059\.contentdm\.oclc\.org\/digital\/collection\/([^/]+)\/id\/(\d+)/);
+        if (viewerMatch) {
+            return {
+                collection: viewerMatch[1]!,
+                itemId: viewerMatch[2]!,
+                urlType: 'manuscript_viewer',
+                viewerUrl: `https://cdm21059.contentdm.oclc.org/digital/collection/${viewerMatch[1]}/id/${viewerMatch[2]}/rec/1`
+            };
+        }
+
+        // Pattern 2: IIIF image URLs
+        // https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217702/full/max/0/default.jpg
+        const iiifImageMatch = url.match(/cdm21059\.contentdm\.oclc\.org\/iiif\/2\/([^:]+):(\d+)/);
+        if (iiifImageMatch) {
+            return {
+                collection: iiifImageMatch[1]!,
+                itemId: iiifImageMatch[2]!,
+                urlType: 'iiif_image',
+                viewerUrl: `https://cdm21059.contentdm.oclc.org/digital/collection/${iiifImageMatch[1]}/id/${iiifImageMatch[2]}/rec/1`
+            };
+        }
+
+        // Pattern 3: IIIF manifest URLs
+        // https://cdm21059.contentdm.oclc.org/iiif/2/plutei:217702/manifest.json
+        const iiifManifestMatch = url.match(/cdm21059\.contentdm\.oclc\.org\/iiif\/2\/([^:]+):(\d+)\/manifest/);
+        if (iiifManifestMatch) {
+            return {
+                collection: iiifManifestMatch[1]!,
+                itemId: iiifManifestMatch[2]!,
+                urlType: 'iiif_manifest',
+                viewerUrl: `https://cdm21059.contentdm.oclc.org/digital/collection/${iiifManifestMatch[1]}/id/${iiifManifestMatch[2]}/rec/1`
+            };
+        }
+
+        // Pattern 4: ContentDM API URLs
+        // https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/plutei/217702/default.jpg
+        const apiMatch = url.match(/cdm21059\.contentdm\.oclc\.org\/digital\/api\/singleitem\/image\/([^/]+)\/(\d+)/);
+        if (apiMatch) {
+            return {
+                collection: apiMatch[1]!,
+                itemId: apiMatch[2]!,
+                urlType: 'contentdm_api',
+                viewerUrl: `https://cdm21059.contentdm.oclc.org/digital/collection/${apiMatch[1]}/id/${apiMatch[2]}/rec/1`
+            };
+        }
+
+        // If no patterns match, throw a helpful error
+        throw new Error(`Unsupported Florence URL format: ${url}
+
+Supported formats:
+• Manuscript viewer: https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/ID/rec/1
+• IIIF image: https://cdm21059.contentdm.oclc.org/iiif/2/plutei:ID/full/max/0/default.jpg
+• IIIF manifest: https://cdm21059.contentdm.oclc.org/iiif/2/plutei:ID/manifest.json
+• ContentDM API: https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/plutei/ID/default.jpg`);
     }
 
     /**
@@ -107,30 +176,61 @@ export class FlorenceLoader extends BaseLibraryLoader {
 
         return headers;
     }
+
     
     getLibraryName(): string {
         return 'florence';
     }
 
     /**
-     * Test ContentDM native API accessibility (no size variants needed)
+     * Determine the best high-resolution variant supported by the Florence IIIF server (with fallbacks)
      */
-    private async testImageAccess(collection: string, pageId: string): Promise<{ success: boolean; error?: string }> {
-        const testUrl = `https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/${collection}/${pageId}/default.jpg`;
+    private async resolveBestImageVariant(collection: string, pageId: string): Promise<
+        { kind: 'iiif', sizeMode: 'max' | 'full' | 'pct' | 'width', width?: number } | { kind: 'native' }
+    > {
+        const baseIiif = `https://cdm21059.contentdm.oclc.org/digital/iiif/${collection}/${pageId}`;
+        const probes: Array<{ url: string; mode: 'max' | 'full' | 'pct' }> = [
+            { url: `${baseIiif}/full/max/0/default.jpg`, mode: 'max' },
+            { url: `${baseIiif}/full/full/0/default.jpg`, mode: 'full' },
+            { url: `${baseIiif}/full/pct:100/0/default.jpg`, mode: 'pct' },
+        ];
         
         try {
-            const response = await this.deps.fetchWithHTTPS(testUrl, {
-                method: 'HEAD',
-                headers: this.getSessionHeaders()
-            });
-            
-            if (response.ok) {
-                return { success: true };
-            } else {
-                return { success: false, error: `HTTP ${response.status}: ${response.statusText}` };
+            // Try common IIIF maximum-size syntaxes
+            for (const p of probes) {
+                const response = await this.deps.fetchWithHTTPS(p.url, {
+                    method: 'HEAD',
+                    headers: this.getSessionHeaders()
+                });
+                if (response.ok) {
+                    return { kind: 'iiif', sizeMode: p.mode };
+                }
             }
-        } catch (error: any) {
-            return { success: false, error: error.message || String(error) };
+            
+            // If these failed, try exact native width from info.json
+            const infoUrl = `${baseIiif}/info.json`;
+            try {
+                const infoResp = await this.deps.fetchWithHTTPS(infoUrl, { headers: this.getSessionHeaders() });
+                if (infoResp.ok) {
+                    const info = await infoResp.json() as { width?: number };
+                    const w = (info && typeof info['width'] === 'number') ? info['width'] : undefined;
+                    if (w && w > 0) {
+                        const widthUrl = `${baseIiif}/full/${w},/0/default.jpg`;
+                        const widthHead = await this.deps.fetchWithHTTPS(widthUrl, { method: 'HEAD', headers: this.getSessionHeaders() });
+                        if (widthHead.ok) {
+                            return { kind: 'iiif', sizeMode: 'width', width: w };
+                        }
+                    }
+                }
+            } catch {
+                // ignore info.json errors and continue to native fallback
+            }
+            
+            // Final fallback: native ContentDM API (lower resolution on some servers)
+            return { kind: 'native' };
+        } catch {
+            // On unexpected errors, be conservative and use native
+            return { kind: 'native' };
         }
     }
 
@@ -160,21 +260,33 @@ export class FlorenceLoader extends BaseLibraryLoader {
         
         for (const page of pagesToValidate) {
             try {
-                const testUrl = `https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/${collection}/${page.id}/default.jpg`;
+                const baseIiif = `https://cdm21059.contentdm.oclc.org/digital/iiif/${collection}/${page.id}`;
+                const probes = [
+                    `${baseIiif}/full/max/0/default.jpg`,
+                    `${baseIiif}/full/full/0/default.jpg`,
+                    `${baseIiif}/full/pct:100/0/default.jpg`
+                ];
+                let ok = false;
+                let lastStatus = 0;
+                let lastText = '';
+                for (const url of probes) {
+                    const response = await this.deps.fetchWithHTTPS(url, {
+                        method: 'HEAD',
+                        headers: this.getSessionHeaders()
+                    });
+                    if (response.ok) { ok = true; break; }
+                    lastStatus = response.status;
+                    lastText = response.statusText;
+                }
                 
-                const response = await this.deps.fetchWithHTTPS(testUrl, {
-                    method: 'HEAD',
-                    headers: this.getSessionHeaders()
-                });
-                
-                if (response.ok) {
+                if (ok) {
                     validCount++;
-                } else if (response.status === 403 || response.status === 501) {
+                } else if (lastStatus === 403 || lastStatus === 501) {
                     invalidCount++;
                     this.deps.logger.log({
                         level: 'warn',
                         library: 'florence',
-                        message: `Page ${page.id} inaccessible: ${response.status} ${response.statusText} - skipping`
+                        message: `Page ${page.id} inaccessible: ${lastStatus} ${lastText} - skipping`
                     });
                     continue; // Skip invalid pages
                 } else {
@@ -206,7 +318,7 @@ export class FlorenceLoader extends BaseLibraryLoader {
                     this.deps.logger.log({
                         level: 'warn',
                         library: 'florence',
-                        message: `Page ${page.id} validation warning: ${response.status} ${response.statusText} - including anyway`
+                        message: `Page ${page.id} validation warning: ${lastStatus} ${lastText} - including anyway`
                     });
                 }
                 
@@ -274,19 +386,30 @@ export class FlorenceLoader extends BaseLibraryLoader {
             // Process batch with limited concurrency
             const validationPromises = batch.map(async (page, index) => {
                 try {
-                    const testUrl = `https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/${collection}/${page.id}/default.jpg`;
+                    const baseIiif = `https://cdm21059.contentdm.oclc.org/digital/iiif/${collection}/${page.id}`;
+                    const probes = [
+                        `${baseIiif}/full/max/0/default.jpg`,
+                        `${baseIiif}/full/full/0/default.jpg`,
+                        `${baseIiif}/full/pct:100/0/default.jpg`
+                    ];
                     
                     // Stagger requests to avoid overwhelming server
                     await new Promise(resolve => setTimeout(resolve, index * 20));
                     
-                    const response = await this.deps.fetchWithHTTPS(testUrl, {
-                        method: 'HEAD',
-                        headers: this.getSessionHeaders()
-                    });
+                    let ok = false;
+                    let lastStatus = 0;
+                    for (const url of probes) {
+                        const response = await this.deps.fetchWithHTTPS(url, {
+                            method: 'HEAD',
+                            headers: this.getSessionHeaders()
+                        });
+                        if (response.ok) { ok = true; break; }
+                        lastStatus = response.status;
+                    }
                     
-                    if (response.ok) {
+                    if (ok) {
                         return page;
-                    } else if (response.status === 403 || response.status === 501) {
+                    } else if (lastStatus === 403 || lastStatus === 501) {
                         // Known error codes - skip immediately
                         return null;
                     } else {
@@ -344,31 +467,31 @@ export class FlorenceLoader extends BaseLibraryLoader {
     }
 
     /**
-     * Test ContentDM native API accessibility - ContentDM serves full resolution automatically
+     * Test Florence IIIF image accessibility - ensure high resolution endpoints respond
      */
-    private async validateNativeAPIAccess(collection: string, samplePageId: string, manuscriptId: string): Promise<boolean> {
+    private async validateNativeAPIAccess(collection: string, samplePageId: string, manuscriptId: string): Promise<{ kind: 'iiif', sizeMode: 'max' | 'full' | 'pct' | 'width', width?: number } | { kind: 'native' }> {
         this.deps.logger.log({
             level: 'info',
             library: 'florence',
-            message: `Testing ContentDM native API access for manuscript ${manuscriptId} (sample page: ${samplePageId})`
+            message: `Testing Florence IIIF access for manuscript ${manuscriptId} (sample page: ${samplePageId})`
         });
         
-        const result = await this.testImageAccess(collection, samplePageId);
+        const variant = await this.resolveBestImageVariant(collection, samplePageId);
         
-        if (result.success) {
+        if (variant.kind === 'iiif') {
             this.deps.logger.log({
                 level: 'info',
                 library: 'florence',
-                message: `ContentDM native API confirmed working for manuscript ${manuscriptId}`
+                message: `Florence IIIF confirmed (mode: ${variant.sizeMode}${variant.sizeMode === 'width' ? `=${variant.width}` : ''}) for manuscript ${manuscriptId}`
             });
-            return true;
+            return variant;
         } else {
             this.deps.logger.log({
-                level: 'error',
+                level: 'warn',
                 library: 'florence',
-                message: `ContentDM native API failed for manuscript ${manuscriptId}: ${result.error}`
+                message: `Falling back to native ContentDM API for manuscript ${manuscriptId}`
             });
-            return false;
+            return variant;
         }
     }
     
@@ -386,23 +509,53 @@ export class FlorenceLoader extends BaseLibraryLoader {
         await this.establishSession();
         
         try {
-            // Extract collection and item ID from URL
-            // Format: https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/25456/rec/1
-            const urlMatch = originalUrl.match(/cdm21059\.contentdm\.oclc\.org\/digital\/collection\/([^/]+)\/id\/(\d+)/);
-            if (!urlMatch) {
-                const error = new Error('Could not extract collection and item ID from Florence URL');
-                this.deps.logger.logDownloadError('florence', originalUrl, error);
-                throw error;
+            // Use intelligent URL parsing to handle multiple Florence URL formats
+            const parsed = this.parseFlorenceUrl(originalUrl);
+            const collection = parsed.collection;
+            const itemId = parsed.itemId;
+
+            // Log the intelligent handling strategy
+            let processingNote = '';
+            switch (parsed.urlType) {
+                case 'manuscript_viewer':
+                    processingNote = 'Using manuscript viewer URL for standard processing';
+                    break;
+                case 'iiif_image':
+                    processingNote = 'Single IIIF image detected - will discover full manuscript';
+                    break;
+                case 'contentdm_api':
+                    processingNote = 'ContentDM API URL detected - will discover full manuscript';
+                    break;
+                case 'iiif_manifest':
+                    processingNote = 'IIIF manifest detected - will discover full manuscript';
+                    break;
             }
 
-            const collection = urlMatch[1]!;
-            const itemId = urlMatch[2]!;
+            this.deps.logger.log({
+                level: 'info',
+                library: 'florence',
+                message: `Florence URL processing: ${processingNote} (collection: ${collection}, itemId: ${itemId})`
+            });
+
             console.log(`🔍 Florence: collection=${collection}, itemId=${itemId}`);
+
+            // For IIIF URLs, we need to convert to manuscript viewer URL for proper processing
+            const processingUrl = parsed.urlType !== 'manuscript_viewer' 
+                ? `https://cdm21059.contentdm.oclc.org/digital/collection/${collection}/id/${itemId}/rec/1`
+                : originalUrl;
+
+            if (processingUrl !== originalUrl) {
+                this.deps.logger.log({
+                    level: 'info',
+                    library: 'florence',
+                    message: `Converting to manuscript viewer URL for processing: ${processingUrl}`
+                });
+            }
 
             // Fetch the HTML page to extract the initial state with all children
             console.log('📄 Fetching Florence page HTML to extract manuscript structure...');
             const sessionHeaders = this.getSessionHeaders();
-            const pageResponse = await this.deps.fetchWithHTTPS(originalUrl, {
+            const pageResponse = await this.deps.fetchWithHTTPS(processingUrl, {
                 headers: {
                     ...sessionHeaders,
                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
@@ -578,22 +731,33 @@ export class FlorenceLoader extends BaseLibraryLoader {
             // Validate ContentDM native API access with first validated page
             const manuscriptId = itemId || 'unknown';
             const samplePageId = validatedPages[0]?.id ? validatedPages[0].id.toString() : '217712';
-            const nativeAPIWorks = await this.validateNativeAPIAccess(collection, samplePageId, manuscriptId);
-            
-            if (!nativeAPIWorks) {
-                throw new Error('ContentDM native API validation failed - cannot access manuscript images');
-            }
+            const variant = await this.validateNativeAPIAccess(collection, samplePageId, manuscriptId);
             
             // Use validated pages for URL generation
             pages = validatedPages;
             
-            // Generate ContentDM native API URLs for all pages - these actually work!
-            // ContentDM native API format: https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/{collection}/{id}/default.jpg
-            const pageLinks = pages.map(page => {
-                return `https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/${collection}/${page.id}/default.jpg`;
-            });
-
-            console.log(`📄 Florence manuscript processed: ${pages?.length} pages using ContentDM native API (full resolution)`);
+            let pageLinks: string[] = [];
+            if (variant.kind === 'iiif') {
+                const toUrl = (pageId: string) => {
+                    const baseIiif = `https://cdm21059.contentdm.oclc.org/digital/iiif/${collection}/${pageId}`;
+                    switch (variant.sizeMode) {
+                        case 'max':
+                            return `${baseIiif}/full/max/0/default.jpg`;
+                        case 'full':
+                            return `${baseIiif}/full/full/0/default.jpg`;
+                        case 'pct':
+                            return `${baseIiif}/full/pct:100/0/default.jpg`;
+                        case 'width':
+                            return `${baseIiif}/full/${variant.width},/0/default.jpg`;
+                    }
+                };
+                pageLinks = pages.map(p => toUrl(p.id));
+                console.log(`📄 Florence manuscript processed: ${pageLinks.length} pages using IIIF Image API (${variant.sizeMode}${variant.sizeMode === 'width' ? `=${variant.width}` : ''}) for maximum resolution`);
+            } else {
+                // Native fallback (should be rare). Note: may be lower resolution but ensures robustness.
+                pageLinks = pages.map(page => `https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/${collection}/${page.id}/default.jpg`);
+                console.log(`📄 Florence manuscript processed: ${pageLinks.length} pages using native ContentDM API fallback (lower resolution)`);
+            }
 
             return {
                 pageLinks,

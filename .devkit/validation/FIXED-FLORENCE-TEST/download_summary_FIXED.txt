@@ -1,0 +1,47 @@
+Florence Manuscript Download Summary (FIXED URLS)
+Manuscript: Plut.16.39 Calendarium (Fixed ContentDM Native API URLs)
+Download Date: 2025-08-22T14:02:28.496Z
+Pages Attempted: 30 (sample from 215 total)
+Successfully Downloaded: 30
+Failed: 0
+Success Rate: 100%
+Duration: 63s
+
+URL Pattern Used: ContentDM Native API (/digital/api/singleitem/image/)
+Previous Success Rate (IIIF): 72% (159/221 pages)
+Fixed Success Rate (Native API): 100% (30/30 pages)
+
+Pages Downloaded:
+  Page 1: 79KB
+  Page 2: 65KB
+  Page 3: 72KB
+  Page 4: 61KB
+  Page 5: 63KB
+  Page 6: 68KB
+  Page 7: 123KB
+  Page 8: 97KB
+  Page 9: 105KB
+  Page 10: 108KB
+  Page 11: 111KB
+  Page 12: 103KB
+  Page 13: 91KB
+  Page 14: 110KB
+  Page 15: 96KB
+  Page 16: 109KB
+  Page 17: 99KB
+  Page 18: 109KB
+  Page 19: 85KB
+  Page 20: 121KB
+  Page 21: 122KB
+  Page 22: 100KB
+  Page 23: 96KB
+  Page 24: 111KB
+  Page 25: 103KB
+  Page 26: 97KB
+  Page 27: 92KB
+  Page 28: 113KB
+  Page 29: 106KB
+  Page 30: 131KB
+
+Failed Pages:
+
