@@ -38,9 +38,76 @@ interface FlorenceState {
 export class FlorenceLoader extends BaseLibraryLoader {
     private readonly SIZE_PREFERENCES = [6000, 4000, 2048, 1024, 800];
     private readonly manuscriptSizeCache = new Map<string, number>();
+    private sessionCookie: string | null = null;
 
     constructor(deps: LoaderDependencies) {
         super(deps);
+    }
+
+    /**
+     * Establish ContentDM session by visiting collection page to get JSESSIONID cookie
+     */
+    private async establishSession(): Promise<void> {
+        if (this.sessionCookie) {
+            return; // Already have session
+        }
+
+        try {
+            // Visit the collection page to establish session
+            const collectionUrl = 'https://cdm21059.contentdm.oclc.org/digital/collection/plutei';
+            const response = await this.deps.fetchWithHTTPS(collectionUrl, {
+                method: 'GET',
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7',
+                    'Referer': 'https://cdm21059.contentdm.oclc.org/',
+                    'Cache-Control': 'no-cache'
+                }
+            });
+
+            // Extract JSESSIONID from set-cookie headers
+            const setCookie = response.headers.get('set-cookie');
+            if (setCookie) {
+                const match = setCookie.match(/JSESSIONID=([^;]+)/);
+                if (match) {
+                    this.sessionCookie = `JSESSIONID=${match[1]}`;
+                    this.deps.logger.log({
+                        level: 'info',
+                        library: 'florence',
+                        message: 'ContentDM session established successfully'
+                    });
+                }
+            }
+        } catch (error) {
+            this.deps.logger.log({
+                level: 'warn',
+                library: 'florence',
+                message: 'Failed to establish ContentDM session, proceeding without'
+            });
+        }
+    }
+
+    /**
+     * Get session-aware headers for ContentDM requests
+     */
+    private getSessionHeaders(): Record<string, string> {
+        const headers: Record<string, string> = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+            'Accept': 'image/*,*/*;q=0.8',
+            'Accept-Language': 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Referer': 'https://cdm21059.contentdm.oclc.org/',
+            'Sec-Fetch-Dest': 'image',
+            'Sec-Fetch-Mode': 'no-cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'DNT': '1'
+        };
+
+        if (this.sessionCookie) {
+            headers['Cookie'] = this.sessionCookie;
+        }
+
+        return headers;
     }
     
     getLibraryName(): string {
@@ -56,11 +123,7 @@ export class FlorenceLoader extends BaseLibraryLoader {
         try {
             const response = await this.deps.fetchWithHTTPS(testUrl, {
                 method: 'HEAD',
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-                    'Accept': 'image/*',
-                    'Referer': 'https://cdm21059.contentdm.oclc.org/'
-                }
+                headers: this.getSessionHeaders()
             });
             
             if (response.ok) {
@@ -139,6 +202,9 @@ export class FlorenceLoader extends BaseLibraryLoader {
             details: { method: 'loadFlorenceManifest' }
         });
         
+        // CRITICAL: Establish ContentDM session before any requests
+        await this.establishSession();
+        
         try {
             // Extract collection and item ID from URL
             // Format: https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/25456/rec/1
@@ -149,18 +215,17 @@ export class FlorenceLoader extends BaseLibraryLoader {
                 throw error;
             }
 
-            const collection = urlMatch[1];
-            const itemId = urlMatch[2];
+            const collection = urlMatch[1]!;
+            const itemId = urlMatch[2]!;
             console.log(`🔍 Florence: collection=${collection}, itemId=${itemId}`);
 
             // Fetch the HTML page to extract the initial state with all children
             console.log('📄 Fetching Florence page HTML to extract manuscript structure...');
+            const sessionHeaders = this.getSessionHeaders();
             const pageResponse = await this.deps.fetchWithHTTPS(originalUrl, {
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                    'Accept-Language': 'en-US,en;q=0.5',
-                    'Referer': 'https://cdm21059.contentdm.oclc.org/'
+                    ...sessionHeaders,
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
                 }
             });
 
@@ -319,7 +384,7 @@ export class FlorenceLoader extends BaseLibraryLoader {
 
             // Determine optimal image size using intelligent testing with first page
             const manuscriptId = itemId || 'unknown';
-            const samplePageId = pages[0]?.id?.toString() || '317515';
+            const samplePageId = pages[0]?.id ? pages[0].id.toString() : '217712';
             const optimalSize = await this.determineOptimalSize(collection, samplePageId, manuscriptId);
             
             // Generate IIIF URLs for all pages using optimal size
