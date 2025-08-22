@@ -74,7 +74,9 @@ import {
     HhuLoader,
     GamsLoader,
     LinzLoader,
+    DigitalWaltersLoader,
     GenericIiifLoader,
+    CodicesLoader,
     type LoaderDependencies,
     type LibraryLoader
 } from './library-loaders';
@@ -311,7 +313,9 @@ export class EnhancedManuscriptDownloaderService {
         this.libraryLoaders.set('hhu', new HhuLoader(loaderDeps));
         this.libraryLoaders.set('gams', new GamsLoader(loaderDeps));
         this.libraryLoaders.set('linz', new LinzLoader(loaderDeps));
+        this.libraryLoaders.set('digital_walters', new DigitalWaltersLoader(loaderDeps));
         this.libraryLoaders.set('generic_iiif', new GenericIiifLoader(loaderDeps));
+        this.libraryLoaders.set('codices', new CodicesLoader(loaderDeps));
 
         // Clear potentially problematic cached manifests on startup
         this.manifestCache.clearProblematicUrls().catch(error => {
@@ -1071,12 +1075,16 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('digital.bodleian.ox.ac.uk') || url.includes('digital2.bodleian.ox.ac.uk')) return 'bodleian';
         if (url.includes('digi.ub.uni-heidelberg.de') || url.includes('doi.org/10.11588/diglit')) return 'heidelberg';
         if (url.includes('digi.landesbibliothek.at')) return 'linz';
+        // Digital Walters Art Museum support
+        if (url.includes('thedigitalwalters.org')) return 'digital_walters';
         // Issue #54: Ambrosiana library support
         if (url.includes('ambrosiana.comperio.it')) return 'ambrosiana';
         // Issue #30: Roman Archive support
         if (url.includes('imagoarchiviodistatoroma.cultura.gov.it') || url.includes('archiviostorico.senato.it')) return 'roman_archive';
         // Issue #33: Digital Scriptorium support  
         if (url.includes('digital-scriptorium.org') || url.includes('colenda.library.upenn.edu')) return 'digital_scriptorium';
+        // Codices library support - both manuscript pages and direct IIIF manifests
+        if (url.includes('codices.at')) return 'codices';
 
         return null;
     }
@@ -2273,6 +2281,12 @@ export class EnhancedManuscriptDownloaderService {
                     // ROUTING FIX: Use dedicated LinzLoader instead of basic SharedManifest
                     manifest = await this.loadLibraryManifest('linz', originalUrl);
                     break;
+                case 'digital_walters':
+                    // ROUTING: digital_walters → DigitalWaltersLoader (registered as 'digital_walters')
+                    // WHY: Digital Walters requires page count discovery and custom URL structure for sequential images
+                    // TESTED: 2025-01-XX with manuscript W33 (584 pages via sequential image discovery)
+                    manifest = await this.loadLibraryManifest('digital_walters', originalUrl);
+                    break;
                 case 'yale':
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('yale', originalUrl);
                     break;
@@ -2289,6 +2303,12 @@ export class EnhancedManuscriptDownloaderService {
                     // ROUTING: ambrosiana → SharedManifestAdapter for Issue #54 support
                     // WHY: New library added by user request - using SharedManifest for initial implementation
                     manifest = await this.sharedManifestAdapter.getManifestForLibrary('ambrosiana', originalUrl);
+                    break;
+                case 'codices':
+                    // ROUTING: codices → CodicesLoader (registered as 'codices')
+                    // WHY: Codices (codices.at) uses standard IIIF v3 implementation with full resolution support
+                    // TESTED: Standard IIIF implementation with manifest discovery and full/full/0/default.jpg resolution
+                    manifest = await this.loadLibraryManifest('codices', originalUrl);
                     break;
                 case 'vienna_manuscripta':
                     // ROUTING: vienna_manuscripta → ViennaManuscriptaLoader (registered as 'vienna')

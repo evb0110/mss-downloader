@@ -1,14 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.237",
+  "version": "1.4.238",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.237: 🚨 Critical GitHub Issues Resolution - 6 Major Fixes + 1 New Library",
-    "CRITICAL: Fixed Morgan Library ReferenceError causing download crashes in production",
-    "FIXED: Grenoble Library 429 rate limiting with 5-second auto-retry mechanism", 
-    "NEW: Added Ambrosiana Library support (ambrosiana.comperio.it manuscripts)",
-    "PERFORMANCE: Fixed Florence Library hanging on large manuscript processing (1000+ pages)",
-    "OPTIMIZATION: Fixed Linz Library slow downloads with auto-split (prevents restarts)",
+    "v1.4.238: 🚀 New Libraries + DO NOT DEFER Command Fix",
+    "Added Digital Walters library - download manuscripts from thedigitalwalters.org",
+    "Added Codices library - download manuscripts from IIIF-enabled codices.at",
+    "CRITICAL: Fixed command workflow to IMPLEMENT libraries immediately, not defer them",
     "PERFORMANCE: 99% memory reduction for large manuscripts, timeout optimizations across libraries",
     "VALIDATION: All 16 todos processed with ultra-deep analysis and comprehensive testing"
   ],
