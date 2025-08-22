@@ -1,0 +1,97 @@
+{
+  "issue_57": {
+    "number": 57,
+    "title": "Codices",
+    "author": "textorhub",
+    "urls": [
+      "https://admont.codices.at/codices/169/90299",
+      "https://admont.codices.at/iiif/9cec1d04-d5c3-4a2a-9aa8-4279b359e701",
+      "https://admont.codices.at/iiif/image/9cec1d06-e05f-48d4-a36a-e220906a51fd/info.json"
+    ],
+    "primaryUrl": "https://admont.codices.at/codices/169/90299",
+    "body": "добавить библиотеку Codices\n\nhttps://admont.codices.at/codices/169/90299\n\nhttps://admont.codices.at/iiif/9cec1d04-d5c3-4a2a-9aa8-4279b359e701\n\nhttps://admont.codices.at/iiif/image/9cec1d06-e05f-48d4-a36a-e220906a51fd/info.json\n\n\n"
+  },
+  "issue_54": {
+    "number": 54,
+    "title": "амброзиана",
+    "author": "textorhub",
+    "urls": [
+      "https://ambrosiana.comperio.it/opac/detail/view/ambro:catalog:76502",
+      "https://ambrosiana.comperio.it/opac/detail/view/ambro:catalog:76502https://ambrosiana.comperio.it/opac/detail/view/ambro:catalog:76502"
+    ],
+    "primaryUrl": "https://ambrosiana.comperio.it/opac/detail/view/ambro:catalog:76502",
+    "body": "https://ambrosiana.comperio.it/opac/detail/view/ambro:catalog:76502\n\nсломалась\n\nError invoking remote method 'parse-manuscript-url-chunked': Error: Unsupported library for URL: https://ambrosiana.comperio.it/opac/detail/view/ambro:catalog:76502https://ambrosiana.comperio.it/opac/detail/view/ambro:catalog:76502\n\n"
+  },
+  "issue_43": {
+    "number": 43,
+    "title": "гренобль",
+    "author": "textorhub",
+    "urls": [
+      "https://pagella.bm-grenoble.fr/ark:/12148/btv1b106634178/f3.item.zoom"
+    ],
+    "primaryUrl": "https://pagella.bm-grenoble.fr/ark:/12148/btv1b106634178/f3.item.zoom",
+    "body": "сломался\nhttps://pagella.bm-grenoble.fr/ark:/12148/btv1b106634178/f3.item.zoom\n\nFailed to load grenoble manifest: Failed to fetch manifest: 429\n\n[logs-grenoble_Manuscript-1755637482935.txt](https://github.com/user-attachments/files/21868167/logs-grenoble_Manuscript-1755637482935.txt)\n\nсам сайт недоступен - Too Many Requests\nThe user has sent too many requests in a given amount of time."
+  },
+  "issue_39": {
+    "number": 39,
+    "title": "флоренция",
+    "author": "textorhub",
+    "urls": [
+      "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/217923/rec/2"
+    ],
+    "primaryUrl": "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/217923/rec/2",
+    "body": "https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/217923/rec/2\n\nвисит на калькуляции\n\n[logs-Plut_16_39___Calendarium-1755636459234.txt](https://github.com/user-attachments/files/21867944/logs-Plut_16_39___Calendarium-1755636459234.txt)"
+  },
+  "issue_38": {
+    "number": 38,
+    "title": "Digital Walters",
+    "author": "textorhub",
+    "urls": [
+      "https://www.thedigitalwalters.org/Data/WaltersManuscripts/html/W33/",
+      "https://www.thedigitalwalters.org/Data/WaltersManuscripts/W33/data/W.33/sap/W33_000001_sap.jpg",
+      "https://www.thedigitalwalters.org/Data/WaltersManuscripts/W33/data/W.33/sap/W33_000584_sap.jpg"
+    ],
+    "primaryUrl": "https://www.thedigitalwalters.org/Data/WaltersManuscripts/html/W33/",
+    "body": "добавить новую библиотеку\nhttps://www.thedigitalwalters.org/Data/WaltersManuscripts/html/W33/\n\nфайлы картинок лежат каждый отдельно, начиная с:\nhttps://www.thedigitalwalters.org/Data/WaltersManuscripts/W33/data/W.33/sap/W33_000001_sap.jpg\nи до:\nhttps://www.thedigitalwalters.org/Data/WaltersManuscripts/W33/data/W.33/sap/W33_000584_sap.jpg\n"
+  },
+  "issue_37": {
+    "number": 37,
+    "title": "Линц",
+    "author": "textorhub",
+    "urls": [
+      "https://digi.landesbibliothek.at/viewer/image/154/"
+    ],
+    "primaryUrl": "https://digi.landesbibliothek.at/viewer/image/154/",
+    "body": "https://digi.landesbibliothek.at/viewer/image/154/\nдолго и медленно качает, доходит до конца и начинает сначала\nфайл, видимо, тяжелый, но программа не разбивает его на части и пытается качать целиком сразу"
+  },
+  "issue_6": {
+    "number": 6,
+    "title": "Бордо",
+    "author": "textorhub",
+    "urls": [
+      "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+      "https://selene.bordeaux.fr/in/dz/330636101_MS0778_0009_files/0/0_0.jpg",
+      "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778/v0001.simple.selectedTab=thumbnail.hidesidebar"
+    ],
+    "primaryUrl": "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+    "body": "необходимо добавить новую библиотеку\n\nhttps://selene.bordeaux.fr/ark:/27705/330636101_MS_0778\n\nhttps://selene.bordeaux.fr/in/dz/330636101_MS0778_0009_files/0/0_0.jpg\n\nhttps://selene.bordeaux.fr/ark:/27705/330636101_MS_0778/v0001.simple.selectedTab=thumbnail.hidesidebar\n\nнеобходимо учесть zoom, картинки с высоким разрешением собираются из кусков"
+  },
+  "issue_4": {
+    "number": 4,
+    "title": "морган",
+    "author": "textorhub",
+    "urls": [
+      "https://www.themorgan.org/collection/lindau-gospels/thumbs"
+    ],
+    "primaryUrl": "https://www.themorgan.org/collection/lindau-gospels/thumbs",
+    "body": "Error invoking remote method 'parse-manuscript-url': ReferenceError: imagesByPriority is not definedhttps://www.themorgan.org/collection/lindau-gospels/thumbs\nFailed\n\n[mss-downloader-logs-2025-07-27T09-35-06-593Z.json](https://github.com/user-attachments/files/21453101/mss-downloader-logs-2025-07-27T09-35-06-593Z.json)"
+  },
+  "issue_2": {
+    "number": 2,
+    "title": "грац",
+    "author": "textorhub",
+    "urls": [],
+    "primaryUrl": null,
+    "body": "![Image](https://github.com/user-attachments/assets/b227ba31-4771-4077-9d94-028e652cd71d)\n![Image](https://github.com/user-attachments/assets/cf6ad185-5cc9-4750-8072-eb1687594346)\n\nошибка во время добавления манифеста"
+  }
+}

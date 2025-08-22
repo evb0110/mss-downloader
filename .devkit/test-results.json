@@ -1,0 +1,37 @@
+{
+  "issue_57": {
+    "status": "parse_error",
+    "output": "Failed: loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\"https://admont.codices.at/codices/169/90299\")', 'loader.detectLibraryFromUrl' is undefined)\n{\"success\":false,\"error\":\"loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\\\"https://admont.codices.at/codices/169/90299\\\")', 'loader.detectLibraryFromUrl' is undefined)\"}\n"
+  },
+  "issue_54": {
+    "status": "parse_error",
+    "output": "Failed: loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\"https://ambrosiana.comperio.it/opac/detail/view/ambro:catalog:76502\")', 'loader.detectLibraryFromUrl' is undefined)\n{\"success\":false,\"error\":\"loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\\\"https://ambrosiana.comperio.it/opac/detail/view/ambro:catalog:76502\\\")', 'loader.detectLibraryFromUrl' is undefined)\"}\n"
+  },
+  "issue_43": {
+    "status": "parse_error",
+    "output": "Failed: loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\"https://pagella.bm-grenoble.fr/ark:/12148/btv1b106634178/f3.item.zoom\")', 'loader.detectLibraryFromUrl' is undefined)\n{\"success\":false,\"error\":\"loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\\\"https://pagella.bm-grenoble.fr/ark:/12148/btv1b106634178/f3.item.zoom\\\")', 'loader.detectLibraryFromUrl' is undefined)\"}\n"
+  },
+  "issue_39": {
+    "status": "parse_error",
+    "output": "Failed: loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\"https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/217923/rec/2\")', 'loader.detectLibraryFromUrl' is undefined)\n{\"success\":false,\"error\":\"loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\\\"https://cdm21059.contentdm.oclc.org/digital/collection/plutei/id/217923/rec/2\\\")', 'loader.detectLibraryFromUrl' is undefined)\"}\n"
+  },
+  "issue_38": {
+    "status": "parse_error",
+    "output": "Failed: loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\"https://www.thedigitalwalters.org/Data/WaltersManuscripts/html/W33/\")', 'loader.detectLibraryFromUrl' is undefined)\n{\"success\":false,\"error\":\"loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\\\"https://www.thedigitalwalters.org/Data/WaltersManuscripts/html/W33/\\\")', 'loader.detectLibraryFromUrl' is undefined)\"}\n"
+  },
+  "issue_37": {
+    "status": "parse_error",
+    "output": "Failed: loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\"https://digi.landesbibliothek.at/viewer/image/154/\")', 'loader.detectLibraryFromUrl' is undefined)\n{\"success\":false,\"error\":\"loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\\\"https://digi.landesbibliothek.at/viewer/image/154/\\\")', 'loader.detectLibraryFromUrl' is undefined)\"}\n"
+  },
+  "issue_6": {
+    "status": "parse_error",
+    "output": "Failed: loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\"https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778\")', 'loader.detectLibraryFromUrl' is undefined)\n{\"success\":false,\"error\":\"loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\\\"https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778\\\")', 'loader.detectLibraryFromUrl' is undefined)\"}\n"
+  },
+  "issue_4": {
+    "status": "parse_error",
+    "output": "Failed: loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\"https://www.themorgan.org/collection/lindau-gospels/thumbs\")', 'loader.detectLibraryFromUrl' is undefined)\n{\"success\":false,\"error\":\"loader.detectLibraryFromUrl is not a function. (In 'loader.detectLibraryFromUrl(\\\"https://www.themorgan.org/collection/lindau-gospels/thumbs\\\")', 'loader.detectLibraryFromUrl' is undefined)\"}\n"
+  },
+  "issue_2": {
+    "status": "no_url"
+  }
+}

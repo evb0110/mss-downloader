@@ -206,6 +206,14 @@ https://collections.library.utoronto.ca/view/fisher2:F6521
 https://digital.ulb.hhu.de/i3f/v20/7674176/manifest
 ```
 
+### -2. LIBRARY REQUESTS = IMMEDIATE IMPLEMENTATION - NO DEFERRALS EVER 🚀
+- **WHEN USER REQUESTS LIBRARY:** Implement NOW, not "in future versions"
+- **FORBIDDEN RESPONSES:** "Принято к рассмотрению", "Will be added later", "Documented for consideration"
+- **REQUIRED RESPONSE:** Create loader → Test → Deploy → "✅ Implemented in v1.4.XXX"
+- **TIME LIMIT:** 1-2 hours maximum from request to deployment
+- **NO EXCUSES:** Complex library = still implement basic version NOW
+- **USER EXPECTATION:** When they request, they expect immediate action, not promises
+
 ### 0. NO ARTIFICIAL LIMITS OR CAPS - EVER
 - **NEVER SET PAGE CAPS:** Do NOT limit pages to 256, 512, 1024 or ANY number
 - **NEVER HARDCODE LIMITS:** No manuscript is "too large" - users decide what to download
