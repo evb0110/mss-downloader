@@ -7,21 +7,29 @@ export default async function signWindows(context) {
   const { electronPlatformName, appOutDir } = context;
   if (electronPlatformName !== 'win32') return;
   
-  // Check if signing certificate is available
+  // Check if a real signing certificate is available
   if (process.env.CSC_LINK && process.env.CSC_KEY_PASSWORD) {
     console.log('✅ Using provided code signing certificate');
-    return; // Let electron-builder handle the signing
+    return; // electron-builder will sign installer, app, and uninstaller
   }
-  
-  // Try to create and use a self-signed certificate for development
-  try {
-    await createSelfSignedCertificate();
-    console.log('✅ Using self-signed certificate for development builds');
-  } catch (error) {
-    console.log('⚠️  Building without code signature. This may trigger Windows SmartScreen warnings.');
-    console.log('   Users will need to click "More info" > "Run anyway" to bypass the warning.');
-    console.log('   To eliminate warnings, consider purchasing a code signing certificate.');
+
+  const allowSelfSign = process.env.ALLOW_SELF_SIGN === 'true';
+
+  if (allowSelfSign) {
+    try {
+      await createSelfSignedCertificate();
+      console.log('✅ Using self-signed certificate for development builds (ALLOW_SELF_SIGN=true)');
+      return;
+    } catch (error) {
+      console.log('⚠️ Failed to create a self-signed certificate, continuing unsigned. This is OK for local dev only.');
+      return;
+    }
   }
+
+  // Proceed unsigned for small distribution to trusted users
+  console.log('⚠️ Building unsigned Windows binaries (no CSC_LINK provided). NSIS installer and uninstaller will be unsigned.');
+  console.log('   This may trigger SmartScreen/AV prompts for some users.');
+  return;
 }
 
 async function createSelfSignedCertificate() {

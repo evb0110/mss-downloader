@@ -1,13 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.241",
+  "version": "1.4.242",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.241: 🏛️ Florence Production Download System Complete",
-    "PRODUCTION: Complete Florence ContentDM workflow with intelligent gap handling and resolution optimization",
-    "ENHANCED: Smart missing page detection prevents download failures from incomplete manuscripts",
-    "OPTIMIZED: Maximum resolution discovery ensures highest quality downloads for Florence manuscripts",
-    "RELIABLE: End-to-end Florence manuscript downloads now work seamlessly with proper error handling"
+    "v1.4.242: Windows AV false-positives mitigated",
+    "REMOVED: Portable Windows builds (often flagged by AV)",
+    "BUILD: Allow unsigned NSIS installer for small trusted distribution",
+    "NOTE: Old unsigned uninstaller may be flagged; advise users to uninstall old version before installing"
   ],
   "main": "dist/main/main.js",
   "scripts": {
@@ -147,18 +146,6 @@
           "arch": [
             "arm64"
           ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "arm64"
-          ]
         }
       ],
       "icon": "assets/icon.png",
@@ -168,7 +155,10 @@
       "certificateSubjectName": "Abba Ababus Manuscripts",
       "signDlls": true,
       "rfc3161TimeStampServer": "http://timestamp.digicert.com",
-      "sign": "./sign-windows.js"
+      "sign": "./sign-windows.js",
+      "signingHashAlgorithms": [
+        "sha256"
+      ]
     },
     "mac": {
       "target": "dmg",
@@ -192,9 +182,6 @@
       "include": "installer.nsh",
       "perMachine": false,
       "differentialPackage": false
-    },
-    "portable": {
-      "artifactName": "${productName} ${version}-${arch}-portable.${ext}"
     },
     "linux": {
       "target": "AppImage",
