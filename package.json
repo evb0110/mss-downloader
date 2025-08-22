@@ -1,13 +1,13 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.240",
+  "version": "1.4.241",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.240: 🏛️ Florence Intelligent Gap Handling - Smart Missing Page Detection",
-    "ENHANCED: Florence loader now intelligently detects and skips missing pages with 'Nessun file è associato a questo item'",
-    "IMPROVED: Web scraping validation checks page content for missing file messages in Italian and English",
-    "SMART: Automatic gap filtering prevents download failures from pages without associated files",
-    "RELIABILITY: Florence manuscripts with missing pages now download only available content successfully"
+    "v1.4.241: 🏛️ Florence Production Download System Complete",
+    "PRODUCTION: Complete Florence ContentDM workflow with intelligent gap handling and resolution optimization",
+    "ENHANCED: Smart missing page detection prevents download failures from incomplete manuscripts",
+    "OPTIMIZED: Maximum resolution discovery ensures highest quality downloads for Florence manuscripts",
+    "RELIABLE: End-to-end Florence manuscript downloads now work seamlessly with proper error handling"
   ],
   "main": "dist/main/main.js",
   "scripts": {
