@@ -40,13 +40,88 @@ This command adapts the handle-issues workflow but with ULTRA-FOCUS on a SINGLE 
 
 ## MANDATORY FIRST STEP: Duplicate Detection & Issue Selection
 
-### Step 0: CRITICAL DUPLICATE PREVENTION CHECK
+### Step 0: CRITICAL EVBØ110 FILTERING & DUPLICATE PREVENTION
 ```bash
+# 🚨 ULTRA-CRITICAL: Check if evb0110 already responded to this issue
+get_last_commenter() {
+    local issue_num=$1
+    gh api "repos/evb0110/mss-downloader/issues/$issue_num/comments" --jq '.[-1].user.login' 2>/dev/null || echo "none"
+}
+
+get_last_comment_time() {
+    local issue_num=$1
+    gh api "repos/evb0110/mss-downloader/issues/$issue_num/comments" --jq '.[-1].created_at' 2>/dev/null || echo "none"
+}
+
+should_skip_issue() {
+    local issue_num=$1
+    local last_commenter=$(get_last_commenter $issue_num)
+    
+    if [ "$last_commenter" = "evb0110" ]; then
+        echo "true"  # Skip this issue - Claude already responded
+    else
+        echo "false" # Process this issue - needs Claude's attention
+    fi
+}
+
+is_recently_addressed() {
+    local issue_num=$1
+    local last_commenter=$(get_last_commenter $issue_num)
+    local last_comment_time=$(get_last_comment_time $issue_num)
+    
+    if [ "$last_commenter" = "evb0110" ]; then
+        # Check if comment is within last 48 hours
+        if [ "$last_comment_time" != "none" ]; then
+            local comment_epoch=$(date -d "$last_comment_time" +%s 2>/dev/null || echo "0")
+            local current_epoch=$(date +%s)
+            local hours_diff=$(( (current_epoch - comment_epoch) / 3600 ))
+            
+            if [ $hours_diff -le 48 ]; then
+                echo "true"  # Recently addressed by Claude
+            else
+                echo "false" # Old Claude comment, might need follow-up
+            fi
+        else
+            echo "false"
+        fi
+    else
+        echo "false" # Not addressed by Claude
+    fi
+}
+
+debug_issue_filtering() {
+    echo "=== ISSUE FILTERING DEBUG ==="
+    for issue_num in $(gh issue list --state open --json number --jq '.[].number'); do
+        local last_commenter=$(get_last_commenter $issue_num)
+        local should_skip=$(should_skip_issue $issue_num)
+        local recently_addressed=$(is_recently_addressed $issue_num)
+        local comment_time=$(get_last_comment_time $issue_num)
+        
+        echo "Issue #$issue_num: last_commenter=$last_commenter, skip=$should_skip, recent=$recently_addressed, time=$comment_time"
+    done
+    echo "=== END DEBUG ==="
+}
+
 # 🚨 ULTRA-CRITICAL: Check if issue was already "fixed" in recent versions
 check_for_duplicate_fixes() {
     local issue_num=$1
     
     echo "🔍 Checking for duplicate fixes of Issue #$issue_num..."
+    
+    # FIRST: Check if evb0110 already responded (CRITICAL)
+    local should_skip=$(should_skip_issue $issue_num)
+    if [ "$should_skip" = "true" ]; then
+        local last_commenter=$(get_last_commenter $issue_num)
+        local comment_time=$(get_last_comment_time $issue_num)
+        local recently_addressed=$(is_recently_addressed $issue_num)
+        
+        echo "🛑 CRITICAL: Issue #$issue_num already addressed by evb0110"
+        echo "   Last commenter: $last_commenter"
+        echo "   Comment time: $comment_time"
+        echo "   Recently addressed: $recently_addressed"
+        echo "🚨 STOPPING: Cannot process issue already handled by Claude"
+        return 1  # Signal to stop
+    fi
     
     # Use the issue state tracker if available
     if [ -f ".devkit/scripts/issue-state-tracker.cjs" ]; then
@@ -75,7 +150,7 @@ check_for_duplicate_fixes() {
             
             # Check if user confirmed any fix worked
             echo "Checking user responses..."
-            ISSUE_COMMENTS=$(gh api "repos/{owner}/{repo}/issues/$issue_num/comments" --jq '.[] | {user: .user.login, body: .body, created: .created_at}' 2>/dev/null || echo "")
+            ISSUE_COMMENTS=$(gh api "repos/evb0110/mss-downloader/issues/$issue_num/comments" --jq '.[] | {user: .user.login, body: .body, created: .created_at}' 2>/dev/null || echo "")
             
             # Look for user confirmation or rejection
             LAST_USER_COMMENT=$(echo "$ISSUE_COMMENTS" | grep -v '"user": "evb0110"' | tail -1)
@@ -119,9 +194,9 @@ if [[ "$1" =~ ^[0-9]+$ ]]; then
     TARGET_ISSUE="$1"
     echo "🎯 Using specified issue #$TARGET_ISSUE"
     
-    # CHECK FOR DUPLICATES
+    # CHECK FOR EVB0110 FILTERING AND DUPLICATES
     if ! check_for_duplicate_fixes $TARGET_ISSUE; then
-        echo "🛑 Stopping due to duplicate detection"
+        echo "🛑 Stopping due to evb0110 filtering or duplicate detection"
         exit 0
     fi
 elif [[ "$1" =~ github\.com/.*/issues/([0-9]+) ]]; then
@@ -129,9 +204,9 @@ elif [[ "$1" =~ github\.com/.*/issues/([0-9]+) ]]; then
     TARGET_ISSUE="${BASH_REMATCH[1]}"
     echo "🎯 Extracted issue #$TARGET_ISSUE from URL"
     
-    # CHECK FOR DUPLICATES
+    # CHECK FOR EVB0110 FILTERING AND DUPLICATES  
     if ! check_for_duplicate_fixes $TARGET_ISSUE; then
-        echo "🛑 Stopping due to duplicate detection"
+        echo "🛑 Stopping due to evb0110 filtering or duplicate detection"
         exit 0
     fi
 else
@@ -141,48 +216,87 @@ else
     # Get detailed issue data with comments
     gh issue list --state open --json number,title,author,createdAt --limit 100 > .devkit/issue-candidates.json
     
-    # Find issues that haven't been repeatedly "fixed"
+    # First, show current filtering debug info
+    echo "🔍 Analyzing which issues need attention..."
+    debug_issue_filtering
+    echo ""
+    
+    # Find issues that need Claude's attention (evb0110 NOT last commenter)
     BEST_ISSUE=""
+    SKIPPED_COUNT=0
+    PROCESSED_COUNT=0
+    
     for issue_num in $(cat .devkit/issue-candidates.json | jq -r '.[].number'); do
-        # First check if this issue has duplicate fixes
-        DUPLICATE_COUNT=$(git log --oneline --grep="Issue #$issue_num" | wc -l)
-        if [ $DUPLICATE_COUNT -ge 2 ]; then
-            echo "  Skipping Issue #$issue_num (already 'fixed' $DUPLICATE_COUNT times)"
+        # CRITICAL: Check if evb0110 already responded
+        local should_skip=$(should_skip_issue $issue_num)
+        if [ "$should_skip" = "true" ]; then
+            echo "  ⏭️  Skipping Issue #$issue_num (evb0110 already responded)"
+            SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
             continue
         fi
-        # Get issue comments
-        gh api "repos/{owner}/{repo}/issues/$issue_num/comments" --jq '.[].user.login' > .devkit/comment-authors-$issue_num.txt 2>/dev/null || continue
+        
+        # Check if this issue has too many duplicate fixes
+        DUPLICATE_COUNT=$(git log --oneline --grep="Issue #$issue_num" | wc -l)
+        if [ $DUPLICATE_COUNT -ge 2 ]; then
+            echo "  ⏭️  Skipping Issue #$issue_num (already 'fixed' $DUPLICATE_COUNT times)"
+            SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+            continue
+        fi
         
         # Get issue author
         ISSUE_AUTHOR=$(cat .devkit/issue-candidates.json | jq -r ".[] | select(.number == $issue_num) | .author.login")
         
-        # Check if last comment is from author (not from bot or MSS team)
-        if [ -s .devkit/comment-authors-$issue_num.txt ]; then
-            LAST_COMMENTER=$(tail -1 .devkit/comment-authors-$issue_num.txt)
-            if [ "$LAST_COMMENTER" = "$ISSUE_AUTHOR" ] && [ "$LAST_COMMENTER" != "github-actions[bot]" ]; then
-                BEST_ISSUE=$issue_num
-                break
-            fi
-        else
-            # No comments yet, issue is fresh from author
+        # Get last commenter
+        LAST_COMMENTER=$(get_last_commenter $issue_num)
+        
+        # Only process if user (not evb0110) was last commenter
+        if [ "$LAST_COMMENTER" != "evb0110" ] && [ "$LAST_COMMENTER" != "github-actions[bot]" ] && [ "$LAST_COMMENTER" != "none" ]; then
+            echo "  ✅ Issue #$issue_num needs attention (last commenter: $LAST_COMMENTER)"
             BEST_ISSUE=$issue_num
+            PROCESSED_COUNT=$((PROCESSED_COUNT + 1))
             break
+        elif [ "$LAST_COMMENTER" = "none" ]; then
+            # No comments yet, issue is fresh from author
+            echo "  ✅ Issue #$issue_num is fresh (no comments yet)"
+            BEST_ISSUE=$issue_num
+            PROCESSED_COUNT=$((PROCESSED_COUNT + 1))
+            break
+        else
+            echo "  ⏭️  Skipping Issue #$issue_num (last commenter: $LAST_COMMENTER)"
+            SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
         fi
     done
     
-    # Clean up temporary files
-    rm -f .devkit/comment-authors-*.txt
+    echo ""
+    echo "📊 FILTERING SUMMARY:"
+    echo "   Skipped issues: $SKIPPED_COUNT (already addressed by evb0110 or duplicates)"
+    echo "   Available for processing: $PROCESSED_COUNT"
+    echo ""
     
     if [ -z "$BEST_ISSUE" ]; then
-        # Fallback: pick most recent issue
-        TARGET_ISSUE=$(cat .devkit/issue-candidates.json | jq -r 'sort_by(.createdAt) | reverse | .[0].number')
-        echo "⚡ AUTO-SELECTED: Most recent issue #$TARGET_ISSUE"
+        echo "🚨 NO AVAILABLE ISSUES FOUND!"
+        echo ""
+        echo "All open issues have been filtered out because:"
+        echo "- evb0110 (Claude) was the last commenter, OR"
+        echo "- Issues have too many failed fix attempts, OR"
+        echo "- Only bot comments exist"
+        echo ""
+        echo "✅ This means all issues are either:"
+        echo "   1. Recently addressed by Claude (waiting for user feedback)"
+        echo "   2. Have too many failed attempts and need manual review"
+        echo "   3. Are not ready for processing"
+        echo ""
+        echo "🛑 STOPPING: No issues need immediate attention"
+        exit 0
     else
         TARGET_ISSUE=$BEST_ISSUE
         ISSUE_TITLE=$(cat .devkit/issue-candidates.json | jq -r ".[] | select(.number == $TARGET_ISSUE) | .title")
-        echo "⚡ AUTO-SELECTED: Issue #$TARGET_ISSUE: $ISSUE_TITLE (author's last comment pending)"
+        LAST_COMMENTER=$(get_last_commenter $TARGET_ISSUE)
+        echo "⚡ AUTO-SELECTED: Issue #$TARGET_ISSUE: $ISSUE_TITLE"
+        echo "   Reason: Last commenter was $LAST_COMMENTER (needs Claude's response)"
     fi
     
+    echo ""
     echo "🔥 STARTING ULTRA-PRIORITY WORK IMMEDIATELY ON ISSUE #$TARGET_ISSUE"
 fi
 

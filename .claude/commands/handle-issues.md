@@ -24,35 +24,191 @@ This command implements an AUTONOMOUS issue-fixing workflow that:
 - Seeks approval from ISSUE AUTHORS, not the Claude user
 - Overrides normal version bump approval requirements
 
-## MANDATORY FIRST STEP: Comprehensive Issue Discovery
+## CRITICAL EVB0110 FILTERING - PREVENT DUPLICATE WORK
 
-### Step 1: Fetch ALL Open Issues
+**🚨 ULTRA-CRITICAL**: Before processing ANY issues, implement bulletproof filtering to prevent processing issues already addressed by evb0110 (Claude).
+
+### EVB0110 Filtering Functions
+```bash
+# Check who was the last commenter on an issue
+get_last_commenter() {
+    local issue_num=$1
+    gh api "repos/evb0110/mss-downloader/issues/$issue_num/comments" --jq '.[-1].user.login' 2>/dev/null || echo "none"
+}
+
+# Get timestamp of last comment
+get_last_comment_time() {
+    local issue_num=$1
+    gh api "repos/evb0110/mss-downloader/issues/$issue_num/comments" --jq '.[-1].created_at' 2>/dev/null || echo "none"
+}
+
+# Determine if issue should be skipped (evb0110 already responded)
+should_skip_issue() {
+    local issue_num=$1
+    local last_commenter=$(get_last_commenter $issue_num)
+    
+    if [ "$last_commenter" = "evb0110" ]; then
+        echo "true"  # Skip - Claude already responded
+    else
+        echo "false" # Process - needs Claude's attention
+    fi
+}
+
+# Check if issue was recently addressed by Claude
+is_recently_addressed() {
+    local issue_num=$1
+    local last_commenter=$(get_last_commenter $issue_num)
+    local last_comment_time=$(get_last_comment_time $issue_num)
+    
+    if [ "$last_commenter" = "evb0110" ]; then
+        if [ "$last_comment_time" != "none" ]; then
+            local comment_epoch=$(date -d "$last_comment_time" +%s 2>/dev/null || echo "0")
+            local current_epoch=$(date +%s)
+            local hours_diff=$(( (current_epoch - comment_epoch) / 3600 ))
+            
+            if [ $hours_diff -le 48 ]; then
+                echo "true"  # Recently addressed
+            else
+                echo "false" # Old response, might need follow-up
+            fi
+        else
+            echo "false"
+        fi
+    else
+        echo "false"
+    fi
+}
+
+# Filter issues to only those needing Claude's attention
+filter_issues_needing_attention() {
+    local input_file=$1
+    local output_file=$2
+    
+    echo "🔍 Filtering issues to find those needing Claude's attention..."
+    echo "["
+    
+    local first=true
+    local total_issues=0
+    local skipped_count=0
+    local processable_count=0
+    
+    while IFS= read -r issue_json; do
+        local issue_num=$(echo "$issue_json" | jq -r '.number')
+        local issue_title=$(echo "$issue_json" | jq -r '.title')
+        local issue_author=$(echo "$issue_json" | jq -r '.author.login')
+        
+        total_issues=$((total_issues + 1))
+        
+        local should_skip=$(should_skip_issue $issue_num)
+        local last_commenter=$(get_last_commenter $issue_num)
+        local recently_addressed=$(is_recently_addressed $issue_num)
+        
+        if [ "$should_skip" = "true" ]; then
+            echo "   ⏭️  Skipping Issue #$issue_num: '$issue_title' (evb0110 last commenter: $last_commenter, recent: $recently_addressed)"
+            skipped_count=$((skipped_count + 1))
+        else
+            echo "   ✅ Issue #$issue_num: '$issue_title' needs attention (last commenter: $last_commenter)"
+            
+            if [ "$first" = "true" ]; then
+                first=false
+            else
+                echo ","
+            fi
+            echo "$issue_json"
+            processable_count=$((processable_count + 1))
+        fi
+    done < <(cat "$input_file" | jq -c '.[]')
+    
+    echo "]"
+    
+    echo ""
+    echo "📊 FILTERING SUMMARY:"
+    echo "   Total open issues: $total_issues"
+    echo "   Skipped (evb0110 already responded): $skipped_count"
+    echo "   Available for processing: $processable_count"
+    echo ""
+    
+    if [ $processable_count -eq 0 ]; then
+        echo "🎉 ALL ISSUES ALREADY ADDRESSED!"
+        echo ""
+        echo "All open issues have evb0110 as the last commenter, meaning:"
+        echo "- Claude has already responded to every issue"
+        echo "- Issues are waiting for user feedback"
+        echo "- No immediate action needed"
+        echo ""
+        echo "🛑 STOPPING: No issues need processing at this time"
+        return 1
+    fi
+    
+    return 0
+}
+
+# Debug function to show current issue state
+debug_all_issue_filtering() {
+    echo "=== COMPREHENSIVE ISSUE FILTERING DEBUG ==="
+    
+    for issue_num in $(gh issue list --state open --json number --jq '.[].number'); do
+        local last_commenter=$(get_last_commenter $issue_num)
+        local should_skip=$(should_skip_issue $issue_num)
+        local recently_addressed=$(is_recently_addressed $issue_num)
+        local comment_time=$(get_last_comment_time $issue_num)
+        local issue_title=$(gh issue view $issue_num --json title --jq '.title' 2>/dev/null || echo "unknown")
+        
+        printf "Issue #%d: %-20s | last: %-12s | skip: %-5s | recent: %-5s | time: %s\n" \
+               "$issue_num" "$issue_title" "$last_commenter" "$should_skip" "$recently_addressed" "$comment_time"
+    done
+    
+    echo "=== END DEBUG ==="
+    echo ""
+}
+```
+
+## MANDATORY FIRST STEP: Comprehensive Issue Discovery WITH FILTERING
+
+### Step 1: Fetch ALL Open Issues AND Filter Out Already-Addressed Issues
 ```bash
 # MANDATORY: Get ALL open issues, save to file for reference
 gh issue list --state open --json number,title,body,author,comments --limit 100 > .devkit/all-open-issues.json
 
-# Display sorted list
+echo "📋 All open issues found:"
+cat .devkit/all-open-issues.json | jq -r '.[] | "Issue #\(.number): \(.title)"' | sort -t'#' -k2 -n
+echo ""
+
+# CRITICAL: Apply evb0110 filtering to prevent duplicate work
+echo "🚨 APPLYING CRITICAL EVB0110 FILTERING..."
+debug_all_issue_filtering
+
+# Filter to only issues needing Claude's attention
+if ! filter_issues_needing_attention .devkit/all-open-issues.json .devkit/filtered-issues.json; then
+    echo "✅ All issues already addressed - no work needed!"
+    exit 0
+fi
+
+# Update the working file to only include filtered issues
+mv .devkit/filtered-issues.json .devkit/all-open-issues.json
+
+echo "📋 Issues needing attention after filtering:"
 cat .devkit/all-open-issues.json | jq -r '.[] | "Issue #\(.number): \(.title)"' | sort -t'#' -k2 -n
 ```
 
-### Step 2: Explicitly List ALL Issues Found
-**REQUIRED OUTPUT FORMAT:**
+### Step 2: Explicitly List FILTERED Issues That Need Processing
+**REQUIRED OUTPUT FORMAT (after filtering):**
 ```
-Found 12 open issues:
-- Issue #2: грац
-- Issue #3: верона
-- Issue #4: морган
-- Issue #5: Флоренция
-- Issue #6: Бордо
-- Issue #7: Бодлеянская
-- Issue #8: Бодлеянская
-- Issue #9: BDL
-- Issue #10: Цюрих
-- Issue #11: BNE
-- Issue #12: каталония
-- Issue #13: гренобль
+Found 9 total open issues.
+After evb0110 filtering: 2 issues need processing:
+- Issue #4: морган (last commenter: textorhub)
+- Issue #6: Бордо (last commenter: textorhub)
 
-Will now process ALL 12 issues...
+Skipped 7 issues already addressed by evb0110:
+- Issue #2: грац (evb0110 responded 2025-08-01)
+- Issue #37: Линц (evb0110 responded 2025-08-21)
+- Issue #38: Digital Walters (evb0110 responded 2025-08-21)
+- Issue #39: флоренция (evb0110 responded 2025-08-21)
+- Issue #43: гренобль (evb0110 responded 2025-08-21)
+- Issue #54: амброзиана (evb0110 responded 2025-08-21)
+- Issue #57: Codices (evb0110 responded 2025-08-21)
+
+Will now process ONLY the 2 issues needing attention...
 ```
 
 ### Step 3: Build Comprehensive Test Cases

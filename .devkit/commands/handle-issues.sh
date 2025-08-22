@@ -85,6 +85,14 @@ class OrchestratedResolver {
         const fixableIssues = await this.findAllFixableIssues();
         
         if (fixableIssues.length === 0) {
+            console.log('🎉 ALL ISSUES ALREADY ADDRESSED!');
+            console.log('');
+            console.log('All open issues either:');
+            console.log('- Have evb0110 (Claude) as the last commenter');
+            console.log('- Have too many failed fix attempts');
+            console.log('- Are waiting for user feedback');
+            console.log('- Are not ready for processing');
+            console.log('');
             console.log('✅ No issues need fixing at this time');
             return { success: true, issuesFixed: 0 };
         }
@@ -115,10 +123,19 @@ class OrchestratedResolver {
             const issues = JSON.parse(issuesJson);
             const fixable = [];
             
+            let totalIssues = 0;
+            let skippedEvb0110 = 0;
+            let skippedOther = 0;
+            
             for (const issue of issues) {
+                totalIssues++;
                 const analysis = await this.analyzeIssue(issue);
                 
-                if (analysis.shouldFix) {
+                if (analysis.skipReason === 'CLAUDE_ALREADY_RESPONDED') {
+                    console.log(`   ⏭️  Skipping Issue #${issue.number}: '${issue.title}' (evb0110 already responded)`);
+                    skippedEvb0110++;
+                } else if (analysis.shouldFix) {
+                    console.log(`   ✅ Issue #${issue.number}: '${issue.title}' needs attention (last commenter: ${analysis.lastCommenter || 'unknown'})`);
                     fixable.push({
                         number: issue.number,
                         title: issue.title,
@@ -126,8 +143,19 @@ class OrchestratedResolver {
                         priority: analysis.priority,
                         analysis
                     });
+                } else {
+                    console.log(`   ⏭️  Skipping Issue #${issue.number}: '${issue.title}' (${analysis.reason})`);
+                    skippedOther++;
                 }
             }
+            
+            console.log('');
+            console.log('📊 FILTERING SUMMARY:');
+            console.log(`   Total open issues: ${totalIssues}`);
+            console.log(`   Skipped (evb0110 already responded): ${skippedEvb0110}`);
+            console.log(`   Skipped (other reasons): ${skippedOther}`);
+            console.log(`   Available for processing: ${fixable.length}`);
+            console.log('');
             
             fixable.sort((a, b) => b.priority - a.priority);
             
@@ -155,6 +183,23 @@ class OrchestratedResolver {
                 })) : [];
             } catch {
                 comments = [];
+            }
+            
+            // CRITICAL: Check if evb0110 was the last commenter
+            const lastComment = comments[comments.length - 1];
+            const lastCommenter = lastComment?.user || 'none';
+            
+            if (lastCommenter === 'evb0110') {
+                // evb0110 (Claude) already responded - SKIP this issue
+                const hoursSince = lastComment ? (Date.now() - new Date(lastComment.date)) / (1000 * 60 * 60) : 0;
+                return {
+                    shouldFix: false,
+                    priority: 0,
+                    reason: `evb0110 already responded ${hoursSince.toFixed(1)}h ago`,
+                    lastCommenter: 'evb0110',
+                    skipReason: 'CLAUDE_ALREADY_RESPONDED',
+                    fixAttempts: 0
+                };
             }
             
             const fixAttempts = this.getFixAttempts(issue.number);
@@ -210,7 +255,8 @@ class OrchestratedResolver {
                 shouldFix,
                 priority,
                 reason,
-                fixAttempts
+                fixAttempts,
+                lastCommenter
             };
         } catch (e) {
             console.error(`Failed to analyze issue #${issue.number}:`, e.message);
