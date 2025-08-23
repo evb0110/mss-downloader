@@ -66,10 +66,25 @@
               <input 
                 v-model.number="autoSplitThresholdMB" 
                 type="number" 
-                min="100" 
-                max="800"
-                step="50"
+                min="10" 
+                max="400"
+                step="10"
                 @change="updateAutoSplitThreshold"
+              >
+              <span class="unit">MB</span>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <label>Max PDF part size</label>
+            <div class="input-with-unit">
+              <input
+                v-model.number="maxPdfPartSizeMB"
+                type="number"
+                min="10"
+                max="400"
+                step="10"
+                @change="updateMaxPdfPartSize"
               >
               <span class="unit">MB</span>
             </div>
@@ -156,6 +171,7 @@ const localConfig = reactive({
   maxRetries: 10,
   requestTimeout: 30000,
   autoSplitThreshold: 300 * 1024 * 1024, // 300MB in bytes - reduced to prevent "Invalid array length" errors
+  maxPdfPartSizeMB: 100,
   language: 'en',
   theme: 'system'
 });
@@ -165,6 +181,14 @@ const autoSplitThresholdMB = computed({
   get: () => Math.round(localConfig.autoSplitThreshold / (1024 * 1024)),
   set: (value: number) => {
     localConfig.autoSplitThreshold = value * 1024 * 1024;
+  }
+});
+
+// Simple value binding for max PDF part size (MB)
+const maxPdfPartSizeMB = computed({
+  get: () => localConfig.maxPdfPartSizeMB,
+  set: (value: number) => {
+    localConfig.maxPdfPartSizeMB = value;
   }
 });
 
@@ -190,6 +214,11 @@ const updateConfig = async (key: string, value: unknown) => {
 // Update auto-split threshold
 const updateAutoSplitThreshold = () => {
   updateConfig('autoSplitThreshold', localConfig.autoSplitThreshold);
+};
+
+// Update max PDF part size
+const updateMaxPdfPartSize = () => {
+  updateConfig('maxPdfPartSizeMB', localConfig.maxPdfPartSizeMB);
 };
 
 // Reset to defaults

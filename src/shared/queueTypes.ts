@@ -63,7 +63,7 @@ export interface QueuedManuscript {
     pageLinks?: any[];
 }
 
-export type TSimultaneousMode = 'sequential' | 'all' | 'custom';
+export type TSimultaneousMode = 'sequential';
 
 export interface QueueState {
     items: QueuedManuscript[];

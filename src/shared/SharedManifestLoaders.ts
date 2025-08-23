@@ -6,6 +6,8 @@
 
 import type * as https from 'https';
 import type * as http from 'http';
+import * as fs from 'fs';
+import * as path from 'path';
 
 import type {
     ManuscriptImage,
@@ -26,6 +28,37 @@ import type {
 
 class SharedManifestLoaders implements ISharedManifestLoaders {
     public fetchWithRetry: FetchFunction;
+
+    // Devkit logging support
+    private devkitLogDir: string | null = null;
+    private ensureDevkitLogDir(): string {
+        if (this.devkitLogDir) return this.devkitLogDir;
+        try {
+            // Resolve to project-local .devkit/logs directory
+            const baseDir = process?.cwd ? process.cwd() : '.';
+            const logsDir = path.resolve(baseDir, '.devkit', 'logs');
+            fs.mkdirSync(logsDir, { recursive: true });
+            this.devkitLogDir = logsDir;
+            return logsDir;
+        } catch {
+            // If creating the directory fails, fall back to current working directory
+            this.devkitLogDir = '.';
+            return this.devkitLogDir;
+        }
+    }
+    private devkitLog(library: string, message: string) {
+        try {
+            const dir = this.ensureDevkitLogDir();
+            const now = new Date();
+            const dateStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
+            const filePath = path.join(dir, `${library}-${dateStr}.log`);
+            const line = `${now.toISOString()} ${message}\n`;
+            // Non-blocking append; ignore callback errors silently to avoid affecting main flow
+            fs.appendFile(filePath, line, () => {});
+        } catch {
+            // Swallow logging errors to avoid interfering with main logic
+        }
+    }
 
 
     /**
@@ -540,6 +573,10 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
     }
     
     getTimeoutForUrl(url: string): number {
+        // Bordeaux tile server: keep probes snappy to avoid UI hangs
+        if (url.includes('selene.bordeaux.fr')) {
+            return 6000; // 6s per probe is enough; we'll also limit retries elsewhere
+        }
         // Verona servers need extended timeout
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
             return url.includes('mirador_json/manifest/') ? 180000 : 90000;
@@ -3709,109 +3746,134 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      */
     async discoverBordeauxPageRange(baseId: string | number): Promise<{ firstPage: number | null; lastPage: number | null; totalPages: number; availablePages: number[] }> {
         console.log(`[Bordeaux] Discovering page range for baseId: ${baseId}`);
-        
+        this.devkitLog('bordeaux', `[Bordeaux] Discovering page range for baseId: ${baseId}`);
         const baseUrl = 'https://selene.bordeaux.fr/in/dz';
-        const availablePages: any[] = [];
-        
-        // Test a reasonable range of pages
-        const maxTestPages = 1000; // ULTRATHINK FIX: Increased to 1000 to support very large manuscripts
-        
-        // First, do a quick scan to find the general range
-        // Include pages 6-9 since some manuscripts start at page 6 instead of page 1
-        // ULTRATHINK FIX: Added high page numbers (250, 278, 300) for manuscripts with 278+ pages (Issue #6)
-        const quickScanPages = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 50, 75, 100, 150, 200, 250, 278, 300];
-        let foundAny = false;
-        let minFound = null;
-        let maxFound = null;
-        
-        console.log(`[Bordeaux] Quick scan for page availability...`);
-        for (const page of quickScanPages) {
-            const pageId = `${baseId}_${String(page).padStart(4, '0')}`;
-            const testUrl = `${baseUrl}/${pageId}_files/0/0_0.jpg`;
-            
-            try {
-                const response = await this.fetchUrl(testUrl);
-                if (response.ok) {
-                    foundAny = true;
-                    if (minFound === null || page < minFound) minFound = page;
-                    if (maxFound === null || page > maxFound) maxFound = page;
-                    console.log(`[Bordeaux] Quick scan: Page ${page} available`);
+        const availablePages: number[] = [];
+
+        // Time budgets to prevent UI hangs
+        const discoveryStart = Date.now();
+        const quickScanBudgetMs = 20000; // 20s budget for quick scan
+        const detailedScanBudgetMs = 35000; // 35s budget for detailed scan
+        const perPageBudgetQuickMs = 4000; // 4s per page in quick scan
+        const perPageBudgetDetailedMs = 6000; // 6s per page in detailed scan
+
+        // Helper: build a tester with given levels/paddings and per-page deadline
+        const paddings = [4, 3, 2, 0]; // try 4-digit first
+        const makeTestPage = (levels: number[], perPageBudgetMs: number) => async (page: number): Promise<boolean> => {
+            const pageStart = Date.now();
+            for (const pad of paddings) {
+                const suffix = pad > 0 ? String(page).padStart(pad, '0') : String(page);
+                const pageId = `${baseId}_${suffix}`;
+                for (const level of levels) {
+                    if (Date.now() - pageStart > perPageBudgetMs) {
+                        return false; // per-page deadline exceeded
+                    }
+                    const url = `${baseUrl}/${pageId}_files/${level}/0_0.jpg`;
+                    try {
+                        const resp = await this.fetchWithRetry(url, {
+                            method: 'HEAD',
+                            headers: { 'Accept': 'image/jpeg' }
+                        }, 1);
+                        if (resp.ok) {
+                            const getHeader = (h: any, k: string) => typeof h?.get === 'function' ? h.get(k) : (h?.[k.toLowerCase()] || h?.[k]);
+                            const ctype = getHeader(resp.headers, 'content-type') as string | null;
+                            if (!ctype || ctype.includes('image')) {
+                                return true;
+                            }
+                        }
+                    } catch {
+                        // ignore and continue
+                    }
                 }
-            } catch {
-                // Ignore errors during discovery
             }
-            
-            // Small delay to be respectful to the server
-            await new Promise(resolve => setTimeout(resolve, 50));
+            return false;
+        };
+
+        // Level subsets
+        const quickLevels = [13, 12, 11, 10, 9, 8];
+        const detailedLevels = [18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5];
+
+        const quickTestPage = makeTestPage(quickLevels, perPageBudgetQuickMs);
+        const detailedTestPage = makeTestPage(detailedLevels, perPageBudgetDetailedMs);
+
+        // Scan page candidates to bound the range
+        const maxTestPages = 1000;
+        const quickScanPages = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 50, 75, 100, 150, 200, 250, 278, 300];
+        let minFound: number | null = null;
+        let maxFound: number | null = null;
+
+        console.log('[Bordeaux] Quick scan for page availability across levels...');
+        this.devkitLog('bordeaux', '[Bordeaux] Quick scan for page availability across levels...');
+        const quickScanStart = Date.now();
+        const quickResults = await Promise.all(
+            quickScanPages.map(page =>
+                quickTestPage(page)
+                    .then(ok => ({ page, ok }))
+                    .catch(() => ({ page, ok: false }))
+            )
+        );
+        for (const { page, ok } of quickResults) {
+            if (ok) {
+                if (minFound === null || page < minFound) minFound = page;
+                if (maxFound === null || page > maxFound) maxFound = page;
+                console.log(`[Bordeaux] Quick scan: Page ${page} available`);
+                this.devkitLog('bordeaux', `[Bordeaux] Quick scan: Page ${page} available`);
+            }
         }
-        
-        if (!foundAny) {
-            console.log(`[Bordeaux] No pages found in quick scan`);
+        const quickElapsed = Date.now() - quickScanStart;
+        console.log(`[Bordeaux] Quick scan completed in ${Math.round(quickElapsed)}ms`);
+        this.devkitLog('bordeaux', `[Bordeaux] Quick scan completed in ${Math.round(quickElapsed)}ms`);
+
+        if (minFound === null || maxFound === null) {
+            console.log('[Bordeaux] No pages found in quick scan');
+            this.devkitLog('bordeaux', '[Bordeaux] No pages found in quick scan');
             return { firstPage: null, lastPage: null, totalPages: 0, availablePages: [] };
         }
-        
-        console.log(`[Bordeaux] Quick scan found pages between ${minFound ?? 'unknown'} and ${maxFound ?? 'unknown'}`);
-        
-        // Now do a detailed scan in the discovered range
-        const detailedStart = Math?.max(1, (minFound ?? 1) - 5);
-        const detailedEnd = Math?.min(maxTestPages, (maxFound ?? 1) + 10);
-        
-        console.log(`[Bordeaux] Detailed scan from ${detailedStart} to ${detailedEnd}...`);
-        
-        // Process pages in batches for faster discovery
-        const batchSize = 10;
+
+        const detailedStart = Math.max(1, minFound - 5);
+        const detailedEnd = Math.min(maxTestPages, maxFound + 10);
+        console.log(`[Bordeaux] Detailed scan from ${detailedStart} to ${detailedEnd} with multi-level probing...`);
+        this.devkitLog('bordeaux', `[Bordeaux] Detailed scan from ${detailedStart} to ${detailedEnd} with multi-level probing...`);
+
+        const batchSize = 12;
         const totalBatches = Math.ceil((detailedEnd - detailedStart + 1) / batchSize);
         let currentBatch = 0;
-        
+
         for (let batchStart = detailedStart; batchStart <= detailedEnd; batchStart += batchSize) {
+            // Global detailed scan budget
+            if (Date.now() - discoveryStart > quickScanBudgetMs + detailedScanBudgetMs) {
+                console.log('[Bordeaux] Detailed scan budget reached, finishing early');
+                this.devkitLog('bordeaux', '[Bordeaux] Detailed scan budget reached, finishing early');
+                break;
+            }
             const batchEnd = Math.min(batchStart + batchSize - 1, detailedEnd);
             currentBatch++;
-            
-            // Create promises for batch
-            const batchPromises = [];
+            const promises: Promise<number | null>[] = [];
             for (let page = batchStart; page <= batchEnd; page++) {
-                const pageId = `${baseId}_${String(page).padStart(4, '0')}`;
-                const testUrl = `${baseUrl}/${pageId}_files/0/0_0.jpg`;
-                
-                batchPromises.push(
-                    this.fetchUrl(testUrl)
-                        .then(response => response.ok ? page : null)
-                        .catch(() => null)
+                promises.push(
+                    detailedTestPage(page).then(ok => ok ? page : null).catch(() => null)
                 );
             }
-            
-            // Process batch results
-            const batchResults = await Promise.all(batchPromises);
-            for (const page of batchResults) {
-                if (page !== null) {
-                    availablePages.push(page);
-                }
+            const results = await Promise.all(promises);
+            for (const hit of results) {
+                if (hit !== null) availablePages.push(hit);
             }
-            
-            // Progress indication - more detailed for UI responsiveness
             const progressPercent = Math.round((currentBatch / totalBatches) * 100);
-            console.log(`[Bordeaux] Page discovery progress: ${progressPercent}% (batch ${currentBatch}/${totalBatches}, ${availablePages?.length} pages found)`);
-            
-            // Yield control back to event loop more frequently to keep UI responsive
-            if (currentBatch % 3 === 0) {  // Every 3 batches (30 pages)
-                await new Promise(resolve => setImmediate(resolve));
-            }
-            
-            // Smaller delay between batches for better performance
-            await new Promise(resolve => setTimeout(resolve, 25));
+            console.log(`[Bordeaux] Page discovery progress: ${progressPercent}% (batch ${currentBatch}/${totalBatches}, ${availablePages.length} pages found)`);
+            this.devkitLog('bordeaux', `[Bordeaux] Page discovery progress: ${progressPercent}% (batch ${currentBatch}/${totalBatches}, ${availablePages.length} pages found)`);
+            if (currentBatch % 3 === 0) await new Promise(resolve => setImmediate(resolve));
+            await new Promise(resolve => setTimeout(resolve, 10));
         }
-        
-        // Sort pages in case they came back out of order
+
         availablePages.sort((a, b) => a - b);
-        
         const result = {
-            firstPage: availablePages?.length > 0 ? availablePages[0] : null,
-            lastPage: availablePages?.length > 0 ? availablePages[availablePages?.length - 1] : null,
-            totalPages: availablePages?.length,
-            availablePages: availablePages
+            firstPage: availablePages.length > 0 ? availablePages[0] : null,
+            lastPage: availablePages.length > 0 ? availablePages[availablePages.length - 1] : null,
+            totalPages: availablePages.length,
+            availablePages
         };
-        
-        console.log(`[Bordeaux] Page discovery complete: ${result?.totalPages} pages found (${result.firstPage}-${result.lastPage})`);
+        console.log(`[Bordeaux] Page discovery complete: ${result.totalPages} pages found (${result.firstPage}-${result.lastPage})`);
+        this.devkitLog('bordeaux', `[Bordeaux] Page discovery complete: ${result.totalPages} pages found (${result.firstPage}-${result.lastPage})`);
         return result;
     }
 
@@ -3820,6 +3882,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
      */
     async getBordeauxManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string, type?: string, baseId?: number, publicId?: string, startPage?: number, pageCount?: number, tileBaseUrl?: string, requiresTileProcessor?: boolean, tileConfig?: Record<string, unknown>, pageBlocks?: Record<string, unknown> } | ManuscriptImage[]> {
         console.log('[Bordeaux] Processing URL:', url);
+        this.devkitLog('bordeaux', `[Bordeaux] Processing URL: ${url}`);
         
         // Handle both public URLs and direct tile URLs
         let publicId, pageNum, internalId;
@@ -3865,7 +3928,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         console.log('[Bordeaux] Public ID:', publicId, 'Starting page:', pageNum, 'Internal ID:', internalId || 'unknown');
         
         // First, try to fetch the main page to discover the internal tile ID (if not already known)
-        if (!internalId && publicMatch) {
+        // Skip if manuscrits.bordeaux.fr is not resolvable in this environment
+        if (!internalId && publicMatch && !url.includes('manuscrits.bordeaux.fr')) {
             try {
                 const pageResponse = await this.fetchWithRetry(url);
                 if (pageResponse.ok) {
@@ -3900,20 +3964,43 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 console.log('[Bordeaux] Could not fetch main page:', errorMessage);
             }
+        } else if (!internalId && publicMatch && url.includes('manuscrits.bordeaux.fr')) {
+            console.log('[Bordeaux] Skipping manuscrits.bordeaux.fr fetch due to DNS resolution issues in this environment');
+            this.devkitLog('bordeaux', '[Bordeaux] Skipping manuscrits.bordeaux.fr fetch due to DNS issues');
         }
         
         // If we couldn't find the internal ID, try known patterns or direct tile URL
         if (!internalId) {
             // Known mappings (can be expanded)
-            const knownMappings = {
+            const knownMappings: Record<string, string> = {
                 'btv1b52509616g': '330636101_MS0778',
                 '330636101_MS_0778': '330636101_MS0778',
-                'v2b3306361012': '330636101_MS0778',  // Fix for issue with ARK URL
-                // Add more mappings as discovered
+                'v2b3306361012': '330636101_MS0778'
             };
-            
-            internalId = (knownMappings as Record<string, string>)[publicId ?? ''];
-            
+            internalId = knownMappings[publicId ?? ''];
+
+            // Heuristics: normalize common patterns (MS_#### -> MS####, remove extra underscores)
+            if (!internalId && publicId) {
+                const candidates = new Set<string>();
+                candidates.add(publicId);
+                candidates.add(publicId.replace(/MS_([0-9]+)/i, 'MS$1'));
+                candidates.add(publicId.replace(/_/g, ''));
+                candidates.add(publicId.replace(/MS[_-]?0*([0-9]+)/i, 'MS$1'));
+
+                for (const cand of candidates) {
+                    // Try to discover pages with this candidate as baseId
+                    try {
+                        const disc = await this.discoverBordeauxPageRange(cand);
+                        if (disc.totalPages > 0) {
+                            internalId = cand;
+                            break;
+                        }
+                    } catch {
+                        // ignore
+                    }
+                }
+            }
+
             if (!internalId) {
                 // If it's a direct selene.bordeaux.fr URL, extract the ID
                 if (url.includes('selene.bordeaux.fr')) {
@@ -3922,17 +4009,18 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         internalId = seleneMatch[1];
                     }
                 } else {
-                    throw new Error(`Cannot determine tile ID for Bordeaux manuscript: ${publicId}. Please use the direct tile URL from selene.bordeaux.fr if available.`);
+                    throw new Error(`Cannot determine tile ID for Bordeaux manuscript: ${publicId}.`);
                 }
             }
         }
         
         // Extract base ID without page number if present
-        const baseIdMatch = internalId?.match(/^(.+?)(?:_\d{4})?$/);
+        const baseIdMatch = internalId?.match(/^(.+?)(?:_\d{2,4})?$/);
         const baseId = baseIdMatch ? baseIdMatch[1] : internalId;
         
-        // For Bordeaux, discover the actual page range by testing availability
+        // For Bordeaux, discover the actual page range by testing availability (multi-level)
         console.log('[Bordeaux] Discovering actual page range...');
+        this.devkitLog('bordeaux', '[Bordeaux] Discovering actual page range...');
         const pageDiscovery = await this.discoverBordeauxPageRange(baseId!);
         
         let startPage = (typeof pageNum === 'number' ? pageNum : parseInt(pageNum || '0', 10)) || pageDiscovery.firstPage || 1;
@@ -3940,24 +4028,21 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         
         // If user specified a specific page, respect it but use discovered total count
         if (pageNum && pageDiscovery?.totalPages > 0) {
-            startPage = typeof pageNum === 'number' ? pageNum : parseInt(pageNum, 10);
+            startPage = typeof pageNum === 'number' ? pageNum : parseInt(pageNum as unknown as string, 10);
         }
         
         console.log(`[Bordeaux] Discovered ${pageCount} pages, starting from page ${startPage}`);
+        this.devkitLog('bordeaux', `[Bordeaux] Discovered ${pageCount} pages, starting from page ${startPage}`);
         
-        // Generate the images array based on discovered pages
+        // Generate the images array based on discovered pages (provide representative URLs)
         const images: ManuscriptImage[] = [];
         
-        // If we have specific available pages, use them; otherwise generate a range
         if (pageDiscovery.availablePages && pageDiscovery.availablePages?.length > 0) {
-            // Use actual available pages for manuscripts that don't have continuous numbering
-            for (const pageNum of pageDiscovery.availablePages) {
-                const paddedPage = String(pageNum).padStart(4, '0');
-                const imageUrl = `https://selene.bordeaux.fr/in/dz/${baseId}_${paddedPage}_files/13/0_0.jpg`;
-                images.push({
-                    url: imageUrl || '',
-                    label: `Page ${pageNum}`
-                });
+            // Provide representative URLs at a mid-level (actual tiles will be fetched by DirectTileProcessor)
+            for (const pg of pageDiscovery.availablePages) {
+                const padded = String(pg).padStart(4, '0');
+                const imageUrl = `https://selene.bordeaux.fr/in/dz/${baseId}_${padded}_files/10/0_0.jpg`;
+                images.push({ url: imageUrl, label: `Page ${pg}` });
             }
         } else if (pageCount > 0) {
             // Fallback to range-based generation if discovery didn't find specific pages
@@ -3972,6 +4057,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         }
         
         console.log(`[Bordeaux] Generated ${images?.length} image URLs`);
+        this.devkitLog('bordeaux', `[Bordeaux] Generated ${images?.length} image URLs`);
         
         // Return standard images array for compatibility
         return { 
@@ -3979,14 +4065,14 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             displayName: `Bordeaux - ${publicId}`,
             // Keep tile processor info for backward compatibility
             type: 'bordeaux_tiles',
-            baseId: parseInt(baseId!, 10),
+            baseId: baseId!,
             publicId: publicId,
             startPage: startPage,
             pageCount: pageCount,
             tileBaseUrl: 'https://selene.bordeaux.fr/in/dz',
             requiresTileProcessor: true,
             tileConfig: {
-                baseId: baseId,
+                baseId: baseId!,
                 startPage: startPage,
                 pageCount: pageCount,
                 tileBaseUrl: 'https://selene.bordeaux.fr/in/dz',

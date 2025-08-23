@@ -822,36 +822,50 @@ export class EnhancedDownloadQueue extends EventEmitter {
             let manifestMetadata = {};
 
             if (item.isAutoPart && item.downloadOptions?.startPage && item.downloadOptions?.endPage) {
-                // For auto-split parts, we need to slice the pageLinks
                 console.log(`Processing auto-split part: ${item.displayName}`);
                 console.log(`Page range: ${item.downloadOptions.startPage}-${item.downloadOptions.endPage}`);
-                
-                // Load manifest once to get pageLinks
-                const fullManifest = await this.currentDownloader!.loadManifest(item.url);
-                
-                // CRITICAL FIX: Ensure library is properly set on the item before proceeding
-                if (!item.library && fullManifest.library) {
-                    item.library = fullManifest.library as TLibrary;
+
+                if (Array.isArray((item as any).downloadOptions?.pageLinks)) {
+                    // Use pre-sliced links provided at split time (no manifest fetch)
+                    pageLinksToPass = (item as any).downloadOptions.pageLinks as string[];
+                    const preMeta = (item as any).downloadOptions?.preSlicedManifestMeta || {};
+                    manifestMetadata = {
+                        library: preMeta.library || item.library || this.detectLibraryFromUrl(item.url) || 'unknown',
+                        displayName: item.displayName,
+                        totalPages: pageLinksToPass.length,
+                        originalUrl: item.url,
+                        requiresTileProcessor: preMeta.requiresTileProcessor,
+                        tileConfig: preMeta.tileConfig,
+                        pageBlocks: preMeta.pageBlocks,
+                    };
+                } else {
+                    // Load manifest once to get pageLinks
+                    const fullManifest = await this.currentDownloader!.loadManifest(item.url);
+
+                    // CRITICAL FIX: Ensure library is properly set on the item before proceeding
+                    if (!item.library && fullManifest.library) {
+                        item.library = fullManifest.library as TLibrary;
+                    }
+
+                    // Slice the pageLinks for this part
+                    const startIdx = item.downloadOptions.startPage - 1;
+                    const endIdx = item.downloadOptions.endPage;
+                    pageLinksToPass = fullManifest.pageLinks.slice(startIdx, endIdx);
+
+                    console.log(`Sliced ${pageLinksToPass?.length} pages from full manifest (${fullManifest?.totalPages} total)`);
+
+                    // Preserve manifest metadata - ensure library is always defined
+                    manifestMetadata = {
+                        library: fullManifest.library || item.library || this.detectLibraryFromUrl(item.url) || 'unknown',
+                        displayName: item.displayName,
+                        totalPages: pageLinksToPass?.length,
+                        originalUrl: item.url,
+                        // Preserve special processing flags
+                        requiresTileProcessor: fullManifest.requiresTileProcessor,
+                        tileConfig: fullManifest.tileConfig,
+                        pageBlocks: fullManifest.pageBlocks,
+                    };
                 }
-                
-                // Slice the pageLinks for this part
-                const startIdx = item.downloadOptions.startPage - 1;
-                const endIdx = item.downloadOptions.endPage;
-                pageLinksToPass = fullManifest.pageLinks.slice(startIdx, endIdx);
-                
-                console.log(`Sliced ${pageLinksToPass?.length} pages from full manifest (${fullManifest?.totalPages} total)`);
-                
-                // Preserve manifest metadata - ensure library is always defined
-                manifestMetadata = {
-                    library: fullManifest.library || item.library || this.detectLibraryFromUrl(item.url) || 'unknown',
-                    displayName: item.displayName,
-                    totalPages: pageLinksToPass?.length,
-                    originalUrl: item.url,
-                    // Preserve special processing flags
-                    requiresTileProcessor: fullManifest.requiresTileProcessor,
-                    tileConfig: fullManifest.tileConfig,
-                    pageBlocks: fullManifest.pageBlocks,
-                };
             }
 
             // Determine effective concurrency: prefer per-item override, then global, capped by library optimization
@@ -1424,7 +1438,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     manifest.library === 'hhu' ? 0.6 : // Heinrich Heine University
                     manifest.library === 'wolfenbuettel' ? 0.8 : // Wolfenbüttel
                     manifest.library === 'freiburg' ? 0.6 : // Freiburg
-                    manifest.library === 'bordeaux' ? 0.7 : // Bordeaux
+                    // Bordeaux pages are stitched from tiles and are much larger than standard IIIF JPEGs
+                    // Use a conservative estimate to ensure pre-download auto-split kicks in
+                    manifest.library === 'bordeaux' ? 15.0 : // Bordeaux (tile-stitched JPEGs) ~15MB per page
                     manifest.library === 'linz' ? 1.2 : // CRITICAL FIX Issue #37: Linz Library IIIF /full/max/ ~1.2MB
                     manifest.library === 'digital_walters' ? 0.8 : // Digital Walters Art Museum sequential JPEG ~0.8MB
                     manifest.library === 'codices' ? 1.0 : // Admont Codices Library IIIF /full/full/ ~1.0MB (tested: 0.75-1.36MB range)
@@ -1437,10 +1453,17 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 
                 // Get library-specific optimizations directly since item.libraryOptimizations may not be set yet
                 const libraryOpts = LibraryOptimizationService.getOptimizationsForLibrary(manifest.library as TLibrary);
-                const effectiveThreshold = libraryOpts.autoSplitThresholdMB || 
+                let effectiveThreshold = libraryOpts.autoSplitThresholdMB || 
                                          this.state.globalSettings.autoSplitThresholdMB;
+                // Enforce global maximum of 400MB
+                effectiveThreshold = Math.min(effectiveThreshold, 400);
+                // If user configured a hard per-part cap, respect the smaller of the two
+                const userCap = (configService.get('maxPdfPartSizeMB') as number) || 0;
+                if (userCap && userCap > 0) {
+                    effectiveThreshold = Math.min(effectiveThreshold, userCap);
+                }
                 
-                console.log(`${manifest.library} size check: ${estimatedTotalSizeMB}MB vs threshold ${effectiveThreshold}MB`);
+                console.log(`${manifest.library} size check: ${estimatedTotalSizeMB}MB vs threshold ${effectiveThreshold}MB (user cap: ${userCap || 'none'})`);
                 
                 if (estimatedTotalSizeMB > effectiveThreshold) {
                     console.log(`${manifest.library} manuscript exceeds threshold, splitting into parts`);
@@ -1597,8 +1620,15 @@ export class EnhancedDownloadQueue extends EventEmitter {
             item.estimatedSizeMB = estimatedTotalSizeMB;
             
             // Get library-specific threshold or use global
-            const effectiveThreshold = item.libraryOptimizations?.autoSplitThresholdMB || 
+            let effectiveThreshold = item.libraryOptimizations?.autoSplitThresholdMB || 
                                      this.state.globalSettings.autoSplitThresholdMB;
+            // Enforce global maximum of 400MB
+            effectiveThreshold = Math.min(effectiveThreshold, 400);
+            // Apply user hard cap if set
+            const userCap = (configService.get('maxPdfPartSizeMB') as number) || 0;
+            if (userCap && userCap > 0) {
+                effectiveThreshold = Math.min(effectiveThreshold, userCap);
+            }
             
             if (estimatedTotalSizeMB > effectiveThreshold) {
                 if (manifest) {
@@ -1628,13 +1658,17 @@ export class EnhancedDownloadQueue extends EventEmitter {
         manifest: { totalPages?: number; library?: string; title?: string; displayName?: string }, 
         estimatedSizeMB: number
     ): Promise<void> {
-        const thresholdMB = this.state.globalSettings.autoSplitThresholdMB;
+        // Determine effective threshold in MB, honoring user hard cap if present
+        let thresholdMB = this.state.globalSettings.autoSplitThresholdMB;
+        const userCap = (configService.get('maxPdfPartSizeMB') as number) || 0;
+        if (userCap && userCap > 0) {
+            thresholdMB = Math.min(thresholdMB, userCap);
+        }
         const totalPages = manifest?.totalPages || 0;
-        const avgPageSizeMB = estimatedSizeMB / totalPages;
         
-        // Calculate pages per part to stay under threshold
-        const pagesPerPart = Math.floor(thresholdMB / avgPageSizeMB);
-        const numberOfParts = Math.ceil(totalPages / pagesPerPart);
+        // Calculate number of parts based on total estimated size vs. threshold, then derive pages per part
+        const numberOfParts = Math.max(1, Math.ceil(estimatedSizeMB / thresholdMB));
+        const pagesPerPart = Math.max(1, Math.ceil(totalPages / numberOfParts));
         
         // Remove original item from queue
         const originalIndex = this.state.items.findIndex(item => item.id === originalItem.id);
@@ -1642,6 +1676,35 @@ export class EnhancedDownloadQueue extends EventEmitter {
             this.state.items.splice(originalIndex, 1);
         }
         
+        // Prefer using the provided manifest's pageLinks to avoid a second manifest load
+        let allPageLinks: string[] | null = null;
+        let preSlicedManifestMeta: any = null;
+        if ((manifest as any)?.pageLinks && Array.isArray((manifest as any).pageLinks)) {
+            allPageLinks = (manifest as any).pageLinks as string[];
+            preSlicedManifestMeta = {
+                requiresTileProcessor: (manifest as any).requiresTileProcessor,
+                tileConfig: (manifest as any).tileConfig,
+                pageBlocks: (manifest as any).pageBlocks,
+                library: (manifest as any).library,
+            };
+        } else {
+            try {
+                const fullManifestForSlicing = await this.currentDownloader!.loadManifest(originalItem.url);
+                if (fullManifestForSlicing?.pageLinks && Array.isArray(fullManifestForSlicing.pageLinks)) {
+                    allPageLinks = fullManifestForSlicing.pageLinks as unknown as string[];
+                    // Capture tile-related and library metadata to preserve behavior without re-fetching manifests later
+                    preSlicedManifestMeta = {
+                        requiresTileProcessor: (fullManifestForSlicing as any).requiresTileProcessor,
+                        tileConfig: (fullManifestForSlicing as any).tileConfig,
+                        pageBlocks: (fullManifestForSlicing as any).pageBlocks,
+                        library: (fullManifestForSlicing as any).library,
+                    };
+                }
+            } catch (e) {
+                console.warn('Failed to pre-load manifest for pageLinks; parts will slice at download time:', (e as Error)?.message);
+            }
+        }
+
         // Create parts
         for (let i = 0; i < (numberOfParts || 0); i++) {
             const startPage = i * pagesPerPart + 1;
@@ -1653,6 +1716,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 console.warn(`Skipping part ${partNumber}: startPage ${startPage} exceeds totalPages ${totalPages}`);
                 continue;
             }
+            
+            // If we have all page links, slice now so we don't fetch manifest again later
+            const preSlicedLinks = allPageLinks ? allPageLinks.slice(startPage - 1, endPage) : undefined;
             
             const partId = `${originalItem.id}_part_${partNumber}`;
             const partItem = {
@@ -1672,6 +1738,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     concurrentDownloads: originalItem.downloadOptions?.concurrentDownloads || 3,
                     startPage,
                     endPage,
+                    ...(preSlicedLinks ? { pageLinks: preSlicedLinks, preSlicedManifestMeta } : {})
                 },
                 estimatedSizeMB, // Store size estimate for reactive splitting
                 progress: undefined,
@@ -1938,50 +2005,21 @@ export class EnhancedDownloadQueue extends EventEmitter {
         }
     }
 
-    // Simultaneous download methods
-    setSimultaneousMode(mode: TSimultaneousMode, maxCount?: number): void {
-        this.state.globalSettings.simultaneousMode = mode;
-        if (maxCount !== undefined) {
-            this.state.globalSettings.maxSimultaneousDownloads = Math.max(1, Math.min(maxCount, 10));
-        }
+    // Simultaneous download methods removed; force sequential mode
+    setSimultaneousMode(_mode: TSimultaneousMode, _maxCount?: number): void {
+        // Always enforce sequential mode in global settings
+        this.state.globalSettings.simultaneousMode = 'sequential';
+        this.state.globalSettings.maxSimultaneousDownloads = 1;
         this.saveToStorage();
         this.notifyListeners();
     }
 
     async startAllSimultaneous(): Promise<void> {
+        // Start sequential processing instead
+        await this.startProcessing();
+        return;
         
-        if (this.state.isProcessing) {
-            return;
-        }
-        
-        const pendingItems = this.state.items.filter(item => 
-            item.status === 'pending' || item.status === 'loading'
-        );
-        
-        
-        if (pendingItems?.length === 0) {
-            return;
-        }
-        
-        this.state.isProcessing = true;
-        this.state.isPaused = false;
-        this.state.activeItemIds = [];
-        this.processingAbortController = new AbortController();
-        this.notifyListeners();
-        
-        try {
-            // Start initial batch simultaneously
-            const maxConcurrent = this.state.globalSettings.maxSimultaneousDownloads;
-            const itemsToStart = pendingItems.slice(0, maxConcurrent);
-            
-            console.log(`[Queue] Starting ${itemsToStart?.length} items simultaneously${pendingItems?.length > maxConcurrent ? ` (${pendingItems?.length - maxConcurrent} more will start as slots free up)` : ''}`);
-            
-            // Start all items concurrently - fire and forget (don't wait for completion)
-            itemsToStart.forEach(item => {
-                this.processItemConcurrently(item).catch(error => {
-                    console.error(`Error processing item ${item.id}:`, error);
-                });
-            });
+        // unreachable legacy code retained for reference but not used
             
             // Start queue monitor to auto-start remaining items
             this.startQueueMonitor();
@@ -2148,36 +2186,49 @@ export class EnhancedDownloadQueue extends EventEmitter {
             let manifestMetadata = {};
 
             if (item.isAutoPart && item.downloadOptions?.startPage && item.downloadOptions?.endPage) {
-                // For auto-split parts, we need to slice the pageLinks
                 console.log(`Processing auto-split part: ${item.displayName}`);
                 console.log(`Page range: ${item.downloadOptions.startPage}-${item.downloadOptions.endPage}`);
-                
-                // Load manifest once to get pageLinks
-                const fullManifest = await downloader.loadManifest(item.url);
-                
-                // CRITICAL FIX: Ensure library is properly set on the item before proceeding
-                if (!item.library && fullManifest.library) {
-                    item.library = fullManifest.library as TLibrary;
+
+                if (Array.isArray((item as any).downloadOptions?.pageLinks)) {
+                    // Pre-sliced links available: skip manifest fetch
+                    pageLinksToPass = (item as any).downloadOptions.pageLinks as string[];
+                    const preMeta = (item as any).downloadOptions?.preSlicedManifestMeta || {};
+                    manifestMetadata = {
+                        library: preMeta.library || item.library || this.detectLibraryFromUrl(item.url) || 'unknown',
+                        displayName: item.displayName,
+                        totalPages: pageLinksToPass.length,
+                        originalUrl: item.url,
+                        requiresTileProcessor: preMeta.requiresTileProcessor,
+                        tileConfig: preMeta.tileConfig,
+                        pageBlocks: preMeta.pageBlocks,
+                    };
+                } else {
+                    // Load manifest to slice
+                    const fullManifest = await downloader.loadManifest(item.url);
+
+                    // Ensure library set
+                    if (!item.library && fullManifest.library) {
+                        item.library = fullManifest.library as TLibrary;
+                    }
+
+                    // Slice
+                    const startIdx = item.downloadOptions.startPage - 1;
+                    const endIdx = item.downloadOptions.endPage;
+                    pageLinksToPass = fullManifest.pageLinks.slice(startIdx, endIdx);
+
+                    console.log(`Sliced ${pageLinksToPass?.length} pages from full manifest (${fullManifest?.totalPages} total)`);
+
+                    // Metadata
+                    manifestMetadata = {
+                        library: fullManifest.library || item.library || this.detectLibraryFromUrl(item.url) || 'unknown',
+                        displayName: item.displayName,
+                        totalPages: pageLinksToPass?.length,
+                        originalUrl: item.url,
+                        requiresTileProcessor: fullManifest.requiresTileProcessor,
+                        tileConfig: fullManifest.tileConfig,
+                        pageBlocks: fullManifest.pageBlocks,
+                    };
                 }
-                
-                // Slice the pageLinks for this part
-                const startIdx = item.downloadOptions.startPage - 1;
-                const endIdx = item.downloadOptions.endPage;
-                pageLinksToPass = fullManifest.pageLinks.slice(startIdx, endIdx);
-                
-                console.log(`Sliced ${pageLinksToPass?.length} pages from full manifest (${fullManifest?.totalPages} total)`);
-                
-                // Preserve manifest metadata - ensure library is always defined
-                manifestMetadata = {
-                    library: fullManifest.library || item.library || this.detectLibraryFromUrl(item.url) || 'unknown',
-                    displayName: item.displayName,
-                    totalPages: pageLinksToPass?.length,
-                    originalUrl: item.url,
-                    // Preserve special processing flags
-                    requiresTileProcessor: fullManifest.requiresTileProcessor,
-                    tileConfig: fullManifest.tileConfig,
-                    pageBlocks: fullManifest.pageBlocks,
-                };
             }
 
             // Determine effective concurrency: prefer per-item override, then global, capped by library optimization

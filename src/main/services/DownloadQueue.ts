@@ -239,22 +239,20 @@ export class DownloadQueue extends EventEmitter {
         this.recalculateAutoSplits();
     }
     
-    // Simultaneous download methods
-    setSimultaneousMode(mode: TSimultaneousMode, maxCount?: number): void {
-        this.state.globalSettings.simultaneousMode = mode;
-        if (maxCount !== undefined) {
-            this.state.globalSettings.maxSimultaneousDownloads = Math.max(1, Math.min(maxCount, 10));
-        }
+    // Simultaneous download methods removed; enforce sequential mode
+    setSimultaneousMode(_mode: TSimultaneousMode, _maxCount?: number): void {
+        this.state.globalSettings.simultaneousMode = 'sequential';
+        this.state.globalSettings.maxSimultaneousDownloads = 1;
         this.saveToStorage();
         this.notifyListeners();
     }
     
     async startAllSimultaneous(): Promise<void> {
-        if (this.state.isProcessing) return;
+        // Fallback to sequential start
+        await this.startProcessing();
+        return;
         
-        const pendingItems = this.state.items.filter(item => 
-            item.status === 'pending' || item.status === 'loading'
-        );
+        // legacy unreachable code
         
         if (pendingItems?.length === 0) return;
         

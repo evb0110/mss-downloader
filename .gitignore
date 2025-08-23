@@ -110,3 +110,6 @@ dev-cert.p12
 .dev-pid
 .dev-headless-pid
 .test-pid
+
+# Devkit logs
+.devkit/logs/

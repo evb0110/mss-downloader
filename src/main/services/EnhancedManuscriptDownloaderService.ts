@@ -97,6 +97,9 @@ interface DownloadOptions {
     library?: string;
     totalPages?: number;
     queueItem?: QueuedManuscript;
+    // Pass-through flags for tile-based libraries (e.g., Bordeaux)
+    requiresTileProcessor?: boolean;
+    tileConfig?: TileConfig;
 }
 
 interface TileConfig {
@@ -841,8 +844,8 @@ export class EnhancedManuscriptDownloaderService {
         },
         {
             name: 'Rouen Municipal Library',
-            example: 'https://www.rotomagus.fr/ark:/12148/btv1b10052442z/f1.item.zoom',
-            description: 'Bibliothèque municipale de Rouen digital manuscript collections with high-resolution access',
+            example: 'https://www.rotomagus.fr/',
+            description: 'Bibliothèque municipale de Rouen digital manuscript collections with high-resolution access (use ark:/12148/<id>/f1.item.zoom pages) ',
         },
         {
             name: 'University of Freiburg',
@@ -861,7 +864,7 @@ export class EnhancedManuscriptDownloaderService {
         },
         {
             name: 'Bordeaux Bibliothèques',
-            example: 'https://manuscrits.bordeaux.fr/ark:/26678/btv1b52509616g/f13.item.zoom',
+            example: 'https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778',
             description: 'Bordeaux Libraries digital manuscripts using Deep Zoom Image (DZI) tile technology for ultra-high resolution',
         },
         {
@@ -2933,6 +2936,8 @@ export class EnhancedManuscriptDownloaderService {
             library,
             totalPages,
             queueItem,
+            requiresTileProcessor,
+            tileConfig: optTileConfig,
         } = options;
 
         const downloadStartTime = Date.now();
@@ -2956,8 +2961,9 @@ export class EnhancedManuscriptDownloaderService {
                     originalUrl: url,
                     // Preserve any special metadata from queueItem
                     ...(queueItem?.partInfo ? { partInfo: queueItem.partInfo } : {}),
-                    ...(queueItem?.tileConfig ? { tileConfig: queueItem.tileConfig } : {}),
-                    ...(queueItem?.requiresTileProcessor ? { requiresTileProcessor: queueItem.requiresTileProcessor } : {}),
+                    // Carry tile processing flags either from queueItem or from options provided by queue
+                    ...(queueItem?.tileConfig ? { tileConfig: queueItem.tileConfig } : (optTileConfig ? { tileConfig: optTileConfig } : {})),
+                    ...(queueItem?.requiresTileProcessor !== undefined ? { requiresTileProcessor: queueItem.requiresTileProcessor } : (requiresTileProcessor !== undefined ? { requiresTileProcessor } : {})),
                 } as ManuscriptManifest;
                 const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
                 if (DEBUG_LOGS) console.log(`Using pre-sliced pageLinks for ${displayName}: ${pageLinks.length} pages`);
@@ -3025,19 +3031,20 @@ export class EnhancedManuscriptDownloaderService {
                 globalMaxConcurrent,
                 manifestLibrary
             );
-
+            
             // Use library-specific or global split threshold
-            // This respects user's configured split size (30MB, 100MB, etc)
+            // Prefer queue item's effective threshold if provided (reflects UI/queue settings)
             const autoSplitThresholdMB = optimizations.autoSplitThresholdMB;
-
+            const effectiveAutoSplitMB = (options.queueItem?.libraryOptimizations?.autoSplitThresholdMB ?? autoSplitThresholdMB) || autoSplitThresholdMB;
+            
             // Estimate average page size (conservative estimate: 500KB per page for high-quality images)
             // This is based on typical manuscript page sizes at high resolution
             const estimatedTotalSizeMB = (totalPagesToDownload * 0.5);
-
+            
             // Determine if we need to split the PDF based on estimated size
             // Fixed: Was hardcoded to 1000 pages, now uses actual MB threshold
-            const shouldSplit = estimatedTotalSizeMB > autoSplitThresholdMB;
-            const maxPagesPerPart = Math.ceil((autoSplitThresholdMB * 2) / 1); // Pages per part based on threshold (assuming ~0.5MB per page)
+            const shouldSplit = estimatedTotalSizeMB > effectiveAutoSplitMB;
+            const maxPagesPerPart = Math.ceil((effectiveAutoSplitMB * 2) / 1); // Pages per part based on threshold (assuming ~0.5MB per page)
 
             let filename: string;
             let filepath: string;
@@ -3089,27 +3096,58 @@ export class EnhancedManuscriptDownloaderService {
             const startTime = Date.now();
             let completedPages = 0;
 
-            const updateProgress = () => {
-                const progress = completedPages / totalPagesToDownload;
-                const elapsed = (Date.now() - startTime) / 1000;
-                const rate = completedPages / elapsed;
-                const eta = rate > 0 ? Math.round((totalPagesToDownload - completedPages) / rate) : 0;
+            // Throttled, monotonic UI progress emitter to avoid jitter and UI flooding
+            const uiThrottleMs = Number(configService.get('progressUpdateThrottleMs') || 400);
+            let lastUiEmitTime = 0;
+            let lastDisplayedPercent = 0; // in 0..100 range
+            let lastDisplayedEta = 0; // seconds, smoothed
+            let lastEmittedDownloadedPages = 0;
+
+            const emitProgress = (force: boolean = false) => {
+                const now = Date.now();
+                const total = totalPagesToDownload || 1;
+                const downloaded = Math.max(0, Math.min(total, completedPages));
+
+                // Compute percentage based solely on completed pages to avoid flicker from in-page tile updates
+                const rawPercentage = (downloaded / total) * 100;
+                // Floor to two decimals to ensure monotonic non-decreasing display
+                const flooredTwoDecimal = Math.floor(rawPercentage * 100) / 100;
+                const nextDisplayedPercent = Math.max(lastDisplayedPercent, flooredTwoDecimal);
+
+                // Compute ETA using page-level rate
+                const elapsed = Math.max(0.001, (now - startTime) / 1000);
+                const ratePagesPerSec = downloaded / elapsed;
+                const instantaneousEta = ratePagesPerSec > 0 ? Math.round((total - downloaded) / ratePagesPerSec) : 0;
+                // Smooth ETA with simple EMA to reduce oscillation
+                lastDisplayedEta = lastDisplayedEta > 0 ? Math.round(0.7 * lastDisplayedEta + 0.3 * instantaneousEta) : instantaneousEta;
+
+                const shouldEmit = force ||
+                    (now - lastUiEmitTime) >= uiThrottleMs ||
+                    downloaded !== lastEmittedDownloadedPages ||
+                    (nextDisplayedPercent - lastDisplayedPercent) >= 0.5; // Emit on noticeable +0.5% increments
+
+                if (!shouldEmit) return;
+
+                lastUiEmitTime = now;
+                lastDisplayedPercent = nextDisplayedPercent;
+                lastEmittedDownloadedPages = downloaded;
+
                 onProgress({
-                    totalPages: totalPagesToDownload,
-                    downloadedPages: completedPages,
-                    currentPage: completedPages,
-                    totalImages: totalPagesToDownload,
-                    downloadedImages: completedPages,
-                    currentImageIndex: completedPages,
-                    pagesProcessed: completedPages,
-                    percentage: progress * 100,
-                    progress: progress,
+                    totalPages: total,
+                    downloadedPages: downloaded,
+                    currentPage: downloaded, // legacy field behavior retained
+                    totalImages: total,
+                    downloadedImages: downloaded,
+                    currentImageIndex: downloaded,
+                    pagesProcessed: downloaded,
+                    percentage: lastDisplayedPercent,
+                    progress: lastDisplayedPercent / 100,
                     elapsedTime: elapsed,
-                    estimatedTimeRemaining: eta,
-                    eta: eta,
+                    estimatedTimeRemaining: lastDisplayedEta,
+                    eta: lastDisplayedEta,
                     bytesDownloaded: 0,
                     bytesTotal: 0,
-                    downloadSpeed: rate
+                    downloadSpeed: ratePagesPerSec
                 });
             };
 
@@ -3153,7 +3191,7 @@ export class EnhancedManuscriptDownloaderService {
                     console?.error(`Page index ${pageIndex + 1} (manifest index ${manifestIndex}) is out of bounds for manifest with ${manifest?.pageLinks?.length ?? 0} pages`);
                     failedPages.push(pageIndex + 1);
                     completedPages++;
-                    updateProgress();
+                    emitProgress(false);
                     return;
                 }
 
@@ -3163,7 +3201,7 @@ export class EnhancedManuscriptDownloaderService {
                 if (!imageUrl || imageUrl === '') {
                     console.warn(`Skipping missing page ${pageIndex + 1}`);
                     completedPages++;
-                    updateProgress();
+                    emitProgress(false);
                     return;
                 }
 
@@ -3179,7 +3217,7 @@ export class EnhancedManuscriptDownloaderService {
                         const relativeIndex = pageIndex - (actualStartPage - 1);
                         imagePaths[relativeIndex] = imgPath;
                         completedPages++;
-                        updateProgress();
+                        emitProgress(false);
                         return;
                     } catch {
                         // Use DirectTileProcessor for Bordeaux
@@ -3189,32 +3227,9 @@ export class EnhancedManuscriptDownloaderService {
                             console.log(`[Bordeaux] Processing page ${pageNum} using DirectTileProcessor`);
 
                             // Create a progress callback for tile downloads
-                            const tileProgressCallback = (tilesDownloaded: number, totalTiles: number) => {
-                                // Calculate sub-progress within this page
-                                const pageProgress = tilesDownloaded / totalTiles;
-                                const overallProgress = (completedPages + pageProgress) / totalPagesToDownload;
-
-                                const elapsed = (Date.now() - startTime) / 1000;
-                                const rate = (completedPages + pageProgress) / elapsed;
-                                const eta = rate > 0 ? Math.round((totalPagesToDownload - completedPages - pageProgress) / rate) : 0;
-
-                                onProgress({
-                                    totalPages: totalPagesToDownload,
-                                    downloadedPages: completedPages,
-                                    currentPage: pageIndex + 1,
-                                    totalImages: totalTiles,
-                                    downloadedImages: tilesDownloaded,
-                                    currentImageIndex: tilesDownloaded,
-                                    pagesProcessed: completedPages,
-                                    percentage: overallProgress * 100,
-                                    progress: overallProgress,
-                                    elapsedTime: elapsed,
-                                    estimatedTimeRemaining: eta,
-                                    eta: eta,
-                                    bytesDownloaded: 0,
-                                    bytesTotal: 0,
-                                    downloadSpeed: rate
-                                });
+                            const tileProgressCallback = (_tilesDownloaded: number, _totalTiles: number) => {
+                                // Throttled monotonic progress emission (page-level only)
+                                emitProgress(false);
                             };
 
                             const result = await this.directTileProcessor.processPage(
@@ -3229,7 +3244,7 @@ export class EnhancedManuscriptDownloaderService {
                         const relativeIndex = pageIndex - (actualStartPage - 1);
                         imagePaths[relativeIndex] = imgPath;
                                 completedPages++;
-                                updateProgress();
+                                emitProgress(false);
                                 console.log(`[Bordeaux] Successfully processed page ${pageNum}`);
                             } else {
                                 console.error(`[Bordeaux] Failed to process page ${pageNum}: ${result.error}`);
@@ -3257,7 +3272,7 @@ export class EnhancedManuscriptDownloaderService {
                         const relativeIndex = pageIndex - (actualStartPage - 1);
                         imagePaths[relativeIndex] = imgPath;
                         completedPages++;
-                        updateProgress();
+                        emitProgress(false);
                         return;
                     } catch {
                         // Not present: download using tile engine
@@ -3266,30 +3281,9 @@ export class EnhancedManuscriptDownloaderService {
                             if (DEBUG_LOGS) console.log(`Downloading tile-based page ${pageIndex + 1} from ${imageUrl}`);
 
                             const tileCallbacks = this.tileEngineService.createProgressCallback(
-                                (progress) => {
-                                    // Update progress with tile download info
-                                    const tileProgress = completedPages + ((progress as Record<string, unknown>)['percentage'] as number / 100);
-                                    const elapsed = (Date.now() - startTime) / 1000;
-                                    const rate = tileProgress / elapsed;
-                                    const eta = rate > 0 ? Math.round((totalPagesToDownload - tileProgress) / rate) : 0;
-
-                                    onProgress({
-                                        progress: tileProgress / totalPagesToDownload,
-                                        totalPages: totalPagesToDownload,
-                                        downloadedPages: Math.floor(tileProgress),
-                                        currentPage: pageIndex + 1,
-                                        totalImages: totalPagesToDownload,
-                                        downloadedImages: Math.floor(tileProgress),
-                                        currentImageIndex: Math.floor(tileProgress),
-                                        pagesProcessed: Math.floor(tileProgress),
-                                        percentage: (tileProgress / totalPagesToDownload) * 100,
-                                        elapsedTime: elapsed,
-                                        estimatedTimeRemaining: eta,
-                                        eta: eta,
-                                        bytesDownloaded: 0,
-                                        bytesTotal: 0,
-                                        downloadSpeed: rate
-                                    });
+                                (_progress) => {
+                                    // Throttled monotonic progress emission (page-level only)
+                                    emitProgress(false);
                                 },
                                 (status) => {
                                     console.log(`Tile download status: ${status['phase']} - ${status['message']}`);
@@ -3319,7 +3313,7 @@ export class EnhancedManuscriptDownloaderService {
                         }
                     }
 
-                    updateProgress();
+                    emitProgress(false);
                     return;
                 }
 
@@ -3349,19 +3343,19 @@ export class EnhancedManuscriptDownloaderService {
                             } else {
                                 console.warn(`No image found for lazy-loaded page ${pageNum}`);
                                 completedPages++;
-                                updateProgress();
+                                emitProgress(false);
                                 return;
                             }
                         } else {
                             console.warn(`Failed to fetch lazy page ${pageNum}: HTTP ${pageResponse.status}`);
                             completedPages++;
-                            updateProgress();
+                            emitProgress(false);
                             return;
                         }
                     } catch (error: unknown) {
                         console.error(`Failed to fetch lazy page ${pageNum}: ${(error as Error).message}`);
                         completedPages++;
-                        updateProgress();
+                        emitProgress(false);
                         return;
                     }
                 }
@@ -3443,7 +3437,7 @@ export class EnhancedManuscriptDownloaderService {
                     // Don't mark path for failed downloads
                     // Don't increment completedPages for failures
                 }
-                updateProgress();
+                emitProgress(false);
             };
 
             // Download pages with proper concurrency control
@@ -3462,7 +3456,8 @@ export class EnhancedManuscriptDownloaderService {
             // Wait for all file writes to complete before processing
             await Promise.all(writePromises);
 
-            // Ensure final progress update
+            // Ensure final progress update (forced)
+            emitProgress(true);
             onProgress({
                 totalPages: totalPagesToDownload,
                 downloadedPages: totalPagesToDownload,
@@ -3571,30 +3566,69 @@ export class EnhancedManuscriptDownloaderService {
                 targetDir
             );
 
-            if (shouldSplit) {
-                // Split into multiple PDFs like barsky.club
-                const totalParts = Math.ceil(completeImagePaths.length / maxPagesPerPart);
+            // Build parts by actual file sizes to enforce a hard cap per PDF part
+            // Respects either:
+            // - maxPdfPartSizeMB (new explicit cap), or
+            // - effectiveAutoSplitMB (queue/config threshold), or
+            // falls back to 100MB if neither is set
+            const maxPartSizeMB = Number(configService.get('maxPdfPartSizeMB') || effectiveAutoSplitMB || 100);
+            console.log(`[PDF Split] Using max part size cap: ${maxPartSizeMB} MB (queue cap=${options.queueItem?.libraryOptimizations?.autoSplitThresholdMB ?? 'n/a'}, config cap=${autoSplitThresholdMB ?? 'n/a'})`);
+            const maxPartBytes = Math.max(1, Math.floor(maxPartSizeMB * 1024 * 1024));
+
+            // Compute per-page sizes (missing pages assumed negligible)
+            const pageSizes: number[] = [];
+            for (let i = 0; i < completeImagePaths.length; i++) {
+                const p = completeImagePaths[i];
+                if (p) {
+                    try {
+                        const st = await fs.stat(p);
+                        pageSizes[i] = st.size;
+                    } catch {
+                        pageSizes[i] = 0;
+                    }
+                } else {
+                    // Blank page placeholder rendered in PDF is small; treat as 0 here
+                    pageSizes[i] = 0;
+                }
+            }
+
+            // Group images into parts such that sum(part) <= maxPartBytes (greedy, preserving order)
+            type Part = { startIdx: number; endIdx: number; images: (string | null)[] };
+            const parts: Part[] = [];
+            let partStart = 0;
+            let acc = 0;
+            for (let i = 0; i < completeImagePaths.length; i++) {
+                const sz = pageSizes[i] || 0;
+                const wouldExceed = acc > 0 && (acc + sz) > maxPartBytes;
+                if (wouldExceed) {
+                    parts.push({ startIdx: partStart, endIdx: i, images: completeImagePaths.slice(partStart, i) });
+                    partStart = i;
+                    acc = 0;
+                }
+                acc += sz;
+            }
+            // Push the last part (even if empty sizes)
+            if (partStart < completeImagePaths.length) {
+                parts.push({ startIdx: partStart, endIdx: completeImagePaths.length, images: completeImagePaths.slice(partStart) });
+            }
+
+            // If only one part and below cap, write a single PDF; otherwise, write multiple
+            if (parts.length > 1) {
                 const createdFiles: string[] = [];
-
-                for (let partIndex = 0; partIndex < totalParts; partIndex++) {
-                    const startIdx = partIndex * maxPagesPerPart;
-                    const endIdx = Math.min(startIdx + maxPagesPerPart, completeImagePaths.length);
-                    const partImages = completeImagePaths.slice(startIdx, endIdx);
-
+                for (let partIndex = 0; partIndex < parts.length; partIndex++) {
+                    const { startIdx, images } = parts[partIndex];
                     const partNumber = String(partIndex + 1).padStart(2, '0');
                     const partFilename = `${sanitizedName}_part_${partNumber}.pdf`;
                     const partFilepath = path.join(targetDir, partFilename);
 
                     const partStartPage = actualStartPage + startIdx;
                     try {
-                        // BNE and BDL may provide PDFs, not images - use PDF merger instead
-                        // Check if any of the files are PDFs
-                        const hasPDFs = partImages.some(img => img && img.toLowerCase().endsWith('.pdf'));
-                        
+                        // If any files in this slice are PDFs, merge; otherwise convert images
+                        const hasPDFs = images.some(img => img && img.toLowerCase().endsWith('.pdf'));
                         if ((manifest as any)?.library === 'bne' || hasPDFs) {
-                            await this.mergePDFPages(partImages, partFilepath, partStartPage, manifest);
+                            await this.mergePDFPages(images, partFilepath, partStartPage, manifest);
                         } else {
-                            await this.convertImagesToPDFWithBlanks(partImages, partFilepath, partStartPage, manifest);
+                            await this.convertImagesToPDFWithBlanks(images, partFilepath, partStartPage, manifest);
                         }
                         createdFiles.push(partFilepath);
                     } catch (pdfError: unknown) {
@@ -3602,7 +3636,7 @@ export class EnhancedManuscriptDownloaderService {
                         console.error(`Failed to create PDF part ${partNumber}: ${errorMessage}`);
                         this.logger.logPdfCreationError(manifest.library || 'unknown', pdfError as Error, {
                             partNumber,
-                            imagesInPart: partImages.length,
+                            imagesInPart: images.length,
                             outputPath: partFilepath
                         });
                         throw new Error(`PDF creation failed for part ${partNumber}: ${errorMessage}`);
@@ -3628,18 +3662,16 @@ export class EnhancedManuscriptDownloaderService {
                     downloadDuration
                 );
 
-                return createdFiles[0] || ''; // Return first part as primary filepath
+                return createdFiles[0] || '';
             } else {
                 // Single PDF
                 try {
-                    // BNE and BDL may provide PDFs, not images - use PDF merger instead
-                    // Check if any of the files are PDFs
-                    const hasPDFs = completeImagePaths.some(img => img && img.toLowerCase().endsWith('.pdf'));
-                    
+                    const onlyPart = parts[0]?.images || completeImagePaths;
+                    const hasPDFs = onlyPart.some(img => img && img.toLowerCase().endsWith('.pdf'));
                     if ((manifest as any)?.library === 'bne' || hasPDFs) {
-                        await this.mergePDFPages(completeImagePaths, filepath, actualStartPage, manifest);
+                        await this.mergePDFPages(onlyPart, filepath, actualStartPage, manifest);
                     } else {
-                        await this.convertImagesToPDFWithBlanks(completeImagePaths, filepath, actualStartPage, manifest);
+                        await this.convertImagesToPDFWithBlanks(onlyPart, filepath, actualStartPage, manifest);
                     }
                 } catch (pdfError: unknown) {
                     const errorMessage = pdfError instanceof Error ? pdfError.message : String(pdfError);
@@ -3664,15 +3696,12 @@ export class EnhancedManuscriptDownloaderService {
                 const downloadDuration = Date.now() - downloadStartTime;
                 const stats = await fs.stat(filepath);
                 context.actualSizeMB = stats.size / (1024 * 1024);
-                
                 const metrics: PerformanceMetrics = {
                     duration: downloadDuration,
                     speedMbps: context.actualSizeMB ? (context.actualSizeMB / (downloadDuration / 1000)) : undefined
                 };
-                
                 enhancedLogger.logDownloadSuccess(context, metrics, filepath);
-
-                return filepath; // Return the created PDF filepath
+                return filepath;
             }
 
         } catch (error: unknown) {

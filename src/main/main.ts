@@ -12,7 +12,7 @@ import { NegativeConverterService } from './services/NegativeConverterService';
 import { DownloadLogger } from './services/DownloadLogger';
 import { VersionMigrationService } from './services/VersionMigrationService';
 import { comprehensiveLogger } from './services/ComprehensiveLogger';
-import type { QueuedManuscript, QueueState, TSimultaneousMode } from '../shared/queueTypes';
+import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
 import type { ConversionSettings } from './services/NegativeConverterService';
 
 // __dirname is available in CommonJS
@@ -1069,39 +1069,6 @@ ipcMain.handle('queue-update-item', async (_event, id: string, updates: Partial<
   return enhancedDownloadQueue.updateItem(id, updates);
 });
 
-// Simultaneous download handlers
-ipcMain.handle('queue-start-all-simultaneous', async () => {
-  if (!enhancedDownloadQueue) {
-    throw new Error('Enhanced download queue not initialized');
-  }
-  return enhancedDownloadQueue.startAllSimultaneous();
-});
-
-ipcMain.handle('queue-start-item-individual', async (_event, id: string) => {
-  if (!enhancedDownloadQueue) {
-    throw new Error('Enhanced download queue not initialized');
-  }
-  return enhancedDownloadQueue.startItemIndividually(id);
-});
-
-ipcMain.handle('queue-set-simultaneous-mode', async (_event, mode: string, maxCount?: number) => {
-  if (!enhancedDownloadQueue) {
-    throw new Error('Enhanced download queue not initialized');
-  }
-  enhancedDownloadQueue.setSimultaneousMode(mode as TSimultaneousMode, maxCount);
-});
-
-ipcMain.handle('queue-get-simultaneous-state', async () => {
-  if (!enhancedDownloadQueue) {
-    throw new Error('Enhanced download queue not initialized');
-  }
-  const state = enhancedDownloadQueue.getState();
-  return {
-    simultaneousMode: state.globalSettings.simultaneousMode,
-    maxSimultaneousDownloads: state.globalSettings.maxSimultaneousDownloads,
-    activeDownloads: state.activeItemIds?.length || 0,
-  };
-});
 
 ipcMain.handle('queue-get-state', async () => {
   if (!enhancedDownloadQueue) {

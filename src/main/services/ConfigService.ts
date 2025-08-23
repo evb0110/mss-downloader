@@ -21,9 +21,13 @@ export interface AppConfig {
   
     // Progress reporting
     progressUpdateInterval: number; // Console update interval in ms
+    // Throttled UI progress emissions (ms)
+    progressUpdateThrottleMs: number;
   
     // PDF processing
     maxMemoryUsage: number; // bytes
+    // Hard cap for per-PDF part size (in MB). If set, overrides library thresholds.
+    maxPdfPartSizeMB?: number;
   
     // Timeouts
     requestTimeout: number; // ms
@@ -59,9 +63,13 @@ const defaultConfig: AppConfig = {
   
     // Progress reporting
     progressUpdateInterval: 1000,
+    // Default UI throttle for progress updates
+    progressUpdateThrottleMs: 400,
   
     // PDF processing
     maxMemoryUsage: 2 * KB * MB, // 2GB
+    // Hard cap is disabled by default (0). Set a value > 0 to enable.
+    maxPdfPartSizeMB: 0,
   
     // Timeouts
     requestTimeout: 30000,

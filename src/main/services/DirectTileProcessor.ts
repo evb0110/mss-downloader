@@ -346,13 +346,18 @@ export class DirectTileProcessor {
             
             console.log('[DirectTile] Encoding to JPEG...');
             
-            // Convert to JPEG buffer
+            // Convert to JPEG buffer with compression to keep per-page size manageable
             const jpegBuffer = await new Promise<Buffer>((resolve, reject) => {
                 try {
-                    const buffer = canvas.toBuffer();
+                    // Use JPEG with reasonable quality and chroma subsampling to reduce size dramatically
+                    const buffer = canvas.toBuffer('image/jpeg', {
+                        quality: 0.85,              // 0..1
+                        progressive: true,          // enable progressive JPEGs
+                        chromaSubsampling: true     // reduce chroma resolution for smaller size
+                    } as unknown as any);
                     resolve(buffer);
                 } catch (err) {
-                    reject(err);
+                    reject(err as Error);
                 }
             });
             
@@ -418,60 +423,46 @@ export class DirectTileProcessor {
         try {
             console.log(`[DirectTile] Processing Bordeaux page ${pageNum} with base ID: ${baseId}`);
             
-            // Construct the tile URL for this specific page
-            // Bordeaux uses pattern: baseId_pageNum (4 digits) for tiled pages
-            const pageId = `${baseId}_${String(pageNum).padStart(4, '0')}`;
+            // Construct the tile URL for this specific page (default: 4-digit padding)
+            const paddedPage = String(pageNum).padStart(4, '0');
+            const pageId = `${baseId}_${paddedPage}`;
             const tileBaseUrl = `https://selene.bordeaux.fr/in/dz/${pageId}`;
-            
-            console.log(`[DirectTile] Tile base URL: ${tileBaseUrl}`);
-            
-            // First, test if any tiles exist for this page
-            const testTileUrl = `${tileBaseUrl}_files/0/0_0.jpg`;
-            console.log(`[DirectTile] Testing tile existence: ${testTileUrl}`);
-            
-            const testResult = await this.fetchUrl(testTileUrl);
-            if (!testResult.exists) {
-                // Try with different page number formats if the 4-digit padded doesn't work
-                const alternativeFormats = [
-                    String(pageNum), // No padding
-                    String(pageNum).padStart(2, '0'), // 2-digit padding
-                    String(pageNum).padStart(3, '0')  // 3-digit padding
-                ];
-                
-                let foundFormat = null;
-                for (const format of alternativeFormats) {
-                    const altPageId = `${baseId}_${format}`;
-                    const altTileUrl = `https://selene.bordeaux.fr/in/dz/${altPageId}_files/0/0_0.jpg`;
-                    console.log(`[DirectTile] Testing alternative format: ${altTileUrl}`);
-                    
-                    const altResult = await this.fetchUrl(altTileUrl);
-                    if (altResult.exists) {
-                        foundFormat = altPageId;
-                        break;
-                    }
-                }
-                
-                if (foundFormat) {
-                    console.log(`[DirectTile] Found working format: ${foundFormat}`);
-                    const altTileBaseUrl = `https://selene.bordeaux.fr/in/dz/${foundFormat}`;
-                    const imageBuffer = await this.processTiledImage(altTileBaseUrl, undefined, onProgress);
+            console.log(`[DirectTile] Tile base URL (primary): ${tileBaseUrl}`);
+
+            // Probe tile structure across levels instead of testing only level 0
+            try {
+                const tileInfo = await this.probeTileStructure(tileBaseUrl);
+                const imageBuffer = await this.processTiledImage(tileBaseUrl, tileInfo, onProgress);
+                await fs.writeFile(outputPath, imageBuffer);
+                console.log(`[DirectTile] Successfully saved page ${pageNum} to ${outputPath}`);
+                return { success: true };
+            } catch (primaryProbeErr: any) {
+                console.warn(`[DirectTile] Primary probe failed for ${pageId}: ${primaryProbeErr?.message || primaryProbeErr}. Trying alternative page formats...`);
+            }
+
+            // Try with different page number formats if the 4-digit padded doesn't work
+            const alternativeFormats = [
+                String(pageNum), // No padding
+                String(pageNum).padStart(2, '0'), // 2-digit padding
+                String(pageNum).padStart(3, '0')  // 3-digit padding
+            ];
+
+            for (const format of alternativeFormats) {
+                const altPageId = `${baseId}_${format}`;
+                const altTileBaseUrl = `https://selene.bordeaux.fr/in/dz/${altPageId}`;
+                console.log(`[DirectTile] Probing alternative format base: ${altTileBaseUrl}`);
+                try {
+                    const altTileInfo = await this.probeTileStructure(altTileBaseUrl);
+                    const imageBuffer = await this.processTiledImage(altTileBaseUrl, altTileInfo, onProgress);
                     await fs.writeFile(outputPath, imageBuffer);
-                    console.log(`[DirectTile] Successfully saved page ${pageNum} to ${outputPath} using alternative format`);
+                    console.log(`[DirectTile] Successfully saved page ${pageNum} to ${outputPath} using alternative format ${format}`);
                     return { success: true };
-                } else {
-                    throw new Error(`No tiles found for page ${pageNum}. Tested various formats including ${pageId}.`);
+                } catch (altErr: any) {
+                    console.warn(`[DirectTile] Alternative format probe failed for ${altPageId}: ${altErr?.message || altErr}`);
                 }
             }
-            
-            // Process the tiled image using the original format
-            const imageBuffer = await this.processTiledImage(tileBaseUrl, undefined, onProgress);
-            
-            // Save to output path
-            await fs.writeFile(outputPath, imageBuffer);
-            
-            console.log(`[DirectTile] Successfully saved page ${pageNum} to ${outputPath}`);
-            return { success: true };
-            
+
+            throw new Error(`No tiles found for page ${pageNum} of base ${baseId}. Tried formats: 4, 3, 2, and no padding.`);
         } catch (error: any) {
             console.error(`[DirectTile] Error processing page ${pageNum}:`, error instanceof Error ? error.message : String(error));
             return { success: false, error: error instanceof Error ? error.message : String(error) };
