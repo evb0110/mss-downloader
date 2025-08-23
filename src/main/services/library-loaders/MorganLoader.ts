@@ -182,21 +182,30 @@ export class MorganLoader extends BaseLibraryLoader {
                             if (!m) return null;
                             const json = JSON.parse(m[1]);
                             const ajaxViews = json?.views?.ajaxViews || {};
+                            const candidates: any[] = [];
                             for (const key of Object.keys(ajaxViews)) {
                                 const v = ajaxViews[key];
                                 if (v?.view_name && v?.view_display_id && v?.view_path) {
-                                    return {
-                                        view_name: v.view_name,
-                                        view_display_id: v.view_display_id,
-                                        view_args: v.view_args || '',
-                                        view_path: v.view_path,
-                                        view_base_path: v.view_base_path || '',
-                                        view_dom_id: v.view_dom_id || key,
-                                        pager_element: String(v.pager_element ?? 0)
-                                    };
+                                    const view_path: string = v.view_path || '';
+                                    let score = 0;
+                                    if (view_path.includes(`/collection/${manuscriptId}/thumbs`)) score = 3;
+                                    else if (view_path.includes(`/collection/${manuscriptId}`)) score = 2;
+                                    else score = 1;
+                                    candidates.push({ key, score, v });
                                 }
                             }
-                            return null;
+                            if (candidates.length === 0) return null;
+                            candidates.sort((a, b) => b.score - a.score);
+                            const v = candidates[0].v;
+                            return {
+                                view_name: v.view_name,
+                                view_display_id: v.view_display_id,
+                                view_args: v.view_args || '',
+                                view_path: v.view_path,
+                                view_base_path: v.view_base_path || '',
+                                view_dom_id: v.view_dom_id || candidates[0].key,
+                                pager_element: String(v.pager_element ?? 0)
+                            };
                         } catch {
                             return null;
                         }
@@ -205,65 +214,87 @@ export class MorganLoader extends BaseLibraryLoader {
                     const ajaxParams = parseDrupalSettings(pageContent);
                     let usedAjax = false;
 
+                    // Helper: try both POST and GET to /views/ajax
+                    const fetchViewsAjax = async (pageIndex: number): Promise<any[] | null> => {
+                        const form = new URLSearchParams();
+                        form.set('view_name', ajaxParams!.view_name);
+                        form.set('view_display_id', ajaxParams!.view_display_id);
+                        form.set('view_args', ajaxParams!.view_args);
+                        form.set('view_path', ajaxParams!.view_path);
+                        form.set('view_base_path', ajaxParams!.view_base_path);
+                        form.set('view_dom_id', ajaxParams!.view_dom_id);
+                        form.set('pager_element', ajaxParams!.pager_element);
+                        form.set('page', String(pageIndex));
+
+                        // First try POST
+                        try {
+                            const resp = await this.deps.fetchDirect(`${baseUrl}/views/ajax`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json, text/javascript, */*; q=0.01'
+                                },
+                                body: form.toString()
+                            });
+                            if (resp.ok) {
+                                const json = await resp.json().catch(() => null as any);
+                                if (Array.isArray(json)) return json;
+                            }
+                        } catch {}
+
+                        // Fallback: GET with query params
+                        try {
+                            const resp = await this.deps.fetchDirect(`${baseUrl}/views/ajax?${form.toString()}&_wrapper_format=drupal_ajax`, {
+                                method: 'GET',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json, text/javascript, */*; q=0.01'
+                                }
+                            });
+                            if (resp.ok) {
+                                const json = await resp.json().catch(() => null as any);
+                                if (Array.isArray(json)) return json;
+                            }
+                        } catch {}
+
+                        return null;
+                    };
+
                     // Try Drupal views/ajax pagination first
                     if (ajaxParams) {
                         usedAjax = true;
                         let pageIndex = 1;
                         while (true) {
-                            const form = new URLSearchParams();
-                            form.set('view_name', ajaxParams.view_name);
-                            form.set('view_display_id', ajaxParams.view_display_id);
-                            form.set('view_args', ajaxParams.view_args);
-                            form.set('view_path', ajaxParams.view_path);
-                            form.set('view_base_path', ajaxParams.view_base_path);
-                            form.set('view_dom_id', ajaxParams.view_dom_id);
-                            form.set('pager_element', ajaxParams.pager_element);
-                            form.set('page', String(pageIndex));
+                            const json = await fetchViewsAjax(pageIndex);
+                            if (!Array.isArray(json)) break;
 
-                            try {
-                                const resp = await this.deps.fetchDirect(`${baseUrl}/views/ajax`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                                        'X-Requested-With': 'XMLHttpRequest',
-                                        'Accept': 'application/json, text/javascript, */*; q=0.01'
-                                    },
-                                    body: form.toString()
-                                });
-
-                                if (!resp.ok) break;
-                                const json = await resp.json().catch(() => null as any);
-                                if (!Array.isArray(json)) break;
-
-                                // Extract any HTML chunks from 'data' fields in commands
-                                let appended = false;
-                                for (const cmd of json) {
-                                    const data = cmd?.data;
-                                    if (typeof data === 'string' && data.includes('<')) {
-                                        const idsBefore = knownIds.size;
-                                        const pagesBefore = knownPages.size;
-                                        for (const m of data.matchAll(quickFacsimileIdRegex)) {
-                                            knownIds.add(m[2]);
-                                        }
-                                        for (const m of data.matchAll(styledFacsimileIdRegex)) {
-                                            knownIds.add(m[2]);
-                                        }
-                                        for (const m of data.matchAll(pageLinkRegex)) {
-                                            knownPages.add(m[1]);
-                                        }
-                                        if (knownIds.size > idsBefore || knownPages.size > pagesBefore) {
-                                            pagesHtml.push(data);
-                                            appended = true;
-                                        }
+                            // Extract any HTML chunks from 'data' fields in commands
+                            let appended = false;
+                            for (const cmd of json) {
+                                const data = cmd?.data;
+                                if (typeof data === 'string' && data.includes('<')) {
+                                    const idsBefore = knownIds.size;
+                                    const pagesBefore = knownPages.size;
+                                    for (const m of data.matchAll(quickFacsimileIdRegex)) {
+                                        knownIds.add(m[2]);
+                                    }
+                                    for (const m of data.matchAll(styledFacsimileIdRegex)) {
+                                        knownIds.add(m[2]);
+                                    }
+                                    for (const m of data.matchAll(pageLinkRegex)) {
+                                        knownPages.add(m[1]);
+                                    }
+                                    if (knownIds.size > idsBefore || knownPages.size > pagesBefore) {
+                                        pagesHtml.push(data);
+                                        appended = true;
                                     }
                                 }
-
-                                if (!appended) break;
-                                pageIndex++;
-                                await new Promise(r => setTimeout(r, 200));
-                            } catch {
-                                break;
                             }
+
+                            if (!appended) break;
+                            pageIndex++;
+                            await new Promise(r => setTimeout(r, 200));
                         }
                     }
 
