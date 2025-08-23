@@ -329,11 +329,21 @@ Use: https://admont.codices.at/iiif/9cec1d04-d5c3-4a2a-9aa8-4279b359e701`);
                                 if (manifest) return manifest;
                             }
                             // If it contains a manifest URL, search within JSON string
-                            const match = text.match(/https?:\\/\\/[^"']*codices\.at\\/iiif\\/[a-f0-9-]{36}/i);
-                            if (match && match[0]) {
-                                const manifestUrl = match[0].replace(/\\/g, '');
+                            // 1) Normal unescaped URLs
+                            const normalUrlMatch = text.match(/https?:\/\/[^"']*codices\.at\/iiif\/[a-f0-9-]{36}/i);
+                            if (normalUrlMatch && normalUrlMatch[0]) {
+                                const manifestUrl = normalUrlMatch[0];
                                 const manifest = await this.loadIIIFManifest(manifestUrl, codicesUrl);
                                 if (manifest) return manifest;
+                            } else {
+                                // 2) JSON-escaped URLs like https:\/\/admont.codices.at\/iiif\/UUID
+                                const escapedRegex = new RegExp('https?:\\\\/\\\\/[^"\\\']*codices\\.at\\\\/iiif\\\\/[a-f0-9-]{36}', 'i');
+                                const escapedMatch = text.match(escapedRegex);
+                                if (escapedMatch && escapedMatch[0]) {
+                                    const cleaned = escapedMatch[0].replace(/\\\//g, '/').replace(/\\/g, '');
+                                    const manifest = await this.loadIIIFManifest(cleaned, codicesUrl);
+                                    if (manifest) return manifest;
+                                }
                             }
                         } catch {
                             // Ignore JSON parse errors
