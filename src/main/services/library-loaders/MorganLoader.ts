@@ -580,6 +580,42 @@ export class MorganLoader extends BaseLibraryLoader {
                             }
                         }
                     }
+
+                    // Ensure first two pages (cover pages) are included if missing
+                    try {
+                        const firstPageCandidates: string[] = [];
+                        const presentId = (url: string) => (url.match(/([^/]+)\.(?:jpg|jpeg|png|gif|zif)$/i)?.[1] || url);
+                        const containsId = (id: string): boolean => {
+                            const inZifs = (imagesByPriority?.[0] || []).some(u => u.includes(`/${id}.zif`));
+                            const inLinks = pageLinks.some(u => presentId(u) === id);
+                            return inZifs || inLinks;
+                        };
+                        for (let p = 1; p <= 2; p++) {
+                            const pageUrlAbs = `${baseUrl}/collection/${manuscriptId}/${p}`;
+                            const resp = await this.deps.fetchDirect(pageUrlAbs);
+                            if (!resp.ok) continue;
+                            const html = await resp.text();
+                            // Match both facsimile/BBID/ID.jpg and facsimile/ID.jpg
+                            const m = html.match(/\/(sites\/default\/files\/facsimile\/(?:\d+\/)?([^"']+\.jpg))/i);
+                            if (m) {
+                                const rel = m[1];
+                                const idMatch = rel.match(/([^\/]+)\.jpg$/i);
+                                const id = idMatch ? idMatch[1] : null;
+                                if (id && !containsId(id)) {
+                                    const full = `${baseUrl}/${rel}`.replace(/\/+/, '/').replace('https:/', 'https://');
+                                    firstPageCandidates.push(full);
+                                    console.log(`Morgan: Added missing cover page P${p}: ${id}`);
+                                }
+                            }
+                            await new Promise(r => setTimeout(r, 100));
+                        }
+                        // Prepend candidates to maintain correct sequencing
+                        if (firstPageCandidates.length > 0) {
+                            pageLinks.unshift(...firstPageCandidates);
+                        }
+                    } catch {
+                        // Non-critical
+                    }
                 }
                 
                 // Try to extract title from page content
@@ -601,8 +637,15 @@ export class MorganLoader extends BaseLibraryLoader {
                     throw new Error('No images found on Morgan Library page');
                 }
                 
-                // Remove duplicates and sort
-                const uniquePageLinks = [...new Set(pageLinks)].sort();
+                // Remove duplicates but preserve original order
+                const seenIdsForOrder = new Set<string>();
+                const extractId = (url: string) => (url.match(/([^/]+)\.(?:jpg|jpeg|png|gif|zif)$/i)?.[1] || url);
+                const uniquePageLinks = pageLinks.filter(url => {
+                    const id = extractId(url);
+                    if (seenIdsForOrder.has(id)) return false;
+                    seenIdsForOrder.add(id);
+                    return true;
+                });
                 
                 // Log priority distribution for debugging - only if imagesByPriority is defined
                 if (typeof imagesByPriority !== 'undefined' && imagesByPriority) {

@@ -53,8 +53,10 @@ export class LibraryOptimizationService {
             maxConcurrentDownloads: 2, // Reduced concurrency for ZIF file processing
             timeoutMultiplier: 4.0, // Extended timeout for large ZIF file downloads and processing
             enableProgressiveBackoff: true, // Enable backoff for server stability
-            autoSplitThresholdMB: 300, // Lower threshold due to ZIF processing overhead
-            optimizationDescription: 'Morgan Library optimizations: 2 concurrent downloads, 4x timeout for ZIF processing, auto-split at 300MB'
+            // Use a minimum cap of 100MB. User-defined thresholds below this will be elevated to 100MB,
+            // thresholds above will be respected. This keeps parts reasonably small for very large pages.
+            autoSplitThresholdMB: 100,
+            optimizationDescription: 'Morgan Library optimizations: 2 concurrent downloads, 4x timeout for ZIF processing, minimum auto-split threshold 100MB'
         },
         'gallica': {},
         'grenoble': {
@@ -313,7 +315,8 @@ export class LibraryOptimizationService {
         }
 
         return {
-            autoSplitThresholdMB: libraryOpts.autoSplitThresholdMB || globalAutoSplitThresholdMB,
+            // Treat library autoSplitThresholdMB as a minimum cap; respect larger user-defined globals
+            autoSplitThresholdMB: Math.max(globalAutoSplitThresholdMB || 0, libraryOpts.autoSplitThresholdMB || 0),
             maxConcurrentDownloads: libraryMaxConcurrent,
             timeoutMultiplier: libraryOpts.timeoutMultiplier || 1.0,
             enableProgressiveBackoff: libraryOpts.enableProgressiveBackoff || false,
