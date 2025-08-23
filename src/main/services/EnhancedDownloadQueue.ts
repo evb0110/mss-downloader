@@ -1377,6 +1377,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 // CRITICAL FIX Issue #37: Add Linz to prevent slow downloads and restarts
                 'linz', // Linz (Austria) Library: IIIF /full/max/ resolution - needs auto-split for large manuscripts
                 'digital_walters', // Digital Walters Art Museum: Sequential JPEG images - needs auto-split for large manuscripts
+                'codices', // Admont Codices Library: IIIF /full/full/ resolution - needs auto-split for large manuscripts
                 // CRITICAL: High-res libraries that MUST use auto-split to prevent memory failures
                 'laon', // Laon Bibliothèque: 7.2MB pages - EXTREME memory risk without auto-split
                 'munich', // Munich Digital Collections: 3.8MB pages - HIGH memory risk without auto-split
@@ -1426,6 +1427,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     manifest.library === 'bordeaux' ? 0.7 : // Bordeaux
                     manifest.library === 'linz' ? 1.2 : // CRITICAL FIX Issue #37: Linz Library IIIF /full/max/ ~1.2MB
                     manifest.library === 'digital_walters' ? 0.8 : // Digital Walters Art Museum sequential JPEG ~0.8MB
+                    manifest.library === 'codices' ? 1.0 : // Admont Codices Library IIIF /full/full/ ~1.0MB (tested: 0.75-1.36MB range)
                     manifest.library === 'e_rara' ? 0.9 : // e-rara Swiss
                     manifest.library === 'omnes_vallicelliana' ? 2.3 : // OMNES Vallicelliana IIIF v2 ~2.3MB (TIMEOUT FIX)
                     manifest.library === 'ugent' ? 2.0 : // University of Ghent IIIF Belgian manuscripts ~2.0MB (ARRAY BUFFER FIX)

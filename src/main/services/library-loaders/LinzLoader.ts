@@ -1,9 +1,13 @@
 import { BaseLibraryLoader, type LoaderDependencies } from './types';
 import type { ManuscriptManifest } from '../../../shared/types';
+import { AnubisSolver } from '../AnubisSolver';
 
 export class LinzLoader extends BaseLibraryLoader {
+    private anubisSolver: AnubisSolver;
+    
     constructor(deps: LoaderDependencies) {
         super(deps);
+        this.anubisSolver = new AnubisSolver();
     }
     
     getLibraryName(): string {
@@ -36,7 +40,7 @@ export class LinzLoader extends BaseLibraryLoader {
         console.log('[LinzLoader] Fetching IIIF manifest from:', manifestUrl);
         
         try {
-            const response = await this.deps.fetchWithHTTPS(manifestUrl, {
+            let response = await this.deps.fetchWithHTTPS(manifestUrl, {
                 headers: {
                     'Accept': 'application/json, application/ld+json',
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -47,7 +51,57 @@ export class LinzLoader extends BaseLibraryLoader {
                 throw new Error(`Failed to fetch Linz manifest: ${response.status}`);
             }
             
-            const manifest = await response.json();
+            let manifest: any;
+            
+            // Check if we got an Anubis anti-bot challenge instead of JSON
+            try {
+                manifest = await response.json();
+            } catch (jsonError) {
+                const html = await response.text();
+                
+                // Check for Anubis anti-bot protection
+                if (html.includes('Making sure you\'re not a bot') || html.includes('anubis_challenge')) {
+                    console.log('[LinzLoader] Anubis anti-bot protection detected, solving challenge...');
+                    
+                    // Extract and solve the challenge
+                    const challenge = this.anubisSolver.extractChallengeFromPage(html);
+                    if (!challenge) {
+                        throw new Error('Could not extract Anubis challenge from Linz page');
+                    }
+                    
+                    console.log(`[LinzLoader] Solving Anubis challenge with difficulty ${challenge.difficulty}...`);
+                    const solution = await this.anubisSolver.solveChallenge(challenge);
+                    if (!solution) {
+                        throw new Error('Failed to solve Anubis challenge for Linz library');
+                    }
+                    
+                    console.log('[LinzLoader] Anubis challenge solved, retrying manifest request...');
+                    
+                    // Submit solution (this may set cookies for future requests)
+                    const baseUrl = 'https://digi.landesbibliothek.at';
+                    await this.anubisSolver.submitSolution(solution, baseUrl, this.deps.fetchWithHTTPS);
+                    
+                    // Retry the original request with any cookies that were set
+                    response = await this.deps.fetchWithHTTPS(manifestUrl, {
+                        headers: {
+                            'Accept': 'application/json, application/ld+json',
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Linz manifest request failed after solving Anubis challenge: ${response.status}`);
+                    }
+                    
+                    try {
+                        manifest = await response.json();
+                    } catch (retryJsonError) {
+                        throw new Error(`Linz still returning non-JSON after solving Anubis challenge. This may require browser-specific implementation.`);
+                    }
+                } else {
+                    throw new Error(`Failed to parse Linz manifest as JSON: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}`);
+                }
+            }
             const images: Array<{ url: string; label: string }> = [];
             
             // Extract images from IIIF manifest

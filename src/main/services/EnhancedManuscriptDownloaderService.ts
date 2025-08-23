@@ -879,6 +879,16 @@ export class EnhancedManuscriptDownloaderService {
             example: 'https://collections.library.yale.edu/catalog/33242982',
             description: 'Yale Beinecke Rare Book & Manuscript Library digital collections via IIIF v3, featuring medieval manuscripts, archives, and rare books',
         },
+        {
+            name: 'Digital Walters Art Museum',
+            example: 'https://manuscripts.thewalters.org/viewer.php?id=W.530#page/1/mode/1up',
+            description: 'The Walters Art Museum digital manuscript collection with high-resolution image access',
+        },
+        {
+            name: 'Admont Codices Library',
+            example: 'https://codices.at/de/manuscript/4-codices-25-2/folios',
+            description: 'Admont Abbey digital manuscript collection (codices.at) via IIIF v3 with maximum resolution support',
+        },
     ];
 
     getSupportedLibraries(): LibraryInfo[] {
@@ -1239,6 +1249,7 @@ export class EnhancedManuscriptDownloaderService {
     async fetchDirect(url: string, options: RequestInit = {}, attempt: number = 1): Promise<Response> {
         const startTime = Date.now();
         const library = this.detectLibrary(url) as TLibrary || 'unknown';
+        const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
 
         // Check circuit breaker before attempting request
         const circuitCheck = networkResilienceService.canExecuteRequest(library);
@@ -1463,19 +1474,21 @@ export class EnhancedManuscriptDownloaderService {
                 responseHeaders[key] = value;
             });
 
-            this.logger.log({
-                level: 'info',
-                library: library || 'unknown',
-                url,
-                message: `Response received - Status: ${response.status}, Time: ${elapsed}ms`,
-                duration: elapsed,
-                details: {
-                    status: response.status,
-                    statusText: response.statusText,
-                    headers: responseHeaders,
-                    attempt
-                }
-            });
+            if (DEBUG_LOGS) {
+                this.logger.log({
+                    level: 'debug',
+                    library: library || 'unknown',
+                    url,
+                    message: `Response received - Status: ${response.status}, Time: ${elapsed}ms`,
+                    duration: elapsed,
+                    details: {
+                        status: response.status,
+                        statusText: response.statusText,
+                        headers: responseHeaders,
+                        attempt
+                    }
+                });
+            }
 
             if (response.ok) {
                 const contentLength = response.headers.get('content-length');
@@ -1799,9 +1812,15 @@ export class EnhancedManuscriptDownloaderService {
             throw error;
         }
 
-        const requestTimeout = (options as any).timeout || (url.includes('unipub.uni-graz.at') ? 120000 :
-                    (url.includes('digitale.bnc.roma.sbn.it') ? 15000 : // Rome responds instantly - 15s is plenty
-                    (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 60000 : 30000));
+        const methodUpper = (options.method || 'GET').toUpperCase();
+        const requestTimeout = ((options as any).timeout && typeof (options as any).timeout === 'number')
+                    ? (options as any).timeout
+                    : (url.includes('unipub.uni-graz.at') ? 120000 :
+                       (url.includes('digitale.bnc.roma.sbn.it') ? 15000 : // Rome responds instantly - 15s is plenty
+                       (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) ? 60000 : 30000));
+        
+        // For lightweight HEAD requests (probes), keep a strict cap to avoid 30s stalls
+        const effectiveTimeout = methodUpper === 'HEAD' ? Math.min(requestTimeout, 5000) : requestTimeout;
         
         // ContentDM Florence specific headers to prevent 403 errors
         const baseHeaders = {
@@ -1849,7 +1868,8 @@ export class EnhancedManuscriptDownloaderService {
         const attemptRequest = (): Promise<Response> => {
             return new Promise((resolve, reject) => {
                 const attemptStartTime = Date.now();
-                console.log(`[fetchWithHTTPS] Attempt ${retryCount + 1}/${maxRetries} for ${urlObj.hostname}`);
+                const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
+                if (DEBUG_LOGS) console.log(`[fetchWithHTTPS] Attempt ${retryCount + 1}/${maxRetries} for ${urlObj.hostname}`);
 
                 const req = https.request(requestOptions, (res) => {
                 const chunks: Buffer[] = [];
@@ -1860,7 +1880,7 @@ export class EnhancedManuscriptDownloaderService {
                 // Smart timeout: Monitor if data is still flowing
                 const PROGRESS_CHECK_INTERVAL = 10000; // Check every 10 seconds
                 const STALL_TIMEOUT = 30000; // Timeout if no data for 30 seconds
-                const initialTimeout = requestTimeout;
+                const initialTimeout = effectiveTimeout;
 
                 // Clear any existing timeout
                 const clearProgressTimer = () => {
@@ -1871,6 +1891,7 @@ export class EnhancedManuscriptDownloaderService {
 
                 // Setup progress monitoring
                 const setupProgressMonitor = () => {
+                    if (methodUpper === 'HEAD') return; // No progress monitoring for HEAD
                     clearProgressTimer();
                     progressTimer = setTimeout(() => {
                         const timeSinceLastData = Date.now() - lastDataTime;
@@ -1894,7 +1915,7 @@ export class EnhancedManuscriptDownloaderService {
                             reject(stallError);
                         } else {
                             // Still receiving data, continue monitoring
-                            console.log(`[fetchWithHTTPS] Download in progress: ${totalBytes} bytes received, last data ${Math.round(timeSinceLastData / 1000)}s ago`);
+                            if (DEBUG_LOGS) console.log(`[fetchWithHTTPS] Download in progress: ${totalBytes} bytes received, last data ${Math.round(timeSinceLastData / 1000)}s ago`);
                             setupProgressMonitor();
                         }
                     }, PROGRESS_CHECK_INTERVAL);
@@ -1933,7 +1954,8 @@ export class EnhancedManuscriptDownloaderService {
                     let body = Buffer.concat(chunks);
                     const responseHeaders = new Headers();
 
-                    console.log(`[fetchWithHTTPS] Download complete: ${totalBytes} bytes in ${Math.round((Date.now() - lastDataTime + STALL_TIMEOUT) / 1000)}s`);
+                    const attemptDuration = Date.now() - attemptStartTime;
+                    if (DEBUG_LOGS) console.log(`[fetchWithHTTPS] Download complete: ${totalBytes} bytes in ${Math.round(attemptDuration / 1000)}s`);
 
                     Object.entries(res.headers).forEach(([key, value]) => {
                         responseHeaders.set(key, Array.isArray(value) ? value.join(', ') : value || '');
@@ -1985,7 +2007,7 @@ export class EnhancedManuscriptDownloaderService {
 
             req.on('error', (error: unknown) => {
                 const attemptDuration = Date.now() - attemptStartTime;
-                console.log(`[fetchWithHTTPS] Request error after ${attemptDuration}ms:`, (error as any)?.code, (error as Error).message);
+                if (DEBUG_LOGS) console.log(`[fetchWithHTTPS] Request error after ${attemptDuration}ms:`, (error as any)?.code, (error as Error).message);
 
                 comprehensiveLogger.logNetworkError(url, error, {
                     library,
@@ -2417,6 +2439,7 @@ export class EnhancedManuscriptDownloaderService {
     async downloadImageWithRetries(url: string, attempt = 0): Promise<DownloadResult> {
         const startTime = Date.now();
         const library = this.detectLibrary(url) as TLibrary;
+        const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
 
         // Debug logging for BDL detection
         if (url.includes('bdl.servizirl.it')) {
@@ -2657,14 +2680,16 @@ export class EnhancedManuscriptDownloaderService {
             const buffer = await response.arrayBuffer();
             const elapsed = Date.now() - startTime;
 
-            this.logger.log({
-                level: 'info',
-                library: library || 'unknown',
-                url,
-                message: `Buffer downloaded - Size: ${buffer.byteLength} bytes, Time: ${elapsed}ms`,
-                duration: elapsed,
-                details: { size: buffer.byteLength, speedMbps: (buffer.byteLength / elapsed / 1024).toFixed(2) }
-            });
+            if (DEBUG_LOGS) {
+                this.logger.log({
+                    level: 'debug',
+                    library: library || 'unknown',
+                    url,
+                    message: `Buffer downloaded - Size: ${buffer.byteLength} bytes, Time: ${elapsed}ms`,
+                    duration: elapsed,
+                    details: { size: buffer.byteLength, speedMbps: (buffer.byteLength / elapsed / 1024).toFixed(2) }
+                });
+            }
 
             if (buffer.byteLength < MIN_VALID_IMAGE_SIZE_BYTES) {
                 this.logger.log({
@@ -2933,7 +2958,8 @@ export class EnhancedManuscriptDownloaderService {
                     ...(queueItem?.tileConfig ? { tileConfig: queueItem.tileConfig } : {}),
                     ...(queueItem?.requiresTileProcessor ? { requiresTileProcessor: queueItem.requiresTileProcessor } : {}),
                 } as ManuscriptManifest;
-                console.log(`Using pre-sliced pageLinks for ${displayName}: ${pageLinks.length} pages`);
+                const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
+                if (DEBUG_LOGS) console.log(`Using pre-sliced pageLinks for ${displayName}: ${pageLinks.length} pages`);
                 manifestLoadDuration = Date.now() - manifestStartTime; // Minimal time
             } else {
                 // Existing behavior: load manifest from URL
@@ -3106,8 +3132,11 @@ export class EnhancedManuscriptDownloaderService {
 
             // Log optimization info for debugging
             if (optimizations.optimizationDescription) {
-                console.log(`Applying ${library} optimizations: ${optimizations.optimizationDescription}`);
-                console.log(`Using ${actualMaxConcurrent} concurrent downloads (global: ${globalMaxConcurrent})`);
+                const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
+                if (DEBUG_LOGS) {
+                    console.log(`Applying ${library} optimizations: ${optimizations.optimizationDescription}`);
+                    console.log(`Using ${actualMaxConcurrent} concurrent downloads (global: ${globalMaxConcurrent})`);
+                }
             }
 
             const semaphore = new Array(actualMaxConcurrent).fill(null);
@@ -3232,7 +3261,8 @@ export class EnhancedManuscriptDownloaderService {
                     } catch {
                         // Not present: download using tile engine
                         try {
-                            console.log(`Downloading tile-based page ${pageIndex + 1} from ${imageUrl}`);
+                            const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
+                            if (DEBUG_LOGS) console.log(`Downloading tile-based page ${pageIndex + 1} from ${imageUrl}`);
 
                             const tileCallbacks = this.tileEngineService.createProgressCallback(
                                 (progress) => {
@@ -3276,7 +3306,8 @@ export class EnhancedManuscriptDownloaderService {
                         const relativeIndex = pageIndex - (actualStartPage - 1);
                         imagePaths[relativeIndex] = imgPath;
                                 completedPages++;
-                                console.log(`Successfully downloaded ${result.downloadedTiles} tiles for page ${pageIndex + 1}`);
+                                const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
+                                if (DEBUG_LOGS) console.log(`Successfully downloaded ${result.downloadedTiles} tiles for page ${pageIndex + 1}`);
                             } else {
                                 console.error(`Failed to download tiles for page ${pageIndex + 1}: ${result.errors.join(', ')}`);
                                 failedPages.push(pageIndex + 1);
@@ -3357,7 +3388,7 @@ export class EnhancedManuscriptDownloaderService {
                         // File already exists with correct extension - mark path for skipped file
                         imagePaths[pageIndex] = imgPath;
                         completedPages++; // Count cached files as completed
-                        console.log(`📋 Skipped existing file: ${imgFile} (${fileType.extension.toUpperCase()})`);
+                        { const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1'; if (DEBUG_LOGS) console.log(`📋 Skipped existing file: ${imgFile} (${fileType.extension.toUpperCase()})`); }
                     } else {
                         // Write the file with detected extension
                         const writePromise = fs.writeFile(imgPath, Buffer.from(buffer));
@@ -3368,7 +3399,12 @@ export class EnhancedManuscriptDownloaderService {
                         imagePaths[relativeIndex] = imgPath;
                         completedPages++; // Only increment on successful download
                         
-                        console.log(`💾 Downloaded: ${imgFile} (${fileType.extension.toUpperCase()}, ${fileType.mimeType})`);
+                        { const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
+                          const PAGE_LOG_INTERVAL = configService.get('pageLogInterval') || 50;
+                          if (DEBUG_LOGS || ((relativeIndex + 1) % PAGE_LOG_INTERVAL === 0) || (pageIndex + 1 === actualEndPage)) {
+                              console.log(`💾 Downloaded: ${imgFile} (${fileType.extension.toUpperCase()}, ${fileType.mimeType})`);
+                          }
+                        }
                         
                         // RATE LIMITING: Add delay after successful Rome downloads to prevent server blocking
                         if (library === 'rome') {

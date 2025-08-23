@@ -1,5 +1,6 @@
 import { BaseLibraryLoader, type LoaderDependencies } from './types';
 import type { ManuscriptManifest } from '../../../shared/types';
+const VERBOSE = process.env.MSSDL_DEBUG === '1';
 
 interface FlorenceField {
     key: string;
@@ -43,6 +44,7 @@ interface ParsedFlorenceUrl {
 }
 
 export class FlorenceLoader extends BaseLibraryLoader {
+    private static manifestCache: Map<string, { pages: Array<{ id: string; title: string }>, displayName: string, variant: { kind: 'iiif' | 'native', sizeMode?: 'max' | 'full' | 'pct' | 'width', width?: number }, createdAt: number }> = new Map();
     private sessionCookie: string | null = null;
 
     constructor(deps: LoaderDependencies) {
@@ -188,7 +190,7 @@ Supported formats:
     private async resolveBestImageVariant(collection: string, pageId: string): Promise<
         { kind: 'iiif', sizeMode: 'max' | 'full' | 'pct' | 'width', width?: number } | { kind: 'native' }
     > {
-        const baseIiif = `https://cdm21059.contentdm.oclc.org/digital/iiif/${collection}/${pageId}`;
+        const baseIiif = `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${pageId}`;
         const probes: Array<{ url: string; mode: 'max' | 'full' | 'pct' }> = [
             { url: `${baseIiif}/full/max/0/default.jpg`, mode: 'max' },
             { url: `${baseIiif}/full/full/0/default.jpg`, mode: 'full' },
@@ -200,7 +202,8 @@ Supported formats:
             for (const p of probes) {
                 const response = await this.deps.fetchWithHTTPS(p.url, {
                     method: 'HEAD',
-                    headers: this.getSessionHeaders()
+                    headers: this.getSessionHeaders(),
+                    timeout: 5000
                 });
                 if (response.ok) {
                     return { kind: 'iiif', sizeMode: p.mode };
@@ -210,13 +213,13 @@ Supported formats:
             // If these failed, try exact native width from info.json
             const infoUrl = `${baseIiif}/info.json`;
             try {
-                const infoResp = await this.deps.fetchWithHTTPS(infoUrl, { headers: this.getSessionHeaders() });
+                const infoResp = await this.deps.fetchWithHTTPS(infoUrl, { headers: this.getSessionHeaders(), timeout: 10000 });
                 if (infoResp.ok) {
                     const info = await infoResp.json() as { width?: number };
                     const w = (info && typeof info['width'] === 'number') ? info['width'] : undefined;
                     if (w && w > 0) {
                         const widthUrl = `${baseIiif}/full/${w},/0/default.jpg`;
-                        const widthHead = await this.deps.fetchWithHTTPS(widthUrl, { method: 'HEAD', headers: this.getSessionHeaders() });
+                        const widthHead = await this.deps.fetchWithHTTPS(widthUrl, { method: 'HEAD', headers: this.getSessionHeaders(), timeout: 5000 });
                         if (widthHead.ok) {
                             return { kind: 'iiif', sizeMode: 'width', width: w };
                         }
@@ -237,16 +240,17 @@ Supported formats:
     /**
      * Validate page accessibility to filter out 403/501 gaps and missing content in ContentDM sequence
      */
-    private async validatePageAccessibility(collection: string, pages: Array<{ id: string; title: string }>): Promise<Array<{ id: string; title: string }>> {
-        const maxValidation = 20; // Don't validate too many to avoid overwhelming server
+    private async validatePageAccessibility(collection: string, pages: Array<{ id: string; title: string }>, variant?: { kind: 'iiif', sizeMode: 'max' | 'full' | 'pct' | 'width', width?: number } | { kind: 'native' }): Promise<Array<{ id: string; title: string }>> {
         const validatedPages: Array<{ id: string; title: string }> = [];
         
-        // If there are many pages, sample validate first portion + random selection
-        const pagesToValidate = pages.length <= maxValidation ? pages : [
-            ...pages.slice(0, 10), // First 10 pages
-            ...pages.slice(-5),     // Last 5 pages
-            ...pages.filter((_, i) => i % Math.ceil(pages.length / 5) === 0).slice(0, 5) // Every ~20% sample
-        ];
+        // Validate only a minimal sample: first, middle, last
+        const pickIndices = (len: number) => {
+            if (len <= 3) return Array.from({ length: len }, (_, i) => i);
+            const mid = Math.floor(len / 2);
+            return [0, mid, len - 1];
+        };
+        const indices = pickIndices(pages.length);
+        const pagesToValidate = indices.map(i => pages[i]).filter(Boolean as any);
         
         this.deps.logger.log({
             level: 'info',
@@ -258,45 +262,60 @@ Supported formats:
         let validCount = 0;
         let invalidCount = 0;
         
-        for (const page of pagesToValidate) {
-            try {
-                const baseIiif = `https://cdm21059.contentdm.oclc.org/digital/iiif/${collection}/${page.id}`;
-                const probes = [
-                    `${baseIiif}/full/max/0/default.jpg`,
-                    `${baseIiif}/full/full/0/default.jpg`,
-                    `${baseIiif}/full/pct:100/0/default.jpg`
-                ];
-                let ok = false;
-                let lastStatus = 0;
-                let lastText = '';
-                for (const url of probes) {
-                    const response = await this.deps.fetchWithHTTPS(url, {
+        // Validate with small parallelism to speed up while being polite
+        const batchSize = 10;
+        for (let i = 0; i < pagesToValidate.length; i += batchSize) {
+            const batch = pagesToValidate.slice(i, i + batchSize);
+            const validationPromises = batch.map(async (page) => {
+                try {
+                    // Build single probe URL based on resolved variant, default to max
+                    let probeUrl: string;
+                    if (variant && variant.kind === 'iiif') {
+                        const baseIiif = `https://cdm21059?.contentdm.oclc?.org/iiif/2/${collection}:${page?.id}`;
+                        switch (variant.sizeMode) {
+                            case 'max': probeUrl = `${baseIiif}/full/max/0/default.jpg`; break;
+                            case 'full': probeUrl = `${baseIiif}/full/full/0/default.jpg`; break;
+                            case 'pct': probeUrl = `${baseIiif}/full/pct:100/0/default.jpg`; break;
+                            case 'width': probeUrl = `${baseIiif}/full/${variant.width},/0/default.jpg`; break;
+                        }
+                    } else {
+                        const baseIiif = `https://cdm21059?.contentdm.oclc?.org/iiif/2/${collection}:${page?.id}`;
+                        probeUrl = `${baseIiif}/full/max/0/default.jpg`;
+                    }
+
+                    let ok = false;
+                    let lastStatus = 0;
+                    let lastText = '';
+                    const response = await this.deps.fetchWithHTTPS(probeUrl!, {
                         method: 'HEAD',
-                        headers: this.getSessionHeaders()
+                        headers: this.getSessionHeaders(),
+                        timeout: 5000
                     });
-                    if (response.ok) { ok = true; break; }
+                    ok = response.ok;
                     lastStatus = response.status;
                     lastText = response.statusText;
-                }
-                
-                if (ok) {
-                    validCount++;
-                } else if (lastStatus === 403 || lastStatus === 501) {
-                    invalidCount++;
-                    this.deps.logger.log({
-                        level: 'warn',
-                        library: 'florence',
-                        message: `Page ${page.id} inaccessible: ${lastStatus} ${lastText} - skipping`
-                    });
-                    continue; // Skip invalid pages
-                } else {
+                    
+                    if (ok) {
+                        validCount++;
+                        return page;
+                    }
+                    if (lastStatus === 403 || lastStatus === 501) {
+                        invalidCount++;
+                        this.deps.logger.log({
+                            level: 'warn',
+                            library: 'florence',
+                            message: `Page ${page?.id} inaccessible: ${lastStatus} ${lastText} - skipping`
+                        });
+                        return null;
+                    }
+
                     // For other errors, check if it's a "no file associated" case by fetching the actual page
-                    const pageUrl = `https://cdm21059.contentdm.oclc.org/digital/collection/${collection}/id/${page.id}`;
+                    const pageUrl = `https://cdm21059?.contentdm.oclc?.org/digital/collection/${collection}/id/${page?.id}`;
                     try {
                         const pageResponse = await this.deps.fetchWithHTTPS(pageUrl, {
-                            headers: this.getSessionHeaders()
+                            headers: this.getSessionHeaders(),
+                            timeout: 10000
                         });
-                        
                         if (pageResponse.ok) {
                             const pageHtml = await pageResponse.text();
                             if (pageHtml.includes('Nessun file è associato a questo item') || 
@@ -305,9 +324,9 @@ Supported formats:
                                 this.deps.logger.log({
                                     level: 'warn',
                                     library: 'florence',
-                                    message: `Page ${page.id} has no associated file - skipping`
+                                    message: `Page ${page?.id} has no associated file - skipping`
                                 });
-                                continue; // Skip pages with no associated files
+                                return null;
                             }
                         }
                     } catch (pageError) {
@@ -318,22 +337,22 @@ Supported formats:
                     this.deps.logger.log({
                         level: 'warn',
                         library: 'florence',
-                        message: `Page ${page.id} validation warning: ${lastStatus} ${lastText} - including anyway`
+                        message: `Page ${page?.id} validation warning: ${lastStatus} ${lastText} - including anyway`
                     });
+                    return page;
+                } catch (error) {
+                    this.deps.logger.log({
+                        level: 'warn',
+                        library: 'florence',
+                        message: `Page ${page?.id} validation error: ${error instanceof Error ? error?.message : String(error)} - including anyway`
+                    });
+                    return page; // Include on network errors
                 }
-                
-                validatedPages.push(page);
-                
-            } catch (error) {
-                this.deps.logger.log({
-                    level: 'warn',
-                    library: 'florence',
-                    message: `Page ${page.id} validation error: ${error instanceof Error ? error.message : String(error)} - including anyway`
-                });
-                validatedPages.push(page); // Include on network errors
-            }
-            
-            // Rate limiting during validation
+            });
+
+            const batchResults = await Promise.all(validationPromises);
+            validatedPages.push(...batchResults.filter((p): p is { id: string; title: string } => p !== null));
+            // Short pause between batches
             await new Promise(resolve => setTimeout(resolve, 100));
         }
         
@@ -351,7 +370,7 @@ Supported formats:
                     message: `Invalid pages detected (${Math.round(invalidRate * 100)}% rate), validating all ${pages.length} pages to filter gaps...`
                 });
                 
-                return await this.validateAllPages(collection, pages);
+                return await this.validateAllPages(collection, pages, variant);
             }
             
             // No invalid pages in sample - assume all pages are valid
@@ -375,8 +394,8 @@ Supported formats:
     /**
      * Validate all pages when gaps detected - optimized for ContentDM patterns with intelligent gap detection
      */
-    private async validateAllPages(collection: string, pages: Array<{ id: string; title: string }>): Promise<Array<{ id: string; title: string }>> {
-        console.log(`📄 Starting comprehensive validation of ${pages.length} pages...`);
+    private async validateAllPages(collection: string, pages: Array<{ id: string; title: string }>, variant?: { kind: 'iiif', sizeMode: 'max' | 'full' | 'pct' | 'width', width?: number } | { kind: 'native' }): Promise<Array<{ id: string; title: string }>> {
+        if (VERBOSE) console.log(`📄 Starting comprehensive validation of ${pages.length} pages...`);
         const validatedPages: Array<{ id: string; title: string }> = [];
         const batchSize = 20; // Larger batches for efficiency
         
@@ -386,26 +405,32 @@ Supported formats:
             // Process batch with limited concurrency
             const validationPromises = batch.map(async (page, index) => {
                 try {
-                    const baseIiif = `https://cdm21059.contentdm.oclc.org/digital/iiif/${collection}/${page.id}`;
-                    const probes = [
-                        `${baseIiif}/full/max/0/default.jpg`,
-                        `${baseIiif}/full/full/0/default.jpg`,
-                        `${baseIiif}/full/pct:100/0/default.jpg`
-                    ];
+                    // Determine single probe URL
+                    let probeUrl: string;
+                    if (variant && variant.kind === 'iiif') {
+                        const baseIiif = `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${page.id}`;
+                        switch (variant.sizeMode) {
+                            case 'max': probeUrl = `${baseIiif}/full/max/0/default.jpg`; break;
+                            case 'full': probeUrl = `${baseIiif}/full/full/0/default.jpg`; break;
+                            case 'pct': probeUrl = `${baseIiif}/full/pct:100/0/default.jpg`; break;
+                            case 'width': probeUrl = `${baseIiif}/full/${variant.width},/0/default.jpg`; break;
+                        }
+                    } else {
+                        const baseIiif = `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${page.id}`;
+                        probeUrl = `${baseIiif}/full/max/0/default.jpg`;
+                    }
                     
                     // Stagger requests to avoid overwhelming server
                     await new Promise(resolve => setTimeout(resolve, index * 20));
                     
                     let ok = false;
                     let lastStatus = 0;
-                    for (const url of probes) {
-                        const response = await this.deps.fetchWithHTTPS(url, {
-                            method: 'HEAD',
-                            headers: this.getSessionHeaders()
-                        });
-                        if (response.ok) { ok = true; break; }
-                        lastStatus = response.status;
-                    }
+                    const response = await this.deps.fetchWithHTTPS(probeUrl!, {
+                        method: 'HEAD',
+                        headers: this.getSessionHeaders(),
+                        timeout: 5000
+                    });
+                    if (response.ok) { ok = true; } else { lastStatus = response.status; }
                     
                     if (ok) {
                         return page;
@@ -456,13 +481,13 @@ Supported formats:
             // Progress logging
             const progress = Math.min(i + batchSize, pages.length);
             const validRate = Math.round((validatedPages.length / progress) * 100);
-            console.log(`📄 Validated ${progress}/${pages.length} pages, ${validatedPages.length} valid (${validRate}% success rate)`);
+            if (VERBOSE) console.log(`📄 Validated ${progress}/${pages.length} pages, ${validatedPages.length} valid (${validRate}% success rate)`);
             
             // Short delay between batches
             await new Promise(resolve => setTimeout(resolve, 100));
         }
         
-        console.log(`✅ Validation complete: ${validatedPages.length} valid pages from ${pages.length} total`);
+        if (VERBOSE) console.log(`✅ Validation complete: ${validatedPages.length} valid pages from ${pages.length} total`);
         return validatedPages;
     }
 
@@ -537,7 +562,7 @@ Supported formats:
                 message: `Florence URL processing: ${processingNote} (collection: ${collection}, itemId: ${itemId})`
             });
 
-            console.log(`🔍 Florence: collection=${collection}, itemId=${itemId}`);
+            if (VERBOSE) console.log(`🔍 Florence: collection=${collection}, itemId=${itemId}`);
 
             // For IIIF URLs, we need to convert to manuscript viewer URL for proper processing
             const processingUrl = parsed.urlType !== 'manuscript_viewer' 
@@ -552,8 +577,42 @@ Supported formats:
                 });
             }
 
+            // Attempt cache reuse for repeated loads (e.g., auto-split parts)
+            const cacheKey = `${collection}:${itemId}`;
+            const cached = FlorenceLoader.manifestCache.get(cacheKey);
+            if (cached && Date.now() - cached.createdAt < 10 * 60 * 1000) {
+                this.deps.logger.log({ level: 'info', library: 'florence', message: `Using in-memory cache for ${cacheKey} (pages: ${cached.pages.length})` });
+                const variant = cached.variant.kind === 'iiif'
+                    ? cached.variant as { kind: 'iiif', sizeMode: 'max' | 'full' | 'pct' | 'width', width?: number }
+                    : { kind: 'native' as const };
+                const pages = cached.pages;
+                const displayName = cached.displayName;
+                let pageLinks: string[] = [];
+                if (variant.kind === 'iiif') {
+                    const toUrl = (pageId: string) => {
+                        const baseIiif = `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${pageId}`;
+                        switch (variant.sizeMode) {
+                            case 'max': return `${baseIiif}/full/max/0/default.jpg`;
+                            case 'full': return `${baseIiif}/full/full/0/default.jpg`;
+                            case 'pct': return `${baseIiif}/full/pct:100/0/default.jpg`;
+                            case 'width': return `${baseIiif}/full/${variant.width},/0/default.jpg`;
+                        }
+                    };
+                    pageLinks = pages.map(p => toUrl(p.id));
+                } else {
+                    pageLinks = pages.map(page => `https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/${collection}/${page.id}/default.jpg`);
+                }
+                return {
+                    pageLinks,
+                    totalPages: pageLinks.length,
+                    library: 'florence',
+                    displayName,
+                    originalUrl: originalUrl,
+                };
+            }
+
             // Fetch the HTML page to extract the initial state with all children
-            console.log('📄 Fetching Florence page HTML to extract manuscript structure...');
+            if (VERBOSE) console.log('📄 Fetching Florence page HTML to extract manuscript structure...');
             const sessionHeaders = this.getSessionHeaders();
             const pageResponse = await this.deps.fetchWithHTTPS(processingUrl, {
                 headers: {
@@ -567,7 +626,7 @@ Supported formats:
             }
 
             const html = await pageResponse.text();
-            console.log(`📄 Page HTML retrieved (${html?.length} characters)`);
+            if (VERBOSE) console.log(`📄 Page HTML retrieved (${html?.length} characters)`);
 
             // Extract __INITIAL_STATE__ from the HTML
             const stateMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*JSON\.parse\("(.+?)"\);/);
@@ -609,7 +668,7 @@ Supported formats:
             if (itemData.parentId && itemData.parentId !== -1) {
                 // This is a child page - get all siblings from parent
                 if (itemData.parent && itemData.parent.children && Array.isArray(itemData.parent.children)) {
-                    console.log(`📄 Found ${itemData.parent.children?.length} pages in parent compound object`);
+                    if (VERBOSE) console.log(`📄 Found ${itemData.parent.children?.length} pages in parent compound object`);
                     
                     // Filter out non-page items (like Color Chart, Dorso, etc.)
                     pages = itemData.parent.children
@@ -658,7 +717,7 @@ Supported formats:
                 // Check the current page for children
                 const currentPageChildren = state?.item?.children;
                 if (currentPageChildren && Array.isArray(currentPageChildren) && currentPageChildren?.length > 0) {
-                    console.log(`📄 Found ${currentPageChildren?.length} child pages in current item`);
+                    if (VERBOSE) console.log(`📄 Found ${currentPageChildren?.length} child pages in current item`);
                     
                     pages = currentPageChildren
                         .filter((child: FlorenceChild) => {
@@ -705,7 +764,7 @@ Supported formats:
                     }];
                     
                     displayName = itemData.title || displayName;
-                    console.log('📄 Single page manuscript');
+                    if (VERBOSE) console.log('📄 Single page manuscript');
                 }
             }
 
@@ -713,11 +772,29 @@ Supported formats:
                 throw new Error('No pages found in Florence manuscript');
             }
 
-            console.log(`📄 Extracted ${pages?.length} manuscript pages (excluding binding/charts)`);
+            if (VERBOSE) console.log(`📄 Extracted ${pages?.length} manuscript pages (excluding binding/charts)`);
 
-            // CRITICAL: Validate page accessibility to filter out 403/501 gaps
-            console.log('📄 Validating page accessibility to filter gaps...');
-            const validatedPages = await this.validatePageAccessibility(collection, pages);
+            // Resolve the best IIIF size variant once using the first page
+            const manuscriptId = itemId || 'unknown';
+            const samplePageIdForVariant = pages[0]?.id ? pages[0].id.toString() : itemId;
+            const variant = await this.resolveBestImageVariant(collection, samplePageIdForVariant || itemId);
+            if (variant.kind === 'iiif') {
+                this.deps.logger.log({
+                    level: 'info',
+                    library: 'florence',
+                    message: `Florence IIIF confirmed (mode: ${variant.sizeMode}${variant.sizeMode === 'width' ? `=${variant.width}` : ''}) for manuscript ${manuscriptId}`
+                });
+            } else {
+                this.deps.logger.log({
+                    level: 'warn',
+                    library: 'florence',
+                    message: `Falling back to native ContentDM API for manuscript ${manuscriptId}`
+                });
+            }
+
+            // CRITICAL: Validate page accessibility using the resolved variant to filter out 403/501 gaps
+            if (VERBOSE) console.log('📄 Validating page accessibility to filter gaps...');
+            const validatedPages = await this.validatePageAccessibility(collection, pages, variant);
             
             if (validatedPages.length === 0) {
                 throw new Error('No accessible pages found after validation');
@@ -725,13 +802,8 @@ Supported formats:
             
             const filteredCount = pages.length - validatedPages.length;
             if (filteredCount > 0) {
-                console.log(`📄 Filtered out ${filteredCount} inaccessible pages, ${validatedPages.length} pages remaining`);
+                if (VERBOSE) console.log(`📄 Filtered out ${filteredCount} inaccessible pages, ${validatedPages.length} pages remaining`);
             }
-
-            // Validate ContentDM native API access with first validated page
-            const manuscriptId = itemId || 'unknown';
-            const samplePageId = validatedPages[0]?.id ? validatedPages[0].id.toString() : '217712';
-            const variant = await this.validateNativeAPIAccess(collection, samplePageId, manuscriptId);
             
             // Use validated pages for URL generation
             pages = validatedPages;
@@ -739,7 +811,7 @@ Supported formats:
             let pageLinks: string[] = [];
             if (variant.kind === 'iiif') {
                 const toUrl = (pageId: string) => {
-                    const baseIiif = `https://cdm21059.contentdm.oclc.org/digital/iiif/${collection}/${pageId}`;
+                    const baseIiif = `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${pageId}`;
                     switch (variant.sizeMode) {
                         case 'max':
                             return `${baseIiif}/full/max/0/default.jpg`;
@@ -758,6 +830,14 @@ Supported formats:
                 pageLinks = pages.map(page => `https://cdm21059.contentdm.oclc.org/digital/api/singleitem/image/${collection}/${page.id}/default.jpg`);
                 console.log(`📄 Florence manuscript processed: ${pageLinks.length} pages using native ContentDM API fallback (lower resolution)`);
             }
+
+            // Cache for subsequent loads within the session
+            FlorenceLoader.manifestCache.set(cacheKey, {
+                pages,
+                displayName,
+                variant: variant.kind === 'iiif' ? { kind: 'iiif', sizeMode: variant.sizeMode, width: variant.width } : { kind: 'native' },
+                createdAt: Date.now()
+            });
 
             return {
                 pageLinks,
