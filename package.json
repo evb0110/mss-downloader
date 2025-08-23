@@ -1,8 +1,9 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.247",
+  "version": "1.4.248",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
+    "v1.4.248: Morgan fully functional: complete pagination via views/ajax + ?page=N, facsimile-only extraction, cover pages fixed, improved ZIF selection; min auto-split 100MB; recommended concurrency = 2-3",
     "v1.4.247: Admont Codices supported patterns clarified",
     "CHANGED: Supported Libraries entry mentions both iiif/{UUID} manifest and iiif/image/{UUID}/info.json direct image service handling",
     "ENHANCED: Codices loader robustly handles admont.codices.at and codices.at across raw-UUID discovery and HTML parsing"
