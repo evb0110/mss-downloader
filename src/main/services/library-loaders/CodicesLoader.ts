@@ -12,19 +12,44 @@ export class CodicesLoader extends BaseLibraryLoader {
     
     async loadManifest(codicesUrl: string): Promise<ManuscriptManifest> {
         try {
-            // Check if this is already a direct IIIF manifest URL
-            if (codicesUrl.includes('/iiif/') && /[a-f0-9-]{36}/.test(codicesUrl)) {
+            // Normalize and handle direct IIIF access patterns first
+            const url = codicesUrl;
+
+            // 1) Direct IIIF image service info.json
+            // Example: https://admont.codices.at/iiif/image/9cec1d06-e05f-48d4-a36a-e220906a51fd/info.json
+            if (/\/iiif\/image\/[a-f0-9-]{36}\/info\.json$/i.test(url)) {
+                const serviceUrl = url.replace(/\/info\.json$/i, '');
+                const pageUrl = `${serviceUrl}/full/full/0/default.jpg`;
+                this.deps.logger?.log({
+                    level: 'info',
+                    library: 'codices',
+                    message: `Processing Codices IIIF image info.json`,
+                    details: { serviceUrl }
+                });
+                const manifest: ManuscriptManifest = {
+                    pageLinks: [pageUrl],
+                    totalPages: 1,
+                    library: 'codices',
+                    displayName: 'Codices image',
+                    originalUrl: url
+                };
+                await this.deps.manifestCache.set(url, manifest as any).catch(console.warn);
+                return manifest;
+            }
+
+            // 2) Direct IIIF manifest UUID URL
+            if (url.includes('/iiif/') && /[a-f0-9-]{36}/.test(url)) {
                 this.deps.logger?.log({
                     level: 'info',
                     library: 'codices',
                     message: `Processing direct IIIF manifest URL`,
-                    details: { manifestUrl: codicesUrl }
+                    details: { manifestUrl: url }
                 });
 
-                const manifest = await this.loadIIIFManifest(codicesUrl, codicesUrl);
+                const manifest = await this.loadIIIFManifest(url, url);
                 if (manifest) {
                     // Cache the manifest
-                    this.deps.manifestCache.set(codicesUrl, manifest as any).catch(console.warn);
+                    this.deps.manifestCache.set(url, manifest as any).catch(console.warn);
                     return manifest;
                 }
                 throw new Error('Failed to load direct IIIF manifest');
@@ -45,9 +70,10 @@ export class CodicesLoader extends BaseLibraryLoader {
 
             // Try different strategies to find the IIIF manifest
             const strategies = [
-                () => this.tryBrowserBasedDiscovery(codicesUrl), // NEW: Browser automation for SPA
-                () => this.tryManifestDiscovery(codicesUrl),
-                () => this.tryPageScraping(codicesUrl),
+                () => this.tryBrowserBasedDiscovery(codicesUrl), // NEW: Browser automation for SPA (skipped in build)
+                () => this.tryManifestDiscovery(codicesUrl),      // Parse static HTML for IIIF hints
+                () => this.tryHeuristicApiEndpoints(codicesUrl),  // Try common API/endpoint patterns without JS
+                () => this.tryPageScraping(codicesUrl),           // As a last resort, look for IIIF image services
                 () => this.tryDirectManifestAccess(manuscriptId, codicesUrl)
             ];
 
@@ -165,6 +191,7 @@ Use: https://admont.codices.at/iiif/9cec1d04-d5c3-4a2a-9aa8-4279b359e701`);
             }
 
             const html = await response.text();
+            const origin = new URL(codicesUrl).origin;
             
             // Look for IIIF manifest references in the HTML - expanded patterns
             const manifestPatterns = [
@@ -215,6 +242,35 @@ Use: https://admont.codices.at/iiif/9cec1d04-d5c3-4a2a-9aa8-4279b359e701`);
                 }
             }
 
+            // As a last attempt: extract raw UUIDs anywhere in HTML and try IIIF manifest construction
+            const rawUuidRegex = /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/gi;
+            for (const m of html.matchAll(rawUuidRegex)) {
+                const uuid = m[1];
+                if (!uuid) continue;
+                // Try multiple bases to be robust across hostnames
+                const bases = [
+                    `${origin}/iiif/`,
+                    `https://admont.codices.at/iiif/`,
+                    `https://codices.at/iiif/`
+                ];
+                for (const base of bases) {
+                    const manifestUrl = `${base}${uuid}`;
+                    if (foundUrls.has(manifestUrl)) continue;
+                    foundUrls.add(manifestUrl);
+                    try {
+                        const manifest = await this.loadIIIFManifest(manifestUrl, codicesUrl);
+                        if (manifest) return manifest;
+                    } catch (error) {
+                        this.deps.logger?.log({
+                            level: 'warn',
+                            library: 'codices',
+                            message: `UUID-derived manifest failed: ${manifestUrl}`,
+                            details: { manifestUrl, error: String(error) }
+                        });
+                    }
+                }
+            }
+
             return null;
         } catch (error) {
             this.deps.logger?.log({
@@ -222,6 +278,106 @@ Use: https://admont.codices.at/iiif/9cec1d04-d5c3-4a2a-9aa8-4279b359e701`);
                 library: 'codices',
                 message: `Manifest discovery failed`,
                 details: { error: String(error) }
+            });
+            return null;
+        }
+    }
+
+    private async tryHeuristicApiEndpoints(codicesUrl: string): Promise<ManuscriptManifest | null> {
+        try {
+            const urlObj = new URL(codicesUrl);
+            const host = `${urlObj.protocol}//${urlObj.host}`;
+
+            // Extract collection/manuscript ids if available
+            const idMatch = codicesUrl.match(/codices\/(\d+)\/(\d+)/);
+            const collectionId = idMatch?.[1];
+            const manuscriptId = idMatch?.[2];
+
+            const candidates: string[] = [];
+            if (collectionId && manuscriptId) {
+                candidates.push(
+                    `${host}/codices/${collectionId}/${manuscriptId}/manifest`,
+                    `${host}/codices/${collectionId}/${manuscriptId}/iiif`,
+                    `${host}/codices/${collectionId}/${manuscriptId}.json`,
+                    `${host}/api/codices/${collectionId}/${manuscriptId}`,
+                    `${host}/api/manuscripts/${manuscriptId}`,
+                    `${host}/api/iiif/${manuscriptId}`,
+                    `${host}/iiif/codices/${collectionId}/${manuscriptId}`,
+                    `${host}/iiif/manifest/${manuscriptId}`
+                );
+            }
+
+            // Also try known IIIF collection/landing endpoints
+            candidates.push(
+                `${host}/iiif`,
+                `${host}/iiif/top`,
+                `${host}/iiif/collection`,
+                `${host}/iiif/collection/${collectionId || ''}`.replace(/\/$/, '')
+            );
+
+            // De-duplicate
+            const tried = new Set<string>();
+
+            for (const endpoint of candidates) {
+                if (!endpoint || tried.has(endpoint)) continue;
+                tried.add(endpoint);
+
+                try {
+                    const resp = await this.deps.fetchDirect(endpoint, { headers: { 'Accept': 'application/json, application/ld+json,*/*' } });
+                    if (!resp.ok) continue;
+
+                    // If this is a manifest itself
+                    const text = await resp.text();
+                    // Quick check to avoid parsing huge HTML by mistake
+                    if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
+                        try {
+                            const json = JSON.parse(text);
+                            // If it looks like a IIIF manifest
+                            if (json?.type === 'Manifest' || json?.['@type'] === 'sc:Manifest' || json?.items || json?.sequences) {
+                                const manifest = await this.loadIIIFManifest(endpoint, codicesUrl);
+                                if (manifest) return manifest;
+                            }
+                            // If it contains a manifest URL, search within JSON string
+                            // 1) Normal unescaped URLs
+                            const normalUrlMatch = text.match(/https?:\/\/[^"']*codices\.at\/iiif\/[a-f0-9-]{36}/i);
+                            if (normalUrlMatch && normalUrlMatch[0]) {
+                                const manifestUrl = normalUrlMatch[0];
+                                const manifest = await this.loadIIIFManifest(manifestUrl, codicesUrl);
+                                if (manifest) return manifest;
+                            } else {
+                                // 2) JSON-escaped URLs like https:\/\/admont.codices.at\/iiif\/UUID
+                                const escapedRegex = new RegExp('https?:\\\\/\\\\/[^"\\\']*codices\\.at\\\\/iiif\\\\/[a-f0-9-]{36}', 'i');
+                                const escapedMatch = text.match(escapedRegex);
+                                if (escapedMatch && escapedMatch[0]) {
+                                    const cleaned = escapedMatch[0].replace(/\\\//g, '/').replace(/\\/g, '');
+                                    const manifest = await this.loadIIIFManifest(cleaned, codicesUrl);
+                                    if (manifest) return manifest;
+                                }
+                            }
+                        } catch {
+                            // Ignore JSON parse errors
+                        }
+                    } else {
+                        // Non-JSON but accessible; try to find iiif UUIDs in text
+                        const uuidMatch = text.match(/https?:\/\/[^"']*codices\.at\/iiif\/[a-f0-9-]{36}/i);
+                        if (uuidMatch && uuidMatch[0]) {
+                            const manifestUrl = uuidMatch[0];
+                            const manifest = await this.loadIIIFManifest(manifestUrl, codicesUrl);
+                            if (manifest) return manifest;
+                        }
+                    }
+                } catch {
+                    // Ignore and continue
+                }
+            }
+
+            return null;
+        } catch (e) {
+            this.deps.logger?.log({
+                level: 'warn',
+                library: 'codices',
+                message: `Heuristic API discovery failed`,
+                details: { error: String(e) }
             });
             return null;
         }

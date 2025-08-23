@@ -881,13 +881,13 @@ export class EnhancedManuscriptDownloaderService {
         },
         {
             name: 'Digital Walters Art Museum',
-            example: 'https://manuscripts.thewalters.org/viewer.php?id=W.530#page/1/mode/1up',
-            description: 'The Walters Art Museum digital manuscript collection with high-resolution image access',
+            example: 'https://www.thedigitalwalters.org/Data/WaltersManuscripts/html/W33/',
+            description: 'The Walters Art Museum digital manuscript collection (HTML index). Downloads JPEG sap images, not TIFF masters.',
         },
         {
             name: 'Admont Codices Library',
-            example: 'https://codices.at/de/manuscript/4-codices-25-2/folios',
-            description: 'Admont Abbey digital manuscript collection (codices.at) via IIIF v3 with maximum resolution support',
+            example: 'https://admont.codices.at/iiif/9cec1d04-d5c3-4a2a-9aa8-4279b359e701',
+            description: 'Admont Abbey Codices (admont.codices.at) via IIIF v3; example uses direct IIIF manifest URL for one-click download',
         },
     ];
 
@@ -1086,8 +1086,8 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('digital.bodleian.ox.ac.uk') || url.includes('digital2.bodleian.ox.ac.uk')) return 'bodleian';
         if (url.includes('digi.ub.uni-heidelberg.de') || url.includes('doi.org/10.11588/diglit')) return 'heidelberg';
         if (url.includes('digi.landesbibliothek.at')) return 'linz';
-        // Digital Walters Art Museum support - both domains
-        if (url.includes('thedigitalwalters.org') || url.includes('manuscripts.thewalters.org')) return 'digital_walters';
+        // Digital Walters Art Museum support - only HTML index URLs per Issue #38
+        if (url.includes('thedigitalwalters.org') && url.includes('/Data/WaltersManuscripts/html/')) return 'digital_walters';
         // Issue #54: Ambrosiana library support
         if (url.includes('ambrosiana.comperio.it')) return 'ambrosiana';
         // Issue #30: Roman Archive support
