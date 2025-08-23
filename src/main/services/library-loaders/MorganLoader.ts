@@ -196,21 +196,46 @@ export class MorganLoader extends BaseLibraryLoader {
                     // OPTIMIZED: Single regex with capture groups to avoid redundant operations
                     // manuscriptId already extracted above
                     if (manuscriptId) {
-                        const imageIdRegex = /\/images\/collection\/([^"'?]+)\.jpg/g;
-                        const validImagePattern = /\d+v?_\d+/;
-                        
-                        let match;
-                        while ((match = imageIdRegex.exec(pageContent)) !== null) {
-                            const imageId = match?.[1] || '';
-                            // FIXED: Use correct pattern for Lindau Gospels (76874v_*) and similar manuscripts
-                            if (imageId && validImagePattern.test(imageId) && !imageId.includes('front-cover')) {
-                                const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptId}/${imageId}.zif`;
-                                if (imagesByPriority && imagesByPriority[0]) {
-                                    imagesByPriority[0].push(zifUrl);
-                                }
-                            }
+                        // Parse image identifiers from both styled and direct facsimile references
+                        // Example styled thumb: /sites/default/files/styles/largest_800_x_800_/public/facsimile/76874/76874v_0487-0001.jpg?itok=...
+                        // Example direct:       /sites/default/files/facsimile/76874/76874v_0487-0001.jpg
+                        const facsimileIdRegex = /\/facsimile\/(\d+)\/([^"'?]+)\.jpg/g;
+                        const styledFacsimileRegex = /\/styles\/[^"']*\/public\/facsimile\/(\d+)\/([^"'?]+)\.jpg/g;
+
+                        type FacsimileRef = { bbid: string; id: string };
+                        const facsimiles: FacsimileRef[] = [];
+
+                        // Collect from direct facsimile references
+                        let fm: RegExpExecArray | null;
+                        while ((fm = facsimileIdRegex.exec(pageContent)) !== null) {
+                            const bbid = fm[1];
+                            const id = fm[2];
+                            if (bbid && id) facsimiles.push({ bbid, id });
                         }
-                        
+
+                        // Collect from styled facsimiles as well
+                        for (const sm of pageContent.matchAll(styledFacsimileRegex)) {
+                            const bbid = sm[1];
+                            const id = sm[2];
+                            if (bbid && id) facsimiles.push({ bbid, id });
+                        }
+
+                        // De-duplicate by id (same page may appear multiple times)
+                        const seen = new Set<string>();
+                        for (const f of facsimiles) {
+                            const key = `${f.id}`;
+                            if (seen.has(key)) continue;
+                            seen.add(key);
+
+                            // Priority 0: ZIF ultra-high resolution
+                            const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptId}/${f.id}.zif`;
+                            imagesByPriority[0].push(zifUrl);
+
+                            // Priority 2/3: original facsimile JPEG as fallback (non-styled)
+                            const originalJpeg = `${baseUrl}/sites/default/files/facsimile/${f.bbid}/${f.id}.jpg`;
+                            imagesByPriority[2].push(originalJpeg);
+                        }
+
                         // Priority 1: NEW - High-resolution download URLs (16.6x improvement validated)
                         // Parse individual manuscript pages for download URLs
                         try {
