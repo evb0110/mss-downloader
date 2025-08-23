@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.245",
+  "version": "1.4.246",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.245: Codices (Admont) IIIF support enhancements",
-    "ADDED: Direct handling of Codices IIIF image service info.json and UUID-based IIIF manifest URLs",
-    "ENHANCED: Codices loader robust discovery for admont.codices.at manifests",
-    "NOTE: You can paste https://admont.codices.at/codices/169/90299 or direct IIIF like https://admont.codices.at/iiif/9cec1d04-d5c3-4a2a-9aa8-4279b359e701"
+    "v1.4.246: Admont Codices example fixed + broader URL patterns",
+    "CHANGED: Supported Libraries example now uses direct IIIF manifest for one-click download",
+    "ENHANCED: Codices loader tries both admont.codices.at and codices.at when building IIIF URLs from raw UUIDs",
+    "FIXED: Regex escaping for JSON-escaped URLs in discovery"
   ],
   "main": "dist/main/main.js",
   "scripts": {

@@ -886,8 +886,8 @@ export class EnhancedManuscriptDownloaderService {
         },
         {
             name: 'Admont Codices Library',
-            example: 'https://admont.codices.at/codices/169/90299',
-            description: 'Admont Abbey Codices (admont.codices.at) via IIIF v3; supports direct IIIF UUID and image info.json URLs',
+            example: 'https://admont.codices.at/iiif/9cec1d04-d5c3-4a2a-9aa8-4279b359e701',
+            description: 'Admont Abbey Codices (admont.codices.at) via IIIF v3; example uses direct IIIF manifest URL for one-click download',
         },
     ];
 

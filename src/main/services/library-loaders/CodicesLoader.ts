@@ -191,6 +191,7 @@ Use: https://admont.codices.at/iiif/9cec1d04-d5c3-4a2a-9aa8-4279b359e701`);
             }
 
             const html = await response.text();
+            const origin = new URL(codicesUrl).origin;
             
             // Look for IIIF manifest references in the HTML - expanded patterns
             const manifestPatterns = [
@@ -246,19 +247,27 @@ Use: https://admont.codices.at/iiif/9cec1d04-d5c3-4a2a-9aa8-4279b359e701`);
             for (const m of html.matchAll(rawUuidRegex)) {
                 const uuid = m[1];
                 if (!uuid) continue;
-                const manifestUrl = `https://admont.codices.at/iiif/${uuid}`;
-                if (foundUrls.has(manifestUrl)) continue;
-                foundUrls.add(manifestUrl);
-                try {
-                    const manifest = await this.loadIIIFManifest(manifestUrl, codicesUrl);
-                    if (manifest) return manifest;
-                } catch (error) {
-                    this.deps.logger?.log({
-                        level: 'warn',
-                        library: 'codices',
-                        message: `UUID-derived manifest failed: ${manifestUrl}`,
-                        details: { manifestUrl, error: String(error) }
-                    });
+                // Try multiple bases to be robust across hostnames
+                const bases = [
+                    `${origin}/iiif/`,
+                    `https://admont.codices.at/iiif/`,
+                    `https://codices.at/iiif/`
+                ];
+                for (const base of bases) {
+                    const manifestUrl = `${base}${uuid}`;
+                    if (foundUrls.has(manifestUrl)) continue;
+                    foundUrls.add(manifestUrl);
+                    try {
+                        const manifest = await this.loadIIIFManifest(manifestUrl, codicesUrl);
+                        if (manifest) return manifest;
+                    } catch (error) {
+                        this.deps.logger?.log({
+                            level: 'warn',
+                            library: 'codices',
+                            message: `UUID-derived manifest failed: ${manifestUrl}`,
+                            details: { manifestUrl, error: String(error) }
+                        });
+                    }
                 }
             }
 
