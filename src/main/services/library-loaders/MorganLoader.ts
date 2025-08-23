@@ -169,10 +169,12 @@ export class MorganLoader extends BaseLibraryLoader {
                 if (manuscriptId) {
                     const quickFacsimileIdRegex = /\/facsimile\/(\d+)\/([^"'?]+)\.jpg/g;
                     const styledFacsimileIdRegex = /\/styles\/[^"']*\/public\/facsimile\/(\d+)\/([^"'?]+)\.jpg/g;
+                    const pageLinkRegex = new RegExp(`\\/collection\\/${manuscriptId}\\/(\\d+)`, 'g');
                     const knownIds = new Set<string>([
                         ...[...pageContent.matchAll(quickFacsimileIdRegex)].map(m => m[2]),
                         ...[...pageContent.matchAll(styledFacsimileIdRegex)].map(m => m[2])
                     ]);
+                    const knownPages = new Set<string>([...pageContent.matchAll(pageLinkRegex)].map(m => m[1]));
 
                     const parseDrupalSettings = (html: string) => {
                         try {
@@ -238,14 +240,18 @@ export class MorganLoader extends BaseLibraryLoader {
                                 for (const cmd of json) {
                                     const data = cmd?.data;
                                     if (typeof data === 'string' && data.includes('<')) {
-                                        const before = knownIds.size;
+                                        const idsBefore = knownIds.size;
+                                        const pagesBefore = knownPages.size;
                                         for (const m of data.matchAll(quickFacsimileIdRegex)) {
                                             knownIds.add(m[2]);
                                         }
                                         for (const m of data.matchAll(styledFacsimileIdRegex)) {
                                             knownIds.add(m[2]);
                                         }
-                                        if (knownIds.size > before) {
+                                        for (const m of data.matchAll(pageLinkRegex)) {
+                                            knownPages.add(m[1]);
+                                        }
+                                        if (knownIds.size > idsBefore || knownPages.size > pagesBefore) {
                                             pagesHtml.push(data);
                                             appended = true;
                                         }
@@ -275,14 +281,18 @@ export class MorganLoader extends BaseLibraryLoader {
                                 if (!resp.ok) break;
                                 const html = await resp.text();
 
-                                const before = knownIds.size;
+                                const idsBefore = knownIds.size;
+                                const pagesBefore = knownPages.size;
                                 for (const m of html.matchAll(quickFacsimileIdRegex)) {
                                     knownIds.add(m[2]);
                                 }
                                 for (const m of html.matchAll(styledFacsimileIdRegex)) {
                                     knownIds.add(m[2]);
                                 }
-                                if (knownIds.size > before) {
+                                for (const m of html.matchAll(pageLinkRegex)) {
+                                    knownPages.add(m[1]);
+                                }
+                                if (knownIds.size > idsBefore || knownPages.size > pagesBefore) {
                                     pagesHtml.push(html);
                                     pageIndex++;
                                     await new Promise(r => setTimeout(r, 200));
@@ -353,15 +363,18 @@ export class MorganLoader extends BaseLibraryLoader {
                         }
 
                         // De-duplicate by id (same page may appear multiple times)
+                        const isLikelyZifCandidate = (id: string) => id.includes('_') && !/-\d{2,4}x\d{2,4}/.test(id);
                         const seen = new Set<string>();
                         for (const f of facsimiles) {
                             const key = `${f.id}`;
                             if (seen.has(key)) continue;
                             seen.add(key);
 
-                            // Priority 0: ZIF ultra-high resolution
+                            // Priority 0: ZIF ultra-high resolution (only for plausible facsimile page IDs)
                             const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptId}/${f.id}.zif`;
-                            imagesByPriority[0].push(zifUrl);
+                            if (isLikelyZifCandidate(f.id)) {
+                                imagesByPriority[0].push(zifUrl);
+                            }
 
                             // Priority 2/3: original facsimile JPEG as fallback (non-styled)
                             const originalJpeg = `${baseUrl}/sites/default/files/facsimile/${f.bbid}/${f.id}.jpg`;
@@ -371,33 +384,25 @@ export class MorganLoader extends BaseLibraryLoader {
                         // Priority 1: NEW - High-resolution download URLs (16.6x improvement validated)
                         // Parse individual manuscript pages for download URLs (only if we didn't get ZIFs)
                         if (imagesByPriority[0].length === 0) try {
-                            // Extract individual page URLs from thumbs page
+                            // Extract individual page URLs from all collected thumbs pages
                             const pageUrlRegex = new RegExp(`\\/collection\\/${manuscriptId}\\/(\\d+)`, 'g');
-                            const pageMatches = [...pageContent.matchAll(pageUrlRegex)];
-                            const uniquePages = [...new Set(pageMatches.map(match => match?.[1]))];
-                            
-                            // Also try alternative patterns for page detection
                             const altPatterns = [
                                 new RegExp(`href="[^"]*\\/collection\\/${manuscriptId}\\/(\\d+)[^"]*"`, 'g'),
                                 new RegExp(`data-page="(\\d+)"`, 'g'),
                                 new RegExp(`page-(\\d+)`, 'g'),
-                                // FIXED: Add pattern for thumbnail grid items
                                 new RegExp(`<a[^>]+href="[^"]*\\/collection\\/${manuscriptId}\\/(\\d+)[^"]*"[^>]*>\\s*<img`, 'g'),
-                                // FIXED: Add pattern for data attributes in grid
                                 new RegExp(`data-id="(\\d+)"`, 'g')
                             ];
-                            
-                            // Collect all pages from alternative patterns
-                            const allPages = [...uniquePages];
-                            for (const pattern of altPatterns) {
-                                const altMatches = [...pageContent.matchAll(pattern)];
-                                for (const match of altMatches) {
-                                    allPages.push(match?.[1] || '');
+                            const uniquePageSet = new Set<string>();
+                            for (const html of pagesHtml) {
+                                for (const m of html.matchAll(pageUrlRegex)) uniquePageSet.add(m[1]);
+                                for (const pattern of altPatterns) {
+                                    for (const m of html.matchAll(pattern)) uniquePageSet.add(m[1] || '');
                                 }
                             }
                             
                             // Remove duplicates and sort
-                            const allUniquePages = [...new Set(allPages)].sort((a, b) => parseInt(a || '0') - parseInt(b || '0'));
+                            const allUniquePages = [...uniquePageSet].filter(Boolean).sort((a, b) => parseInt(a || '0') - parseInt(b || '0'));
                             
                             // FIXED: If no pages found in thumbs and we started from a single page, create page range
                             if (allUniquePages?.length === 0 && startPageNum !== null) {
