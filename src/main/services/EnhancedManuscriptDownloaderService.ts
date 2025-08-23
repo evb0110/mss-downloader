@@ -2115,7 +2115,8 @@ export class EnhancedManuscriptDownloaderService {
                     manifest = await this.loadLibraryManifest('nypl', originalUrl);
                     break;
                 case 'morgan':
-                    manifest = await this.sharedManifestAdapter.getManifestForLibrary('morgan', originalUrl);
+                    // Use dedicated MorganLoader for robust facsimile/ZIF discovery
+                    manifest = await this.loadLibraryManifest('morgan', originalUrl);
                     break;
                 case 'gallica':
                     manifest = await this.loadLibraryManifest('gallica', originalUrl);
