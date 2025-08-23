@@ -301,42 +301,40 @@ export class MorganLoader extends BaseLibraryLoader {
                         usedAjax = appendedTotal > 0;
                     }
 
-                    // Fallback to simple ?page=N pagination if AJAX failed
-                    if (!usedAjax) {
-                        try {
-                            let pageIndex = 1;
-                            // If initial page was /thumbs, paginate on /thumbs; otherwise, on the base collection path
-                            const thumbsPagingBase = pageUrl.includes('/thumbs')
-                                ? `${baseUrl}/collection/${manuscriptId}/thumbs`
-                                : `${baseUrl}/collection/${manuscriptId}`;
-                            while (true) {
-                                const nextUrl = `${thumbsPagingBase}?page=${pageIndex}`;
-                                const resp = await this.deps.fetchDirect(nextUrl);
-                                if (!resp.ok) break;
-                                const html = await resp.text();
+                    // ALWAYS perform simple ?page=N pagination as a safety net
+                    try {
+                        let pageIndex = 1;
+                        // If initial page was /thumbs, paginate on /thumbs; otherwise, on the base collection path
+                        const thumbsPagingBase = pageUrl.includes('/thumbs')
+                            ? `${baseUrl}/collection/${manuscriptId}/thumbs`
+                            : `${baseUrl}/collection/${manuscriptId}`;
+                        while (true) {
+                            const nextUrl = `${thumbsPagingBase}?page=${pageIndex}`;
+                            const resp = await this.deps.fetchDirect(nextUrl);
+                            if (!resp.ok) break;
+                            const html = await resp.text();
 
-                                const idsBefore = knownIds.size;
-                                const pagesBefore = knownPages.size;
-                                for (const m of html.matchAll(quickFacsimileIdRegex)) {
-                                    knownIds.add(m[2]);
-                                }
-                                for (const m of html.matchAll(styledFacsimileIdRegex)) {
-                                    knownIds.add(m[2]);
-                                }
-                                for (const m of html.matchAll(pageLinkRegex)) {
-                                    knownPages.add(m[1]);
-                                }
-                                if (knownIds.size > idsBefore || knownPages.size > pagesBefore) {
-                                    pagesHtml.push(html);
-                                    pageIndex++;
-                                    await new Promise(r => setTimeout(r, 200));
-                                } else {
-                                    break;
-                                }
+                            const idsBefore = knownIds.size;
+                            const pagesBefore = knownPages.size;
+                            for (const m of html.matchAll(quickFacsimileIdRegex)) {
+                                knownIds.add(m[2]);
                             }
-                        } catch {
-                            // Ignore pagination errors
+                            for (const m of html.matchAll(styledFacsimileIdRegex)) {
+                                knownIds.add(m[2]);
+                            }
+                            for (const m of html.matchAll(pageLinkRegex)) {
+                                knownPages.add(m[1]);
+                            }
+                            if (knownIds.size > idsBefore || knownPages.size > pagesBefore) {
+                                pagesHtml.push(html);
+                                pageIndex++;
+                                await new Promise(r => setTimeout(r, 200));
+                            } else {
+                                break;
+                            }
                         }
+                    } catch {
+                        // Ignore pagination errors
                     }
                 }
                 
