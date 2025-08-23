@@ -167,34 +167,118 @@ export class MorganLoader extends BaseLibraryLoader {
                 // Load more pages (views infinite scroll) to collect all facsimiles
                 let pagesHtml: string[] = [pageContent];
                 if (manuscriptId) {
-                    try {
-                        let pageIndex = 1;
-                        const maxPages = 20;
-                        const quickFacsimileIdRegex = /\/facsimile\/(\d+)\/([^"'?]+)\.jpg/g;
-                        const knownIds = new Set<string>();
-                        for (const m of pageContent.matchAll(quickFacsimileIdRegex)) {
-                            knownIds.add(m[2]);
-                        }
-                        while (pageIndex <= maxPages) {
-                            const nextUrl = `${baseUrl}/collection/${manuscriptId}?page=${pageIndex}`;
-                            const resp = await this.deps.fetchDirect(nextUrl);
-                            if (!resp.ok) break;
-                            const html = await resp.text();
+                    const quickFacsimileIdRegex = /\/facsimile\/(\d+)\/([^"'?]+)\.jpg/g;
+                    const knownIds = new Set<string>([...pageContent.matchAll(quickFacsimileIdRegex)].map(m => m[2]));
 
-                            const before = knownIds.size;
-                            for (const m of html.matchAll(quickFacsimileIdRegex)) {
-                                knownIds.add(m[2]);
+                    const parseDrupalSettings = (html: string) => {
+                        try {
+                            const m = html.match(/<script[^>]*data-drupal-selector=\"drupal-settings-json\"[^>]*>([\s\S]*?)<\/script>/i);
+                            if (!m) return null;
+                            const json = JSON.parse(m[1]);
+                            const ajaxViews = json?.views?.ajaxViews || {};
+                            for (const key of Object.keys(ajaxViews)) {
+                                const v = ajaxViews[key];
+                                if (v?.view_name && v?.view_display_id && v?.view_path) {
+                                    return {
+                                        view_name: v.view_name,
+                                        view_display_id: v.view_display_id,
+                                        view_args: v.view_args || '',
+                                        view_path: v.view_path,
+                                        view_base_path: v.view_base_path || '',
+                                        view_dom_id: v.view_dom_id || key,
+                                        pager_element: String(v.pager_element ?? 0)
+                                    };
+                                }
                             }
-                            if (knownIds.size > before) {
-                                pagesHtml.push(html);
+                            return null;
+                        } catch {
+                            return null;
+                        }
+                    };
+
+                    const ajaxParams = parseDrupalSettings(pageContent);
+                    let usedAjax = false;
+
+                    // Try Drupal views/ajax pagination first
+                    if (ajaxParams) {
+                        usedAjax = true;
+                        let pageIndex = 1;
+                        while (true) {
+                            const form = new URLSearchParams();
+                            form.set('view_name', ajaxParams.view_name);
+                            form.set('view_display_id', ajaxParams.view_display_id);
+                            form.set('view_args', ajaxParams.view_args);
+                            form.set('view_path', ajaxParams.view_path);
+                            form.set('view_base_path', ajaxParams.view_base_path);
+                            form.set('view_dom_id', ajaxParams.view_dom_id);
+                            form.set('pager_element', ajaxParams.pager_element);
+                            form.set('page', String(pageIndex));
+
+                            try {
+                                const resp = await this.deps.fetchDirect(`${baseUrl}/views/ajax`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'Accept': 'application/json, text/javascript, */*; q=0.01'
+                                    },
+                                    body: form.toString()
+                                });
+
+                                if (!resp.ok) break;
+                                const json = await resp.json().catch(() => null as any);
+                                if (!Array.isArray(json)) break;
+
+                                // Extract any HTML chunks from 'data' fields in commands
+                                let appended = false;
+                                for (const cmd of json) {
+                                    const data = cmd?.data;
+                                    if (typeof data === 'string' && data.includes('<')) {
+                                        const before = knownIds.size;
+                                        for (const m of data.matchAll(quickFacsimileIdRegex)) {
+                                            knownIds.add(m[2]);
+                                        }
+                                        if (knownIds.size > before) {
+                                            pagesHtml.push(data);
+                                            appended = true;
+                                        }
+                                    }
+                                }
+
+                                if (!appended) break;
                                 pageIndex++;
                                 await new Promise(r => setTimeout(r, 200));
-                            } else {
+                            } catch {
                                 break;
                             }
                         }
-                    } catch {
-                        // Ignore pagination errors and continue with what we have
+                    }
+
+                    // Fallback to simple ?page=N pagination if AJAX failed
+                    if (!usedAjax) {
+                        try {
+                            let pageIndex = 1;
+                            while (true) {
+                                const nextUrl = `${baseUrl}/collection/${manuscriptId}?page=${pageIndex}`;
+                                const resp = await this.deps.fetchDirect(nextUrl);
+                                if (!resp.ok) break;
+                                const html = await resp.text();
+
+                                const before = knownIds.size;
+                                for (const m of html.matchAll(quickFacsimileIdRegex)) {
+                                    knownIds.add(m[2]);
+                                }
+                                if (knownIds.size > before) {
+                                    pagesHtml.push(html);
+                                    pageIndex++;
+                                    await new Promise(r => setTimeout(r, 200));
+                                } else {
+                                    break;
+                                }
+                            }
+                        } catch {
+                            // Ignore pagination errors
+                        }
                     }
                 }
                 
@@ -271,8 +355,8 @@ export class MorganLoader extends BaseLibraryLoader {
                         }
 
                         // Priority 1: NEW - High-resolution download URLs (16.6x improvement validated)
-                        // Parse individual manuscript pages for download URLs
-                        try {
+                        // Parse individual manuscript pages for download URLs (only if we didn't get ZIFs)
+                        if (imagesByPriority[0].length === 0) try {
                             // Extract individual page URLs from thumbs page
                             const pageUrlRegex = new RegExp(`\\/collection\\/${manuscriptId}\\/(\\d+)`, 'g');
                             const pageMatches = [...pageContent.matchAll(pageUrlRegex)];
