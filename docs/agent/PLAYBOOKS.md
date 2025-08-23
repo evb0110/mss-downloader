@@ -15,6 +15,7 @@ Detailed procedures, pitfalls, and context for non-trivial tasks.
 - Site is Drupal 10 with Digital Facsimiles grid and individual pages
 - Thumbs redirect to canonical collection page: /collection/{slug}[/thumbs]
 - Preferred assets (highest to lowest):
+  - Use pagination (?page=1,2,…) to gather all facsimile ids from the collection grid before building links
   1) ZIF tiles: https://host.themorgan.org/facsimile/images/{slug}/{id}.zif
   2) High-res JPEGs from individual page: /sites/default/files/facsimile/{BBID}/{id}.jpg
   3) Original images converted from styled thumbs

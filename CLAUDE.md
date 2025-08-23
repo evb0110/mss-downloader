@@ -1,7 +1,5 @@
 # CLAUDE.md
 
-test line
-
 Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF creation.
 **Technologies:** Electron, Vue 3, TypeScript, SCSS, Vite, `electron-store`
 

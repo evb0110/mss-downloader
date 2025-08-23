@@ -164,6 +164,40 @@ export class MorganLoader extends BaseLibraryLoader {
                 
                 const pageContent = await pageResponse.text();
                 
+                // Load more pages (views infinite scroll) to collect all facsimiles
+                let pagesHtml: string[] = [pageContent];
+                if (manuscriptId) {
+                    try {
+                        let pageIndex = 1;
+                        const maxPages = 20;
+                        const quickFacsimileIdRegex = /\/facsimile\/(\d+)\/([^"'?]+)\.jpg/g;
+                        const knownIds = new Set<string>();
+                        for (const m of pageContent.matchAll(quickFacsimileIdRegex)) {
+                            knownIds.add(m[2]);
+                        }
+                        while (pageIndex <= maxPages) {
+                            const nextUrl = `${baseUrl}/collection/${manuscriptId}?page=${pageIndex}`;
+                            const resp = await this.deps.fetchDirect(nextUrl);
+                            if (!resp.ok) break;
+                            const html = await resp.text();
+
+                            const before = knownIds.size;
+                            for (const m of html.matchAll(quickFacsimileIdRegex)) {
+                                knownIds.add(m[2]);
+                            }
+                            if (knownIds.size > before) {
+                                pagesHtml.push(html);
+                                pageIndex++;
+                                await new Promise(r => setTimeout(r, 200));
+                            } else {
+                                break;
+                            }
+                        }
+                    } catch {
+                        // Ignore pagination errors and continue with what we have
+                    }
+                }
+                
                 // Extract image URLs from the page
                 const pageLinks: string[] = [];
                 
@@ -207,17 +241,17 @@ export class MorganLoader extends BaseLibraryLoader {
 
                         // Collect from direct facsimile references
                         let fm: RegExpExecArray | null;
-                        while ((fm = facsimileIdRegex.exec(pageContent)) !== null) {
-                            const bbid = fm[1];
-                            const id = fm[2];
-                            if (bbid && id) facsimiles.push({ bbid, id });
-                        }
-
-                        // Collect from styled facsimiles as well
-                        for (const sm of pageContent.matchAll(styledFacsimileRegex)) {
-                            const bbid = sm[1];
-                            const id = sm[2];
-                            if (bbid && id) facsimiles.push({ bbid, id });
+                        for (const html of pagesHtml) {
+                            while ((fm = facsimileIdRegex.exec(html)) !== null) {
+                                const bbid = fm[1];
+                                const id = fm[2];
+                                if (bbid && id) facsimiles.push({ bbid, id });
+                            }
+                            for (const sm of html.matchAll(styledFacsimileRegex)) {
+                                const bbid = sm[1];
+                                const id = sm[2];
+                                if (bbid && id) facsimiles.push({ bbid, id });
+                            }
                         }
 
                         // De-duplicate by id (same page may appear multiple times)
@@ -352,31 +386,7 @@ export class MorganLoader extends BaseLibraryLoader {
                         }
                     }
                     
-                    // Priority 2: Look for direct full-size image references
-                    const fullSizeImageRegex = /\/sites\/default\/files\/images\/collection\/[^"'?]+\.jpg/g;
-                    const fullSizeMatches = pageContent.match(fullSizeImageRegex) || [];
-                    
-                    for (const match of fullSizeMatches) {
-                        const fullUrl = `${baseUrl}${match}`;
-                        if (imagesByPriority && imagesByPriority[2]) {
-                            imagesByPriority[2].push(fullUrl);
-                        }
-                    }
-                    
-                    // Priority 3: Extract styled images converted to original (fallback for reliability)
-                    const styledImageRegex = /\/sites\/default\/files\/styles\/[^"']*\/public\/images\/collection\/[^"'?]+\.jpg/g;
-                    const styledMatches = pageContent.match(styledImageRegex) || [];
-                    
-                    for (const match of styledMatches) {
-                        // Convert styled image to original high-resolution version
-                        // From: /sites/default/files/styles/large__650_x_650_/public/images/collection/filename.jpg
-                        // To: /sites/default/files/images/collection/filename.jpg
-                        const originalPath = match.replace(/\/styles\/[^/]+\/public\//, '/');
-                        const fullUrl = `${baseUrl}${originalPath}`;
-                        if (imagesByPriority && imagesByPriority[3]) {
-                            imagesByPriority[3].push(fullUrl);
-                        }
-                    }
+                    // Priority 2/3 removed for Morgan: avoid non-facsimile hero/styled images that 404
                     
                     // Priority 4: Fallback to facsimile images (legacy format)
                     const facsimileRegex = /\/sites\/default\/files\/facsimile\/[^"']+\.jpg/g;
@@ -390,14 +400,12 @@ export class MorganLoader extends BaseLibraryLoader {
                     }
                     
                     // Priority 5: Other direct image references
-                    const directImageRegex = /https?:\/\/[^"']*themorgan\.org[^"']*\.jpg/g;
+                    const directImageRegex = /https?:\/\/[^"']*themorgan\.org[^"']*facsimile[^"']*\.jpg/g;
                     const directMatches = pageContent.match(directImageRegex) || [];
                     
                     for (const match of directMatches) {
-                        if (match.includes('facsimile') || match.includes('images/collection')) {
-                            if (imagesByPriority && imagesByPriority[5]) {
-                                imagesByPriority[5].push(match);
-                            }
+                        if (imagesByPriority && imagesByPriority[5]) {
+                            imagesByPriority[5].push(match);
                         }
                     }
                     
