@@ -1086,8 +1086,8 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('digital.bodleian.ox.ac.uk') || url.includes('digital2.bodleian.ox.ac.uk')) return 'bodleian';
         if (url.includes('digi.ub.uni-heidelberg.de') || url.includes('doi.org/10.11588/diglit')) return 'heidelberg';
         if (url.includes('digi.landesbibliothek.at')) return 'linz';
-        // Digital Walters Art Museum support
-        if (url.includes('thedigitalwalters.org')) return 'digital_walters';
+        // Digital Walters Art Museum support - both domains
+        if (url.includes('thedigitalwalters.org') || url.includes('manuscripts.thewalters.org')) return 'digital_walters';
         // Issue #54: Ambrosiana library support
         if (url.includes('ambrosiana.comperio.it')) return 'ambrosiana';
         // Issue #30: Roman Archive support

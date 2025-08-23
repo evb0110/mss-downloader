@@ -12,14 +12,27 @@ export class DigitalWaltersLoader extends BaseLibraryLoader {
     
     async loadManifest(url: string): Promise<ManuscriptManifest> {
         try {
-            // Extract manuscript ID from URL
-            // Pattern: https://www.thedigitalwalters.org/Data/WaltersManuscripts/html/WXX/
-            const idMatch = url.match(/\/html\/([Ww]\d+)\/?$/);
-            if (!idMatch || !idMatch[1]) {
-                throw new Error('Invalid Digital Walters URL format - could not extract manuscript ID');
-            }
+            // Extract manuscript ID from URL - handle both formats
+            // Pattern 1: https://www.thedigitalwalters.org/Data/WaltersManuscripts/html/WXX/
+            // Pattern 2: https://manuscripts.thewalters.org/viewer.php?id=W.530#page/1/mode/1up
+            let manuscriptId: string;
             
-            const manuscriptId = idMatch[1].toUpperCase(); // Ensure uppercase W
+            if (url.includes('thedigitalwalters.org')) {
+                const idMatch = url.match(/\/html\/([Ww]\d+)\/?$/);
+                if (!idMatch || !idMatch[1]) {
+                    throw new Error('Invalid Digital Walters URL format - could not extract manuscript ID');
+                }
+                manuscriptId = idMatch[1].toUpperCase();
+            } else if (url.includes('manuscripts.thewalters.org')) {
+                const idMatch = url.match(/[?&]id=([Ww]\.?\d+)/);
+                if (!idMatch || !idMatch[1]) {
+                    throw new Error('Invalid Walters manuscripts URL format - could not extract manuscript ID');
+                }
+                // Convert W.530 to W530 format
+                manuscriptId = idMatch[1].toUpperCase().replace('.', '');
+            } else {
+                throw new Error('Unsupported Digital Walters URL format');
+            }
             
             // Fetch the main page to extract title
             const pageResponse = await this.deps.fetchDirect(url);
