@@ -263,7 +263,7 @@ export class MorganLoader extends BaseLibraryLoader {
 
                     // Try Drupal views/ajax pagination first
                     if (ajaxParams) {
-                        usedAjax = true;
+                        let appendedTotal = 0;
                         let pageIndex = 1;
                         while (true) {
                             const json = await fetchViewsAjax(pageIndex);
@@ -288,6 +288,7 @@ export class MorganLoader extends BaseLibraryLoader {
                                     if (knownIds.size > idsBefore || knownPages.size > pagesBefore) {
                                         pagesHtml.push(data);
                                         appended = true;
+                                        appendedTotal++;
                                     }
                                 }
                             }
@@ -296,6 +297,8 @@ export class MorganLoader extends BaseLibraryLoader {
                             pageIndex++;
                             await new Promise(r => setTimeout(r, 200));
                         }
+                        // Only consider AJAX successful if we appended at least once
+                        usedAjax = appendedTotal > 0;
                     }
 
                     // Fallback to simple ?page=N pagination if AJAX failed
