@@ -168,7 +168,11 @@ export class MorganLoader extends BaseLibraryLoader {
                 let pagesHtml: string[] = [pageContent];
                 if (manuscriptId) {
                     const quickFacsimileIdRegex = /\/facsimile\/(\d+)\/([^"'?]+)\.jpg/g;
-                    const knownIds = new Set<string>([...pageContent.matchAll(quickFacsimileIdRegex)].map(m => m[2]));
+                    const styledFacsimileIdRegex = /\/styles\/[^"']*\/public\/facsimile\/(\d+)\/([^"'?]+)\.jpg/g;
+                    const knownIds = new Set<string>([
+                        ...[...pageContent.matchAll(quickFacsimileIdRegex)].map(m => m[2]),
+                        ...[...pageContent.matchAll(styledFacsimileIdRegex)].map(m => m[2])
+                    ]);
 
                     const parseDrupalSettings = (html: string) => {
                         try {
@@ -238,6 +242,9 @@ export class MorganLoader extends BaseLibraryLoader {
                                         for (const m of data.matchAll(quickFacsimileIdRegex)) {
                                             knownIds.add(m[2]);
                                         }
+                                        for (const m of data.matchAll(styledFacsimileIdRegex)) {
+                                            knownIds.add(m[2]);
+                                        }
                                         if (knownIds.size > before) {
                                             pagesHtml.push(data);
                                             appended = true;
@@ -270,6 +277,9 @@ export class MorganLoader extends BaseLibraryLoader {
 
                                 const before = knownIds.size;
                                 for (const m of html.matchAll(quickFacsimileIdRegex)) {
+                                    knownIds.add(m[2]);
+                                }
+                                for (const m of html.matchAll(styledFacsimileIdRegex)) {
                                     knownIds.add(m[2]);
                                 }
                                 if (knownIds.size > before) {
