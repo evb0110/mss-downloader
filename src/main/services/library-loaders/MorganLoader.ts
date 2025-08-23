@@ -258,8 +258,12 @@ export class MorganLoader extends BaseLibraryLoader {
                     if (!usedAjax) {
                         try {
                             let pageIndex = 1;
+                            // If initial page was /thumbs, paginate on /thumbs; otherwise, on the base collection path
+                            const thumbsPagingBase = pageUrl.includes('/thumbs')
+                                ? `${baseUrl}/collection/${manuscriptId}/thumbs`
+                                : `${baseUrl}/collection/${manuscriptId}`;
                             while (true) {
-                                const nextUrl = `${baseUrl}/collection/${manuscriptId}?page=${pageIndex}`;
+                                const nextUrl = `${thumbsPagingBase}?page=${pageIndex}`;
                                 const resp = await this.deps.fetchDirect(nextUrl);
                                 if (!resp.ok) break;
                                 const html = await resp.text();
