@@ -12,19 +12,44 @@ export class CodicesLoader extends BaseLibraryLoader {
     
     async loadManifest(codicesUrl: string): Promise<ManuscriptManifest> {
         try {
-            // Check if this is already a direct IIIF manifest URL
-            if (codicesUrl.includes('/iiif/') && /[a-f0-9-]{36}/.test(codicesUrl)) {
+            // Normalize and handle direct IIIF access patterns first
+            const url = codicesUrl;
+
+            // 1) Direct IIIF image service info.json
+            // Example: https://admont.codices.at/iiif/image/9cec1d06-e05f-48d4-a36a-e220906a51fd/info.json
+            if (/\/iiif\/image\/[a-f0-9-]{36}\/info\.json$/i.test(url)) {
+                const serviceUrl = url.replace(/\/info\.json$/i, '');
+                const pageUrl = `${serviceUrl}/full/full/0/default.jpg`;
+                this.deps.logger?.log({
+                    level: 'info',
+                    library: 'codices',
+                    message: `Processing Codices IIIF image info.json`,
+                    details: { serviceUrl }
+                });
+                const manifest: ManuscriptManifest = {
+                    pageLinks: [pageUrl],
+                    totalPages: 1,
+                    library: 'codices',
+                    displayName: 'Codices image',
+                    originalUrl: url
+                };
+                await this.deps.manifestCache.set(url, manifest as any).catch(console.warn);
+                return manifest;
+            }
+
+            // 2) Direct IIIF manifest UUID URL
+            if (url.includes('/iiif/') && /[a-f0-9-]{36}/.test(url)) {
                 this.deps.logger?.log({
                     level: 'info',
                     library: 'codices',
                     message: `Processing direct IIIF manifest URL`,
-                    details: { manifestUrl: codicesUrl }
+                    details: { manifestUrl: url }
                 });
 
-                const manifest = await this.loadIIIFManifest(codicesUrl, codicesUrl);
+                const manifest = await this.loadIIIFManifest(url, url);
                 if (manifest) {
                     // Cache the manifest
-                    this.deps.manifestCache.set(codicesUrl, manifest as any).catch(console.warn);
+                    this.deps.manifestCache.set(url, manifest as any).catch(console.warn);
                     return manifest;
                 }
                 throw new Error('Failed to load direct IIIF manifest');

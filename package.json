@@ -1,13 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.244",
+  "version": "1.4.245",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.244: Digital Walters URL Detection FIXED",
-    "FIXED: Digital Walters Art Museum - now supports both URL formats", 
-    "ADDED: manuscripts.thewalters.org URL pattern detection",
-    "ENHANCED: DigitalWaltersLoader handles W.530 to W530 ID conversion",
-    "USER IMPACT: All Walters manuscripts now accessible via viewer URLs"
+    "v1.4.245: Codices (Admont) IIIF support enhancements",
+    "ADDED: Direct handling of Codices IIIF image service info.json and UUID-based IIIF manifest URLs",
+    "ENHANCED: Codices loader robust discovery for admont.codices.at manifests",
+    "NOTE: You can paste https://admont.codices.at/codices/169/90299 or direct IIIF like https://admont.codices.at/iiif/9cec1d04-d5c3-4a2a-9aa8-4279b359e701"
   ],
   "main": "dist/main/main.js",
   "scripts": {
