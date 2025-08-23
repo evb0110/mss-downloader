@@ -1,13 +1,11 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.249",
+  "version": "1.4.250",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.249: UX: throttled, monotonic progress (no jitter), smoothed ETA; tile progress consolidated to avoid UI flooding; Bordeaux tile processor flags propagated for pre-sliced parts",
-    "v1.4.248: Morgan fully functional: complete pagination via views/ajax + ?page=N, facsimile-only extraction, cover pages fixed, improved ZIF selection; min auto-split 100MB; recommended concurrency = 2-3",
-    "v1.4.247: Admont Codices supported patterns clarified",
-    "CHANGED: Supported Libraries entry mentions both iiif/{UUID} manifest and iiif/image/{UUID}/info.json direct image service handling",
-    "ENHANCED: Codices loader robustly handles admont.codices.at and codices.at across raw-UUID discovery and HTML parsing"
+    "v1.4.250: Fixed auto-split chunk orchestration to strictly sequential; prevented parallel chunk starts in sequential mode",
+    "Non-breaking change to queue logic; respects maxSimultaneousDownloads and existing per-page concurrency",
+    "Improved reliability for large manuscripts when auto-splitting"
   ],
   "main": "dist/main/main.js",
   "scripts": {
@@ -56,6 +54,9 @@
     "test:e2e:kill": ".devkit/tools/kill-tests.sh",
     "test:e2e:headed": "npm run build && npx playwright test --headed",
     "test:e2e:debug": "npm run build && npx playwright test --debug",
+    "auto": "node .devkit/tools/auto-electron.cjs",
+    "auto:example": "node .devkit/tools/auto-electron.cjs --plan .devkit/recipes/add-and-start.json --param URL=https://imagoarchiviodistatoroma.cultura.gov.it/Preziosi/scheda.php?r=994-882",
+    "auto:roman": "node .devkit/tools/auto-electron.cjs --plan .devkit/recipes/add-start-wait-visual.json --param URL=https://imagoarchiviodistatoroma.cultura.gov.it/Preziosi/scheda.php?r=994-882",
     "telegram:start": "cd telegram-bot && npm run start",
     "telegram:install": "cd telegram-bot && npm install",
     "cleanup": ".devkit/tools/cleanup-processes.sh",

@@ -2015,24 +2015,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
     }
 
     async startAllSimultaneous(): Promise<void> {
-        // Start sequential processing instead
+        // Sequential mode is enforced; delegate to startProcessing
         await this.startProcessing();
-        return;
-        
-        // unreachable legacy code retained for reference but not used
-            
-            // Start queue monitor to auto-start remaining items
-            this.startQueueMonitor();
-            
-        } catch (error) {
-            console.error('Error starting simultaneous downloads:', error);
-            this.state.isProcessing = false;
-            this.state.currentItemId = undefined;
-            this.state.activeItemIds = [];
-            this.processingAbortController = null;
-            this.notifyListeners();
-        }
-        // Note: No finally block - let queue monitor handle completion
     }
 
     async startItemIndividually(id: string): Promise<void> {
@@ -2426,6 +2410,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
      */
     private tryStartNextPendingItem(): void {
         if (!this.state.isProcessing || this.state.isPaused) {
+            return;
+        }
+
+        // Enforce sequential mode using maxSimultaneousDownloads: if <= 1, never auto-start another item
+        if ((this.state.globalSettings?.maxSimultaneousDownloads ?? 1) <= 1) {
             return;
         }
         
