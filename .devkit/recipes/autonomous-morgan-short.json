@@ -1,0 +1,9 @@
+[
+  { "action": "waitForLoad", "state": "domcontentloaded", "timeout": 60000 },
+  { "action": "ipc", "call": "clearAllFromQueue" },
+  { "action": "sleep", "ms": 1000 },
+  { "action": "addManuscriptIPC", "url": "{{URL}}", "saveIdAs": ".devkit/validation/READY-FOR-USER/morgan-short-added.json" },
+  { "action": "ipc", "call": "getQueueState", "saveAs": ".devkit/validation/READY-FOR-USER/morgan-short-queue.json" },
+  { "action": "screenshot", "path": ".devkit/validation/READY-FOR-USER/morgan-short-ui.png", "fullPage": true }
+]
+

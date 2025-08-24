@@ -53,40 +53,64 @@ export class MorganLoader extends BaseLibraryLoader {
                 }
                 
                 // Ensure we're fetching the correct page
-                // FIXED: Handle different Morgan URL formats properly
+                // FIXED: Handle different Morgan URL formats properly (preserve objectId when present)
                 let pageUrl = morganUrl;
                 let manuscriptId = '';
-                let startPageNum = null;
+                let objectId: string | null = null;
+                let startPageNum: number | null = null;
                 
-                // Extract manuscript ID and check if it's a single page URL
-                const singlePageMatch = morganUrl.match(/\/collection\/([^/]+)\/(\d+)/);
-                if (singlePageMatch) {
-                    manuscriptId = singlePageMatch[1] || '';
-                    startPageNum = parseInt(singlePageMatch[2] || '0');
-                    // For single page URLs, we need to fetch the thumbs page to find all pages
+                // Parse common Morgan URL shapes:
+                // 1) /collection/<slug>/<objectId>/thumbs
+                // 2) /collection/<slug>/<objectId>
+                // 3) /collection/<slug>/<objectId>/<page>
+                // 4) /collection/<slug>/thumbs
+                // 5) /collection/<slug>
+                const objThumbsMatch = morganUrl.match(/\/collection\/([^/]+)\/(\d+)\/thumbs\b/);
+                const objBaseMatch = morganUrl.match(/\/collection\/([^/]+)\/(\d+)(?:[?#]|$)/);
+                const objPageMatch = morganUrl.match(/\/collection\/([^/]+)\/(\d+)\/(\d+)(?:[/?#]|$)/);
+                const slugThumbsMatch = morganUrl.match(/\/collection\/([^/]+)\/thumbs\b/);
+                const slugOnlyMatch = morganUrl.match(/\/collection\/([^/]+)(?:[?#]|$)/);
+                
+                if (objPageMatch) {
+                    // Explicit objectId + page URL, fetch the corresponding thumbs page
+                    manuscriptId = objPageMatch[1] || '';
+                    objectId = objPageMatch[2] || null;
+                    startPageNum = parseInt(objPageMatch[3] || '0');
+                    pageUrl = `${baseUrl}/collection/${manuscriptId}/${objectId}/thumbs`;
+                    console.log(`Morgan: Detected object page URL, using thumbs for ${manuscriptId}/${objectId}`);
+                } else if (objThumbsMatch) {
+                    manuscriptId = objThumbsMatch[1] || '';
+                    objectId = objThumbsMatch[2] || null;
+                    pageUrl = `${baseUrl}/collection/${manuscriptId}/${objectId}/thumbs`;
+                    console.log(`Morgan: Detected object thumbs URL for ${manuscriptId}/${objectId}`);
+                } else if (objBaseMatch) {
+                    manuscriptId = objBaseMatch[1] || '';
+                    objectId = objBaseMatch[2] || null;
+                    pageUrl = `${baseUrl}/collection/${manuscriptId}/${objectId}/thumbs`;
+                    console.log(`Morgan: Detected object base URL, redirecting to thumbs for ${manuscriptId}/${objectId}`);
+                } else if (slugThumbsMatch) {
+                    manuscriptId = slugThumbsMatch[1] || '';
                     pageUrl = `${baseUrl}/collection/${manuscriptId}/thumbs`;
-                    console.log(`Morgan: Single page URL detected, fetching thumbs page for ${manuscriptId}`);
+                    console.log(`Morgan: Detected slug thumbs URL for ${manuscriptId}`);
                 } else {
-                    // For thumbs URLs or general collection URLs
-                    const collectionMatch = morganUrl.match(/\/collection\/([^/]+)/);
-                    if (collectionMatch) {
-                        manuscriptId = collectionMatch[1] || '';
-                        
-                        // CRITICAL VALIDATION: Ensure manuscriptId doesn't contain URLs
-                        if (manuscriptId.includes('://') || manuscriptId.includes('http')) {
-                            console.error(`Morgan: Invalid manuscriptId detected: ${manuscriptId}`);
-                            throw new Error(`Morgan: Malformed URL - manuscriptId contains URL fragments: ${manuscriptId}`);
-                        }
-                        
-                        if (manuscriptId.length > 100) {
-                            console.error(`Morgan: Suspiciously long manuscriptId: ${manuscriptId}`);
-                            throw new Error(`Morgan: Malformed URL - manuscriptId too long: ${manuscriptId.length} chars`);
-                        }
-                        
-                        // Ensure we have the thumbs page
-                        if (!pageUrl.includes('/thumbs')) {
-                            pageUrl = `${baseUrl}/collection/${manuscriptId}/thumbs`;
-                        }
+                    // Fallback: slug-only
+                    const m = slugOnlyMatch;
+                    if (m) {
+                        manuscriptId = m[1] || '';
+                        pageUrl = `${baseUrl}/collection/${manuscriptId}/thumbs`;
+                        console.log(`Morgan: Detected slug base URL, redirecting to thumbs for ${manuscriptId}`);
+                    }
+                }
+                
+                // CRITICAL VALIDATION: Ensure manuscriptId doesn't contain URLs
+                if (manuscriptId) {
+                    if (manuscriptId.includes('://') || manuscriptId.includes('http')) {
+                        console.error(`Morgan: Invalid manuscriptId detected: ${manuscriptId}`);
+                        throw new Error(`Morgan: Malformed URL - manuscriptId contains URL fragments: ${manuscriptId}`);
+                    }
+                    if (manuscriptId.length > 100) {
+                        console.error(`Morgan: Suspiciously long manuscriptId: ${manuscriptId}`);
+                        throw new Error(`Morgan: Malformed URL - manuscriptId too long: ${manuscriptId.length} chars`);
                     }
                 }
                 
@@ -165,11 +189,12 @@ export class MorganLoader extends BaseLibraryLoader {
                 const pageContent = await pageResponse.text();
                 
                 // Load more pages (views infinite scroll) to collect all facsimiles
-                let pagesHtml: string[] = [pageContent];
+                const pagesHtml: string[] = [pageContent];
                 if (manuscriptId) {
-                    const quickFacsimileIdRegex = /\/facsimile\/(\d+)\/([^"'?]+)\.jpg/g;
-                    const styledFacsimileIdRegex = /\/styles\/[^"']*\/public\/facsimile\/(\d+)\/([^"'?]+)\.jpg/g;
-                    const pageLinkRegex = new RegExp(`\\/collection\\/${manuscriptId}\\/(\\d+)`, 'g');
+                    const quickFacsimileIdRegex = /\/facsimile\/(\d+)\/([^\"'?]+)\.jpg/g;
+                    const styledFacsimileIdRegex = /\/styles\/[^\"']*\/public\/facsimile\/(\d+)\/([^\"'?]+)\.jpg/g;
+                        const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
+                        const pageLinkRegex = new RegExp(`/collection/${collectionPath}/(\\d+)`, 'g');
                     const knownIds = new Set<string>([
                         ...[...pageContent.matchAll(quickFacsimileIdRegex)].map(m => m[2]).filter((id): id is string => Boolean(id)),
                         ...[...pageContent.matchAll(styledFacsimileIdRegex)].map(m => m[2]).filter((id): id is string => Boolean(id))
@@ -178,7 +203,7 @@ export class MorganLoader extends BaseLibraryLoader {
 
                     const parseDrupalSettings = (html: string) => {
                         try {
-                            const m = html.match(/<script[^>]*data-drupal-selector=\"drupal-settings-json\"[^>]*>([\s\S]*?)<\/script>/i);
+const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>]*>([\s\S]*?)<\/script>/i);
                             if (!m || !m[1]) return null;
                             const json = JSON.parse(m[1]);
                             const ajaxViews = json?.views?.ajaxViews || {};
@@ -188,8 +213,9 @@ export class MorganLoader extends BaseLibraryLoader {
                                 if (v?.view_name && v?.view_display_id && v?.view_path) {
                                     const view_path: string = v.view_path || '';
                                     let score = 0;
-                                    if (view_path.includes(`/collection/${manuscriptId}/thumbs`)) score = 3;
-                                    else if (view_path.includes(`/collection/${manuscriptId}`)) score = 2;
+                                    const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
+                                    if (view_path.includes(`/collection/${collectionPath}/thumbs`)) score = 3;
+                                    else if (view_path.includes(`/collection/${collectionPath}`)) score = 2;
                                     else score = 1;
                                     candidates.push({ key, score, v });
                                 }
@@ -241,7 +267,7 @@ export class MorganLoader extends BaseLibraryLoader {
                                 const json = await resp.json().catch(() => null as any);
                                 if (Array.isArray(json)) return json;
                             }
-                        } catch {}
+                        } catch { void 0; }
 
                         // Fallback: GET with query params
                         try {
@@ -256,14 +282,14 @@ export class MorganLoader extends BaseLibraryLoader {
                                 const json = await resp.json().catch(() => null as any);
                                 if (Array.isArray(json)) return json;
                             }
-                        } catch {}
+                        } catch { void 0; }
 
                         return null;
                     };
 
                     // Try Drupal views/ajax pagination first
                     if (ajaxParams) {
-                        let appendedTotal = 0;
+                        let _appendedTotal = 0;
                         let pageIndex = 1;
                         while (true) {
                             const json = await fetchViewsAjax(pageIndex);
@@ -288,7 +314,7 @@ export class MorganLoader extends BaseLibraryLoader {
                                     if (knownIds.size > idsBefore || knownPages.size > pagesBefore) {
                                         pagesHtml.push(data);
                                         appended = true;
-                                        appendedTotal++;
+                                        _appendedTotal++;
                                     }
                                 }
                             }
@@ -305,9 +331,10 @@ export class MorganLoader extends BaseLibraryLoader {
                     try {
                         let pageIndex = 1;
                         // If initial page was /thumbs, paginate on /thumbs; otherwise, on the base collection path
+                        const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
                         const thumbsPagingBase = pageUrl.includes('/thumbs')
-                            ? `${baseUrl}/collection/${manuscriptId}/thumbs`
-                            : `${baseUrl}/collection/${manuscriptId}`;
+                            ? `${baseUrl}/collection/${collectionPath}/thumbs`
+                            : `${baseUrl}/collection/${collectionPath}`;
                         while (true) {
                             const nextUrl = `${thumbsPagingBase}?page=${pageIndex}`;
                             const resp = await this.deps.fetchDirect(nextUrl);
@@ -333,9 +360,7 @@ export class MorganLoader extends BaseLibraryLoader {
                                 break;
                             }
                         }
-                    } catch {
-                        // Ignore pagination errors
-                    }
+                    } catch { void 0; }
                 }
                 
                 // Extract image URLs from the page
@@ -417,13 +442,14 @@ export class MorganLoader extends BaseLibraryLoader {
                         // Parse individual manuscript pages for download URLs (only if we didn't get ZIFs)
                         if (imagesByPriority[0]?.length === 0) try {
                             // Extract individual page URLs from all collected thumbs pages
-                            const pageUrlRegex = new RegExp(`\\/collection\\/${manuscriptId}\\/(\\d+)`, 'g');
+                            const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
+                            const pageUrlRegex = new RegExp(`/collection/${collectionPath}/(\\d+)`, 'g');
                             const altPatterns = [
-                                new RegExp(`href="[^"]*\\/collection\\/${manuscriptId}\\/(\\d+)[^"]*"`, 'g'),
-                                new RegExp(`data-page="(\\d+)"`, 'g'),
+                                new RegExp(`href=\"[^\"]*/collection/${collectionPath}/(\\d+)[^\"]*\"`, 'g'),
+                                new RegExp(`data-page=\"(\\d+)\"`, 'g'),
                                 new RegExp(`page-(\\d+)`, 'g'),
-                                new RegExp(`<a[^>]+href="[^"]*\\/collection\\/${manuscriptId}\\/(\\d+)[^"]*"[^>]*>\\s*<img`, 'g'),
-                                new RegExp(`data-id="(\\d+)"`, 'g')
+                                new RegExp(`<a[^>]+href=\"[^\"]*/collection/${collectionPath}/(\\d+)[^\"]*\"[^>]*>\\s*<img`, 'g'),
+                                new RegExp(`data-id=\"(\\d+)\"`, 'g')
                             ];
                             const uniquePageSet = new Set<string>();
                             for (const html of pagesHtml) {
@@ -491,7 +517,8 @@ export class MorganLoader extends BaseLibraryLoader {
                             // Parse each individual page for high-resolution download URLs
                             for (const pageNum of pagesToProcess) {
                                 try {
-                                    const pageUrl = `${baseUrl}/collection/${manuscriptId}/${pageNum}`;
+                                    const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
+                                    const pageUrl = `${baseUrl}/collection/${collectionPath}/${pageNum}`;
                                     const individualPageResponse = await this.deps.fetchDirect(pageUrl);
                                     
                                     if (individualPageResponse.ok) {
@@ -594,8 +621,9 @@ export class MorganLoader extends BaseLibraryLoader {
                             const inLinks = pageLinks.some(u => presentId(u) === id);
                             return inZifs || inLinks;
                         };
+                        const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
                         for (let p = 1; p <= 2; p++) {
-                            const pageUrlAbs = `${baseUrl}/collection/${manuscriptId}/${p}`;
+                            const pageUrlAbs = `${baseUrl}/collection/${collectionPath}/${p}`;
                             const resp = await this.deps.fetchDirect(pageUrlAbs);
                             if (!resp.ok) continue;
                             const html = await resp.text();
@@ -603,7 +631,7 @@ export class MorganLoader extends BaseLibraryLoader {
                             const m = html.match(/\/(sites\/default\/files\/facsimile\/(?:\d+\/)?([^"']+\.jpg))/i);
                             if (m && m[1]) {
                                 const rel = m[1];
-                                const idMatch = rel.match(/([^\/]+)\.jpg$/i);
+                                const idMatch = rel.match(/([^/]+)\.jpg$/i);
                                 const id = idMatch ? idMatch[1] : null;
                                 if (id && !containsId(id)) {
                                     const full = `${baseUrl}/${rel}`.replace(/\/+/, '/').replace('https:/', 'https://');
@@ -617,9 +645,7 @@ export class MorganLoader extends BaseLibraryLoader {
                         if (firstPageCandidates.length > 0) {
                             pageLinks.unshift(...firstPageCandidates);
                         }
-                    } catch {
-                        // Non-critical
-                    }
+                    } catch { void 0; }
                 }
                 
                 // Try to extract title from page content
