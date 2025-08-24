@@ -131,7 +131,7 @@ export class MorganLoader extends BaseLibraryLoader {
                             const cleanRedirectUrl = redirectUrl.trim();
                             let fullRedirectUrl: string;
                             
-                            console.log(`Morgan: Processing redirect URL: "${cleanRedirectUrl}"`);
+                            console.log(`Morgan: Processing redirect URL: \"${cleanRedirectUrl}\"`);
                             
                             // ENHANCED VALIDATION: Check for malformed URLs first
                             if (cleanRedirectUrl.includes('thumbshttps://') || cleanRedirectUrl.includes('thumbhttp://')) {
@@ -183,7 +183,19 @@ export class MorganLoader extends BaseLibraryLoader {
                 }
                 
                 if (!pageResponse.ok) {
-                    throw new Error(`Failed to fetch Morgan page: ${pageResponse.status} for URL: ${pageUrl}`);
+                    // Fallback: if /thumbs path is 404, try base object page without /thumbs
+                    if (pageResponse.status === 404 && pageUrl.includes('/thumbs')) {
+                        const altUrl = pageUrl.replace('/thumbs', '');
+                        console.log(`Morgan: /thumbs returned 404. Trying base page: ${altUrl}`);
+                        const altResp = await this.deps.fetchDirect(altUrl, { redirect: 'follow' });
+                        if (!altResp.ok) {
+                            throw new Error(`Failed to fetch Morgan page: ${altResp.status} for URL: ${altUrl}`);
+                        }
+                        pageResponse = altResp;
+                        pageUrl = altUrl;
+                    } else {
+                        throw new Error(`Failed to fetch Morgan page: ${pageResponse.status} for URL: ${pageUrl}`);
+                    }
                 }
                 
                 const pageContent = await pageResponse.text();
