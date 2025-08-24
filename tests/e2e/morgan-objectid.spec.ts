@@ -1,4 +1,4 @@
-import { test, expect } from './helpers/electron';
+import { test, expect } from './helpers/electron.js';
 
 // Issue #58: Morgan URL with objectId loses segment leading to 404 when fetching /thumbs
 // Repro URL from issue body: https://www.themorgan.org/collection/gospel-book/143812/thumbs

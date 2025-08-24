@@ -108,7 +108,7 @@ export class EnhancedLogger {
             library: context.library,
             url: context.url,
             message: progress,
-            details: data
+            details: data as Record<string, unknown> | undefined
         });
     }
     

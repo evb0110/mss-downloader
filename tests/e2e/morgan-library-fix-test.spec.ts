@@ -1,4 +1,4 @@
-import { test, expect } from './helpers/electron';
+import { test, expect } from './helpers/electron.js';
 
 test.describe('Morgan Library Fix Test', () => {
   test('should successfully process Morgan Library manuscript with fixed image sizing', async ({ page }) => {

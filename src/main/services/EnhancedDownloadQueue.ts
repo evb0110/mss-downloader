@@ -1007,8 +1007,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     }
                 }
                 
-                // CRITICAL FIX for Issue #29: Prevent infinite restart loops for Linz, e-rara, and Graz
-                if ((item.library === 'linz' || item.library === 'e_rara' || item.library === 'graz')) {
+                // CRITICAL FIX for Issue #29: Prevent infinite restart loops for certain libraries
+                if ((item.library === 'e_rara' || item.library === 'graz')) {
                     const maxRetries = 3; // Standard retry limit for newly implemented libraries
                     if (item.retryCount >= maxRetries) {
                         item.error = `${error instanceof Error ? error.message : String(error)} (Max ${maxRetries} retries exceeded to prevent infinite loops)`;
@@ -1389,7 +1389,6 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 'berlin', 'onb', 'e_manuscripta', 'unifr', 'vatlib', 'florence', 'hhu',
                 'wolfenbuettel', 'freiburg', 'bordeaux', 'e_rara', 'vienna_manuscripta',
                 // CRITICAL FIX Issue #37: Add Linz to prevent slow downloads and restarts
-                'linz', // Linz (Austria) Library: IIIF /full/max/ resolution - needs auto-split for large manuscripts
                 'digital_walters', // Digital Walters Art Museum: Sequential JPEG images - needs auto-split for large manuscripts
                 'codices', // Admont Codices Library: IIIF /full/full/ resolution - needs auto-split for large manuscripts
                 // CRITICAL: High-res libraries that MUST use auto-split to prevent memory failures
@@ -1441,7 +1440,6 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     // Bordeaux pages are stitched from tiles and are much larger than standard IIIF JPEGs
                     // Use a conservative estimate to ensure pre-download auto-split kicks in
                     manifest.library === 'bordeaux' ? 15.0 : // Bordeaux (tile-stitched JPEGs) ~15MB per page
-                    manifest.library === 'linz' ? 1.2 : // CRITICAL FIX Issue #37: Linz Library IIIF /full/max/ ~1.2MB
                     manifest.library === 'digital_walters' ? 0.8 : // Digital Walters Art Museum sequential JPEG ~0.8MB
                     manifest.library === 'codices' ? 1.0 : // Admont Codices Library IIIF /full/full/ ~1.0MB (tested: 0.75-1.36MB range)
                     manifest.library === 'e_rara' ? 0.9 : // e-rara Swiss
@@ -1564,7 +1562,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                         const sizeMB = buffer.length / (1024 * 1024);
                         pageSizes.push(sizeMB);
                         console.log(`[${manifest.library}] Page ${index + 1}: ${sizeMB.toFixed(2)} MB`);
-                    } catch (error) {
+                    } catch {
                         console.warn(`[${manifest.library}] Failed to sample page ${index + 1}, continuing...`);
                     }
                 }
@@ -2326,8 +2324,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
                         }
                     }
                     
-                    // CRITICAL FIX for Issue #29: Prevent infinite restart loops for Linz, e-rara, and Graz
-                    if ((item.library === 'linz' || item.library === 'e_rara' || item.library === 'graz')) {
+                    // CRITICAL FIX for Issue #29: Prevent infinite restart loops for certain libraries
+                    if ((item.library === 'e_rara' || item.library === 'graz')) {
                         const maxRetries = 3; // Standard retry limit for newly implemented libraries
                         if (item.retryCount >= maxRetries) {
                             item.error = `${error instanceof Error ? error.message : String(error)} (Max ${maxRetries} retries exceeded to prevent infinite loops)`;

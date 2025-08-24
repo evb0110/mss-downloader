@@ -23,6 +23,10 @@ export interface AppConfig {
     progressUpdateInterval: number; // Console update interval in ms
     // Throttled UI progress emissions (ms)
     progressUpdateThrottleMs: number;
+    // Optional log level for debug toggles
+    logLevel?: 'debug' | 'info' | 'warn' | 'error';
+    // Optional page log interval for verbose logging
+    pageLogInterval?: number;
   
     // PDF processing
     maxMemoryUsage: number; // bytes
@@ -65,6 +69,9 @@ const defaultConfig: AppConfig = {
     progressUpdateInterval: 1000,
     // Default UI throttle for progress updates
     progressUpdateThrottleMs: 400,
+    // Logging
+    logLevel: 'info',
+    pageLogInterval: 50,
   
     // PDF processing
     maxMemoryUsage: 2 * KB * MB, // 2GB

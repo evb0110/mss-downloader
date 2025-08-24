@@ -93,7 +93,7 @@ export class DiammLoader extends BaseLibraryLoader {
         private extractManuscriptId(manifestUrl: string): string {
             // Extract manuscript ID from manifest URL
             // e.g., https://iiif.diamm.net/manifests/I-Rc-Ms-1907/manifest.json -> I-Rc-Ms-1907
-            const match = manifestUrl.match(/\/manifests\/([^\/]+)\/manifest\.json$/);
+const match = manifestUrl.match(/\/manifests\/([^/]+)\/manifest\.json$/);
             return match?.[1] ?? 'Unknown';
         }
         

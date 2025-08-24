@@ -145,7 +145,6 @@ https://digi.vatlib.it/..."
         </Spoiler>
       </template>
 
-
       <!-- Queue Display -->
       <div
         v-if="queueItems.length > 0"
@@ -203,10 +202,8 @@ https://digi.vatlib.it/..."
                 <span>8</span>
               </div>
             </div>
-
           </div>
         </Spoiler>
-
         <!-- Queue Progress Bar -->
         <div
           v-if="queueStats.total > 0"

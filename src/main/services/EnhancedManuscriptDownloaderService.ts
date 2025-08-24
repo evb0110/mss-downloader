@@ -73,7 +73,6 @@ import {
     WolfenbuettelLoader,
     HhuLoader,
     GamsLoader,
-    LinzLoader,
     DigitalWaltersLoader,
     GenericIiifLoader,
     CodicesLoader,
@@ -315,7 +314,6 @@ export class EnhancedManuscriptDownloaderService {
         this.libraryLoaders.set('wolfenbuettel', new WolfenbuettelLoader(loaderDeps));
         this.libraryLoaders.set('hhu', new HhuLoader(loaderDeps));
         this.libraryLoaders.set('gams', new GamsLoader(loaderDeps));
-        this.libraryLoaders.set('linz', new LinzLoader(loaderDeps));
         this.libraryLoaders.set('digital_walters', new DigitalWaltersLoader(loaderDeps));
         this.libraryLoaders.set('generic_iiif', new GenericIiifLoader(loaderDeps));
         this.libraryLoaders.set('codices', new CodicesLoader(loaderDeps));
@@ -873,11 +871,6 @@ export class EnhancedManuscriptDownloaderService {
             description: 'Heidelberg University Library digital manuscripts via IIIF v2 and v3 with maximum resolution support',
         },
         {
-            name: 'Oberösterreichische Landesbibliothek (Linz)',
-            example: 'https://digi.landesbibliothek.at/viewer/image/116/',
-            description: 'Upper Austrian State Library (Linz) digital manuscripts via IIIF v2, featuring 500+ historical manuscripts from medieval to modern periods',
-        },
-        {
             name: 'Yale Beinecke Rare Book Library',
             example: 'https://collections.library.yale.edu/catalog/33242982',
             description: 'Yale Beinecke Rare Book & Manuscript Library digital collections via IIIF v3, featuring medieval manuscripts, archives, and rare books',
@@ -1088,7 +1081,6 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('manuscrits.bordeaux.fr') || url.includes('selene.bordeaux.fr')) return 'bordeaux';
         if (url.includes('digital.bodleian.ox.ac.uk') || url.includes('digital2.bodleian.ox.ac.uk')) return 'bodleian';
         if (url.includes('digi.ub.uni-heidelberg.de') || url.includes('doi.org/10.11588/diglit')) return 'heidelberg';
-        if (url.includes('digi.landesbibliothek.at')) return 'linz';
         // Digital Walters Art Museum support - only HTML index URLs per Issue #38
         if (url.includes('thedigitalwalters.org') && url.includes('/Data/WaltersManuscripts/html/')) return 'digital_walters';
         // Issue #54: Ambrosiana library support
@@ -1663,9 +1655,7 @@ export class EnhancedManuscriptDownloaderService {
                 }
 
                 // Pre-resolve DNS to avoid EAI_AGAIN errors
-                const addresses = await dns.resolve4(hostname);
-                if (addresses.length > 0) {
-                }
+                await dns.resolve4(hostname);
             } catch (dnsError: unknown) {
                 console.warn(`[Grenoble] DNS resolution failed, proceeding anyway:`, dnsError instanceof Error ? dnsError instanceof Error ? dnsError.message : String(dnsError) : String(dnsError));
 
@@ -1685,9 +1675,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('cdm21059.contentdm.oclc.org')) {
             try {
                 // Pre-resolve DNS to avoid resolution timeouts
-                const addresses = await dns.resolve4(urlObj.hostname);
-                if (addresses.length > 0) {
-                }
+                await dns.resolve4(urlObj.hostname);
             } catch (dnsError) {
                 console.warn(`[Florence] DNS resolution failed, proceeding anyway:`, dnsError);
             }
@@ -1697,9 +1685,7 @@ export class EnhancedManuscriptDownloaderService {
         if (url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it')) {
             try {
                 // Pre-resolve DNS to avoid resolution timeouts
-                const addresses = await dns.resolve4(urlObj.hostname);
-                if (addresses.length > 0) {
-                }
+                await dns.resolve4(urlObj.hostname);
             } catch (dnsError) {
                 console.warn(`[Verona] DNS resolution failed, proceeding anyway:`, dnsError);
             }
@@ -2942,14 +2928,11 @@ export class EnhancedManuscriptDownloaderService {
 
         const downloadStartTime = Date.now();
         let manifest: ManuscriptManifest | undefined;
-        let filepath: string | undefined;
         let validImagePaths: string[] = [];
         let context: ManuscriptContext | undefined;
 
         try {
             // Use provided pageLinks if available, otherwise load manifest
-            const manifestStartTime = Date.now();
-            // let manifestLoadDuration = 0; // Unused
 
             if (pageLinks && Array.isArray(pageLinks) && pageLinks.length > 0) {
                 // Build manifest from pre-sliced data

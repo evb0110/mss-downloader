@@ -12,6 +12,7 @@ import { NegativeConverterService } from './services/NegativeConverterService';
 import { DownloadLogger } from './services/DownloadLogger';
 import { VersionMigrationService } from './services/VersionMigrationService';
 import { comprehensiveLogger } from './services/ComprehensiveLogger';
+import { networkResilienceService } from './services/NetworkResilienceService';
 import type { QueuedManuscript, QueueState } from '../shared/queueTypes';
 import type { ConversionSettings } from './services/NegativeConverterService';
 
@@ -89,10 +90,14 @@ let enhancedDownloadQueue: EnhancedDownloadQueue | null = null;
 let negativeConverter: NegativeConverterService | null = null;
 
 // Global headless detection - available to all functions
-const isHeadless = process.argv.includes('--headless') || 
+// Allow explicit override to run headed in test mode
+const forceHeaded = process.env['FORCE_HEADED'] === '1';
+const isHeadless = !forceHeaded && (
+                   process.argv.includes('--headless') ||
                    process.env['NODE_ENV'] === 'test' ||
                    process.env['DISPLAY'] === ':99' || // Playwright test display
-                   process.env['CI'] === 'true';
+                   process.env['CI'] === 'true'
+                   );
 
 
 const createWindow = async () => {
@@ -132,8 +137,8 @@ const createWindow = async () => {
     }),
   });
 
-  // Force devtools open immediately (but not for tests or headless mode)
-  if (isDev && process.env['NODE_ENV'] !== 'test' && !isHeadless) {
+  // Do not auto-open DevTools by default. Enable by setting OPEN_DEVTOOLS=1
+  if (isDev && process.env['NODE_ENV'] !== 'test' && !isHeadless && process.env['OPEN_DEVTOOLS'] === '1') {
     // Disable autofill to prevent console errors
     mainWindow.webContents.on('devtools-opened', () => {
       // DevTools is open, but we can't disable autofill from here
@@ -238,7 +243,6 @@ const createWindow = async () => {
     if (isDev || (!isHeadless && process.env['NODE_ENV'] !== 'test')) {
       mainWindow?.show();
       mainWindow?.maximize();
-    } else {
     }
   });
 
@@ -543,12 +547,10 @@ ipcMain.handle('config-reset', () => {
 });
 
 ipcMain.handle('get-network-health', () => {
-  const { networkResilienceService } = require('./services/NetworkResilienceService');
   return networkResilienceService.getHealthMetrics();
 });
 
 ipcMain.handle('reset-circuit-breaker', (_event, libraryName: string) => {
-  const { networkResilienceService } = require('./services/NetworkResilienceService');
   networkResilienceService.resetCircuitBreaker(libraryName);
 });
 
@@ -682,7 +684,7 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
       const testSerialization = JSON.stringify(manifest);
       const cleanManifest = JSON.parse(testSerialization);
       return { isChunked: false, manifest: cleanManifest };
-    } catch (serializationError) {
+    } catch {
       // Return minimal safe manifest if serialization fails
       const safeManifest = {
         pageLinks: Array.isArray(manifest.pageLinks) ? manifest.pageLinks : [],
@@ -917,7 +919,7 @@ ipcMain.handle('parse-manuscript-url', async (_event, url: string) => {
       const testSerialization = JSON.stringify(manifest);
       const cleanManifest = JSON.parse(testSerialization);
       return cleanManifest;
-    } catch (serializationError) {
+    } catch {
       // Return minimal safe manifest if serialization fails
       const safeManifest = {
         pageLinks: Array.isArray(manifest?.pageLinks) ? manifest.pageLinks : [],

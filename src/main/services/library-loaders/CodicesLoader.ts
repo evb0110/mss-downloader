@@ -406,7 +406,7 @@ Use: https://admont.codices.at/iiif/9cec1d04-d5c3-4a2a-9aa8-4279b359e701`);
                     const imageUrl = this.resolveUrl(match[1] || match[0], codicesUrl);
                     if (imageUrl.includes('/iiif/image/')) {
                         // Convert to full resolution IIIF URL
-                        const fullResUrl = imageUrl.replace(/\/iiif\/image\/([^\/]+).*/, '/iiif/image/$1/full/full/0/default.jpg');
+const fullResUrl = imageUrl.replace(/\/iiif\/image\/([^/]+).*/, '/iiif/image/$1/full/full/0/default.jpg');
                         imageUrls.push(fullResUrl);
                     }
                 }

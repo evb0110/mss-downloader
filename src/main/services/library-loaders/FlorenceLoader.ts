@@ -148,7 +148,7 @@ Supported formats:
                     });
                 }
             }
-        } catch (error) {
+        } catch {
             this.deps.logger.log({
                 level: 'warn',
                 library: 'florence',
@@ -328,7 +328,7 @@ Supported formats:
                                 return null;
                             }
                         }
-                    } catch (pageError) {
+                    } catch {
                         // If page check fails, fall back to HTTP status handling
                     }
                     
@@ -459,7 +459,7 @@ Supported formats:
                                 // If page loads but image fails, it might be a temporary issue - include it
                                 return page;
                             }
-                        } catch (pageError) {
+                        } catch {
                             // If page check fails, fall back to excluding the page to be safe
                             return null;
                         }
@@ -468,7 +468,7 @@ Supported formats:
                     // Return null for any other error conditions to be conservative
                     return null;
                     
-                } catch (error) {
+                } catch {
                     // Return null for network errors too - be strict for ContentDM
                     return null;
                 }

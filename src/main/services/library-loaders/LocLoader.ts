@@ -36,7 +36,7 @@ export class LocLoader extends BaseLibraryLoader {
                 if (locUrl.includes('tile.loc.gov') && locUrl.includes('/full/full/0/default.')) {
                     console.log(`[loadLocManifest] Detected partial tile URL - extracting service base`);
                     // Extract service ID: tile.loc.gov/image-services/iiif/service:rbc:rbc0001:2022:2022vollb14164:0081/full/full/0/default.jpg
-                    const serviceMatch = locUrl.match(/\/service:([^\/]+)\/full\/full\/0\/default\./);
+const serviceMatch = locUrl.match(/\/service:([^/]+)\/full\/full\/0\/default\./);
                     if (serviceMatch) {
                         const serviceId = `service:${serviceMatch[1]}`;
                         manifestUrl = `https://tile.loc.gov/image-services/iiif/${serviceId}/info.json`;
@@ -236,7 +236,7 @@ export class LocLoader extends BaseLibraryLoader {
             
             // Extract title from original URL or use default
             let displayName = 'Library of Congress Manuscript';
-            const serviceMatch = originalUrl.match(/service:([^:]+):([^:]+):([^:]+):([^:]+):([^\/]+)/);
+const serviceMatch = originalUrl.match(/service:([^:]+):([^:]+):([^:]+):([^:]+):([^/]+)/);
             if (serviceMatch) {
                 displayName = `${serviceMatch[2]} - ${serviceMatch[4]} (Page ${serviceMatch[5]})`;
             }

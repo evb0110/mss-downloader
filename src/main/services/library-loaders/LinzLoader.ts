@@ -95,7 +95,7 @@ export class LinzLoader extends BaseLibraryLoader {
                     
                     try {
                         manifest = await response.json();
-                    } catch (retryJsonError) {
+                    } catch {
                         throw new Error(`Linz still returning non-JSON after solving Anubis challenge. This may require browser-specific implementation.`);
                     }
                 } else {
@@ -153,7 +153,7 @@ export class LinzLoader extends BaseLibraryLoader {
             return {
                 pageLinks: images.map(img => img.url),
                 totalPages: images?.length,
-                library: 'linz' as const,
+                library: 'loading' as const,
                 displayName: manifest.label || `Linz - ${manuscriptId}`,
                 originalUrl: url
             };

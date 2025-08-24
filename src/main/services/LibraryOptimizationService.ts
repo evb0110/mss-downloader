@@ -272,10 +272,6 @@ export class LibraryOptimizationService {
             optimizationDescription: 'Vatican Library optimizations: 4 concurrent downloads, IIIF compliant, stable infrastructure'
         },
         'bordeaux': {},
-        'linz': {
-            autoSplitThresholdMB: 500, // Higher threshold for large Linz manuscripts
-            optimizationDescription: 'Linz Library optimizations: 500MB split threshold to prevent unnecessary parts'
-        },
         'e_rara': {},
         'yale': {},
         'digital_scriptorium': {},

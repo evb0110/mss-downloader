@@ -808,6 +808,9 @@ export class DownloadQueue extends EventEmitter {
         if (this.state.activeItemIds) {
             this.state.activeItemIds = [];
         }
+
+        // Ensure any mismatched downloaders/IDs are cleaned up
+        this.cleanupOrphanedDownloaders();
     }
     
     private cancelSpecificDownloader(itemId: string): void {

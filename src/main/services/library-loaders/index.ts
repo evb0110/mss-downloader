@@ -56,7 +56,6 @@ export { FuldaLoader } from './FuldaLoader';
 export { WolfenbuettelLoader } from './WolfenbuettelLoader';
 export { HhuLoader } from './HhuLoader';
 export { GamsLoader } from './GamsLoader';
-export { LinzLoader } from './LinzLoader';
 export { DigitalWaltersLoader } from './DigitalWaltersLoader';
 // export { BordeauxLoader } from './BordeauxLoader'; // Not found in original
 // export { HeidelbergLoader } from './HeidelbergLoader'; // Not found in original
