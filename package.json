@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.257",
+  "version": "1.4.258",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.257: Fixed Bordeaux library page gaps and duplicate content issues",
-    "Fixed missing pages in Bordeaux manuscripts by using availablePages mapping",
-    "Fixed duplicate content download issue where same pages were repeated across parts",
-    "Improved page indexing to prevent gaps and ensure complete manuscript coverage"
+    "v1.4.258: Enhanced queue processing with sequential auto-split enforcement",
+    "Fixed auto-split part processing to enforce strictly sequential order preventing parallel conflicts",
+    "Updated download mode to hardcode sequential behavior eliminating simultaneous mode issues",
+    "Cleaned up IPC and services removing deprecated simultaneous-mode APIs for better stability"
   ],
   "main": "dist/main/main.js",
   "scripts": {

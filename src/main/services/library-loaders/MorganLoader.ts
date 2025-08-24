@@ -434,25 +434,61 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                         // De-duplicate by id (same page may appear multiple times)
                         const isLikelyZifCandidate = (id: string) => id.includes('_') && !/-\d{2,4}x\d{2,4}/.test(id);
                         const seen = new Set<string>();
+                        const dedupedFacsimiles: FacsimileRef[] = [];
                         for (const f of facsimiles) {
                             const key = `${f.id}`;
                             if (seen.has(key)) continue;
                             seen.add(key);
-
-                            // Priority 0: ZIF ultra-high resolution (only for plausible facsimile page IDs)
-                            const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptId}/${f.id}.zif`;
-                            if (isLikelyZifCandidate(f.id)) {
-                                imagesByPriority[0]?.push(zifUrl);
-                            }
+                            dedupedFacsimiles.push(f);
 
                             // Priority 2/3: original facsimile JPEG as fallback (non-styled)
                             const originalJpeg = `${baseUrl}/sites/default/files/facsimile/${f.bbid}/${f.id}.jpg`;
                             imagesByPriority[2]?.push(originalJpeg);
                         }
 
+                        // Attempt ZIF only if server actually has them. Quick probe with first page using two known patterns.
+                        try {
+                            if (dedupedFacsimiles.length > 0) {
+                                const f0 = dedupedFacsimiles[0];
+                                if (f0) {
+                                    const candidatePatterns = [
+                                        // Pattern A (legacy): numeric directory under /facsimile
+                                        `https://host.themorgan.org/facsimile/${f0.bbid}/${f0.id}.zif`,
+                                        // Pattern B (slug-based images path)
+                                        `https://host.themorgan.org/facsimile/images/${manuscriptId}/${f0.id}.zif`,
+                                    ];
+
+                                    let workingPattern: string | null = null;
+                                    for (const testUrl of candidatePatterns) {
+                                        try {
+                                            const headResp = await this.deps.fetchDirect(testUrl, { method: 'HEAD', redirect: 'follow' as RequestRedirect });
+                                            if (headResp && headResp.ok) {
+                                                workingPattern = testUrl.replace(f0.id + '.zif', '');
+                                                break;
+                                            }
+                                        } catch { /* ignore and try next */ }
+                                    }
+
+                                    if (workingPattern) {
+                                        console.log(`Morgan: ZIF verified, using pattern: ${workingPattern}`);
+                                        for (const f of dedupedFacsimiles) {
+                                            if (!isLikelyZifCandidate(f.id)) continue;
+                                            const zifUrl = `${workingPattern}${f.id}.zif`;
+                                            imagesByPriority[0]?.push(zifUrl);
+                                        }
+                                    } else {
+                                        console.log('Morgan: ZIF not available (404/blocked). Falling back to facsimile JPEGs.');
+                                    }
+                                }
+                            }
+                        } catch {
+                            // If anything goes wrong, just fall back silently
+                            console.log('Morgan: ZIF probe failed, using JPEG fallbacks.');
+                        }
+
                         // Priority 1: NEW - High-resolution download URLs (16.6x improvement validated)
-                        // Parse individual manuscript pages for download URLs (only if we didn't get ZIFs)
-                        if (imagesByPriority[0]?.length === 0) try {
+                        // Only parse individual pages if we didn't already collect facsimile JPEGs from listing pages.
+                        if ((imagesByPriority[2]?.length || 0) === 0) try {
                             // Extract individual page URLs from all collected thumbs pages
                             const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
                             const pageUrlRegex = new RegExp(`/collection/${collectionPath}/(\\d+)`, 'g');
