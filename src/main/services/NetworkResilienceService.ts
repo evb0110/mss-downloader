@@ -13,7 +13,7 @@ import { EventEmitter } from 'events';
 import * as https from 'https';
 // Unused imports removed for TypeScript compliance
 import { configService } from './ConfigService';
-import { EnhancedLogger } from './EnhancedLogger';
+// import { EnhancedLogger } from './EnhancedLogger'; // Currently unused
 
 interface CircuitBreakerState {
     state: 'CLOSED' | 'OPEN' | 'HALF_OPEN';
@@ -40,7 +40,7 @@ interface NetworkHealthMetrics {
 
 export class NetworkResilienceService extends EventEmitter {
     private static instance: NetworkResilienceService | null = null;
-    private logger: EnhancedLogger;
+    // private logger: EnhancedLogger; // Currently unused
     
     // Circuit Breaker Management
     private circuitBreakers: Map<string, CircuitBreakerState> = new Map();
@@ -67,7 +67,7 @@ export class NetworkResilienceService extends EventEmitter {
 
     private constructor() {
         super();
-        this.logger = EnhancedLogger.getInstance();
+        // this.logger = EnhancedLogger.getInstance(); // Currently unused
         this.startHealthMonitoring();
     }
 

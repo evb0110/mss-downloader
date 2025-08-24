@@ -37,7 +37,11 @@ export class AnubisSolver {
                 return null;
             }
 
-            const challengeJson = challengeMatch[1].trim();
+            const challengeJson = challengeMatch[1]?.trim();
+            if (!challengeJson) {
+                console.log('[AnubisSolver] No challenge JSON content found');
+                return null;
+            }
             const challengeData = JSON.parse(challengeJson);
             
             console.log(`[AnubisSolver] Extracted challenge: difficulty ${challengeData.rules?.difficulty}, algorithm ${challengeData.rules?.algorithm}`);

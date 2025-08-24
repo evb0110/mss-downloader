@@ -2296,7 +2296,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
         // Try to match direct IIIF manifest URL first
         let match = url.match(/\/i3f\/v20\/(\d+)\/manifest/);
         if (match) {
-            manuscriptId = match[1];
+            manuscriptId = match[1] || null;
             manifestUrl = url; // Already a manifest URL
             console.log(`[HHU] Using direct IIIF manifest URL, manuscript ID: ${manuscriptId}`);
         } else {
@@ -2304,7 +2304,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             match = url.match(/titleinfo\/(\d+)/);
             if (!match) throw new Error('Invalid HHU URL format. Expected formats: /i3f/v20/[ID]/manifest or /content/titleinfo/[ID]');
             
-            manuscriptId = match[1];
+            manuscriptId = match[1] || null;
             // HHU uses a unified IIIF v2.0 pattern for all collections
             // All collections use the same /i3f/v20/ endpoint regardless of collection type
             manifestUrl = `https://digital.ulb.hhu.de/i3f/v20/${manuscriptId}/manifest`;
@@ -2489,7 +2489,7 @@ class SharedManifestLoaders implements ISharedManifestLoaders {
             
             // Try to access the viewer page to get images directly
             // GAMS IIIF manifests often require authentication, so we use an alternative approach
-            const viewerUrl = `https://gams.uni-graz.at/archive/objects/${objectId}/methods/sdef:IIIF/get`;
+            // const viewerUrl = `https://gams.uni-graz.at/archive/objects/${objectId}/methods/sdef:IIIF/get`;
             
             try {
                 // First, try the IIIF manifest (might work for public objects)
@@ -3867,8 +3867,8 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
 
         availablePages.sort((a, b) => a - b);
         const result = {
-            firstPage: availablePages.length > 0 ? availablePages[0] : null,
-            lastPage: availablePages.length > 0 ? availablePages[availablePages.length - 1] : null,
+            firstPage: availablePages.length > 0 ? (availablePages[0] ?? null) : null,
+            lastPage: availablePages.length > 0 ? (availablePages[availablePages.length - 1] ?? null) : null,
             totalPages: availablePages.length,
             availablePages
         };
@@ -4065,14 +4065,14 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             displayName: `Bordeaux - ${publicId}`,
             // Keep tile processor info for backward compatibility
             type: 'bordeaux_tiles',
-            baseId: baseId!,
+            baseId: Number(baseId!),
             publicId: publicId,
             startPage: startPage,
             pageCount: pageCount,
             tileBaseUrl: 'https://selene.bordeaux.fr/in/dz',
             requiresTileProcessor: true,
             tileConfig: {
-                baseId: baseId!,
+                baseId: Number(baseId!),
                 startPage: startPage,
                 pageCount: pageCount,
                 tileBaseUrl: 'https://selene.bordeaux.fr/in/dz',
@@ -6450,7 +6450,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                     try {
                         const manifestResponse = await this.fetchWithRetry(foundManifestUrl);
                         if (manifestResponse.ok) {
-                            const manifest = await manifestResponse.json();
+                            const manifest = await manifestResponse.json() as any;
                             if (manifest.sequences?.[0]?.canvases) {
                                 console.log(`[Roman Archive] Successfully loaded IIIF manifest with ${manifest.sequences[0].canvases.length} canvases`);
                                 const canvases = manifest.sequences[0].canvases;
@@ -6625,7 +6625,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                                 } else {
                                     const folioNumbers = Array.from(new Set(pageMatches.map(match => {
                                         const folioMatch = match.match(/r1=(\d{3})[rv]\.jp2/);
-                                        return folioMatch ? parseInt(folioMatch[1]) : 0;
+                                        return folioMatch ? parseInt(folioMatch[1] || '0', 10) : 0;
                                     }).filter(f => f > 0))).sort((a, b) => a - b);
                                     const startFolio = folioNumbers[0];
                                     const endFolio = folioNumbers[folioNumbers.length - 1];
@@ -6855,7 +6855,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                         if (label.includes('date') || label.includes('created')) {
                             const dateMatch = value.match(/(\d{4}|\d{1,2}th\s+century|XV|XIV|XIII|XII|XI|\d{1,2}00s)/i);
                             if (dateMatch) {
-                                date = dateMatch[1];
+                                date = dateMatch[1] || '';
                             }
                         }
                         
@@ -6995,7 +6995,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             }
             
             // Extract title from manifest using standardized utility
-            const displayName = this.extractIIIFTitle(manifestData, 'ONB', manuscriptId);
+            const displayName = this.extractIIIFTitle(manifestData, 'ONB', manuscriptId || '');
             
             console.log(`[ONB] Successfully extracted ${images.length} pages - "${displayName}"`);
             return { images, displayName };

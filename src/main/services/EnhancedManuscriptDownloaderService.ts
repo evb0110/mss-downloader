@@ -1147,7 +1147,7 @@ export class EnhancedManuscriptDownloaderService {
             }
             
             // Fallback: use last meaningful path segment
-            return pathParts.length > 0 ? pathParts[pathParts.length - 1] : 'unknown';
+            return pathParts && pathParts.length > 0 ? (pathParts[pathParts.length - 1] || 'unknown') : 'unknown';
         } catch {
             return 'unknown';
         }
@@ -1176,9 +1176,9 @@ export class EnhancedManuscriptDownloaderService {
         };
         
         const library = manifest.library || 'default';
-        const pageSize = avgPageSizeKB[library] || avgPageSizeKB['default'];
+        const pageSize = avgPageSizeKB[library] || avgPageSizeKB['default'] || 400; // Fallback to default size
         
-        return (manifest?.totalPages * pageSize) / 1024; // Convert to MB
+        return (manifest?.totalPages || 0) * pageSize / 1024; // Convert to MB
     }
 
     /**
@@ -1252,7 +1252,7 @@ export class EnhancedManuscriptDownloaderService {
     async fetchDirect(url: string, options: RequestInit = {}, attempt: number = 1): Promise<Response> {
         const startTime = Date.now();
         const library = this.detectLibrary(url) as TLibrary || 'unknown';
-        const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
+        const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env['MSSDL_DEBUG'] === '1';
 
         // Check circuit breaker before attempting request
         const circuitCheck = networkResilienceService.canExecuteRequest(library);
@@ -1267,7 +1267,7 @@ export class EnhancedManuscriptDownloaderService {
 
         // Get optimized HTTP agent with connection pooling
         const urlObj = new URL(url);
-        const httpAgent = networkResilienceService.getHttpAgent(urlObj.hostname);
+        // const httpAgent = networkResilienceService.getHttpAgent(urlObj.hostname); // Unused
 
         // CRITICAL FIX: Ensure baseTimeout is never undefined to prevent NaN timeout
         const baseTimeout = configService.get('requestTimeout') || 30000; // Default to 30 seconds if undefined
@@ -1871,7 +1871,7 @@ export class EnhancedManuscriptDownloaderService {
         const attemptRequest = (): Promise<Response> => {
             return new Promise((resolve, reject) => {
                 const attemptStartTime = Date.now();
-                const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
+                const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env['MSSDL_DEBUG'] === '1';
                 if (DEBUG_LOGS) console.log(`[fetchWithHTTPS] Attempt ${retryCount + 1}/${maxRetries} for ${urlObj.hostname}`);
 
                 const req = https.request(requestOptions, (res) => {
@@ -2443,7 +2443,7 @@ export class EnhancedManuscriptDownloaderService {
     async downloadImageWithRetries(url: string, attempt = 0): Promise<DownloadResult> {
         const startTime = Date.now();
         const library = this.detectLibrary(url) as TLibrary;
-        const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
+        const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env['MSSDL_DEBUG'] === '1';
 
         // Debug logging for BDL detection
         if (url.includes('bdl.servizirl.it')) {
@@ -2944,12 +2944,12 @@ export class EnhancedManuscriptDownloaderService {
         let manifest: ManuscriptManifest | undefined;
         let filepath: string | undefined;
         let validImagePaths: string[] = [];
-        let context: ManuscriptContext;
+        let context: ManuscriptContext | undefined;
 
         try {
             // Use provided pageLinks if available, otherwise load manifest
             const manifestStartTime = Date.now();
-            let manifestLoadDuration = 0;
+            // let manifestLoadDuration = 0; // Unused
 
             if (pageLinks && Array.isArray(pageLinks) && pageLinks.length > 0) {
                 // Build manifest from pre-sliced data
@@ -2965,13 +2965,13 @@ export class EnhancedManuscriptDownloaderService {
                     ...(queueItem?.tileConfig ? { tileConfig: queueItem.tileConfig } : (optTileConfig ? { tileConfig: optTileConfig } : {})),
                     ...(queueItem?.requiresTileProcessor !== undefined ? { requiresTileProcessor: queueItem.requiresTileProcessor } : (requiresTileProcessor !== undefined ? { requiresTileProcessor } : {})),
                 } as ManuscriptManifest;
-                const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
+                const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env['MSSDL_DEBUG'] === '1';
                 if (DEBUG_LOGS) console.log(`Using pre-sliced pageLinks for ${displayName}: ${pageLinks.length} pages`);
-                manifestLoadDuration = Date.now() - manifestStartTime; // Minimal time
+                // manifestLoadDuration = Date.now() - manifestStartTime; // Minimal time
             } else {
                 // Existing behavior: load manifest from URL
                 manifest = await this.loadManifest(url);
-                manifestLoadDuration = Date.now() - manifestStartTime;
+                // manifestLoadDuration = Date.now() - manifestStartTime;
             }
 
             // Validate special processor requirements
@@ -3044,7 +3044,7 @@ export class EnhancedManuscriptDownloaderService {
             // Determine if we need to split the PDF based on estimated size
             // Fixed: Was hardcoded to 1000 pages, now uses actual MB threshold
             const shouldSplit = estimatedTotalSizeMB > effectiveAutoSplitMB;
-            const maxPagesPerPart = Math.ceil((effectiveAutoSplitMB * 2) / 1); // Pages per part based on threshold (assuming ~0.5MB per page)
+            // const maxPagesPerPart = Math.ceil((effectiveAutoSplitMB * 2) / 1); // Pages per part based on threshold (assuming ~0.5MB per page) - Unused
 
             let filename: string;
             let filepath: string;
@@ -3171,7 +3171,7 @@ export class EnhancedManuscriptDownloaderService {
 
             // Log optimization info for debugging
             if (optimizations.optimizationDescription) {
-                const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
+                const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env['MSSDL_DEBUG'] === '1';
                 if (DEBUG_LOGS) {
                     console.log(`Applying ${library} optimizations: ${optimizations.optimizationDescription}`);
                     console.log(`Using ${actualMaxConcurrent} concurrent downloads (global: ${globalMaxConcurrent})`);
@@ -3277,7 +3277,7 @@ export class EnhancedManuscriptDownloaderService {
                     } catch {
                         // Not present: download using tile engine
                         try {
-                            const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
+                            const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env['MSSDL_DEBUG'] === '1';
                             if (DEBUG_LOGS) console.log(`Downloading tile-based page ${pageIndex + 1} from ${imageUrl}`);
 
                             const tileCallbacks = this.tileEngineService.createProgressCallback(
@@ -3301,8 +3301,8 @@ export class EnhancedManuscriptDownloaderService {
                         const relativeIndex = pageIndex - (actualStartPage - 1);
                         imagePaths[relativeIndex] = imgPath;
                                 completedPages++;
-                                const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
-                                if (DEBUG_LOGS) console.log(`Successfully downloaded ${result.downloadedTiles} tiles for page ${pageIndex + 1}`);
+                                const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env['MSSDL_DEBUG'] === '1';
+                                if (DEBUG_LOGS) console.log(`Successfully downloaded ${result.downloadedTiles ?? 0} tiles for page ${pageIndex + 1}`);
                             } else {
                                 console.error(`Failed to download tiles for page ${pageIndex + 1}: ${result.errors.join(', ')}`);
                                 failedPages.push(pageIndex + 1);
@@ -3383,7 +3383,7 @@ export class EnhancedManuscriptDownloaderService {
                         // File already exists with correct extension - mark path for skipped file
                         imagePaths[pageIndex] = imgPath;
                         completedPages++; // Count cached files as completed
-                        { const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1'; if (DEBUG_LOGS) console.log(`📋 Skipped existing file: ${imgFile} (${fileType.extension.toUpperCase()})`); }
+                        { const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env['MSSDL_DEBUG'] === '1'; if (DEBUG_LOGS) console.log(`📋 Skipped existing file: ${imgFile} (${fileType.extension.toUpperCase()})`); }
                     } else {
                         // Write the file with detected extension
                         const writePromise = fs.writeFile(imgPath, Buffer.from(buffer));
@@ -3394,8 +3394,8 @@ export class EnhancedManuscriptDownloaderService {
                         imagePaths[relativeIndex] = imgPath;
                         completedPages++; // Only increment on successful download
                         
-                        { const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env.MSSDL_DEBUG === '1';
-                          const PAGE_LOG_INTERVAL = configService.get('pageLogInterval') || 50;
+                        { const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env['MSSDL_DEBUG'] === '1';
+                          const PAGE_LOG_INTERVAL: number = (configService.get('pageLogInterval') || 50) as number;
                           if (DEBUG_LOGS || ((relativeIndex + 1) % PAGE_LOG_INTERVAL === 0) || (pageIndex + 1 === actualEndPage)) {
                               console.log(`💾 Downloaded: ${imgFile} (${fileType.extension.toUpperCase()}, ${fileType.mimeType})`);
                           }
@@ -3616,7 +3616,9 @@ export class EnhancedManuscriptDownloaderService {
             if (parts.length > 1) {
                 const createdFiles: string[] = [];
                 for (let partIndex = 0; partIndex < parts.length; partIndex++) {
-                    const { startIdx, images } = parts[partIndex];
+                    const part = parts[partIndex];
+                    if (!part) continue;
+                    const { startIdx, images } = part;
                     const partNumber = String(partIndex + 1).padStart(2, '0');
                     const partFilename = `${sanitizedName}_part_${partNumber}.pdf`;
                     const partFilepath = path.join(targetDir, partFilename);
@@ -3624,7 +3626,7 @@ export class EnhancedManuscriptDownloaderService {
                     const partStartPage = actualStartPage + startIdx;
                     try {
                         // If any files in this slice are PDFs, merge; otherwise convert images
-                        const hasPDFs = images.some(img => img && img.toLowerCase().endsWith('.pdf'));
+                        const hasPDFs = images.some((img: string | null) => img && img.toLowerCase().endsWith('.pdf'));
                         if ((manifest as any)?.library === 'bne' || hasPDFs) {
                             await this.mergePDFPages(images, partFilepath, partStartPage, manifest);
                         } else {
@@ -3708,20 +3710,20 @@ export class EnhancedManuscriptDownloaderService {
             console.error(`❌ Download failed: ${(error as Error).message}`);
 
             // Log manuscript download failed with better stage detection
-            let failedStage = 'unknown';
-            if (!manifest) {
-                failedStage = 'manifest_loading';
-            } else if ((error as Error).message?.includes('convertImagesToPDF') ||
-                      (error as Error).message?.includes('PDF') ||
-                      (error as Error).message?.includes('memory') ||
-                      (error as Error).message?.includes('No pages created') ||
-                      validImagePaths && validImagePaths.length > 0 && !filepath) {
-                failedStage = 'pdf_creation';
-            } else if (validImagePaths && validImagePaths.length === 0) {
-                failedStage = 'image_download';
-            } else {
-                failedStage = 'processing';
-            }
+            // let failedStage = 'unknown'; // Unused
+            // if (!manifest) {
+            //     failedStage = 'manifest_loading';
+            // } else if ((error as Error).message?.includes('convertImagesToPDF') ||
+            //           (error as Error).message?.includes('PDF') ||
+            //           (error as Error).message?.includes('memory') ||
+            //           (error as Error).message?.includes('No pages created') ||
+            //           validImagePaths && validImagePaths.length > 0 && !filepath) {
+            //     failedStage = 'pdf_creation';
+            // } else if (validImagePaths && validImagePaths.length === 0) {
+            //     failedStage = 'image_download';
+            // } else {
+            //     failedStage = 'processing';
+            // }
 
             // Log enhanced error information
             if (context) {

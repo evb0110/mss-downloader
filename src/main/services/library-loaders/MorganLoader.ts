@@ -171,15 +171,15 @@ export class MorganLoader extends BaseLibraryLoader {
                     const styledFacsimileIdRegex = /\/styles\/[^"']*\/public\/facsimile\/(\d+)\/([^"'?]+)\.jpg/g;
                     const pageLinkRegex = new RegExp(`\\/collection\\/${manuscriptId}\\/(\\d+)`, 'g');
                     const knownIds = new Set<string>([
-                        ...[...pageContent.matchAll(quickFacsimileIdRegex)].map(m => m[2]),
-                        ...[...pageContent.matchAll(styledFacsimileIdRegex)].map(m => m[2])
+                        ...[...pageContent.matchAll(quickFacsimileIdRegex)].map(m => m[2]).filter((id): id is string => Boolean(id)),
+                        ...[...pageContent.matchAll(styledFacsimileIdRegex)].map(m => m[2]).filter((id): id is string => Boolean(id))
                     ]);
-                    const knownPages = new Set<string>([...pageContent.matchAll(pageLinkRegex)].map(m => m[1]));
+                    const knownPages = new Set<string>([...pageContent.matchAll(pageLinkRegex)].map(m => m[1]).filter((id): id is string => Boolean(id)));
 
                     const parseDrupalSettings = (html: string) => {
                         try {
                             const m = html.match(/<script[^>]*data-drupal-selector=\"drupal-settings-json\"[^>]*>([\s\S]*?)<\/script>/i);
-                            if (!m) return null;
+                            if (!m || !m[1]) return null;
                             const json = JSON.parse(m[1]);
                             const ajaxViews = json?.views?.ajaxViews || {};
                             const candidates: any[] = [];
@@ -212,7 +212,7 @@ export class MorganLoader extends BaseLibraryLoader {
                     };
 
                     const ajaxParams = parseDrupalSettings(pageContent);
-                    let usedAjax = false;
+                    // let usedAjax = false; // Removed unused variable
 
                     // Helper: try both POST and GET to /views/ajax
                     const fetchViewsAjax = async (pageIndex: number): Promise<any[] | null> => {
@@ -277,13 +277,13 @@ export class MorganLoader extends BaseLibraryLoader {
                                     const idsBefore = knownIds.size;
                                     const pagesBefore = knownPages.size;
                                     for (const m of data.matchAll(quickFacsimileIdRegex)) {
-                                        knownIds.add(m[2]);
+                                        if (m[2]) knownIds.add(m[2]);
                                     }
                                     for (const m of data.matchAll(styledFacsimileIdRegex)) {
-                                        knownIds.add(m[2]);
+                                        if (m[2]) knownIds.add(m[2]);
                                     }
                                     for (const m of data.matchAll(pageLinkRegex)) {
-                                        knownPages.add(m[1]);
+                                        if (m[1]) knownPages.add(m[1]);
                                     }
                                     if (knownIds.size > idsBefore || knownPages.size > pagesBefore) {
                                         pagesHtml.push(data);
@@ -298,7 +298,7 @@ export class MorganLoader extends BaseLibraryLoader {
                             await new Promise(r => setTimeout(r, 200));
                         }
                         // Only consider AJAX successful if we appended at least once
-                        usedAjax = appendedTotal > 0;
+                        // usedAjax = appendedTotal > 0; // Currently unused
                     }
 
                     // ALWAYS perform simple ?page=N pagination as a safety net
@@ -317,13 +317,13 @@ export class MorganLoader extends BaseLibraryLoader {
                             const idsBefore = knownIds.size;
                             const pagesBefore = knownPages.size;
                             for (const m of html.matchAll(quickFacsimileIdRegex)) {
-                                knownIds.add(m[2]);
+                                if (m[2]) knownIds.add(m[2]);
                             }
                             for (const m of html.matchAll(styledFacsimileIdRegex)) {
-                                knownIds.add(m[2]);
+                                if (m[2]) knownIds.add(m[2]);
                             }
                             for (const m of html.matchAll(pageLinkRegex)) {
-                                knownPages.add(m[1]);
+                                if (m[1]) knownPages.add(m[1]);
                             }
                             if (knownIds.size > idsBefore || knownPages.size > pagesBefore) {
                                 pagesHtml.push(html);
@@ -405,17 +405,17 @@ export class MorganLoader extends BaseLibraryLoader {
                             // Priority 0: ZIF ultra-high resolution (only for plausible facsimile page IDs)
                             const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptId}/${f.id}.zif`;
                             if (isLikelyZifCandidate(f.id)) {
-                                imagesByPriority[0].push(zifUrl);
+                                imagesByPriority[0]?.push(zifUrl);
                             }
 
                             // Priority 2/3: original facsimile JPEG as fallback (non-styled)
                             const originalJpeg = `${baseUrl}/sites/default/files/facsimile/${f.bbid}/${f.id}.jpg`;
-                            imagesByPriority[2].push(originalJpeg);
+                            imagesByPriority[2]?.push(originalJpeg);
                         }
 
                         // Priority 1: NEW - High-resolution download URLs (16.6x improvement validated)
                         // Parse individual manuscript pages for download URLs (only if we didn't get ZIFs)
-                        if (imagesByPriority[0].length === 0) try {
+                        if (imagesByPriority[0]?.length === 0) try {
                             // Extract individual page URLs from all collected thumbs pages
                             const pageUrlRegex = new RegExp(`\\/collection\\/${manuscriptId}\\/(\\d+)`, 'g');
                             const altPatterns = [
@@ -427,9 +427,13 @@ export class MorganLoader extends BaseLibraryLoader {
                             ];
                             const uniquePageSet = new Set<string>();
                             for (const html of pagesHtml) {
-                                for (const m of html.matchAll(pageUrlRegex)) uniquePageSet.add(m[1]);
+                                for (const m of html.matchAll(pageUrlRegex)) {
+                                    if (m[1]) uniquePageSet.add(m[1]);
+                                }
                                 for (const pattern of altPatterns) {
-                                    for (const m of html.matchAll(pattern)) uniquePageSet.add(m[1] || '');
+                                    for (const m of html.matchAll(pattern)) {
+                                        if (m[1]) uniquePageSet.add(m[1]);
+                                    }
                                 }
                             }
                             
@@ -597,7 +601,7 @@ export class MorganLoader extends BaseLibraryLoader {
                             const html = await resp.text();
                             // Match both facsimile/BBID/ID.jpg and facsimile/ID.jpg
                             const m = html.match(/\/(sites\/default\/files\/facsimile\/(?:\d+\/)?([^"']+\.jpg))/i);
-                            if (m) {
+                            if (m && m[1]) {
                                 const rel = m[1];
                                 const idMatch = rel.match(/([^\/]+)\.jpg$/i);
                                 const id = idMatch ? idMatch[1] : null;

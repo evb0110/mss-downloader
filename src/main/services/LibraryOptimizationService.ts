@@ -278,6 +278,10 @@ export class LibraryOptimizationService {
         },
         'e_rara': {},
         'yale': {},
+        'digital_scriptorium': {},
+        'digital_walters': {},
+        'codices': {},
+        'munich': {},
         'loading': {}
     };
 

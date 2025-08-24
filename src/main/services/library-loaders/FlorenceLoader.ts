@@ -1,6 +1,6 @@
 import { BaseLibraryLoader, type LoaderDependencies } from './types';
 import type { ManuscriptManifest } from '../../../shared/types';
-const VERBOSE = process.env.MSSDL_DEBUG === '1';
+const VERBOSE = process.env['MSSDL_DEBUG'] === '1';
 
 interface FlorenceField {
     key: string;
@@ -202,8 +202,7 @@ Supported formats:
             for (const p of probes) {
                 const response = await this.deps.fetchWithHTTPS(p.url, {
                     method: 'HEAD',
-                    headers: this.getSessionHeaders(),
-                    timeout: 5000
+                    headers: this.getSessionHeaders()
                 });
                 if (response.ok) {
                     return { kind: 'iiif', sizeMode: p.mode };
@@ -213,13 +212,13 @@ Supported formats:
             // If these failed, try exact native width from info.json
             const infoUrl = `${baseIiif}/info.json`;
             try {
-                const infoResp = await this.deps.fetchWithHTTPS(infoUrl, { headers: this.getSessionHeaders(), timeout: 10000 });
+                const infoResp = await this.deps.fetchWithHTTPS(infoUrl, { headers: this.getSessionHeaders() });
                 if (infoResp.ok) {
                     const info = await infoResp.json() as { width?: number };
                     const w = (info && typeof info['width'] === 'number') ? info['width'] : undefined;
                     if (w && w > 0) {
                         const widthUrl = `${baseIiif}/full/${w},/0/default.jpg`;
-                        const widthHead = await this.deps.fetchWithHTTPS(widthUrl, { method: 'HEAD', headers: this.getSessionHeaders(), timeout: 5000 });
+                        const widthHead = await this.deps.fetchWithHTTPS(widthUrl, { method: 'HEAD', headers: this.getSessionHeaders() });
                         if (widthHead.ok) {
                             return { kind: 'iiif', sizeMode: 'width', width: w };
                         }
@@ -268,10 +267,12 @@ Supported formats:
             const batch = pagesToValidate.slice(i, i + batchSize);
             const validationPromises = batch.map(async (page) => {
                 try {
+                    if (!page) return null;
+                    
                     // Build single probe URL based on resolved variant, default to max
                     let probeUrl: string;
                     if (variant && variant.kind === 'iiif') {
-                        const baseIiif = `https://cdm21059?.contentdm.oclc?.org/iiif/2/${collection}:${page?.id}`;
+                        const baseIiif = `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${page.id}`;
                         switch (variant.sizeMode) {
                             case 'max': probeUrl = `${baseIiif}/full/max/0/default.jpg`; break;
                             case 'full': probeUrl = `${baseIiif}/full/full/0/default.jpg`; break;
@@ -279,7 +280,7 @@ Supported formats:
                             case 'width': probeUrl = `${baseIiif}/full/${variant.width},/0/default.jpg`; break;
                         }
                     } else {
-                        const baseIiif = `https://cdm21059?.contentdm.oclc?.org/iiif/2/${collection}:${page?.id}`;
+                        const baseIiif = `https://cdm21059.contentdm.oclc.org/iiif/2/${collection}:${page.id}`;
                         probeUrl = `${baseIiif}/full/max/0/default.jpg`;
                     }
 
@@ -288,8 +289,7 @@ Supported formats:
                     let lastText = '';
                     const response = await this.deps.fetchWithHTTPS(probeUrl!, {
                         method: 'HEAD',
-                        headers: this.getSessionHeaders(),
-                        timeout: 5000
+                        headers: this.getSessionHeaders()
                     });
                     ok = response.ok;
                     lastStatus = response.status;
@@ -304,17 +304,16 @@ Supported formats:
                         this.deps.logger.log({
                             level: 'warn',
                             library: 'florence',
-                            message: `Page ${page?.id} inaccessible: ${lastStatus} ${lastText} - skipping`
+                            message: `Page ${page.id} inaccessible: ${lastStatus} ${lastText} - skipping`
                         });
                         return null;
                     }
 
                     // For other errors, check if it's a "no file associated" case by fetching the actual page
-                    const pageUrl = `https://cdm21059?.contentdm.oclc?.org/digital/collection/${collection}/id/${page?.id}`;
+                    const pageUrl = `https://cdm21059.contentdm.oclc.org/digital/collection/${collection}/id/${page.id}`;
                     try {
                         const pageResponse = await this.deps.fetchWithHTTPS(pageUrl, {
-                            headers: this.getSessionHeaders(),
-                            timeout: 10000
+                            headers: this.getSessionHeaders()
                         });
                         if (pageResponse.ok) {
                             const pageHtml = await pageResponse.text();
@@ -324,7 +323,7 @@ Supported formats:
                                 this.deps.logger.log({
                                     level: 'warn',
                                     library: 'florence',
-                                    message: `Page ${page?.id} has no associated file - skipping`
+                                    message: `Page ${page.id} has no associated file - skipping`
                                 });
                                 return null;
                             }
@@ -337,16 +336,19 @@ Supported formats:
                     this.deps.logger.log({
                         level: 'warn',
                         library: 'florence',
-                        message: `Page ${page?.id} validation warning: ${lastStatus} ${lastText} - including anyway`
+                        message: `Page ${page.id} validation warning: ${lastStatus} ${lastText} - including anyway`
                     });
                     return page;
                 } catch (error) {
-                    this.deps.logger.log({
-                        level: 'warn',
-                        library: 'florence',
-                        message: `Page ${page?.id} validation error: ${error instanceof Error ? error?.message : String(error)} - including anyway`
-                    });
-                    return page; // Include on network errors
+                    if (page) {
+                        this.deps.logger.log({
+                            level: 'warn',
+                            library: 'florence',
+                            message: `Page ${page.id} validation error: ${error instanceof Error ? error?.message : String(error)} - including anyway`
+                        });
+                        return page; // Include on network errors
+                    }
+                    return null;
                 }
             });
 
@@ -427,8 +429,7 @@ Supported formats:
                     let lastStatus = 0;
                     const response = await this.deps.fetchWithHTTPS(probeUrl!, {
                         method: 'HEAD',
-                        headers: this.getSessionHeaders(),
-                        timeout: 5000
+                        headers: this.getSessionHeaders()
                     });
                     if (response.ok) { ok = true; } else { lastStatus = response.status; }
                     
@@ -491,34 +492,7 @@ Supported formats:
         return validatedPages;
     }
 
-    /**
-     * Test Florence IIIF image accessibility - ensure high resolution endpoints respond
-     */
-    private async validateNativeAPIAccess(collection: string, samplePageId: string, manuscriptId: string): Promise<{ kind: 'iiif', sizeMode: 'max' | 'full' | 'pct' | 'width', width?: number } | { kind: 'native' }> {
-        this.deps.logger.log({
-            level: 'info',
-            library: 'florence',
-            message: `Testing Florence IIIF access for manuscript ${manuscriptId} (sample page: ${samplePageId})`
-        });
-        
-        const variant = await this.resolveBestImageVariant(collection, samplePageId);
-        
-        if (variant.kind === 'iiif') {
-            this.deps.logger.log({
-                level: 'info',
-                library: 'florence',
-                message: `Florence IIIF confirmed (mode: ${variant.sizeMode}${variant.sizeMode === 'width' ? `=${variant.width}` : ''}) for manuscript ${manuscriptId}`
-            });
-            return variant;
-        } else {
-            this.deps.logger.log({
-                level: 'warn',
-                library: 'florence',
-                message: `Falling back to native ContentDM API for manuscript ${manuscriptId}`
-            });
-            return variant;
-        }
-    }
+    // Removed unused validateNativeAPIAccess method
     
     async loadManifest(originalUrl: string): Promise<ManuscriptManifest> {
         // Log the start of Florence manifest loading

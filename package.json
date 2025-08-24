@@ -1,11 +1,11 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.250",
+  "version": "1.4.251",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.250: Fixed auto-split chunk orchestration to strictly sequential; prevented parallel chunk starts in sequential mode",
-    "Non-breaking change to queue logic; respects maxSimultaneousDownloads and existing per-page concurrency",
-    "Improved reliability for large manuscripts when auto-splitting"
+    "v1.4.251: Enhanced queue processing - strictly sequential auto-split parts with improved reliability",
+    "Removed parallel chunk processing that could cause download conflicts and memory issues",
+    "Better handling of large manuscripts with consistent sequential download order"
   ],
   "main": "dist/main/main.js",
   "scripts": {

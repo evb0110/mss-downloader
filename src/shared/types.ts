@@ -1,3 +1,5 @@
+import type { TLibrary } from './queueTypes';
+
 export interface DownloadProgress {
   totalPages: number;
   downloadedPages: number;
@@ -30,7 +32,7 @@ export interface DownloadCallbacks {
 export interface ManuscriptManifest {
   pageLinks: string[];
   totalPages: number;
-  library: 'nypl' | 'morgan' | 'gallica' | 'grenoble' | 'karlsruhe' | 'manchester' | 'munich' | 'unifr' | 'e_manuscripta' | 'vatlib' | 'cecilia' | 'irht' | 'loc' | 'dijon' | 'laon' | 'durham' | 'florus' | 'unicatt' | 'cudl' | 'trinity_cam' | 'toronto' | 'fulda' | 'isos' | 'mira' | 'arca' | 'rbme' | 'parker' | 'manuscripta' | 'internet_culturale' | 'graz' | 'gams' | 'cologne' | 'vienna_manuscripta' | 'rome' | 'berlin' | 'czech' | 'modena' | 'bdl' | 'europeana' | 'monte_cassino' | 'vallicelliana' | 'omnes_vallicelliana' | 'verona' | 'diamm' | 'bne' | 'mdc_catalonia' | 'bvpb' | 'onb' | 'rouen' | 'freiburg' | 'sharedcanvas' | 'saint_omer' | 'ugent' | 'bl' | 'bodleian' | 'wolfenbuettel' | 'florence' | 'hhu' | 'vatican' | 'belgica_kbr' | 'bordeaux' | 'linz' | 'digital_walters' | 'codices';
+  library: TLibrary;
   displayName: string;
   title?: string; // Optional title property
   originalUrl: string;

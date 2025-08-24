@@ -2398,14 +2398,6 @@ export class EnhancedDownloadQueue extends EventEmitter {
     }
     
     /**
-     * Start monitoring queue to auto-progress through pending items
-     */
-    private startQueueMonitor(): void {
-        // Monitor is implicitly handled by tryStartNextPendingItem() calls in completion handlers
-        console.log('[Queue] Queue monitor active - will auto-start items as slots become available');
-    }
-    
-    /**
      * Try to start next pending item when a slot becomes available
      */
     private tryStartNextPendingItem(): void {

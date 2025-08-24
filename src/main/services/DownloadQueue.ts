@@ -251,47 +251,6 @@ export class DownloadQueue extends EventEmitter {
         // Fallback to sequential start
         await this.startProcessing();
         return;
-        
-        // legacy unreachable code
-        
-        if (pendingItems?.length === 0) return;
-        
-        this.state.isProcessing = true;
-        this.state.isPaused = false;
-        this.state.activeItemIds = [];
-        this.processingAbortController = new AbortController();
-        this.notifyListeners();
-        
-        try {
-            // Start all pending items simultaneously with resource limits
-            const itemsToStart = pendingItems.slice(0, this.state.globalSettings.maxSimultaneousDownloads);
-            
-            if (itemsToStart?.length < pendingItems?.length) {
-                console.warn(`Starting ${itemsToStart?.length} of ${pendingItems?.length} items due to resource limits`);
-            }
-            
-            const promises = itemsToStart.map(item => this.processItemConcurrently(item));
-            const results = await Promise.allSettled(promises);
-            
-            // Log any failures
-            results.forEach((result, index) => {
-                if (result.status === 'rejected') {
-                    console.error(`Failed to process item ${itemsToStart[index]?.id}:`, result.reason);
-                }
-            });
-        } catch (error) {
-            console.error('Error in simultaneous processing:', error);
-        } finally {
-            // Clean up any orphaned downloaders before stopping
-            this.cleanupOrphanedDownloaders();
-            
-            this.state.isProcessing = false;
-            this.state.currentItemId = undefined;
-            this.state.activeItemIds = [];
-            this.activeDownloaders.clear();
-            this.processingAbortController = null;
-            this.notifyListeners();
-        }
     }
     
     async startItemIndividually(id: string): Promise<void> {
