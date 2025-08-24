@@ -1086,6 +1086,20 @@ ipcMain.handle('queue-update-autosplit-threshold', async (_event, thresholdMB: n
   return enhancedDownloadQueue.updateAutoSplitThreshold(thresholdMB);
 });
 
+ipcMain.handle('queue-update-global-concurrency', async (_event, newConcurrent: number) => {
+  if (!enhancedDownloadQueue) {
+    throw new Error('Enhanced download queue not initialized');
+  }
+  // Update queue's global concurrent downloads and persist to config for future sessions
+  enhancedDownloadQueue.updateGlobalConcurrentDownloads(Number(newConcurrent));
+  try {
+    const { configService } = await import('./services/ConfigService');
+    configService.set('maxConcurrentDownloads', Number(newConcurrent));
+  } catch (e) {
+    console.warn('Failed to persist maxConcurrentDownloads to config:', e instanceof Error ? e.message : String(e));
+  }
+});
+
 ipcMain.handle('queue-move-item', async (_event, fromIndex: number, toIndex: number) => {
   if (!enhancedDownloadQueue) {
     throw new Error('Enhanced download queue not initialized');
@@ -1302,16 +1316,92 @@ ipcMain.handle('show-item-in-finder', async (_event, filePath: string) => {
 });
 
 ipcMain.handle('open-external', async (_event, url: string) => {
+  console.log('[MAIN] open-external called with URL:', url);
+  
   if (!url) {
+    console.error('[MAIN] open-external: No URL provided');
     throw new Error('No URL provided');
   }
   
+  // Validate and normalize URL format
+  let normalizedUrl = url;
   try {
-    await shell.openExternal(url);
-    return true;
-  } catch (error) {
-    console.error('Failed to open external URL:', error);
-    throw new Error(`Failed to open URL: ${url}`);
+    // Try to create URL object - if it fails, it might be missing protocol
+    new URL(url);
+  } catch (urlError) {
+    // If URL is missing protocol, try adding https://
+    if (!url.includes('://') && (url.includes('.') || url.startsWith('localhost'))) {
+      console.log('[MAIN] open-external: URL missing protocol, adding https://', url);
+      normalizedUrl = `https://${url}`;
+      try {
+        new URL(normalizedUrl);
+        console.log('[MAIN] open-external: Successfully normalized URL:', normalizedUrl);
+      } catch (normalizedError) {
+        console.error('[MAIN] open-external: Invalid URL format even after normalization:', normalizedUrl, normalizedError);
+        throw new Error(`Invalid URL format: ${url} (tried adding https:// but still invalid)`);
+      }
+    } else {
+      console.error('[MAIN] open-external: Invalid URL format:', url, urlError);
+      throw new Error(`Invalid URL format: ${url}`);
+    }
+  }
+  
+  console.log('[MAIN] open-external: Attempting to open URL with shell.openExternal:', normalizedUrl);
+  
+  try {
+    await shell.openExternal(normalizedUrl);
+    console.log('[MAIN] open-external: Successfully opened URL:', url);
+    return { success: true, method: 'shell.openExternal' };
+  } catch (primaryError) {
+    console.error('[MAIN] open-external: Primary method (shell.openExternal) failed:', primaryError);
+    
+    // Try platform-specific fallback methods
+    try {
+      console.log('[MAIN] open-external: Attempting fallback method for platform:', process.platform);
+      
+      if (process.platform === 'darwin') {
+        // macOS fallback using AppleScript
+        const { execSync } = require('child_process');
+        const escapedUrl = normalizedUrl.replace(/'/g, "'\"'\"'");
+        const appleScript = `osascript -e 'open location "${escapedUrl}"'`;
+        console.log('[MAIN] open-external: Executing AppleScript fallback:', appleScript);
+        execSync(appleScript);
+        console.log('[MAIN] open-external: Successfully opened URL via AppleScript:', normalizedUrl);
+        return { success: true, method: 'applescript' };
+      } else if (process.platform === 'win32') {
+        // Windows fallback
+        const { execSync } = require('child_process');
+        execSync(`start "" "${normalizedUrl}"`, { shell: true });
+        console.log('[MAIN] open-external: Successfully opened URL via Windows start:', normalizedUrl);
+        return { success: true, method: 'windows-start' };
+      } else if (process.platform === 'linux') {
+        // Linux fallback
+        const { execSync } = require('child_process');
+        execSync(`xdg-open "${normalizedUrl}"`);
+        console.log('[MAIN] open-external: Successfully opened URL via xdg-open:', normalizedUrl);
+        return { success: true, method: 'xdg-open' };
+      } else {
+        throw new Error(`No fallback method available for platform: ${process.platform}`);
+      }
+    } catch (fallbackError) {
+      console.error('[MAIN] open-external: Fallback method also failed:', fallbackError);
+      console.error('[MAIN] open-external: All methods failed. Primary error:', {
+        name: (primaryError as any)?.name,
+        message: (primaryError as any)?.message,
+        stack: (primaryError as any)?.stack,
+        originalUrl: url,
+        normalizedUrl: normalizedUrl
+      });
+      console.error('[MAIN] open-external: Fallback error:', {
+        name: (fallbackError as any)?.name,
+        message: (fallbackError as any)?.message,
+        platform: process.platform,
+        originalUrl: url,
+        normalizedUrl: normalizedUrl
+      });
+      
+      throw new Error(`Failed to open URL: ${normalizedUrl} (original: ${url}). Primary error: ${(primaryError as any)?.message || primaryError}. Fallback error: ${(fallbackError as any)?.message || fallbackError}`);
+    }
   }
 });
 

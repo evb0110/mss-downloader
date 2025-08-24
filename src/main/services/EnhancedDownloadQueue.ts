@@ -40,13 +40,14 @@ export class EnhancedDownloadQueue extends EventEmitter {
             isProcessing: false,
             isPaused: false,
             activeItemIds: [],
-            globalSettings: {
+                globalSettings: {
                 autoStart: false,
                 concurrentDownloads: configService.get('maxConcurrentDownloads'),
                 pauseBetweenItems: 0,
                 autoSplitThresholdMB: configService.get('autoSplitThreshold') / (1024 * 1024), // Convert bytes to MB
                 simultaneousMode: 'sequential' as TSimultaneousMode,
-                maxSimultaneousDownloads: 3,
+                // Enforce sequential-only by default
+                maxSimultaneousDownloads: 1,
             },
         };
         
@@ -121,7 +122,12 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 this.state.globalSettings.simultaneousMode = 'sequential';
             }
             if (!this.state.globalSettings.maxSimultaneousDownloads) {
-                this.state.globalSettings.maxSimultaneousDownloads = 3;
+                this.state.globalSettings.maxSimultaneousDownloads = 1;
+            }
+            // Migration: if any persisted value allows >1, clamp to 1 to enforce sequential-only processing
+            if (this.state.globalSettings.maxSimultaneousDownloads > 1) {
+                console.warn(`Clamping maxSimultaneousDownloads from ${this.state.globalSettings.maxSimultaneousDownloads} to 1 (sequential-only enforcement)`);
+                this.state.globalSettings.maxSimultaneousDownloads = 1;
             }
             
             // Migration: Set reasonable auto-split threshold default (issue #18)
@@ -1414,7 +1420,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     manifest.library === 'nypl' ? 1.2 :
                     manifest.library === 'czech' ? 0.5 :
                     manifest.library === 'modena' ? 0.4 :
-                    manifest.library === 'morgan' ? 5.0 : // Morgan .zif files ~5MB
+                    manifest.library === 'morgan' ? 1.0 : // Morgan facsimile JPEGs ~1MB per page (avoid oversplitting)
                     manifest.library === 'laon' ? 7.2 : // Laon Bibliothèque IIIF full resolution ~7.2MB (EXTREME)
                     manifest.library === 'munich' ? 3.8 : // Munich Digital Collections IIIF /full/max/ ~3.8MB (HIGH)
                     // Major international libraries
@@ -1451,17 +1457,19 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 
                 // Get library-specific optimizations directly since item.libraryOptimizations may not be set yet
                 const libraryOpts = LibraryOptimizationService.getOptimizationsForLibrary(manifest.library as TLibrary);
-                let effectiveThreshold = libraryOpts.autoSplitThresholdMB || 
-                                         this.state.globalSettings.autoSplitThresholdMB;
-                // Enforce global maximum of 400MB
-                effectiveThreshold = Math.min(effectiveThreshold, 400);
-                // If user configured a hard per-part cap, respect the smaller of the two
-                const userCap = (configService.get('maxPdfPartSizeMB') as number) || 0;
-                if (userCap && userCap > 0) {
-                    effectiveThreshold = Math.min(effectiveThreshold, userCap);
+                
+                // Respect the user's global threshold as the baseline, and treat library thresholds as minimum caps
+                // This prevents the threshold from being reduced (e.g., from 300MB down to 30MB)
+                let effectiveThreshold = this.state.globalSettings.autoSplitThresholdMB;
+                if (typeof libraryOpts.autoSplitThresholdMB === 'number' && libraryOpts.autoSplitThresholdMB > 0) {
+                    effectiveThreshold = Math.max(effectiveThreshold, libraryOpts.autoSplitThresholdMB);
                 }
                 
-                console.log(`${manifest.library} size check: ${estimatedTotalSizeMB}MB vs threshold ${effectiveThreshold}MB (user cap: ${userCap || 'none'})`);
+                // Optional upper bound safety (keep very large thresholds sane), but never lower below the user's value
+                const GLOBAL_SOFT_MAX_MB = 400;
+                effectiveThreshold = Math.min(effectiveThreshold, GLOBAL_SOFT_MAX_MB);
+                
+                console.log(`${manifest.library} size check: ${estimatedTotalSizeMB}MB vs threshold ${effectiveThreshold}MB (lib min: ${libraryOpts.autoSplitThresholdMB || 'n/a'})`);
                 
                 if (estimatedTotalSizeMB > effectiveThreshold) {
                     console.log(`${manifest.library} manuscript exceeds threshold, splitting into parts`);
@@ -1617,16 +1625,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
             // Store the estimated size for future recalculations
             item.estimatedSizeMB = estimatedTotalSizeMB;
             
-            // Get library-specific threshold or use global
+            // Get library-specific threshold or use global (do not apply per-part hard cap at queue level)
             let effectiveThreshold = item.libraryOptimizations?.autoSplitThresholdMB || 
                                      this.state.globalSettings.autoSplitThresholdMB;
             // Enforce global maximum of 400MB
             effectiveThreshold = Math.min(effectiveThreshold, 400);
-            // Apply user hard cap if set
-            const userCap = (configService.get('maxPdfPartSizeMB') as number) || 0;
-            if (userCap && userCap > 0) {
-                effectiveThreshold = Math.min(effectiveThreshold, userCap);
-            }
             
             if (estimatedTotalSizeMB > effectiveThreshold) {
                 if (manifest) {
@@ -1656,12 +1659,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
         manifest: { totalPages?: number; library?: string; title?: string; displayName?: string }, 
         estimatedSizeMB: number
     ): Promise<void> {
-        // Determine effective threshold in MB, honoring user hard cap if present
-        let thresholdMB = this.state.globalSettings.autoSplitThresholdMB;
-        const userCap = (configService.get('maxPdfPartSizeMB') as number) || 0;
-        if (userCap && userCap > 0) {
-            thresholdMB = Math.min(thresholdMB, userCap);
-        }
+        // Determine effective threshold in MB for queue-level splitting (do not use per-part hard cap here)
+        const thresholdMB = this.state.globalSettings.autoSplitThresholdMB;
         const totalPages = manifest?.totalPages || 0;
         
         // Calculate number of parts based on total estimated size vs. threshold, then derive pages per part
@@ -1752,8 +1751,10 @@ export class EnhancedDownloadQueue extends EventEmitter {
         this.saveToStorage();
         this.notifyListeners();
         
-        // Auto-start processing the newly created parts
-        this.tryStartNextPendingItem();
+        // Auto-start processing the newly created parts (only if simultaneous downloads are explicitly allowed)
+        if ((this.state.globalSettings?.maxSimultaneousDownloads ?? 1) > 1) {
+            this.tryStartNextPendingItem();
+        }
     }
     
     private async downloadSinglePage(url: string): Promise<Buffer> {
@@ -2403,7 +2404,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
             return;
         }
 
-        // Enforce sequential mode using maxSimultaneousDownloads: if <= 1, never auto-start another item
+        // Hard enforce sequential-only mode globally. Do not auto-start another item when any download is active.
         if ((this.state.globalSettings?.maxSimultaneousDownloads ?? 1) <= 1) {
             return;
         }

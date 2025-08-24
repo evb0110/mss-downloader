@@ -220,6 +220,8 @@ export class EnhancedManuscriptDownloaderService {
     private logger: DownloadLogger;
     private ultraBDLService: UltraReliableBDLService;
     private libraryLoaders: Map<string, LibraryLoader>;
+    // Reuse HTTPS agents per host to enable effective keep-alive connection pooling
+    private httpsAgents: Map<string, import('https').Agent> = new Map();
 
     constructor(manifestCache?: ManifestCache) {
         this.manifestCache = manifestCache || new ManifestCache();
@@ -1767,23 +1769,47 @@ export class EnhancedManuscriptDownloaderService {
             }
         }
 
-        // Create agent with connection pooling for Graz, Florence, Verona, and Rome
-        const agent = (url.includes('unipub.uni-graz.at') || url.includes('cdm21059.contentdm.oclc.org') ||
-                      url.includes('nuovabibliotecamanoscritta.it') || url.includes('nbm.regione.veneto.it') ||
-                      url.includes('digitale.bnc.roma.sbn.it')) ?
-            new https.Agent({
-                keepAlive: true,
-                keepAliveMsecs: url.includes('cdm21059.contentdm.oclc.org') ? 60000 : 1000, // Florence: longer keep-alive for stability
-                maxSockets: url.includes('cdm21059.contentdm.oclc.org') ? 3 : 10, // Florence: reduce concurrent connections to avoid overwhelming server
-                maxFreeSockets: url.includes('cdm21059.contentdm.oclc.org') ? 1 : 5, // Florence: minimal free sockets to reduce server load
-                timeout: url.includes('digitale.bnc.roma.sbn.it') ? 15000 : 
-                        url.includes('cdm21059.contentdm.oclc.org') ? 60000 : 120000, // Florence: 60s timeout for faster recovery
-                rejectUnauthorized: false,
-                scheduling: url.includes('cdm21059.contentdm.oclc.org') ? 'fifo' : undefined // Florence: predictable connection scheduling
-            }) : undefined;
+        // Create/reuse agent with connection pooling for specific hosts
+        // Include: Graz, Florence (ContentDM), Verona (NBM), Rome, and Munich (digitale-sammlungen.de)
+        let agent: import('https').Agent | undefined = undefined;
+        const hostname = urlObj.hostname;
+        const usePooledAgent = (
+            url.includes('unipub.uni-graz.at') ||
+            url.includes('cdm21059.contentdm.oclc.org') ||
+            url.includes('nuovabibliotecamanoscritta.it') ||
+            url.includes('nbm.regione.veneto.it') ||
+            url.includes('digitale.bnc.roma.sbn.it') ||
+            url.includes('digitale-sammlungen.de') // Munich
+        );
+
+        if (usePooledAgent) {
+            // Tune per-host options
+            const isFlorence = url.includes('cdm21059.contentdm.oclc.org');
+            const isRome = url.includes('digitale.bnc.roma.sbn.it');
+            const isMunich = url.includes('digitale-sammlungen.de');
+
+            const agentKey = hostname || 'default';
+            const existing = this.httpsAgents.get(agentKey);
+            if (existing) {
+                agent = existing;
+            } else {
+                const opts: import('https').AgentOptions = {
+                    keepAlive: true,
+                    keepAliveMsecs: isFlorence ? 60000 : (isMunich ? 10000 : 1000),
+                    maxSockets: isFlorence ? 3 : (isMunich ? 10 : 10),
+                    maxFreeSockets: isFlorence ? 1 : 5,
+                    timeout: isRome ? 15000 : (isFlorence ? 60000 : 120000),
+                    rejectUnauthorized: false,
+                    // Florence: predictable connection scheduling
+                    scheduling: isFlorence ? 'fifo' as any : undefined
+                };
+                const newAgent = new (require('https').Agent)(opts);
+                this.httpsAgents.set(agentKey, newAgent);
+                agent = newAgent;
+            }
+        }
 
         // ULTRA-DEFENSIVE: Final hostname validation
-        const hostname = urlObj.hostname;
         if (hostname.includes('://') || hostname.includes('https')) {
             const error = new Error(`Invalid hostname detected: ${hostname}. URL: ${url}`);
             comprehensiveLogger.log({
@@ -1833,19 +1859,19 @@ export class EnhancedManuscriptDownloaderService {
             });
         }
 
-        const requestOptions = {
-            hostname: hostname,
-            port: urlObj.port || 443,
-            path: urlObj.pathname + urlObj.search,
-            method: options.method || 'GET',
-            headers: {
-                ...baseHeaders,
-                ...(options.headers as Record<string, string> || {})
-            },
-            rejectUnauthorized: false,
-            // Use connection pooling agent for Graz
-            agent: agent
-        };
+            const requestOptions = {
+                hostname: hostname,
+                port: urlObj.port || 443,
+                path: urlObj.pathname + urlObj.search,
+                method: options.method || 'GET',
+                headers: {
+                    ...baseHeaders,
+                    ...(options.headers as Record<string, string> || {})
+                },
+                rejectUnauthorized: false,
+                // Use connection pooling agent when available
+                agent: agent
+            };
 
         // Implement retry logic for connection timeouts
         const maxRetries = url.includes('unipub.uni-graz.at') ? 5 :
@@ -3152,12 +3178,14 @@ export class EnhancedManuscriptDownloaderService {
                 actualMaxConcurrent = 3;
             }
 
+            // Always log actual concurrency used for transparency
+            console.log(`[Concurrency] Using ${actualMaxConcurrent} concurrent downloads for ${manifest.library} (global=${globalMaxConcurrent}${optimizations.maxConcurrentDownloads ? `, cap=${optimizations.maxConcurrentDownloads}` : ''})`);
+
             // Log optimization info for debugging
             if (optimizations.optimizationDescription) {
                 const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env['MSSDL_DEBUG'] === '1';
                 if (DEBUG_LOGS) {
                     console.log(`Applying ${library} optimizations: ${optimizations.optimizationDescription}`);
-                    console.log(`Using ${actualMaxConcurrent} concurrent downloads (global: ${globalMaxConcurrent})`);
                 }
             }
 
@@ -3561,9 +3589,14 @@ export class EnhancedManuscriptDownloaderService {
             // - maxPdfPartSizeMB (new explicit cap), or
             // - effectiveAutoSplitMB (queue/config threshold), or
             // falls back to 100MB if neither is set
-            const maxPartSizeMB = Number(configService.get('maxPdfPartSizeMB') || effectiveAutoSplitMB || 100);
-            console.log(`[PDF Split] Using max part size cap: ${maxPartSizeMB} MB (queue cap=${options.queueItem?.libraryOptimizations?.autoSplitThresholdMB ?? 'n/a'}, config cap=${autoSplitThresholdMB ?? 'n/a'})`);
+            const userCapMB = Number(configService.get('maxPdfPartSizeMB') || 0);
+            const maxPartSizeMB = Number(userCapMB > 0 ? userCapMB : (effectiveAutoSplitMB || 100));
+            console.log(`[PDF Split] Using max part size cap: ${maxPartSizeMB} MB (queue cap=${options.queueItem?.libraryOptimizations?.autoSplitThresholdMB ?? 'n/a'}, config cap=${autoSplitThresholdMB ?? 'n/a'}, user hard cap=${userCapMB || 'none'})`);
             const maxPartBytes = Math.max(1, Math.floor(maxPartSizeMB * 1024 * 1024));
+
+            // If this item is already an auto-split part created by the queue and there is no explicit user hard cap,
+            // avoid splitting again here to prevent generating hundreds of tiny PDFs (one per page).
+            const skipInternalSplitting = Boolean(options.queueItem?.isAutoPart) && userCapMB <= 0;
 
             // Compute per-page sizes (missing pages assumed negligible)
             const pageSizes: number[] = [];
@@ -3585,21 +3618,26 @@ export class EnhancedManuscriptDownloaderService {
             // Group images into parts such that sum(part) <= maxPartBytes (greedy, preserving order)
             type Part = { startIdx: number; endIdx: number; images: (string | null)[] };
             const parts: Part[] = [];
-            let partStart = 0;
-            let acc = 0;
-            for (let i = 0; i < completeImagePaths.length; i++) {
-                const sz = pageSizes[i] || 0;
-                const wouldExceed = acc > 0 && (acc + sz) > maxPartBytes;
-                if (wouldExceed) {
-                    parts.push({ startIdx: partStart, endIdx: i, images: completeImagePaths.slice(partStart, i) });
-                    partStart = i;
-                    acc = 0;
+
+            if (!skipInternalSplitting) {
+                let partStart = 0;
+                let acc = 0;
+                for (let i = 0; i < completeImagePaths.length; i++) {
+                    const sz = pageSizes[i] || 0;
+                    const wouldExceed = acc > 0 && (acc + sz) > maxPartBytes;
+                    if (wouldExceed) {
+                        parts.push({ startIdx: partStart, endIdx: i, images: completeImagePaths.slice(partStart, i) });
+                        partStart = i;
+                        acc = 0;
+                    }
+                    acc += sz;
                 }
-                acc += sz;
-            }
-            // Push the last part (even if empty sizes)
-            if (partStart < completeImagePaths.length) {
-                parts.push({ startIdx: partStart, endIdx: completeImagePaths.length, images: completeImagePaths.slice(partStart) });
+                // Push the last part (even if empty sizes)
+                if (partStart < completeImagePaths.length) {
+                    parts.push({ startIdx: partStart, endIdx: completeImagePaths.length, images: completeImagePaths.slice(partStart) });
+                }
+            } else {
+                console.log('[PDF Split] Skipping internal per-size splitting for auto-split part (no user hard cap set)');
             }
 
             // If only one part and below cap, write a single PDF; otherwise, write multiple

@@ -130,6 +130,9 @@ const api = {
   updateAutoSplitThreshold: (thresholdMB: number) =>
     ipcRenderer.invoke('queue-update-autosplit-threshold', thresholdMB),
   
+  updateGlobalConcurrentDownloads: (newConcurrent: number) =>
+    ipcRenderer.invoke('queue-update-global-concurrency', newConcurrent),
+  
   onQueueStateChanged: (callback: (state: QueueState) => void) => {
     ipcRenderer.on('queue-state-changed', (_, state) => callback(state));
     // Return unsubscribe function

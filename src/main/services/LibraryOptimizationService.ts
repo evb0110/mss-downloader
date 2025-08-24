@@ -50,13 +50,12 @@ export class LibraryOptimizationService {
         // Default libraries (no special optimizations)
         'nypl': {},
         'morgan': {
-            maxConcurrentDownloads: 2, // Reduced concurrency for ZIF file processing
-            timeoutMultiplier: 4.0, // Extended timeout for large ZIF file downloads and processing
+            maxConcurrentDownloads: 1, // Process sequentially to avoid double-chunk contention
+            timeoutMultiplier: 4.0, // Extended timeout for large facsimile/ZIF processing
             enableProgressiveBackoff: true, // Enable backoff for server stability
-            // Use a minimum cap of 100MB. User-defined thresholds below this will be elevated to 100MB,
-            // thresholds above will be respected. This keeps parts reasonably small for very large pages.
-            autoSplitThresholdMB: 100,
-            optimizationDescription: 'Morgan Library optimizations: 2 concurrent downloads, 4x timeout for ZIF processing, minimum auto-split threshold 100MB'
+            // Increase minimum cap to reduce unnecessary tiny auto-splits for Morgan facsimiles.
+            autoSplitThresholdMB: 300,
+            optimizationDescription: 'Morgan Library optimizations: 1 concurrent download, 4x timeout, minimum auto-split threshold 300MB'
         },
         'gallica': {},
         'grenoble': {
