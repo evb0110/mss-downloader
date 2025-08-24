@@ -1,0 +1,19 @@
+[
+  { "action": "waitForLoad", "state": "domcontentloaded", "timeout": 60000 },
+  { "action": "waitForSelector", "selector": "[data-testid=download-queue]", "timeout": 60000 },
+  { "action": "sleep", "ms": 2000 },
+  { "action": "waitForSelector", "selector": "[data-testid=url-input]", "timeout": 5000, "optional": true },
+  { "action": "fill", "selector": "[data-testid=url-input]", "text": "{{URL}}", "optional": true },
+  { "action": "click", "selector": "[data-testid=add-button]", "optional": true },
+  { "action": "click", "selector": "button.add-more-btn", "optional": true },
+  { "action": "waitForSelector", "selector": "#modal-bulk-urls", "timeout": 30000, "optional": true },
+  { "action": "fill", "selector": "#modal-bulk-urls", "text": "{{URL}}", "optional": true },
+  { "action": "click", "selector": "button.load-btn", "optional": true },
+  { "action": "waitForSelector", "selector": "[data-testid=queue-item]", "timeout": 120000 },
+  { "action": "sleep", "ms": 8000 },
+  { "action": "click", "selector": "[data-testid=start-queue]" },
+  { "action": "log", "message": "Waiting for completion (max 25 minutes)." },
+  { "action": "waitForText", "text": "Completed", "timeout": 1500000, "optional": true },
+  { "action": "waitForConsole", "includes": "completed", "timeout": 1500000, "optional": true },
+  { "action": "screenshot", "path": ".devkit/validation/READY-FOR-USER/auto-final-visual.png", "fullPage": true }
+]

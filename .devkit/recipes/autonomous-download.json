@@ -1,0 +1,23 @@
+[
+  { "action": "waitForLoad", "state": "domcontentloaded", "timeout": 60000 },
+
+  { "action": "startConsoleCapture", "logPath": ".devkit/validation/READY-FOR-USER/console.log" },
+
+  { "action": "ipc", "call": "clearAllFromQueue" },
+  { "action": "sleep", "ms": 1000 },
+
+  { "action": "addManuscriptIPC", "url": "{{URL}}", "saveIdAs": ".devkit/validation/READY-FOR-USER/added.json" },
+
+  { "action": "ipc", "call": "getQueueState", "saveAs": ".devkit/validation/READY-FOR-USER/queue-state-after-add.json" },
+
+  { "action": "ipc", "call": "startQueueProcessing" },
+
+  { "action": "monitorQueue", "timeout": 1800000, "intervalMs": 4000, "screenshotEveryMs": 60000, "logPath": ".devkit/validation/READY-FOR-USER/queue-monitor.ndjson" },
+
+  { "action": "waitForQueueIdle", "timeout": 1800000, "saveAs": ".devkit/validation/READY-FOR-USER/queue-final-state.json" },
+
+  { "action": "saveConsole", "logPath": ".devkit/validation/READY-FOR-USER/console-final.log" },
+
+  { "action": "screenshot", "path": ".devkit/validation/READY-FOR-USER/final-ui.png", "fullPage": true }
+]
+

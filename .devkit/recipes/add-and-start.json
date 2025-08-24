@@ -1,0 +1,10 @@
+[
+  { "action": "waitForLoad", "state": "domcontentloaded", "timeout": 20000 },
+  { "action": "sleep", "ms": 4000 },
+  { "action": "fill", "selector": "textarea, input[type=\"text\"]", "text": "{{URL}}" },
+  { "action": "click", "selector": "button:has-text(\"Add\")" },
+  { "action": "sleep", "ms": 5000 },
+  { "action": "click", "selector": "button:has-text(\"Start\")" },
+  { "action": "waitForConsole", "includes": "completed", "timeout": 1200000 },
+  { "action": "screenshot", "path": ".devkit/validation/READY-FOR-USER/auto-final.png", "fullPage": true }
+]
