@@ -66,6 +66,8 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue';
+
 interface Props {
     show: boolean;
     title: string;
@@ -98,6 +100,20 @@ function handleOverlayClick() {
         emit('close');
     }
 }
+
+function handleKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape' && props.show) {
+        emit('close');
+    }
+}
+
+onMounted(() => {
+    document.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('keydown', handleKeydown);
+});
 </script>
 
 <style scoped>

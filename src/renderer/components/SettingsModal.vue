@@ -193,6 +193,12 @@ const maxPdfPartSizeMB = computed({
 });
 
 // Load initial config
+function handleKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && props.isOpen) {
+    close();
+  }
+}
+
 onMounted(async () => {
   try {
     const config = await window.electronAPI.getAllConfig();
@@ -200,6 +206,8 @@ onMounted(async () => {
   } catch (error) {
     console.error('Failed to load config:', error);
   }
+  
+  document.addEventListener('keydown', handleKeydown);
 });
 
 // Update specific config setting
@@ -251,6 +259,7 @@ onMounted(() => {
   onUnmounted(() => {
     unsubscribeConfigChanged();
     unsubscribeConfigReset();
+    document.removeEventListener('keydown', handleKeydown);
   });
 });
 

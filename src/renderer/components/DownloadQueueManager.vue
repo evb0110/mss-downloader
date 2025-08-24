@@ -1044,9 +1044,11 @@ declare global {
       updateQueueItem: (id: string, updates: Partial<QueuedManuscript>) => Promise<boolean>;
       getQueueState: () => Promise<QueueState>;
       updateAutoSplitThreshold: (thresholdMB: number) => Promise<void>;
+      updateGlobalConcurrentDownloads: (newConcurrent: number) => Promise<void>;
       onQueueStateChanged: (callback: (state: QueueState) => void) => () => void;
       cleanupIndexedDBCache: () => Promise<void>;
       showItemInFinder: (filePath: string) => Promise<boolean>;
+      setConfig: (key: string, value: unknown) => Promise<void>;
       
     };
   }
@@ -1098,6 +1100,25 @@ const currentLogs = ref<LogEntry[]>([]);
 const currentLogItem = ref<QueuedManuscript | null>(null);
 const downloadLogs = ref<Map<string, LogEntry[]>>(new Map());
 const showAddMoreDocumentsModal = ref(false);
+
+// Escape key handler for all modals
+function handleKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    if (showConfirmModal.value) {
+      showConfirmModal.value = false;
+    } else if (showAlertModal.value) {
+      showAlertModal.value = false;
+    } else if (showSupportedLibrariesModal.value) {
+      showSupportedLibrariesModal.value = false;
+    } else if (showNegativeConverterModal.value) {
+      showNegativeConverterModal.value = false;
+    } else if (showLogViewer.value) {
+      showLogViewer.value = false;
+    } else if (showAddMoreDocumentsModal.value) {
+      showAddMoreDocumentsModal.value = false;
+    }
+  }
+}
 
 // Context menu state
 const contextMenu = ref({
@@ -1153,6 +1174,9 @@ onUnmounted(() => {
     if (logMonitorInterval) {
         clearInterval(logMonitorInterval);
     }
+    
+    // Remove escape key listener
+    document.removeEventListener('keydown', handleKeydown);
 });
 const confirmModal = ref({
     title: '',
@@ -1265,13 +1289,17 @@ const queueSettings = ref({
     maxConcurrentDownloads: 3
 });
 
-// Debounced threshold update
+// Debounced threshold update and UI guard against flicker
 let debounceTimer: NodeJS.Timeout | null = null;
+let adjustGuardTimer: NodeJS.Timeout | null = null;
+const isAdjustingAutoSplit = ref(false);
 
-// Watch for queue state changes to sync settings
+// Watch for queue state changes to sync settings, but do not overwrite while user is adjusting the slider
 watchEffect(() => {
     if (queueState.value?.globalSettings) {
-        queueSettings.value.autoSplitThresholdMB = queueState.value.globalSettings.autoSplitThresholdMB;
+        if (!isAdjustingAutoSplit.value) {
+            queueSettings.value.autoSplitThresholdMB = queueState.value.globalSettings.autoSplitThresholdMB;
+        }
         queueSettings.value.maxConcurrentDownloads = queueState.value.globalSettings.concurrentDownloads;
     }
 });
@@ -1301,13 +1329,16 @@ function onConcurrencyChange() {
   if (concurrencyDebounce) clearTimeout(concurrencyDebounce);
   concurrencyDebounce = setTimeout(async () => {
     try {
-      // Ensure number is sent to config
+      // Ensure number is sent to config and queue
       const value = Number(queueSettings.value.maxConcurrentDownloads) || 1;
-      await window.electronAPI.setConfig('maxConcurrentDownloads', value);
-      // Update local reflected state so new items get this value
+      await Promise.all([
+        window.electronAPI.setConfig('maxConcurrentDownloads', value),
+        window.electronAPI.updateGlobalConcurrentDownloads(value)
+      ]);
+      // Update local reflected state so new items get this value immediately in UI
       queueState.value.globalSettings.concurrentDownloads = value;
     } catch (e) {
-      console.error('Failed to update maxConcurrentDownloads config:', e);
+      console.error('Failed to update maxConcurrentDownloads:', e);
     }
   }, 500);
 }
@@ -1831,6 +1862,9 @@ onMounted(async () => {
             queueState.value = { ...refreshedState };
         }, 1000);
     }
+    
+    // Add escape key listener for modals
+    document.addEventListener('keydown', handleKeydown);
 });
 
 function parseUrls(text: string): string[] {
@@ -2430,10 +2464,51 @@ function closeAlertModal() {
 
 async function openInBrowser(url: string) {
     // Use Electron's shell to open in default browser
+    console.log('[RENDERER] openInBrowser called with URL:', url);
+    
+    if (!url) {
+        console.error('[RENDERER] openInBrowser: No URL provided');
+        alert('Error: No URL provided to open in browser');
+        return;
+    }
+    
     try {
-        await window.electronAPI.openExternal(url);
+        console.log('[RENDERER] openInBrowser: Calling window.electronAPI.openExternal...');
+        const result = await window.electronAPI.openExternal(url);
+        console.log('[RENDERER] openInBrowser: Success result:', result);
+        
+        // Provide user feedback on successful opening
+        if (result && typeof result === 'object' && result.success) {
+            console.log(`[RENDERER] openInBrowser: Successfully opened URL using method: ${result.method}`);
+            
+            // Optional: Show success message to user (only if fallback was used)
+            if (result.method !== 'shell.openExternal') {
+                console.log(`[RENDERER] openInBrowser: Note - Used fallback method '${result.method}' due to primary method failure`);
+            }
+        }
     } catch (error) {
-        console.error('Failed to open URL in browser:', error);
+        console.error('[RENDERER] openInBrowser: Failed to open URL in browser:', error);
+        console.error('[RENDERER] openInBrowser: Error details:', {
+            name: (error as any)?.name,
+            message: (error as any)?.message,
+            stack: (error as any)?.stack,
+            url: url,
+            platform: navigator.platform
+        });
+        
+        // Show user-friendly error message with additional troubleshooting info
+        const errorMessage = (error as any)?.message || error;
+        let troubleshootingTip = '';
+        
+        if (navigator.platform.includes('Mac')) {
+            troubleshootingTip = '\n\nTroubleshooting:\n• Check System Preferences → General → Default web browser\n• Try running: System Preferences → Security & Privacy → Allow apps downloaded from...';
+        } else if (navigator.platform.includes('Win')) {
+            troubleshootingTip = '\n\nTroubleshooting:\n• Check Settings → Apps → Default apps → Web browser\n• Ensure Windows has a default browser set';
+        } else {
+            troubleshootingTip = '\n\nTroubleshooting:\n• Check your system\'s default browser settings\n• Verify xdg-utils is installed (Linux)';
+        }
+        
+        alert(`Failed to open URL in browser: ${errorMessage}\n\nURL: ${url}${troubleshootingTip}\n\nPlease copy the URL manually if needed.`);
     }
 }
 
@@ -2586,17 +2661,25 @@ function _UNUSED_updateQueueSettings() {
 
 // Debounced auto-split threshold update
 function onAutoSplitThresholdChange() {
+    // Guard: mark that user is adjusting, so watchEffect won't overwrite the local value
+    isAdjustingAutoSplit.value = true;
+    if (adjustGuardTimer) clearTimeout(adjustGuardTimer);
+    adjustGuardTimer = setTimeout(() => {
+        isAdjustingAutoSplit.value = false;
+    }, 800); // stop guarding shortly after user stops moving the slider
+
+    // Debounce IPC update (shorter delay to keep UI and state in sync quickly)
     if (debounceTimer) {
         clearTimeout(debounceTimer);
     }
-    
+
     debounceTimer = setTimeout(async () => {
         try {
-            await window.electronAPI.updateAutoSplitThreshold(queueSettings.value.autoSplitThresholdMB);
+            await window.electronAPI.updateAutoSplitThreshold(Number(queueSettings.value.autoSplitThresholdMB) || 10);
         } catch (error) {
             console.error('Failed to update auto-split threshold:', error);
         }
-    }, 2000); // 2 second debounce
+    }, 300);
 }
 
 

@@ -302,7 +302,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { DownloadProgress, DownloadStatus, LibraryInfo } from '../../shared/types'
 
@@ -429,6 +429,12 @@ const waitForElectronAPI = () => {
   });
 };
 
+function handleKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && showCacheModal.value) {
+    showCacheModal.value = false;
+  }
+}
+
 onMounted(async () => {
   try {
     await waitForElectronAPI();
@@ -450,9 +456,16 @@ onMounted(async () => {
       currentLanguage.value = language
       locale.value = language
     })
+    
+    // Add escape key listener
+    document.addEventListener('keydown', handleKeydown);
   } catch (error) {
     console.error('Failed to initialize:', error)
   }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown);
 })
 
 const switchLanguage = async (language: string) => {
