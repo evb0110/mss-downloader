@@ -3206,7 +3206,16 @@ export class EnhancedManuscriptDownloaderService {
                         // Use DirectTileProcessor for Bordeaux
                         try {
                             const tileConfig = (manifest as ManifestWithTileConfig).tileConfig as TileConfig;
-                            const pageNum = tileConfig.startPage + pageIndex;
+                            // Prefer discovered availablePages mapping if present to avoid gaps/duplication
+                            const available = (tileConfig as any)?.pageRange?.availablePages as number[] | undefined;
+                            const pageNum = Array.isArray(available) && available.length >= (pageIndex + 1)
+                                ? available[pageIndex]
+                                : (tileConfig.startPage + pageIndex);
+                            
+                            if (pageNum === undefined) {
+                                console.warn(`[Bordeaux] Could not determine page number for pageIndex ${pageIndex}`);
+                                return;
+                            }
                             console.log(`[Bordeaux] Processing page ${pageNum} using DirectTileProcessor`);
 
                             // Create a progress callback for tile downloads
@@ -3224,8 +3233,8 @@ export class EnhancedManuscriptDownloaderService {
 
                             if (result.success) {
                                 // Store in array using relative index for proper array management
-                        const relativeIndex = pageIndex - (actualStartPage - 1);
-                        imagePaths[relativeIndex] = imgPath;
+                                const relativeIndex = pageIndex - (actualStartPage - 1);
+                                imagePaths[relativeIndex] = imgPath;
                                 completedPages++;
                                 emitProgress(false);
                                 console.log(`[Bordeaux] Successfully processed page ${pageNum}`);
@@ -3238,8 +3247,6 @@ export class EnhancedManuscriptDownloaderService {
                             failedPages.push(pageIndex + 1);
                         }
                     }
-
-                    return;
                 }
 
                 // Check if this is a tile-based system

@@ -88,6 +88,11 @@ export class SharedManifestAdapter {
                 if ((result as any).images) {
                     manifest.images = (result as any).images; // Preserve full image info for tile processing
                 }
+                // Propagate Bordeaux pageRange if present
+                if ((result as any).tileConfig && (result as any).tileConfig.pageRange) {
+                    (manifest as any).tileConfig = (manifest as any).tileConfig || {};
+                    (manifest as any).tileConfig.pageRange = (result as any).tileConfig.pageRange;
+                }
             }
             
             // Handle new Bordeaux format with tile processor integration
@@ -101,13 +106,21 @@ export class SharedManifestAdapter {
                     pageCount: (result as any).pageCount,
                     tileBaseUrl: (result as any).tileBaseUrl
                 };
-                // Generate placeholder page links for UI
+                // Generate placeholder page links for UI using discovered availablePages if present
                 manifest.pageLinks = [];
-                for (let i = 0; i < (result as any).pageCount; i++) {
-                    const pageNum = (result as any).startPage + i;
-                    manifest.pageLinks.push(`${(result as any).tileBaseUrl}/${(result as any).baseId}_${String(pageNum).padStart(4, '0')}`);
+                const pageRange = (result as any).tileConfig?.pageRange;
+                if (pageRange && Array.isArray(pageRange.availablePages) && pageRange.availablePages.length > 0) {
+                    for (const pageNum of pageRange.availablePages) {
+                        manifest.pageLinks.push(`${(result as any).tileBaseUrl}/${(result as any).baseId}_${String(pageNum).padStart(4, '0')}`);
+                    }
+                    if (manifest) manifest.totalPages = pageRange.availablePages.length;
+                } else {
+                    for (let i = 0; i < (result as any).pageCount; i++) {
+                        const pageNum = (result as any).startPage + i;
+                        manifest.pageLinks.push(`${(result as any).tileBaseUrl}/${(result as any).baseId}_${String(pageNum).padStart(4, '0')}`);
+                    }
+                    if (manifest) manifest.totalPages = (result as any).pageCount;
                 }
-                if (manifest) manifest.totalPages = (result as any).pageCount;
             }
 
             return manifest as ManuscriptManifest;

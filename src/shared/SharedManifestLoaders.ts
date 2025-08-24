@@ -3880,7 +3880,7 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
     /**
      * Bordeaux - Fixed with proper tile processor integration
      */
-    async getBordeauxManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string, type?: string, baseId?: number, publicId?: string, startPage?: number, pageCount?: number, tileBaseUrl?: string, requiresTileProcessor?: boolean, tileConfig?: Record<string, unknown>, pageBlocks?: Record<string, unknown> } | ManuscriptImage[]> {
+    async getBordeauxManifest(url: string): Promise<{ images: ManuscriptImage[], displayName?: string, type?: string, baseId?: string, publicId?: string, startPage?: number, pageCount?: number, tileBaseUrl?: string, requiresTileProcessor?: boolean, tileConfig?: Record<string, unknown>, pageBlocks?: Record<string, unknown> } | ManuscriptImage[]> {
         console.log('[Bordeaux] Processing URL:', url);
         this.devkitLog('bordeaux', `[Bordeaux] Processing URL: ${url}`);
         
@@ -4065,14 +4065,14 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             displayName: `Bordeaux - ${publicId}`,
             // Keep tile processor info for backward compatibility
             type: 'bordeaux_tiles',
-            baseId: Number(baseId!),
+            baseId: String(baseId || ''),
             publicId: publicId,
             startPage: startPage,
             pageCount: pageCount,
             tileBaseUrl: 'https://selene.bordeaux.fr/in/dz',
             requiresTileProcessor: true,
             tileConfig: {
-                baseId: Number(baseId!),
+                baseId: String(baseId || ''),
                 startPage: startPage,
                 pageCount: pageCount,
                 tileBaseUrl: 'https://selene.bordeaux.fr/in/dz',
