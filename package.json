@@ -1,12 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.254",
+  "version": "1.4.255",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.254: Morgan objectId URL fix + autonomous validation",
-    "Fixed Morgan loader to preserve /collection/<slug>/<objectId> paths across thumbs, pagination, and per-page parsing",
-    "Resolved 404s on Morgan by handling 301 redirects from /thumbs to object pages correctly",
-    "Added autonomous IPC Playwright plans and a focused e2e spec for Morgan; improved test harness resiliency"
+    "v1.4.255: Enforcement of sequential auto-split processing",
+    "Fixed download queue to strictly enforce sequential part processing for auto-split manuscripts",
+    "Removed simultaneous download mode from UI and hardcoded sequential behavior",
+    "Enhanced queue services to prevent race conditions and ensure reliable large manuscript downloads"
   ],
   "main": "dist/main/main.js",
   "scripts": {
