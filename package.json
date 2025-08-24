@@ -1,11 +1,12 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.251",
+  "version": "1.4.253",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.251: Enhanced queue processing - strictly sequential auto-split parts with improved reliability",
-    "Removed parallel chunk processing that could cause download conflicts and memory issues",
-    "Better handling of large manuscripts with consistent sequential download order"
+    "v1.4.253: Enforce strictly sequential auto-split part processing",
+    "Fixed queue handling to prevent concurrent download conflicts in large manuscripts",
+    "Improved reliability for multi-part manuscripts with proper ordering",
+    "Enhanced auto-split processing to maintain sequential integrity"
   ],
   "main": "dist/main/main.js",
   "scripts": {
@@ -54,9 +55,10 @@
     "test:e2e:kill": ".devkit/tools/kill-tests.sh",
     "test:e2e:headed": "npm run build && npx playwright test --headed",
     "test:e2e:debug": "npm run build && npx playwright test --debug",
-    "auto": "node .devkit/tools/auto-electron.cjs",
-    "auto:example": "node .devkit/tools/auto-electron.cjs --plan .devkit/recipes/add-and-start.json --param URL=https://imagoarchiviodistatoroma.cultura.gov.it/Preziosi/scheda.php?r=994-882",
-    "auto:roman": "node .devkit/tools/auto-electron.cjs --plan .devkit/recipes/add-start-wait-visual.json --param URL=https://imagoarchiviodistatoroma.cultura.gov.it/Preziosi/scheda.php?r=994-882",
+    "auto": "node .devkit/tools/auto-electron.cjs --headed",
+    "auto:example": "node .devkit/tools/auto-electron.cjs --headed --plan .devkit/recipes/add-and-start.json --param URL=https://imagoarchiviodistatoroma.cultura.gov.it/Preziosi/scheda.php?r=994-882",
+    "auto:roman": "node .devkit/tools/auto-electron.cjs --headed --plan .devkit/recipes/add-start-wait-visual.json --param URL=https://imagoarchiviodistatoroma.cultura.gov.it/Preziosi/scheda.php?r=994-882",
+    "auto:download": "node .devkit/tools/auto-electron.cjs --headed --plan .devkit/recipes/autonomous-download.json",
     "telegram:start": "cd telegram-bot && npm run start",
     "telegram:install": "cd telegram-bot && npm install",
     "cleanup": ".devkit/tools/cleanup-processes.sh",
