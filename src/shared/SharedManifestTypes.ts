@@ -12,6 +12,7 @@ export interface ManuscriptImage {
   pageNumber?: number;
   resolution?: ImageResolution;
   metadata?: Record<string, unknown>;
+  requiresTileProcessor?: boolean; // For DirectTileProcessor support
 }
 
 /**

@@ -261,80 +261,75 @@ export class DirectTileProcessor {
         console.log(`[DirectTile] Stitching ${tiles?.length} tiles...`);
         
         try {
-            // Try to use Canvas if available
-            let Canvas;
-            try {
-                Canvas = await import('canvas');
-            } catch {
-                throw new Error('Canvas dependency required for tile assembly. Please install canvas package.');
-            }
-            
-            // ULTRA-SAFE canvas dimensions to prevent RangeError: Invalid array length
-            const MAX_CANVAS_SIZE = 16384; // Safe limit for most systems
+            // Use Jimp to avoid native canvas dependency
+            const JimpModule: any = await import('jimp');
+            const Jimp: any = JimpModule.Jimp || JimpModule.default || JimpModule;
+
+            // ULTRA-SAFE dimensions to prevent RangeError: Invalid array length
+            const MAX_DIMENSION = 16384; // Safe limit for most systems
             
             // Comprehensive dimension validation to handle NaN, negative, and non-integer values
             let safeWidth = tileInfo.estimatedDimensions.width;
             let safeHeight = tileInfo.estimatedDimensions.height;
             
-            // Handle invalid numbers (NaN, Infinity, negative)
             if (!Number.isFinite(safeWidth) || safeWidth <= 0) {
                 console.warn(`[DirectTile] Invalid width detected (${safeWidth}), using fallback`);
-                safeWidth = 1000; // Fallback to reasonable size
+                safeWidth = 1000;
             }
-            
             if (!Number.isFinite(safeHeight) || safeHeight <= 0) {
                 console.warn(`[DirectTile] Invalid height detected (${safeHeight}), using fallback`);
-                safeHeight = 1000; // Fallback to reasonable size
+                safeHeight = 1000;
             }
             
-            // Ensure integers (Canvas requires integer dimensions)
-            safeWidth = Math.floor(safeWidth);
-            safeHeight = Math.floor(safeHeight);
-            
-            // Apply size limits
-            safeWidth = Math.min(safeWidth, MAX_CANVAS_SIZE);
-            safeHeight = Math.min(safeHeight, MAX_CANVAS_SIZE);
+            safeWidth = Math.floor(Math.min(safeWidth, MAX_DIMENSION));
+            safeHeight = Math.floor(Math.min(safeHeight, MAX_DIMENSION));
             
             console.log(`[DirectTile] Original dimensions: ${tileInfo.estimatedDimensions.width}x${tileInfo.estimatedDimensions.height}`);
             console.log(`[DirectTile] Safe dimensions: ${safeWidth}x${safeHeight}`);
 
-            if (safeWidth !== tileInfo.estimatedDimensions.width || safeHeight !== tileInfo.estimatedDimensions.height) {
-                console.warn(`[DirectTile] Dimensions adjusted to prevent memory allocation error`);
-            }
-            
-            // Final validation before Canvas creation
-            if (safeWidth <= 0 || safeHeight <= 0 || !Number.isInteger(safeWidth) || !Number.isInteger(safeHeight)) {
-                throw new Error(`Cannot create canvas with invalid dimensions ${safeWidth}x${safeHeight}`);
+            if (safeWidth <= 0 || safeHeight <= 0) {
+                throw new Error(`Cannot create image with invalid dimensions ${safeWidth}x${safeHeight}`);
             }
 
-            const canvas = Canvas.createCanvas(safeWidth, safeHeight);
-            const ctx = canvas.getContext('2d');
+            // Create base image (white background) - Jimp v1.6.0+ syntax
+            const whiteBuffer = Buffer.alloc(safeWidth * safeHeight * 4);
+            // Fill with white (RGBA: 255,255,255,255)
+            for (let i = 0; i < whiteBuffer.length; i += 4) {
+                whiteBuffer[i] = 255;     // R
+                whiteBuffer[i + 1] = 255; // G  
+                whiteBuffer[i + 2] = 255; // B
+                whiteBuffer[i + 3] = 255; // A
+            }
+            const baseImage = new Jimp({ width: safeWidth, height: safeHeight, data: whiteBuffer });
             
             let processedTiles = 0;
             for (const tile of tiles) {
                 if (!tile.data) continue;
-                
                 try {
-                    const img = await Canvas.loadImage(tile.data);
-                    
+                    const img = await Jimp.read(tile.data);
+
                     // Calculate position (accounting for overlap)
                     const destX = tile.column * tileInfo.tileSize - (tile.column > 0 ? tileInfo.overlap : 0);
                     const destY = tile.row * tileInfo.tileSize - (tile.row > 0 ? tileInfo.overlap : 0);
                     
-                    // Draw tile
+                    // Crop to remove overlap at source edges - Jimp v1.6.0+ uses bitmap properties
                     const sourceX = tile.column > 0 ? tileInfo.overlap : 0;
                     const sourceY = tile.row > 0 ? tileInfo.overlap : 0;
+                    const imgWidth = img.bitmap?.width || img.getWidth?.() || 256;
+                    const imgHeight = img.bitmap?.height || img.getHeight?.() || 256;
+                    const cropW = imgWidth - sourceX - (tile.column < tileInfo.gridSize.cols - 1 ? tileInfo.overlap : 0);
+                    const cropH = imgHeight - sourceY - (tile.row < tileInfo.gridSize.rows - 1 ? tileInfo.overlap : 0);
                     
-                    ctx.drawImage(
-                        img,
-                        sourceX, sourceY,
-                        img.width - sourceX - (tile.column < tileInfo.gridSize.cols - 1 ? tileInfo.overlap : 0),
-                        img.height - sourceY - (tile.row < tileInfo.gridSize.rows - 1 ? tileInfo.overlap : 0),
-                        destX, destY,
-                        img.width - sourceX - (tile.column < tileInfo.gridSize.cols - 1 ? tileInfo.overlap : 0),
-                        img.height - sourceY - (tile.row < tileInfo.gridSize.rows - 1 ? tileInfo.overlap : 0)
-                    );
-                    
+                    // Guard against negative crop sizes (defensive)
+                    const finalW = Math.max(1, cropW);
+                    const finalH = Math.max(1, cropH);
+                    if (sourceX !== 0 || sourceY !== 0 || finalW !== imgWidth || finalH !== imgHeight) {
+                        img.crop({ x: sourceX, y: sourceY, w: finalW, h: finalH });
+                    }
+
+                    // Composite the tile
+                    baseImage.composite(img, destX, destY);
+
                     processedTiles++;
                     if (processedTiles % 10 === 0) {
                         console.log(`[DirectTile] Stitching progress: ${Math.round((processedTiles / tiles?.length) * 100)}%`);
@@ -343,27 +338,12 @@ export class DirectTileProcessor {
                     console.error(`[DirectTile] Error processing tile ${tile.column}_${tile.row}:`, error instanceof Error ? error.message : String(error));
                 }
             }
-            
-            console.log('[DirectTile] Encoding to JPEG...');
-            
-            // Convert to JPEG buffer with compression to keep per-page size manageable
-            const jpegBuffer = await new Promise<Buffer>((resolve, reject) => {
-                try {
-                    // Use JPEG with reasonable quality and chroma subsampling to reduce size dramatically
-                    const buffer = canvas.toBuffer('image/jpeg', {
-                        quality: 0.85,              // 0..1
-                        progressive: true,          // enable progressive JPEGs
-                        chromaSubsampling: true     // reduce chroma resolution for smaller size
-                    } as unknown as any);
-                    resolve(buffer);
-                } catch (err) {
-                    reject(err as Error);
-                }
-            });
-            
+
+            // Encode to JPEG with quality settings - Jimp v1.6.0+ syntax
+            const jpegBuffer: Buffer = await baseImage.getBuffer('image/jpeg', { quality: 85 });
+
             console.log(`[DirectTile] Final image size: ${(jpegBuffer?.length / 1024 / 1024).toFixed(2)} MB`);
             return jpegBuffer;
-            
         } catch (error) {
             console.error('[DirectTile] Stitching error:', error);
             throw error;
@@ -419,14 +399,15 @@ export class DirectTileProcessor {
      * Process a single page for Bordeaux-style tiled manuscripts
      * Used by EnhancedManuscriptDownloaderService for individual page processing
      */
-    async processPage(baseId: string, pageNum: number, outputPath: string, onProgress?: (downloaded: number, total: number) => void): Promise<{ success: boolean; error?: string }> {
+    async processPage(baseId: string, pageNum: number, outputPath: string, onProgress?: (downloaded: number, total: number) => void, tileHostBaseUrl?: string): Promise<{ success: boolean; error?: string }> {
         try {
             console.log(`[DirectTile] Processing Bordeaux page ${pageNum} with base ID: ${baseId}`);
             
-            // Construct the tile URL for this specific page (default: 4-digit padding)
+            // Construct the tile URL for this specific page using provided host when available
             const paddedPage = String(pageNum).padStart(4, '0');
             const pageId = `${baseId}_${paddedPage}`;
-            const tileBaseUrl = `https://selene.bordeaux.fr/in/dz/${pageId}`;
+            const resolvedHost = (tileHostBaseUrl && typeof tileHostBaseUrl === 'string') ? tileHostBaseUrl.replace(/\/$/, '') : 'https://selene.bordeaux.fr/in/dz';
+            const tileBaseUrl = `${resolvedHost}/${pageId}`;
             console.log(`[DirectTile] Tile base URL (primary): ${tileBaseUrl}`);
 
             // Probe tile structure across levels instead of testing only level 0
@@ -449,7 +430,7 @@ export class DirectTileProcessor {
 
             for (const format of alternativeFormats) {
                 const altPageId = `${baseId}_${format}`;
-                const altTileBaseUrl = `https://selene.bordeaux.fr/in/dz/${altPageId}`;
+                const altTileBaseUrl = `${resolvedHost}/${altPageId}`;
                 console.log(`[DirectTile] Probing alternative format base: ${altTileBaseUrl}`);
                 try {
                     const altTileInfo = await this.probeTileStructure(altTileBaseUrl);

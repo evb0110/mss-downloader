@@ -312,6 +312,27 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 item.url,
                 Date.now() - loadingStartTime
             );
+
+            // Targeted debug: manifest shape for tile-based libraries (e.g., Bordeaux)
+            try {
+                const tileCfgDbg: any = (manifest as any)?.tileConfig || null;
+                logger.log({
+                    level: 'debug',
+                    library: (manifest.library || library) as any,
+                    url: item.url,
+                    message: 'Manifest loaded',
+                    details: {
+                        displayName: (manifest as any)?.displayName,
+                        totalPages: (manifest as any)?.totalPages,
+                        hasTileConfig: !!tileCfgDbg,
+                        tileBaseUrl: tileCfgDbg?.tileBaseUrl,
+                        baseId: tileCfgDbg?.baseId,
+                        discoveredFirstPage: tileCfgDbg?.pageRange?.firstPage,
+                        discoveredLastPage: tileCfgDbg?.pageRange?.lastPage,
+                        discoveredTotal: tileCfgDbg?.pageRange?.totalPages
+                    }
+                });
+            } catch {}
             
             // If we showed progress, ensure minimum display time of 2 seconds
             if (hasShownProgress) {
@@ -323,11 +344,47 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 }
             }
             
+            // Derive a reliable totalPages value, including tile-based manifests (e.g., Bordeaux)
+            let resolvedTotalPages = (manifest as any)?.totalPages || 0;
+            const tileCfg = (manifest as any)?.tileConfig as any;
+            if ((!resolvedTotalPages || resolvedTotalPages === 0) && tileCfg) {
+                const pageRange = tileCfg?.pageRange as any;
+                if (pageRange && Array.isArray(pageRange.availablePages) && pageRange.availablePages.length > 0) {
+                    resolvedTotalPages = pageRange.availablePages.length;
+                } else if (typeof tileCfg?.pageCount === 'number' && tileCfg.pageCount > 0) {
+                    resolvedTotalPages = tileCfg.pageCount;
+                } else if (
+                    typeof pageRange?.firstPage === 'number' &&
+                    typeof pageRange?.lastPage === 'number' &&
+                    pageRange.lastPage >= pageRange.firstPage
+                ) {
+                    resolvedTotalPages = pageRange.lastPage - pageRange.firstPage + 1;
+                }
+            }
+
+            // Debug log the resolved total for visibility
+            try {
+                logger.log({
+                    level: 'debug',
+                    library: (manifest.library || library) as any,
+                    url: item.url,
+                    message: 'Resolved totalPages after manifest load',
+                    details: {
+                        resolvedTotalPages,
+                        usedTileConfig: !!tileCfg
+                    }
+                });
+            } catch {}
+            
             // Update item with manifest information and set status back to pending
             item.status = 'pending';
             item.progress = undefined;
-            if (item) item.totalPages = manifest?.totalPages;
+            if (item) item.totalPages = resolvedTotalPages;
             item.library = manifest.library as TLibrary;
+            // Prefer manifest-provided display name when available
+            if ((manifest as any)?.displayName && (manifest as any).displayName !== item.displayName) {
+                item.displayName = (manifest as any).displayName;
+            }
             
             // Apply library-specific optimizations
             const optimizations = LibraryOptimizationService.applyOptimizations(
@@ -363,9 +420,11 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 error instanceof Error ? error : new Error(String(error))
             );
             
-            // Reset status and clear progress on error
-            item.status = 'pending';
+            // Explicitly mark as failed to prevent indefinite loading loops and allow controlled retries
+            item.status = 'failed';
+            item.error = errorMessage;
             item.progress = undefined;
+            this.saveToStorage();
             this.notifyListeners();
         }
     }

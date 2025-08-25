@@ -291,12 +291,7 @@ https://digi.vatlib.it/..."
             data-testid="start-queue"
             @click="startQueue"
           >
-            <template v-if="queueStats.loading > 0">
-              Loading Manifests...
-            </template>
-            <template v-else>
-              {{ shouldShowResume ? 'Resume Queue' : 'Start Queue' }}
-            </template>
+            {{ shouldShowResume ? 'Resume Queue' : 'Start Queue' }}
           </button>
           <button
             v-if="isQueueProcessing && !isQueuePaused"
@@ -319,12 +314,7 @@ https://digi.vatlib.it/..."
             :disabled="isProcessingUrls || !hasReadyItems || queueStats.loading > 0"
             @click="startQueue"
           >
-            <template v-if="queueStats.loading > 0">
-              Loading Manifests...
-            </template>
-            <template v-else>
-              Start Queue
-            </template>
+            Start Queue
           </button>
           <button
             v-if="isQueueProcessing || isQueuePaused"
@@ -383,14 +373,6 @@ https://digi.vatlib.it/..."
 
 
         <div class="queue-actions">
-          <!-- Loading manifests indicator -->
-          <div
-            v-if="isProcessingUrls"
-            class="loading-manifests"
-          >
-            <div class="loading-spinner" />
-            <span>Loading Manifests...</span>
-          </div>
         </div>
 
         <div class="queue-list">
@@ -432,36 +414,52 @@ https://digi.vatlib.it/..."
                       {{ group.parent.displayName }}
                     </a>
                     <span v-else>{{ group.parent.displayName }}</span>
-                    <span
-                      v-if="group.parts.length > 0"
-                      class="part-count-badge"
-                    >
-                      ({{ group.parts.length }} parts)
-                    </span>
                   </strong>
                   <div class="queue-item-meta">
                     <span
                       class="status-badge"
                       :class="`status-${getGroupStatus(group)}`"
-                    >{{ getGroupStatusText(group) }}</span>
+                    >
+                      <span
+                        v-if="getGroupStatus(group) === 'downloading' || getGroupStatus(group) === 'loading'"
+                        class="inline-spinner"
+                      />
+                      {{ getGroupStatusText(group) }}
+                    </span>
                     <span
                       v-if="group.parent.status !== 'failed'"
                       class="total-pages-badge"
                     >
+                    <span
+                      v-if="showManifestSpinnerForItem(group.parent)"
+                      class="inline-spinner"
+                    />
                       {{ getTotalPagesText(group) }}
                     </span>
                     <span
                       v-if="group.parent.status !== 'failed'"
                       class="concurrency-badge"
-                      :title="concurrencyBadgeTitle(group.parent)"
+                      :title="concurrencyBadgeTitleForGroup(group)"
                     >
-                      Concurrency: {{ effectiveItemConcurrency(group.parent) }}
+                      Concurrency: {{ effectiveGroupConcurrency(group) }}
+                    </span>
+                    <span
+                      v-if="shouldShowGroupProgress(group) && getGroupPagesProgressText(group)"
+                      class="pages-progress-badge"
+                    >
+                      {{ getGroupPagesProgressText(group) }}
+                    </span>
+                    <span
+                      v-if="shouldShowGroupProgress(group) && getGroupProgress(group)?.eta"
+                      class="eta-badge"
+                    >
+                      ETA: {{ getGroupProgress(group)?.eta }}
                     </span>
                   </div>
                 </div>
                 <div class="queue-item-controls">
                   <button
-                    v-if="editingQueueItemId !== group.parent.id && getParentIndex(group.parent) > 0 && !hasActiveDownloads"
+                    v-if="!group.isSynthetic && editingQueueItemId !== group.parent.id && getParentIndex(group.parent) > 0 && !hasActiveDownloads"
                     class="move-up-btn"
                     title="Move up in queue"
                     @click="moveQueueItemUp(group.parent)"
@@ -469,7 +467,7 @@ https://digi.vatlib.it/..."
                     ↑
                   </button>
                   <button
-                    v-if="editingQueueItemId !== group.parent.id && getParentIndex(group.parent) < groupedQueueItems.length - 1 && !hasActiveDownloads"
+                    v-if="!group.isSynthetic && editingQueueItemId !== group.parent.id && getParentIndex(group.parent) < groupedQueueItems.length - 1 && !hasActiveDownloads"
                     class="move-down-btn"
                     title="Move down in queue"
                     @click="moveQueueItemDown(group.parent)"
@@ -486,7 +484,7 @@ https://digi.vatlib.it/..."
                     {{ isPartsExpanded(group.parent.id) ? '▼' : '▶' }}
                   </button>
                   <button
-                    v-if="editingQueueItemId !== group.parent.id"
+                    v-if="!group.isSynthetic && editingQueueItemId !== group.parent.id"
                     class="edit-btn"
                     title="Edit download options"
                     data-testid="edit-button"
@@ -521,6 +519,7 @@ https://digi.vatlib.it/..."
                     Restart
                   </button>
                   <button
+                    v-if="!group.isSynthetic"
                     class="view-logs-btn"
                     :title="'View logs for this download'"
                     @click="viewDownloadLogs(group.parent)"
@@ -546,119 +545,21 @@ https://digi.vatlib.it/..."
                 </div>
               </div>
 
-              <!-- Auto-split parts (collapsible) -->
+              <!-- Auto-split parts (collapsible, compact view) -->
               <div 
                 v-if="group.parts.length > 0 && isPartsExpanded(group.parent.id)"
-                class="auto-parts-list"
+                class="parts-compact"
               >
                 <div
                   v-for="part in group.parts"
                   :key="part.id"
-                  class="queue-item part-item"
-                  :class="[`status-${part.status}`, { 'loading-manifest': part.status === 'loading' }]"
-                  data-testid="queue-part"
+                  class="part-chip"
+                  :class="[`status-${part.status}`]"
+                  :title="`Pages ${part.partInfo?.pageRange.start}–${part.partInfo?.pageRange.end}`"
                 >
-                  <div class="queue-item-header">
-                    <div class="queue-item-info">
-                      <strong>
-                        {{ part.displayName }}
-                      </strong>
-                      <div class="queue-item-meta">
-                        <span
-                          class="status-badge"
-                          :class="`status-${part.status}`"
-                        >{{ getStatusText(part.status) }}</span>
-                        <span
-                          v-if="part.status !== 'failed'"
-                          class="total-pages-badge"
-                        >
-                          Pages {{ part.partInfo?.pageRange.start }}–{{ part.partInfo?.pageRange.end }}
-                        </span>
-                      </div>
-                    </div>
-                    <div class="queue-item-controls">
-                      <button
-                        v-if="part.status === 'downloading'"
-                        class="pause-item-btn"
-                        title="Pause this part"
-                        @click="pauseQueueItem(part.id)"
-                      >
-                        Pause
-                      </button>
-                      <button
-                        v-if="part.status === 'paused'"
-                        class="resume-item-btn"
-                        title="Resume this part"
-                        @click="resumeQueueItem(part.id)"
-                      >
-                        Resume
-                      </button>
-                      <button
-                        v-if="part.status === 'completed' || part.status === 'failed'"
-                        class="restart-item-btn"
-                        title="Restart this part"
-                        @click="restartQueueItem(part.id)"
-                      >
-                        Restart
-                      </button>
-                      <button
-                        v-if="(part.status === 'completed' || part.status === 'failed') && part.outputPath"
-                        class="show-finder-btn"
-                        :title="getShowInFinderText()"
-                        @click="showItemInFinder(part.outputPath)"
-                      >
-                        {{ getShowInFinderText() }}
-                      </button>
-                      <button
-                        class="remove-btn"
-                        title="Remove this part"
-                        @click="removeQueueItem(part.id)"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Progress bar for individual parts -->
-                  <div
-                    v-if="part.status === 'downloading' || (part.status === 'paused' && part.progress)"
-                    :key="`progress-${part.id}-${part.progress?.current || 0}`"
-                    class="item-progress"
-                  >
-                    <div class="item-progress-header">
-                      <span class="item-progress-label">
-                        {{ part.status === 'downloading' ? 'Part Progress' : 'Part Paused' }}
-                      </span>
-                      <span class="item-progress-stats">
-                        <template v-if="part.progress">
-                          <template v-if="part.progress.stage === 'loading-manifest'">
-                            Loading manifest: {{ part.progress.current }}/{{ part.progress.total }} pages ({{ part.progress.percentage }}%)
-                          </template>
-                          <template v-else>
-                            {{ part.status === 'downloading'
-                              ? `Downloading ${part.progress.current} of ${part.progress.total}`
-                              : `Paused at ${part.progress.current} of ${part.progress.total}`
-                            }} ({{ part.progress.percentage }}%)
-                          </template>
-                        </template>
-                        <template v-else>
-                          Initializing...
-                        </template>
-                      </span>
-                    </div>
-                    <div class="item-progress-bar">
-                      <div 
-                        class="item-progress-fill"
-                        :style="{ width: `${part.progress?.percentage || 0}%` }"
-                      />
-                    </div>
-                    <div
-                      v-if="part.progress?.eta"
-                      class="item-progress-eta"
-                    >
-                      Estimated Time: {{ part.progress.eta }}
-                    </div>
-                  </div>
+                  <span class="part-name">Part {{ part.partInfo?.partNumber }}</span>
+                  <span class="part-range">({{ part.partInfo?.pageRange.start }}–{{ part.partInfo?.pageRange.end }})</span>
+                  <span class="part-status">• {{ getStatusText(part.status) }}</span>
                 </div>
               </div>
                         
@@ -734,33 +635,6 @@ https://digi.vatlib.it/..."
                 </div>
               </div>
                         
-              <!-- Overall progress bar for group -->
-              <div
-                v-if="shouldShowGroupProgress(group)"
-                :key="`progress-${group.parent.id}-${getGroupProgress(group)?.current || 0}`"
-                class="item-progress group-progress"
-              >
-                <div class="item-progress-header">
-                  <span class="item-progress-label">
-                    {{ getGroupProgressLabel(group) }}
-                  </span>
-                  <span class="item-progress-stats">
-                    {{ getGroupProgressStats(group) }}
-                  </span>
-                </div>
-                <div class="item-progress-bar">
-                  <div 
-                    class="item-progress-fill"
-                    :style="{ width: `${getGroupProgress(group)?.percentage || 0}%` }"
-                  />
-                </div>
-                <div
-                  v-if="getGroupProgress(group)?.eta"
-                  class="item-progress-eta"
-                >
-                  Estimated Time: {{ getGroupProgress(group).eta }}
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -993,7 +867,7 @@ https://digi.vatlib.it/..."
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watchEffect, onMounted, onUnmounted } from 'vue';
-import type { QueuedManuscript, QueueState, TStatus, TLibrary, TSimultaneousMode } from '../../shared/queueTypes';
+import type { QueuedManuscript, QueueState, TStatus, TLibrary, TSimultaneousMode, TStage } from '../../shared/queueTypes';
 import type { LibraryInfo, ManuscriptManifest, DownloadCallbacks } from '../../shared/types';
 import Modal from './Modal.vue';
 import Spoiler from './Spoiler.vue';
@@ -1354,8 +1228,7 @@ const groupedQueueItems = computed(() => {
     const items = queueItems.value;
     const parentItems: QueuedManuscript[] = [];
     const partsMap = new Map<string, QueuedManuscript[]>();
-    const orphanedParts: QueuedManuscript[] = [];
-    
+
     // Separate parent items and parts
     items.forEach(item => {
         if (item.isAutoPart && item.parentId) {
@@ -1367,37 +1240,65 @@ const groupedQueueItems = computed(() => {
             parentItems.push(item);
         }
     });
-    
-    // Find orphaned parts (parts without parent items)
-    partsMap.forEach((parts, parentId) => {
-        const hasParent = parentItems.some(parent => parent.id === parentId);
-        if (!hasParent) {
-            orphanedParts.push(...parts);
-            partsMap.delete(parentId);
-        }
-    });
-    
+
     // Sort parts by part number for each parent
     partsMap.forEach(parts => {
         parts.sort((a, b) => (a.partInfo?.partNumber || 0) - (b.partInfo?.partNumber || 0));
     });
-    
-    // Create groups for parent items with their parts
-    const groups = parentItems.map(parent => ({
-        parent,
-        parts: partsMap.get(parent.id) || []
-    }));
-    
-    // Add orphaned parts as individual groups (treating them as parent items)
-    orphanedParts.forEach(orphan => {
-        groups.push({
-            parent: orphan,
-            parts: []
-        });
+
+    // Create groups for parent items with their parts when parent exists
+    const groups: Array<{ parent: any; parts: QueuedManuscript[]; isSynthetic?: boolean }> = [];
+
+    parentItems.forEach(parent => {
+        groups.push({ parent, parts: partsMap.get(parent.id) || [], isSynthetic: false });
+        // Remove mapped parts so we only synthesize for missing parents below
+        if (partsMap.has(parent.id)) partsMap.delete(parent.id);
     });
-    
+
+    // For any remaining parentId keys (no real parent item exists), synthesize a visual parent
+    partsMap.forEach((parts, parentId) => {
+        if (!parts || parts.length === 0) return;
+        const first = parts[0];
+        const totalPages = parts.reduce((max, p) => Math.max(max, p.partInfo?.pageRange.end || 0), 0);
+        const originalDisplayName = first.partInfo?.originalDisplayName || (first.displayName?.split('_Part_')[0] || first.displayName);
+        const syntheticParent: Partial<QueuedManuscript> & { id: string; isSyntheticParent?: boolean } = {
+            id: parentId,
+            url: first.url,
+            displayName: originalDisplayName,
+            library: first.library,
+            totalPages,
+            status: 'pending',
+            addedAt: first.addedAt,
+            downloadOptions: {
+                concurrentDownloads: first.downloadOptions?.concurrentDownloads || 3,
+                startPage: 1,
+                endPage: totalPages,
+            },
+        } as any;
+        (syntheticParent as any).isSyntheticParent = true;
+        groups.push({ parent: syntheticParent, parts, isSynthetic: true });
+    });
+
     return groups;
 });
+
+function isRealQueueItem(id: string | undefined): boolean {
+    if (!id) return false;
+    return !!queueState.value.items.find(i => i.id === id);
+}
+
+function effectiveGroupConcurrency(group: { parent: any; parts: QueuedManuscript[]; isSynthetic?: boolean }): number {
+    if (!group.isSynthetic && isRealQueueItem(group.parent?.id)) {
+        return effectiveItemConcurrency(group.parent as QueuedManuscript);
+    }
+    const base = group.parts[0];
+    return base ? effectiveItemConcurrency(base) : (queueState.value.globalSettings?.concurrentDownloads || 3);
+}
+
+function concurrencyBadgeTitleForGroup(group: { parent: any; parts: QueuedManuscript[]; isSynthetic?: boolean }): string {
+    const item = (!group.isSynthetic && isRealQueueItem(group.parent?.id)) ? group.parent as QueuedManuscript : (group.parts[0] as QueuedManuscript);
+    return concurrencyBadgeTitle(item);
+}
 
 // Expanded parts state
 const expandedParts = ref<Set<string>>(new Set());
@@ -1443,6 +1344,22 @@ function getTotalPagesText(group: { parent: QueuedManuscript; parts: QueuedManus
         const completedParts = group.parts.filter(p => p.status === 'completed').length;
         return `${completedParts}/${totalParts} parts completed`;
     }
+}
+
+// Show a spinner next to "Loading manifest..." only when the item is not already in 'loading' status.
+// This avoids duplicate spinners (status badge + pages badge) while keeping a spinner visible when
+// the item is still pending/paused and manifest data hasn't arrived yet.
+function showManifestSpinnerForItem(item: QueuedManuscript): boolean {
+    if (!item) return false;
+    // If the item's status is 'loading', the status badge already shows a spinner.
+    if (item.status === 'loading') return false;
+    // Show spinner if we have explicit manifest-loading progress
+    if ((item as any)?.progress?.stage === 'loading-manifest') return true;
+    // Or if we don't yet know total pages while pending/paused
+    if ((!item.totalPages || item.totalPages === 0) && (item.status === 'pending' || item.status === 'paused')) {
+        return true;
+    }
+    return false;
 }
 
 function getParentIndex(parent: QueuedManuscript): number {
@@ -1604,6 +1521,18 @@ function getGroupProgressLabel(group: { parent: QueuedManuscript; parts: QueuedM
     if (status === 'downloading') return 'Overall Progress';
     if (status === 'loading') return 'Overall Loading';
     return 'Overall Paused';
+}
+
+function getGroupPagesProgressText(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): string {
+    const p: any = getGroupProgress(group);
+    if (!p) return '';
+    // Loading manifests stage
+    if (p.stage === 'loading-manifest') {
+        return `Loading manifest: ${p.current}/${p.total} pages`;
+    }
+    const current = Math.max(0, p.current || 0);
+    const total = Math.max(0, p.total || 0);
+    return `${current}/${total} pages downloaded`;
 }
 
 function getGroupProgressStats(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): string {
@@ -3431,21 +3360,12 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 .queue-item.loading-manifest {
     background: #f8f9fa;
     border-left: 4px solid #6c757d;
-    opacity: 0.7;
 }
 
 .queue-item.status-failed {
     opacity: 0.8;
 }
 
-.loading-manifests {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #6c757d;
-    font-size: 0.9em;
-    margin-bottom: 10px;
-}
 
 .loading-spinner {
     width: 16px;
@@ -3462,9 +3382,14 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 }
 
 .queue-item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    display: grid;
+    grid-template-areas:
+        "title"
+        "buttons"
+        "meta";
+    grid-template-columns: 1fr;
+    row-gap: 6px;
+    align-items: start;
 }
 
 .queue-item-info strong {
@@ -3472,6 +3397,12 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     margin-bottom: 4px;
     word-break: break-all;
 }
+
+/* Always stack title, buttons, bubbles using grid */
+.queue-item-info { display: contents; }
+.queue-item-info > strong { grid-area: title; }
+.queue-item-controls { grid-area: buttons; width: 100%; justify-content: flex-start; flex-wrap: wrap; margin: 4px 0 0 0; }
+.queue-item-meta { grid-area: meta; width: 100%; }
 
 .manuscript-title-link {
     color: inherit;
@@ -3509,6 +3440,7 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     font-size: 0.9em;
     color: #666;
     margin-top: 0.75rem;
+    flex-wrap: wrap; /* Allow bubbles to wrap on small widths */
 }
 
 .status-badge {
@@ -3533,6 +3465,17 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 .status-badge.status-downloading {
     background: #ffc107;
     color: #212529;
+}
+
+.inline-spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(0,0,0,0.2);
+    border-top-color: rgba(0,0,0,0.6);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: spin 0.8s linear infinite;
 }
 
 .status-badge.status-paused {
@@ -3563,6 +3506,8 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
     font-size: 0.75em;
     font-weight: 600;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
 }
 
 .concurrency-badge {
@@ -3853,6 +3798,55 @@ function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false):
 
 .queue-edit-form .edit-cancel-btn:hover {
     background: #5a6268;
+}
+
+.parts-compact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0 0 8px;
+}
+
+.part-chip {
+    background: #f1f3f5;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 12px;
+    color: #495057;
+}
+
+.part-chip.status-downloading { background: #fff3cd; color: #856404; border-color: #ffeaa7; }
+.part-chip.status-paused { background: #e2e3e5; color: #383d41; border-color: #c6c8ca; }
+.part-chip.status-completed { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+.part-chip.status-failed { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+.part-chip.status-loading { background: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
+
+.pages-progress-badge {
+    background: #e9ecef;
+    color: #495057;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.eta-badge {
+    background: #fff3cd;
+    color: #856404;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 600;
+    border: 1px solid #ffeaa7;
+    white-space: nowrap;
+}
+
+.compact-progress {
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
 }
 
 /* Queue Edit Form */
@@ -4525,5 +4519,6 @@ label {
 button {
     white-space: nowrap;
 }
+
 
 </style>

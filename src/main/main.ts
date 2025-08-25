@@ -108,6 +108,9 @@ const createWindow = async () => {
     const iconPath = process.platform === 'darwin' 
       ? join(__dirname, '../../assets/icon-512.png')
       : join(__dirname, '../../assets/icon.png');
+
+    // Allow automation to force loading the built renderer even when isDev is true
+    const forceRendererFile = process.env['FORCE_RENDERER_FILE'] === '1';
     
     mainWindow = new BrowserWindow({
     width: 1200,
@@ -217,23 +220,31 @@ const createWindow = async () => {
 
   // Remove problematic event listeners for now
 
-  if (isDev) {
-    // Simply try to load the default dev server URL
+  if (isDev && !forceRendererFile) {
+    // In dev mode, attempt to use the Vite server
     mainWindow.loadURL('http://localhost:5173').then(() => {
       console.log('Successfully loaded dev server on port 5173');
     }).catch(err => {
       console.error('Error loading dev server:', err.message);
       // Try other ports
       const tryPorts = [5174, 5175, 5176, 5177];
+      let triedAny = false;
       for (const port of tryPorts) {
+        triedAny = true;
         mainWindow?.loadURL(`http://localhost:${port}`).then(() => {
           console.log(`Successfully loaded dev server on port ${port}`);
         }).catch(() => {
           // Silent fail, try next
         });
       }
+      // If no dev server responds, fallback to built renderer file
+      if (!triedAny) {
+        console.log('Falling back to built renderer index.html');
+        mainWindow?.loadFile(join(__dirname, '../renderer/index.html'));
+      }
     });
   } else {
+    // Load the built renderer directly
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
 
@@ -665,10 +676,26 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
     const manifest = await enhancedManuscriptDownloader.loadManifest(url);
     
     // Check if manifest is large and needs chunking
-    const manifestSize = JSON.stringify(manifest)?.length;
+    const serializedOnce = JSON.stringify(manifest);
+    const manifestSize = serializedOnce?.length;
     const CHUNK_THRESHOLD = 100 * 1024; // 100KB threshold
     
     if (manifestSize > CHUNK_THRESHOLD) {
+      // Cache a clean, serializable copy so subsequent chunk requests don't recompute heavy manifests (e.g., Bordeaux)
+      let cleanManifest: Record<string, unknown>;
+      try {
+        cleanManifest = JSON.parse(serializedOnce);
+      } catch {
+        cleanManifest = {
+          pageLinks: Array.isArray((manifest as any).pageLinks) ? (manifest as any).pageLinks : [],
+          totalPages: typeof (manifest as any).totalPages === 'number' ? (manifest as any).totalPages : 0,
+          library: (manifest as any).library || 'unknown',
+          displayName: typeof (manifest as any).displayName === 'string' ? (manifest as any).displayName : 'Manuscript',
+          originalUrl: url
+        } as unknown as Record<string, unknown>;
+      }
+      chunkedManifestCache.set(url, { manifest: cleanManifest, timestamp: Date.now() });
+      
       // Return metadata indicating chunked response is needed
       return {
         isChunked: true,
@@ -687,12 +714,12 @@ ipcMain.handle('parse-manuscript-url-chunked', async (_event, url: string) => {
     } catch {
       // Return minimal safe manifest if serialization fails
       const safeManifest = {
-        pageLinks: Array.isArray(manifest.pageLinks) ? manifest.pageLinks : [],
-        totalPages: typeof manifest.totalPages === 'number' ? manifest.totalPages : 0,
-        library: manifest.library || 'unknown',
-        displayName: typeof manifest.displayName === 'string' ? manifest.displayName : 'Manuscript',
+        pageLinks: Array.isArray((manifest as any).pageLinks) ? (manifest as any).pageLinks : [],
+        totalPages: typeof (manifest as any).totalPages === 'number' ? (manifest as any).totalPages : 0,
+        library: (manifest as any).library || 'unknown',
+        displayName: typeof (manifest as any).displayName === 'string' ? (manifest as any).displayName : 'Manuscript',
         originalUrl: url
-      };
+      } as unknown as Record<string, unknown>;
       return { isChunked: false, manifest: safeManifest };
     }
   } catch (error: any) {
@@ -730,8 +757,30 @@ ipcMain.handle('get-manifest-chunk', async (_event, url: string, chunkIndex: num
   }
   
   try {
-    const manifest = await enhancedManuscriptDownloader.loadManifest(url);
-    const manifestString = JSON.stringify(manifest);
+    // Serve from cache if present to avoid recomputing the heavy manifest for each chunk
+    let manifestRecord = chunkedManifestCache.get(url);
+    let manifestString: string;
+    if (manifestRecord) {
+      manifestString = JSON.stringify(manifestRecord.manifest);
+      // Refresh timestamp for LRU-like cleanup
+      manifestRecord.timestamp = Date.now();
+      chunkedManifestCache.set(url, manifestRecord);
+    } else {
+      const manifest = await enhancedManuscriptDownloader.loadManifest(url);
+      const serialized = JSON.stringify(manifest);
+      let clean: Record<string, unknown>;
+      try { clean = JSON.parse(serialized); } catch {
+        clean = {
+          pageLinks: Array.isArray((manifest as any).pageLinks) ? (manifest as any).pageLinks : [],
+          totalPages: typeof (manifest as any).totalPages === 'number' ? (manifest as any).totalPages : 0,
+          library: (manifest as any).library || 'unknown',
+          displayName: typeof (manifest as any).displayName === 'string' ? (manifest as any).displayName : 'Manuscript',
+          originalUrl: url
+        } as unknown as Record<string, unknown>;
+      }
+      chunkedManifestCache.set(url, { manifest: clean, timestamp: Date.now() });
+      manifestString = JSON.stringify(clean);
+    }
     
     const start = chunkIndex * chunkSize;
     const end = Math.min(start + chunkSize, manifestString?.length);

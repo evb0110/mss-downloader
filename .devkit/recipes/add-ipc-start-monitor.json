@@ -1,0 +1,27 @@
+[
+  {
+    "action": "startConsoleCapture"
+  },
+  {
+    "action": "addManuscriptIPC",
+    "url": "{{URL}}",
+    "saveIdAs": ".devkit/validation/READY-FOR-USER/added.json"
+  },
+  {
+    "action": "ipc",
+    "call": "startQueueProcessing"
+  },
+  {
+    "action": "monitorQueue",
+    "timeout": 900000
+  },
+  {
+    "action": "saveConsole",
+    "logPath": ".devkit/validation/READY-FOR-USER/console.log"
+  },
+  {
+    "action": "screenshot",
+    "path": ".devkit/validation/READY-FOR-USER/after.png",
+    "fullPage": true
+  }
+]

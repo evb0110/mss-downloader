@@ -910,7 +910,7 @@ export class EnhancedManuscriptDownloaderService {
      * ETA formatting helper
      */
     formatETA(etaSeconds: number): string {
-        if (!etaSeconds || !isFinite(etaSeconds)) return 'calculating...';
+        if (!etaSeconds || !isFinite(etaSeconds) || etaSeconds < 0) return 'calculating...';
 
         const hours = Math.floor(etaSeconds / 3600);
         const minutes = Math.floor((etaSeconds % 3600) / 60);
@@ -3022,10 +3022,11 @@ export class EnhancedManuscriptDownloaderService {
                 .substring(0, 100) || 'manuscript';       // Limit to 100 characters with fallback
 
             // Calculate pages to download for splitting logic
-            // When using pre-sliced pageLinks, pages are already selected
-            const actualStartPage = pageLinks ? 1 : Math.max(1, startPage || manifest.startPageFromUrl || 1);
-            const actualEndPage = pageLinks ? manifest.totalPages : Math.min(manifest.totalPages, endPage || manifest.totalPages);
-            const totalPagesToDownload = actualEndPage - actualStartPage + 1;
+            // CRITICAL FIX: Respect part's intended page range even with pre-sliced pageLinks
+            const actualStartPage = Math.max(1, startPage || manifest.startPageFromUrl || 1);
+            const actualEndPage = Math.min(manifest.totalPages, endPage || manifest.totalPages);
+            // For pre-sliced pageLinks, use the slice length, otherwise calculate from range
+            const totalPagesToDownload = pageLinks ? pageLinks.length : (actualEndPage - actualStartPage + 1);
 
             // Apply library-specific optimization settings early to get split threshold
             // This must happen before determining split logic to respect user settings
@@ -3123,12 +3124,55 @@ export class EnhancedManuscriptDownloaderService {
                 const flooredTwoDecimal = Math.floor(rawPercentage * 100) / 100;
                 const nextDisplayedPercent = Math.max(lastDisplayedPercent, flooredTwoDecimal);
 
-                // Compute ETA using page-level rate
+                // Compute ETA using page-level rate - Enhanced with total manuscript calculation
                 const elapsed = Math.max(0.001, (now - startTime) / 1000);
                 const ratePagesPerSec = downloaded / elapsed;
-                const instantaneousEta = ratePagesPerSec > 0 ? Math.round((total - downloaded) / ratePagesPerSec) : 0;
-                // Smooth ETA with simple EMA to reduce oscillation
-                lastDisplayedEta = lastDisplayedEta > 0 ? Math.round(0.7 * lastDisplayedEta + 0.3 * instantaneousEta) : instantaneousEta;
+                
+                // Calculate both current part ETA and total manuscript ETA
+                let currentPartEta = -1;
+                let totalManuscriptEta = -1;
+                
+                // FIX: Don't calculate ETA until we have at least 1 completed page
+                if (downloaded > 0 && ratePagesPerSec > 0) {
+                    // Current part ETA
+                    currentPartEta = Math.round((total - downloaded) / ratePagesPerSec);
+                    
+                    // Total manuscript ETA calculation (if this is a split part)
+                    if (queueItem?.partInfo) {
+                        const partInfo = queueItem.partInfo;
+                        
+                        // Calculate total progress across all parts
+                        const currentPartPages = partInfo.pageRange.end - partInfo.pageRange.start + 1;
+                        const totalManuscriptPages = partInfo.totalParts > 1 ? 
+                            Math.round(currentPartPages * partInfo.totalParts) : // Estimate if we don't know exact total
+                            currentPartPages;
+                        
+                        // Pages completed in previous parts
+                        const pagesFromPreviousParts = (partInfo.partNumber - 1) * currentPartPages;
+                        
+                        // Total pages completed across entire manuscript
+                        const totalPagesCompleted = pagesFromPreviousParts + downloaded;
+                        
+                        // Total manuscript ETA
+                        const totalRatePagesPerSec = totalPagesCompleted / elapsed;
+                        if (totalRatePagesPerSec > 0) {
+                            totalManuscriptEta = Math.round((totalManuscriptPages - totalPagesCompleted) / totalRatePagesPerSec);
+                        }
+                    } else {
+                        // Not a split manuscript, total ETA is same as current part ETA
+                        totalManuscriptEta = currentPartEta;
+                    }
+                }
+                
+                // Use total manuscript ETA for primary display, with fallback to current part
+                const instantaneousEta = totalManuscriptEta >= 0 ? totalManuscriptEta : currentPartEta;
+                
+                // Smooth ETA with simple EMA to reduce oscillation, but only if we have valid data
+                if (downloaded > 0 && instantaneousEta >= 0) {
+                    lastDisplayedEta = lastDisplayedEta > 0 ? Math.round(0.7 * lastDisplayedEta + 0.3 * instantaneousEta) : instantaneousEta;
+                } else {
+                    lastDisplayedEta = -1; // Keep as "calculating..." until first page completes
+                }
 
                 const shouldEmit = force ||
                     (now - lastUiEmitTime) >= uiThrottleMs ||
@@ -3141,23 +3185,60 @@ export class EnhancedManuscriptDownloaderService {
                 lastDisplayedPercent = nextDisplayedPercent;
                 lastEmittedDownloadedPages = downloaded;
 
-                onProgress({
-                    totalPages: total,
-                    downloadedPages: downloaded,
-                    currentPage: downloaded, // legacy field behavior retained
-                    totalImages: total,
-                    downloadedImages: downloaded,
-                    currentImageIndex: downloaded,
-                    pagesProcessed: downloaded,
-                    percentage: lastDisplayedPercent,
-                    progress: lastDisplayedPercent / 100,
+                // Calculate consistent progress context - prioritize total manuscript over part
+                let displayTotalPages = total;
+                let displayDownloadedPages = downloaded;
+                let displayPercentage = lastDisplayedPercent;
+                
+                if (queueItem?.partInfo) {
+                    const partInfo = queueItem.partInfo;
+                    const currentPartPages = partInfo.pageRange.end - partInfo.pageRange.start + 1;
+                    
+                    // For multi-part manuscripts, show total manuscript progress
+                    if (partInfo.totalParts > 1) {
+                        const totalManuscriptPages = Math.round(currentPartPages * partInfo.totalParts);
+                        const pagesFromPreviousParts = (partInfo.partNumber - 1) * currentPartPages;
+                        const totalPagesCompleted = pagesFromPreviousParts + downloaded;
+                        
+                        displayTotalPages = totalManuscriptPages;
+                        displayDownloadedPages = totalPagesCompleted;
+                        displayPercentage = totalManuscriptPages > 0 ? Math.floor((totalPagesCompleted / totalManuscriptPages) * 100 * 100) / 100 : 0;
+                    }
+                }
+
+                // Enhanced progress data with consistent total manuscript context
+                const progressData = {
+                    // Primary display values - always show total manuscript context when available
+                    totalPages: displayTotalPages,
+                    downloadedPages: displayDownloadedPages,
+                    currentPage: displayDownloadedPages, // legacy field behavior retained
+                    totalImages: displayTotalPages,
+                    downloadedImages: displayDownloadedPages,
+                    currentImageIndex: displayDownloadedPages,
+                    pagesProcessed: displayDownloadedPages,
+                    percentage: displayPercentage,
+                    progress: displayPercentage / 100,
                     elapsedTime: elapsed,
                     estimatedTimeRemaining: lastDisplayedEta,
                     eta: lastDisplayedEta,
                     bytesDownloaded: 0,
                     bytesTotal: 0,
-                    downloadSpeed: ratePagesPerSec
-                });
+                    downloadSpeed: ratePagesPerSec,
+                    // Enhanced part/total information for advanced UI displays
+                    partInfo: queueItem?.partInfo ? {
+                        currentPart: queueItem.partInfo.partNumber,
+                        totalParts: queueItem.partInfo.totalParts,
+                        partEta: currentPartEta >= 0 ? currentPartEta : -1,
+                        totalEta: totalManuscriptEta >= 0 ? totalManuscriptEta : -1,
+                        isMultiPart: queueItem.partInfo.totalParts > 1,
+                        // Part-specific progress for detailed displays
+                        currentPartPages: downloaded,
+                        currentPartTotal: total,
+                        currentPartPercentage: lastDisplayedPercent
+                    } : undefined
+                };
+                
+                onProgress(progressData);
             };
 
             // ULTRA-PRIORITY FIX #9: Force parallel downloads for BDL
@@ -3190,7 +3271,8 @@ export class EnhancedManuscriptDownloaderService {
             }
 
             const semaphore = new Array(actualMaxConcurrent).fill(null);
-            let nextPageIndex = actualStartPage - 1; // Convert to 0-based index
+            // CRITICAL FIX: For pre-sliced pageLinks (auto-split parts), start at 0
+            let nextPageIndex = pageLinks ? 0 : (actualStartPage - 1); // Convert to 0-based index
 
             const downloadPage = async (pageIndex: number) => {
                 // Fix for Bordeaux and other libraries: map page index to manifest array index
@@ -3224,8 +3306,8 @@ export class EnhancedManuscriptDownloaderService {
                     try {
                         // Skip if already downloaded
                         await fs.access(imgPath);
-                        // Store in array using relative index for proper array management
-                        const relativeIndex = pageIndex - (actualStartPage - 1);
+                        // CRITICAL FIX: For pre-sliced pageLinks, pageIndex is already relative
+                        const relativeIndex = pageLinks ? pageIndex : (pageIndex - (actualStartPage - 1));
                         imagePaths[relativeIndex] = imgPath;
                         completedPages++;
                         emitProgress(false);
@@ -3236,9 +3318,11 @@ export class EnhancedManuscriptDownloaderService {
                             const tileConfig = (manifest as ManifestWithTileConfig).tileConfig as TileConfig;
                             // Prefer discovered availablePages mapping if present to avoid gaps/duplication
                             const available = (tileConfig as any)?.pageRange?.availablePages as number[] | undefined;
-                            const pageNum = Array.isArray(available) && available.length >= (pageIndex + 1)
-                                ? available[pageIndex]
-                                : (tileConfig.startPage + pageIndex);
+                            // CRITICAL FIX: Map pageIndex correctly for pre-sliced pageLinks
+                            const relativeIndex = pageLinks ? pageIndex : (pageIndex - (actualStartPage - 1));
+                            const pageNum = Array.isArray(available) && available.length >= (relativeIndex + 1)
+                                ? available[relativeIndex]
+                                : (tileConfig.startPage + relativeIndex);
                             
                             if (pageNum === undefined) {
                                 console.warn(`[Bordeaux] Could not determine page number for pageIndex ${pageIndex}`);
@@ -3256,16 +3340,19 @@ export class EnhancedManuscriptDownloaderService {
                                 tileConfig['baseId'] as string,
                                 pageNum,
                                 imgPath,
-                                tileProgressCallback
+                                tileProgressCallback,
+                                (tileConfig as any)?.tileBaseUrl as string | undefined
                             );
 
                             if (result.success) {
-                                // Store in array using relative index for proper array management
-                                const relativeIndex = pageIndex - (actualStartPage - 1);
+                                // CRITICAL FIX: For pre-sliced pageLinks, pageIndex is already relative
+                                const relativeIndex = pageLinks ? pageIndex : (pageIndex - (actualStartPage - 1));
                                 imagePaths[relativeIndex] = imgPath;
                                 completedPages++;
                                 emitProgress(false);
                                 console.log(`[Bordeaux] Successfully processed page ${pageNum}`);
+                                // IMPORTANT: Avoid falling through to generic tile handling once we've succeeded
+                                return;
                             } else {
                                 console.error(`[Bordeaux] Failed to process page ${pageNum}: ${result.error}`);
                                 failedPages.push(pageIndex + 1);
@@ -3286,8 +3373,8 @@ export class EnhancedManuscriptDownloaderService {
                     try {
                         // Skip if already downloaded
                         await fs.access(imgPath);
-                        // Store in array using relative index for proper array management
-                        const relativeIndex = pageIndex - (actualStartPage - 1);
+                        // CRITICAL FIX: For pre-sliced pageLinks, pageIndex is already relative
+                        const relativeIndex = pageLinks ? pageIndex : (pageIndex - (actualStartPage - 1));
                         imagePaths[relativeIndex] = imgPath;
                         completedPages++;
                         emitProgress(false);
@@ -3315,9 +3402,9 @@ export class EnhancedManuscriptDownloaderService {
                             );
 
                             if (result.success) {
-                                // Store in array using relative index for proper array management
-                        const relativeIndex = pageIndex - (actualStartPage - 1);
-                        imagePaths[relativeIndex] = imgPath;
+                                // CRITICAL FIX: For pre-sliced pageLinks, pageIndex is already relative
+                                const relativeIndex = pageLinks ? pageIndex : (pageIndex - (actualStartPage - 1));
+                                imagePaths[relativeIndex] = imgPath;
                                 completedPages++;
                                 const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env['MSSDL_DEBUG'] === '1';
                                 if (DEBUG_LOGS) console.log(`Successfully downloaded ${result.downloadedTiles ?? 0} tiles for page ${pageIndex + 1}`);
@@ -3407,8 +3494,8 @@ export class EnhancedManuscriptDownloaderService {
                         const writePromise = fs.writeFile(imgPath, Buffer.from(buffer));
                         writePromises.push(writePromise);
                         
-                        // Store in array using relative index for proper array management
-                        const relativeIndex = pageIndex - (actualStartPage - 1);
+                        // CRITICAL FIX: For pre-sliced pageLinks, pageIndex is already relative
+                        const relativeIndex = pageLinks ? pageIndex : (pageIndex - (actualStartPage - 1));
                         imagePaths[relativeIndex] = imgPath;
                         completedPages++; // Only increment on successful download
                         
@@ -3461,11 +3548,11 @@ export class EnhancedManuscriptDownloaderService {
             // Download pages with proper concurrency control
             // Each element in semaphore array represents a worker that downloads pages
             await Promise.all(semaphore.map(async () => {
-                // Fixed: Loop condition was comparing 0-based index with 1-based page number
-                // actualEndPage is 1-based (e.g., 600 for last page)
-                // nextPageIndex is 0-based (0-599 for 600 pages)
-                // So we need to compare with actualEndPage - 1
-                while (nextPageIndex <= actualEndPage - 1) {
+                // CRITICAL FIX: Loop condition for auto-split parts with pre-sliced pageLinks
+                // For pre-sliced pageLinks: loop while nextPageIndex < pageLinks.length
+                // For regular downloads: loop while nextPageIndex <= actualEndPage - 1
+                const endCondition = pageLinks ? (pageLinks.length - 1) : (actualEndPage - 1);
+                while (nextPageIndex <= endCondition) {
                     const idx = nextPageIndex++;
                     await downloadPage(idx);
                 }

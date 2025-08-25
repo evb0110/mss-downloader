@@ -1,0 +1,56 @@
+{
+  "timestamp": "2025-08-25T18:26:46.584Z",
+  "testUrl": "https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778",
+  "status": "SUCCESS",
+  "totalPages": 278,
+  "samplePages": [
+    {
+      "pageNumber": 1,
+      "url": "https://selene.bordeaux.fr/in/dz/thumb/512/330636101_MS0778_0006.jpg",
+      "label": "Page 1"
+    },
+    {
+      "pageNumber": 11,
+      "url": "https://selene.bordeaux.fr/in/dz/thumb/512/330636101_MS0778_0016.jpg",
+      "label": "Page 11"
+    },
+    {
+      "pageNumber": 51,
+      "url": "https://selene.bordeaux.fr/in/dz/thumb/512/330636101_MS0778_0056.jpg",
+      "label": "Page 51"
+    },
+    {
+      "pageNumber": 101,
+      "url": "https://selene.bordeaux.fr/in/dz/thumb/512/330636101_MS0778_0106.jpg",
+      "label": "Page 101"
+    },
+    {
+      "pageNumber": 151,
+      "url": "https://selene.bordeaux.fr/in/dz/thumb/512/330636101_MS0778_0156.jpg",
+      "label": "Page 151"
+    },
+    {
+      "pageNumber": 201,
+      "url": "https://selene.bordeaux.fr/in/dz/thumb/512/330636101_MS0778_0206.jpg",
+      "label": "Page 201"
+    },
+    {
+      "pageNumber": 278,
+      "url": "https://selene.bordeaux.fr/in/dz/thumb/512/330636101_MS0778_0284.jpg",
+      "label": "Page 278"
+    }
+  ],
+  "infrastructure": {
+    "usesRealPictureListAPI": true,
+    "discoversActualFilenames": true,
+    "noPatternAssumptions": true,
+    "correctNamingPattern": true,
+    "baseUrl": "https://selene.bordeaux.fr/in/dz"
+  },
+  "complianceWithClaude06": {
+    "noPatternAssumptions": true,
+    "discoverFromSource": true,
+    "serverIsAuthority": true,
+    "manifestFirstApproach": true
+  }
+}

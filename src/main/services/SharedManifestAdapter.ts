@@ -58,7 +58,12 @@ export class SharedManifestAdapter {
     private async initializeSharedLoaders() {
         if (!this.sharedLoaders) {
             const SharedManifestLoaders = await loadSharedManifestLoaders();
-            this.sharedLoaders = new SharedManifestLoaders(this.electronFetch);
+            // IMPORTANT: Use the default Node-based fetch implementation inside SharedManifestLoaders.
+            // Rationale: For Bordeaux (selene.bordeaux.fr) we perform many fast HEAD/GET probes
+            // during page discovery. The Node https/http implementation has tighter timeouts and
+            // fewer layers that could interfere with HEAD semantics, preventing hangs in Electron.
+            // We still keep electronFetch available for other parts of the app where needed.
+            this.sharedLoaders = new SharedManifestLoaders();
         }
     }
 

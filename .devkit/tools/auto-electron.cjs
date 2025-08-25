@@ -359,8 +359,10 @@ async function runSteps(page, steps, params) {
 
     const env = {
       ELECTRON_DISABLE_SECURITY_WARNINGS: 'true',
-      NODE_ENV: 'test', // ensure dist build is loaded
-      FORCE_HEADED: args.headless ? '0' : '1'
+      NODE_ENV: 'test', // running under automation
+      FORCE_HEADED: args.headless ? '0' : '1',
+      // Ensure the main process loads the built renderer instead of a dev server
+      FORCE_RENDERER_FILE: '1'
     };
 
     const app = await electron.launch({

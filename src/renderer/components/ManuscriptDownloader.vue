@@ -81,7 +81,12 @@
             class="status-message"
             :class="downloadStatus.phase"
           >
-            {{ downloadStatus.message }}
+            <span
+              v-if="showManifestLoader"
+              class="spinner"
+              aria-hidden="true"
+            />
+            <span class="status-text">{{ downloadStatus.message }}</span>
           </div>
 
           <div
@@ -96,17 +101,29 @@
             </div>
             
             <div class="progress-details">
-              <span>{{ $t('downloader.progress.pages', { 
+              <!-- Primary progress display - total manuscript context -->
+              <span class="progress-primary">{{ $t('downloader.progress.pages', { 
                 current: downloadProgress.downloadedPages, 
                 total: downloadProgress.totalPages 
               }) }}</span>
+              
+              <!-- Part progress display for multi-part manuscripts -->
+              <span 
+                v-if="downloadProgress.partInfo?.isMultiPart" 
+                class="progress-part"
+                :title="`Part ${downloadProgress.partInfo.currentPart}/${downloadProgress.partInfo.totalParts}`"
+              >
+                (part {{ downloadProgress.partInfo.currentPart }}/{{ downloadProgress.partInfo.totalParts }}: 
+                {{ downloadProgress.partInfo.currentPartPages }}/{{ downloadProgress.partInfo.currentPartTotal }} pages)
+              </span>
+              
               <span>{{ $t('downloader.progress.percentage', { 
                 percentage: Math.round(downloadProgress.percentage) 
               }) }}</span>
             </div>
 
             <div
-              v-if="downloadProgress.estimatedTimeRemaining > 0"
+              v-if="downloadProgress.estimatedTimeRemaining !== undefined"
               class="progress-eta"
             >
               {{ $t('downloader.progress.timeRemaining', { 
@@ -307,6 +324,13 @@ import { useI18n } from 'vue-i18n'
 import type { DownloadProgress, DownloadStatus, LibraryInfo } from '../../shared/types'
 
 const { t, locale } = useI18n()
+
+// Show a small spinner when status message indicates manifest is loading
+const showManifestLoader = computed(() => {
+  const s = downloadStatus.value
+  if (!s || !s.message) return false
+  return s.message.toLowerCase().includes('loading manifest')
+})
 
 const manuscriptUrl = ref('')
 const isDownloading = ref(false)
@@ -535,11 +559,14 @@ const clearCache = async () => {
   }
 }
 
-const formatTime = (milliseconds: number): string => {
-  const seconds = Math.round(milliseconds / 1000)
-  if (seconds < 60) return `${seconds}s`
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
+const formatTime = (seconds: number): string => {
+  // Handle negative values or zero - show "calculating..." instead of invalid time
+  if (seconds <= 0) return 'calculating...'
+  
+  const roundedSeconds = Math.round(seconds)
+  if (roundedSeconds < 60) return `${roundedSeconds}s`
+  const minutes = Math.floor(roundedSeconds / 60)
+  const remainingSeconds = roundedSeconds % 60
   return `${minutes}m ${remainingSeconds}s`
 }
 
@@ -632,6 +659,9 @@ const formatBytes = (bytes: number): string => {
 }
 
 .status-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 1rem;
   border-radius: 8px;
   font-weight: 500;
@@ -660,10 +690,24 @@ const formatBytes = (bytes: number): string => {
 
 .progress-details {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 0.9rem;
   color: var(--secondary-color);
   margin-bottom: 0.5rem;
+}
+
+.progress-primary {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.progress-part {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-style: italic;
+  opacity: 0.8;
 }
 
 .progress-eta, .progress-speed {
@@ -926,6 +970,19 @@ const formatBytes = (bytes: number): string => {
 .cache-info p {
   margin: 0.5rem 0;
   color: var(--secondary-color);
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (min-width: 1600px) {
