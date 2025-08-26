@@ -69,7 +69,11 @@
     "telegram:test": "cd telegram-bot && npm run test",
     "release": "./release.sh",
     "postinstall": "electron-builder install-app-deps",
-    "validate:libraries": "node .devkit/run-validation.js"
+    "validate:libraries": "node .devkit/run-validation.js",
+    "test:prod:bordeaux": "electron ./.devkit/test-scripts/run-electron-ts.cjs ./.devkit/test-scripts/production-bordeaux-test.ts",
+    "test:prod:bordeaux:lite": "electron ./.devkit/test-scripts/run-electron-ts.cjs ./.devkit/test-scripts/production-bordeaux-lite.ts",
+    "test:prod:florence": "electron ./.devkit/test-scripts/run-electron-ts.cjs ./.devkit/testing/production-florence-download.ts",
+    "test:prod:framework": "bun ./.devkit/test-scripts/production-code-test-framework.ts"
   },
   "dependencies": {
     "@anthropic-ai/claude-code": "^1.0.74",
@@ -104,6 +108,7 @@
     "playwright": "^1.54.2",
     "sass": "^1.84.0",
     "terser": "^5.42.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.33.1",
     "vite": "^6.3.5",

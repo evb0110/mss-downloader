@@ -3848,7 +3848,6 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
             this.devkitLog('bordeaux', '[Bordeaux] Using pattern-based fallback');
             
             // Try to discover pages using common patterns
-            const _unused_baseId = arkId.replace(/^([^_]+)_(.+)$/, '$1_$2'); // Keep original format
             const tileBaseUrl = 'https://selene.bordeaux.fr/in/dz';
             
             // Test for pages using the correct naming pattern (no underscore between MS and number)
@@ -3956,29 +3955,19 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
                 continue;
             }
             
-            // CRITICAL FIX: Return tile base URL instead of mid-resolution image
-            // This enables DirectTileProcessor to assemble highest resolution
-            let tileBaseUrl = '';
-            let imageUrl = '';
-            
-            // ALWAYS use tile base URL for highest resolution assembly
-            // hiResimage is often just a larger thumbnail (thumb/512/, thumb/1024/), not true high-res
-            if (picture.hiResimage && picture.hiResimage.includes('/full/max/')) {
-                // Only use direct URL if it's IIIF full/max resolution
-                imageUrl = `https://selene.bordeaux.fr${picture.hiResimage}`;
-                images.push({
-                    url: imageUrl,
-                    label: `Page ${i + 1}`
-                });
-            } else {
-                // Use tile base URL for DirectTileProcessor assembly (highest quality)
-                tileBaseUrl = `https://selene.bordeaux.fr/in/dz/${imageId}`;
-                images.push({
-                    url: tileBaseUrl, // DirectTileProcessor will handle this
-                    label: `Page ${i + 1}`,
-                    requiresTileProcessor: true
-                });
-            }
+            // Use DirectTileProcessor or DZI processor for high-resolution tile assembly
+            // Preserve the Deep Zoom XML manifest when available
+            const tileBaseUrl = `https://selene.bordeaux.fr/in/dz/${imageId}`;
+            const dziRelative = picture.deepZoomManifest || picture.deepZoom || null; // e.g., /in/dz/330636101_MS0778_0006.xml
+            const dziUrl = typeof dziRelative === 'string'
+                ? (dziRelative.startsWith('http') ? dziRelative : `https://selene.bordeaux.fr${dziRelative}`)
+                : `${tileBaseUrl}.xml`;
+            images.push({
+                url: tileBaseUrl,
+                label: `Page ${i + 1}`,
+                requiresTileProcessor: true,
+                metadata: { dzi: dziUrl }
+            });
         }
         
         if (images.length === 0) {
@@ -3988,19 +3977,21 @@ If you have a UniPub URL (starting with https://unipub.uni-graz.at/), please use
         console.log(`[Bordeaux] Successfully processed ${images.length} pages from pictureList`);
         this.devkitLog('bordeaux', `[Bordeaux] Processed ${images.length} pages from pictureList`);
         
-        // CRITICAL FIX: Convert baseId to tile-compatible format (no underscore before MS number)
-        const tileCompatibleBaseId = arkId?.replace(/MS_(\d+)/, 'MS$1') || arkId;
+        // CRITICAL FIX: Convert baseId to tile-compatible format for DirectTileProcessor  
+        // The baseId MUST match the tile path format: 330636101_MS_0778 → 330636101_MS0778 (remove underscore before number)
+        const tileCompatibleBaseId = arkId?.replace(/_MS_(\d+)/, '_MS$1') || arkId;
+        console.log(`[Bordeaux] ARK ID: ${arkId} → Tile Base ID: ${tileCompatibleBaseId}`);
         
         return {
             images: images,
             displayName: `Bordeaux - ${arkId}`,
             type: 'bordeaux_tiles',
-            baseId: tileCompatibleBaseId, // Use tile-compatible format for DirectTileProcessor
-            publicId: arkId, // Keep original for display
+            baseId: tileCompatibleBaseId, // MUST match tile URL format for DirectTileProcessor
+            publicId: arkId, // Keep original for display  
             startPage: 1,
             pageCount: images.length,
             tileBaseUrl: 'https://selene.bordeaux.fr/in/dz',
-            requiresTileProcessor: true   // Images may need DirectTileProcessor assembly
+            requiresTileProcessor: true   // Use DirectTileProcessor for high-resolution assembly
         };
     }
     

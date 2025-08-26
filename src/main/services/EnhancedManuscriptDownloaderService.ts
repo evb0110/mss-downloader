@@ -1,5 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import https from 'https';
+import http from 'http';
 import { getAppPath } from './ElectronCompat';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { ManifestCache } from './ManifestCache';
@@ -223,6 +225,10 @@ export class EnhancedManuscriptDownloaderService {
     // Reuse HTTPS agents per host to enable effective keep-alive connection pooling
     private httpsAgents: Map<string, import('https').Agent> = new Map();
 
+    // Fast-fail settings for Bordeaux DZI preflight
+    private static readonly BORDEAUX_HEAD_TIMEOUT_MS = 2500;
+    private static readonly BORDEAUX_SKIP_DIRECT_TILE_FALLBACK = true;
+
     constructor(manifestCache?: ManifestCache) {
         this.manifestCache = manifestCache || new ManifestCache();
         this.zifProcessor = new ZifImageProcessor();
@@ -336,6 +342,9 @@ export class EnhancedManuscriptDownloaderService {
         
         // Clear BDL cache to fix PDF URL vs IIIF URL issue
         this.clearBdlCacheOnStartup();
+
+        // Clear Bordeaux cache to ensure new manifest (with DZI metadata) is used
+        this.clearBordeauxCacheOnStartup();
     }
 
     /**
@@ -453,6 +462,38 @@ export class EnhancedManuscriptDownloaderService {
                 errorStack: (error as Error).stack,
                 details: {
                     message: 'Failed to clear BDL cache on startup'
+                }
+            });
+        }
+    }
+
+    /**
+     * Clear Bordeaux cache on startup to ensure manifests include DZI metadata
+     * Prevents using stale cached manifests that force DirectTileProcessor (404s)
+     */
+    private async clearBordeauxCacheOnStartup(): Promise<void> {
+        try {
+            await this.manifestCache.clearDomain('selene.bordeaux.fr');
+            console.log('✅ Bordeaux cache cleared on startup - enabling DZI-first processing');
+            comprehensiveLogger.log({
+                level: 'info',
+                category: 'system',
+                library: 'Bordeaux',
+                details: {
+                    message: 'Bordeaux cache cleared on startup',
+                    reason: 'Use new manifest with per-page DZI metadata'
+                }
+            });
+        } catch (error) {
+            console.warn('⚠️ Failed to clear Bordeaux cache on startup:', (error as Error).message);
+            comprehensiveLogger.log({
+                level: 'error',
+                category: 'system',
+                library: 'Bordeaux',
+                errorMessage: (error as Error).message,
+                errorStack: (error as Error).stack,
+                details: {
+                    message: 'Failed to clear Bordeaux cache on startup'
                 }
             });
         }
@@ -2961,21 +3002,30 @@ export class EnhancedManuscriptDownloaderService {
             // Use provided pageLinks if available, otherwise load manifest
 
             if (pageLinks && Array.isArray(pageLinks) && pageLinks.length > 0) {
-                // Build manifest from pre-sliced data
-                manifest = {
-                    pageLinks: pageLinks,
-                    totalPages: totalPages || pageLinks.length,
-                    library: library || 'unknown',
-                    displayName: displayName || 'manuscript',
-                    originalUrl: url,
-                    // Preserve any special metadata from queueItem
-                    ...(queueItem?.partInfo ? { partInfo: queueItem.partInfo } : {}),
-                    // Carry tile processing flags either from queueItem or from options provided by queue
-                    ...(queueItem?.tileConfig ? { tileConfig: queueItem.tileConfig } : (optTileConfig ? { tileConfig: optTileConfig } : {})),
-                    ...(queueItem?.requiresTileProcessor !== undefined ? { requiresTileProcessor: queueItem.requiresTileProcessor } : (requiresTileProcessor !== undefined ? { requiresTileProcessor } : {})),
-                } as ManuscriptManifest;
-                const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env['MSSDL_DEBUG'] === '1';
-                if (DEBUG_LOGS) console.log(`Using pre-sliced pageLinks for ${displayName}: ${pageLinks.length} pages`);
+                // For tile-based libraries (e.g., Bordeaux), we MUST keep per-page metadata (DZI URLs)
+                // So always load the full manifest to preserve the images[] array and metadata
+                const needFullManifestForTiles = (requiresTileProcessor === true) || Boolean(optTileConfig) || (library === 'bordeaux');
+                if (needFullManifestForTiles) {
+                    const DEBUG_LOGS = ((configService.get('logLevel') || 'info') === 'debug') || process.env['MSSDL_DEBUG'] === '1';
+                    if (DEBUG_LOGS) console.log(`Pre-sliced pageLinks provided, but loading full manifest to preserve tile metadata (library=${library})`);
+                    manifest = await this.loadManifest(url);
+                } else {
+                    // Non-tile libraries: build minimal manifest from provided slice
+                    manifest = {
+                        pageLinks: pageLinks,
+                        totalPages: totalPages || pageLinks.length,
+                        library: library || 'unknown',
+                        displayName: displayName || 'manuscript',
+                        originalUrl: url,
+                        // Preserve any special metadata from queueItem
+                        ...(queueItem?.partInfo ? { partInfo: queueItem.partInfo } : {}),
+                        // Carry tile processing flags either from queueItem or from options provided by queue
+                        ...(queueItem?.tileConfig ? { tileConfig: queueItem.tileConfig } : (optTileConfig ? { tileConfig: optTileConfig } : {})),
+                        ...(queueItem?.requiresTileProcessor !== undefined ? { requiresTileProcessor: queueItem.requiresTileProcessor } : (requiresTileProcessor !== undefined ? { requiresTileProcessor } : {})),
+                    } as ManuscriptManifest;
+                    const DEBUG_LOGS2 = ((configService.get('logLevel') || 'info') === 'debug') || process.env['MSSDL_DEBUG'] === '1';
+                    if (DEBUG_LOGS2) console.log(`Using pre-sliced pageLinks for ${displayName}: ${pageLinks.length} pages`);
+                }
                 // manifestLoadDuration = Date.now() - manifestStartTime; // Minimal time
             } else {
                 // Existing behavior: load manifest from URL
@@ -3022,9 +3072,13 @@ export class EnhancedManuscriptDownloaderService {
                 .substring(0, 100) || 'manuscript';       // Limit to 100 characters with fallback
 
             // Calculate pages to download for splitting logic
-            // CRITICAL FIX: Respect part's intended page range even with pre-sliced pageLinks
-            const actualStartPage = Math.max(1, startPage || manifest.startPageFromUrl || 1);
-            const actualEndPage = Math.min(manifest.totalPages, endPage || manifest.totalPages);
+            // Respect part's intended page range even with pre-sliced pageLinks; prefer queueItem.partInfo if available
+            const partStart = queueItem?.partInfo?.pageRange?.start;
+            const partEnd = queueItem?.partInfo?.pageRange?.end;
+            const actualStartPage = Math.max(1, (partStart || startPage || (manifest as any).startPageFromUrl || 1));
+            const actualEndPage = Math.min(manifest.totalPages, (partEnd || endPage || manifest.totalPages));
+            // Detect when we loaded a full manifest but received a pre-sliced list (tile-based libraries)
+            const usingFullManifestWithSlice = Boolean(pageLinks) && (((manifest as any)?.requiresTileProcessor && (manifest as any)?.tileConfig) || (manifest as any)?.library === 'bordeaux');
             // For pre-sliced pageLinks, use the slice length, otherwise calculate from range
             const totalPagesToDownload = pageLinks ? pageLinks.length : (actualEndPage - actualStartPage + 1);
 
@@ -3241,6 +3295,25 @@ export class EnhancedManuscriptDownloaderService {
                 onProgress(progressData);
             };
 
+            // Helper: fast HEAD preflight with short timeout (used for Bordeaux DZI)
+            const headExists = async (urlStr: string, timeoutMs: number = EnhancedManuscriptDownloaderService.BORDEAUX_HEAD_TIMEOUT_MS): Promise<boolean> => {
+                return new Promise((resolve) => {
+                    try {
+                        const u = new URL(urlStr);
+                        const lib = u.protocol === 'https:' ? https : http;
+                        const req = lib.request(urlStr, { method: 'HEAD', headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
+                            const ok = (res.statusCode || 0) >= 200 && (res.statusCode || 0) < 300;
+                            resolve(ok);
+                        });
+                        req.on('error', () => resolve(false));
+                        req.setTimeout(timeoutMs, () => { try { req.destroy(); } catch {} resolve(false); });
+                        req.end();
+                    } catch {
+                        resolve(false);
+                    }
+                });
+            };
+
             // ULTRA-PRIORITY FIX #9: Force parallel downloads for BDL
             // Override concurrency settings for BDL to improve performance
             let actualMaxConcurrent = optimizations.maxConcurrentDownloads
@@ -3276,8 +3349,10 @@ export class EnhancedManuscriptDownloaderService {
 
             const downloadPage = async (pageIndex: number) => {
                 // Fix for Bordeaux and other libraries: map page index to manifest array index
-                // When using pre-sliced pageLinks, index directly
-                const manifestIndex = pageLinks ? pageIndex : (pageIndex - (actualStartPage - 1));
+                // When using a full manifest with a pre-sliced part, offset into the full list
+                const manifestIndex = pageLinks
+                    ? (usingFullManifestWithSlice ? ((actualStartPage - 1) + pageIndex) : pageIndex)
+                    : pageIndex;
 
                 // Validate manifestIndex is within bounds
                 if (manifestIndex < 0 || manifestIndex >= (manifest?.pageLinks?.length ?? 0)) {
@@ -3300,7 +3375,8 @@ export class EnhancedManuscriptDownloaderService {
 
                 // Check if this manifest requires the DirectTileProcessor (Bordeaux)
                 if ((manifest as ManifestWithTileConfig).requiresTileProcessor && (manifest as ManifestWithTileConfig).tileConfig) {
-                    const imgFile = `${sanitizedName}_page_${pageIndex + 1}.jpg`;
+                    const pageLabel = usingFullManifestWithSlice ? ((actualStartPage - 1) + pageIndex + 1) : (pageIndex + 1);
+                    const imgFile = `${sanitizedName}_page_${pageLabel}.jpg`;
                     const imgPath = path.join(tempImagesDir, imgFile);
 
                     try {
@@ -3313,17 +3389,58 @@ export class EnhancedManuscriptDownloaderService {
                         emitProgress(false);
                         return;
                     } catch {
-                        // Use DirectTileProcessor for Bordeaux
+                        // Prefer DZI metadata when available (more reliable for Bordeaux)
                         try {
                             const tileConfig = (manifest as ManifestWithTileConfig).tileConfig as TileConfig;
+                            const imgs = (manifest as any)?.images as Array<any> | undefined;
+                        // CRITICAL FIX: Map page indices correctly for pre-sliced pageLinks
+                        const relativeIndex = pageLinks ? pageIndex : (pageIndex - (actualStartPage - 1));
+                        const imageMeta = Array.isArray(imgs) && imgs.length > manifestIndex ? imgs[manifestIndex] : undefined;
+                        const dziFromMeta = imageMeta?.metadata?.dzi || imageMeta?.metadata?.deepZoomManifest || null;
+                            if (dziFromMeta && typeof dziFromMeta === 'string') {
+                                const dziUrl = dziFromMeta.startsWith('http') ? dziFromMeta : `https://selene.bordeaux.fr${dziFromMeta}`;
+
+                                // Fast preflight: avoid long probes when DZI is missing
+                                if (manifest?.library === 'bordeaux') {
+                                    const ok = await headExists(dziUrl);
+                                    if (!ok) {
+                                        console.warn(`[Bordeaux] DZI not available for page ${relativeIndex + 1} (HEAD preflight failed) - fast skip`);
+                                        if (EnhancedManuscriptDownloaderService.BORDEAUX_SKIP_DIRECT_TILE_FALLBACK) {
+                                            failedPages.push(pageIndex + 1);
+                                            completedPages++;
+                                            emitProgress(false);
+                                            return; // Skip slow DirectTile fallback entirely for Bordeaux
+                                        }
+                                    }
+                                }
+
+                                try {
+                                    const buffer = await this.dziProcessor.processDziImage(dziUrl);
+                                    await fs.writeFile(imgPath, buffer);
+                                    imagePaths[relativeIndex] = imgPath;
+                                    completedPages++;
+                                    emitProgress(false);
+                                    console.log(`[Bordeaux] Successfully processed page via DZI: ${relativeIndex + 1}`);
+                                    return; // Do not fall through to DirectTileProcessor if DZI succeeded
+                                } catch (dziErr: any) {
+                                    console.warn(`[Bordeaux] DZI processing failed for page ${relativeIndex + 1}: ${dziErr?.message || String(dziErr)}.`);
+                                    if (manifest?.library === 'bordeaux' && EnhancedManuscriptDownloaderService.BORDEAUX_SKIP_DIRECT_TILE_FALLBACK) {
+                                        // Fail fast for Bordeaux instead of long tile probing with timeouts
+                                        failedPages.push(pageIndex + 1);
+                                        completedPages++;
+                                        emitProgress(false);
+                                        return;
+                                    }
+                                }
+                            }
+
+                            // Fallback to DirectTileProcessor for Bordeaux
                             // Prefer discovered availablePages mapping if present to avoid gaps/duplication
                             const available = (tileConfig as any)?.pageRange?.availablePages as number[] | undefined;
-                            // CRITICAL FIX: Map pageIndex correctly for pre-sliced pageLinks
-                            const relativeIndex = pageLinks ? pageIndex : (pageIndex - (actualStartPage - 1));
-                            const pageNum = Array.isArray(available) && available.length >= (relativeIndex + 1)
-                                ? available[relativeIndex]
-                                : (tileConfig.startPage + relativeIndex);
-                            
+                            const pageNum = Array.isArray(available) && available.length >= (manifestIndex + 1)
+                                ? available[manifestIndex]
+                                : ((tileConfig as any).startPage + manifestIndex);
+
                             if (pageNum === undefined) {
                                 console.warn(`[Bordeaux] Could not determine page number for pageIndex ${pageIndex}`);
                                 return;
@@ -3337,7 +3454,7 @@ export class EnhancedManuscriptDownloaderService {
                             };
 
                             const result = await this.directTileProcessor.processPage(
-                                tileConfig['baseId'] as string,
+                                (tileConfig as any)['baseId'] as string,
                                 pageNum,
                                 imgPath,
                                 tileProgressCallback,
@@ -3346,7 +3463,6 @@ export class EnhancedManuscriptDownloaderService {
 
                             if (result.success) {
                                 // CRITICAL FIX: For pre-sliced pageLinks, pageIndex is already relative
-                                const relativeIndex = pageLinks ? pageIndex : (pageIndex - (actualStartPage - 1));
                                 imagePaths[relativeIndex] = imgPath;
                                 completedPages++;
                                 emitProgress(false);
@@ -3367,7 +3483,8 @@ export class EnhancedManuscriptDownloaderService {
                 // Check if this is a tile-based system
                 const isTileBased = await this.tileEngineService.isTileBasedUrl(imageUrl);
                 if (isTileBased) {
-                    const imgFile = `${sanitizedName}_page_${pageIndex + 1}.jpg`;
+                    const pageLabel = usingFullManifestWithSlice ? ((actualStartPage - 1) + pageIndex + 1) : (pageIndex + 1);
+                    const imgFile = `${sanitizedName}_page_${pageLabel}.jpg`;
                     const imgPath = path.join(tempImagesDir, imgFile);
 
                     try {
@@ -3471,7 +3588,8 @@ export class EnhancedManuscriptDownloaderService {
                     const { buffer, fileType } = downloadResult;
                     
                     // Create filename with correct extension based on detected file type
-                    const imgFile = `${sanitizedName}_page_${pageIndex + 1}.${fileType.extension}`;
+                    const pageLabel = usingFullManifestWithSlice ? ((actualStartPage - 1) + pageIndex + 1) : (pageIndex + 1);
+                    const imgFile = `${sanitizedName}_page_${pageLabel}.${fileType.extension}`;
                     const imgPath = path.join(tempImagesDir, imgFile);
                     
                     // Check if file with correct extension already exists

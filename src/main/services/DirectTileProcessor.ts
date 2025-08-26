@@ -2,6 +2,7 @@ import { promises as fs } from 'fs';
 import https from 'https';
 import http from 'http';
 import { URL } from 'url';
+import xml2js from 'xml2js';
 
 /**
  * Direct Tile Processor
@@ -75,15 +76,67 @@ export class DirectTileProcessor {
     
     /**
      * Probe tile structure by testing tile existence
+     * First, try to parse Deep Zoom XML (.dzi or .xml). If unavailable, fall back to probing.
      */
     async probeTileStructure(baseUrl: string): Promise<TileInfo> {
         console.log('[DirectTile] Probing tile structure for:', baseUrl);
-        
+
+        // Attempt to read Deep Zoom metadata (either .dzi or .xml)
+        const candidateManifests = [
+            `${baseUrl}.dzi`,
+            `${baseUrl}.xml`
+        ];
+        for (const manifestUrl of candidateManifests) {
+            try {
+                const xmlResult = await this.fetchUrl(manifestUrl);
+                if (xmlResult.exists && xmlResult.data) {
+                    try {
+                        const parser = new xml2js.Parser();
+                        const parsed = await parser.parseStringPromise(xmlResult.data.toString('utf-8'));
+                        // Deep Zoom format: <Image TileSize="256" Overlap="1" Format="jpg"><Size Width="W" Height="H"/></Image>
+                        const imageNode = parsed?.Image || parsed?.image;
+                        const attrs = imageNode?.$;
+                        const sizeNode = imageNode?.Size?.[0] || imageNode?.size?.[0];
+                        const widthAttr = sizeNode?.$?.Width || sizeNode?.$?.width;
+                        const heightAttr = sizeNode?.$?.Height || sizeNode?.$?.height;
+                        if (attrs && widthAttr && heightAttr) {
+                            const tileSize = parseInt(attrs.TileSize || attrs.tilesize || '256', 10) || 256;
+                            const overlap = parseInt(attrs.Overlap || attrs.overlap || '1', 10) || 1;
+                            const format = (attrs.Format || attrs.format || 'jpg').toString();
+                            const width = parseInt(widthAttr.toString(), 10);
+                            const height = parseInt(heightAttr.toString(), 10);
+                            const maxDim = Math.max(width, height);
+                            const maxLevel = Math.ceil(Math.log2(maxDim));
+                            const cols = Math.ceil(width / tileSize);
+                            const rows = Math.ceil(height / tileSize);
+
+                            console.log(`[DirectTile] Parsed DZI XML: tileSize=${tileSize}, overlap=${overlap}, format=${format}, width=${width}, height=${height}, maxLevel=${maxLevel}`);
+
+                            return {
+                                baseUrl,
+                                maxLevel,
+                                tileSize,
+                                overlap,
+                                format,
+                                gridSize: { cols, rows },
+                                estimatedDimensions: { width, height }
+                            };
+                        }
+                    } catch (e) {
+                        console.warn('[DirectTile] Failed to parse Deep Zoom XML, falling back to probing:', e instanceof Error ? e.message : String(e));
+                    }
+                }
+            } catch {
+                // Ignore and try next
+            }
+        }
+
+        // Fallback: heuristic probing
         // Common tile parameters
         const tileSize = 256;
         const overlap = 1;
         const format = 'jpg';
-        
+
         // Find the highest zoom level
         let maxLevel = 0;
         for (let level = 20; level >= 0; level--) {
@@ -99,11 +152,11 @@ export class DirectTileProcessor {
                 // Continue searching
             }
         }
-        
+
         // Probe grid size at max level
         let maxCol = 0;
         let maxRow = 0;
-        
+
         // Binary search for max column
         let low = 0, high = 200;
         while (low < high) {
@@ -121,7 +174,7 @@ export class DirectTileProcessor {
             }
         }
         maxCol = low;
-        
+
         // Binary search for max row
         low = 0; high = 200;
         while (low < high) {
@@ -139,9 +192,9 @@ export class DirectTileProcessor {
             }
         }
         maxRow = low;
-        
+
         console.log(`[DirectTile] Grid size at level ${maxLevel}: ${maxCol + 1} x ${maxRow + 1} tiles`);
-        
+
         // Calculate estimated dimensions with memory validation
         const scale = Math.pow(2, maxLevel);
         const levelWidth = (maxCol + 1) * tileSize;
@@ -160,7 +213,7 @@ export class DirectTileProcessor {
             estimatedHeight = Math.floor(estimatedHeight * scaleFactor);
             console.warn(`[DirectTile] Dimensions scaled down to prevent memory allocation error: ${estimatedWidth}x${estimatedHeight} (was ${Math.ceil(levelWidth * scale / Math.pow(2, maxLevel))}x${Math.ceil(levelHeight * scale / Math.pow(2, maxLevel))})`);
         }
-        
+
         return {
             baseUrl,
             maxLevel,

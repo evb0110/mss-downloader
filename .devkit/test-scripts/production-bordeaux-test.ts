@@ -3,7 +3,6 @@
 // This simulates the exact production workflow with no exemptions
 
 import { EnhancedManuscriptDownloaderService } from '../../src/main/services/EnhancedManuscriptDownloaderService';
-import { EnhancedDownloadQueue } from '../../src/main/services/EnhancedDownloadQueue';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -12,7 +11,7 @@ async function productionBordeauxTest() {
     
     const testUrl = 'https://selene.bordeaux.fr/ark:/27705/330636101_MS_0778';
     const outputDir = '/Users/evb/WebstormProjects/mss-downloader/.devkit/validation/READY-FOR-USER';
-    const testPdfPath = path.join(outputDir, 'bordeaux-production-test.pdf');
+    const expectedName = 'bordeaux-production-test.pdf';
     
     // Ensure output directory exists
     if (!fs.existsSync(outputDir)) {
@@ -22,7 +21,6 @@ async function productionBordeauxTest() {
     try {
         console.log('📋 Step 1: Initialize production services...');
         const downloader = new EnhancedManuscriptDownloaderService();
-        const queue = new EnhancedDownloadQueue(downloader);
         
         console.log('📋 Step 2: Test manifest loading...');
         const manifest = await downloader.loadManifest(testUrl);
@@ -39,7 +37,7 @@ async function productionBordeauxTest() {
         const tileConfig = (manifest as any).tileConfig;
         if (tileConfig && tileConfig.baseId) {
             console.log(`  - Base ID for tiles: ${tileConfig.baseId}`);
-            if (tileConfig.baseId.includes('_MS_')) {
+            if (String(tileConfig.baseId).includes('_MS_')) {
                 console.log('❌ CRITICAL ERROR: Base ID contains underscore (_MS_) - should be MS without underscore');
                 console.log('   This will cause all tile downloads to fail with 404 errors');
             } else {
@@ -49,46 +47,43 @@ async function productionBordeauxTest() {
         
         console.log('\n📋 Step 3: Test first 5 pages download (sample)...');
         
-        // Create a test manuscript with just 5 pages for validation
-        const testManuscript: any = {
-            id: 'test-bordeaux-production',
-            url: testUrl,
-            displayName: 'Production Test - Bordeaux (5 pages)',
-            library: manifest.library,
-            totalPages: 5, // Just test 5 pages
-            pageLinks: manifest.pageLinks.slice(0, 5),
-            requiresTileProcessor: (manifest as any).requiresTileProcessor,
-            tileConfig: (manifest as any).tileConfig,
-            startPageFromUrl: 1
-        };
-        
         // Track download progress
         let downloadedPages = 0;
         let errorCount = 0;
         const errors: string[] = [];
+        let returnedPdfPath: string | null = null;
         
         console.log('📋 Step 4: Execute production download...');
         
-        const result = await downloader.downloadManuscript({
-            manuscript: testManuscript,
-            outputPath: testPdfPath,
-            progressCallback: (current, total, currentPage, fileName) => {
-                downloadedPages = current;
-                console.log(`  Progress: ${current}/${total} pages (${Math.round(current/total*100)}%) - ${fileName || 'unknown'}`);
+        const pdfPath = await downloader.downloadManuscript(testUrl, {
+            onProgress: (p) => {
+                if (typeof p === 'object') {
+                    const pct = Math.floor((p.progress || 0) * 100);
+                    downloadedPages = p.downloadedPages || downloadedPages;
+                    console.log(`  Progress: ${pct}% (${p.downloadedPages || 0}/${p.totalPages || 0})`);
+                }
             },
             library: manifest.library,
-            totalPages: 5
+            displayName: 'Production Test - Bordeaux (5 pages)',
+            // Slice to first 5 pages
+            pageLinks: manifest.pageLinks.slice(0, 5),
+            totalPages: 5,
+            requiresTileProcessor: (manifest as any).requiresTileProcessor,
+            tileConfig: (manifest as any).tileConfig,
+            startPage: 1,
+            endPage: 5,
         });
+        returnedPdfPath = typeof pdfPath === 'string' ? pdfPath : null;
         
         console.log('\n📋 Step 5: Validate results...');
         
-        if (result.success) {
+        if (returnedPdfPath) {
             console.log('✅ Download completed successfully!');
             
             // Validate PDF file
-            if (fs.existsSync(testPdfPath)) {
-                const stats = fs.statSync(testPdfPath);
-                console.log(`✓ PDF created: ${(stats.size / 1024).toFixed(1)}KB`);
+            if (fs.existsSync(returnedPdfPath)) {
+                const stats = fs.statSync(returnedPdfPath);
+                console.log(`✓ PDF created: ${path.basename(returnedPdfPath)} (${(stats.size / 1024).toFixed(1)}KB)`);
                 
                 if (stats.size > 100000) { // > 100KB for 5 pages suggests high resolution
                     console.log('✅ HIGH RESOLUTION: File size suggests quality content');
@@ -103,9 +98,9 @@ async function productionBordeauxTest() {
                     console.log('\n📋 Step 6: PDF structure validation...');
                     const { execSync } = require('child_process');
                     
-                    const pdfInfo = execSync(`pdfinfo "${testPdfPath}"`, { encoding: 'utf8', timeout: 5000 });
+                    const pdfInfo = execSync(`pdfinfo \"${returnedPdfPath}\"`, { encoding: 'utf8', timeout: 5000 });
                     console.log('✓ PDF info:');
-                    pdfInfo.split('\n').slice(0, 5).forEach(line => {
+                    pdfInfo.split('\n').slice(0, 5).forEach((line: string) => {
                         if (line.trim()) console.log(`  ${line}`);
                     });
                     
@@ -117,13 +112,12 @@ async function productionBordeauxTest() {
             } else {
                 console.log('❌ CRITICAL FAILURE: PDF file not created');
                 errorCount++;
-                errors.push('PDF file not created despite success flag');
+                errors.push('PDF file not created');
             }
         } else {
-            console.log('❌ Download failed:');
-            console.log(`  Error: ${result.error}`);
+            console.log('❌ Download failed: no file path returned');
             errorCount++;
-            errors.push(result.error || 'Unknown download error');
+            errors.push('Download did not return a file path');
         }
         
         console.log('\n🏁 PRODUCTION TEST RESULTS:');
@@ -133,7 +127,7 @@ async function productionBordeauxTest() {
         
         if (errorCount === 0 && downloadedPages === 5) {
             console.log('\n🎉 SUCCESS: Production Bordeaux download is working perfectly!');
-            console.log('📁 Test files available in:', outputDir);
+            console.log('📁 Test files available in:', path.dirname(returnedPdfPath || outputDir));
             return true;
         } else {
             console.log('\n❌ FAILURE: Production download has issues:');

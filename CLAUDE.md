@@ -353,7 +353,15 @@ My initial testing only verified manifest loading, missing the real bugs in down
 - **FOCUS on complete user workflow** - manifest → download → completion
 - **ANALYZE production logs** and user-provided error traces
 
-**BUN DEVELOPMENT RULE - ENHANCED:**
+**BUN/ELECTRON TESTING RULES - UPDATED:**
+- Use Bun for fast TypeScript component/dev tests: `bun filename.ts`
+- For production environment tests (anything importing Electron at runtime, e.g., DownloadLogger/ManifestCache/Queue): always run under Electron main process
+  - Commands (added):
+    - `npm run test:prod:bordeaux`
+    - `npm run test:prod:bordeaux:lite`
+    - `npm run test:prod:florence`
+  - Implementation: Electron + ts-node transpile-only: `electron -r ts-node/register/transpile-only <ts-entry>`
+- Rationale: Bun/Node do not provide Electron's CommonJS exports; running production tests in Electron prevents module resolution failures like "Export named 'app' not found in module 'electron/index.js'"
 - **ALWAYS use Bun** for TypeScript testing
 - **COMMAND:** `bun filename.ts` to run TypeScript directly  
 - **LIMITATION:** Bun tests don't reveal Electron environment issues

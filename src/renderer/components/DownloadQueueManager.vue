@@ -453,7 +453,7 @@ https://digi.vatlib.it/..."
                       v-if="shouldShowGroupProgress(group) && getGroupProgress(group)?.eta"
                       class="eta-badge"
                     >
-                      ETA: {{ getGroupProgress(group)?.eta }}
+                      ETA: {{ formatTime(getGroupProgress(group)?.eta) }}
                     </span>
                   </div>
                 </div>
@@ -1498,15 +1498,15 @@ function getGroupProgress(group: { parent: QueuedManuscript; parts: QueuedManusc
     const currentPages = group.parts.reduce((sum, part) => sum + (part.progress?.current || 0), 0);
     const percentage = totalPages > 0 ? Math.round((currentPages / totalPages) * 100) : 0;
     
-    // Estimate ETA from active downloading parts
-    const downloadingParts = group.parts.filter(part => part.status === 'downloading' && part.progress?.eta);
+    // Estimate ETA from active downloading parts  
+    const downloadingParts = group.parts.filter(part => part.status === 'downloading' && part.progress?.eta && part.progress.eta > 0);
     const eta = downloadingParts.length > 0 ? downloadingParts[0].progress?.eta : undefined;
     
     return {
         current: currentPages,
         total: totalPages,
         percentage,
-        eta: eta || 'calculating...',
+        eta: eta || -1, // Use -1 instead of string to let formatTime handle it
         stage: 'downloading' as TStage
     };
 }
@@ -1532,6 +1532,12 @@ function getGroupPagesProgressText(group: { parent: QueuedManuscript; parts: Que
     }
     const current = Math.max(0, p.current || 0);
     const total = Math.max(0, p.total || 0);
+    
+    // For multi-part manuscripts, show clearer context  
+    if (group.parts.length > 1) {
+        return `${current}/${total} pages total`;
+    }
+    
     return `${current}/${total} pages downloaded`;
 }
 
@@ -2686,6 +2692,19 @@ function getButtonClass(buttonKey: string, baseClass: string): string {
 function isButtonDisabled(buttonKey: string, originalDisabled: boolean = false): boolean {
     const state = buttonLoadingStates.value[buttonKey] || 'idle';
     return originalDisabled || state === 'loading';
+}
+
+function formatTime(seconds: number | undefined): string {
+    // Handle undefined, null, NaN, negative values, or zero - show "calculating..." instead of invalid time
+    if (seconds === undefined || seconds === null || !Number.isFinite(seconds) || seconds <= 0) {
+        return 'calculating...';
+    }
+    
+    const roundedSeconds = Math.round(seconds);
+    if (roundedSeconds < 60) return `${roundedSeconds}s`;
+    const minutes = Math.floor(roundedSeconds / 60);
+    const remainingSeconds = roundedSeconds % 60;
+    return `${minutes}m ${remainingSeconds}s`;
 }
 
 // Note: refreshQueueState function removed as it was unused

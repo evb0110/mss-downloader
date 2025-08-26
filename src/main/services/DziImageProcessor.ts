@@ -73,18 +73,41 @@ export class DziImageProcessor {
         const parser = new xml2js.Parser();
         const result = await parser.parseStringPromise(xmlString);
         
-        if (!result.Image || !result.Image.$) {
-            throw new Error('Invalid DZI XML format');
+        // DZI format: <Image TileSize="256" Overlap="1" Format="jpg">\n  <Size Width="W" Height="H"/>\n</Image>
+        const imageNode = (result as any).Image || (result as any).image;
+        if (!imageNode || !imageNode.$) {
+            throw new Error('Invalid DZI XML format: missing Image element or attributes');
         }
-        
-        const imageAttrs = result.Image.$;
-        return {
-            width: parseInt(imageAttrs.Width),
-            height: parseInt(imageAttrs.Height),
-            tileSize: parseInt(imageAttrs.TileSize),
-            overlap: parseInt(imageAttrs.Overlap),
-            format: imageAttrs.Format || 'jpg'
-        };
+        const attrs = imageNode.$ as Record<string, string>;
+        // Size element may be nested as Size or size depending on XML parser config
+        const sizeNode = (imageNode.Size && imageNode.Size[0]) || (imageNode.size && imageNode.size[0]);
+        if (!sizeNode || !sizeNode.$) {
+            throw new Error('Invalid DZI XML format: missing Size element');
+        }
+        const sizeAttrs = sizeNode.$ as Record<string, string>;
+        const widthStr = sizeAttrs['Width'] || sizeAttrs['width'];
+        const heightStr = sizeAttrs['Height'] || sizeAttrs['height'];
+        const tileSizeStr = attrs['TileSize'] || (attrs as any)['tilesize'] || '256';
+        const overlapStr = attrs['Overlap'] || (attrs as any)['overlap'] || '1';
+        const formatStr = attrs['Format'] || (attrs as any)['format'] || 'jpg';
+
+        const width = parseInt(widthStr || '0', 10);
+        const height = parseInt(heightStr || '0', 10);
+        const tileSize = parseInt(tileSizeStr || '0', 10);
+        const overlap = parseInt(overlapStr || '0', 10);
+        const format = String(formatStr || 'jpg');
+
+        if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+            throw new Error(`Invalid DZI Size dimensions parsed: width=${widthStr}, height=${heightStr}`);
+        }
+        if (!Number.isFinite(tileSize) || tileSize <= 0) {
+            throw new Error(`Invalid DZI TileSize parsed: ${tileSizeStr}`);
+        }
+        if (!Number.isFinite(overlap) || overlap < 0) {
+            throw new Error(`Invalid DZI Overlap parsed: ${overlapStr}`);
+        }
+
+        return { width, height, tileSize, overlap, format };
     }
     
     /**
@@ -161,15 +184,15 @@ export class DziImageProcessor {
                         console.log(`[DZI] Downloaded ${i + batch.indexOf(tile) + 1}/${tiles?.length} tiles`);
                     }
                 } catch (error) {
-                    console.error(`[DZI] Failed to download tile ${tile.column}_${tile.row}:`, error instanceof Error ? error.message : String(error));
-                    throw error;
+                    // Tolerate missing/broken tiles: log and continue instead of failing the whole image
+                    console.warn(`[DZI] Skipping missing/broken tile ${tile.level}/${tile.column}_${tile.row}:`, error instanceof Error ? error.message : String(error));
                 }
             });
             
             await Promise.all(promises);
         }
         
-        console.log('[DZI] All tiles downloaded successfully');
+        console.log('[DZI] Tiles download pass complete');
         return tileData;
     }
     
@@ -179,115 +202,145 @@ export class DziImageProcessor {
     private async stitchTiles(tiles: TileInfo[], tileData: Map<string, Buffer>, metadata: DziMetadata): Promise<Buffer> {
         console.log(`[DZI] Stitching ${tiles?.length} tiles into ${metadata.width}x${metadata.height} image...`);
         
-        try {
-            // Try to use Canvas if available
-            let Canvas;
-            try {
-                Canvas = await import('canvas');
-            } catch {
-                // Canvas not available - return error
-                throw new Error('Canvas dependency required for DZI tile assembly. Please install canvas package.');
-            }
-            
-            // ULTRA-SAFE canvas dimensions to prevent RangeError: Invalid array length
-            const MAX_CANVAS_SIZE = 16384; // Safe limit for most systems
-            
-            // Comprehensive dimension validation to handle NaN, negative, and non-integer values
-            let safeWidth = metadata.width;
-            let safeHeight = metadata.height;
-            
-            // Handle invalid numbers (NaN, Infinity, negative)
-            if (!Number.isFinite(safeWidth) || safeWidth <= 0) {
-                console.warn(`[DZI] Invalid width detected (${safeWidth}), using fallback`);
-                safeWidth = 1000; // Fallback to reasonable size
-            }
-            
-            if (!Number.isFinite(safeHeight) || safeHeight <= 0) {
-                console.warn(`[DZI] Invalid height detected (${safeHeight}), using fallback`);
-                safeHeight = 1000; // Fallback to reasonable size
-            }
-            
-            // Ensure integers (Canvas requires integer dimensions)
-            safeWidth = Math.floor(safeWidth);
-            safeHeight = Math.floor(safeHeight);
-            
-            // Apply size limits
-            safeWidth = Math.min(safeWidth, MAX_CANVAS_SIZE);
-            safeHeight = Math.min(safeHeight, MAX_CANVAS_SIZE);
-            
-            console.log(`[DZI] Original dimensions: ${metadata.width}x${metadata.height}`);
-            console.log(`[DZI] Safe dimensions: ${safeWidth}x${safeHeight}`);
-
-            if (safeWidth !== metadata.width || safeHeight !== metadata.height) {
-                console.warn(`[DZI] Dimensions adjusted to prevent memory allocation error`);
-            }
-            
-            // Final validation before Canvas creation
-            if (safeWidth <= 0 || safeHeight <= 0 || !Number.isInteger(safeWidth) || !Number.isInteger(safeHeight)) {
-                throw new Error(`Cannot create canvas with invalid dimensions ${safeWidth}x${safeHeight}`);
-            }
-
-            const canvas = Canvas.createCanvas(safeWidth, safeHeight);
-            const ctx = canvas.getContext('2d');
-            
-            // Process tiles
-            let processedTiles = 0;
-            for (const tile of tiles) {
-                const key = `${tile.level}_${tile.column}_${tile.row}`;
-                const data = tileData.get(key);
-                
-                if (!data) {
-                    console.warn(`[DZI] Missing tile data for ${key}`);
-                    continue;
-                }
-                
-                try {
-                    const img = await Canvas.loadImage(data);
-                    
-                    // Calculate actual position (accounting for overlap)
-                    const destX = tile.column * metadata.tileSize - (tile.column > 0 ? metadata.overlap : 0);
-                    const destY = tile.row * metadata.tileSize - (tile.row > 0 ? metadata.overlap : 0);
-                    
-                    // Draw tile (cropping overlap areas)
-                    const sourceX = tile.column > 0 ? metadata.overlap : 0;
-                    const sourceY = tile.row > 0 ? metadata.overlap : 0;
-                    const drawWidth = Math.min(tile.width - sourceX, metadata.width - destX);
-                    const drawHeight = Math.min(tile.height - sourceY, metadata.height - destY);
-                    
-                    ctx.drawImage(
-                        img,
-                        sourceX, sourceY, drawWidth, drawHeight,
-                        destX, destY, drawWidth, drawHeight
-                    );
-                    
-                    processedTiles++;
-                    if (processedTiles % 10 === 0) {
-                        console.log(`[DZI] Stitching progress: ${Math.round((processedTiles / tiles?.length) * 100)}%`);
-                    }
-                } catch (error) {
-                    console.error(`[DZI] Error processing tile ${key}:`, error instanceof Error ? error.message : String(error));
-                }
-            }
-            
-            console.log('[DZI] Stitching complete, encoding to JPEG...');
-            
-            // Convert to JPEG buffer
-            const jpegBuffer = await new Promise<Buffer>((resolve, reject) => {
-                try {
-                    const buffer = canvas.toBuffer();
-                    resolve(buffer);
-                } catch (err) {
-                    reject(err);
-                }
-            });
-            
-            console.log(`[DZI] Final image size: ${(jpegBuffer?.length / 1024 / 1024).toFixed(2)} MB`);
-            return jpegBuffer;
-            
-        } catch (error) {
-            console.error('[DZI] Stitching error:', error);
-            throw error;
+        // ULTRA-SAFE canvas dimensions to prevent RangeError: Invalid array length
+        const MAX_CANVAS_SIZE = 16384; // Safe limit for most systems
+        
+        // Comprehensive dimension validation to handle NaN, negative, and non-integer values
+        let safeWidth = metadata.width;
+        let safeHeight = metadata.height;
+        
+        // Handle invalid numbers (NaN, Infinity, negative)
+        if (!Number.isFinite(safeWidth) || safeWidth <= 0) {
+            console.warn(`[DZI] Invalid width detected (${safeWidth}), using fallback`);
+            safeWidth = 1000; // Fallback to reasonable size
         }
+        
+        if (!Number.isFinite(safeHeight) || safeHeight <= 0) {
+            console.warn(`[DZI] Invalid height detected (${safeHeight}), using fallback`);
+            safeHeight = 1000; // Fallback to reasonable size
+        }
+        
+        // Ensure integers
+        safeWidth = Math.floor(safeWidth);
+        safeHeight = Math.floor(safeHeight);
+        
+        // Apply size limits
+        safeWidth = Math.min(safeWidth, MAX_CANVAS_SIZE);
+        safeHeight = Math.min(safeHeight, MAX_CANVAS_SIZE);
+        
+        console.log(`[DZI] Original dimensions: ${metadata.width}x${metadata.height}`);
+        console.log(`[DZI] Safe dimensions: ${safeWidth}x${safeHeight}`);
+
+        if (safeWidth !== metadata.width || safeHeight !== metadata.height) {
+            console.warn(`[DZI] Dimensions adjusted to prevent memory allocation error`);
+        }
+        
+        // Final validation
+        if (safeWidth <= 0 || safeHeight <= 0 || !Number.isInteger(safeWidth) || !Number.isInteger(safeHeight)) {
+            throw new Error(`Cannot create canvas with invalid dimensions ${safeWidth}x${safeHeight}`);
+        }
+
+        // Try node-canvas first; if unavailable, fall back to Jimp
+        let useCanvas = false;
+        let Canvas: any = null;
+        try {
+            Canvas = await import('canvas');
+            useCanvas = Boolean(Canvas);
+        } catch {
+            useCanvas = false;
+        }
+
+        if (useCanvas) {
+            try {
+                const canvas = Canvas.createCanvas(safeWidth, safeHeight);
+                const ctx = canvas.getContext('2d');
+                
+                let processedTiles = 0;
+                for (const tile of tiles) {
+                    const key = `${tile.level}_${tile.column}_${tile.row}`;
+                    const data = tileData.get(key);
+                    if (!data) {
+                        console.warn(`[DZI] Missing tile data for ${key}`);
+                        continue;
+                    }
+                    try {
+                        const img = await Canvas.loadImage(data);
+                        const destX = tile.column * metadata.tileSize - (tile.column > 0 ? metadata.overlap : 0);
+                        const destY = tile.row * metadata.tileSize - (tile.row > 0 ? metadata.overlap : 0);
+                        const sourceX = tile.column > 0 ? metadata.overlap : 0;
+                        const sourceY = tile.row > 0 ? metadata.overlap : 0;
+                        const drawWidth = Math.min(tile.width - sourceX, safeWidth - destX);
+                        const drawHeight = Math.min(tile.height - sourceY, safeHeight - destY);
+                        ctx.drawImage(
+                            img,
+                            sourceX, sourceY, drawWidth, drawHeight,
+                            destX, destY, drawWidth, drawHeight
+                        );
+                        processedTiles++;
+                        if (processedTiles % 10 === 0) {
+                            console.log(`[DZI] Stitching progress: ${Math.round((processedTiles / tiles?.length) * 100)}%`);
+                        }
+                    } catch (error) {
+                        console.error(`[DZI] Error processing tile ${key}:`, error instanceof Error ? error.message : String(error));
+                    }
+                }
+                const buffer = canvas.toBuffer();
+                console.log(`[DZI] Final image size: ${(buffer?.length / 1024 / 1024).toFixed(2)} MB`);
+                return buffer;
+            } catch (e) {
+                console.warn('[DZI] node-canvas stitching failed, falling back to Jimp:', e instanceof Error ? e.message : String(e));
+            }
+        }
+
+        // Fallback to Jimp-based stitching
+        const JimpModule: any = await import('jimp');
+        const Jimp: any = JimpModule.Jimp || JimpModule.default || JimpModule;
+
+        const whiteBuffer = Buffer.alloc(safeWidth * safeHeight * 4);
+        for (let i = 0; i < whiteBuffer.length; i += 4) {
+            whiteBuffer[i] = 255;     // R
+            whiteBuffer[i + 1] = 255; // G
+            whiteBuffer[i + 2] = 255; // B
+            whiteBuffer[i + 3] = 255; // A
+        }
+        const baseImage = new Jimp({ width: safeWidth, height: safeHeight, data: whiteBuffer });
+
+        let processedTiles = 0;
+        for (const tile of tiles) {
+            const key = `${tile.level}_${tile.column}_${tile.row}`;
+            const data = tileData.get(key);
+            if (!data) {
+                console.warn(`[DZI] Missing tile data for ${key}`);
+                continue;
+            }
+            try {
+                const img = await Jimp.read(data);
+                const destX = tile.column * metadata.tileSize - (tile.column > 0 ? metadata.overlap : 0);
+                const destY = tile.row * metadata.tileSize - (tile.row > 0 ? metadata.overlap : 0);
+
+                const sourceX = tile.column > 0 ? metadata.overlap : 0;
+                const sourceY = tile.row > 0 ? metadata.overlap : 0;
+                const imgWidth = img.bitmap?.width || 256;
+                const imgHeight = img.bitmap?.height || 256;
+                const cropW = Math.min(imgWidth - sourceX, safeWidth - destX);
+                const cropH = Math.min(imgHeight - sourceY, safeHeight - destY);
+                const finalW = Math.max(1, cropW);
+                const finalH = Math.max(1, cropH);
+                if (sourceX !== 0 || sourceY !== 0 || finalW !== imgWidth || finalH !== imgHeight) {
+                    img.crop({ x: sourceX, y: sourceY, w: finalW, h: finalH });
+                }
+                baseImage.composite(img, destX, destY);
+                processedTiles++;
+                if (processedTiles % 10 === 0) {
+                    console.log(`[DZI] Jimp stitching progress: ${Math.round((processedTiles / tiles?.length) * 100)}%`);
+                }
+            } catch (error) {
+                console.error(`[DZI] Error processing tile ${key} (Jimp):`, error instanceof Error ? error.message : String(error));
+            }
+        }
+        const jpegBuffer: Buffer = await baseImage.getBuffer('image/jpeg', { quality: 85 });
+        console.log(`[DZI] Final image size: ${(jpegBuffer?.length / 1024 / 1024).toFixed(2)} MB`);
+        return jpegBuffer;
     }
     
     /**
@@ -296,8 +349,8 @@ export class DziImageProcessor {
     async processDziImage(dziUrl: string): Promise<Buffer> {
         console.log('[DZI] Processing DZI image:', dziUrl);
         
-        // Extract base URL (remove .dzi extension)
-        const baseUrl = dziUrl.replace(/\.dzi$/i, '');
+        // Extract base URL (remove .dzi or .xml extension)
+        const baseUrl = dziUrl.replace(/\.(dzi|xml)$/i, '');
         
         // Fetch and parse DZI metadata
         const metadata = await this.parseDziMetadata(dziUrl);
