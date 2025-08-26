@@ -224,6 +224,10 @@ export class EnhancedManuscriptDownloaderService {
     private libraryLoaders: Map<string, LibraryLoader>;
     // Reuse HTTPS agents per host to enable effective keep-alive connection pooling
     private httpsAgents: Map<string, import('https').Agent> = new Map();
+    
+    // CRITICAL FIX: DZI URL deduplication to prevent concurrent processing of same DZI
+    // Prevents multiple workers from downloading the same DZI tiles simultaneously
+    private dziProcessingCache = new Map<string, Promise<Buffer>>();
 
     // Fast-fail settings for Bordeaux DZI preflight
     private static readonly BORDEAUX_HEAD_TIMEOUT_MS = 2500;
@@ -2910,8 +2914,23 @@ export class EnhancedManuscriptDownloaderService {
         try {
             console.log(`Processing DZI file: ${url} (attempt ${attempt + 1})`);
 
-            // Use the dedicated DZI processor with timeout protection
-            const representativeImageBuffer = await this.dziProcessor.processDziImage(url);
+            // CRITICAL FIX: Use deduplication cache for DZI processing
+            // This method is called during manifest loading and can also cause concurrent processing
+            let processingPromise = this.dziProcessingCache.get(url);
+            if (!processingPromise) {
+                console.log(`[DZI] Starting processing for new URL: ${url}`);
+                processingPromise = this.dziProcessor.processDziImage(url);
+                this.dziProcessingCache.set(url, processingPromise);
+                
+                // Clean up cache entry after completion
+                processingPromise.finally(() => {
+                    this.dziProcessingCache.delete(url);
+                });
+            } else {
+                console.log(`[DZI] Reusing processing result for: ${url}`);
+            }
+            
+            const representativeImageBuffer = await processingPromise;
 
             console.log(`DZI processed successfully: ${(representativeImageBuffer.length / 1024 / 1024).toFixed(2)} MB high-quality image`);
 
@@ -3415,7 +3434,23 @@ export class EnhancedManuscriptDownloaderService {
                                 }
 
                                 try {
-                                    const buffer = await this.dziProcessor.processDziImage(dziUrl);
+                                    // CRITICAL FIX: Use deduplication cache to prevent concurrent DZI processing
+                                    // Multiple pages may reference the same DZI URL, causing bandwidth waste and progress corruption
+                                    let processingPromise = this.dziProcessingCache.get(dziUrl);
+                                    if (!processingPromise) {
+                                        console.log(`[Bordeaux] Starting DZI processing for new URL: ${dziUrl}`);
+                                        processingPromise = this.dziProcessor.processDziImage(dziUrl);
+                                        this.dziProcessingCache.set(dziUrl, processingPromise);
+                                        
+                                        // Clean up cache entry after completion to prevent memory leaks
+                                        processingPromise.finally(() => {
+                                            this.dziProcessingCache.delete(dziUrl);
+                                        });
+                                    } else {
+                                        console.log(`[Bordeaux] Reusing DZI processing result for page ${relativeIndex + 1}: ${dziUrl}`);
+                                    }
+                                    
+                                    const buffer = await processingPromise;
                                     await fs.writeFile(imgPath, buffer);
                                     imagePaths[relativeIndex] = imgPath;
                                     completedPages++;
@@ -3790,14 +3825,16 @@ export class EnhancedManuscriptDownloaderService {
             );
 
             // Build parts by actual file sizes to enforce a hard cap per PDF part
-            // Respects either:
-            // - maxPdfPartSizeMB (new explicit cap), or
-            // - effectiveAutoSplitMB (queue/config threshold), or
-            // falls back to 100MB if neither is set
+            // Respects user settings:
+            // - maxPdfPartSizeMB > 0: Use explicit cap
+            // - maxPdfPartSizeMB = 0: User disabled splitting (use Infinity)  
+            // - maxPdfPartSizeMB undefined: Use system default (300MB)
             const userCapMB = Number(configService.get('maxPdfPartSizeMB') || 0);
-            const maxPartSizeMB = Number(userCapMB > 0 ? userCapMB : (effectiveAutoSplitMB || 100));
-            console.log(`[PDF Split] Using max part size cap: ${maxPartSizeMB} MB (queue cap=${options.queueItem?.libraryOptimizations?.autoSplitThresholdMB ?? 'n/a'}, config cap=${autoSplitThresholdMB ?? 'n/a'}, user hard cap=${userCapMB || 'none'})`);
-            const maxPartBytes = Math.max(1, Math.floor(maxPartSizeMB * 1024 * 1024));
+            const maxPartSizeMB = userCapMB > 0 ? userCapMB : 
+                                 userCapMB === 0 ? Infinity : // User explicitly disabled
+                                 (effectiveAutoSplitMB || 300); // System default (was 100MB)
+            console.log(`[PDF Split] Using max part size cap: ${maxPartSizeMB === Infinity ? 'DISABLED' : maxPartSizeMB + ' MB'} (queue cap=${options.queueItem?.libraryOptimizations?.autoSplitThresholdMB ?? 'n/a'}, config cap=${autoSplitThresholdMB ?? 'n/a'}, user hard cap=${userCapMB || 'none'})`);
+            const maxPartBytes = maxPartSizeMB === Infinity ? Number.MAX_SAFE_INTEGER : Math.max(1, Math.floor(maxPartSizeMB * 1024 * 1024));
 
             // If this item is already an auto-split part created by the queue and there is no explicit user hard cap,
             // avoid splitting again here to prevent generating hundreds of tiny PDFs (one per page).
