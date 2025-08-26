@@ -106,14 +106,14 @@ https://digi.vatlib.it/..."
                 v-model="queueSettings.autoSplitThresholdMB"
                 type="range"
                 min="10"
-                max="400"
+                max="2048"
                 step="10"
                 class="setting-range"
                 @input="onAutoSplitThresholdChange"
               >
               <div class="range-labels">
                 <span>10MB</span>
-                <span>400MB</span>
+                <span>2048MB</span>
               </div>
             </div>
 
@@ -167,14 +167,14 @@ https://digi.vatlib.it/..."
                 v-model="queueSettings.autoSplitThresholdMB"
                 type="range"
                 min="10"
-                max="400"
+                max="2048"
                 step="10"
                 class="setting-range"
                 @input="onAutoSplitThresholdChange"
               >
               <div class="range-labels">
                 <span>10MB</span>
-                <span>400MB</span>
+                <span>2048MB</span>
               </div>
             </div>
 
@@ -2805,7 +2805,13 @@ function onAutoSplitThresholdChange() {
 
     debounceTimer = setTimeout(async () => {
         try {
-            await window.electronAPI.updateAutoSplitThreshold(Number(queueSettings.value.autoSplitThresholdMB) || 10);
+            const thresholdMB = Number(queueSettings.value.autoSplitThresholdMB) || 10;
+            await Promise.all([
+                // Persist for queue-level splitting logic
+                window.electronAPI.updateAutoSplitThreshold(thresholdMB),
+                // Persist to global config (bytes) so the downloader service uses the same value
+                window.electronAPI.setConfig('autoSplitThreshold', thresholdMB * 1024 * 1024)
+            ]);
         } catch (error) {
             console.error('Failed to update auto-split threshold:', error);
         }

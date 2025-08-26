@@ -13,6 +13,7 @@ import { TileEngineService } from './tile-engine/TileEngineService';
 import { DirectTileProcessor } from './DirectTileProcessor';
 import { SharedManifestAdapter } from './SharedManifestAdapter';
 import { DownloadLogger } from './DownloadLogger';
+import { GlobalDziCache } from './GlobalDziCache';
 import { comprehensiveLogger } from './ComprehensiveLogger';
 import { enhancedLogger, ManuscriptContext, PerformanceMetrics } from './EnhancedLogger';
 import { UltraReliableBDLService } from './UltraReliableBDLService';
@@ -225,9 +226,11 @@ export class EnhancedManuscriptDownloaderService {
     // Reuse HTTPS agents per host to enable effective keep-alive connection pooling
     private httpsAgents: Map<string, import('https').Agent> = new Map();
     
-    // CRITICAL FIX: DZI URL deduplication to prevent concurrent processing of same DZI
-    // Prevents multiple workers from downloading the same DZI tiles simultaneously
-    private dziProcessingCache = new Map<string, Promise<Buffer>>();
+    // ARCHITECTURAL FIX: Use global singleton cache to prevent concurrent DZI processing
+    // across ALL service instances (root cause was isolated per-instance caches)
+    private get dziProcessingCache() {
+        return GlobalDziCache.getInstance();
+    }
 
     // Fast-fail settings for Bordeaux DZI preflight
     private static readonly BORDEAUX_HEAD_TIMEOUT_MS = 2500;
@@ -2914,20 +2917,16 @@ export class EnhancedManuscriptDownloaderService {
         try {
             console.log(`Processing DZI file: ${url} (attempt ${attempt + 1})`);
 
-            // CRITICAL FIX: Use deduplication cache for DZI processing
-            // This method is called during manifest loading and can also cause concurrent processing
+            // ARCHITECTURAL FIX: Use global singleton cache for DZI processing
+            // This prevents ALL service instances from concurrent processing of same DZI
             let processingPromise = this.dziProcessingCache.get(url);
             if (!processingPromise) {
-                console.log(`[DZI] Starting processing for new URL: ${url}`);
+                console.log(`[DZI GLOBAL] Starting processing for new URL: ${url}`);
                 processingPromise = this.dziProcessor.processDziImage(url);
                 this.dziProcessingCache.set(url, processingPromise);
-                
-                // Clean up cache entry after completion
-                processingPromise.finally(() => {
-                    this.dziProcessingCache.delete(url);
-                });
+                // Note: GlobalDziCache handles cleanup automatically
             } else {
-                console.log(`[DZI] Reusing processing result for: ${url}`);
+                console.log(`[DZI GLOBAL] Reusing processing result across service instances: ${url}`);
             }
             
             const representativeImageBuffer = await processingPromise;
@@ -3344,6 +3343,13 @@ export class EnhancedManuscriptDownloaderService {
                 actualMaxConcurrent = Math.min(10, manifest.pageLinks.length); // Up to 10 concurrent for BDL
                 console.log(`🚀 [BDL Performance] Using ${actualMaxConcurrent} concurrent downloads for faster speed`);
             }
+            
+            // CRITICAL FIX: Force single-threaded DZI processing for Bordeaux
+            // DZI already has internal batching (5 tiles/batch), concurrent processing causes chaos
+            if (manifest.library === 'bordeaux') {
+                actualMaxConcurrent = 1; // Single-threaded for clean DZI progress
+                console.log(`📄 [DZI Fix] Using ${actualMaxConcurrent} concurrent download for Bordeaux DZI (prevents tile chaos)`);
+            }
 
             // Validate actualMaxConcurrent to prevent "Invalid array length" error
             if (!Number.isInteger(actualMaxConcurrent) || actualMaxConcurrent <= 0 || !Number.isFinite(actualMaxConcurrent)) {
@@ -3434,20 +3440,16 @@ export class EnhancedManuscriptDownloaderService {
                                 }
 
                                 try {
-                                    // CRITICAL FIX: Use deduplication cache to prevent concurrent DZI processing
-                                    // Multiple pages may reference the same DZI URL, causing bandwidth waste and progress corruption
+                                    // ARCHITECTURAL FIX: Global singleton cache prevents DZI processing across ALL service instances
+                                    // Root cause was isolated per-instance caches allowing concurrent processing
                                     let processingPromise = this.dziProcessingCache.get(dziUrl);
                                     if (!processingPromise) {
-                                        console.log(`[Bordeaux] Starting DZI processing for new URL: ${dziUrl}`);
+                                        console.log(`[Bordeaux GLOBAL] Starting DZI processing for new URL: ${dziUrl}`);
                                         processingPromise = this.dziProcessor.processDziImage(dziUrl);
                                         this.dziProcessingCache.set(dziUrl, processingPromise);
-                                        
-                                        // Clean up cache entry after completion to prevent memory leaks
-                                        processingPromise.finally(() => {
-                                            this.dziProcessingCache.delete(dziUrl);
-                                        });
+                                        // Note: GlobalDziCache handles cleanup automatically
                                     } else {
-                                        console.log(`[Bordeaux] Reusing DZI processing result for page ${relativeIndex + 1}: ${dziUrl}`);
+                                        console.log(`[Bordeaux GLOBAL] Reusing DZI result across service instances for page ${relativeIndex + 1}: ${dziUrl}`);
                                     }
                                     
                                     const buffer = await processingPromise;

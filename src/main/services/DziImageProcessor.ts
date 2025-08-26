@@ -168,6 +168,7 @@ export class DziImageProcessor {
     private async downloadTiles(tiles: TileInfo[]): Promise<Map<string, Buffer>> {
         const tileData = new Map<string, Buffer>();
         const batchSize = 5; // Download tiles in batches
+        let cumulativeTilesDownloaded = 0;
         
         console.log(`[DZI] Downloading ${tiles?.length} tiles...`);
         
@@ -179,17 +180,20 @@ export class DziImageProcessor {
                     const data = await this.fetchUrl(tile.url);
                     const key = `${tile.level}_${tile.column}_${tile.row}`;
                     tileData.set(key, data);
-                    
-                    if ((i + batch.indexOf(tile) + 1) % 10 === 0) {
-                        console.log(`[DZI] Downloaded ${i + batch.indexOf(tile) + 1}/${tiles?.length} tiles`);
-                    }
+                    return true;
                 } catch (error) {
                     // Tolerate missing/broken tiles: log and continue instead of failing the whole image
                     console.warn(`[DZI] Skipping missing/broken tile ${tile.level}/${tile.column}_${tile.row}:`, error instanceof Error ? error.message : String(error));
+                    return false;
                 }
             });
             
-            await Promise.all(promises);
+            const results = await Promise.all(promises);
+            const completedInBatch = results.filter(success => success).length;
+            cumulativeTilesDownloaded += completedInBatch;
+            
+            // Log progress after each batch completion - show actual batch behavior
+            console.log(`[DZI] Batch complete: ${completedInBatch} tiles downloaded (total: ${cumulativeTilesDownloaded}/${tiles?.length})`);
         }
         
         console.log('[DZI] Tiles download pass complete');

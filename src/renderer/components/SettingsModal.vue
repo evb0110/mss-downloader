@@ -67,7 +67,7 @@
                 v-model.number="autoSplitThresholdMB" 
                 type="number" 
                 min="10" 
-                max="400"
+                max="2048"
                 step="10"
                 @change="updateAutoSplitThreshold"
               >
@@ -81,11 +81,12 @@
               <input
                 v-model.number="maxPdfPartSizeMB"
                 type="number"
-                min="10"
-                max="400"
+                min="0"
+                max="2048"
                 step="10"
                 @change="updateMaxPdfPartSize"
               >
+              <small class="hint">0 disables per-PDF part splitting</small>
               <span class="unit">MB</span>
             </div>
           </div>

@@ -1552,18 +1552,17 @@ export class EnhancedDownloadQueue extends EventEmitter {
                     effectiveThreshold = Math.max(effectiveThreshold, libraryOpts.autoSplitThresholdMB);
                 }
                 
-                // Optional upper bound safety (keep very large thresholds sane), but never lower below the user's value
-                const GLOBAL_SOFT_MAX_MB = 400;
-                effectiveThreshold = Math.min(effectiveThreshold, GLOBAL_SOFT_MAX_MB);
+                // Respect user's global setting - no hardcoded caps
+                // Libraries can set minimums, but user's global setting is authoritative for maximums
                 
-                console.log(`${manifest.library} size check: ${estimatedTotalSizeMB}MB vs threshold ${effectiveThreshold}MB (lib min: ${libraryOpts.autoSplitThresholdMB || 'n/a'})`);
+                console.log(`AUTO-SPLIT DECISION [${manifest.library}]: ${estimatedTotalSizeMB}MB vs ${effectiveThreshold}MB threshold (user global: ${this.state.globalSettings.autoSplitThresholdMB}MB, library minimum: ${libraryOpts.autoSplitThresholdMB || 'none'})`);
                 
                 if (estimatedTotalSizeMB > effectiveThreshold) {
-                    console.log(`${manifest.library} manuscript exceeds threshold, splitting into parts`);
+                    console.log(`✂️  AUTO-SPLIT TRIGGERED [${manifest.library}]: ${estimatedTotalSizeMB}MB > ${effectiveThreshold}MB - splitting manuscript`);
                     await this.splitQueueItem(item, manifest, estimatedTotalSizeMB);
                     return true;
                 }
-                console.log(`${manifest.library} manuscript within threshold, proceeding with single download`);
+                console.log(`📄 NO SPLIT NEEDED [${manifest.library}]: ${estimatedTotalSizeMB}MB ≤ ${effectiveThreshold}MB - single download`);
                 return false;
             }
             
@@ -1715,10 +1714,12 @@ export class EnhancedDownloadQueue extends EventEmitter {
             // Get library-specific threshold or use global (do not apply per-part hard cap at queue level)
             let effectiveThreshold = item.libraryOptimizations?.autoSplitThresholdMB || 
                                      this.state.globalSettings.autoSplitThresholdMB;
-            // Enforce global maximum of 400MB
-            effectiveThreshold = Math.min(effectiveThreshold, 400);
+            // Respect user's global setting - no hardcoded maximum enforcement
+            
+            console.log(`AUTO-SPLIT DECISION #2 [${item.url}]: ${estimatedTotalSizeMB}MB vs ${effectiveThreshold}MB threshold`);
             
             if (estimatedTotalSizeMB > effectiveThreshold) {
+                console.log(`✂️  AUTO-SPLIT TRIGGERED #2: ${estimatedTotalSizeMB}MB > ${effectiveThreshold}MB - splitting manuscript`);
                 if (manifest) {
                     await this.splitQueueItem(item, manifest, estimatedTotalSizeMB);
                     return true;
@@ -2478,20 +2479,6 @@ export class EnhancedDownloadQueue extends EventEmitter {
             // Auto-start next pending item if available
             this.tryStartNextPendingItem();
         }
-    }
-    
-    /**
-     * Format milliseconds into human-readable time string
-     */
-    private formatTime(milliseconds: number): string {
-        const seconds = Math.round(milliseconds / 1000);
-        if (seconds < 60) return `${seconds}s`;
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        if (minutes < 60) return `${minutes}m ${remainingSeconds}s`;
-        const hours = Math.floor(minutes / 60);
-        const remainingMinutes = minutes % 60;
-        return `${hours}h ${remainingMinutes}m`;
     }
     
     /**
