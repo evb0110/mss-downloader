@@ -258,52 +258,81 @@ export class DirectTileProcessor {
     }
     
     /**
-     * Download tiles with existence checking
+     * Download tiles with existence checking and robust retries.
+     * Some tile servers (e.g., Bordeaux) intermittently return 404/timeout for valid tiles.
+     * We retry failed tiles a few times with backoff to reduce white bands in the final image.
      */
     private async downloadTiles(tiles: Tile[], onProgress?: (downloaded: number, total: number) => void): Promise<Tile[]> {
         const batchSize = 5;
+        const maxRetries = 3;
         const downloadedTiles: Tile[] = [];
+        const totalTiles = tiles?.length || 0;
         
-        console.log(`[DirectTile] Downloading up to ${tiles?.length} tiles...`);
+        console.log(`[DirectTile] Downloading up to ${totalTiles} tiles...`);
         
         let validTiles = 0;
-        for (let i = 0; i < tiles?.length; i += batchSize) {
-            const batch = tiles.slice(i, Math.min(i + batchSize, tiles?.length));
-            
-            const promises = batch.map(async (tile) => {
-                try {
-                    const result = await this.fetchUrl(tile.url);
-                    if (result.exists && result.data) {
-                        tile.exists = true;
-                        tile.data = result.data;
-                        validTiles++;
-                        
-                        if (validTiles % 10 === 0) {
-                            console.log(`[DirectTile] Downloaded ${validTiles} tiles...`);
+        // Work list of tiles to attempt
+        let pending: Tile[] = tiles.map(t => ({ ...t }));
+        
+        for (let attempt = 1; attempt <= maxRetries && pending.length > 0; attempt++) {
+            if (attempt > 1) {
+                const delayMs = 750 * (attempt - 1);
+                console.log(`[DirectTile] Retrying ${pending.length} failed tiles (attempt ${attempt}/${maxRetries}) after ${delayMs}ms...`);
+                await new Promise(r => setTimeout(r, delayMs));
+            }
+
+            const nextRound: Tile[] = [];
+
+            for (let i = 0; i < pending.length; i += batchSize) {
+                const batch = pending.slice(i, Math.min(i + batchSize, pending.length));
+
+                const promises = batch.map(async (tile) => {
+                    try {
+                        const result = await this.fetchUrl(tile.url);
+                        if (result.exists && result.data) {
+                            tile.exists = true;
+                            tile.data = result.data;
+                            validTiles++;
+
+                            // Periodic progress logging
+                            if (validTiles % 10 === 0) {
+                                console.log(`[DirectTile] Downloaded ${validTiles}/${totalTiles} tiles...`);
+                            }
+
+                            // Report progress if callback provided
+                            onProgress?.(validTiles, totalTiles);
+
+                            return tile;
+                        } else {
+                            // Might be a transient 404; keep for retry if attempts remain
+                            tile.exists = false;
+                            return tile;
                         }
-                        
-                        // Report progress if callback provided
-                        if (onProgress) {
-                            onProgress(validTiles, tiles?.length);
-                        }
-                        
-                        return tile;
-                    } else {
+                    } catch (error: any) {
+                        console.warn(`[DirectTile] Failed to download tile ${tile.column}_${tile.row}:`, error instanceof Error ? error.message : String(error));
                         tile.exists = false;
                         return tile;
                     }
-                } catch (error: any) {
-                    console.warn(`[DirectTile] Failed to download tile ${tile.column}_${tile.row}:`, error instanceof Error ? error.message : String(error));
-                    tile.exists = false;
-                    return tile;
+                });
+
+                const batchResults = await Promise.all(promises);
+                const successes = batchResults.filter(t => t.exists);
+                downloadedTiles.push(...successes);
+
+                // Keep failures for next attempt if any retries left
+                if (attempt < maxRetries) {
+                    nextRound.push(...batchResults.filter(t => !t.exists));
                 }
-            });
-            
-            const batchResults = await Promise.all(promises);
-            downloadedTiles.push(...batchResults.filter(t => t.exists));
+            }
+
+            pending = nextRound;
+        }
+
+        if (pending.length > 0) {
+            console.warn(`[DirectTile] ${pending.length} tiles failed after ${maxRetries} attempts. The stitched image may contain gaps (white bands).`);
         }
         
-        console.log(`[DirectTile] Downloaded ${validTiles} valid tiles`);
+        console.log(`[DirectTile] Downloaded ${validTiles} valid tiles out of ${totalTiles}`);
         return downloadedTiles;
     }
     

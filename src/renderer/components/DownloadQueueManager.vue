@@ -493,15 +493,6 @@ https://digi.vatlib.it/..."
                     Edit
                   </button>
                   <button
-                    v-if="canStartGroup(group)"
-                    class="start-item-btn"
-                    title="Start this download"
-                    data-testid="start-item-button"
-                    @click="startGroup(group)"
-                  >
-                    Start
-                  </button>
-                  <button
                     v-if="canPauseGroup(group)"
                     class="pause-item-btn"
                     title="Pause this download"
@@ -1395,18 +1386,6 @@ function canPauseGroup(group: { parent: QueuedManuscript; parts: QueuedManuscrip
     return group.parts.some(part => part.status === 'downloading');
 }
 
-function canStartGroup(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): boolean {
-    // Show Start when the group (or any of its parts) is pending and the queue is not currently processing
-    const anyPending = group.parts.length === 0
-        ? group.parent.status === 'pending'
-        : group.parts.some(p => p.status === 'pending');
-    return anyPending && !isQueueProcessing.value;
-}
-
-async function startGroup(_group: { parent: QueuedManuscript; parts: QueuedManuscript[] }) {
-    // Start the queue processing; in sequential mode this will begin downloading
-    await startQueue();
-}
 
 function canResumeGroup(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): boolean {
     if (group.parts.length === 0) {
@@ -3666,26 +3645,6 @@ function formatTime(seconds: number | undefined): string {
 
 .resume-item-btn:hover {
     background: #138496;
-}
-
-.start-item-btn {
-    background: #28a745;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    min-width: 28px;
-    height: 28px;
-    padding: 0 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.start-item-btn:hover {
-    background: #218838;
 }
 
 .restart-item-btn {
