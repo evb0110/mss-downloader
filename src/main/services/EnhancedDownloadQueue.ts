@@ -770,11 +770,27 @@ export class EnhancedDownloadQueue extends EventEmitter {
             const errorMessage = error instanceof Error ? error.message : String(error);
             console.error('Queue processing error:', errorMessage);
         } finally {
+            // Do not flip isProcessing to false between items. Only mark false when the queue is truly drained
+            // (no active downloads AND no pending/retryable items). This avoids UI flicker.
             this.isProcessingQueue = false;
-            if (this.activeDownloadCount === 0) {
+
+            const hasPendingOrRetryable = this.state.items.some((item) => {
+                if (item.status === 'pending') return true;
+                if (item.status === 'failed' && item.error && !item.error.includes('CAPTCHA_REQUIRED:')) {
+                    const retries = item.retryCount || 0;
+                    return retries < 3; // same retry policy as selection logic
+                }
+                return false;
+            });
+            const hasActiveStatuses = this.activeDownloadCount > 0 || this.state.items.some(i => ['downloading', 'loading'].includes(i.status));
+
+            if (!hasActiveStatuses && !hasPendingOrRetryable) {
                 this.state.isProcessing = false;
                 this.state.currentItemId = undefined;
                 this.processingAbortController = null;
+            } else {
+                // Keep processing flag on while there is still work to do
+                this.state.isProcessing = true;
             }
             this.notifyListeners();
         }

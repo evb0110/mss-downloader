@@ -1317,6 +1317,18 @@ function getGroupStatus(group: { parent: QueuedManuscript; parts: QueuedManuscri
     if (allStatuses.some(s => s === 'paused')) return 'paused';
     if (allStatuses.every(s => s === 'completed')) return 'completed';
     if (allStatuses.some(s => s === 'loading')) return 'loading';
+
+    // Anti-flicker: while the queue is actively processing and this group is next-up or has pending parts,
+    // show 'downloading' instead of briefly flipping to 'pending' between parts.
+    try {
+        const items = queueItems.value;
+        const nextUp = items.find(i => i.status === 'downloading' || i.status === 'pending' || i.status === 'loading');
+        const belongsToGroup = nextUp && (nextUp.parentId ? nextUp.parentId === group.parent.id : nextUp.id === group.parent.id);
+        const groupHasPending = group.parts.some(p => p.status === 'pending') || group.parent.status === 'pending';
+        if (isQueueProcessing.value && !isQueuePaused.value && belongsToGroup && groupHasPending) {
+            return 'downloading';
+        }
+    } catch {}
     
     return 'pending';
 }
@@ -1499,15 +1511,17 @@ function getGroupProgress(group: { parent: QueuedManuscript; parts: QueuedManusc
     const currentPages = group.parts.reduce((sum, part) => sum + (part.progress?.current || 0), 0);
     const percentage = totalPages > 0 ? Math.round((currentPages / totalPages) * 100) : 0;
     
-    // Estimate ETA from active downloading parts  
-    const downloadingParts = group.parts.filter(part => part.status === 'downloading' && part.progress?.eta && part.progress.eta > 0);
-    const eta = downloadingParts.length > 0 ? downloadingParts[0].progress?.eta : undefined;
+    // Estimate ETA from active downloading parts: choose the minimum positive ETA across parts
+    const etas = group.parts
+        .map(part => (part as any)?.progress?.eta)
+        .filter((v: any) => typeof v === 'number' && v > 0) as number[];
+    const eta = etas.length > 0 ? Math.min(...etas) : -1;
     
     return {
         current: currentPages,
         total: totalPages,
         percentage,
-        eta: eta || -1, // Use -1 instead of string to let formatTime handle it
+        eta,
         stage: 'downloading' as TStage
     };
 }
@@ -1550,6 +1564,13 @@ function getGroupPagesProgressText(group: { parent: QueuedManuscript; parts: Que
         // Graceful fallback if partTotal is unknown but we know the range
         if (!partTotal && active?.partInfo) {
             partTotal = (active.partInfo.pageRange.end - active.partInfo.pageRange.start + 1) || 0;
+        }
+        // Derive partCurrent from global progress if partCurrent is unavailable
+        if ((!partCurrent || partCurrent < 0) && typeof prog.current === 'number' && active?.partInfo) {
+            const perPart = (active.partInfo.pageRange.end - active.partInfo.pageRange.start + 1) || 0;
+            const pagesBefore = (Math.max(1, active.partInfo.partNumber || 1) - 1) * perPart;
+            const derived = Math.max(0, Math.min(partTotal || perPart, (prog.current as number) - pagesBefore));
+            partCurrent = derived;
         }
         // If the part is completed and we have the total, ensure current equals total
         if (active?.status === 'completed' && partTotal) {
