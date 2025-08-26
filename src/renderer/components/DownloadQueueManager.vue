@@ -1303,6 +1303,165 @@ function concurrencyBadgeTitleForGroup(group: { parent: any; parts: QueuedManusc
 // Expanded parts state
 const expandedParts = ref<Set<string>>(new Set());
 
+// Stable per-group progress cache to avoid flicker between parts
+interface GroupProgressCacheEntry {
+  current: number;
+  total: number;
+  percentage: number;
+  eta: number; // -1 when unknown
+  partCurrent?: number;
+  partTotal?: number;
+  activePartId?: string;
+  ts: number;
+}
+const groupProgressCache = ref<Map<string, GroupProgressCacheEntry>>(new Map());
+
+function partRangeTotal(part: QueuedManuscript): number {
+  if (part?.partInfo) {
+    const r = part.partInfo.pageRange;
+    return Math.max(0, (r?.end || 0) - (r?.start || 0) + 1);
+  }
+  const prog: any = (part as any)?.progress || {};
+  if (typeof prog.partTotal === 'number') return Math.max(0, prog.partTotal);
+  if (typeof prog.total === 'number') return Math.max(0, prog.total);
+  return Math.max(0, part?.totalPages || 0);
+}
+
+function recomputeGroupProgressCache() {
+  const now = Date.now();
+  const prev = groupProgressCache.value; // previous snapshot
+  const map = new Map<string, GroupProgressCacheEntry>();
+
+  for (const group of groupedQueueItems.value) {
+    const parentId = group.parent.id;
+
+    // Single item (no parts)
+    if (group.parts.length === 0) {
+      const prog: any = (group.parent as any)?.progress || {};
+      const total = Math.max(0, prog?.total ?? group.parent.totalPages ?? 0);
+      let current = Math.max(0, prog?.current ?? (group.parent.status === 'completed' ? total : 0));
+      // Monotonic clamp
+      const prevEntry = prev.get(parentId);
+      if (prevEntry && current < prevEntry.current && total === prevEntry.total) {
+        current = prevEntry.current;
+      }
+      const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+
+      // Renderer-side ETA: compute from rate if service ETA not available
+      let eta = typeof prog?.eta === 'number' ? prog.eta : -1;
+      if (eta <= 0 && prevEntry && now > prevEntry.ts && current > prevEntry.current) {
+        const dt = (now - prevEntry.ts) / 1000;
+        const dPages = current - prevEntry.current;
+        const rate = dPages / Math.max(dt, 0.001);
+        const naive = rate > 0 ? (total - current) / rate : -1;
+        if (naive > 0) {
+          // EMA smoothing
+          const smoothed = prevEntry.eta > 0 ? (0.7 * prevEntry.eta + 0.3 * naive) : naive;
+          eta = Math.round(smoothed);
+        }
+      }
+
+      map.set(parentId, { current, total, percentage, eta, ts: now });
+      continue;
+    }
+
+    // With parts: aggregate across all parts
+    let total = 0;
+    let current = 0;
+    let partCurrent = 0;
+    let partTotal = 0;
+    let eta = -1;
+    let activePartId: string | undefined;
+
+    // Determine active part preference
+    const activePart = group.parts.find(p => p.status === 'downloading')
+      || group.parts.find(p => p.status === 'paused' && (p as any).progress)
+      || group.parts.find(p => p.status === 'pending')
+      || group.parts[0];
+
+    for (const part of group.parts) {
+      const pTotal = partRangeTotal(part);
+      total += pTotal;
+      const pProg: any = (part as any)?.progress || {};
+      let pCurrent = 0;
+      if (part.status === 'completed') {
+        pCurrent = pTotal;
+      } else if (typeof pProg.partCurrent === 'number') {
+        pCurrent = Math.min(pTotal, Math.max(0, pProg.partCurrent));
+      } else if (typeof pProg.currentPartPages === 'number') {
+        pCurrent = Math.min(pTotal, Math.max(0, pProg.currentPartPages));
+      } else if (typeof pProg.current === 'number' && part.partInfo) {
+        // Derive from global current when libraries report manuscript-wide progress using actual page range start
+        const parentStart = group.parent?.downloadOptions?.startPage || 1;
+        const start = (part.partInfo?.pageRange?.start ?? parentStart);
+        const pagesBefore = Math.max(0, start - parentStart);
+        pCurrent = Math.min(pTotal, Math.max(0, (pProg.current as number) - pagesBefore));
+      }
+
+      // Monotonic clamp per active part
+      if (activePart && part.id === activePart.id) {
+        const prevEntry = prev.get(parentId);
+        if (prevEntry && prevEntry.activePartId === activePart.id && pCurrent < (prevEntry.partCurrent || 0) && pTotal === (prevEntry.partTotal || pTotal)) {
+          pCurrent = prevEntry.partCurrent || 0;
+        }
+      }
+
+      current += pCurrent;
+
+      if (part.id === activePart?.id) {
+        partCurrent = pCurrent;
+        partTotal = pTotal;
+        // Do not take per-chunk ETA for group-level display to avoid resets on part boundaries
+        activePartId = part.id;
+      }
+    }
+
+    // Monotonic clamp for total current
+    const prevEntry = prev.get(parentId);
+    if (prevEntry && current < prevEntry.current && total === prevEntry.total) {
+      current = prevEntry.current;
+    }
+
+    const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+
+    // Renderer-side ETA: compute a manuscript-level ETA from aggregate progress, not per-chunk
+    if (prevEntry && now > prevEntry.ts) {
+      const dt = (now - prevEntry.ts) / 1000;
+      const dPages = current - prevEntry.current;
+      if (dPages > 0) {
+        const rate = dPages / Math.max(dt, 0.001);
+        const naive = rate > 0 ? (total - current) / rate : -1;
+        if (naive > 0) {
+          const smoothed = prevEntry.eta > 0 ? (0.7 * prevEntry.eta + 0.3 * naive) : naive;
+          eta = Math.round(smoothed);
+        }
+      } else if (prevEntry.eta > 0) {
+        // Carry forward last known ETA through short idle periods (e.g., stitching between parts)
+        eta = prevEntry.eta;
+      }
+    }
+
+    map.set(parentId, {
+      current,
+      total,
+      percentage,
+      eta,
+      partCurrent,
+      partTotal,
+      activePartId,
+      ts: now,
+    });
+  }
+
+  groupProgressCache.value = map;
+}
+
+watchEffect(() => {
+  // Recompute cache whenever queue items change
+  // This is cheap (linear in number of items) and stabilizes the UI between part transitions
+  recomputeGroupProgressCache();
+});
+
 // Helper functions for grouped display
 function getGroupStatus(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): string {
     if (group.parts.length === 0) {
@@ -1471,59 +1630,41 @@ async function showGroupInFinder(group: { parent: QueuedManuscript; parts: Queue
 // Progress calculation functions
 function shouldShowGroupProgress(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): boolean {
     if (group.parts.length === 0) {
-        const result = group.parent.status === 'downloading' || 
-               (group.parent.status === 'paused' && group.parent.progress) ||
-               (group.parent.status === 'loading' && group.parent.progress && group.parent.progress.stage === 'loading-manifest');
-        
-        // Debug logging for Orleans loading
-        if (group.parent.status === 'loading' || group.parent.url?.includes('orleans')) {
-            console.log('shouldShowGroupProgress debug:', {
-                status: group.parent.status,
-                hasProgress: !!group.parent.progress,
-                progressStage: group.parent.progress?.stage,
-                progressData: group.parent.progress,
-                result,
-                url: group.parent.url
-            });
-        }
-        
-        return result;
+        const basic = group.parent.status === 'downloading' || 
+               (group.parent.status === 'paused' && (group.parent as any).progress) ||
+               (group.parent.status === 'loading' && (group.parent as any).progress && (group.parent as any).progress.stage === 'loading-manifest');
+        // Also show while we have cached progress (prevents disappearing badges between transitions)
+        const cached = groupProgressCache.value.get(group.parent.id);
+        return basic || (!!cached && (cached.current > 0 || cached.total > 0));
     }
-    return group.parts.some(part => part.status === 'downloading' || (part.status === 'paused' && part.progress));
+    const anyActive = group.parts.some(part => part.status === 'downloading' || (part.status === 'paused' && (part as any).progress));
+    if (anyActive) return true;
+    // Keep visible if cached shows we have progress (even if the active part just flipped state)
+    const cached = groupProgressCache.value.get(group.parent.id);
+    return !!cached && (cached.current > 0 || cached.total > 0);
 }
 
 function getGroupProgress(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }) {
     if (group.parts.length === 0) {
-        return group.parent.progress;
+        const prog: any = (group.parent as any)?.progress || {};
+        const total = prog?.total ?? group.parent.totalPages ?? 0;
+        const current = prog?.current ?? (group.parent.status === 'completed' ? total : 0);
+        const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+        const eta = typeof prog?.eta === 'number' ? prog.eta : -1;
+        return { current, total, percentage, eta, stage: 'downloading' as TStage } as any;
     }
-    
-    // Calculate combined progress from all parts
-    const partsWithProgress = group.parts.filter(part => part.progress);
-    if (partsWithProgress.length === 0) return null;
-    
-    const totalPages = group.parts.reduce((sum, part) => {
-        // Use expected chunk page count even before downloading starts
-        const expectedPages = part.partInfo ? 
-            (part.partInfo.pageRange.end - part.partInfo.pageRange.start + 1) : 
-            (part.progress?.total || 0);
-        return sum + expectedPages;
-    }, 0);
-    const currentPages = group.parts.reduce((sum, part) => sum + (part.progress?.current || 0), 0);
-    const percentage = totalPages > 0 ? Math.round((currentPages / totalPages) * 100) : 0;
-    
-    // Estimate ETA from active downloading parts: choose the minimum positive ETA across parts
-    const etas = group.parts
-        .map(part => (part as any)?.progress?.eta)
-        .filter((v: any) => typeof v === 'number' && v > 0) as number[];
-    const eta = etas.length > 0 ? Math.min(...etas) : -1;
-    
-    return {
-        current: currentPages,
-        total: totalPages,
-        percentage,
-        eta,
-        stage: 'downloading' as TStage
-    };
+
+    const cached = groupProgressCache.value.get(group.parent.id);
+    if (cached) {
+        return {
+            current: cached.current,
+            total: cached.total,
+            percentage: cached.percentage,
+            eta: cached.eta,
+            stage: 'downloading' as TStage,
+        } as any;
+    }
+    return null;
 }
 
 function getGroupProgressLabel(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): string {
@@ -1550,7 +1691,15 @@ function getGroupPagesProgressText(group: { parent: QueuedManuscript; parts: Que
 
     // For manuscripts with parts, also show the active part progress
     if (group.parts.length > 0) {
-        // Prefer currently downloading part, otherwise any part with progress, otherwise last completed, otherwise first part
+        // Use cached active part numbers when available for stability
+        const cached = groupProgressCache.value.get(group.parent.id);
+        if (cached && (cached.partTotal || cached.partCurrent !== undefined)) {
+            const pc = Math.max(0, cached.partCurrent || 0);
+            const pt = Math.max(0, cached.partTotal || 0);
+            return `Total pages: ${totalCurrent}/${totalTotal}; part pages: ${pc}/${pt || '?'}`;
+        }
+
+        // Fallback: compute from the currently downloading part
         const active = group.parts.find(p => p.status === 'downloading')
             || group.parts.find(p => (p as any).progress && (p as any).progress.partTotal)
             || [...group.parts].reverse().find(p => p.status === 'completed')
@@ -1560,16 +1709,19 @@ function getGroupPagesProgressText(group: { parent: QueuedManuscript; parts: Que
         let partTotal = 0;
         const prog: any = (active as any)?.progress || {};
         if (typeof prog.partCurrent === 'number') partCurrent = Math.max(0, prog.partCurrent);
+        else if (typeof prog.currentPartPages === 'number') partCurrent = Math.max(0, prog.currentPartPages);
         if (typeof prog.partTotal === 'number') partTotal = Math.max(0, prog.partTotal);
+        else if (typeof prog.currentPartTotal === 'number') partTotal = Math.max(0, prog.currentPartTotal);
         // Graceful fallback if partTotal is unknown but we know the range
         if (!partTotal && active?.partInfo) {
             partTotal = (active.partInfo.pageRange.end - active.partInfo.pageRange.start + 1) || 0;
         }
-        // Derive partCurrent from global progress if partCurrent is unavailable
-        if ((!partCurrent || partCurrent < 0) && typeof prog.current === 'number' && active?.partInfo) {
-            const perPart = (active.partInfo.pageRange.end - active.partInfo.pageRange.start + 1) || 0;
-            const pagesBefore = (Math.max(1, active.partInfo.partNumber || 1) - 1) * perPart;
-            const derived = Math.max(0, Math.min(partTotal || perPart, (prog.current as number) - pagesBefore));
+        // Derive partCurrent from global progress if per-part value is unavailable
+        if ((!(partCurrent > 0) || partCurrent < 0) && typeof prog.current === 'number' && active?.partInfo) {
+            const parentStart = group.parent?.downloadOptions?.startPage || 1;
+            const start = (active.partInfo.pageRange.start ?? parentStart);
+            const pagesBefore = Math.max(0, start - parentStart);
+            const derived = Math.max(0, Math.min(partTotal || ((active.partInfo.pageRange.end - active.partInfo.pageRange.start + 1) || 0), (prog.current as number) - pagesBefore));
             partCurrent = derived;
         }
         // If the part is completed and we have the total, ensure current equals total
