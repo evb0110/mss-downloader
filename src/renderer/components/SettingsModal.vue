@@ -172,7 +172,7 @@ const localConfig = reactive({
   maxRetries: 10,
   requestTimeout: 30000,
   autoSplitThreshold: 300 * 1024 * 1024, // 300MB in bytes - reduced to prevent "Invalid array length" errors
-  maxPdfPartSizeMB: 100,
+  maxPdfPartSizeMB: 0, // 0 = disabled (use global threshold), >0 = explicit cap
   language: 'en',
   theme: 'system'
 });

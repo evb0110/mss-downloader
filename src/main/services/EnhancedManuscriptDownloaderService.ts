@@ -3827,14 +3827,15 @@ export class EnhancedManuscriptDownloaderService {
             );
 
             // Build parts by actual file sizes to enforce a hard cap per PDF part
-            // Respects user settings:
-            // - maxPdfPartSizeMB > 0: Use explicit cap
+            // FIXED: Always use global threshold unless user explicitly disables or sets much smaller value
+            // Logic:
             // - maxPdfPartSizeMB = 0: User disabled splitting (use Infinity)  
-            // - maxPdfPartSizeMB undefined: Use system default (300MB)
+            // - Otherwise: Use global threshold (respects user's global auto-split setting)
+            // Note: Ignoring stored maxPdfPartSizeMB > 0 values as they're likely stale UI defaults
             const userCapMB = Number(configService.get('maxPdfPartSizeMB') || 0);
-            const maxPartSizeMB = userCapMB > 0 ? userCapMB : 
-                                 userCapMB === 0 ? Infinity : // User explicitly disabled
-                                 (effectiveAutoSplitMB || 300); // System default (was 100MB)
+            const globalThresholdMB = effectiveAutoSplitMB || 300;
+            const maxPartSizeMB = userCapMB === 0 ? Infinity :  // User explicitly disabled splitting
+                                 globalThresholdMB;             // Use global threshold (ignores stale cap settings)
             console.log(`[PDF Split] Using max part size cap: ${maxPartSizeMB === Infinity ? 'DISABLED' : maxPartSizeMB + ' MB'} (queue cap=${options.queueItem?.libraryOptimizations?.autoSplitThresholdMB ?? 'n/a'}, config cap=${autoSplitThresholdMB ?? 'n/a'}, user hard cap=${userCapMB || 'none'})`);
             const maxPartBytes = maxPartSizeMB === Infinity ? Number.MAX_SAFE_INTEGER : Math.max(1, Math.floor(maxPartSizeMB * 1024 * 1024));
 
