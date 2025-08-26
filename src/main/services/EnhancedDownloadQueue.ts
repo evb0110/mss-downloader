@@ -297,7 +297,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                         current,
                         total,
                         percentage: Math.round((current / total) * 100),
-                        eta: '',
+                        eta: -1,
                         stage: 'loading-manifest'
                     };
                     this.notifyListeners();
@@ -785,16 +785,23 @@ export class EnhancedDownloadQueue extends EventEmitter {
         item.status = 'downloading';
         item.startedAt = Date.now();
         
-        // For chunked downloads, use chunk page count instead of full manuscript total
-        const totalPagesForProgress = (item.isAutoPart && item.partInfo) ? 
-            (item.partInfo.pageRange.end - item.partInfo.pageRange.start + 1) :
-            (item?.totalPages || 0);
-            
+        // Initialize progress display
+        // For auto-split parts, show global manuscript context immediately
+        let initCurrent = 0;
+        let initTotal = item?.totalPages || 0;
+        if (item.isAutoPart && item.partInfo) {
+            const partPages = item.partInfo.pageRange.end - item.partInfo.pageRange.start + 1;
+            const totalParts = Math.max(1, item.partInfo.totalParts || 1);
+            initTotal = partPages * totalParts; // approximate total manuscript pages
+            const pagesBeforeThisPart = (Math.max(1, item.partInfo.partNumber || 1) - 1) * partPages;
+            initCurrent = Math.max(0, pagesBeforeThisPart);
+        }
+
         item.progress = {
-            current: 0,
-            total: totalPagesForProgress,
-            percentage: 0,
-            eta: 'calculating...',
+            current: initCurrent,
+            total: initTotal,
+            percentage: initTotal > 0 ? Math.floor((initCurrent / initTotal) * 100 * 100) / 100 : 0,
+            eta: -1,
             stage: 'downloading',
         };
         
@@ -951,9 +958,14 @@ export class EnhancedDownloadQueue extends EventEmitter {
                             current: progress.downloadedPages || 0,
                             total: progress?.totalPages || item?.totalPages || 0,
                             percentage: Math.round((progress.progress || 0) * 100 * 100) / 100, // Round to 2 decimal places
-                            eta: typeof progress.eta === 'number' ? this.formatTime(progress.eta * 1000) : (progress.eta || 'calculating...'),
+                            eta: typeof progress.eta === 'number' ? progress.eta : -1,
                             stage: 'downloading' as TStage,
-                        };
+                            // Include part-level context for improved UI reporting
+                            ...(progress.partInfo ? {
+                                partCurrent: progress.partInfo.currentPartPages ?? undefined,
+                                partTotal: progress.partInfo.currentPartTotal ?? undefined,
+                            } : {})
+                        } as any;
                     }
                     item.eta = typeof progress === 'object' ? (progress as any).eta : undefined;
                     this.notifyListeners();
@@ -2146,16 +2158,23 @@ export class EnhancedDownloadQueue extends EventEmitter {
         item.startedAt = Date.now();
         item.error = undefined;
         
-        // For chunked downloads, use chunk page count instead of full manuscript total
-        const totalPagesForProgress = (item.isAutoPart && item.partInfo) ? 
-            (item.partInfo.pageRange.end - item.partInfo.pageRange.start + 1) :
-            (item?.totalPages || 1);
-        
+        // Initialize progress display
+        // For auto-split parts, show global manuscript context immediately
+        let initCurrent = 0;
+        let initTotal = item?.totalPages || 1;
+        if (item.isAutoPart && item.partInfo) {
+            const partPages = item.partInfo.pageRange.end - item.partInfo.pageRange.start + 1;
+            const totalParts = Math.max(1, item.partInfo.totalParts || 1);
+            initTotal = partPages * totalParts; // approximate total manuscript pages
+            const pagesBeforeThisPart = (Math.max(1, item.partInfo.partNumber || 1) - 1) * partPages;
+            initCurrent = Math.max(0, pagesBeforeThisPart);
+        }
+
         item.progress = {
-            current: 0,
-            total: totalPagesForProgress,
-            percentage: 0,
-            eta: 'Calculating...',
+            current: initCurrent,
+            total: initTotal,
+            percentage: initTotal > 0 ? Math.floor((initCurrent / initTotal) * 100 * 100) / 100 : 0,
+            eta: -1,
             stage: 'downloading' as TStage,
         };
         
@@ -2292,9 +2311,13 @@ export class EnhancedDownloadQueue extends EventEmitter {
                             current: progress.downloadedPages || 0,
                             total: progress?.totalPages || item?.totalPages || 0,
                             percentage: Math.round((progress.progress || 0) * 100 * 100) / 100, // Round to 2 decimal places
-                            eta: typeof progress.eta === 'number' ? this.formatTime(progress.eta * 1000) : (progress.eta || 'calculating...'),
+                            eta: typeof progress.eta === 'number' ? progress.eta : -1,
                             stage: 'downloading' as TStage,
-                        };
+                            ...(progress.partInfo ? {
+                                partCurrent: progress.partInfo.currentPartPages ?? undefined,
+                                partTotal: progress.partInfo.currentPartTotal ?? undefined,
+                            } : {})
+                        } as any;
                     }
                     item.eta = typeof progress === 'object' ? (progress as any).eta : undefined;
                     this.notifyListeners();

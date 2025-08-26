@@ -428,6 +428,13 @@ https://digi.vatlib.it/..."
                     </span>
                     <span
                       v-if="group.parent.status !== 'failed'"
+                      class="concurrency-badge"
+                      :title="concurrencyBadgeTitleForGroup(group)"
+                    >
+                      Concurrency: {{ effectiveGroupConcurrency(group) }}
+                    </span>
+                    <span
+                      v-if="group.parent.status !== 'failed'"
                       class="total-pages-badge"
                     >
                     <span
@@ -435,13 +442,6 @@ https://digi.vatlib.it/..."
                       class="inline-spinner"
                     />
                       {{ getTotalPagesText(group) }}
-                    </span>
-                    <span
-                      v-if="group.parent.status !== 'failed'"
-                      class="concurrency-badge"
-                      :title="concurrencyBadgeTitleForGroup(group)"
-                    >
-                      Concurrency: {{ effectiveGroupConcurrency(group) }}
                     </span>
                     <span
                       v-if="shouldShowGroupProgress(group) && getGroupPagesProgressText(group)"
@@ -491,6 +491,15 @@ https://digi.vatlib.it/..."
                     @click="startQueueItemEdit(group.parent)"
                   >
                     Edit
+                  </button>
+                  <button
+                    v-if="canStartGroup(group)"
+                    class="start-item-btn"
+                    title="Start this download"
+                    data-testid="start-item-button"
+                    @click="startGroup(group)"
+                  >
+                    Start
                   </button>
                   <button
                     v-if="canPauseGroup(group)"
@@ -1386,6 +1395,19 @@ function canPauseGroup(group: { parent: QueuedManuscript; parts: QueuedManuscrip
     return group.parts.some(part => part.status === 'downloading');
 }
 
+function canStartGroup(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): boolean {
+    // Show Start when the group (or any of its parts) is pending and the queue is not currently processing
+    const anyPending = group.parts.length === 0
+        ? group.parent.status === 'pending'
+        : group.parts.some(p => p.status === 'pending');
+    return anyPending && !isQueueProcessing.value;
+}
+
+async function startGroup(_group: { parent: QueuedManuscript; parts: QueuedManuscript[] }) {
+    // Start the queue processing; in sequential mode this will begin downloading
+    await startQueue();
+}
+
 function canResumeGroup(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): boolean {
     if (group.parts.length === 0) {
         return group.parent.status === 'paused';
@@ -1524,21 +1546,42 @@ function getGroupProgressLabel(group: { parent: QueuedManuscript; parts: QueuedM
 }
 
 function getGroupPagesProgressText(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): string {
-    const p: any = getGroupProgress(group);
-    if (!p) return '';
+    const overall: any = getGroupProgress(group);
+    if (!overall) return '';
     // Loading manifests stage
-    if (p.stage === 'loading-manifest') {
-        return `Loading manifest: ${p.current}/${p.total} pages`;
+    if (overall.stage === 'loading-manifest') {
+        return `Loading manifest: ${overall.current}/${overall.total} pages`;
     }
-    const current = Math.max(0, p.current || 0);
-    const total = Math.max(0, p.total || 0);
-    
-    // For multi-part manuscripts, show clearer context  
-    if (group.parts.length > 1) {
-        return `${current}/${total} pages total`;
+    const totalCurrent = Math.max(0, overall.current || 0);
+    const totalTotal = Math.max(0, overall.total || 0);
+
+    // For manuscripts with parts, also show the active part progress
+    if (group.parts.length > 0) {
+        // Prefer currently downloading part, otherwise any part with progress, otherwise last completed, otherwise first part
+        const active = group.parts.find(p => p.status === 'downloading')
+            || group.parts.find(p => (p as any).progress && (p as any).progress.partTotal)
+            || [...group.parts].reverse().find(p => p.status === 'completed')
+            || group.parts[0];
+
+        let partCurrent = 0;
+        let partTotal = 0;
+        const prog: any = (active as any)?.progress || {};
+        if (typeof prog.partCurrent === 'number') partCurrent = Math.max(0, prog.partCurrent);
+        if (typeof prog.partTotal === 'number') partTotal = Math.max(0, prog.partTotal);
+        // Graceful fallback if partTotal is unknown but we know the range
+        if (!partTotal && active?.partInfo) {
+            partTotal = (active.partInfo.pageRange.end - active.partInfo.pageRange.start + 1) || 0;
+        }
+        // If the part is completed and we have the total, ensure current equals total
+        if (active?.status === 'completed' && partTotal) {
+            partCurrent = partTotal;
+        }
+
+        return `Total pages: ${totalCurrent}/${totalTotal}; part pages: ${partCurrent}/${partTotal || '?'}`;
     }
-    
-    return `${current}/${total} pages downloaded`;
+
+    // Single-document (no parts): keep simple
+    return `${totalCurrent}/${totalTotal} pages downloaded`;
 }
 
 function getGroupProgressStats(group: { parent: QueuedManuscript; parts: QueuedManuscript[] }): string {
@@ -3623,6 +3666,26 @@ function formatTime(seconds: number | undefined): string {
 
 .resume-item-btn:hover {
     background: #138496;
+}
+
+.start-item-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.start-item-btn:hover {
+    background: #218838;
 }
 
 .restart-item-btn {

@@ -31,11 +31,14 @@ export interface QueuedManuscript {
         current: number;
         total: number;
         percentage: number;
-        eta: string;
+        eta: number; // seconds remaining; renderer will format
         stage: TStage;
         actualCurrentPage?: number; // For page range downloads, shows the actual page being downloaded
+        // Optional part-level context for auto-split parts
+        partCurrent?: number;
+        partTotal?: number;
     };
-    eta?: string;
+    eta?: number;
     error?: string;
     retryCount?: number;
     outputPath?: string;
