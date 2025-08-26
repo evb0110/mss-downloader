@@ -270,7 +270,10 @@ export class LibraryOptimizationService {
             enableProgressiveBackoff: true,
             optimizationDescription: 'Vatican Library optimizations: 4 concurrent downloads, IIIF compliant, stable infrastructure'
         },
-        'bordeaux': {},
+        'bordeaux': {
+            maxConcurrentDownloads: 1, // Single-threaded for clean DZI progress (prevents tile chaos)
+            optimizationDescription: 'Bordeaux Digital Library optimizations: single-threaded DZI processing to prevent tile downloading chaos'
+        },
         'e_rara': {},
         'yale': {},
         'digital_scriptorium': {},

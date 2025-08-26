@@ -1935,7 +1935,35 @@ async function initializeQueue() {
     
     // Subscribe to queue updates
     window.electronAPI.onQueueStateChanged((state: QueueState) => {
-        // Debug logging for Orleans progress data
+        // 🚨 CRITICAL PROGRESS DEBUGGING - Track all progress updates
+        const activeItems = state.items?.filter(item => 
+            item.status === 'downloading' || item.status === 'loading' || item.progress
+        );
+        
+        if (activeItems && activeItems.length > 0) {
+            console.log('🔄 PROGRESS UPDATE DEBUG:', {
+                timestamp: Date.now(),
+                totalItems: state.items?.length || 0,
+                activeCount: activeItems.length,
+                activeItems: activeItems.map(item => ({
+                    id: item.id.slice(-8),
+                    library: item.library,
+                    status: item.status,
+                    displayName: item.displayName?.slice(0, 50) || 'Unknown',
+                    hasProgress: !!item.progress,
+                    progress: item.progress ? {
+                        current: (item.progress as any)?.current || 0,
+                        total: (item.progress as any)?.total || 0,
+                        percentage: (item.progress as any)?.percentage || 0,
+                        stage: (item.progress as any)?.stage || 'unknown'
+                    } : null,
+                    concurrency: item.downloadOptions?.concurrentDownloads || 'default',
+                    libraryOptimizations: item.libraryOptimizations
+                }))
+            });
+        }
+        
+        // Debug logging for Orleans progress data (keep existing)
         const orleansItems = state.items?.filter(item => item.url?.includes('orleans') || item.status === 'loading');
         if (orleansItems && orleansItems.length > 0) {
             console.log('Queue state update - Orleans items:', orleansItems.map(item => ({
