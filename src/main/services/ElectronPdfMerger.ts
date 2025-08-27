@@ -21,7 +21,7 @@ export class ElectronPdfMerger {
     private enhancedMerger = new EnhancedPdfMerger();
 
     async createPDFFromImages(options: PdfMergerOptions): Promise<string> {
-        const { images, outputPath, displayName, startPage, endPage, totalPages, autoSplit, maxPagesPerPart, onProgress, onError } = options;
+        const { images, outputPath, displayName, startPage, endPage, totalPages, autoSplit: _autoSplit, maxPagesPerPart: _maxPagesPerPart, onProgress, onError } = options;
         
         if (this.isProcessing) {
             throw new Error('PDF creation already in progress');
@@ -74,8 +74,10 @@ export class ElectronPdfMerger {
                 finalOutputPath = result.filePath;
             }
 
-            // Check if document should be auto-split
-            const shouldSplit = autoSplit && images?.length > (maxPagesPerPart || 100);
+            // CRITICAL FIX: Don't auto-split at PDF level - respect queue-level decisions
+            // The queue already handled splitting based on user's global threshold
+            // PDF-level splitting was creating unnecessary additional parts
+            const shouldSplit = false; // Force single PDF creation
             
             if (shouldSplit) {
                 // Create split PDFs with both part and page numbers
@@ -99,7 +101,7 @@ export class ElectronPdfMerger {
                 }
                 
                 const result = await this.enhancedMerger.createSplitPDFs(images, baseName, partsDir || outputDir, {
-                    maxPagesPerPart: maxPagesPerPart || 100,
+                    maxPagesPerPart: _maxPagesPerPart || 100,
                     startPage: startPage || 1,
                     onProgress: (progress: { completed: number; total: number; message?: string }) => {
                         onProgress?.({
