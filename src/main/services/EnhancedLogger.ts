@@ -21,7 +21,7 @@ export interface ManuscriptContext {
 export interface PerformanceMetrics {
     duration?: number;
     speedMbps?: number;
-    eta?: number;
+    eta?: number | string;
     bytesTransferred?: number;
     retryCount?: number;
     attemptNumber?: number;
@@ -196,7 +196,9 @@ export class EnhancedLogger {
     logDownloadProgress(context: ManuscriptContext, current: number, total: number, metrics: PerformanceMetrics, data?: LibrarySpecificData) {
         const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
         const speedMbps = metrics.speedMbps || 0;
-        const eta = metrics.eta ? `${Math.round(metrics.eta)}s` : 'calculating';
+        const eta = metrics.eta ? 
+            typeof metrics.eta === 'number' ? `${Math.round(metrics.eta)}s` : metrics.eta 
+            : 'calculating';
         const transferred = metrics.bytesTransferred ? `${(metrics.bytesTransferred / 1024 / 1024).toFixed(1)}MB` : '';
         
         const chunkInfo = context.totalChunks && context.totalChunks > 1 

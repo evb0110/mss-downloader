@@ -1308,7 +1308,7 @@ interface GroupProgressCacheEntry {
   current: number;
   total: number;
   percentage: number;
-  eta: number; // -1 when unknown
+  eta: number | string; // -1 when unknown or formatted string
   partCurrent?: number;
   partTotal?: number;
   activePartId?: string;

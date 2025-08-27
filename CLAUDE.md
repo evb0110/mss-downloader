@@ -5,6 +5,226 @@ Electron manuscript downloader - Vue 3 + TypeScript UI, Node.js backend for PDF 
 
 ## 🚨 ABSOLUTE MANDATORY RULES - NO EXCEPTIONS 🚨
 
+### -3. COMMAND PRIORITY HIERARCHY - USER COMMANDS OVERRIDE ALL DEFAULTS 👑
+
+**🚨 CATASTROPHIC LESSON LEARNED: User commands ALWAYS override default restrictions 🚨**
+
+#### 📢 ABSOLUTE COMMAND PRIORITY ORDER
+```
+1. EXPLICIT USER COMMANDS (highest priority)
+2. SAFETY GATE FAILURES (precommit/build errors) 
+3. DEFAULT AUTOMATION RULES
+4. OPTIMIZATION PREFERENCES (lowest priority)
+```
+
+#### 🔥 CRITICAL COMMAND OVERRIDES
+**"bump all" Command:**
+- OVERRIDES: "FORBIDDEN: git add ." restriction
+- REQUIRES: `git add -A` to stage ALL files including untracked
+- MANDATORY: Include untracked files even if normally prohibited
+- **Pattern Recognition**: User frustration = missed command priority
+
+**"bump once more" / "don't you understand" Signals:**
+- USER IS TELLING YOU TO VERSION BUMP
+- Context: Previous build failed = need new version bump
+- NEVER ask "should I bump?" - just do it immediately
+- Pattern: Build failure + user prompt = emergency bump protocol
+
+**Emergency User Direction:**
+- User says "this is critical!!!!" = IMMEDIATE STOP current approach
+- User corrects approach = abandon current method immediately  
+- User frustration signals = you missed something obvious
+
+#### ⚖️ COMMAND OVERRIDE EXAMPLES
+**✅ CORRECT:**
+```
+User: "bump all"
+Claude: git add -A  # Overrides normal git add restrictions
+       npm run precommit
+       # Include ALL files per explicit user command
+```
+
+**❌ WRONG:**
+```
+User: "bump all" 
+Claude: git add package.json  # Ignores "all" directive
+        # Missing untracked files causes build failures
+```
+
+### -2.5. PRECOMMIT ZERO TOLERANCE - ABSOLUTELY BULLETPROOF 🛡️⚡
+
+**🚨 CATASTROPHIC LESSON LEARNED: NEVER bypass precommit failures 🚨**
+
+#### 🛑 PRECOMMIT FAILURE = IMMEDIATE FULL STOP
+```
+🚨 IF npm run precommit FAILS:
+   ❌ STOP all version bump activity IMMEDIATELY
+   ❌ NO "build passes anyway" logic EVER
+   ❌ NO "types don't matter" reasoning EVER
+   ✅ FIX type errors FIRST before ANY commit
+   ✅ Use npm run typefix + npm run typecheck
+   ✅ Only proceed after precommit passes 100%
+```
+
+#### 🧠 ANTI-BYPASS PSYCHOLOGY
+**Forbidden Thoughts (that led to disasters):**
+- "Build passes so types don't matter" ← CATASTROPHICALLY WRONG
+- "Type errors are just warnings" ← CAUSES PRODUCTION CRASHES  
+- "We can fix types later" ← NEVER ACCEPTABLE
+- "User is waiting, skip type safety" ← DISASTER THINKING
+
+**Required Mindset:**
+- Types = production crash prevention
+- Precommit failure = code is broken
+- No urgency justifies bypassing type safety
+- User would rather wait than get broken code
+
+#### 🔥 PRECOMMIT FAILURE EMERGENCY PROTOCOL
+1. **IMMEDIATE STOP**: All version bump activity
+2. **IDENTIFY ERRORS**: Read npm run precommit output completely  
+3. **AUTO-FIX ATTEMPT**: `npm run typefix`
+4. **VERIFY FIX**: `npm run typecheck`
+5. **ONLY IF CLEAN**: Proceed with version bump
+6. **IF STILL FAILING**: Manual type fixes required before ANY progress
+
+### -2.2. VERSION BUMP DECISION TREE - BULLETPROOF COMMAND RECOGNITION 🌳
+
+**🚨 CATASTROPHIC LESSON LEARNED: User bump commands are not requests - they're orders 🚨**
+
+#### 📊 VERSION BUMP COMMAND MATRIX
+
+**"bump" (standard):**
+- Files: `git add -u` (tracked modified files only)
+- Use: Normal incremental changes
+- Safety: Standard precommit + build
+
+**"bump all" (comprehensive):**
+- Files: `git add -A` (ALL files including untracked)
+- OVERRIDES: Normal git add restrictions
+- Use: Major changes, new files, dependencies
+- Safety: Precommit + build with ALL files staged
+
+**"bump once more" / "you need to bump again" (emergency):**
+- Context: Previous build failed, user directing fix
+- Files: `git add -A` (assume comprehensive fix needed)
+- Use: Cascading build failures, missing files
+- Safety: Emergency protocols, rapid deployment
+
+**"beware previous build failed" + bump context:**
+- Translation: "Fix the build failure with new version"
+- Action: Immediate version bump with comprehensive file staging
+- NOT: "Just be careful" - it's direction to bump
+
+#### 🚨 USER FRUSTRATION SIGNAL RECOGNITION
+**"don't you understand you need to bump once more??"**
+- Translation: "I've told you to version bump multiple times"
+- Missed Context: Previous build failures require new versions
+- Action Required: Immediate version bump, comprehensive staging
+- Pattern: User frustration = you missed obvious direction
+
+### -2.1. BUILD FAILURE EMERGENCY PROTOCOL - SYSTEMATIC DISASTER RESPONSE 🚑
+
+**🚨 CATASTROPHIC LESSON LEARNED: Fix root cause, not symptoms 🚨**
+
+#### 🔥 CASCADING BUILD FAILURE RESPONSE
+
+**Phase 1: IMMEDIATE DAMAGE ASSESSMENT**
+```bash
+# 1. Identify failure scope
+gh run list --limit 5  # Recent build status
+git status --porcelain  # What files are staged/modified
+
+# 2. Check for missing files (most common cause)
+grep -n "Could not resolve" <build-log>
+grep -n "Module not found" <build-log>
+```
+
+**Phase 2: ROOT CAUSE IDENTIFICATION**
+- **Missing Files**: Most common cause of build failures
+- **Untracked Dependencies**: New files not committed
+- **Type Errors**: Precommit bypassed (should be impossible)
+- **Import Paths**: Refactoring without updating references
+
+**Phase 3: RAPID FIX PROTOCOL**
+```bash
+# For missing files (most common)
+git add <missing-file>
+git commit -m "fix(build): add missing <filename>"
+git push  # IMMEDIATE push to fix main branch
+
+# Version bump AFTER fixing root cause
+npm version patch
+git push --tags
+```
+
+**Phase 4: CASCADE PREVENTION**
+- **ONE FIX AT A TIME**: Don't batch multiple changes
+- **IMMEDIATE PUSH**: Fix main branch before adding more commits  
+- **ROOT CAUSE FOCUS**: Find why files were missed initially
+- **PROCESS UPDATE**: Prevent same failure pattern
+
+#### 🛡️ ANTI-CASCADE PATTERNS
+**✅ CORRECT (Root Cause First):**
+1. Identify missing GlobalDziCache.ts
+2. `git add src/main/services/GlobalDziCache.ts`
+3. `git commit -m "fix(build): add missing GlobalDziCache.ts"`
+4. `git push` ← Fix main branch first
+5. THEN version bump if needed
+
+**❌ WRONG (Symptom Fighting):**
+1. Try to trigger rebuild without fixing missing files
+2. Create multiple failing commits
+3. Version bump while root cause still exists
+4. Stack failures on top of failures
+
+### -2. CODE PRESERVATION HIERARCHY - PROTECT WORKING CODE 🏗️🛡️
+
+**🚨 CATASTROPHIC LESSON LEARNED: Preserve working runtime code, adapt types 🚨**
+
+#### 🎯 CHANGE RISK ASSESSMENT HIERARCHY
+```
+1. TYPE ADJUSTMENTS (lowest risk)
+   - Make types more flexible/permissive
+   - Add type assertions or any casts
+   - Update interface definitions
+
+2. IMPORT/EXPORT CHANGES (low risk)
+   - Add missing exports
+   - Update import paths  
+   - Adjust module references
+
+3. RUNTIME LOGIC CHANGES (high risk)
+   - Modify function behavior
+   - Change control flow
+   - Alter data processing
+
+4. CORE ALGORITHM CHANGES (highest risk)
+   - Change download logic
+   - Modify manifest processing
+   - Alter queue management
+```
+
+#### 🛠️ TYPE VS RUNTIME DECISION MATRIX
+**Scenario: "eta: -1" causing type errors**
+
+**✅ CORRECT APPROACH (Type Adjustment):**
+- Problem: Type expects number, runtime returns -1
+- Solution: Allow -1 in type definition or use type assertion
+- Risk: Very low - types match existing working behavior
+- Code: `eta?: number | -1` or `eta: any`
+
+**❌ WRONG APPROACH (Runtime Change):**
+- Problem: Same type error
+- Solution: Change runtime logic to avoid -1
+- Risk: High - could break working download timing
+- Code: Modify tested algorithm behavior
+
+#### 🏛️ CODE PRESERVATION PRINCIPLES
+1. **Working Code is Sacred**: If it works in production, don't change runtime behavior
+2. **Types Serve Code**: Make types match reality, not force code to match types  
+3. **Risk Assessment**: Always choose lower-risk solution
+4. **User Direction Priority**: When user says "don't change runtime code" - obey immediately
+
 ### -1. LIBRARY ROUTING ARCHITECTURE - CRITICAL UNDERSTANDING 🏗️
 
 **THE #1 CAUSE OF CRITICAL FAILURES:** "Two Implementations Bug" - 60% of critical failures are routing issues
@@ -367,29 +587,53 @@ My initial testing only verified manifest loading, missing the real bugs in down
 - **LIMITATION:** Bun tests don't reveal Electron environment issues
 - **SOLUTION:** Use ultrathink agents for production environment analysis
 
-### 4. VERSION CONTROL - COMPLETE WORKFLOW MANDATORY
-**Version Bump Requirements:**
-- **USER APPROVAL:** When user says "bump", "bump version", "release", or "approved" → Execute FULL workflow
-- **FULL WORKFLOW MANDATORY:** Version bump → Commit → Push → Verify GitHub Actions → Check Telegram
-- **NEVER bump without pushing:** Phantom versions break the workflow and confuse everyone
-- **SINGLE EXCEPTION:** User explicitly says "bump locally" or "don't push yet" 
-- **AUTONOMOUS:** `/handle-issues` command handles everything automatically
+### 4. VERSION CONTROL - BULLETPROOF WORKFLOW WITH COMMAND RECOGNITION 🎯
 
-**🚨 FILE INCLUSION RULES - ZERO MISSED FILES EVER 🚨**
+**🚨 LESSONS FROM CATASTROPHIC FAILURES APPLIED 🚨**
+
+#### 🔥 USER COMMAND RECOGNITION (LEARNED FROM DISASTERS)
+**Version Bump Triggers (execute immediately):**
+- **"bump"** - Standard version bump with tracked files only
+- **"bump all"** - Comprehensive bump with ALL files (git add -A)
+- **"bump version"** - Standard version bump  
+- **"bump once more"** - Emergency bump, usually after build failures
+- **"don't you understand you need to bump once more??"** - USER IS FRUSTRATED, missed obvious direction
+- **"beware previous build failed"** + bump context - FIX with new version
+- **"release"** - Full release version bump
+- **"approved"** - Permission to execute full workflow
+
+#### 🚨 COMMAND INTERPRETATION RULES
+**Context Clue Detection:**
+- Build failure mentions + user prompts = emergency version bump needed
+- User frustration language = you missed something obvious
+- "once more", "again", "you need to" = clear direction being given
+
+**NEVER ask "should I bump?" when:**
+- User already said bump-related commands
+- Previous build failed and user is prompting
+- User shows frustration about missed directions
+
+**🚨 FILE INCLUSION RULES - CATASTROPHIC FAILURES PREVENTION 🚨**
+
+**LEARNED FROM BUILD DISASTERS 17258588974, 17259179725:**
+
 ```bash
-# "bump all" Command Protocol (MANDATORY when user says "bump all"):
+# "bump all" Command Protocol (MANDATORY - USER COMMAND OVERRIDES ALL RESTRICTIONS):
 git status --porcelain  # Show what will be included
 git add -A             # Stage ALL modifications AND untracked files  
-npm run precommit      # Quality gates with ALL files staged
-npm run build          # Build verification with ALL files staged
+                       # ↑ OVERRIDES "FORBIDDEN git add ." rule when user says "all"
+npm run precommit      # Quality gates with ALL files staged - MUST PASS
+npm run build          # Build verification with ALL files staged - MUST PASS
 # Then commit with untracked file disclosure
 ```
 
-**"bump" vs "bump all" Distinction:**
+**"bump" vs "bump all" ABSOLUTE Distinction:**
 - **"bump"**: Only staged/modified tracked files (`git add -u`)
-- **"bump all"**: ALL files including untracked (`git add -A`) - OVERRIDES normal git add restrictions
-- **Default**: When user says just "bump", ask for clarification
-- **BUILD SAFETY PRIORITY**: Better to include extra files than miss critical dependencies
+- **"bump all"**: ALL files including untracked (`git add -A`) 
+  - **OVERRIDES**: "FORBIDDEN: git add ." default restriction
+  - **PRIORITY**: User explicit command > default automation rules
+- **Emergency Context**: Build failures + user direction = assume "bump all" comprehensive fix
+- **BUILD SAFETY PRIORITY**: Missing files = build failures = deployment disasters
 
 **Emergency Response for Missing Files:**
 1. **IMMEDIATE DETECTION**: Build fails with "Could not resolve" = missing file
@@ -510,19 +754,61 @@ npm run build          # Build verification with ALL files staged
 - **CLEANUP:** Delete after EVERY task completion
 - **PWD CHECK:** If files "missing", IMMEDIATELY run `pwd` to verify location
 
-### 8. PRE-PUSH QUALITY GATES - NO EXCEPTIONS
-**MUST run before EVERY commit:**
-1. `npm run precommit` - Type safety check (MANDATORY)
-2. `npm run lint` - MUST pass with zero errors
-3. `npm run build` - MUST complete successfully (includes type checking)
+### 8. PRE-PUSH QUALITY GATES - BULLETPROOF ENFORCEMENT FROM DISASTERS 🛡️💥
 
-**Type Safety Requirements (NEW):**
-- **NEVER commit with type errors** - Causes runtime failures like `loadVatlibManifest is not a function`
-- **Run `npm run precommit` BEFORE EVERY commit** - Catches method reference errors
-- **If type errors exist:** Run `npm run typefix` for auto-fix, then verify with `npm run typecheck`
-- **Build now includes type checking** - Will fail if types are wrong
+**🚨 CATASTROPHIC LESSON LEARNED: NEVER BYPASS PRECOMMIT FAILURES 🚨**
+**Disaster Reference: User had to say "this is critical!!!!" to stop me from bypassing**
 
-**After push:**
+#### 🛑 PRECOMMIT FAILURE = FULL SYSTEM SHUTDOWN
+```
+🚨🚨🚨 IF npm run precommit FAILS: 🚨🚨🚨
+   ❌ STOP ALL VERSION BUMP ACTIVITY IMMEDIATELY
+   ❌ STOP ALL GIT COMMITS IMMEDIATELY  
+   ❌ STOP ALL BUILD ATTEMPTS IMMEDIATELY
+   ❌ NO "build passes anyway" logic EVER ALLOWED
+   ❌ NO "types don't matter" reasoning EVER ALLOWED
+   ❌ NO "we can fix later" postponement EVER ALLOWED
+   ✅ FIX TYPE ERRORS FIRST - NOTHING ELSE MATTERS
+   ✅ Use npm run typefix + npm run typecheck
+   ✅ Only proceed after precommit shows 0 errors
+```
+
+#### 🧠 FORBIDDEN DISASTER THINKING (That Led to Failures)
+**These thoughts are now BANNED:**
+- "Build passes so type errors don't matter" ← CATASTROPHICALLY WRONG - caused production crashes
+- "Type errors are just warnings" ← CAUSES RUNTIME FAILURES in Electron  
+- "We can fix types later" ← NEVER ACCEPTABLE - fix NOW
+- "User is waiting, skip type safety" ← USER PREFERS WORKING CODE over fast broken code
+- "It works in dev so types don't matter" ← PRODUCTION != DEV environment
+
+#### 🏗️ MANDATORY QUALITY GATE SEQUENCE
+```bash
+# BULLETPROOF SEQUENCE - NO SHORTCUTS ALLOWED
+1. npm run precommit    # MUST show 0 errors - FULL STOP if fails
+2. npm run lint         # MUST pass with zero errors  
+3. npm run build        # MUST complete successfully
+4. git commit          # ONLY if ALL gates pass
+5. git push            # Deploy only verified code
+```
+
+#### 🚑 PRECOMMIT FAILURE EMERGENCY PROTOCOL
+```bash
+# When precommit fails (MANDATORY RESPONSE):
+1. STOP IMMEDIATELY - no other actions allowed
+2. npm run typefix     # Auto-fix attempt
+3. npm run typecheck   # Verify fix worked  
+4. IF STILL FAILING: Manual type fixes required
+5. REPEAT until precommit passes 100%
+6. ONLY THEN resume version bump process
+```
+
+**CRITICAL FAILURE PATTERNS NOW IMPOSSIBLE:**
+- ❌ Seeing precommit errors and continuing anyway ← BLOCKED by immediate stop protocol
+- ❌ "Build passes so type errors don't matter" ← BANNED thinking pattern
+- ❌ Ignoring type safety for speed ← Quality over speed always
+- ✅ ALWAYS fix type errors before any commit ← ONLY acceptable pattern
+
+**After push (unchanged):**
 1. Verify GitHub Actions build success
 2. Check telegram notifications sent
 3. If build fails: fix, commit, push fixes

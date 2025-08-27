@@ -12,7 +12,7 @@ export interface DownloadProgress {
   progress?: number; // Alternative progress field
   elapsedTime: number;
   estimatedTimeRemaining: number;
-  eta?: number; // Estimated time of arrival
+  eta?: number | string; // Estimated time of arrival
   bytesDownloaded: number;
   bytesTotal: number;
   downloadSpeed: number;
