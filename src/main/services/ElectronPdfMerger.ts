@@ -16,6 +16,10 @@ interface PdfMergerOptions {
     onError?: (error: string) => void;
 }
 
+/**
+ * PDF creation service for Electron manuscript downloader
+ * Uses pdf-lib via EnhancedPdfMerger for high-quality PDF generation
+ */
 export class ElectronPdfMerger {
     private isProcessing = false;
     private enhancedMerger = new EnhancedPdfMerger();
@@ -30,31 +34,24 @@ export class ElectronPdfMerger {
         this.isProcessing = true;
 
         try {
-            // For now, we'll use a simplified approach
-            // Convert Buffer images to Blobs for web worker compatibility  
-            // const imageBlobs = images.map(buffer => new Blob([buffer]));
-            
-            // For now, we'll use a simplified approach
-            // In a full implementation, you'd create a Node.js worker thread
-            // that uses a server-side PDF library like PDFKit or pdf-lib
+            // Create PDF using pdf-lib with EnhancedPdfMerger
             
             let finalOutputPath = outputPath;
             if (!finalOutputPath) {
-                // Construct filename like source project
+                // Generate default filename with manuscript name and page range
                 let defaultFilename = 'manuscript.pdf';
                 
                 if (displayName) {
-                    // Use filesystem-safe sanitization while preserving more characters
+                    // Sanitize filename for filesystem compatibility
                     const cleanName = displayName
-                        .replace(/[<>:"/\\|?*\x00-\x1f]/g, '_')  // Remove filesystem-unsafe and control characters
+                        .replace(/[<>:"/\\|?*\x00-\x1f]/g, '_')  // Remove unsafe characters  
                         .replace(/\s+/g, '_')                     // Replace spaces with underscores
-                        .substring(0, 100) || 'manuscript';       // Limit to 100 characters with fallback
+                        .substring(0, 100) || 'manuscript';       // Limit length with fallback
                     
                     if (startPage && endPage && totalPages) {
-                        // Always include page numbers for clarity
+                        // Include page range in filename
                         defaultFilename = `${cleanName}_pages_${startPage}-${endPage}.pdf`;
                     } else {
-                        // Fallback for missing page info
                         defaultFilename = `${cleanName}.pdf`;
                     }
                 }
@@ -80,24 +77,24 @@ export class ElectronPdfMerger {
             const shouldSplit = false; // Force single PDF creation
             
             if (shouldSplit) {
-                // Create split PDFs with both part and page numbers
+                // Create multiple PDF parts (currently disabled - shouldSplit = false)
                 const baseName = displayName ? displayName
                     .replace(/[\u003c\u003e:"/\\|?*]/g, '_')
                     .replace(/\s+/g, '_')
-                    .substring(0, 80) // Leave room for part/page suffixes
+                    .substring(0, 80) // Leave room for part suffixes
                     : 'Manuscript';
                 
+                // Create dedicated subfolder for split parts
                 const outputDir = finalOutputPath.substring(0, finalOutputPath.lastIndexOf('/'));
-                // Group all split parts into a dedicated subfolder to keep them together
-                // IMPORTANT: strip any existing part/page suffixes from the folder name to avoid creating one folder per part
                 const folderBase = baseName
                     .replace(/_Part_\d+.*$/i, '')
                     .replace(/_pages_\d+-\d+.*$/i, '');
                 const partsDir = join(outputDir, folderBase || baseName);
+                
                 try {
                     await fs.mkdir(partsDir, { recursive: true });
                 } catch {
-                    // If directory creation fails, fallback to parent outputDir
+                    // Fallback to parent directory if mkdir fails
                 }
                 
                 const result = await this.enhancedMerger.createSplitPDFs(images, baseName, partsDir || outputDir, {
@@ -113,13 +110,12 @@ export class ElectronPdfMerger {
                 });
                 
                 if (result.success && result.files?.length > 0) {
-                    // Return the first file path (caller can check for multiple files)
                     return result.files[0] || '';
                 } else {
                     throw new Error('Failed to create split PDFs');
                 }
             } else {
-                // Create single PDF
+                // Create single unified PDF using pdf-lib
                 const pdfBytes = await this.enhancedMerger.createPDF(images, {
                     title: displayName || 'Manuscript',
                     onProgress: (current: number, total: number) => {
@@ -131,7 +127,7 @@ export class ElectronPdfMerger {
                     }
                 });
                 
-                // Write the actual PDF bytes to file
+                // Write PDF to file system
                 await fs.writeFile(finalOutputPath, pdfBytes);
             }
 
@@ -145,7 +141,10 @@ export class ElectronPdfMerger {
         }
     }
 
+    /**
+     * Cancel ongoing PDF creation (not yet implemented)
+     */
     abort(): void {
-        // TODO: Implement abort functionality
+        // TODO: Implement abort functionality for long-running PDF creation
     }
 }

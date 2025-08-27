@@ -375,6 +375,28 @@ My initial testing only verified manifest loading, missing the real bugs in down
 - **SINGLE EXCEPTION:** User explicitly says "bump locally" or "don't push yet" 
 - **AUTONOMOUS:** `/handle-issues` command handles everything automatically
 
+**🚨 FILE INCLUSION RULES - ZERO MISSED FILES EVER 🚨**
+```bash
+# "bump all" Command Protocol (MANDATORY when user says "bump all"):
+git status --porcelain  # Show what will be included
+git add -A             # Stage ALL modifications AND untracked files  
+npm run precommit      # Quality gates with ALL files staged
+npm run build          # Build verification with ALL files staged
+# Then commit with untracked file disclosure
+```
+
+**"bump" vs "bump all" Distinction:**
+- **"bump"**: Only staged/modified tracked files (`git add -u`)
+- **"bump all"**: ALL files including untracked (`git add -A`) - OVERRIDES normal git add restrictions
+- **Default**: When user says just "bump", ask for clarification
+- **BUILD SAFETY PRIORITY**: Better to include extra files than miss critical dependencies
+
+**Emergency Response for Missing Files:**
+1. **IMMEDIATE DETECTION**: Build fails with "Could not resolve" = missing file
+2. **RAPID FIX**: `git add missing-file && git commit -m "fix(build): add missing [filename]"`
+3. **PUSH IMMEDIATELY**: Don't leave broken build in main branch
+4. **PREVENT RECURRENCE**: Update process to catch similar files
+
 **🚨 CHANGELOG UPDATE - MANDATORY WITH EVERY VERSION BUMP 🚨**
 ```javascript
 // package.json - MUST update when bumping version
@@ -399,26 +421,29 @@ My initial testing only verified manifest loading, missing the real bugs in down
 - When user explicitly says "bump", "release", or "approved"
 
 **Complete Version Bump Workflow (MANDATORY):**
-1. Update package.json version number
-2. Update changelog with clear user benefits
-3. Run `npm run precommit` for type safety
-4. Commit with descriptive message
-5. **Push to GitHub immediately**
-6. Monitor `gh run list` for build status
-7. Verify Telegram notification sent
-8. Report success/failure to user
+1. **FILE STAGING**: `git add -A` if "bump all", `git add -u` if just "bump"
+2. **QUALITY GATES**: `npm run precommit` with ALL files staged
+3. **BUILD VERIFICATION**: `npm run build` with ALL files staged
+4. Update package.json version number
+5. Update changelog with clear user benefits
+6. Commit with descriptive message (include untracked files list)
+7. **Push to GitHub immediately**
+8. Monitor `gh run list` for build status
+9. Verify Telegram notification sent
+10. Report success/failure to user
 
 **NOT Version Bump Triggers:**
 - Documentation changes (unless requested)
 - Telegram bot fixes
 - Code refactoring without behavior changes
 
-### 4. COMMIT & PUSH STRATEGY - COMPLETE THE WORKFLOW
-- **FORBIDDEN:** `git add .` or similar broad adds
-- **MUST track:** ALL your specific changes for parallel work safety
-- **WORKFLOW:** After version bump → Commit → Push immediately → Verify build
-- **VERIFICATION:** Monitor GitHub Actions (gh run list) and confirm Telegram sent
-- **FALLBACK:** If Bash fails, create Node.js script (.cjs) with `child_process.execSync()`
+### 4.1. COMMIT & PUSH STRATEGY - BUILD-SAFE WORKFLOW
+- **VERSION BUMPS OVERRIDE**: For version bumps, `git add -A` is MANDATORY when user says "bump all"
+- **QUALITY GATES FIRST**: Run precommit + build with ALL files staged BEFORE committing
+- **BUILD SAFETY PRIORITY**: Missing files = build failures = deployment disasters
+- **PARALLEL WORK SAFETY**: Use feature branches for experimental work, not main branch restrictions
+- **VERIFICATION**: Monitor GitHub Actions (gh run list) and confirm Telegram sent
+- **FALLBACK**: If Bash fails, create Node.js script (.cjs) with `child_process.execSync()`
 
 ### 5. LIBRARY VALIDATION PROTOCOL - 100% SUCCESS REQUIRED
 **MANDATORY Steps (except in `/handle-issues` workflow):**

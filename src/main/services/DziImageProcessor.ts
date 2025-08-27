@@ -167,7 +167,7 @@ export class DziImageProcessor {
      */
     private async downloadTiles(tiles: TileInfo[]): Promise<Map<string, Buffer>> {
         const tileData = new Map<string, Buffer>();
-        const batchSize = 5; // Download tiles in batches
+        const batchSize = 50; // Download tiles in larger batches for better performance
         let cumulativeTilesDownloaded = 0;
         
         console.log(`[DZI] Downloading ${tiles?.length} tiles...`);
