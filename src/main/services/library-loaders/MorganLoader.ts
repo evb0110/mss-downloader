@@ -446,44 +446,53 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                             imagesByPriority[2]?.push(originalJpeg);
                         }
 
-                        // Attempt ZIF only if server actually has them. Quick probe with first page using two known patterns.
+                        // Attempt ZIF by discovering manuscript code from individual pages
+                        let manuscriptCode: string | null = null;
                         try {
-                            if (dedupedFacsimiles.length > 0) {
-                                const f0 = dedupedFacsimiles[0];
-                                if (f0) {
-                                    const candidatePatterns = [
-                                        // Pattern A (legacy): numeric directory under /facsimile
-                                        `https://host.themorgan.org/facsimile/${f0.bbid}/${f0.id}.zif`,
-                                        // Pattern B (slug-based images path)
-                                        `https://host.themorgan.org/facsimile/images/${manuscriptId}/${f0.id}.zif`,
-                                    ];
-
-                                    let workingPattern: string | null = null;
-                                    for (const testUrl of candidatePatterns) {
-                                        try {
-                                            const headResp = await this.deps.fetchDirect(testUrl, { method: 'HEAD', redirect: 'follow' as RequestRedirect });
-                                            if (headResp && headResp.ok) {
-                                                workingPattern = testUrl.replace(f0.id + '.zif', '');
-                                                break;
-                                            }
-                                        } catch { /* ignore and try next */ }
-                                    }
-
-                                    if (workingPattern) {
-                                        console.log(`Morgan: ZIF verified, using pattern: ${workingPattern}`);
-                                        for (const f of dedupedFacsimiles) {
-                                            if (!isLikelyZifCandidate(f.id)) continue;
-                                            const zifUrl = `${workingPattern}${f.id}.zif`;
-                                            imagesByPriority[0]?.push(zifUrl);
-                                        }
-                                    } else {
-                                        console.log('Morgan: ZIF not available (404/blocked). Falling back to facsimile JPEGs.');
-                                    }
+                            // Try to discover manuscript code from first individual page
+                            const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
+                            const firstPageUrl = `${baseUrl}/collection/${collectionPath}/1`;
+                            const firstPageResp = await this.deps.fetchDirect(firstPageUrl);
+                            
+                            if (firstPageResp.ok) {
+                                const firstPageHtml = await firstPageResp.text();
+                                // Look for iframe src with manuscript code pattern
+                                const iframeMatch = firstPageHtml.match(/host\.themorgan\.org\/facsimile\/([^\/]+)\/default\.asp/);
+                                if (iframeMatch && iframeMatch[1]) {
+                                    manuscriptCode = iframeMatch[1];
+                                    console.log(`Morgan: Discovered manuscript code: ${manuscriptCode}`);
                                 }
                             }
                         } catch {
-                            // If anything goes wrong, just fall back silently
-                            console.log('Morgan: ZIF probe failed, using JPEG fallbacks.');
+                            console.log('Morgan: Could not discover manuscript code from individual page');
+                        }
+
+                        // If we have manuscript code, build ZIF URLs
+                        if (manuscriptCode && dedupedFacsimiles.length > 0) {
+                            try {
+                                const f0 = dedupedFacsimiles[0];
+                                if (f0) {
+                                    // Test the correct ZIF pattern: /facsimile/images/{manuscript_code}/{file_id}.zif
+                                    const testZifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptCode}/${f0.id}.zif`;
+                                    const headResp = await this.deps.fetchDirect(testZifUrl, { method: 'HEAD', redirect: 'follow' as RequestRedirect });
+                                    
+                                    if (headResp && headResp.ok) {
+                                        console.log(`Morgan: ZIF verified with manuscript code ${manuscriptCode}`);
+                                        // Build all ZIF URLs using the discovered pattern
+                                        for (const f of dedupedFacsimiles) {
+                                            if (!isLikelyZifCandidate(f.id)) continue;
+                                            const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptCode}/${f.id}.zif`;
+                                            imagesByPriority[0]?.push(zifUrl);
+                                        }
+                                    } else {
+                                        console.log(`Morgan: ZIF test failed (${headResp.status}) for manuscript code ${manuscriptCode}`);
+                                    }
+                                }
+                            } catch (error) {
+                                console.log('Morgan: ZIF verification failed:', error);
+                            }
+                        } else {
+                            console.log('Morgan: No manuscript code discovered, skipping ZIF attempt');
                         }
 
                         // Priority 1: NEW - High-resolution download URLs (16.6x improvement validated)
