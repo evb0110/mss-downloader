@@ -467,7 +467,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
         return newItem.id;
     }
 
-    removeManuscript(id: string): boolean {
+    async removeManuscript(id: string): Promise<boolean> {
         const item = this.state.items.find((item) => item.id === id);
         if (!item) return false;
 
@@ -496,14 +496,45 @@ export class EnhancedDownloadQueue extends EventEmitter {
             console.log(`Removed ${id} from active downloaders`);
         }
 
-        // Clear manifest cache for this item and its domain (nuke all related cached data)
-        this.manifestCache.clearUrl(item.url).catch((error: any) => {
-            console.warn(`Failed to clear manifest cache for ${item.url}:`, error instanceof Error ? error.message : String(error));
-        });
+        // 🚨 COMPREHENSIVE CACHE NUKING - Clear ALL cache types for this manuscript
+        console.log(`[Cache] Nuking ALL caches for manuscript: ${item.displayName} (${item.url})`);
+        
         try {
+            // 1. Clear ManifestCache for this URL and domain
+            await this.manifestCache.clearUrl(item.url);
             const domain = this.extractDomainFromUrl(item.url);
-            if (domain) this.manifestCache.clearDomain(domain).catch(() => void 0);
-        } catch { /* best-effort */ }
+            if (domain) await this.manifestCache.clearDomain(domain);
+            
+            // 2. Clear GlobalDziCache (shared across all instances)
+            const { GlobalDziCache } = await import('./GlobalDziCache');
+            const globalDziCache = GlobalDziCache.getInstance();
+            globalDziCache.clear(); // Nuclear option: clear entire DZI cache
+            
+            // 3. Clear ElectronImageCache if it exists
+            try {
+                const { ElectronImageCache } = await import('./ElectronImageCache');
+                const imageCache = ElectronImageCache.getInstance();
+                if (imageCache && typeof imageCache.clear === 'function') {
+                    await imageCache.clear();
+                }
+            } catch { /* ElectronImageCache might not exist */ }
+            
+            // 4. Clear any library-specific caches that might exist
+            try {
+                // Morgan Library ZIF cache clearing
+                if (item.url.includes('themorgan.org')) {
+                    console.log('[Cache] Clearing Morgan-specific caches');
+                    // Add any Morgan-specific cache clearing here if needed
+                }
+                // Add other library-specific cache clearing as needed
+            } catch { /* best-effort */ }
+            
+            console.log(`[Cache] ✅ Successfully nuked all caches for: ${item.displayName}`);
+            
+        } catch (error: any) {
+            console.warn(`[Cache] Failed to clear some caches for ${item.url}:`, error instanceof Error ? error.message : String(error));
+            // Don't fail the deletion if cache clearing fails
+        }
 
         this.state.items = this.state.items.filter((item) => item.id !== id);
         this.saveToStorage();

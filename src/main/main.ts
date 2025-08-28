@@ -1047,7 +1047,7 @@ ipcMain.handle('queue-remove-manuscript', async (_event, id: string) => {
   if (!enhancedDownloadQueue) {
     throw new Error('Enhanced download queue not initialized');
   }
-  return enhancedDownloadQueue.removeManuscript(id);
+  return await enhancedDownloadQueue.removeManuscript(id);
 });
 
 ipcMain.handle('queue-start-processing', async () => {

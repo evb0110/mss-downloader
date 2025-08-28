@@ -352,6 +352,9 @@ export class EnhancedManuscriptDownloaderService {
 
         // Clear Bordeaux cache to ensure new manifest (with DZI metadata) is used
         this.clearBordeauxCacheOnStartup();
+        
+        // Clear Morgan cache to fix Lindau Gospels 16-page regression issue  
+        this.clearMorganCacheOnStartup();
     }
 
     /**
@@ -501,6 +504,38 @@ export class EnhancedManuscriptDownloaderService {
                 errorStack: (error as Error).stack,
                 details: {
                     message: 'Failed to clear Bordeaux cache on startup'
+                }
+            });
+        }
+    }
+
+    /**
+     * Clear Morgan cache on startup to fix Lindau Gospels 16-page regression
+     * Cached manifests showing 16 pages instead of the discovered 48 pages
+     */
+    private async clearMorganCacheOnStartup(): Promise<void> {
+        try {
+            await this.manifestCache.clearDomain('themorgan.org');
+            console.log('✅ Morgan cache cleared on startup - fixing Lindau Gospels 16-page regression');
+            comprehensiveLogger.log({
+                level: 'info',
+                category: 'system',
+                library: 'Morgan',
+                details: {
+                    message: 'Morgan cache cleared on startup',
+                    reason: 'Fix Lindau Gospels 16-page cached data regression'
+                }
+            });
+        } catch (error) {
+            console.warn('⚠️ Failed to clear Morgan cache on startup:', (error as Error).message);
+            comprehensiveLogger.log({
+                level: 'error',
+                category: 'system',
+                library: 'Morgan',
+                errorMessage: (error as Error).message,
+                errorStack: (error as Error).stack,
+                details: {
+                    message: 'Failed to clear Morgan cache on startup'
                 }
             });
         }

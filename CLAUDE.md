@@ -113,6 +113,24 @@ URL detection returns `'detected_name'` but routing expects `'registered_name'`
 
 **See detailed routing methodology:** [.devkit/docs/routing-methodology.md](.devkit/docs/routing-methodology.md)
 
+### 🛑 ZERO PATTERN ASSUMPTIONS RULE - TOP PRIORITY 🛑
+
+**🚨 FUNDAMENTAL PROHIBITION: NEVER ASSUME PATTERNS - ALWAYS DISCOVER FROM SOURCE 🚨**
+
+This is the **#1 CAUSE OF 404 ERRORS AND BROKEN DOWNLOADS**. Pattern assumptions have caused critical failures in:
+- Lindau Gospels (fake ZIF patterns)
+- Multiple library implementations
+- User download breakages
+
+**IMMEDIATE VIOLATION CHECK:**
+- Are you generating URLs with patterns like `page-{num}`, `{id}-{suffix}`, `{base}_{index}`?
+- Are you assuming filename structures without fetching real data?
+- Are you using template substitution instead of individual page discovery?
+
+**IF YES TO ANY → STOP IMMEDIATELY → USE INDIVIDUAL DISCOVERY ONLY**
+
+**See comprehensive rules:** [Section: ZERO PATTERN ASSUMPTIONS](#zero-pattern-assumptions)
+
 ## CORE OPERATIONAL RULES
 
 ### Library Requests = Immediate Implementation - No Deferrals Ever 🚀
@@ -131,10 +149,44 @@ URL detection returns `'detected_name'` but routing expects `'registered_name'`
 - **ALWAYS CLEAR CACHE:** When ANY manuscript is deleted, its cache MUST be cleared
 - **100% COVERAGE REQUIRED:** clearCompleted, clearFailed, clearAll, removeManuscript - ALL must clear cache
 
-### Filename Discovery - No Pattern Assumptions
-- **NEVER ASSUME FILENAME PATTERNS:** NEVER guess "001r.jp2", "002v.jp2" or ANY filename patterns
-- **DISCOVER FROM SOURCE:** Always get actual filenames from manifests, server responses, or directory listings
-- **404 = WRONG APPROACH:** If getting 404s, you're assuming patterns instead of discovering actual files
+### 🚨 ZERO PATTERN ASSUMPTIONS - DISCOVER ALL DATA FROM SOURCE 🚨
+
+**🛑 ABSOLUTE PROHIBITION: NEVER ASSUME, GUESS, OR GENERATE ANY PATTERNS 🛑**
+
+#### 🚨 CATASTROPHIC LESSON LEARNED: Pattern assumptions cause 404 failures and broken downloads 🚨
+
+**FORBIDDEN ACTIVITIES - ZERO TOLERANCE:**
+- ❌ **NEVER ASSUME FILENAME PATTERNS:** Do NOT guess "001r.jp2", "002v.jp2", "page-0004.zif" or ANY filename patterns
+- ❌ **NEVER GENERATE URL PATTERNS:** Do NOT create "fake" URLs based on assumptions about naming conventions
+- ❌ **NEVER EXTRAPOLATE PATTERNS:** Do NOT use "sample-based inference" to generate URLs for remaining pages
+- ❌ **NEVER USE TEMPLATE SUBSTITUTION:** Do NOT create URL templates like `{baseId}_page-{num}.zif`
+
+**MANDATORY APPROACHES - ONLY SOURCE OF TRUTH:**
+- ✅ **DISCOVER FROM MANIFESTS:** Get actual filenames from IIIF manifests, JSON APIs, XML responses
+- ✅ **DISCOVER FROM HTML PARSING:** Extract actual URLs from individual page HTML content  
+- ✅ **DISCOVER FROM DIRECTORY LISTINGS:** Use server-provided file listings when available
+- ✅ **DISCOVER FROM API RESPONSES:** Use actual data returned by library APIs and services
+
+**CRITICAL VALIDATION RULES:**
+- 🚨 **404 = PATTERN ASSUMPTION:** If getting 404s, you are assuming patterns instead of discovering actual files
+- 🚨 **ALWAYS VERIFY URLS:** Every generated URL must be validated against actual source data
+- 🚨 **NO BULK GENERATION:** Never generate multiple URLs without individual validation per URL
+- 🚨 **FETCH REAL DATA:** For each page/image, fetch the actual page/manifest to discover real URLs
+
+#### 📋 DISCOVERY METHODOLOGY (MANDATORY WORKFLOW)
+```
+1. INITIAL DISCOVERY → Parse manifest/API for available pages
+2. INDIVIDUAL PAGE FETCH → For each page, fetch actual HTML/JSON  
+3. URL EXTRACTION → Extract real image/ZIF URLs from each page
+4. VALIDATION → Verify each URL exists before including in manifest
+5. NO PATTERN SHORTCUTS → Every URL must be individually discovered
+```
+
+**VIOLATION CONSEQUENCES:**
+- Immediate 404 failures breaking user downloads
+- Incomplete manuscripts with missing pages  
+- User frustration and broken functionality
+- Violation of core "real data only" principle
 
 ### Electron Execution - Absolutely Forbidden
 - **NEVER RUN ELECTRON DIRECTLY:** Do NOT execute `electron`, `npm run dev`, `npm run dev:headless` or ANY Electron commands

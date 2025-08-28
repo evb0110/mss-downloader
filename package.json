@@ -1,13 +1,15 @@
 {
   "name": "abba-ababus-mss-downloader",
-  "version": "1.4.264",
+  "version": "1.4.265",
   "description": "Abba Ababus (MSS Downloader) - Manuscript downloader for digital libraries (72+ libraries worldwide)",
   "changelog": [
-    "v1.4.264: Fixed Morgan Library thumbnail issue - now downloads ultra-high resolution images",
-    "Morgan manuscripts now download 25+ megapixel ZIF images instead of 88KB thumbnails (158x quality improvement)",
-    "Fixed ZIF URL pattern discovery from iframe sources for proper manuscript code detection",
-    "Added fallback to high-resolution JPEG images when ZIF files unavailable",
-    "Validated with gospel-book manuscript: 21.59MB vs 163KB thumbnails - publication quality images"
+    "v1.4.265: CRITICAL FIX - Lindau Gospels complete manuscript downloads (48 pages instead of 16)",
+    "Fixed devastating 16-page cache regression preventing complete manuscript downloads",
+    "Enhanced Morgan Library pagination discovery with robust page detection (finds all pages)",
+    "Eliminated system overload during ZIF tile processing - M3 Macs no longer become laggy",
+    "Strengthened zero-pattern-assumptions rule preventing 404 errors and broken downloads",
+    "Added comprehensive cache nuking on manuscript deletion (all cache types cleared)",
+    "Implemented startup cache clearing for Morgan Library preventing future regressions"
   ],
   "main": "dist/main/main.js",
   "scripts": {

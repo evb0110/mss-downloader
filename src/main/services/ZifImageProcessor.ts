@@ -437,10 +437,13 @@ export class ZifImageProcessor {
      * Process a batch of tiles with timeout protection
      */
     private async processTileBatch(batch: ExtractedTile[], Canvas: CanvasModule, ctx: CanvasRenderingContext2D, imageInfo: ImageInfo): Promise<number> {
-        // Process batch tiles in parallel
-        const batchPromises = batch.map(async (tile) => {
+        // 🚨 CRITICAL FIX: Process tiles SEQUENTIALLY to prevent system overload
+        // Tile processing should NEVER use Promise.all - it causes massive CPU/memory spikes on M3 Macs
+        const loadedTiles: (any | null)[] = [];
+        
+        for (const tile of batch) {
             try {
-                // Load tile as image
+                // Load tile as image (one at a time to control memory usage)
                 const image = await Canvas.loadImage(tile.data);
                 
                 // Calculate position on canvas
@@ -451,14 +454,12 @@ export class ZifImageProcessor {
                 const tileWidth = Math.min(imageInfo.tileWidth, imageInfo.width - x);
                 const tileHeight = Math.min(imageInfo.tileHeight, imageInfo.height - y);
                 
-                return { image, x, y, tileWidth, tileHeight, index: tile.index };
+                loadedTiles.push({ image, x, y, tileWidth, tileHeight, index: tile.index });
             } catch (error) {
                 console.warn(`Failed to load tile ${tile.index}: ${error}`);
-                return null;
+                loadedTiles.push(null);
             }
-        });
-        
-        const loadedTiles = await Promise.all(batchPromises);
+        }
         
         // Draw loaded tiles to canvas
         let processedCount = 0;

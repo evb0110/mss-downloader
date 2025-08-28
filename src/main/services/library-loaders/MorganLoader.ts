@@ -237,6 +237,8 @@ export class MorganLoader extends BaseLibraryLoader {
                 // Load more pages (views infinite scroll) to collect all facsimiles
                 const pagesHtml: string[] = [pageContent];
                 if (manuscriptId) {
+                    // Memory-safe accumulator for discovered facsimile references across pagination
+                    const facsimileCandidates: Array<{ bbid: string; id: string }> = [];
                     const quickFacsimileIdRegex = /\/facsimile\/(\d+)\/([^\"'?]+)\.jpg/g;
                     const styledFacsimileIdRegex = /\/styles\/[^\"']*\/public\/facsimile\/(\d+)\/([^\"'?]+)\.jpg/g;
                         const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
@@ -348,12 +350,14 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                 if (typeof data === 'string' && data.includes('<')) {
                                     const idsBefore = knownIds.size;
                                     const pagesBefore = knownPages.size;
-                                    // Note: facsimiles array is declared later; only update knownIds/knownPages here to avoid hoist issues
+                                    // Collect IDs and candidates without storing large HTML strings
                                     for (const m of data.matchAll(quickFacsimileIdRegex)) {
                                         if (m[2]) knownIds.add(m[2]);
+                                        if (m[1] && m[2]) facsimileCandidates.push({ bbid: m[1], id: m[2] });
                                     }
                                     for (const m of data.matchAll(styledFacsimileIdRegex)) {
                                         if (m[2]) knownIds.add(m[2]);
+                                        if (m[1] && m[2]) facsimileCandidates.push({ bbid: m[1], id: m[2] });
                                     }
                                     for (const m of data.matchAll(pageLinkRegex)) {
                                         if (m[1]) knownPages.add(m[1]);
@@ -399,7 +403,13 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                 if (m[1]) knownPages.add(m[1]);
                             }
                             if (knownIds.size > idsBefore || knownPages.size > pagesBefore) {
-                                // We only tracked IDs here; detailed facsimile extraction happens after regex setup below
+                                // Extract facsimiles for this page without retaining the HTML in memory
+                                for (const fm of html.matchAll(/\/facsimile\/(\d+)\/([^"'?]+)\.jpg/g)) {
+                                    if (fm[1] && fm[2]) facsimileCandidates.push({ bbid: fm[1], id: fm[2] });
+                                }
+                                for (const sm of html.matchAll(/\/styles\/[^"]*\/public\/facsimile\/(\d+)\/([^"'?]+)\.jpg/g)) {
+                                    if (sm[1] && sm[2]) facsimileCandidates.push({ bbid: sm[1], id: sm[2] });
+                                }
                                 pageIndex++;
                                 await new Promise(r => setTimeout(r, 200));
                             } else {
@@ -448,9 +458,11 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                         const styledFacsimileRegex = /\/styles\/[^"']*\/public\/facsimile\/(\d+)\/([^"'?]+)\.jpg/g;
 
                         type FacsimileRef = { bbid: string; id: string };
+                        // Seed with candidates found during pagination (if available)
+                        // Note: facsimileCandidates is scoped above only when manuscriptId block runs; re-match from pageContent to ensure base set
                         const facsimiles: FacsimileRef[] = [];
 
-                        // Collect from direct facsimile references
+                        // Collect from direct facsimile references (initial page only)
                         let fm: RegExpExecArray | null;
                         for (const html of pagesHtml) {
                             while ((fm = facsimileIdRegex.exec(html)) !== null) {
@@ -576,19 +588,144 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                         }
                                         console.log(`Morgan: Generated ${totalPages} page numbers from navigation info`);
                                     } else {
-                                        // Fallback: assume at least 10 pages around the current page
-                                        const estimatedStart = Math.max(1, startPageNum - 5);
-                                        const estimatedEnd = startPageNum + 50; // Check 50 pages forward
-                                        for (let i = estimatedStart; i <= estimatedEnd; i++) {
+                                        // BORDEAUX-STYLE ROBUST PAGE DISCOVERY: Find actual last page using exponential + binary search
+                                        console.log(`Morgan: Using robust page discovery to find all pages`);
+                                        const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
+                                        
+                                        // Phase 1: Exponential search to find upper bound
+                                        let upperBound = Math.max(startPageNum * 2, 100); // Start with reasonable upper bound
+                                        let lastValidPage = startPageNum;
+                                        
+                                        console.log(`Morgan: Phase 1 - Exponential search starting from ${startPageNum}`);
+                                        while (upperBound <= 2000) { // Reasonable absolute maximum
+                                            const testUrl = `${baseUrl}/collection/${collectionPath}/${upperBound}`;
+                                            try {
+                                                const testResp = await this.deps.fetchDirect(testUrl, { signal: AbortSignal.timeout(5000) });
+                                                if (testResp.ok) {
+                                                    const testContent = await testResp.text();
+                                                    // Check if page contains actual facsimile content (not just error page)
+                                                    if (testContent.includes('facsimile') || testContent.includes('image') || testContent.includes('page')) {
+                                                        lastValidPage = upperBound;
+                                                        upperBound *= 2; // Continue exponentially
+                                                        console.log(`Morgan: Found valid page ${upperBound/2}, testing ${upperBound}`);
+                                                    } else {
+                                                        break; // Found upper bound
+                                                    }
+                                                } else {
+                                                    break; // Found upper bound
+                                                }
+                                            } catch {
+                                                break; // Found upper bound due to timeout/error
+                                            }
+                                            await new Promise(r => setTimeout(r, 100)); // Rate limiting
+                                        }
+                                        
+                                        // Phase 2: Binary search to find exact last page
+                                        let low = lastValidPage;
+                                        let high = Math.min(upperBound, 2000);
+                                        console.log(`Morgan: Phase 2 - Binary search between ${low} and ${high}`);
+                                        
+                                        while (low < high) {
+                                            const mid = Math.floor((low + high + 1) / 2);
+                                            const testUrl = `${baseUrl}/collection/${collectionPath}/${mid}`;
+                                            try {
+                                                const testResp = await this.deps.fetchDirect(testUrl, { signal: AbortSignal.timeout(5000) });
+                                                if (testResp.ok) {
+                                                    const testContent = await testResp.text();
+                                                    if (testContent.includes('facsimile') || testContent.includes('image') || testContent.includes('page')) {
+                                                        low = mid;
+                                                        console.log(`Morgan: Page ${mid} valid, searching higher`);
+                                                    } else {
+                                                        high = mid - 1;
+                                                        console.log(`Morgan: Page ${mid} invalid, searching lower`);
+                                                    }
+                                                } else {
+                                                    high = mid - 1;
+                                                    console.log(`Morgan: Page ${mid} 404, searching lower`);
+                                                }
+                                            } catch {
+                                                high = mid - 1;
+                                            }
+                                            await new Promise(r => setTimeout(r, 100)); // Rate limiting
+                                        }
+                                        
+                                        const actualLastPage = low;
+                                        console.log(`Morgan: Discovered actual last page: ${actualLastPage}`);
+                                        
+                                        // Generate all page numbers from 1 to actualLastPage
+                                        for (let i = 1; i <= actualLastPage; i++) {
                                             allUniquePages.push(i.toString());
                                         }
-                                        console.log(`Morgan: No page count found, checking pages ${estimatedStart}-${estimatedEnd}`);
+                                        console.log(`Morgan: Generated ${actualLastPage} page numbers using robust discovery`);
                                     }
                                 }
                             }
                             
                             console.log(`Morgan: Found ${allUniquePages?.length} individual pages for ${manuscriptId}`);
                             console.log(`Morgan: Page numbers detected: ${allUniquePages.slice(0, 10).join(', ')}${allUniquePages?.length > 10 ? '...' : ''}`);
+                            
+                            // ENHANCED: Detect incomplete pagination and trigger robust discovery
+                            const shouldRunRobustDiscovery = allUniquePages.length > 0 && (
+                                // Pattern 1: Suspicious exact counts that suggest pagination limits (16, 20, 24, 32, 50, etc.)
+                                [16, 20, 24, 32, 50].includes(allUniquePages.length) ||
+                                // Pattern 2: Pages form perfect sequence 1,2,3...N (suggests truncated pagination)
+                                (allUniquePages.length > 10 && 
+                                 allUniquePages.every((page, idx) => parseInt(page) === idx + 1)) ||
+                                // Pattern 3: No high-numbered pages (max page <= 50 suggests incomplete discovery)
+                                Math.max(...allUniquePages.map(p => parseInt(p) || 0)) <= 50
+                            );
+                            
+                            if (shouldRunRobustDiscovery) {
+                                console.log(`Morgan: ⚠️  Suspected incomplete pagination (${allUniquePages.length} pages found). Running robust discovery...`);
+                                const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
+                                
+                                // Start from highest discovered page + 1
+                                const highestFound = Math.max(...allUniquePages.map(p => parseInt(p) || 0));
+                                let testPage = highestFound + 1;
+                                let lastValidPage = highestFound;
+                                
+                                // Phase 1: Find if there are more pages beyond what we discovered
+                                console.log(`Morgan: Testing for pages beyond ${highestFound}...`);
+                                let foundAdditional = false;
+                                while (testPage <= Math.min(highestFound * 3, 500)) { // Reasonable search range
+                                    const testUrl = `${baseUrl}/collection/${collectionPath}/${testPage}`;
+                                    try {
+                                        const testResp = await this.deps.fetchDirect(testUrl, { signal: AbortSignal.timeout(3000) });
+                                        if (testResp.ok) {
+                                            const testContent = await testResp.text();
+                                            if (testContent.includes('facsimile') || testContent.includes('image') || 
+                                                testContent.includes('page') && !testContent.includes('Page not found')) {
+                                                lastValidPage = testPage;
+                                                foundAdditional = true;
+                                                console.log(`Morgan: Found additional page ${testPage}`);
+                                                // Add this page to our collection
+                                                allUniquePages.push(testPage.toString());
+                                            }
+                                        } else if (testResp.status === 404) {
+                                            break; // No more pages
+                                        }
+                                    } catch {
+                                        break; // Error likely means no more pages
+                                    }
+                                    testPage++;
+                                    await new Promise(r => setTimeout(r, 50)); // Fast rate limiting
+                                }
+                                
+                                if (foundAdditional) {
+                                    // Fill in any gaps between highest original and newly discovered pages
+                                    for (let i = highestFound + 1; i <= lastValidPage; i++) {
+                                        if (!allUniquePages.includes(i.toString())) {
+                                            allUniquePages.push(i.toString());
+                                        }
+                                    }
+                                    // Sort the pages again
+                                    allUniquePages.sort((a, b) => parseInt(a) - parseInt(b));
+                                    console.log(`Morgan: 🎉 Robust discovery found ${lastValidPage - highestFound} additional pages! Total: ${allUniquePages.length}`);
+                                } else {
+                                    console.log(`Morgan: No additional pages found beyond ${highestFound}`);
+                                }
+                            }
+                            
                             this.deps.logger.log({
                                 level: 'info',
                                 library: 'morgan',
@@ -598,15 +735,16 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                     manuscriptId,
                                     totalPagesDetected: allUniquePages?.length,
                                     pageNumbers: allUniquePages.slice(0, 20),
-                                    detectionMethod: 'multiple patterns'
+                                    detectionMethod: shouldRunRobustDiscovery ? 'multiple patterns + robust discovery' : 'multiple patterns'
                                 }
                             });
                             
-                            // Process only first 3 pages for ZIF confirmation
-                            const pagesToProcess = allUniquePages.slice(0, 3);
+                            // CRITICAL FIX: Generate image URLs for ALL discovered pages
+                            // We need to create images for every page we discovered, not just sample them
                             
-                            // Parse each individual page for high-resolution download URLs
-                            for (const pageNum of pagesToProcess) {
+                            // Phase 1: Process first few pages for ZIF pattern discovery
+                            const samplePages = allUniquePages.slice(0, Math.min(3, allUniquePages.length));
+                            for (const pageNum of samplePages) {
                                 try {
                                     const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
                                     const pageUrl = `${baseUrl}/collection/${collectionPath}/${pageNum}`;
@@ -660,7 +798,92 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                             }
                             
                             if (imagesByPriority && imagesByPriority[1] && imagesByPriority[1]?.length > 0) {
-                                console.log(`Morgan: Successfully found ${imagesByPriority[1]?.length} high-resolution download URLs`);
+                                console.log(`Morgan: Successfully found ${imagesByPriority[1]?.length} high-resolution download URLs from sample pages`);
+                            }
+                            
+                            // Phase 2: Generate URLs for ALL remaining discovered pages using patterns from sample
+                            if (allUniquePages.length > samplePages.length) {
+                                console.log(`Morgan: Generating URLs for remaining ${allUniquePages.length - samplePages.length} pages using discovered patterns`);
+                                
+                                // Extract image generation patterns from the sample pages we processed
+                                const sampleImagePatterns: string[] = [];
+                                if (imagesByPriority[1] && imagesByPriority[1].length > 0) {
+                                    // Pattern from high-res facsimile images
+                                    sampleImagePatterns.push(...imagesByPriority[1]);
+                                }
+                                if (imagesByPriority[0] && imagesByPriority[0].length > 0) {
+                                    // Pattern from ZIF images  
+                                    sampleImagePatterns.push(...imagesByPriority[0]);
+                                }
+                                
+                                // CRITICAL FIX: Fetch actual ZIF URLs for discovered pages instead of guessing patterns
+                                const remainingPages = allUniquePages.slice(samplePages.length);
+                                if (remainingPages.length > 0) {
+                                    console.log(`Morgan: Fetching actual ZIF URLs for ${remainingPages.length} additional pages`);
+                                    
+                                    // Process additional pages in batches to avoid overwhelming the server
+                                    const batchSize = 5;
+                                    const batches = [];
+                                    for (let i = 0; i < remainingPages.length; i += batchSize) {
+                                        batches.push(remainingPages.slice(i, i + batchSize));
+                                    }
+                                    
+                                    let processedCount = 0;
+                                    for (const batch of batches) {
+                                        await Promise.all(batch.map(async (pageNum) => {
+                                            try {
+                                                const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
+                                                const pageUrl = `${baseUrl}/collection/${collectionPath}/${pageNum}`;
+                                                const pageResp = await this.deps.fetchDirect(pageUrl, { signal: AbortSignal.timeout(5000) });
+                                                
+                                                if (pageResp.ok) {
+                                                    const pageHtml = await pageResp.text();
+                                                    
+                                                    // Extract actual facsimile image URL
+                                                    const facsimileMatch = pageHtml.match(/\/sites\/default\/files\/(?:styles\/[^"']*\/public\/)?facsimile\/(?:\d+\/)?([^"']+\.jpg)/i);
+                                                    if (facsimileMatch) {
+                                                        const downloadUrl = `${baseUrl}${facsimileMatch[0]}`;
+                                                        if (imagesByPriority[1]) {
+                                                            imagesByPriority[1].push(downloadUrl);
+                                                        }
+                                                    }
+                                                    
+                                                    // Extract actual ZIF URL from zoom viewer if present
+                                                    const zoomMatch = pageHtml.match(/https?:\/\/host\.themorgan\.org\/facsimile\/([^\/]+)\/default\.asp\?id=(\d+)/i);
+                                                    if (zoomMatch && await this.canStitchZif()) {
+                                                        const code = zoomMatch[1];
+                                                        const pageId = zoomMatch[2];
+                                                        try {
+                                                            const viewerUrl = `https://host.themorgan.org/facsimile/${code}/default.asp?id=${pageId}`;
+                                                            const viewerResp = await this.deps.fetchDirect(viewerUrl, { signal: AbortSignal.timeout(3000) });
+                                                            if (viewerResp.ok) {
+                                                                const viewerHtml = await viewerResp.text();
+                                                                const zifMatch = viewerHtml.match(/images\/([A-Za-z0-9_-]+)\/([^"']+)\.zif/i);
+                                                                if (zifMatch && zifMatch[1] && zifMatch[2]) {
+                                                                    const dir = zifMatch[1];
+                                                                    const fileBase = zifMatch[2];
+                                                                    const zifUrl = `https://host.themorgan.org/facsimile/images/${dir}/${fileBase}.zif`;
+                                                                    if (imagesByPriority[0]) {
+                                                                        imagesByPriority[0].push(zifUrl);
+                                                                    }
+                                                                }
+                                                            }
+                                                        } catch { /* ZIF extraction failed, skip */ }
+                                                    }
+                                                    processedCount++;
+                                                }
+                                            } catch {
+                                                // Skip pages we can't process
+                                            }
+                                        }));
+                                        
+                                        // Rate limiting between batches
+                                        if (batches.indexOf(batch) < batches.length - 1) {
+                                            await new Promise(r => setTimeout(r, 200));
+                                        }
+                                    }
+                                    console.log(`Morgan: Successfully processed ${processedCount}/${remainingPages.length} additional pages`);
+                                }
                             }
                             
                         } catch (error) {
