@@ -496,10 +496,14 @@ export class EnhancedDownloadQueue extends EventEmitter {
             console.log(`Removed ${id} from active downloaders`);
         }
 
-        // Clear manifest cache for this item
+        // Clear manifest cache for this item and its domain (nuke all related cached data)
         this.manifestCache.clearUrl(item.url).catch((error: any) => {
             console.warn(`Failed to clear manifest cache for ${item.url}:`, error instanceof Error ? error.message : String(error));
         });
+        try {
+            const domain = this.extractDomainFromUrl(item.url);
+            if (domain) this.manifestCache.clearDomain(domain).catch(() => void 0);
+        } catch { /* best-effort */ }
 
         this.state.items = this.state.items.filter((item) => item.id !== id);
         this.saveToStorage();
@@ -541,6 +545,10 @@ export class EnhancedDownloadQueue extends EventEmitter {
             this.manifestCache.clearUrl(item.url).catch((error: any) => {
                 console.warn(`Failed to clear manifest cache for ${item.url}:`, error instanceof Error ? error.message : String(error));
             });
+            try {
+                const domain = this.extractDomainFromUrl(item.url);
+                if (domain) this.manifestCache.clearDomain(domain).catch(() => void 0);
+            } catch { /* best-effort */ }
         });
         
         this.state.items = this.state.items.filter((item) => item.status !== 'completed');
@@ -556,6 +564,10 @@ export class EnhancedDownloadQueue extends EventEmitter {
             this.manifestCache.clearUrl(item.url).catch((error: any) => {
                 console.warn(`Failed to clear manifest cache for ${item.url}:`, error instanceof Error ? error.message : String(error));
             });
+            try {
+                const domain = this.extractDomainFromUrl(item.url);
+                if (domain) this.manifestCache.clearDomain(domain).catch(() => void 0);
+            } catch { /* best-effort */ }
         });
         
         this.state.items = this.state.items.filter((item) => item.status !== 'failed');
@@ -567,7 +579,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
     clearAll(): void {
         // const totalCount = this.state.items?.length;
         
-        // Clear manifest cache for all items
+        // Clear manifest cache for all items (nuke everything)
         this.manifestCache.clear().catch((error: any) => {
             console.warn(`Failed to clear manifest cache:`, error instanceof Error ? error.message : String(error));
         });
@@ -576,6 +588,16 @@ export class EnhancedDownloadQueue extends EventEmitter {
         this.saveToStorage();
         this.notifyListeners();
         
+    }
+
+    // Extract domain from URL (helper for cache nuking)
+    private extractDomainFromUrl(url: string): string | null {
+        try {
+            const u = new URL(url);
+            return u.hostname;
+        } catch {
+            return null;
+        }
     }
 
     pauseItem(id: string): boolean {
@@ -1254,48 +1276,27 @@ export class EnhancedDownloadQueue extends EventEmitter {
         }
         
         // Check standalone items for potential splitting
+        // ULTRA-STABILITY: Do not recalculate splits for items that already spawned parts (has children).
         for (const item of standaloneItems) {
+            const hasSpawnedParts = this.state.items.some(p => p.parentId === item.id);
+            if (hasSpawnedParts) {
+                // Skip recalculation to prevent re-splitting churn
+                continue;
+            }
             this.checkStandaloneItemForSplitting(item).catch(err => 
                 console.error(`Error checking item ${item.displayName} for splitting:`, err)
             );
         }
         
         // For each parent group, recalculate splits
-        for (const [parentId, parts] of parentGroups) {
-            // Only recalculate if all parts are still queued or paused
-            const canRecalculate = parts.every(p => p.status === 'pending' || p.status === 'paused');
-            if (parts?.length > 0 && canRecalculate) {
-                this.recalculatePartsForGroup(parentId, parts);
-            }
-        }
+        // ULTRA-STABILITY: Freeze existing parts; do not resize groups mid-run
+        // This prevents disappearing/reappearing items and part count resets.
+        // Intentionally skip calling recalculatePartsForGroup.
+        // for (const [parentId, parts] of parentGroups) { /* frozen */ }
     }
     
-    private recalculatePartsForGroup(parentId: string, existingParts: QueuedManuscript[]): void {
-        // Get the first part to reconstruct original document info
-        const firstPart = existingParts[0];
-        if (!firstPart || !firstPart.partInfo) return;
-        
-        const originalDisplayName = firstPart.partInfo.originalDisplayName;
-        const totalPages = existingParts.reduce((max, part) => 
-            Math.max(max, part.partInfo?.pageRange.end || 0), 0);
-        
-        // Get actual size estimate if we have it stored
-        const estimatedSizeMB = firstPart.estimatedSizeMB || (totalPages * 8);
-        const thresholdMB = this.state.globalSettings.autoSplitThresholdMB;
-        
-        if (estimatedSizeMB <= thresholdMB) {
-            // Should not be split anymore - merge back to single item
-            this.mergePartsBackToSingle(parentId, existingParts, originalDisplayName, totalPages);
-        } else {
-            // Recalculate new parts
-            const newNumberOfParts = Math.ceil(estimatedSizeMB / thresholdMB);
-            const newPagesPerPart = Math.ceil(totalPages / newNumberOfParts);
-            
-            if (newNumberOfParts !== existingParts?.length) {
-                this.recreatePartsWithNewSizes(parentId, existingParts, originalDisplayName, totalPages, newNumberOfParts, newPagesPerPart);
-            }
-        }
-    }
+    // ULTRA-STABILITY: Disable group re-splitting routine to prevent queue churn
+    // private recalculatePartsForGroup(...) { /* disabled */ }
     
     private async checkStandaloneItemForSplitting(item: QueuedManuscript): Promise<void> {
         // If we don't have size estimate, we can't check without downloading
@@ -1357,7 +1358,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
         }
     }
     
-    private mergePartsBackToSingle(parentId: string, parts: QueuedManuscript[], originalDisplayName: string, totalPages: number): void {
+    // ULTRA-STABILITY: Keep method for future use; currently unused
+    /* private */ mergePartsBackToSingle(parentId: string, parts: QueuedManuscript[], originalDisplayName: string, totalPages: number): void {
         // Remove all parts
         this.state.items = this.state.items.filter(item => !parts.includes(item));
         
@@ -1389,7 +1391,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
         this.notifyListeners();
     }
     
-    private recreatePartsWithNewSizes(
+    // ULTRA-STABILITY: Keep method for future use; currently unused
+    /* private */ recreatePartsWithNewSizes(
         parentId: string, 
         existingParts: QueuedManuscript[], 
         originalDisplayName: string, 
@@ -1545,12 +1548,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 // Get library-specific optimizations directly since item.libraryOptimizations may not be set yet
                 const libraryOpts = LibraryOptimizationService.getOptimizationsForLibrary(manifest.library as TLibrary);
                 
-                // Respect the user's global threshold as the baseline, and treat library thresholds as minimum caps
-                // This prevents the threshold from being reduced (e.g., from 300MB down to 30MB)
+                // Respect the user's global threshold EXACTLY. Do not raise it with library minimums.
+                // Users can force smaller parts (e.g., 30MB) when needed for stability.
                 let effectiveThreshold = this.state.globalSettings.autoSplitThresholdMB;
-                if (typeof libraryOpts.autoSplitThresholdMB === 'number' && libraryOpts.autoSplitThresholdMB > 0) {
-                    effectiveThreshold = Math.max(effectiveThreshold, libraryOpts.autoSplitThresholdMB);
-                }
                 
                 // Respect user's global setting - no hardcoded caps
                 // Libraries can set minimums, but user's global setting is authoritative for maximums

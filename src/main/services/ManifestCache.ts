@@ -7,9 +7,10 @@ export class ManifestCache {
     private cacheDir: string;
     private cacheFile: string;
     private cache = new Map<string, { manifest: Record<string, unknown>; timestamp: number; version: number }>();
-    private maxAge = 24 * 60 * 60 * 1000; // 24 hours
+    private maxAge = Number.POSITIVE_INFINITY; // Infinite TTL by default
     private initialized = false;
     private static readonly CACHE_VERSION = 5; // v5: Rome phantom pages fix - force fresh discovery
+    private static readonly MAX_CACHE_FILE_BYTES = 5 * 1024 * 1024; // 5MB safety cap to prevent OOM on load
 
     constructor() {
         const userDataPath = app.getPath('userData');
@@ -26,7 +27,21 @@ export class ManifestCache {
             let shouldClearCache = false;
             
             try {
-                const data = await fs.readFile(this.cacheFile, 'utf-8');
+                // Safety: if cache file is too large, clear it to avoid OOM
+                try {
+                    const stat = await fs.stat(this.cacheFile);
+                    if (stat && stat.size > ManifestCache.MAX_CACHE_FILE_BYTES) {
+                        console.warn(`[ManifestCache] Cache file too large (${stat.size} bytes). Clearing to prevent OOM.`);
+                        shouldClearCache = true;
+                    }
+                } catch {
+                    // stat failed; continue
+                }
+                const data = shouldClearCache ? '' : await fs.readFile(this.cacheFile, 'utf-8');
+                if (shouldClearCache) {
+                    // skip parsing
+                    throw new Error('Cache too large');
+                }
                 const cached = JSON.parse(data);
                 
                 // Check cache version and auto-clear if outdated
@@ -44,6 +59,11 @@ export class ManifestCache {
                                 this.cache.set(key, value);
                             }
                         }
+                    }
+                    // Additional safety: if too many entries accumulated, clear to prevent memory bloat
+                    if (this.cache.size > 1000) {
+                        console.warn(`[ManifestCache] Too many cached entries (${this.cache.size}). Clearing to prevent memory bloat.`);
+                        shouldClearCache = true;
                     }
                 }
             } catch {

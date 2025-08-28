@@ -50,7 +50,8 @@ export class LibraryOptimizationService {
         // Default libraries (no special optimizations)
         'nypl': {},
         'morgan': {
-            maxConcurrentDownloads: 1, // Process sequentially to avoid double-chunk contention
+            // Remove hard override; use cap instead via downloader (user can choose lower/higher up to this)
+            maxConcurrentDownloads: 8,
             timeoutMultiplier: 4.0, // Extended timeout for large facsimile/ZIF processing
             enableProgressiveBackoff: true, // Enable backoff for server stability
             // Increase minimum cap to reduce unnecessary tiny auto-splits for Morgan facsimiles.

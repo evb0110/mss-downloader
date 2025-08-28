@@ -514,7 +514,7 @@ export class EnhancedManuscriptDownloaderService {
         if (!url || typeof url !== 'string') return url;
 
         // ENHANCED Pattern: Detect morgan-specific malformation first
-        const morganMalformedPattern = /thumbs?(https?:\/\/.+)/i;
+        const morganMalformedPattern = /thumbs?\s*(https?:\/\/.+)/i;
         const morganMatch = url.match(morganMalformedPattern);
         if (morganMatch) {
             const extractedUrl = morganMatch[1] || url;
@@ -2462,7 +2462,7 @@ export class EnhancedManuscriptDownloaderService {
             const manifestDuration = Date.now() - manifestStartTime;
             enhancedLogger.logManifestComplete(context, { duration: manifestDuration });
 
-            // Cache the manifest
+            // Cache the manifest (debug behaves the same as prod; only adds logs)
             await this.manifestCache.set(originalUrl, manifest as unknown as Record<string, unknown>);
 
             return manifest;
@@ -3116,12 +3116,20 @@ export class EnhancedManuscriptDownloaderService {
             
             // Use library-specific or global split threshold
             // Prefer queue item's effective threshold if provided (reflects UI/queue settings)
+            // Respect user's global threshold strictly; do not raise with library minimums here
             const autoSplitThresholdMB = optimizations.autoSplitThresholdMB;
             const effectiveAutoSplitMB = (options.queueItem?.libraryOptimizations?.autoSplitThresholdMB ?? autoSplitThresholdMB) || autoSplitThresholdMB;
             
-            // Estimate average page size (conservative estimate: 500KB per page for high-quality images)
-            // This is based on typical manuscript page sizes at high resolution
-            const estimatedTotalSizeMB = (totalPagesToDownload * 0.5);
+            // Estimate average page size (Morgan ZIF/JPEG-aware):
+            // - Default 0.5MB/page
+            // - Morgan: assume 1.0MB/page (high-res JPEGs); if any link ends with .zif, assume 8MB/page
+            let avgPageSizeMBForSplit = 0.5;
+            if (manifestLibrary === 'morgan') {
+                const links = (pageLinks && Array.isArray(pageLinks)) ? pageLinks : (manifest?.pageLinks || []);
+                const containsZif = Array.isArray(links) ? links.some((u: string) => typeof u === 'string' && u.endsWith('.zif')) : false;
+                avgPageSizeMBForSplit = containsZif ? 8.0 : 1.0;
+            }
+            const estimatedTotalSizeMB = totalPagesToDownload * avgPageSizeMBForSplit;
             
             // Determine if we need to split the PDF based on estimated size
             // Fixed: Was hardcoded to 1000 pages, now uses actual MB threshold
@@ -3334,9 +3342,12 @@ export class EnhancedManuscriptDownloaderService {
 
             // ULTRA-PRIORITY FIX #9: Force parallel downloads for BDL
             // Override concurrency settings for BDL to improve performance
-            let actualMaxConcurrent = optimizations.maxConcurrentDownloads
-                ? Math.min(optimizations.maxConcurrentDownloads, globalMaxConcurrent || 3)
-                : (globalMaxConcurrent || 3);
+            // Concurrency policy: library cap is a MAXIMUM, not an override of user's lower setting.
+            // Respect user's global setting first; then cap by library's max if present.
+            let actualMaxConcurrent = globalMaxConcurrent || 3;
+            if (optimizations.maxConcurrentDownloads && optimizations.maxConcurrentDownloads > 0) {
+                actualMaxConcurrent = Math.min(actualMaxConcurrent, optimizations.maxConcurrentDownloads);
+            }
 
             // Special handling for BDL: use aggressive parallelism
             if (manifest.library === 'bdl') {
@@ -3344,11 +3355,12 @@ export class EnhancedManuscriptDownloaderService {
                 console.log(`🚀 [BDL Performance] Using ${actualMaxConcurrent} concurrent downloads for faster speed`);
             }
             
-            // CRITICAL FIX: Force single-threaded DZI processing for Bordeaux
-            // DZI already has internal batching (5 tiles/batch), concurrent processing causes chaos
-            if (manifest.library === 'bordeaux') {
-                actualMaxConcurrent = 1; // Single-threaded for clean DZI progress
-                console.log(`📄 [DZI Fix] Using ${actualMaxConcurrent} concurrent download for Bordeaux DZI (prevents tile chaos)`);
+            // CRITICAL FIX: Force single-threaded for tile-based processing to prevent tile chaos
+            const requiresTileAssembly = (manifest as any).requiresTileProcessor === true || (manifest as any).requiresTileAssembly === true;
+            const isTileBased = requiresTileAssembly || (Array.isArray(manifest.pageLinks) && manifest.pageLinks.some(u => typeof u === 'string' && (u.endsWith('.zif') || u.endsWith('.dzi'))));
+            if (isTileBased) {
+                actualMaxConcurrent = 1;
+                console.log(`📄 [Tile Fix] Using single-threaded download for tile-based manuscript (${manifest.library})`);
             }
 
             // Validate actualMaxConcurrent to prevent "Invalid array length" error

@@ -6,6 +6,23 @@ export class MorganLoader extends BaseLibraryLoader {
         super(deps);
     }
     
+    // Detect whether we can stitch ZIF tiles on this platform (Canvas available)
+    private async canStitchZif(): Promise<boolean> {
+        try {
+            // Dynamic import to avoid bundling issues on platforms without canvas
+            await import('canvas');
+            return true;
+        } catch {
+            // Fallback: try Jimp-based stitching capability
+            try {
+                const jimpModule: any = await import('jimp');
+                return Boolean(jimpModule);
+            } catch {
+                return false;
+            }
+        }
+    }
+    
     getLibraryName(): string {
         return 'morgan';
     }
@@ -59,6 +76,23 @@ export class MorganLoader extends BaseLibraryLoader {
                 let objectId: string | null = null;
                 let startPageNum: number | null = null;
                 
+                // Normalize obvious malformed Morgan URLs where 'thumbs' is concatenated with an absolute URL
+                // e.g. '/collection/lindau-gospelszhttps://www.themorgan.org/collection/lindau-gospels/thumbsz'
+                if (/thumbs?https?:\/\//i.test(pageUrl)) {
+                    const match = pageUrl.match(/(https?:\/\/[^\s]+?(?:\/collection\/[^\s]+?))(?:\?|#|$)/i);
+                    if (match && match[1]) {
+                        console.warn(`Morgan: Normalized malformed URL '${pageUrl}' -> '${match[1]}'`);
+                        pageUrl = match[1];
+                    } else {
+                        // Fallback: strip everything after 'thumbs' and re-append '/thumbs'
+                        const idx = pageUrl.toLowerCase().indexOf('/thumbs');
+                        if (idx > 0) {
+                            pageUrl = pageUrl.substring(0, idx + '/thumbs'.length);
+                            console.warn(`Morgan: Fallback normalized URL to '${pageUrl}'`);
+                        }
+                    }
+                }
+
                 // Parse common Morgan URL shapes:
                 // 1) /collection/<slug>/<objectId>/thumbs
                 // 2) /collection/<slug>/<objectId>
@@ -314,6 +348,7 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                 if (typeof data === 'string' && data.includes('<')) {
                                     const idsBefore = knownIds.size;
                                     const pagesBefore = knownPages.size;
+                                    // Note: facsimiles array is declared later; only update knownIds/knownPages here to avoid hoist issues
                                     for (const m of data.matchAll(quickFacsimileIdRegex)) {
                                         if (m[2]) knownIds.add(m[2]);
                                     }
@@ -324,7 +359,6 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                         if (m[1]) knownPages.add(m[1]);
                                     }
                                     if (knownIds.size > idsBefore || knownPages.size > pagesBefore) {
-                                        pagesHtml.push(data);
                                         appended = true;
                                         _appendedTotal++;
                                     }
@@ -365,7 +399,7 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                 if (m[1]) knownPages.add(m[1]);
                             }
                             if (knownIds.size > idsBefore || knownPages.size > pagesBefore) {
-                                pagesHtml.push(html);
+                                // We only tracked IDs here; detailed facsimile extraction happens after regex setup below
                                 pageIndex++;
                                 await new Promise(r => setTimeout(r, 200));
                             } else {
@@ -448,6 +482,7 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
 
                         // Attempt ZIF by discovering manuscript code from individual pages
                         let manuscriptCode: string | null = null;
+                        let imagesDir: string | null = null; // Subdirectory under /facsimile/images/<imagesDir>/
                         try {
                             // Try to discover manuscript code from first individual page
                             const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
@@ -456,36 +491,35 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                             
                             if (firstPageResp.ok) {
                                 const firstPageHtml = await firstPageResp.text();
-                                // Look for iframe src with manuscript code pattern
+                                // Look for iframe src with manuscript code pattern (e.g., /facsimile/m1/default.asp)
                                 const iframeMatch = firstPageHtml.match(/host\.themorgan\.org\/facsimile\/([^\/]+)\/default\.asp/);
                                 if (iframeMatch && iframeMatch[1]) {
                                     manuscriptCode = iframeMatch[1];
                                     console.log(`Morgan: Discovered manuscript code: ${manuscriptCode}`);
+                                }
+                                // Look for Zoomify viewer call that reveals the images directory (e.g., ../images/lindau-gospels/... .zif)
+                                const imagesDirMatch = firstPageHtml.match(/images\/([A-Za-z0-9_-]+)\/[^"']+\.zif/);
+                                if (imagesDirMatch && imagesDirMatch[1]) {
+                                    imagesDir = imagesDirMatch[1];
+                                    console.log(`Morgan: Discovered images directory: ${imagesDir}`);
                                 }
                             }
                         } catch {
                             console.log('Morgan: Could not discover manuscript code from individual page');
                         }
 
-                        // If we have manuscript code, build ZIF URLs
-                        if (manuscriptCode && dedupedFacsimiles.length > 0) {
+                        // If we have facsimile IDs, build ZIF URLs using discovered imagesDir or manuscriptId
+                        if (dedupedFacsimiles.length > 0) {
                             try {
                                 const f0 = dedupedFacsimiles[0];
                                 if (f0) {
-                                    // Test the correct ZIF pattern: /facsimile/images/{manuscript_code}/{file_id}.zif
-                                    const testZifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptCode}/${f0.id}.zif`;
-                                    const headResp = await this.deps.fetchDirect(testZifUrl, { method: 'HEAD', redirect: 'follow' as RequestRedirect });
-                                    
-                                    if (headResp && headResp.ok) {
-                                        console.log(`Morgan: ZIF verified with manuscript code ${manuscriptCode}`);
-                                        // Build all ZIF URLs using the discovered pattern
-                                        for (const f of dedupedFacsimiles) {
-                                            if (!isLikelyZifCandidate(f.id)) continue;
-                                            const zifUrl = `https://host.themorgan.org/facsimile/images/${manuscriptCode}/${f.id}.zif`;
-                                            imagesByPriority[0]?.push(zifUrl);
-                                        }
-                                    } else {
-                                        console.log(`Morgan: ZIF test failed (${headResp.status}) for manuscript code ${manuscriptCode}`);
+                                    // Prefer discovered imagesDir (e.g., lindau-gospels); fallback to slug manuscriptId
+                                    const zifDir = imagesDir || manuscriptId;
+                                    // Build ZIF URLs directly (avoid HEAD to reduce memory/time)
+                                    for (const f of dedupedFacsimiles) {
+                                        if (!isLikelyZifCandidate(f.id)) continue;
+                                        const zifUrl = `https://host.themorgan.org/facsimile/images/${zifDir}/${f.id}.zif`;
+                                        imagesByPriority[0]?.push(zifUrl);
                                     }
                                 }
                             } catch (error) {
@@ -495,9 +529,9 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                             console.log('Morgan: No manuscript code discovered, skipping ZIF attempt');
                         }
 
-                        // Priority 1: NEW - High-resolution download URLs (16.6x improvement validated)
-                        // Only parse individual pages if we didn't already collect facsimile JPEGs from listing pages.
-                        if ((imagesByPriority[2]?.length || 0) === 0) try {
+                    // Priority 1: NEW - High-resolution download URLs (and per-page ZIF discovery)
+                    // Limit per-page parsing to a tiny sample to avoid memory blowups
+                    try {
                             // Extract individual page URLs from all collected thumbs pages
                             const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
                             const pageUrlRegex = new RegExp(`/collection/${collectionPath}/(\\d+)`, 'g');
@@ -568,8 +602,8 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                 }
                             });
                             
-                            // Process all pages - removed artificial limit
-                            const pagesToProcess = allUniquePages;
+                            // Process only first 3 pages for ZIF confirmation
+                            const pagesToProcess = allUniquePages.slice(0, 3);
                             
                             // Parse each individual page for high-resolution download URLs
                             for (const pageNum of pagesToProcess) {
@@ -582,7 +616,8 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                         const individualPageContent = await individualPageResponse.text();
                                         
                                         // FIXED: Look for facsimile images on individual pages
-                                        const facsimileMatch = individualPageContent.match(/\/sites\/default\/files\/facsimile\/[^"']+\/([^"']+\.jpg)/);
+                                        // Support both with and without BBID segment and optional styled path
+                                        const facsimileMatch = individualPageContent.match(/\/sites\/default\/files\/(?:styles\/[^"']*\/public\/)?facsimile\/(?:\d+\/)?([^"']+\.jpg)/i);
                                         if (facsimileMatch) {
                                             const downloadUrl = `${baseUrl}${facsimileMatch[0]}`;
                                             if (imagesByPriority && imagesByPriority[1]) {
@@ -590,6 +625,30 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                             }
                                             console.log(`Morgan: Found high-res facsimile: ${facsimileMatch[1]}`);
                                         }
+
+                                        // NEW: Extract Zoom viewer link and resolve per-page ZIF path via default.asp
+                                        try {
+                                            const zoomLinkMatch = individualPageContent.match(/https?:\/\/host\.themorgan\.org\/facsimile\/([^\/]+)\/default\.asp\?id=(\d+)/i);
+                                            const zifOk = await this.canStitchZif();
+                                            if (zoomLinkMatch && zifOk) {
+                                                const code = zoomLinkMatch[1];
+                                                const pageId = zoomLinkMatch[2];
+                                                const viewerUrl = `https://host.themorgan.org/facsimile/${code}/default.asp?id=${pageId}`;
+                                                const viewerResp = await this.deps.fetchDirect(viewerUrl);
+                                                if (viewerResp.ok) {
+                                                    const viewerHtml = await viewerResp.text();
+                                                    const zifPathMatch = viewerHtml.match(/images\/([A-Za-z0-9_-]+)\/([^"']+)\.zif/i);
+                                                    if (zifPathMatch && zifPathMatch[1] && zifPathMatch[2]) {
+                                                        const dir = zifPathMatch[1];
+                                                        const fileBase = zifPathMatch[2];
+                                                        const zifUrl = `https://host.themorgan.org/facsimile/images/${dir}/${fileBase}.zif`;
+                                                        if (imagesByPriority && imagesByPriority[0]) {
+                                                            imagesByPriority[0].push(zifUrl);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        } catch { /* non-fatal */ }
                                     }
                                     
                                     // Rate limiting to be respectful to Morgan's servers
@@ -633,15 +692,16 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                     }
                     
                     // FIXED: Properly select all discovered images with highest quality
-                    // Priority 1 contains all individually fetched high-resolution facsimile images
-                    if (imagesByPriority && imagesByPriority[1] && imagesByPriority[1]?.length > 0) {
+                    // Prefer per-page high-res JPEGs; use ZIF only when tile stitching is supported
+                    const zifCapable = await this.canStitchZif();
+                    if (imagesByPriority && imagesByPriority[0] && imagesByPriority[0]?.length > 0 && zifCapable) {
+                        // Prefer ZIF for maximum resolution when tile stitching is available
+                        console.log(`Morgan: Using ${imagesByPriority[0]?.length} ZIF ultra-high resolution images (tile stitching enabled)`);
+                        pageLinks.push(...imagesByPriority[0]);
+                    } else if (imagesByPriority && imagesByPriority[1] && imagesByPriority[1]?.length > 0) {
                         // Use high-resolution facsimile images from individual pages
                         console.log(`Morgan: Using ${imagesByPriority[1]?.length} high-resolution facsimile images`);
                         pageLinks.push(...imagesByPriority[1]);
-                    } else if (imagesByPriority && imagesByPriority[0] && imagesByPriority[0]?.length > 0) {
-                        // Fallback to ZIF ultra-high resolution images if no facsimile images found
-                        console.log(`Morgan: Using ${imagesByPriority[0]?.length} ZIF ultra-high resolution images`);
-                        pageLinks.push(...imagesByPriority[0]);
                     } else {
                         // Fallback to other image priorities if no high-res images found
                         console.log('Morgan: No high-resolution images found, using fallback priorities');
@@ -734,6 +794,12 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                     return true;
                 });
                 
+                // If we still ended up with ZIFs but cannot stitch them, replace with available JPEGs as a safety net
+                if (!(await this.canStitchZif()) && uniquePageLinks.every(u => u.endsWith('.zif')) && imagesByPriority[2]?.length) {
+                    console.warn('Morgan: Safety net activated - replacing ZIF-only set with direct JPEG facsimiles due to missing Canvas');
+                    uniquePageLinks.splice(0, uniquePageLinks.length, ...imagesByPriority[2]!);
+                }
+                
                 // Log priority distribution for debugging - only if imagesByPriority is defined
                 if (typeof imagesByPriority !== 'undefined' && imagesByPriority) {
                     console.log(`Morgan: Image quality distribution:`);
@@ -743,6 +809,11 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                     console.log(`  - Priority 3 (Converted styled): ${imagesByPriority[3]?.length} images`);
                     console.log(`  - Priority 4 (Legacy facsimile): ${imagesByPriority[4]?.length} images`);
                     console.log(`  - Priority 5 (Other direct): ${imagesByPriority[5]?.length} images`);
+                    // Explicitly print first few links for 0/1 to validate sources during logs
+                    const sample0 = (imagesByPriority[0] || []).slice(0, 3);
+                    const sample1 = (imagesByPriority[1] || []).slice(0, 3);
+                    if (sample0.length) console.log(`Morgan: ZIF sample: ${sample0.join(' | ')}`);
+                    if (sample1.length) console.log(`Morgan: JPEG sample: ${sample1.join(' | ')}`);
                 }
                 console.log(`Morgan: Total unique images: ${uniquePageLinks?.length}`);
                 
