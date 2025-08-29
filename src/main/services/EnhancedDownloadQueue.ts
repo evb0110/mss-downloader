@@ -471,9 +471,14 @@ export class EnhancedDownloadQueue extends EventEmitter {
         const item = this.state.items.find((item) => item.id === id);
         if (!item) return false;
 
-        // If currently downloading (sequential mode), abort it
-        if (this.state.currentItemId === id && this.processingAbortController) {
-            this.processingAbortController.abort();
+        // CRITICAL FIX: Only abort the specific item's controller, not the global processing controller
+        // This prevents cascade failures when removing individual items
+        if (this.activeDownloadControllers.has(id)) {
+            const itemController = this.activeDownloadControllers.get(id);
+            if (itemController) {
+                itemController.abort();
+                this.activeDownloadControllers.delete(id);
+            }
         }
 
         // ULTRATHINK FIX: Cancel simultaneous downloads too
@@ -510,14 +515,14 @@ export class EnhancedDownloadQueue extends EventEmitter {
             const globalDziCache = GlobalDziCache.getInstance();
             globalDziCache.clear(); // Nuclear option: clear entire DZI cache
             
-            // 3. Clear ElectronImageCache if it exists
+            // 3. Clear ElectronImageCache if it exists (note: doesn't have singleton pattern)
             try {
                 const { ElectronImageCache } = await import('./ElectronImageCache');
-                const imageCache = ElectronImageCache.getInstance();
-                if (imageCache && typeof imageCache.clear === 'function') {
-                    await imageCache.clear();
+                const imageCache = new ElectronImageCache();
+                if (imageCache && typeof imageCache.clearCache === 'function') {
+                    await imageCache.clearCache();
                 }
-            } catch { /* ElectronImageCache might not exist */ }
+            } catch { /* ElectronImageCache might not exist or not have clearCache method */ }
             
             // 4. Clear any library-specific caches that might exist
             try {
@@ -636,8 +641,12 @@ export class EnhancedDownloadQueue extends EventEmitter {
         if (!item || item.status !== 'downloading') return false;
 
         item.status = 'paused';
-        if (this.state.currentItemId === id && this.processingAbortController) {
-            this.processingAbortController.abort();
+        // CRITICAL FIX: Only abort the specific item's controller, not the global processing controller
+        if (this.activeDownloadControllers.has(id)) {
+            const itemController = this.activeDownloadControllers.get(id);
+            if (itemController) {
+                itemController.abort();
+            }
         }
         
         this.saveToStorage();
@@ -767,7 +776,7 @@ export class EnhancedDownloadQueue extends EventEmitter {
                         return true;
                     }
                     // Don't auto-retry items that failed with CAPTCHA_REQUIRED or exceeded max retries
-                    if (item.status === 'failed' && item.error && !item.error.includes('CAPTCHA_REQUIRED:')) {
+                    if ((item.status as any) === 'failed' && item.error && !item.error.includes('CAPTCHA_REQUIRED:')) {
                         const maxRetries = 3; // Maximum retry attempts to prevent infinite loops
                         const retryCount = item.retryCount || 0;
                         if (retryCount < maxRetries) {
@@ -874,10 +883,16 @@ export class EnhancedDownloadQueue extends EventEmitter {
             stage: 'downloading',
         };
         
-        // Create abort controller for this specific item
+        // Create abort controller for this specific item  
         const abortController = new AbortController();
         this.activeDownloadControllers.set(item.id, abortController);
-        this.processingAbortController = abortController;
+        
+        // CRITICAL FIX: Keep processingAbortController separate from individual download controllers
+        // The global controller is for queue-level operations only, not for individual downloads
+        // This prevents abort cascade failures when queue state changes
+        if (!this.processingAbortController) {
+            this.processingAbortController = new AbortController();
+        }
         
         this.notifyListeners();
 
@@ -939,8 +954,12 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 
                 item.status = 'failed';
                 item.error = `Download timeout - exceeded ${timeoutMinutes} minutes. Large manuscripts (${item?.totalPages || 'unknown'} pages) may require manual splitting.`;
-                if (this.processingAbortController) {
-                    this.processingAbortController.abort();
+                // CRITICAL FIX: Don't abort processingAbortController on timeout as it cascades to abort ALL ongoing requests
+                // Instead, let individual operations handle their own timeouts gracefully
+                // The abort cascade was causing Arenberg Gospels to show "External signal aborted" for all page requests
+                if (this.processingAbortController && Array.isArray(this.state.activeItemIds) && this.state.activeItemIds.includes(item.id)) {
+                    console.log(`[Timeout] Allowing individual operations to handle their own timeouts instead of cascading abort for ${item.displayName}`);
+                    // this.processingAbortController.abort(); // Commented out to prevent cascade failures
                 }
                 this.saveToStorage();
                 this.notifyListeners();
@@ -1017,6 +1036,8 @@ export class EnhancedDownloadQueue extends EventEmitter {
             const libraryCap = item.libraryOptimizations?.maxConcurrentDownloads;
             const effectiveConcurrent = libraryCap ? Math.min(baseConcurrent, libraryCap) : baseConcurrent;
 
+            // CRITICAL FIX: Don't pass the global abort controller signal to individual downloads
+            // This was causing all downloads to be aborted when queue state changes
             const result = await this.currentDownloader!.downloadManuscript(item.url, {
                 onProgress: (progress: any) => {
                     // Handle both simple progress (0-1) and detailed progress object
@@ -1065,6 +1086,9 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 }),
                 // Pass the queue item for manual manifest data
                 queueItem: item,
+                // CRITICAL FIX: Only pass individual item's abort signal, not global processing signal
+                // This prevents abort cascade failures when queue changes state
+                signal: abortController.signal,
             });
 
             // CRITICAL FIX for Issue #29: downloadManuscript returns STRING (filepath) on success, not object

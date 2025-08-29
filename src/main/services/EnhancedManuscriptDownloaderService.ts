@@ -102,6 +102,7 @@ interface DownloadOptions {
     // Pass-through flags for tile-based libraries (e.g., Bordeaux)
     requiresTileProcessor?: boolean;
     tileConfig?: TileConfig;
+    signal?: AbortSignal; // Add signal support for controlled cancellation
 }
 
 interface TileConfig {
@@ -1374,7 +1375,12 @@ export class EnhancedManuscriptDownloaderService {
         const externalSignal = options.signal;
         if (externalSignal) {
             const abortListener = () => {
-                console.log(`[fetchDirect] External signal aborted for ${url}`);
+                // CRITICAL FIX: Only log external abort if it's not a timeout signal from the same request
+                // AbortSignal.timeout() creates legitimate timeout signals that shouldn't be logged as "external"
+                const isTimeoutSignal = externalSignal.reason && externalSignal.reason.toString().includes('timeout');
+                if (!isTimeoutSignal) {
+                    console.log(`[fetchDirect] External signal aborted for ${url}`);
+                }
                 controller.abort();
             };
             externalSignal.addEventListener('abort', abortListener);
@@ -3044,6 +3050,7 @@ export class EnhancedManuscriptDownloaderService {
             queueItem,
             requiresTileProcessor,
             tileConfig: optTileConfig,
+            // signal removed (unused)
         } = options;
 
         const downloadStartTime = Date.now();

@@ -236,6 +236,8 @@ export class MorganLoader extends BaseLibraryLoader {
                 
                 // Load more pages (views infinite scroll) to collect all facsimiles
                 const pagesHtml: string[] = [pageContent];
+                // Track discovered page numbers from pagination to improve coverage downstream
+                let discoveredPageNumbers: Set<string> = new Set<string>();
                 if (manuscriptId) {
                     // Memory-safe accumulator for discovered facsimile references across pagination
                     const facsimileCandidates: Array<{ bbid: string; id: string }> = [];
@@ -417,6 +419,8 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                             }
                         }
                     } catch { void 0; }
+                    // Persist discovered page numbers for downstream logic
+                    discoveredPageNumbers = knownPages;
                 }
                 
                 // Extract image URLs from the page
@@ -445,6 +449,7 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                     }
                 } else {
                     // Main Morgan format - MAXIMUM RESOLUTION priority system
+                    let discoveredPageCount = 0;
                     // FIXED: Prioritize ZIF files for ultra-high resolution (6000x4000+ pixels, 25MP+)
                     
                     // Priority 0: Generate .zif URLs from image references (MAXIMUM RESOLUTION - 25+ megapixels)
@@ -525,8 +530,9 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                             try {
                                 const f0 = dedupedFacsimiles[0];
                                 if (f0) {
-                                    // Prefer discovered imagesDir (e.g., lindau-gospels); fallback to slug manuscriptId
-                                    const zifDir = imagesDir || manuscriptId;
+                                    // CRITICAL FIX: Prefer manuscriptCode over manuscriptId for ZIF directory
+                                    // Order: imagesDir (highest priority) → manuscriptCode → manuscriptId (fallback)
+                                    const zifDir = imagesDir || manuscriptCode || manuscriptId;
                                     // Build ZIF URLs directly (avoid HEAD to reduce memory/time)
                                     for (const f of dedupedFacsimiles) {
                                         if (!isLikelyZifCandidate(f.id)) continue;
@@ -566,8 +572,15 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                 }
                             }
                             
-                            // Remove duplicates and sort
-                            const allUniquePages = [...uniquePageSet].filter(Boolean).sort((a, b) => parseInt(a || '0') - parseInt(b || '0'));
+                            // Remove duplicates and sort (include pages discovered via AJAX/\?page pagination)
+                            const mergedPages = new Set<string>([
+                              ...uniquePageSet,
+                              ...Array.from(discoveredPageNumbers || new Set<string>())
+                            ]);
+                            const allUniquePages = [...mergedPages]
+                              .filter(Boolean)
+                              .sort((a, b) => parseInt(a || '0') - parseInt(b || '0'));
+                            discoveredPageCount = allUniquePages.length;
                             
                             // FIXED: If no pages found in thumbs and we started from a single page, create page range
                             if (allUniquePages?.length === 0 && startPageNum !== null) {
@@ -587,76 +600,61 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                             allUniquePages.push(i.toString());
                                         }
                                         console.log(`Morgan: Generated ${totalPages} page numbers from navigation info`);
+                                        discoveredPageCount = allUniquePages.length;
                                     } else {
-                                        // BORDEAUX-STYLE ROBUST PAGE DISCOVERY: Find actual last page using exponential + binary search
-                                        console.log(`Morgan: Using robust page discovery to find all pages`);
-                                        const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
+                                        // CRITICAL FIX: Use fast sequential discovery instead of exponential+binary search
+                                        // This prevents infinite hanging for manuscripts like Arenberg that have images but no metadata
+                                        console.log(`Morgan: Using fast sequential page discovery for ${manuscriptId}`);
                                         
-                                        // Phase 1: Exponential search to find upper bound
-                                        let upperBound = Math.max(startPageNum * 2, 100); // Start with reasonable upper bound
-                                        let lastValidPage = startPageNum;
+                                        const maxPagesToTest = 50; // Reasonable limit 
+                                        let consecutiveFailures = 0;
+                                        const maxConsecutiveFailures = 5; // Stop after 5 consecutive failures
                                         
-                                        console.log(`Morgan: Phase 1 - Exponential search starting from ${startPageNum}`);
-                                        while (upperBound <= 2000) { // Reasonable absolute maximum
-                                            const testUrl = `${baseUrl}/collection/${collectionPath}/${upperBound}`;
+                                        console.log(`Morgan: Testing pages 1-${maxPagesToTest} sequentially...`);
+                                        
+                                        for (let pageNum = 1; pageNum <= maxPagesToTest; pageNum++) {
                                             try {
-                                                const testResp = await this.deps.fetchDirect(testUrl, { signal: AbortSignal.timeout(5000) });
+                                                const testUrl = `${baseUrl}/collection/${manuscriptId}/${pageNum}`;
+                                                const testResp = await this.deps.fetchDirect(testUrl, { signal: AbortSignal.timeout(3000) });
+                                                
                                                 if (testResp.ok) {
                                                     const testContent = await testResp.text();
-                                                    // Check if page contains actual facsimile content (not just error page)
-                                                    if (testContent.includes('facsimile') || testContent.includes('image') || testContent.includes('page')) {
-                                                        lastValidPage = upperBound;
-                                                        upperBound *= 2; // Continue exponentially
-                                                        console.log(`Morgan: Found valid page ${upperBound/2}, testing ${upperBound}`);
+                                                    // Check for actual facsimile images in the page
+                                                    const hasImages = testContent.match(/\/sites\/default\/files\/[^"']*facsimile[^"']*\.jpg/);
+                                                    if (hasImages) {
+                                                        allUniquePages.push(pageNum.toString());
+                                                        consecutiveFailures = 0; // Reset failure count
+                                                        if (pageNum % 10 === 0) {
+                                                            console.log(`Morgan: ✅ Found page ${pageNum} with images`);
+                                                        }
                                                     } else {
-                                                        break; // Found upper bound
+                                                        consecutiveFailures++;
+                                                        if (consecutiveFailures >= maxConsecutiveFailures) {
+                                                            console.log(`Morgan: Stopping after ${maxConsecutiveFailures} consecutive pages without images`);
+                                                            break;
+                                                        }
                                                     }
                                                 } else {
-                                                    break; // Found upper bound
-                                                }
-                                            } catch {
-                                                break; // Found upper bound due to timeout/error
-                                            }
-                                            await new Promise(r => setTimeout(r, 100)); // Rate limiting
-                                        }
-                                        
-                                        // Phase 2: Binary search to find exact last page
-                                        let low = lastValidPage;
-                                        let high = Math.min(upperBound, 2000);
-                                        console.log(`Morgan: Phase 2 - Binary search between ${low} and ${high}`);
-                                        
-                                        while (low < high) {
-                                            const mid = Math.floor((low + high + 1) / 2);
-                                            const testUrl = `${baseUrl}/collection/${collectionPath}/${mid}`;
-                                            try {
-                                                const testResp = await this.deps.fetchDirect(testUrl, { signal: AbortSignal.timeout(5000) });
-                                                if (testResp.ok) {
-                                                    const testContent = await testResp.text();
-                                                    if (testContent.includes('facsimile') || testContent.includes('image') || testContent.includes('page')) {
-                                                        low = mid;
-                                                        console.log(`Morgan: Page ${mid} valid, searching higher`);
-                                                    } else {
-                                                        high = mid - 1;
-                                                        console.log(`Morgan: Page ${mid} invalid, searching lower`);
+                                                    consecutiveFailures++;
+                                                    if (consecutiveFailures >= maxConsecutiveFailures) {
+                                                        console.log(`Morgan: Stopping after ${maxConsecutiveFailures} consecutive 404s`);
+                                                        break;
                                                     }
-                                                } else {
-                                                    high = mid - 1;
-                                                    console.log(`Morgan: Page ${mid} 404, searching lower`);
                                                 }
-                                            } catch {
-                                                high = mid - 1;
+                                            } catch (error) {
+                                                consecutiveFailures++;
+                                                if (consecutiveFailures >= maxConsecutiveFailures) {
+                                                    console.log(`Morgan: Stopping after ${maxConsecutiveFailures} consecutive timeouts/errors`);
+                                                    break;
+                                                }
                                             }
-                                            await new Promise(r => setTimeout(r, 100)); // Rate limiting
+                                            
+                                            // Rate limiting to prevent overwhelming the server
+                                            await new Promise(r => setTimeout(r, 100));
                                         }
                                         
-                                        const actualLastPage = low;
-                                        console.log(`Morgan: Discovered actual last page: ${actualLastPage}`);
-                                        
-                                        // Generate all page numbers from 1 to actualLastPage
-                                        for (let i = 1; i <= actualLastPage; i++) {
-                                            allUniquePages.push(i.toString());
-                                        }
-                                        console.log(`Morgan: Generated ${actualLastPage} page numbers using robust discovery`);
+                                        console.log(`Morgan: Sequential discovery completed - found ${allUniquePages.length} pages with images`);
+                                        discoveredPageCount = allUniquePages.length;
                                     }
                                 }
                             }
@@ -687,25 +685,47 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                 // Phase 1: Find if there are more pages beyond what we discovered
                                 console.log(`Morgan: Testing for pages beyond ${highestFound}...`);
                                 let foundAdditional = false;
-                                while (testPage <= Math.min(highestFound * 3, 500)) { // Reasonable search range
+                                let consecutiveFailures = 0;
+                                const maxConsecutiveFailures = 5; // Prevent infinite loops
+                                while (testPage <= Math.min(highestFound * 3, 500) && consecutiveFailures < maxConsecutiveFailures) { // Reasonable search range
                                     const testUrl = `${baseUrl}/collection/${collectionPath}/${testPage}`;
                                     try {
                                         const testResp = await this.deps.fetchDirect(testUrl, { signal: AbortSignal.timeout(3000) });
                                         if (testResp.ok) {
                                             const testContent = await testResp.text();
-                                            if (testContent.includes('facsimile') || testContent.includes('image') || 
-                                                testContent.includes('page') && !testContent.includes('Page not found')) {
+                                            // FIXED: Much more strict validation - only count pages with actual facsimile images
+                                            const hasActualImages = testContent.match(/\/sites\/default\/files\/[^"']*facsimile[^"']*\.jpg/) ||
+                                                                   testContent.match(/host\.themorgan\.org\/facsimile\//) ||
+                                                                   testContent.includes('facsimileViewer');
+                                            
+                                            // Also check content length - pages with actual images should have substantial content
+                                            const hasSubstantialContent = testContent.length > 5000;
+                                            
+                                            if (hasActualImages && hasSubstantialContent) {
                                                 lastValidPage = testPage;
                                                 foundAdditional = true;
+                                                consecutiveFailures = 0; // Reset failure counter
                                                 console.log(`Morgan: Found additional page ${testPage}`);
                                                 // Add this page to our collection
                                                 allUniquePages.push(testPage.toString());
+                                            } else {
+                                                consecutiveFailures++;
                                             }
                                         } else if (testResp.status === 404) {
-                                            break; // No more pages
+                                            consecutiveFailures++;
+                                            if (consecutiveFailures >= maxConsecutiveFailures) {
+                                                console.log(`Morgan: Stopping after ${maxConsecutiveFailures} consecutive 404s`);
+                                                break;
+                                            }
+                                        } else {
+                                            consecutiveFailures++;
                                         }
                                     } catch {
-                                        break; // Error likely means no more pages
+                                        consecutiveFailures++;
+                                        if (consecutiveFailures >= maxConsecutiveFailures) {
+                                            console.log(`Morgan: Stopping after ${maxConsecutiveFailures} consecutive errors`);
+                                            break;
+                                        }
                                     }
                                     testPage++;
                                     await new Promise(r => setTimeout(r, 50)); // Fast rate limiting
@@ -721,6 +741,7 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                     // Sort the pages again
                                     allUniquePages.sort((a, b) => parseInt(a) - parseInt(b));
                                     console.log(`Morgan: 🎉 Robust discovery found ${lastValidPage - highestFound} additional pages! Total: ${allUniquePages.length}`);
+                                    discoveredPageCount = allUniquePages.length;
                                 } else {
                                     console.log(`Morgan: No additional pages found beyond ${highestFound}`);
                                 }
@@ -860,7 +881,8 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                                                 const viewerHtml = await viewerResp.text();
                                                                 const zifMatch = viewerHtml.match(/images\/([A-Za-z0-9_-]+)\/([^"']+)\.zif/i);
                                                                 if (zifMatch && zifMatch[1] && zifMatch[2]) {
-                                                                    const dir = zifMatch[1];
+                                                                    // CRITICAL FIX: Use discovered manuscript code if available
+                                                                    const dir = imagesDir || manuscriptCode || zifMatch[1];
                                                                     const fileBase = zifMatch[2];
                                                                     const zifUrl = `https://host.themorgan.org/facsimile/images/${dir}/${fileBase}.zif`;
                                                                     if (imagesByPriority[0]) {
@@ -917,14 +939,23 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                     // FIXED: Properly select all discovered images with highest quality
                     // Prefer per-page high-res JPEGs; use ZIF only when tile stitching is supported
                     const zifCapable = await this.canStitchZif();
-                    if (imagesByPriority && imagesByPriority[0] && imagesByPriority[0]?.length > 0 && zifCapable) {
-                        // Prefer ZIF for maximum resolution when tile stitching is available
-                        console.log(`Morgan: Using ${imagesByPriority[0]?.length} ZIF ultra-high resolution images (tile stitching enabled)`);
-                        pageLinks.push(...imagesByPriority[0]);
-                    } else if (imagesByPriority && imagesByPriority[1] && imagesByPriority[1]?.length > 0) {
-                        // Use high-resolution facsimile images from individual pages
-                        console.log(`Morgan: Using ${imagesByPriority[1]?.length} high-resolution facsimile images`);
-                        pageLinks.push(...imagesByPriority[1]);
+                    const zifCount = imagesByPriority?.[0]?.length || 0;
+                    const jpegCount = imagesByPriority?.[1]?.length || 0;
+                    const expectedPages = discoveredPageCount || 0;
+
+                    // Prefer the set that provides better coverage; avoid CPU-heavy ZIF if incomplete
+                    const zifHasGoodCoverage = expectedPages > 0 ? (zifCount >= Math.max(1, Math.floor(0.95 * expectedPages))) : (zifCount > 0);
+                    const jpegHasGoodCoverage = expectedPages > 0 ? (jpegCount >= Math.max(1, Math.floor(0.90 * expectedPages))) : (jpegCount > 0);
+
+                    if (zifCapable && zifHasGoodCoverage && zifCount >= jpegCount) {
+                        console.log(`Morgan: Using ${zifCount} ZIF ultra-high resolution images (tile stitching enabled)`);
+                        pageLinks.push(...(imagesByPriority?.[0] || []));
+                    } else if (jpegHasGoodCoverage) {
+                        console.log(`Morgan: Using ${jpegCount} high-resolution facsimile images (preferred for coverage/CPU)`);
+                        pageLinks.push(...(imagesByPriority?.[1] || []));
+                    } else if (zifCapable && zifCount > 0) {
+                        console.log(`Morgan: Falling back to ${zifCount} ZIF images (JPEG set insufficient)`);
+                        pageLinks.push(...(imagesByPriority?.[0] || []));
                     } else {
                         // Fallback to other image priorities if no high-res images found
                         console.log('Morgan: No high-resolution images found, using fallback priorities');
