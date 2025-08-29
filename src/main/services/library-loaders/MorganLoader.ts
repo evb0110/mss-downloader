@@ -1114,6 +1114,8 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                     library: 'morgan' as const,
                     displayName,
                     originalUrl: morganUrl,
+                    // Indicate tile-based processing when ZIF/DZI links are selected to cap concurrency at 1
+                    requiresTileAssembly: uniquePageLinks.some(u => u.endsWith('.zif') || u.endsWith('.dzi')),
                 };
                 
                 return morganManifest;
