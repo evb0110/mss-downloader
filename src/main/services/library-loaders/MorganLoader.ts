@@ -465,7 +465,6 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                     }
                 } else {
                     // Main Morgan format - MAXIMUM RESOLUTION priority system
-                    let discoveredPageCount = 0;
                     // FIXED: Prioritize ZIF files for ultra-high resolution (6000x4000+ pixels, 25MP+)
                     
                     // Priority 0: Generate .zif URLs from image references (MAXIMUM RESOLUTION - 25+ megapixels)
@@ -631,7 +630,6 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                             const allUniquePages = [...mergedPages]
                               .filter(Boolean)
                               .sort((a, b) => parseInt(a || '0') - parseInt(b || '0'));
-                            discoveredPageCount = allUniquePages.length;
                             
                             // FIXED: If no pages found in thumbs and we started from a single page, create page range
                             if (allUniquePages?.length === 0 && startPageNum !== null) {
@@ -651,7 +649,6 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                             allUniquePages.push(i.toString());
                                         }
                                         console.log(`Morgan: Generated ${totalPages} page numbers from navigation info`);
-                                        discoveredPageCount = allUniquePages.length;
                                     } else {
                                         // CRITICAL FIX: Use fast sequential discovery instead of exponential+binary search
                                         // This prevents infinite hanging for manuscripts like Arenberg that have images but no metadata
@@ -705,7 +702,6 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                         }
                                         
                                         console.log(`Morgan: Sequential discovery completed - found ${allUniquePages.length} pages with images`);
-                                        discoveredPageCount = allUniquePages.length;
                                     }
                                 }
                             }
@@ -792,7 +788,6 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                     // Sort the pages again
                                     allUniquePages.sort((a, b) => parseInt(a) - parseInt(b));
                                     console.log(`Morgan: 🎉 Robust discovery found ${lastValidPage - highestFound} additional pages! Total: ${allUniquePages.length}`);
-                                    discoveredPageCount = allUniquePages.length;
                                 } else {
                                     console.log(`Morgan: No additional pages found beyond ${highestFound}`);
                                 }
@@ -983,50 +978,45 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                         }
                     }
                     
-                    // FIXED: Properly select all discovered images with highest quality
-                    // Prefer per-page high-res JPEGs; use ZIF only when tile stitching is supported
+                    // Selection policy: if any ZIFs were discovered, prefer ZIF for those pages, and
+                    // fill remaining pages with high‑res JPEGs. This guarantees tile processing when
+                    // available while still achieving full coverage.
                     const zifCapable = await this.canStitchZif();
-                    const zifCount = imagesByPriority?.[0]?.length || 0;
-                    const jpegCount = imagesByPriority?.[1]?.length || 0;
-                    const expectedPages = discoveredPageCount || 0;
+                    const zifList = (imagesByPriority?.[0] || []).slice();
+                    const jpegList = (imagesByPriority?.[1] || []).slice();
 
-                    // Prefer the set that provides better coverage; avoid CPU-heavy ZIF if incomplete
-                    const zifHasGoodCoverage = expectedPages > 0 ? (zifCount >= Math.max(1, Math.floor(0.95 * expectedPages))) : (zifCount > 0);
-                    const jpegHasGoodCoverage = expectedPages > 0 ? (jpegCount >= Math.max(1, Math.floor(0.90 * expectedPages))) : (jpegCount > 0);
+                    // Build an ID→URL map with ZIF preference
+                    const byId = new Map<string, string>();
+                    const extractIdFromUrl = (u: string) => (u.match(/([^/]+)\.(?:jpg|jpeg|png|gif|zif)$/i)?.[1] || u);
 
-                    if (zifCapable && zifHasGoodCoverage && zifCount >= jpegCount) {
-                        console.log(`Morgan: Using ${zifCount} ZIF ultra-high resolution images (tile stitching enabled)`);
-                        pageLinks.push(...(imagesByPriority?.[0] || []));
-                    } else if (jpegHasGoodCoverage) {
-                        console.log(`Morgan: Using ${jpegCount} high-resolution facsimile images (preferred for coverage/CPU)`);
-                        pageLinks.push(...(imagesByPriority?.[1] || []));
-                    } else if (zifCapable && zifCount > 0) {
-                        console.log(`Morgan: Falling back to ${zifCount} ZIF images (JPEG set insufficient)`);
-                        pageLinks.push(...(imagesByPriority?.[0] || []));
-                    } else {
-                        // Fallback to other image priorities if no high-res images found
-                        console.log('Morgan: No high-resolution images found, using fallback priorities');
-                        const getFilenameFromUrl = (url: string) => {
-                            const match = url.match(/([^/]+)\.(jpg|zif)$/);
-                            return match ? match?.[1] : url;
-                        };
-                        
-                        // Use Map for deduplication
-                        const filenameMap = new Map<string, string>();
-                        
-                        // Add images by priority, avoiding duplicates based on filename
-                        if (imagesByPriority) {
-                            for (let priority = 2; priority <= 5; priority++) {
-                                if (imagesByPriority[priority]) {
-                                    for (const imageUrl of imagesByPriority[priority]!) {
-                                        const filename = getFilenameFromUrl(imageUrl) || '';
-                                        if (filename && !filenameMap.has(filename)) {
-                                            filenameMap.set(filename, imageUrl);
-                                            pageLinks.push(imageUrl);
-                                        }
-                                    }
-                                }
-                            }
+                    // Add JPEGs first
+                    for (const u of jpegList) {
+                        const id = extractIdFromUrl(u);
+                        if (id && !byId.has(id)) byId.set(id, u);
+                    }
+                    // Override with ZIFs when supported
+                    if (zifCapable) {
+                        for (const u of zifList) {
+                            const id = extractIdFromUrl(u);
+                            if (id) byId.set(id, u);
+                        }
+                    }
+
+                    // Emit links in insertion order from map
+                    pageLinks.push(...byId.values());
+
+                    // If still nothing, fallback to legacy facsimile links and other direct matches
+                    if (pageLinks.length === 0) {
+                        console.log('Morgan: No prioritized links found, using fallback priorities');
+                        const fallback = [
+                            ...(imagesByPriority?.[4] || []),
+                            ...(imagesByPriority?.[5] || [])
+                        ];
+                        // Deduplicate by id
+                        const seen = new Set<string>();
+                        for (const u of fallback) {
+                            const id = extractIdFromUrl(u);
+                            if (!seen.has(id)) { seen.add(id); pageLinks.push(u); }
                         }
                     }
 
@@ -1123,8 +1113,9 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                     library: 'morgan' as const,
                     displayName,
                     originalUrl: morganUrl,
-                    // Indicate tile-based processing when ZIF/DZI links are selected to cap concurrency at 1
-                    requiresTileAssembly: uniquePageLinks.some(u => u.endsWith('.zif') || u.endsWith('.dzi')),
+                    // Indicate tile-based processing whenever we detected ZIFs for this manuscript
+                    // even if some pages fall back to JPEGs (forces concurrency=1 at queue level)
+                    requiresTileAssembly: (imagesByPriority?.[0]?.length || 0) > 0,
                 };
                 
                 return morganManifest;
