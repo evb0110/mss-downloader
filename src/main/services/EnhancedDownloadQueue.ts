@@ -401,6 +401,17 @@ export class EnhancedDownloadQueue extends EventEmitter {
                 enableProgressiveBackoff: optimizations.enableProgressiveBackoff,
                 optimizationDescription: optimizations.optimizationDescription
             };
+            // Dynamic cap: if manifest is tile-based (ZIF/DZI or explicit flag), force concurrency cap = 1 for UI and processing alignment
+            try {
+                const isTileBased = Boolean(
+                    (manifest as any)?.requiresTileProcessor === true ||
+                    (manifest as any)?.requiresTileAssembly === true ||
+                    (Array.isArray((manifest as any)?.pageLinks) && (manifest as any).pageLinks.some((u: unknown) => typeof u === 'string' && (u.endsWith('.zif') || u.endsWith('.dzi'))))
+                );
+                if (isTileBased) {
+                    item.libraryOptimizations.maxConcurrentDownloads = 1;
+                }
+            } catch {}
             if (LibraryOptimizationService.hasOptimizations(item.library)) {
                 console.log(`Applied library optimizations for ${item.library}: ${optimizations.optimizationDescription}`);
             }
