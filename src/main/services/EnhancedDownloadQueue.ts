@@ -282,6 +282,28 @@ export class EnhancedDownloadQueue extends EventEmitter {
         const loadingStartTime = Date.now();
         
         try {
+            // Pre-populate library/cap for UI while manifest is loading
+            try {
+                const guessedLibrary = (item.library || this.detectLibraryFromUrl(item.url) || 'unknown') as TLibrary;
+                item.library = guessedLibrary;
+                const initialOptimizations = LibraryOptimizationService.applyOptimizations(
+                    this.state.globalSettings.autoSplitThresholdMB,
+                    this.state.globalSettings.concurrentDownloads,
+                    guessedLibrary
+                );
+                item.libraryOptimizations = {
+                    autoSplitThresholdMB: initialOptimizations.autoSplitThresholdMB,
+                    maxConcurrentDownloads: initialOptimizations.maxConcurrentDownloads,
+                    timeoutMultiplier: initialOptimizations.timeoutMultiplier,
+                    enableProgressiveBackoff: initialOptimizations.enableProgressiveBackoff,
+                    optimizationDescription: initialOptimizations.optimizationDescription
+                };
+                // Heuristic cap: Morgan tile-based manuscripts should run with concurrency=1
+                if (guessedLibrary === 'morgan') {
+                    item.libraryOptimizations.maxConcurrentDownloads = 1;
+                }
+            } catch {}
+
             // Set status to loading before manifest loading starts
             item.status = 'loading';
             this.notifyListeners();
