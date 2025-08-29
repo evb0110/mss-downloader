@@ -238,6 +238,20 @@ export class MorganLoader extends BaseLibraryLoader {
                 const pagesHtml: string[] = [pageContent];
                 // Track discovered page numbers from pagination to improve coverage downstream
                 let discoveredPageNumbers: Set<string> = new Set<string>();
+                // Global per-manifest HTML cache to avoid duplicate network requests during discovery
+                const pageHtmlCache = new Map<string, string>();
+                const fetchPageOnce = async (url: string): Promise<string | null> => {
+                    try {
+                        if (pageHtmlCache.has(url)) return pageHtmlCache.get(url) || null;
+                        const resp = await this.deps.fetchDirect(url);
+                        if (!resp.ok) return null;
+                        const html = await resp.text();
+                        pageHtmlCache.set(url, html);
+                        return html;
+                    } catch {
+                        return null;
+                    }
+                };
                 if (manuscriptId) {
                     // Memory-safe accumulator for discovered facsimile references across pagination
                     const facsimileCandidates: Array<{ bbid: string; id: string }> = [];
@@ -250,6 +264,8 @@ export class MorganLoader extends BaseLibraryLoader {
                         ...[...pageContent.matchAll(styledFacsimileIdRegex)].map(m => m[2]).filter((id): id is string => Boolean(id))
                     ]);
                     const knownPages = new Set<string>([...pageContent.matchAll(pageLinkRegex)].map(m => m[1]).filter((id): id is string => Boolean(id)));
+
+                    // pageHtmlCache/fetchPageOnce defined above for the whole manifest discovery scope
 
                     const parseDrupalSettings = (html: string) => {
                         try {
@@ -489,9 +505,8 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                             for (const pn of pagesToProbe) {
                                 const pageUrlAbs = `${baseUrl}/collection/${collectionPath}/${pn}`;
                                 try {
-                                    const resp = await this.deps.fetchDirect(pageUrlAbs);
-                                    if (!resp.ok) continue;
-                                    const html = await resp.text();
+                                    const html = await fetchPageOnce(pageUrlAbs);
+                                    if (!html) continue;
                                     let mm: RegExpExecArray | null;
                                     while ((mm = facsimileIdRegex.exec(html)) !== null) {
                                         const bbid = mm[1];
@@ -541,10 +556,9 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                             // Try to discover manuscript code from first individual page
                             const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
                             const firstPageUrl = `${baseUrl}/collection/${collectionPath}/1`;
-                            const firstPageResp = await this.deps.fetchDirect(firstPageUrl);
+                            const firstPageHtml = await fetchPageOnce(firstPageUrl);
                             
-                            if (firstPageResp.ok) {
-                                const firstPageHtml = await firstPageResp.text();
+                            if (firstPageHtml) {
                                 // Look for iframe src with manuscript code pattern (e.g., /facsimile/m1/default.asp)
                                 const iframeMatch = firstPageHtml.match(/host\.themorgan\.org\/facsimile\/([^\/]+)\/default\.asp/);
                                 if (iframeMatch && iframeMatch[1]) {
@@ -806,10 +820,9 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                 try {
                                     const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
                                     const pageUrl = `${baseUrl}/collection/${collectionPath}/${pageNum}`;
-                                    const individualPageResponse = await this.deps.fetchDirect(pageUrl);
+                                    const individualPageContent = await fetchPageOnce(pageUrl);
                                     
-                                    if (individualPageResponse.ok) {
-                                        const individualPageContent = await individualPageResponse.text();
+                                    if (individualPageContent) {
                                         
                                         // FIXED: Look for facsimile images on individual pages
                                         // Support both with and without BBID segment and optional styled path
@@ -830,9 +843,8 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                                 const code = zoomLinkMatch[1];
                                                 const pageId = zoomLinkMatch[2];
                                                 const viewerUrl = `https://host.themorgan.org/facsimile/${code}/default.asp?id=${pageId}`;
-                                                const viewerResp = await this.deps.fetchDirect(viewerUrl);
-                                                if (viewerResp.ok) {
-                                                    const viewerHtml = await viewerResp.text();
+                                                const viewerHtml = await fetchPageOnce(viewerUrl);
+                                                if (viewerHtml) {
                                                     const zifPathMatch = viewerHtml.match(/images\/([A-Za-z0-9_-]+)\/([^"']+)\.zif/i);
                                                     if (zifPathMatch && zifPathMatch[1] && zifPathMatch[2]) {
                                                         const dir = zifPathMatch[1];
@@ -892,10 +904,9 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                             try {
                                                 const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
                                                 const pageUrl = `${baseUrl}/collection/${collectionPath}/${pageNum}`;
-                                                const pageResp = await this.deps.fetchDirect(pageUrl, { signal: AbortSignal.timeout(5000) });
+                                                const pageHtml = await fetchPageOnce(pageUrl);
                                                 
-                                                if (pageResp.ok) {
-                                                    const pageHtml = await pageResp.text();
+                                                if (pageHtml) {
                                                     
                                                     // Extract actual facsimile image URL
                                                     const facsimileMatch = pageHtml.match(/\/sites\/default\/files\/(?:styles\/[^"']*\/public\/)?facsimile\/(?:\d+\/)?([^"']+\.jpg)/i);
@@ -913,9 +924,8 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                                                         const pageId = zoomMatch[2];
                                                         try {
                                                             const viewerUrl = `https://host.themorgan.org/facsimile/${code}/default.asp?id=${pageId}`;
-                                                            const viewerResp = await this.deps.fetchDirect(viewerUrl, { signal: AbortSignal.timeout(3000) });
-                                                            if (viewerResp.ok) {
-                                                                const viewerHtml = await viewerResp.text();
+                                                            const viewerHtml = await fetchPageOnce(viewerUrl);
+                                                            if (viewerHtml) {
                                                                 const zifMatch = viewerHtml.match(/images\/([A-Za-z0-9_-]+)\/([^"']+)\.zif/i);
                                                                 if (zifMatch && zifMatch[1] && zifMatch[2]) {
                                                                     // CRITICAL FIX: Use discovered manuscript code if available
@@ -1032,9 +1042,8 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                         const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
                         for (let p = 1; p <= 2; p++) {
                             const pageUrlAbs = `${baseUrl}/collection/${collectionPath}/${p}`;
-                            const resp = await this.deps.fetchDirect(pageUrlAbs);
-                            if (!resp.ok) continue;
-                            const html = await resp.text();
+                            const html = await fetchPageOnce(pageUrlAbs);
+                            if (!html) continue;
                             // Match both facsimile/BBID/ID.jpg and facsimile/ID.jpg
                             const m = html.match(/\/(sites\/default\/files\/facsimile\/(?:\d+\/)?([^"']+\.jpg))/i);
                             if (m && m[1]) {
