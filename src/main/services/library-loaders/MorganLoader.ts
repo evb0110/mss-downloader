@@ -482,6 +482,43 @@ const m = html.match(/<script[^>]*data-drupal-selector="drupal-settings-json"[^>
                             }
                         }
 
+                        // Probe discovered pagination pages to extract more facsimile IDs
+                        if (discoveredPageNumbers && discoveredPageNumbers.size > 0) {
+                            const collectionPath = `${manuscriptId}${objectId ? `/${objectId}` : ''}`;
+                            const pagesToProbe = Array.from(discoveredPageNumbers).slice(0, 200);
+                            for (const pn of pagesToProbe) {
+                                const pageUrlAbs = `${baseUrl}/collection/${collectionPath}/${pn}`;
+                                try {
+                                    const resp = await this.deps.fetchDirect(pageUrlAbs);
+                                    if (!resp.ok) continue;
+                                    const html = await resp.text();
+                                    let mm: RegExpExecArray | null;
+                                    while ((mm = facsimileIdRegex.exec(html)) !== null) {
+                                        const bbid = mm[1];
+                                        const id = mm[2];
+                                        if (bbid && id) facsimiles.push({ bbid, id });
+                                    }
+                                    for (const sm of html.matchAll(styledFacsimileRegex)) {
+                                        const bbid = sm[1];
+                                        const id = sm[2];
+                                        if (bbid && id) facsimiles.push({ bbid, id });
+                                    }
+                                } catch {}
+                                await new Promise(r => setTimeout(r, 50));
+                            }
+                        }
+
+                        // Optionally include previously collected candidates if present in outer scope
+                        try {
+                            // @ts-ignore
+                            const fc = typeof facsimileCandidates !== 'undefined' ? facsimileCandidates : [];
+                            if (Array.isArray(fc)) {
+                                for (const c of fc) {
+                                    if (c && c.id) facsimiles.push({ bbid: c.bbid, id: c.id });
+                                }
+                            }
+                        } catch {}
+
                         // De-duplicate by id (same page may appear multiple times)
                         const isLikelyZifCandidate = (id: string) => id.includes('_') && !/-\d{2,4}x\d{2,4}/.test(id);
                         const seen = new Set<string>();
