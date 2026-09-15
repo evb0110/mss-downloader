@@ -1,0 +1,27 @@
+telegram-bot/test-subscription.sh
+  s_1e679de5cc6602::t_47d154c8f62371 3-4
+telegram-bot/restart-bot-cleanly.sh
+  s_1e679de5cc6602::t_47d154c8f62371 3-4
+.github/workflows/build-and-notify.yml
+  s_1e679de5cc6602::t_950a271dc6f04a 1
+scripts/test-telegram-changelog.sh
+  s_1e679de5cc6602::t_950a271dc6f04a 4,12-13
+telegram-bot/README.md
+  s_1e679de5cc6602::t_950a271dc6f04a 3-4,182
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1a40f0859fd2f783870b236ef69360e8dee45c3f",
+  "prompts": {},
+  "sessions": {
+    "s_1e679de5cc6602": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a455-fb52-74b1-97ff-bf00e203d04f",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Eugene Barsky <34789976+evb0110@users.noreply.github.com>"
+    }
+  }
+}
