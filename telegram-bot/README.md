@@ -1,5 +1,7 @@
 # MSS Downloader Telegram Bot
 
+> Retired. The Telegram notification bot and its build-notification integration have been decommissioned. The source remains only as historical reference; do not restore or reuse old bot tokens.
+
 Telegram bot for automatic Windows AMD64 build notifications with GitHub Releases integration.
 
 ## Features

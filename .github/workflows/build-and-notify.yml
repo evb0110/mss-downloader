@@ -1,4 +1,4 @@
-name: Build and Notify on Version Change
+name: Build on Version Change
 
 on:
   push:
@@ -188,34 +188,3 @@ jobs:
         with:
           name: macos-dmg-build-v${{ needs.check-version.outputs.version }}
           path: release/*-arm64.dmg
-
-  notify:
-    needs: [check-version, build-windows, build-linux, build-mac]
-    if: needs.check-version.outputs.version-changed == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      
-      - name: Install Telegram bot dependencies
-        run: |
-          cd telegram-bot
-          npm install
-      
-      - name: Wait for GitHub API to propagate release assets
-        run: |
-          echo "⏳ Waiting 30 seconds for GitHub API to fully propagate the release assets..."
-          sleep 30
-      
-      - name: Send Multiplatform Telegram notification
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd telegram-bot
-          npm run send-multiplatform-build
